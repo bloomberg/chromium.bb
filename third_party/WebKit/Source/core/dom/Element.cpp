@@ -56,6 +56,7 @@
 #include "core/dom/Attr.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
+#include "core/dom/Document.h"
 #include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementShadow.h"
@@ -74,6 +75,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/dom/SlotAssignment.h"
+#include "core/dom/SpaceSplitString.h"
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
@@ -1341,6 +1343,11 @@ void Element::setAttribute(const AtomicString& local_name,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
+void Element::setAttribute(const AtomicString& name,
+                           const AtomicString& value) {
+  setAttribute(name, value, ASSERT_NO_EXCEPTION);
+}
+
 void Element::setAttribute(const QualifiedName& name,
                            const AtomicString& value) {
   SynchronizeAttribute(name);
@@ -1656,6 +1663,12 @@ bool Element::HasEquivalentAttributes(const Element* other) const {
 
 String Element::nodeName() const {
   return tag_name_.ToString();
+}
+
+AtomicString Element::LocalNameForSelectorMatching() const {
+  if (IsHTMLElement() || !GetDocument().IsHTMLDocument())
+    return localName();
+  return localName().DeprecatedLower();
 }
 
 const AtomicString& Element::LocateNamespacePrefix(
@@ -2397,6 +2410,10 @@ bool Element::CanAttachShadowRoot() const {
          tag_name == HTMLNames::spanTag;
 }
 
+ShadowRoot* Element::createShadowRoot(const ScriptState* script_state) {
+  return createShadowRoot(script_state, ASSERT_NO_EXCEPTION);
+}
+
 ShadowRoot* Element::attachShadow(const ScriptState* script_state,
                                   const ShadowRootInit& shadow_root_init_dict,
                                   ExceptionState& exception_state) {
@@ -3060,6 +3077,10 @@ void Element::SetInnerHTMLFromString(const String& html,
   }
 }
 
+void Element::SetInnerHTMLFromString(const String& html) {
+  SetInnerHTMLFromString(html, ASSERT_NO_EXCEPTION);
+}
+
 void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                            ExceptionState& exception_state) {
   DCHECK(stringOrHtml.isString() ||
@@ -3082,6 +3103,10 @@ void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
     html = "";
 
   SetInnerHTMLFromString(html, exception_state);
+}
+
+void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml) {
+  setInnerHTML(stringOrHtml, ASSERT_NO_EXCEPTION);
 }
 
 void Element::SetOuterHTMLFromString(const String& html,
@@ -3710,6 +3735,10 @@ bool Element::matches(const AtomicString& selectors,
   return selector_query->Matches(*this);
 }
 
+bool Element::matches(const AtomicString& selectors) {
+  return matches(selectors, ASSERT_NO_EXCEPTION);
+}
+
 Element* Element::closest(const AtomicString& selectors,
                           ExceptionState& exception_state) {
   SelectorQuery* selector_query = GetDocument().GetSelectorQueryCache().Add(
@@ -3717,6 +3746,10 @@ Element* Element::closest(const AtomicString& selectors,
   if (!selector_query)
     return nullptr;
   return selector_query->Closest(*this);
+}
+
+Element* Element::closest(const AtomicString& selectors) {
+  return closest(selectors, ASSERT_NO_EXCEPTION);
 }
 
 DOMTokenList& Element::classList() {
@@ -4177,6 +4210,37 @@ void Element::DetachAllAttrNodesFromElement() {
   }
 
   RemoveAttrNodeList();
+}
+
+Node::InsertionNotificationRequest Node::InsertedInto(
+    ContainerNode* insertion_point) {
+  DCHECK(!ChildNeedsStyleInvalidation());
+  DCHECK(!NeedsStyleInvalidation());
+  DCHECK(insertion_point->isConnected() || insertion_point->IsInShadowTree() ||
+         IsContainerNode());
+  if (insertion_point->isConnected()) {
+    SetFlag(kIsConnectedFlag);
+    insertion_point->GetDocument().IncrementNodeCount();
+  }
+  if (ParentOrShadowHostNode()->IsInShadowTree())
+    SetFlag(kIsInShadowTreeFlag);
+  if (ChildNeedsDistributionRecalc() &&
+      !insertion_point->ChildNeedsDistributionRecalc())
+    insertion_point->MarkAncestorsWithChildNeedsDistributionRecalc();
+  return kInsertionDone;
+}
+
+void Node::RemovedFrom(ContainerNode* insertion_point) {
+  DCHECK(insertion_point->isConnected() || IsContainerNode() ||
+         IsInShadowTree());
+  if (insertion_point->isConnected()) {
+    ClearFlag(kIsConnectedFlag);
+    insertion_point->GetDocument().DecrementNodeCount();
+  }
+  if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
+    ClearFlag(kIsInShadowTreeFlag);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->Remove(this);
 }
 
 void Element::WillRecalcStyle(StyleRecalcChange) {

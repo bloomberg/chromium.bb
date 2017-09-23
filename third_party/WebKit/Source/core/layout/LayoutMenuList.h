@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutText;
 

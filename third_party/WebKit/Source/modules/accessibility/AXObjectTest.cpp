@@ -4,11 +4,12 @@
 
 #include "modules/accessibility/AXObject.h"
 
+#include <memory>
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

@@ -27,6 +27,7 @@
 
 #include "core/dom/events/EventDispatcher.h"
 
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
