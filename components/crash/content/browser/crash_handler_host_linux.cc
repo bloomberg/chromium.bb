@@ -33,12 +33,12 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "breakpad/src/client/linux/handler/exception_handler.h"
-#include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
-#include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
+#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/linux_dumper.h"
+#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/minidump_writer.h"
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
 #include <sys/linux-syscalls.h>

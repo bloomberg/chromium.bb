@@ -28,8 +28,7 @@ fi
 
 for ARCH in ${ARCHS}; do
   # Use -c to avoid dumping CFI, because the Breakpad stackwalk is incompatible
-  # with CFI produced by clang.
-  # http://code.google.com/p/google-breakpad/issues/detail?id=443
+  # with CFI produced by clang. https://crbug.com/google-breakpad/443
   "${DUMP_SYMS_TOOL}" -a "${ARCH}" -c "${DWARF_PATH}" > \
       "${SOURCE_BUNDLE}-${VERSION}-${ARCH}.breakpad"
 done

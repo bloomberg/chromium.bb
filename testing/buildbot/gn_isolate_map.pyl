@@ -205,7 +205,7 @@
     "type": "console_test_launcher",
   },
   "breakpad_unittests": {
-    "label": "//breakpad:breakpad_unittests",
+    "label": "//third_party/breakpad:breakpad_unittests",
     "type": "console_test_launcher",
   },
   "browser_tests": {
@@ -458,7 +458,7 @@
     "type": "console_test_launcher",
   },
   "dump_syms" : {
-    "label": "//breakpad:dump_syms",
+    "label": "//third_party/breakpad:dump_syms",
     "type": "additional_compile_target",
   },
   "events_unittests": {
@@ -728,7 +728,7 @@
     ],
   },
   "microdump_stackwalk" : {
-    "label": "//breakpad:microdump_stackwalk",
+    "label": "//third_party/breakpad:microdump_stackwalk",
     "type": "additional_compile_target",
   },
   "midi_unittests": {

@@ -11,8 +11,8 @@ Breakpad is an open source library which we use for crash reporting across all
 three platforms (Linux, Mac and Windows). For Linux, a substantial amount of
 work was required to support cross-process dumping. At the time of writing this
 code is currently forked from the upstream breakpad repo. While this situation
-remains, the forked code lives in `breakpad/linux`. The upstream repo is
-mirrored in `breakpad/src`.
+remains, the forked code lives in `third_party/breakpad/linux`. The upstream
+repo is mirrored in `third_party/breakpad/breakpad`.
 
 The code currently supports i386 only. Getting x86-64 to work should only be a
 minor amount of work.
@@ -22,13 +22,13 @@ minor amount of work.
 Breakpad deals in a file format called 'minidumps'. This is a Microsoft format
 and thus is defined by in-memory structures which are dumped, raw, to disk. The
 main header file for this file format is
-`breakpad/src/google_breakpad/common/minidump_format.h`.
+`third_party/breakpad/breakpad/src/google_breakpad/common/minidump_format.h`.
 
 At the top level, the minidump file format is a list of key-value pairs. Many of
 the keys are defined by the minidump format and contain cross-platform
 representations of stacks, threads etc. For Linux we also define a number of
 custom keys containing `/proc/cpuinfo`, `lsb-release` etc. These are defined in
-`breakpad/linux/minidump_format_linux.h`.
+`third_party/breakpad/breakpad/linux/minidump_format_linux.h`.
 
 ### Catching exceptions
 

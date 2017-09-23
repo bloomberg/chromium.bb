@@ -12,7 +12,7 @@ static_library("crash_service") {
 
   deps = [
     "//base",
-    "//breakpad:breakpad_handler",
-    "//breakpad:breakpad_sender",
+    "//third_party/breakpad:breakpad_handler",
+    "//third_party/breakpad:breakpad_sender",
   ]
 }

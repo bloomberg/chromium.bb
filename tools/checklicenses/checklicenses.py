@@ -119,11 +119,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # http://code.google.com/p/google-breakpad/issues/detail?id=450
-    'breakpad/src': [
-        'UNKNOWN',
-    ],
-
     'buildtools/third_party/libc++/trunk/test': [
         # http://llvm.org/bugs/show_bug.cgi?id=25980
         'UNKNOWN',
@@ -183,6 +178,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
 
     # http://code.google.com/p/angleproject/issues/detail?id=217
     'third_party/angle': [
+        'UNKNOWN',
+    ],
+
+    # https://crbug.com/google-breakpad/450
+    'third_party/breakpad/breakpad': [
         'UNKNOWN',
     ],
 

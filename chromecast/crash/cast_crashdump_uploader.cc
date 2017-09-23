@@ -10,12 +10,13 @@
 #include "base/memory/ptr_util.h"
 // TODO(slan): Find a replacement for LibcurlWrapper in Chromium to remove the
 // breakpad dependency.
-#include "breakpad/src/common/linux/libcurl_wrapper.h"
+#include "third_party/breakpad/breakpad/src/common/linux/libcurl_wrapper.h"
 
 namespace chromecast {
 namespace {
 
-// Keep these in sync with "//breakpad/src/client/mac/sender/uploader.mm"
+// Keep these in sync with
+// //third_party/breakpad/breakpad/src/client/mac/sender/uploader.mm
 const char kProdKey[] = "prod";
 const char kVerKey[] = "ver";
 const char kGuidKey[] = "guid";

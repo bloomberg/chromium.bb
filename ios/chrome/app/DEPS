@@ -1,5 +1,4 @@
 include_rules = [
-  "+breakpad/src/client/ios",
   "+components/bookmarks/browser",
   "+components/bookmarks/test",
   "+components/browser_sync",
@@ -27,6 +26,7 @@ include_rules = [
   "+ios/net",
   "+ios/public/provider/chrome",
   "+mojo/edk/embedder/embedder.h",
+  "+third_party/breakpad/breakpad/src/client/ios",
 
   # Strings and resources.
   "+components/grit",

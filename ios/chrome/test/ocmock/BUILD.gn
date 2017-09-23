@@ -11,8 +11,8 @@ source_set("ocmock") {
   ]
   deps = [
     "//base",
-    "//breakpad:client",
     "//testing/gtest",
+    "//third_party/breakpad:client",
     "//third_party/ocmock",
   ]
 }

@@ -15,14 +15,14 @@ source_set("lib") {
     "crash_reporter_client.h",
   ]
 
-  include_dirs = [ "../../../../breakpad/src" ]
+  include_dirs = [ "../../../../third_party/breakpad/breakpad/src" ]
 
   deps = [
     "//base",
   ]
 
   if (is_win) {
-    deps += [ "//breakpad:breakpad_handler" ]
+    deps += [ "//third_party/breakpad:breakpad_handler" ]
   }
 }
 
@@ -213,11 +213,11 @@ source_set("app_non_mac_win") {
 
   if (is_win) {
     deps += [
-      "//breakpad:breakpad_handler",
       "//sandbox",
+      "//third_party/breakpad:breakpad_handler",
     ]
   } else if (is_posix && !is_ios) {
-    deps += [ "//breakpad:client" ]
+    deps += [ "//third_party/breakpad:client" ]
   }
 }
 
@@ -249,18 +249,18 @@ static_library("app_breakpad_mac_win_to_be_deleted") {
     deps += [
       "//base",
       "//base:base_static",
-      "//breakpad:client",
       "//components/crash/core/common",
       "//content/public/common:result_codes",
       "//sandbox",
+      "//third_party/breakpad:client",
     ]
 
     if (is_mac) {
-      deps += [ "//breakpad" ]
+      deps += [ "//third_party/breakpad" ]
     }
 
     if (is_win) {
-      deps += [ "//breakpad:breakpad_handler" ]
+      deps += [ "//third_party/breakpad:breakpad_handler" ]
       libs = [ "userenv.lib" ]
     }
   }
@@ -299,7 +299,7 @@ source_set("unit_tests") {
   if (is_win) {
     deps += [
       ":run_as_crashpad_handler",
-      "//breakpad:client",
+      "//third_party/breakpad:client",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/crashpad/crashpad/snapshot:snapshot",
       "//third_party/crashpad/crashpad/util",

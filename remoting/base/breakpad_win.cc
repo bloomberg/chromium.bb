@@ -22,7 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
+#include "third_party/breakpad/breakpad/src/client/windows/handler/exception_handler.h"
 
 namespace remoting {
 void InitializeCrashReportingForTest(const wchar_t* pipe_name);

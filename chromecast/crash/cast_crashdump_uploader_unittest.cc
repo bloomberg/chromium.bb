@@ -6,11 +6,11 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "breakpad/src/common/linux/libcurl_wrapper.h"
 #include "chromecast/base/scoped_temp_file.h"
 #include "chromecast/crash/cast_crashdump_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/breakpad/breakpad/src/common/linux/libcurl_wrapper.h"
 
 namespace chromecast {
 
@@ -186,4 +186,4 @@ TEST(CastCrashdumpUploaderTest, UploadSucceedsWithValidAttachment) {
   ASSERT_TRUE(uploader.Upload(nullptr));
 }
 
-}  // namespace chromeceast
+}  // namespace chromecast

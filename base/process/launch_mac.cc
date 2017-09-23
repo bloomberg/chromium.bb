@@ -76,7 +76,7 @@ class PosixSpawnFileActions {
 void RestoreDefaultExceptionHandler() {
   // This function is tailored to remove the Breakpad exception handler.
   // exception_mask matches s_exception_mask in
-  // breakpad/src/client/mac/handler/exception_handler.cc
+  // third_party/breakpad/breakpad/src/client/mac/handler/exception_handler.cc
   const exception_mask_t exception_mask = EXC_MASK_BAD_ACCESS |
                                           EXC_MASK_BAD_INSTRUCTION |
                                           EXC_MASK_ARITHMETIC |

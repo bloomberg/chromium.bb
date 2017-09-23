@@ -106,7 +106,7 @@ bool InitializeSymbols() {
 // we are using the Sym* functions.  This is because breakpad does now
 // share a lock with this function.  See this related bug:
 //
-//   http://code.google.com/p/google-breakpad/issues/detail?id=311
+//   https://crbug.com/google-breakpad/311
 //
 // This is a very unlikely edge case, and the current solution is to
 // just ignore it.
