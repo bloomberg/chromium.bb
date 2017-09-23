@@ -65,6 +65,25 @@ _INCLUDE_ORDER_WARNING = (
     'cppguide.html#Names_and_Order_of_Includes')
 
 
+_BANNED_JAVA_FUNCTIONS = (
+    (
+      'StrictMode.allowThreadDiskReads()',
+      (
+       'Prefer using StrictModeContext.allowDiskReads() to using StrictMode '
+       'directly.',
+      ),
+      False,
+    ),
+    (
+      'StrictMode.allowThreadDiskWrites()',
+      (
+       'Prefer using StrictModeContext.allowDiskWrites() to using StrictMode '
+       'directly.',
+      ),
+      False,
+    ),
+)
+
 _BANNED_OBJC_FUNCTIONS = (
     (
       'addTrackingRect:',
@@ -774,6 +793,12 @@ def _CheckNoBannedFunctions(input_api, output_api):
       problems.append('    %s:%d:' % (affected_file.LocalPath(), line_num))
       for message_line in message:
         problems.append('      %s' % message_line)
+
+  file_filter = lambda f: f.LocalPath().endswith(('.java'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      for func_name, message, error in _BANNED_JAVA_FUNCTIONS:
+        CheckForMatch(f, line_num, line, func_name, message, error)
 
   file_filter = lambda f: f.LocalPath().endswith(('.mm', '.m', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
