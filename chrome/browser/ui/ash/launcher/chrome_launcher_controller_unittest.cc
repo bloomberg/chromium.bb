@@ -2504,27 +2504,25 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Check the shelf model used by ShelfWindowWatcher.
   ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
-  ASSERT_EQ(2, shelf_model->item_count());
+  ASSERT_EQ(1, shelf_model->item_count());
   EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[0].type);
-  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, shelf_model->items()[1].type);
 
   // Add an app panel window; ShelfWindowWatcher will add a shelf item.
   V2App panel(profile(), extension_platform_app_.get(),
               extensions::AppWindow::WINDOW_TYPE_PANEL);
-  ASSERT_EQ(3, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[2].type);
+  ASSERT_EQ(2, shelf_model->item_count());
+  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[1].type);
 
   // After switching users the item should go away.
   TestingProfile* profile2 = CreateMultiUserProfile("user2");
   SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile2));
-  ASSERT_EQ(2, shelf_model->item_count());
+  ASSERT_EQ(1, shelf_model->item_count());
   EXPECT_EQ(ash::TYPE_APP_LIST, shelf_model->items()[0].type);
-  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, shelf_model->items()[1].type);
 
   // And it should come back when switching back.
   SwitchActiveUser(multi_user_util::GetAccountIdFromProfile(profile()));
-  ASSERT_EQ(3, shelf_model->item_count());
-  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[2].type);
+  ASSERT_EQ(2, shelf_model->item_count());
+  EXPECT_EQ(ash::TYPE_APP_PANEL, shelf_model->items()[1].type);
 }
 
 // Check that a running windowed V1 application will be properly pinned and
@@ -4217,32 +4215,29 @@ TEST_F(ChromeLauncherControllerTest, ShelfModelSyncMash) {
   if (chromeos::GetAshConfig() != ash::Config::MASH)
     return;
 
-  // ShelfModel creates app list and browser shortcut items.
-  // ShelfController initializes the delegate for the app list item.
+  // ShelfModel creates an app list item, ShelfController creates its delegate.
   TestChromeLauncherController* launcher_controller =
       RecreateLauncherController();
   TestShelfController* shelf_controller =
       launcher_controller->test_shelf_controller();
   EXPECT_EQ(0u, shelf_controller->added_count());
   EXPECT_EQ(0u, shelf_controller->removed_count());
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   EXPECT_EQ(ash::kAppListId, model_->items()[0].id.app_id);
   EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[0].type);
   EXPECT_FALSE(model_->GetShelfItemDelegate(model_->items()[0].id));
-  EXPECT_EQ(extension_misc::kChromeAppId, model_->items()[1].id.app_id);
-  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
-  EXPECT_FALSE(model_->GetShelfItemDelegate(model_->items()[1].id));
-  EXPECT_TRUE(model_->items()[1].title.empty());
 
-  // Init updates the browser item and its delegate in Chrome's ShelfModel.
+  // Init creates the browser item and its delegate in Chrome's ShelfModel.
   // Ash's ShelfController should be notified about the update and delegate.
   launcher_controller->Init();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(0u, shelf_controller->added_count());
+  EXPECT_EQ(1u, shelf_controller->added_count());
   EXPECT_EQ(0u, shelf_controller->removed_count());
-  EXPECT_LE(1u, shelf_controller->updated_count());
+  EXPECT_LE(0u, shelf_controller->updated_count());
   EXPECT_EQ(1u, shelf_controller->set_delegate_count());
+  EXPECT_EQ(extension_misc::kChromeAppId, model_->items()[1].id.app_id);
+  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
   EXPECT_TRUE(model_->GetShelfItemDelegate(model_->items()[1].id));
   EXPECT_FALSE(model_->items()[1].title.empty());
 
@@ -4252,13 +4247,13 @@ TEST_F(ChromeLauncherControllerTest, ShelfModelSyncMash) {
   item.id = ash::ShelfID(kDummyAppId);
   shelf_controller->AddShelfItem(2, item);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, shelf_controller->added_count());
+  EXPECT_EQ(2u, shelf_controller->added_count());
   EXPECT_EQ(0u, shelf_controller->removed_count());
 
   // Remove a shelf item using the ShelfController interface.
   shelf_controller->RemoveShelfItem(item.id);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, shelf_controller->added_count());
+  EXPECT_EQ(2u, shelf_controller->added_count());
   EXPECT_EQ(1u, shelf_controller->removed_count());
 
   // Add an item to Chrome's model; ShelfController should be notified.

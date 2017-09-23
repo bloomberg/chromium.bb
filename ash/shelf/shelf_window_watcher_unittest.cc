@@ -44,8 +44,8 @@ class ShelfWindowWatcherTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     model_ = Shell::Get()->shelf_model();
-    // ShelfModel creates app list and browser shortcut items.
-    ASSERT_EQ(2, model_->item_count());
+    // ShelfModel creates an app list item.
+    ASSERT_EQ(1, model_->item_count());
   }
 
   void TearDown() override {
@@ -74,17 +74,17 @@ TEST_F(ShelfWindowWatcherTest, OpenAndClose) {
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   CreateShelfItem(widget1->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   CreateShelfItem(widget2->GetNativeWindow());
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
 
   // Each ShelfItem is removed when the associated window is destroyed.
   widget1.reset();
-  EXPECT_EQ(3, model_->item_count());
-  widget2.reset();
   EXPECT_EQ(2, model_->item_count());
+  widget2.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 // Ensure shelf items are added and removed for some unknown windows in mash.
@@ -95,16 +95,16 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   // Windows with no valid ShelfItemType and ShelfID properties get shelf items.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
 
   // Each ShelfItem is removed when the associated window is destroyed.
   widget1.reset();
-  EXPECT_EQ(3, model_->item_count());
-  widget2.reset();
   EXPECT_EQ(2, model_->item_count());
+  widget2.reset();
+  EXPECT_EQ(1, model_->item_count());
 
   // Windows with type WINDOW_TYPE_NORMAL get shelf items, others do not.
   aura::client::WindowType no_item_types[] = {
@@ -120,7 +120,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
         ->GetChildById(kShellWindowId_DefaultContainer)
         ->AddChild(window.get());
     window->Show();
-    EXPECT_EQ(type == aura::client::WINDOW_TYPE_NORMAL ? 3 : 2,
+    EXPECT_EQ(type == aura::client::WINDOW_TYPE_NORMAL ? 2 : 1,
               model_->item_count());
   }
 
@@ -131,7 +131,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   // TODO(msw): Make the flag a window property and remove this workaround.
   widget1->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey,
                                           true);
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
 }
 
 TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
@@ -140,23 +140,23 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
     return;
 
   // Creating windows without a valid ShelfItemType does not add items.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
 
   // Create a ShelfItem for the first window.
   ShelfID id_w1 = CreateShelfItem(widget1->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
   // Create a ShelfItem for the second window.
   ShelfID id_w2 = CreateShelfItem(widget2->GetNativeWindow());
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
 
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
@@ -164,14 +164,14 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   // ShelfItem is removed when the item type window property is cleared.
   widget1->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   widget2->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   // Clearing twice doesn't do anything.
   widget2->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
 }
 
 TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
@@ -186,13 +186,13 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
 
   // Create a ShelfItem for the first window.
   ShelfID id_w1 = CreateShelfItem(widget1->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
   // Create a ShelfItem for the second window.
   ShelfID id_w2 = CreateShelfItem(widget2->GetNativeWindow());
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
@@ -210,11 +210,11 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
 
 TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   // Create a ShelfItem for a new window.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   ShelfID id = CreateShelfItem(widget->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
@@ -223,7 +223,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   widget->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                          static_cast<int32_t>(TYPE_APP_PANEL));
   // No new item is created after updating a launcher item.
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after updating a launcher item.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
@@ -231,11 +231,11 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 
 TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   // Create a ShelfItem for a new window.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   ShelfID id = CreateShelfItem(widget->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
@@ -246,7 +246,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   window_state->Maximize();
   EXPECT_TRUE(window_state->IsMaximized());
   // No new item is created after maximizing the window.
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after maximizing the window.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
@@ -255,7 +255,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   window_state->Restore();
   EXPECT_FALSE(window_state->IsMaximized());
   // No new item is created after restoring the window.
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   // Index and id are not changed after maximizing the window.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
@@ -265,11 +265,11 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
 // TODO(simonhong): Add a test for removing a Window during the dragging.
 TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // Create a ShelfItem for a new window.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   ShelfID id = CreateShelfItem(widget->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
@@ -290,13 +290,13 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
 // Ensure panels and dialogs get shelf items.
 TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
   // An item is created for a dialog window.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> dialog_widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   aura::Window* dialog = dialog_widget->GetNativeWindow();
   dialog->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
   dialog->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   // An item is created for a panel window.
   views::Widget panel_widget;
@@ -309,7 +309,7 @@ TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
   aura::Window* panel = panel_widget.GetNativeWindow();
   panel->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
   panel->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP_PANEL));
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
 
   // An item is not created for an app window.
   std::unique_ptr<views::Widget> app_widget =
@@ -317,47 +317,47 @@ TEST_F(ShelfWindowWatcherTest, PanelAndDialogWindows) {
   aura::Window* app = app_widget->GetNativeWindow();
   app->SetProperty(kShelfIDKey, new std::string(ShelfID("c").Serialize()));
   app->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
   app_widget.reset();
 
   // Each ShelfItem is removed when the associated window is destroyed.
   panel_widget.CloseNow();
-  EXPECT_EQ(3, model_->item_count());
-  dialog_widget.reset();
   EXPECT_EQ(2, model_->item_count());
+  dialog_widget.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 // Ensure items use the app icon and window icon aura::Window properties.
 TEST_F(ShelfWindowWatcherTest, ItemIcon) {
   // Create a ShelfItem for a window; it should have a default icon.
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   aura::Window* window = widget->GetNativeWindow();
   ShelfID id = CreateShelfItem(window);
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Image default_image = rb.GetImageNamed(IDR_DEFAULT_FAVICON_32);
-  EXPECT_TRUE(model_->items()[2].image.BackedBySameObjectAs(
+  EXPECT_TRUE(model_->items()[1].image.BackedBySameObjectAs(
       default_image.AsImageSkia()));
 
   // Setting a window icon should update the item icon.
   const gfx::ImageSkia red = CreateImageSkiaIcon(SK_ColorRED);
   window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(red));
-  EXPECT_EQ(SK_ColorRED, model_->items()[2].image.bitmap()->getColor(0, 0));
+  EXPECT_EQ(SK_ColorRED, model_->items()[1].image.bitmap()->getColor(0, 0));
 
   // Setting an app icon should override the window icon.
   const gfx::ImageSkia blue = CreateImageSkiaIcon(SK_ColorBLUE);
   window->SetProperty(aura::client::kAppIconKey, new gfx::ImageSkia(blue));
-  EXPECT_EQ(SK_ColorBLUE, model_->items()[2].image.bitmap()->getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLUE, model_->items()[1].image.bitmap()->getColor(0, 0));
 
   // Clearing the app icon should restore the window icon to the shelf item.
   window->ClearProperty(aura::client::kAppIconKey);
-  EXPECT_EQ(SK_ColorRED, model_->items()[2].image.bitmap()->getColor(0, 0));
+  EXPECT_EQ(SK_ColorRED, model_->items()[1].image.bitmap()->getColor(0, 0));
 }
 
 TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<aura::Window> window =
       base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
@@ -367,7 +367,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
       ->GetChildById(kShellWindowId_DefaultContainer)
       ->AddChild(window.get());
   window->Show();
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   std::unique_ptr<aura::Window> child =
       base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
@@ -377,16 +377,16 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   window->AddChild(child.get());
   child->Show();
   // There should not be a new shelf item for |child|.
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   child.reset();
-  EXPECT_EQ(3, model_->item_count());
-  window.reset();
   EXPECT_EQ(2, model_->item_count());
+  window.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(1, model_->item_count());
   std::unique_ptr<aura::Window> window =
       base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
@@ -396,7 +396,7 @@ TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
       ->GetChildById(kShellWindowId_DefaultContainer)
       ->AddChild(window.get());
   window->Show();
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(2, model_->item_count());
 
   std::unique_ptr<aura::Window> transient =
       base::MakeUnique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
@@ -411,12 +411,12 @@ TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
                                                             transient.get());
   transient->Show();
   // There should be a new shelf item for |transient|.
-  EXPECT_EQ(4, model_->item_count());
+  EXPECT_EQ(3, model_->item_count());
 
   transient.reset();
-  EXPECT_EQ(3, model_->item_count());
-  window.reset();
   EXPECT_EQ(2, model_->item_count());
+  window.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 // Ensures ShelfWindowWatcher supports windows opened prior to session start.
@@ -426,18 +426,18 @@ TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
   ASSERT_FALSE(
       Shell::Get()->session_controller()->IsActiveUserSessionStarted());
 
-  // ShelfModel creates app list and browser shortcut items.
-  EXPECT_EQ(2, model->item_count());
+  // ShelfModel creates an app list item.
+  EXPECT_EQ(1, model->item_count());
 
   // Construct a window that should get a shelf item once the session starts.
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   ShelfWindowWatcherTest::CreateShelfItem(widget->GetNativeWindow());
-  EXPECT_EQ(2, model->item_count());
+  EXPECT_EQ(1, model->item_count());
 
   // Start the test user session; ShelfWindowWatcher will find the open window.
   CreateUserSessions(1);
-  EXPECT_EQ(3, model->item_count());
+  EXPECT_EQ(2, model->item_count());
 }
 
 }  // namespace

@@ -60,13 +60,9 @@ using ShelfControllerTest = AshTestBase;
 
 TEST_F(ShelfControllerTest, IntializesAppListItemDelegate) {
   ShelfModel* model = Shell::Get()->shelf_controller()->model();
-  EXPECT_EQ(2, model->item_count());
+  EXPECT_EQ(1, model->item_count());
   EXPECT_EQ(kAppListId, model->items()[0].id.app_id);
   EXPECT_TRUE(model->GetShelfItemDelegate(ShelfID(kAppListId)));
-  // Chrome initializes the delegate for the browser shortcut item.
-  const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
-  EXPECT_EQ(kChromeAppId, model->items()[1].id.app_id);
-  EXPECT_FALSE(model->GetShelfItemDelegate(ShelfID(kChromeAppId)));
 }
 
 TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
@@ -80,10 +76,9 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
       &observer, mojo::MakeIsolatedRequest(&observer_ptr));
   controller->AddObserver(observer_ptr.PassInterface());
 
-  // ShelfModel creates app list and browser shortcut items.
-  EXPECT_EQ(2, controller->model()->item_count());
-
+  // The ShelfModel should be initialized with a single item for the AppList.
   // In classic ash, the observer should not be notified of ShelfModel changes.
+  EXPECT_EQ(1, controller->model()->item_count());
   EXPECT_EQ(0u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
@@ -93,14 +88,14 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
   item.id = ShelfID("foo");
   int index = controller->model()->Add(item);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, controller->model()->item_count());
+  EXPECT_EQ(2, controller->model()->item_count());
   EXPECT_EQ(0u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
   // Remove a ShelfModel item; |observer| should not be notified in classic ash.
   controller->model()->RemoveItemAt(index);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, controller->model()->item_count());
+  EXPECT_EQ(1, controller->model()->item_count());
   EXPECT_EQ(0u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 }
@@ -117,11 +112,10 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
   controller->AddObserver(observer_ptr.PassInterface());
   base::RunLoop().RunUntilIdle();
 
-  // ShelfModel creates app list and browser shortcut items.
-  EXPECT_EQ(2, controller->model()->item_count());
-
+  // The ShelfModel should be initialized with a single item for the AppList.
   // In mash, the observer is immediately notified of existing shelf items.
-  EXPECT_EQ(2u, observer.added_count());
+  EXPECT_EQ(1, controller->model()->item_count());
+  EXPECT_EQ(1u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
   // Add a ShelfModel item; |observer| should be notified in mash.
@@ -130,31 +124,31 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
   item.id = ShelfID("foo");
   int index = controller->model()->Add(item);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, controller->model()->item_count());
-  EXPECT_EQ(3u, observer.added_count());
+  EXPECT_EQ(2, controller->model()->item_count());
+  EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
   // Remove a ShelfModel item; |observer| should be notified in mash.
   controller->model()->RemoveItemAt(index);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, controller->model()->item_count());
-  EXPECT_EQ(3u, observer.added_count());
+  EXPECT_EQ(1, controller->model()->item_count());
+  EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(1u, observer.removed_count());
 
   // Simulate adding an item remotely; Ash should apply the change.
   // |observer| is not notified; see mojom::ShelfController for rationale.
   controller->AddShelfItem(index, item);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, controller->model()->item_count());
-  EXPECT_EQ(3u, observer.added_count());
+  EXPECT_EQ(2, controller->model()->item_count());
+  EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(1u, observer.removed_count());
 
   // Simulate removing an item remotely; Ash should apply the change.
   // |observer| is not notified; see mojom::ShelfController for rationale.
   controller->RemoveShelfItem(item.id);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, controller->model()->item_count());
-  EXPECT_EQ(3u, observer.added_count());
+  EXPECT_EQ(1, controller->model()->item_count());
+  EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(1u, observer.removed_count());
 }
 
