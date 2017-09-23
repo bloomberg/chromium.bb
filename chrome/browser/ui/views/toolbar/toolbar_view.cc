@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
@@ -78,6 +77,10 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_global_error_factory.h"
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #endif
 
 #if defined(USE_ASH)
@@ -440,19 +443,15 @@ void ToolbarView::ButtonPressed(views::Button* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, UpgradeObserver implementation:
 void ToolbarView::OnOutdatedInstall() {
-  if (OutdatedUpgradeBubbleView::IsAvailable())
-    ShowOutdatedInstallNotification(true);
+  ShowOutdatedInstallNotification(true);
 }
 
 void ToolbarView::OnOutdatedInstallNoAutoUpdate() {
-  if (OutdatedUpgradeBubbleView::IsAvailable())
-    ShowOutdatedInstallNotification(false);
+  ShowOutdatedInstallNotification(false);
 }
 
 void ToolbarView::OnCriticalUpgradeInstalled() {
-#if defined(OS_WIN)
   ShowCriticalNotification();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -738,10 +737,11 @@ void ToolbarView::ShowCriticalNotification() {
 }
 
 void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
-  if (OutdatedUpgradeBubbleView::IsAvailable()) {
-    OutdatedUpgradeBubbleView::ShowBubble(app_menu_button_, browser_,
-                                          auto_update_enabled);
-  }
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  // TODO(tapted): Show this on Mac. See http://crbug.com/764111.
+  OutdatedUpgradeBubbleView::ShowBubble(app_menu_button_, browser_,
+                                        auto_update_enabled);
+#endif
 }
 
 void ToolbarView::OnShowHomeButtonChanged() {

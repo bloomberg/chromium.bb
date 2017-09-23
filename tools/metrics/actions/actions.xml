@@ -13925,7 +13925,9 @@ should be able to be added at any place in this file.
 <action name="OutdatedUpgradeBubble.Later">
   <owner>mad@chromium.org</owner>
   <description>
-    When the user clicks on the Later button of the outdated upgrade bubble.
+    When the user dismisses the outdated upgrade bubble without accepting it. In
+    m62 and earlier this was via a &quot;Later&quot; button. Since m63, that
+    button was removed and replaced by a close [x] reporting the same metric.
   </description>
 </action>
 
