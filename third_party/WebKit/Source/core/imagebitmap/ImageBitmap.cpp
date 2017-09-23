@@ -67,7 +67,7 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
   }
 
   if (options.colorSpaceConversion() != kImageBitmapOptionNone) {
-    if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace()) {
+    if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
       if (options.colorSpaceConversion() == kImageBitmapOptionDefault ||
           options.colorSpaceConversion() ==
               kSRGBImageBitmapColorSpaceConversion) {
@@ -90,12 +90,9 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
             << "Invalid ImageBitmap creation attribute colorSpaceConversion: "
             << options.colorSpaceConversion();
       }
-    } else if (CanvasColorParams::ColorCorrectRenderingInSRGBOnly()) {
-      DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
-      parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
     } else {
       DCHECK_EQ(options.colorSpaceConversion(), kImageBitmapOptionDefault);
-      parsed_options.color_params.SetCanvasColorSpace(kLegacyCanvasColorSpace);
+      parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
     }
   }
 
@@ -312,7 +309,7 @@ RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
   // null color space. This must be okay if color management is only supported
   // for SRGB. Please see crbug.com/754713 for more details.
 
-  if (!CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
+  if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     return image;
 
   // If the image is still in legacy color mode (no color space info), redraw
@@ -451,8 +448,8 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   if (!sk_image->isTextureBacked() && !sk_image->peekPixels(&pixmap)) {
     sk_sp<SkColorSpace> dst_color_space = nullptr;
     SkColorType dst_color_type = kN32_SkColorType;
-    if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace() ||
-        parsed_options.color_params.ColorCorrectNoColorSpaceToSRGB()) {
+    if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled() ||
+        !parsed_options.color_params.LinearPixelMath()) {
       dst_color_space = parsed_options.color_params.GetSkColorSpace();
       dst_color_type = parsed_options.color_params.GetSkColorType();
     }
@@ -641,7 +638,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   // SRGB, we don't do any color conversion when transferring the pixels from
   // ImageData to ImageBitmap to avoid double gamma correction. We tag the
   // image with SRGB color space later in ApplyColorSpaceConversion().
-  if (CanvasColorParams::ColorCorrectRenderingInSRGBOnly())
+  if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     info = info.makeColorSpace(nullptr);
   image_ = NewImageFromRaster(info, std::move(image_pixels));
 

@@ -41,21 +41,11 @@ class PLATFORM_EXPORT CanvasColorParams {
   void SetCanvasColorSpace(CanvasColorSpace);
   void SetCanvasPixelFormat(CanvasPixelFormat);
 
-  // Returns true if the canvas blends output color space values (that is,
-  // not linear space colors).
-  bool UsesOutputSpaceBlending() const;
-
-  // Returns true if color correct rendering flag is set but canvas color
-  // extensions flag is not.
-  static bool ColorCorrectRenderingInSRGBOnly();
-  // Returns true if both color correct rendering and canvas color extensions
-  // flags are set. This activates the color management pipeline for all color
-  // spaces.
-  static bool ColorCorrectRenderingInAnyColorSpace();
-  // Returns true if color correct rendering flag is set but color canvas
-  // extensions flag is not set and the color space stored in CanvasColorParams
-  // object is null.
-  bool ColorCorrectNoColorSpaceToSRGB() const;
+  // Returns true if the canvas does all blending and interpolation in linear
+  // color space. If false, then the canvas does blending and interpolation in
+  // the canvas' output color space.
+  // TODO(ccameron): This currently returns true iff the color space is legacy.
+  bool LinearPixelMath() const;
 
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
   // is nullptr in legacy rendering mode.
@@ -65,16 +55,14 @@ class PLATFORM_EXPORT CanvasColorParams {
   SkColorType GetSkColorType() const;
   uint8_t BytesPerPixel() const;
 
-  // The color space to use for compositing. This will always return a valid
-  // gfx or skia color space.
-  gfx::ColorSpace GetGfxColorSpace() const;
-  sk_sp<SkColorSpace> GetSkColorSpace() const;
+  // The color space in which pixels read from the canvas via a shader will be
+  // returned. Note that for canvases with linear pixel math, these will be
+  // converted from their storage space into a linear space.
+  gfx::ColorSpace GetSamplerGfxColorSpace() const;
 
-  // This matches CanvasRenderingContext::LinearPixelMath, and is true only when
-  // the pixel format is half-float linear.
-  // TODO(ccameron): This is not the same as !UsesOutputSpaceBlending, but
-  // perhaps should be.
-  bool LinearPixelMath() const;
+  // Return the color space of the underlying data for the canvas.
+  gfx::ColorSpace GetStorageGfxColorSpace() const;
+  sk_sp<SkColorSpace> GetSkColorSpace() const;
 
  private:
   CanvasColorSpace color_space_ = kLegacyCanvasColorSpace;

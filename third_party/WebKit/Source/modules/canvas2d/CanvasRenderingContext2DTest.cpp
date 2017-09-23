@@ -183,13 +183,13 @@ CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
 void CanvasRenderingContext2DTest::CreateContext(
     OpacityMode opacity_mode,
     String color_space,
-    LinearPixelMathState linear_pixel_math_state) {
+    LinearPixelMathState LinearPixelMath_state) {
   String canvas_type("2d");
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(opacity_mode == kNonOpaque);
   if (!color_space.IsEmpty()) {
     attributes.setColorSpace(color_space);
-    if (linear_pixel_math_state == kLinearPixelMathEnabled) {
+    if (LinearPixelMath_state == kLinearPixelMathEnabled) {
       attributes.setPixelFormat("float16");
       attributes.setLinearPixelMath(true);
     }

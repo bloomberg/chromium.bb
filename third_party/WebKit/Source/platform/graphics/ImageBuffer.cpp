@@ -391,7 +391,7 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
 
   // If color correct rendering is enabled but color canvas extensions is not,
   // unpremul must be done in gamma encoded color space.
-  if (CanvasColorParams::ColorCorrectRenderingInSRGBOnly())
+  if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     info = info.makeColorSpace(nullptr);
   snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
       info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());

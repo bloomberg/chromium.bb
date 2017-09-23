@@ -33,6 +33,7 @@
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "skia/ext/texture_handle.h"
@@ -63,7 +64,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   // as SRGB will be managed by wrapping the internal SkCanvas inside a
   // SkColorSpaceXformCanvas. If color correct rendering is enbaled for other
   // color spaces, we set the color space properly.
-  if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
+  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     info = info.makeColorSpace(color_params.GetSkColorSpaceForSkSurfaces());
 
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
@@ -74,7 +75,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
     return;
 
   sk_sp<SkColorSpace> xform_canvas_color_space = nullptr;
-  if (color_params.ColorCorrectNoColorSpaceToSRGB())
+  if (!color_params.LinearPixelMath())
     xform_canvas_color_space = color_params.GetSkColorSpace();
   canvas_ = WTF::WrapUnique(
       new SkiaPaintCanvas(surface_->getCanvas(), xform_canvas_color_space));

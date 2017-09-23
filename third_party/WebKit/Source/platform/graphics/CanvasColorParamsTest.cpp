@@ -28,8 +28,7 @@ TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]{32, 96, 160, 255});
 
   CanvasColorSpace canvas_color_spaces[] = {
-      kLegacyCanvasColorSpace, kSRGBCanvasColorSpace, kRec2020CanvasColorSpace,
-      kP3CanvasColorSpace,
+      kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
   };
 
   CanvasPixelFormat canvas_pixel_formats[] = {
@@ -37,7 +36,7 @@ TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
       kRGBA12CanvasPixelFormat, kF16CanvasPixelFormat,
   };
 
-  for (int iter_color_space = 0; iter_color_space < 4; iter_color_space++)
+  for (int iter_color_space = 0; iter_color_space < 3; iter_color_space++)
     for (int iter_pixel_format = 0; iter_pixel_format < 4;
          iter_pixel_format++) {
       CanvasColorParams color_params(canvas_color_spaces[iter_color_space],
@@ -49,7 +48,7 @@ TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
       std::unique_ptr<SkColorSpaceXform> color_space_xform_media =
           SkColorSpaceXform::New(
               src_rgb_color_space.get(),
-              color_params.GetGfxColorSpace().ToSkColorSpace().get());
+              color_params.GetStorageGfxColorSpace().ToSkColorSpace().get());
 
       std::unique_ptr<uint8_t[]> transformed_pixel_canvas(
           new uint8_t[color_params.BytesPerPixel()]());

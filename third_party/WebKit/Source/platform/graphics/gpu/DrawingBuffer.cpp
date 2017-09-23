@@ -167,7 +167,8 @@ DrawingBuffer::DrawingBuffer(
       software_rendering_(this->ContextProvider()->IsSoftwareRendering()),
       want_depth_(want_depth),
       want_stencil_(want_stencil),
-      color_space_(color_params.GetGfxColorSpace()),
+      storage_color_space_(color_params.GetStorageGfxColorSpace()),
+      sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
       chromium_image_usage_(chromium_image_usage) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
@@ -327,7 +328,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
   }
 
   *out_mailbox = viz::TextureMailbox(bitmap.get(), size_);
-  out_mailbox->set_color_space(color_space_);
+  out_mailbox->set_color_space(storage_color_space_);
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running). It also
@@ -409,7 +410,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxGpu(
         color_buffer_for_mailbox->produce_sync_token,
         color_buffer_for_mailbox->parameters.target, gfx::Size(size_),
         is_overlay_candidate, secure_output_only);
-    out_mailbox->set_color_space(color_space_);
+    out_mailbox->set_color_space(sampler_color_space_);
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
@@ -1199,7 +1200,7 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         gfx::Size(size), buffer_format, gfx::BufferUsage::SCANOUT,
         gpu::kNullSurfaceHandle);
     if (gpu_memory_buffer) {
-      gpu_memory_buffer->SetColorSpaceForScanout(color_space_);
+      gpu_memory_buffer->SetColorSpaceForScanout(storage_color_space_);
       image_id =
           gl_->CreateImageCHROMIUM(gpu_memory_buffer->AsClientBuffer(),
                                    size.Width(), size.Height(), gl_format);
