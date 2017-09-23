@@ -225,8 +225,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     int manifest_version,
     Platform platform) const {
   Availability environment_availability = GetEnvironmentAvailability(
-      platform, GetCurrentChannel(), GetCurrentFeatureSessionType(),
-      base::CommandLine::ForCurrentProcess());
+      platform, GetCurrentChannel(), GetCurrentFeatureSessionType());
   if (!environment_availability.is_available())
     return environment_availability;
   Availability manifest_availability =
@@ -245,8 +244,7 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     const GURL& url,
     Platform platform) const {
   Availability environment_availability = GetEnvironmentAvailability(
-      platform, GetCurrentChannel(), GetCurrentFeatureSessionType(),
-      base::CommandLine::ForCurrentProcess());
+      platform, GetCurrentChannel(), GetCurrentFeatureSessionType());
   if (!environment_availability.is_available())
     return environment_availability;
 
@@ -270,9 +268,9 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 }
 
 Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
-  Availability environment_availability = GetEnvironmentAvailability(
-      GetCurrentPlatform(), GetCurrentChannel(), GetCurrentFeatureSessionType(),
-      base::CommandLine::ForCurrentProcess());
+  Availability environment_availability =
+      GetEnvironmentAvailability(GetCurrentPlatform(), GetCurrentChannel(),
+                                 GetCurrentFeatureSessionType());
   if (!environment_availability.is_available())
     return environment_availability;
   return CheckDependencies(base::Bind(&IsAvailableToEnvironmentForBind));
@@ -552,13 +550,21 @@ void SimpleFeature::set_whitelist(
 Feature::Availability SimpleFeature::GetEnvironmentAvailability(
     Platform platform,
     version_info::Channel channel,
-    FeatureSessionType session_type,
-    base::CommandLine* command_line) const {
+    FeatureSessionType session_type) const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!platforms_.empty() && !base::ContainsValue(platforms_, platform))
     return CreateAvailability(INVALID_PLATFORM);
 
-  if (channel_ && *channel_ < GetCurrentChannel())
-    return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
+  if (channel_ && *channel_ < GetCurrentChannel()) {
+    // If the user has the kEnableExperimentalExtensionApis commandline flag
+    // appended, we ignore channel restrictions.
+    if (!ignore_channel_) {
+      ignore_channel_ =
+          command_line->HasSwitch(switches::kEnableExperimentalExtensionApis);
+    }
+    if (!(*ignore_channel_))
+      return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
+  }
 
   if (!command_line_switch_.empty() &&
       !IsCommandLineSwitchEnabled(command_line, command_line_switch_)) {
