@@ -346,7 +346,8 @@ class GSContext(object):
   """A class to wrap common google storage operations."""
 
   # Error messages that indicate an invalid BOTO config.
-  AUTHORIZATION_ERRORS = ('no configured', 'detail=Authorization')
+  AUTHORIZATION_ERRORS = ('no configured', 'none configured',
+                          'detail=Authorization')
 
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
   DEFAULT_GSUTIL_TRACKER_DIR = os.path.expanduser('~/.gsutil/tracker-files')

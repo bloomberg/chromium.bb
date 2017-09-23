@@ -495,6 +495,25 @@ class TastVMTestConfig(object):
     return self.__dict__ == other.__dict__
 
 
+class MoblabVMTestConfig(object):
+  """Config object for moblab tests suites.
+
+  Members:
+    test_type: Test type to be run.
+    timeout: Number of seconds to wait before timing out waiting for
+             results.
+  """
+  DEFAULT_TEST_TIMEOUT = 60 * 60
+
+  def __init__(self, test_type, timeout=DEFAULT_TEST_TIMEOUT):
+    """Constructor -- see members above."""
+    self.test_type = test_type
+    self.timeout = timeout
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+
 class ModelTestConfig(object):
   """Model specific config that controls which test suites are executed.
 
@@ -892,6 +911,10 @@ def DefaultSettings():
       # A list of TastVMTestConfig objects describing Tast-based test suites
       # that should be run in a VM.
       tast_vm_tests=[],
+
+      # Default to not run moblab tests. Currently the blessed moblab board runs
+      # these tests.
+      moblab_vm_tests=[],
 
       # List of patterns for portage packages for which stripped binpackages
       # should be uploaded to GS. The patterns are used to search for packages
@@ -1882,6 +1905,7 @@ def _DeserializeTestConfigs(build_dict):
                          preserve_none=True)
   _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
   _DeserializeTestConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
+  _DeserializeTestConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):

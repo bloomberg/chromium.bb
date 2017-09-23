@@ -278,6 +278,9 @@ class SimpleBuilder(generic_builders.Builder):
       stage_list += [[generic_stages.RetryStage, constants.VM_NUM_RETRIES,
                       vm_test_stages.GCETestStage, board]]
 
+    if config.moblab_vm_tests:
+      stage_list += [[vm_test_stages.MoblabVMTestStage, board]]
+
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
 

@@ -3888,7 +3888,7 @@ def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
   """
   for c in site_config.itervalues():
     # We can only run vmtests on baremetal, so ensure we have it.
-    if c.vm_tests and c.build_type != 'pre_cq':
+    if (c.vm_tests or c.moblab_vm_tests) and c.build_type != 'pre_cq':
       c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
 
 

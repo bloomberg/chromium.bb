@@ -750,6 +750,9 @@ VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
                        VM_SUITE_TEST_TYPE, GCE_SUITE_TEST_TYPE,
                        CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
 VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
+# MoblabVM tests are suites of tests used to validate a moblab image via
+# VMTests.
+MOBLAB_VM_SMOKE_TEST_TYPE = 'moblab_smoke_test'
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
@@ -1026,8 +1029,6 @@ VM_IMAGE_TAR = '%s.tar.xz' % VM_IMAGE_NAME
 VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_NUM_RETRIES = 1
-VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
-GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
 
 TEST_IMAGE_NAME = 'chromiumos_test_image'

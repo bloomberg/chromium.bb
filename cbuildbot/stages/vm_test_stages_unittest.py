@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
@@ -19,7 +20,10 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
+from chromite.lib import gs
+from chromite.lib import moblab_vm
 from chromite.lib import osutils
+from chromite.lib import path_util
 
 
 # pylint: disable=too-many-ancestors
@@ -157,6 +161,83 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     ]
     self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
+
+
+class MoblabVMTestStageTestCase(
+    cros_build_lib_unittest.RunCommandTestCase,
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase,
+):
+  """Does what it says above."""
+
+  BOT_ID = 'moblab-generic-vm-paladin'
+  RELEASE_TAG = ''
+
+  def setUp(self):
+    self._temp_chroot_prefix = os.path.join(self.tempdir, 'chroot')
+    osutils.SafeMakedirsNonRoot(self._temp_chroot_prefix)
+    self._temp_host_prefix = os.path.join(self.tempdir, 'host')
+    osutils.SafeMakedirsNonRoot(self._temp_host_prefix)
+    self.PatchObject(commands, 'UploadArchivedFile', autospec=True)
+    self._Prepare()
+
+  def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
+    self._run.config['moblab_vm_tests'] = [
+        config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE),
+    ]
+    return vm_test_stages.MoblabVMTestStage(self._run, self._current_board)
+
+  def _temp_chroot_path(self, suffix):
+    return os.path.join(self._temp_chroot_prefix, suffix)
+
+  def _temp_host_path(self, suffix):
+    return os.path.join(self._temp_host_prefix, suffix)
+
+  def _strip_path_prefix(self, full_path):
+    """Strips the host / chroot prefix from the given path."""
+    if full_path.startswith(self._temp_chroot_prefix):
+      return full_path.lstrip(self._temp_chroot_prefix)
+    elif full_path.startswith(self._temp_host_prefix):
+      return full_path.lstrip(self._temp_host_prefix)
+
+  def testPerformStageSuccess(self):
+    mock_create_test_root = self.PatchObject(
+        commands, 'CreateTestRoot', autospec=True,
+        return_value=self._temp_chroot_prefix)
+    self.PatchObject(
+        path_util,
+        'FromChrootPath',
+        new=lambda x: self._temp_host_path(self._strip_path_prefix(x)),
+    )
+    self.PatchObject(
+        path_util,
+        'ToChrootPath',
+        new=lambda x: self._temp_chroot_path(self._strip_path_prefix(x)),
+    )
+
+    mock_gs_context = mock.create_autospec(gs.GSContext)
+    self.PatchObject(gs, 'GSContext', autospec=True,
+                     return_value=mock_gs_context)
+    mock_moblab_vm = mock.create_autospec(moblab_vm.MoblabVm)
+    self.PatchObject(moblab_vm, 'MoblabVm', autospec=True,
+                     return_value=mock_moblab_vm)
+    mock_run_moblab_tests = self.PatchObject(vm_test_stages, 'RunMoblabTests',
+                                             autospec=True)
+
+    self.RunStage()
+
+    self.assertEqual(mock_create_test_root.call_count, 1)
+
+    mock_moblab_vm.Create.assert_called_once_with(mock.ANY, mock.ANY)
+    self.assertEqual(mock_moblab_vm.Start.call_count, 1)
+
+    mock_run_moblab_tests.assert_called_once_with(
+        'moblab-generic-vm', mock.ANY, mock.ANY,
+        self._temp_host_path('results'))
+
+    self.assertEqual(mock_moblab_vm.Stop.call_count, 1)
+    self.assertEqual(mock_moblab_vm.Destroy.call_count, 1)
 
 
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):

@@ -27,25 +27,19 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cts_helper
 from chromite.lib import failures_lib
+from chromite.lib import moblab_vm
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
-_VM_TEST_ERROR_MSG = """
-!!!VMTests failed!!!
+_GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
+_VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
 
-Logs are uploaded in the corresponding %(vm_test_results)s. This can be found
-by clicking on the artifacts link in the "Report" Stage. Specifically look
-for the test_harness/failed for the failing tests. For more
-particulars, please refer to which test failed i.e. above see the
-individual test that failed -- or if an update failed, check the
-corresponding update directory.
-"""
+_ERROR_MSG = """
+!!!%(test_name)s failed!!!
 
-_GCE_TEST_ERROR_MSG = """
-!!!GCETests failed!!!
-
-Logs are uploaded in the corresponding %(gce_test_results)s. This can be found
+Logs are uploaded in the corresponding %(test_results)s. This can be found
 by clicking on the artifacts link in the "Report" Stage. Specifically look
 for the test_harness/failed for the failing tests. For more
 particulars, please refer to which test failed i.e. above see the
@@ -227,7 +221,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       return
 
     test_results_root = commands.CreateTestRoot(self._build_root)
-    test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
+    test_basename = _VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for vm_test in self._run.config.vm_tests:
         logging.info('Running VM test %s.', vm_test.test_type)
@@ -243,7 +237,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
             self._RunTest(vm_test, per_test_results_dir)
 
     except Exception:
-      logging.error(_VM_TEST_ERROR_MSG % dict(vm_test_results=test_basename))
+      logging.error(_ERROR_MSG % dict(test_name='VMTests',
+                                      test_results=test_basename))
       self._ArchiveVMFiles(test_results_root)
       raise
     finally:
@@ -301,7 +296,7 @@ class GCETestStage(VMTestStage):
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
     test_results_root = commands.CreateTestRoot(self._build_root)
-    test_basename = constants.GCE_TEST_RESULTS % dict(attempt=self._attempt)
+    test_basename = _GCE_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for gce_test in self._run.config.gce_tests:
         logging.info('Running GCE test %s.', gce_test.test_type)
@@ -317,10 +312,144 @@ class GCETestStage(VMTestStage):
             self._RunTest(gce_test, per_test_results_dir)
 
     except Exception:
-      logging.error(_GCE_TEST_ERROR_MSG % dict(gce_test_results=test_basename))
+      logging.error(_ERROR_MSG % dict(test_name='GCETests',
+                                      test_results=test_basename))
       raise
     finally:
       self._ArchiveTestResults(test_results_root, test_basename)
+
+
+class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
+                        generic_stages.ArchivingStageMixin):
+  """Run autotests against a moblab vm setup.
+
+  This stage launches a MoblabVm setup -- a local running moblab of the image
+  under test and another local VM of a stable DUT connected to it -- and then
+  runs some autotest tests against it.
+  """
+
+  option_name = 'tests'
+  config_name = 'moblab_vm_tests'
+
+  # This includes the time we expect to take to prepare and run the tests. It
+  # excludes the time required to archive the results at the end.
+  _PERFORM_TIMEOUT_S = 60 * 60
+
+  def __str__(self):
+    return type(self).__name__
+
+  def PerformStage(self):
+    test_root_in_chroot = commands.CreateTestRoot(self._build_root)
+    test_root = path_util.FromChrootPath(test_root_in_chroot)
+    results_dir = os.path.join(test_root, 'results')
+    work_dir = os.path.join(test_root, 'workdir')
+    osutils.SafeMakedirsNonRoot(results_dir)
+    osutils.SafeMakedirsNonRoot(work_dir)
+
+    try:
+      r = ' reached %s test run timeout.' % self
+      with timeout_util.Timeout(self._PERFORM_TIMEOUT_S, reason_message=r):
+        self._PerformStage(work_dir, results_dir)
+    except:
+      logging.error(_ERROR_MSG % dict(test_name='MoblabVMTest',
+                                      test_results='directory'))
+      raise
+    finally:
+      self._ArchiveTestResults(results_dir)
+
+  def _PerformStage(self, workdir, results_dir):
+    """Actually performs this stage.
+
+    Args:
+      workdir: The workspace directory to use for all temporary files.
+      results_dir: The directory to use to drop test results into.
+    """
+    dut_target_image = self._SubDutTargetImage(),
+    osutils.SafeMakedirsNonRoot(self._Workspace(workdir))
+    vms = moblab_vm.MoblabVm(self._Workspace(workdir))
+    try:
+      vms.Create(self.GetImageDirSymlink(), self.GetImageDirSymlink())
+      vms.Start()
+      RunMoblabTests(
+          self._current_board,
+          vms.moblab_ssh_port,
+          dut_target_image,
+          results_dir,
+      )
+      vms.Stop()
+    except:
+      # Ignore errors while arhiving images, but re-raise the original error.
+      try:
+        vms.Stop()
+        self._ArchiveMoblabVMWorkspace(self._Workspace(workdir))
+      except Exception as e:
+        logging.error('Failed to archive VM images after test failure: %s', e)
+      raise
+    finally:
+      vms.Destroy()
+
+  def _Workspace(self, workdir):
+    return os.path.join(workdir, 'workspace')
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def _ArchiveMoblabVMWorkspace(self, workspace):
+    """Try to find the VM files used during testing and archive them.
+
+    Args:
+      workspace: Path to a directory used as moblabvm workspace.
+    """
+    tarball_relpath = 'workspace.tar'
+    tarball_path = os.path.join(self.archive_path, tarball_relpath)
+    cros_build_lib.CreateTarball(tarball_path, workspace,
+                                 compression=cros_build_lib.COMP_BZIP2)
+    self._Upload(tarball_relpath, 'workspace')
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def _ArchiveTestResults(self, results_dir):
+    """Try to find the results dropped during testing and archive them.
+
+    Args:
+      results_dir: Path to a directory used for creating result files.
+    """
+    results_reldir = 'results'
+    cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_dir],
+                                  print_cmd=False)
+    archive_dir = os.path.join(self.archive_path, results_reldir)
+    osutils.RmDir(archive_dir, ignore_missing=True)
+
+    def _ShouldIgnore(dirname, file_list):
+      # gsutil hangs on broken symlinks.
+      return [x for x in file_list if os.path.islink(os.path.join(dirname, x))]
+
+    shutil.copytree(results_dir, archive_dir, symlinks=False,
+                    ignore=_ShouldIgnore)
+    self._Upload(results_reldir, 'results')
+    # TODO(pprabhu): List the failed tests with links for easy access like
+    # VMTest does. We can't simly use ListTests because the result directory
+    # looks different from when ctest is used.
+
+  def _SubDutTargetImage(self):
+    """Return a "good" image of the DUT VM board from GS.
+
+    This image will be used to provision the DUT VM. The two requirements here
+    are:
+    - The image should be good enough to pass the tests moblab runs against it.
+      (mostly, should pass provision, and boot otherwise consistently).
+    - The image should exist in GS, for the provision flow to work.
+    """
+    # TODO(pprabhu) This hard-coded version information corresponds to a
+    # manually vetted recent build. This will stop working once R66 goes to
+    # stable (~ July 2018). This should be replaced with a canary channel image
+    # for the same board before that.
+    return 'moblab-generic-vm-paladin/R65-10178.0.0-rc1'
+
+  def _Upload(self, path, prefix):
+    """Upload |path| to GS and print a link to it on the log."""
+    logging.info('Uploading artifact %s to Google Storage...', path)
+    with self.ArtifactUploader(archive=False, strict=False) as queue:
+      queue.put([path])
+    self.PrintDownloadLink(path, '%s: ' % prefix)
+
 
 
 def ListTests(results_path, show_failed=True, show_passed=True):
@@ -532,3 +661,33 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
 
     raise failures_lib.TestFailure(
         '** VMTests failed with code %d **' % result.returncode)
+
+
+def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir):
+  """Run the moblab test suite against a running moblab_vm setup.
+
+  Args:
+    moblab_board: Board name of the moblab DUT.
+    moblab_ip: IP address of moblab VM.
+    dut_target_image: Image string to provision onto the DUT VM. This image must
+        exist on GS so that the provision flow can download and install it on
+        the DUT VM.
+    results_dir: Directory to drop results into.
+  """
+  test_args = [
+      # moblab in VM takes longer to bring up all upstart services on first
+      # boot than on physical machines.
+      'services_init_timeout_m=10',
+      'target_build="%s"' % dut_target_image,
+  ]
+  cros_build_lib.RunCommand(
+      [
+          'test_that',
+          '--no-quickmerge',
+          '-b', moblab_board,
+          '--results_dir', path_util.ToChrootPath(results_dir),
+          'localhost:%s' % moblab_ip, 'moblab_DummyServerSuite',
+          '--args', ' '.join(test_args),
+      ],
+      enter_chroot=True,
+  )

@@ -75,6 +75,7 @@
         "manifest_repo_url": "https://chromium.googlesource.com/chromiumos/manifest",
         "manifest_version": false,
         "master": false,
+        "moblab_vm_tests": [],
         "models": [],
         "name": null,
         "nobuildretry": false,
