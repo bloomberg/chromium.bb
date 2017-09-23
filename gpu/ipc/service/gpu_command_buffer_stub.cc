@@ -1048,7 +1048,9 @@ void GpuCommandBufferStub::OnSignalSyncToken(const SyncToken& sync_token,
 }
 
 void GpuCommandBufferStub::OnSignalAck(uint32_t id) {
-  Send(new GpuCommandBufferMsg_SignalAck(route_id_, id));
+  CommandBuffer::State state = command_buffer_->GetState();
+  ReportState();
+  Send(new GpuCommandBufferMsg_SignalAck(route_id_, id, state));
 }
 
 void GpuCommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
