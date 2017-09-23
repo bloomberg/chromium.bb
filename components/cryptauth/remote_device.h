@@ -21,6 +21,7 @@ struct RemoteDevice {
   std::string persistent_symmetric_key;
   bool unlock_key;
   bool supports_mobile_hotspot;
+  int64_t last_update_time_millis;
 
   // Note: To save space, the BeaconSeeds may not necessarily be included in
   // this object.
@@ -34,7 +35,8 @@ struct RemoteDevice {
                const std::string& bluetooth_address,
                const std::string& persistent_symmetric_key,
                bool unlock_key,
-               bool supports_mobile_hotspot);
+               bool supports_mobile_hotspot,
+               int64_t last_update_time_millis);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 
