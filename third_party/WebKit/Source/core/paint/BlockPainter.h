@@ -51,6 +51,9 @@ class BlockPainter {
   void PaintScrollHitTestDisplayItem(const PaintInfo&);
   void PaintCarets(const PaintInfo&, const LayoutPoint&);
 
+  bool ShouldAdjustForPaintOffsetTranslation(PaintInfo&,
+                                             LayoutPoint& paint_offset);
+
   const LayoutBlock& layout_block_;
 };
 

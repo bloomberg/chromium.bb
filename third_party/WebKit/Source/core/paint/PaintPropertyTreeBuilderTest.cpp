@@ -212,9 +212,11 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
       scroller->GetLayoutObject()->FirstFragment()->PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             scroller_properties->ScrollTranslation()->Matrix());
-  EXPECT_EQ(FrameScrollTranslation(),
+  EXPECT_EQ(scroller_properties->PaintOffsetTranslation(),
             scroller_properties->ScrollTranslation()->Parent());
   EXPECT_EQ(FrameScrollTranslation(),
+            scroller_properties->PaintOffsetTranslation()->Parent());
+  EXPECT_EQ(scroller_properties->PaintOffsetTranslation(),
             scroller_properties->OverflowClip()->LocalTransformSpace());
   const auto* scroll = scroller_properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(FrameScroll(), scroll->Parent());
@@ -222,7 +224,10 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatSize(660, 10200), scroll->Bounds());
   EXPECT_FALSE(scroll->UserScrollableHorizontal());
   EXPECT_TRUE(scroll->UserScrollableVertical());
-  EXPECT_EQ(FloatRoundedRect(120, 340, 413, 317),
+  EXPECT_EQ(FloatSize(120, 340), scroller_properties->PaintOffsetTranslation()
+                                     ->Matrix()
+                                     .To2DTranslation());
+  EXPECT_EQ(FloatRoundedRect(0, 0, 413, 317),
             scroller_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(FrameContentClip(), scroller_properties->OverflowClip()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317),
@@ -234,7 +239,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   Element* rel_pos = GetDocument().getElementById("rel-pos");
   const ObjectPaintProperties* rel_pos_properties =
       rel_pos->GetLayoutObject()->FirstFragment()->PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(680, 1120),
+  EXPECT_EQ(TransformationMatrix().Translate(560, 780),
             rel_pos_properties->PaintOffsetTranslation()->Matrix());
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
             rel_pos_properties->PaintOffsetTranslation()->Parent());
@@ -2606,13 +2611,20 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
       clipper->FirstFragment()->PaintProperties();
   LayoutObject* child = GetLayoutObjectByElementId("child");
 
-  EXPECT_EQ(FrameScrollTranslation(),
+  EXPECT_EQ(FrameScrollTranslation(), clipper->FirstFragment()
+                                          ->LocalBorderBoxProperties()
+                                          ->Transform()
+                                          ->Parent());
+  EXPECT_EQ(clip_properties->PaintOffsetTranslation(),
             clipper->FirstFragment()->LocalBorderBoxProperties()->Transform());
   EXPECT_EQ(FrameContentClip(),
             clipper->FirstFragment()->LocalBorderBoxProperties()->Clip());
 
   auto contents_properties = clipper->FirstFragment()->ContentsProperties();
-  EXPECT_EQ(LayoutPoint(30, 20), clipper->PaintOffset());
+  EXPECT_EQ(
+      FloatSize(30, 20),
+      clip_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(LayoutPoint(0, 0), clipper->PaintOffset());
   EXPECT_EQ(clip_properties->ScrollTranslation(),
             contents_properties.Transform());
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
@@ -3564,7 +3576,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
   // This test verifies an abs-pos element still escape the scroll of a
   // static-pos ancestor, but gets clipped due to the presence of a mask.
   SetBodyInnerHTML(
-      "<div style='width:300px; height:200px; overflow:scroll;'>"
+      "<div id='scroll' style='width:300px; height:200px; overflow:scroll;'>"
       "  <div id='target' style='width:200px; height:300px; "
       "-webkit-mask:linear-gradient(red,red); border:10px dashed black; "
       "overflow:hidden;'>"
@@ -3573,38 +3585,44 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
       "  </div>"
       "</div>");
 
-  const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
+  const ObjectPaintProperties* target_properties =
+      PaintPropertiesForElement("target");
   const ClipPaintPropertyNode* overflow_clip1 =
-      properties->MaskClip()->Parent();
-  const ClipPaintPropertyNode* mask_clip = properties->MaskClip();
-  const ClipPaintPropertyNode* overflow_clip2 = properties->OverflowClip();
+      target_properties->MaskClip()->Parent();
+  const ClipPaintPropertyNode* mask_clip = target_properties->MaskClip();
+  const ClipPaintPropertyNode* overflow_clip2 =
+      target_properties->OverflowClip();
   const auto* target = GetLayoutObjectByElementId("target");
   const TransformPaintPropertyNode* scroll_translation =
       target->FirstFragment()->LocalBorderBoxProperties()->Transform();
 
+  const ObjectPaintProperties* scroll_properties =
+      PaintPropertiesForElement("scroll");
+
   EXPECT_EQ(FrameContentClip(), overflow_clip1->Parent());
-  EXPECT_EQ(FloatRoundedRect(8, 8, 300, 200), overflow_clip1->ClipRect());
-  EXPECT_EQ(FramePreTranslation(), overflow_clip1->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(0, 0, 300, 200), overflow_clip1->ClipRect());
+  EXPECT_EQ(scroll_properties->PaintOffsetTranslation(),
+            overflow_clip1->LocalTransformSpace());
 
   EXPECT_EQ(mask_clip,
             target->FirstFragment()->LocalBorderBoxProperties()->Clip());
   EXPECT_EQ(overflow_clip1, mask_clip->Parent());
-  EXPECT_EQ(FloatRoundedRect(8, 8, 220, 320), mask_clip->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(0, 0, 220, 320), mask_clip->ClipRect());
   EXPECT_EQ(scroll_translation, mask_clip->LocalTransformSpace());
 
   EXPECT_EQ(mask_clip, overflow_clip2->Parent());
-  EXPECT_EQ(FloatRoundedRect(18, 18, 200, 300), overflow_clip2->ClipRect());
+  EXPECT_EQ(FloatRoundedRect(10, 10, 200, 300), overflow_clip2->ClipRect());
   EXPECT_EQ(scroll_translation, overflow_clip2->LocalTransformSpace());
 
-  EXPECT_EQ(properties->Effect(),
+  EXPECT_EQ(target_properties->Effect(),
             target->FirstFragment()->LocalBorderBoxProperties()->Effect());
-  EXPECT_TRUE(properties->Effect()->Parent()->IsRoot());
-  EXPECT_EQ(SkBlendMode::kSrcOver, properties->Effect()->BlendMode());
-  EXPECT_EQ(mask_clip, properties->Effect()->OutputClip());
+  EXPECT_TRUE(target_properties->Effect()->Parent()->IsRoot());
+  EXPECT_EQ(SkBlendMode::kSrcOver, target_properties->Effect()->BlendMode());
+  EXPECT_EQ(mask_clip, target_properties->Effect()->OutputClip());
 
-  EXPECT_EQ(properties->Effect(), properties->Mask()->Parent());
-  EXPECT_EQ(SkBlendMode::kDstIn, properties->Mask()->BlendMode());
-  EXPECT_EQ(mask_clip, properties->Mask()->OutputClip());
+  EXPECT_EQ(target_properties->Effect(), target_properties->Mask()->Parent());
+  EXPECT_EQ(SkBlendMode::kDstIn, target_properties->Mask()->BlendMode());
+  EXPECT_EQ(mask_clip, target_properties->Mask()->OutputClip());
 
   const auto* absolute = GetLayoutObjectByElementId("absolute");
   EXPECT_EQ(FramePreTranslation(),
@@ -3769,17 +3787,24 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   // Because the frameView is does not scroll, overflowHidden's scroll should be
   // under the root.
   auto* scroll_translation = scroll_properties->ScrollTranslation();
+  auto* paint_offset_translation = scroll_properties->PaintOffsetTranslation();
   auto* scroll_node = scroll_translation->ScrollNode();
   EXPECT_TRUE(scroll_node->Parent()->IsRoot());
   EXPECT_EQ(TransformationMatrix().Translate(0, -42),
             scroll_translation->Matrix());
-  // The scroll node should be offset by the margin.
-  EXPECT_EQ(IntPoint(7, 11), scroll_node->Offset());
+  // The paint offset node should be offset by the margin.
+  EXPECT_EQ(FloatSize(7, 11),
+            paint_offset_translation->Matrix().To2DTranslation());
+  // And the scroll node should not.
+  EXPECT_EQ(IntPoint(0, 0), scroll_node->Offset());
 
   scroller->setAttribute(HTMLNames::styleAttr, "border: 20px solid black;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  // The scroll node should be offset by both the margin and border.
-  EXPECT_EQ(IntPoint(27, 31), scroll_node->Offset());
+  // The paint offset node should be offset by the margin.
+  EXPECT_EQ(FloatSize(7, 11),
+            paint_offset_translation->Matrix().To2DTranslation());
+  // The scroll node should be offset by the border.
+  EXPECT_EQ(IntPoint(20, 20), scroll_node->Offset());
 
   scroller->setAttribute(HTMLNames::styleAttr,
                          "border: 20px solid black;"

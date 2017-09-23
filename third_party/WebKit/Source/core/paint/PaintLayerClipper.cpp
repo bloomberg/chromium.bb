@@ -284,8 +284,12 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     // conversion of flow thread to visual coordinates for intervening
     // fragmentation.
     if (layer_.ShouldFragmentCompositedBounds(context.root_layer)) {
-      offset.MoveBy(fragment_data.PaintOffset());
-      offset.MoveBy(-context.root_layer->GetLayoutObject().PaintOffset());
+      PaintLayer* enclosing_pagination_layer =
+          layer_.EnclosingPaginationLayer();
+      layer_.ConvertToLayerCoords(enclosing_pagination_layer, offset);
+      offset.MoveBy(fragment_data.PaginationOffset());
+      offset.MoveBy(enclosing_pagination_layer->VisualOffsetFromAncestor(
+          context.root_layer));
     } else {
       layer_.ConvertToLayerCoords(context.root_layer, offset);
     }

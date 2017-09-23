@@ -83,10 +83,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutSVGTSpan tspan",
       "reason": "geometry"
     },
