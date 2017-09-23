@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
-#define UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
+#ifndef ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
+#define ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_
 
 #include <memory>
 #include <set>
 
+#include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -25,42 +25,43 @@ class ComboboxModel;
 namespace views {
 class Combobox;
 class Label;
-}
+}  // namespace views
 
-namespace message_center {
+namespace ash {
 
 // A class to show the list of notifier extensions / URL patterns and allow
 // users to customize the settings.
-class MESSAGE_CENTER_EXPORT NotifierSettingsView
-    : public NotifierSettingsObserver,
+class ASH_EXPORT NotifierSettingsView
+    : public message_center::NotifierSettingsObserver,
       public views::View,
       public views::ButtonListener,
       public views::ComboboxListener {
  public:
-  explicit NotifierSettingsView(NotifierSettingsProvider* provider);
+  explicit NotifierSettingsView(
+      message_center::NotifierSettingsProvider* provider);
   ~NotifierSettingsView() override;
 
   bool IsScrollable();
 
   // Overridden from NotifierSettingsDelegate:
-  void UpdateIconImage(const NotifierId& notifier_id,
+  void UpdateIconImage(const message_center::NotifierId& notifier_id,
                        const gfx::Image& icon) override;
   void NotifierGroupChanged() override;
-  void NotifierEnabledChanged(const NotifierId& notifier_id,
+  void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
                               bool enabled) override;
 
-  void set_provider(NotifierSettingsProvider* new_provider) {
+  void set_provider(message_center::NotifierSettingsProvider* new_provider) {
     provider_ = new_provider;
   }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestLearnMoreButton);
 
-  class MESSAGE_CENTER_EXPORT NotifierButton : public views::Button,
-                                               public views::ButtonListener {
+  class ASH_EXPORT NotifierButton : public views::Button,
+                                    public views::ButtonListener {
    public:
-    NotifierButton(NotifierSettingsProvider* provider,
-                   std::unique_ptr<Notifier> notifier,
+    NotifierButton(message_center::NotifierSettingsProvider* provider,
+                   std::unique_ptr<message_center::Notifier> notifier,
                    views::ButtonListener* listener);
     ~NotifierButton() override;
 
@@ -68,7 +69,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     void SetChecked(bool checked);
     bool checked() const;
     bool has_learn_more() const;
-    const Notifier& notifier() const;
+    const message_center::Notifier& notifier() const;
 
     void SendLearnMorePressedForTest();
 
@@ -82,8 +83,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     // changed.
     void GridChanged(bool has_learn_more, bool has_icon_view);
 
-    NotifierSettingsProvider* provider_;  // Weak.
-    std::unique_ptr<Notifier> notifier_;
+    message_center::NotifierSettingsProvider* provider_;  // Weak.
+    std::unique_ptr<message_center::Notifier> notifier_;
     // |icon_view_| is owned by us because sometimes we don't leave it
     // in the view hierarchy.
     std::unique_ptr<views::ImageView> icon_view_;
@@ -95,7 +96,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   };
 
   // Given a new list of notifiers, updates the view to reflect it.
-  void UpdateContentsView(std::vector<std::unique_ptr<Notifier>> notifiers);
+  void UpdateContentsView(
+      std::vector<std::unique_ptr<message_center::Notifier>> notifiers);
 
   // Overridden from views::View:
   void Layout() override;
@@ -117,13 +119,13 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   views::Label* title_label_;
   views::Combobox* notifier_group_combobox_;
   views::ScrollView* scroller_;
-  NotifierSettingsProvider* provider_;
+  message_center::NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
   std::unique_ptr<ui::ComboboxModel> notifier_group_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsView);
 };
 
-}  // namespace message_center
+}  // namespace ash
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
+#endif  // ASH_MESSAGE_CENTER_NOTIFIER_SETTINGS_VIEW_H_

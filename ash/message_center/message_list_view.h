@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_LIST_VIEW_H_
-#define UI_MESSAGE_CENTER_VIEWS_MESSAGE_LIST_VIEW_H_
+#ifndef ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
+#define ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_
 
 #include <list>
 #include <set>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/message_center/message_center_export.h"
-#include "ui/message_center/notification.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/scroll_view.h"
@@ -25,15 +24,17 @@ class Layer;
 }
 
 namespace message_center {
-
 class MessageView;
+class Notification;
+}  // namespace message_center
+
+namespace ash {
 
 // Displays a list of messages for rich notifications. Functions as an array of
 // MessageViews and animates them on transitions. It also supports
 // repositioning.
-class MESSAGE_CENTER_EXPORT MessageListView
-    : public views::View,
-      public views::BoundsAnimatorObserver {
+class ASH_EXPORT MessageListView : public views::View,
+                                   public views::BoundsAnimatorObserver {
  public:
   class Observer {
    public:
@@ -43,9 +44,10 @@ class MESSAGE_CENTER_EXPORT MessageListView
   MessageListView();
   ~MessageListView() override;
 
-  void AddNotificationAt(MessageView* view, int i);
-  void RemoveNotification(MessageView* view);
-  void UpdateNotification(MessageView* view, const Notification& notification);
+  void AddNotificationAt(message_center::MessageView* view, int i);
+  void RemoveNotification(message_center::MessageView* view);
+  void UpdateNotification(message_center::MessageView* view,
+                          const message_center::Notification& notification);
   void SetRepositionTarget(const gfx::Rect& target_rect);
   void ResetRepositionSession();
   void ClearAllClosableNotifications(const gfx::Rect& visible_scroll_rect);
@@ -53,8 +55,7 @@ class MESSAGE_CENTER_EXPORT MessageListView
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void SetRepositionTargetForTest(
-      const gfx::Rect& target_rect);
+  void SetRepositionTargetForTest(const gfx::Rect& target_rect);
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
@@ -77,9 +78,6 @@ class MESSAGE_CENTER_EXPORT MessageListView
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
 
-  // Animates all notifications below target upwards to align with the top of
-  // the last closed notification.
-  void AnimateNotificationsBelowTarget();
   // Animates all notifications to align with the top of the last closed
   // notification.
   void AnimateNotifications();
@@ -119,14 +117,10 @@ class MESSAGE_CENTER_EXPORT MessageListView
 
   views::ScrollView* scroller_ = nullptr;
 
-  // If true, the message loop will be quitted after the animation finishes.
-  // This is just for tests and has no setter.
-  bool quit_message_loop_after_animation_for_test_;
-
   base::WeakPtrFactory<MessageListView> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 
-}  // namespace message_center
+}  // namespace ash
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_MESSAGE_LIST_VIEW_H_
+#endif  // ASH_MESSAGE_CENTER_MESSAGE_LIST_VIEW_H_

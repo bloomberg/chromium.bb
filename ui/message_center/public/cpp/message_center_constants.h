@@ -33,27 +33,10 @@ const size_t kMaxVisiblePopupNotifications = 3;
 
 // DIP dimension; H size of the whole card.
 const int kNotificationWidth = 360;
-const int kMinScrollViewHeight = 77;
 
 // Colors.
 const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
-const SkColor kMessageCenterShadowColor = SkColorSetARGB(0.5 * 255, 0, 0, 0);
-
-// Settings dialog constants.
-namespace settings {
-
-const SkColor kEntrySeparatorColor = SkColorSetARGB(0.1 * 255, 0, 0, 0);
-const int kEntryHeight = 45;
-const int kEntrySeparatorHeight = 1;
-const int kHorizontalMargin = 10;
-const int kTopMargin = 20;
-const int kTitleToDescriptionSpace = 20;
-const int kEntryIconSize = 16;
-const int kDescriptionToSwitcherSpace = 15;
-const int kInternalHorizontalSpacing = 10;
-const int kCheckboxSizeWithPadding = 24;
-
-}  // namespace settings
+const SkColor kMessageCenterShadowColor = SkColorSetA(SK_ColorBLACK, 0.5 * 255);
 
 // Within a notification ///////////////////////////////////////////////////////
 
@@ -148,20 +131,8 @@ const int kContextMessageLineLimit = 1;
 const int kMarginBetweenItems = 10;  // H & V space around & between
                                      // notifications.
 
-// Colors.
-// Behind notifications, gradient
-const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
-// from light to dark.
-const SkColor kBackgroundDarkColor = SkColorSetRGB(0xe7, 0xe7, 0xe7);
-
 // Shadow in the tray.
 const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
-
-const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
-// Separator color for the tray.
-const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-// Text color for tray labels.
-const SkColor kFooterTextColor = SkColorSetRGB(0x7b, 0x7b, 0x7b);
 
 }  // namespace message_center
 
