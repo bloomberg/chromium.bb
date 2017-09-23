@@ -6448,10 +6448,7 @@ I don't think this site should be blocked!
 
       <!-- Upgrade bubble messages -->
       <message name="IDS_REENABLE_UPDATES" desc="Text for the button the user clicks to re-enable automatic updates.">
-        Enable autoupdate
-      </message>
-      <message name="IDS_LATER" desc="Text for the button the user clicks to be reminded of reinstalling the app later.">
-        Later
+        Turn on autoupdate
       </message>
 
       <!-- Print -->

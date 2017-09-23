@@ -1078,13 +1078,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         </message>
       </if>
       <message name="IDS_UPGRADE_BUBBLE_TITLE" desc="Text for the title of the upgrade bubble view.">
-        Chromium is out of date
+        Can't update Chromium
       </message>
       <message name="IDS_UPGRADE_BUBBLE_TEXT" desc="Text for the upgrade bubble view full description.">
-        Chromium could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to manually reinstall Chromium.
-      </message>
-      <message name="IDS_UPGRADE_BUBBLE_REENABLE_TEXT" desc="Text for the upgrade bubble view full description.">
-        Chromium could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to update Chromium.
+        Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.
       </message>
 
       <!-- User menu errors -->
