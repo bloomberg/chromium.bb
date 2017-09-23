@@ -41,7 +41,6 @@ class UprevAndroidStage(generic_stages.BuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Stage that uprevs Android container if needed."""
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     # This stage runs only in builders where |android_rev| config is set,
     # namely Android PFQ and pre-flight-branch builders.
@@ -155,7 +154,6 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
 
     return (versions, branches)
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     versions, branches = self._UpdateBoardDictsForAndroidBuildInfo()
 
@@ -208,7 +206,6 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   Downloaded archive will be picked up by DebugSymbolsStage.
   """
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if not config_lib.IsCanaryType(self._run.config.build_type):
       logging.info('This stage runs only in release builders.')
