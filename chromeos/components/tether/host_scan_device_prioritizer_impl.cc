@@ -17,6 +17,23 @@ namespace chromeos {
 
 namespace tether {
 
+namespace {
+
+// Returns true if |remote_device1| should be ordered before |remote_device2|.
+bool CompareRemoteDevices(const cryptauth::RemoteDevice& remote_device1,
+                          const cryptauth::RemoteDevice& remote_device2) {
+  return remote_device1.last_update_time_millis >
+         remote_device2.last_update_time_millis;
+}
+
+void SortRemoteDevicesByLastUpdateTime(
+    std::vector<cryptauth::RemoteDevice>* remote_devices) {
+  std::sort(remote_devices->begin(), remote_devices->end(),
+            &CompareRemoteDevices);
+}
+
+}  // namespace
+
 HostScanDevicePrioritizerImpl::HostScanDevicePrioritizerImpl(
     TetherHostResponseRecorder* tether_host_response_recorder)
     : tether_host_response_recorder_(tether_host_response_recorder) {}
@@ -37,6 +54,8 @@ void HostScanDevicePrioritizerImpl::SortByHostScanOrder(
     prioritized_ids.insert(prioritized_ids.begin(),
                            previously_connectable_host_ids[0]);
   }
+
+  SortRemoteDevicesByLastUpdateTime(remote_devices);
 
   // Iterate from the last stored ID to the first stored ID. This ensures that
   // the items at the front of the list end up in the front of the prioritized
