@@ -140,8 +140,7 @@ void ExclusiveAccessBubble::CheckMousePosition() {
     // of screen).
     if (!hide_timeout_.IsRunning())
       Hide();
-  } else if (cursor_pos.y() < kSlideInRegionHeightPx &&
-             CanMouseTriggerSlideIn()) {
+  } else if (cursor_pos.y() < kSlideInRegionHeightPx && CanTriggerOnMouse()) {
     Show();
   } else if (IsAnimating()) {
     // The cursor is not idle and either it's in the slide-in region or it's in

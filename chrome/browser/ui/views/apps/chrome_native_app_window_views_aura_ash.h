@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_AURA_ASH_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace ash {
@@ -26,11 +30,17 @@ class MenuRunner;
 }
 
 class ChromeNativeAppWindowViewsAuraAshBrowserTest;
+class ExclusiveAccessBubbleViews;
+class ExclusiveAccessManager;
 
 // Ash-specific parts of ChromeNativeAppWindowViewsAura. This is used on CrOS.
-class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
-                                          public views::ContextMenuController,
-                                          public ash::TabletModeObserver {
+class ChromeNativeAppWindowViewsAuraAsh
+    : public ChromeNativeAppWindowViewsAura,
+      public views::ContextMenuController,
+      public ash::TabletModeObserver,
+      public ui::AcceleratorProvider,
+      public ExclusiveAccessContext,
+      public ExclusiveAccessBubbleViewsContext {
  public:
   ChromeNativeAppWindowViewsAuraAsh();
   ~ChromeNativeAppWindowViewsAuraAsh() override;
@@ -74,11 +84,50 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // ui::AcceleratorProvider:
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) const override;
+
+  // ExclusiveAccessContext:
+  Profile* GetProfile() override;
+  bool IsFullscreen() const override;
+  void EnterFullscreen(const GURL& url,
+                       ExclusiveAccessBubbleType bubble_type) override;
+  void ExitFullscreen() override;
+  void UpdateExclusiveAccessExitBubbleContent(
+      const GURL& url,
+      ExclusiveAccessBubbleType bubble_type,
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) override;
+  void OnExclusiveAccessUserInput() override;
+  content::WebContents* GetActiveWebContents() override;
+  void UnhideDownloadShelf() override;
+  void HideDownloadShelf() override;
+
+  // ExclusiveAccessBubbleViewsContext:
+  ExclusiveAccessManager* GetExclusiveAccessManager() override;
+  views::Widget* GetBubbleAssociatedWidget() override;
+  ui::AcceleratorProvider* GetAcceleratorProvider() override;
+  gfx::NativeView GetBubbleParentView() const override;
+  gfx::Point GetCursorPointInParent() const override;
+  gfx::Rect GetClientAreaBoundsInScreen() const override;
+  bool IsImmersiveModeEnabled() const override;
+  gfx::Rect GetTopContainerBoundsInScreen() override;
+  void DestroyAnyExclusiveAccessBubble() override;
+  bool CanTriggerOnMouse() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveWorkFlow);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveModeFullscreenRestoreType);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+                           NoImmersiveOrBubbleOutsidePublicSessionWindow);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+                           NoImmersiveOrBubbleOutsidePublicSessionDom);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+                           ImmersiveNoBubbleInsidePublicSessionWindow);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+                           ImmersiveAndBubbleInsidePublicSessionDom);
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
                            ResizeInsetsWithinBounds);
 
@@ -100,6 +149,10 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
   std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
+
+  // Used for displaying the toast with instructions on exiting fullscreen.
+  std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
+  std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);
 };

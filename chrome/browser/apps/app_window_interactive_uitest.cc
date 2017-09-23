@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
+#include "chrome/browser/apps/app_window_interactive_uitest.h"
+
 #include "build/build_config.h"
-#include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -32,66 +32,48 @@
 using extensions::AppWindow;
 using extensions::NativeAppWindow;
 
-// Helper class that has to be created in the stack to check if the fullscreen
-// setting of a NativeWindow has changed since the creation of the object.
-class FullscreenChangeWaiter {
- public:
-  explicit FullscreenChangeWaiter(NativeAppWindow* window)
-      : window_(window),
-        initial_fullscreen_state_(window_->IsFullscreen()) {}
+FullscreenChangeWaiter::FullscreenChangeWaiter(NativeAppWindow* window)
+    : window_(window), initial_fullscreen_state_(window_->IsFullscreen()) {}
 
-  void Wait() {
-    while (initial_fullscreen_state_ == window_->IsFullscreen())
-      content::RunAllPendingInMessageLoop();
+void FullscreenChangeWaiter::Wait() {
+  while (initial_fullscreen_state_ == window_->IsFullscreen())
+    content::RunAllPendingInMessageLoop();
+}
+
+bool
+AppWindowInteractiveTest::RunAppWindowInteractiveTest(const char* testName) {
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  LoadAndLaunchPlatformApp("window_api_interactive", &launched_listener);
+
+  extensions::ResultCatcher catcher;
+  launched_listener.Reply(testName);
+
+  if (!catcher.GetNextResult()) {
+    message_ = catcher.message();
+    return false;
   }
 
- private:
-  NativeAppWindow* window_;
-  bool initial_fullscreen_state_;
+  return true;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(FullscreenChangeWaiter);
-};
+bool AppWindowInteractiveTest::SimulateKeyPress(ui::KeyboardCode key) {
+  return ui_test_utils::SendKeyPressToWindowSync(
+      GetFirstAppWindow()->GetNativeWindow(),
+      key,
+      false,
+      false,
+      false,
+      false);
+}
 
-class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
- public:
-  bool RunAppWindowInteractiveTest(const char* testName) {
-    ExtensionTestMessageListener launched_listener("Launched", true);
-    LoadAndLaunchPlatformApp("window_api_interactive", &launched_listener);
+void AppWindowInteractiveTest::WaitUntilKeyFocus() {
+  ExtensionTestMessageListener key_listener("KeyReceived", false);
 
-    extensions::ResultCatcher catcher;
-    launched_listener.Reply(testName);
-
-    if (!catcher.GetNextResult()) {
-      message_ = catcher.message();
-      return false;
-    }
-
-    return true;
+  while (!key_listener.was_satisfied()) {
+    ASSERT_TRUE(SimulateKeyPress(ui::VKEY_Z));
+    content::RunAllPendingInMessageLoop();
   }
-
-  bool SimulateKeyPress(ui::KeyboardCode key) {
-    return ui_test_utils::SendKeyPressToWindowSync(
-        GetFirstAppWindow()->GetNativeWindow(),
-        key,
-        false,
-        false,
-        false,
-        false);
-  }
-
-  // This method will wait until the application is able to ack a key event.
-  void WaitUntilKeyFocus() {
-    ExtensionTestMessageListener key_listener("KeyReceived", false);
-
-    while (!key_listener.was_satisfied()) {
-      ASSERT_TRUE(SimulateKeyPress(ui::VKEY_Z));
-      content::RunAllPendingInMessageLoop();
-    }
-  }
-
-  // This test is a method so that we can test with each frame type.
-  void TestOuterBoundsHelper(const std::string& frame_type);
-};
+}
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
 #if defined(OS_MACOSX)

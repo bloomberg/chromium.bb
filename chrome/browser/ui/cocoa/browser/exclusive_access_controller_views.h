@@ -79,9 +79,10 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   gfx::NativeView GetBubbleParentView() const override;
   gfx::Point GetCursorPointInParent() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
-  bool IsImmersiveModeEnabled() override;
+  bool IsImmersiveModeEnabled() const override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
   void DestroyAnyExclusiveAccessBubble() override;
+  bool CanTriggerOnMouse() const override;
 
  private:
   BrowserWindow* GetBrowserWindow() const;
