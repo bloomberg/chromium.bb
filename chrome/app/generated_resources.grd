@@ -5689,14 +5689,21 @@ the Bookmarks menu.">
 
       <!-- Importer Lock Dialog -->
       <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
-        Close Firefox Before Importing
+        Close Firefox before importing
       </message>
       <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button on dialog">
         Continue
       </message>
-      <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
-        Skip Import
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
+          Skip Import
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
+          Skip import
+        </message>
+      </if>
 
       <if expr="enable_extensions">
         <!-- Feedback Dialog -->

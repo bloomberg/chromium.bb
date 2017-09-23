@@ -64,8 +64,8 @@ ImportLockDialogView::~ImportLockDialogView() {
 }
 
 gfx::Size ImportLockDialogView::CalculatePreferredSize() const {
-  const int width = views::Widget::GetLocalizedContentsWidth(
-      IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS);
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT);
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
@@ -93,4 +93,8 @@ bool ImportLockDialogView::Cancel() {
         FROM_HERE, base::BindOnce(callback_, false));
   }
   return true;
+}
+
+bool ImportLockDialogView::ShouldShowCloseButton() const {
+  return false;
 }
