@@ -75,6 +75,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsEGLSurfacelessContextSupported();
   static bool IsEGLContextPrioritySupported();
   static bool IsDirectCompositionSupported();
+  static bool IsDisplayRobustResourceInitSupported();
   static bool IsRobustResourceInitSupported();
   static bool IsDisplayTextureShareGroupSupported();
   static bool IsCreateContextClientArraysSupported();

@@ -571,6 +571,9 @@ bool GLES2DecoderPassthroughImpl::Initialize(
   }
 
   // Check for required extensions
+  // TODO(geofflang): verify
+  // feature_info_->feature_flags().angle_robust_resource_initialization and
+  // glIsEnabled(GL_ROBUST_RESOURCE_INITIALIZATION_ANGLE)
   if (!feature_info_->feature_flags().angle_robust_client_memory ||
       !feature_info_->feature_flags().chromium_bind_generates_resource ||
       !feature_info_->feature_flags().chromium_copy_texture ||
