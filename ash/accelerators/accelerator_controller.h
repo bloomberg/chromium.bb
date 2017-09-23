@@ -34,6 +34,9 @@ struct AcceleratorData;
 class AcceleratorControllerDelegate;
 class ExitWarningHandler;
 
+// Identifier for the high contrast toggle accelerator notification.
+ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
+
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It
 // also implements several handlers as an accelerator target.

@@ -74,16 +74,16 @@
 #include "ui/message_center/message_center.h"
 
 namespace ash {
+
+const char kHighContrastToggleAccelNotificationId[] =
+    "chrome://settings/accessibility/highcontrast";
+
 namespace {
 
 using base::UserMetricsAction;
 using chromeos::input_method::InputMethodManager;
 using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
-
-// Identifier for the high contrast toggle accelerator notification.
-const char kHighContrastToggleAccelNotificationId[] =
-    "chrome://settings/accessibility/highcontrast";
 
 // Toast id and duration for voice interaction shortcuts
 const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
@@ -723,30 +723,37 @@ void HandleToggleCapsLock() {
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
-  // Show a notification so the user knows that this accelerator toggled
-  // high contrast mode, and that they can press it again to toggle back.
-  // The message center automatically only shows this once per session.
-  std::unique_ptr<Notification> notification =
-      system_notifier::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kHighContrastToggleAccelNotificationId,
-          l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_TITLE),
-          l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_MSG),
-          gfx::Image(
-              CreateVectorIcon(kSystemMenuAccessibilityIcon, SK_ColorBLACK)),
-          base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              system_notifier::kNotifierAccessibility),
-          message_center::RichNotificationData(), nullptr,
-          kNotificationAccessibilityIcon,
-          SystemNotificationWarningLevel::NORMAL);
-  message_center::MessageCenter::Get()->AddNotification(
-      std::move(notification));
-
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetHighContrastEnabled(!controller->IsHighContrastEnabled());
+  bool will_be_enabled = !controller->IsHighContrastEnabled();
+
+  if (will_be_enabled) {
+    // Show a notification so the user knows that this accelerator toggled
+    // high contrast mode, and that they can press it again to toggle back.
+    // The message center automatically only shows this once per session.
+    std::unique_ptr<Notification> notification =
+        system_notifier::CreateSystemNotification(
+            message_center::NOTIFICATION_TYPE_SIMPLE,
+            kHighContrastToggleAccelNotificationId,
+            l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_TITLE),
+            l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_MSG),
+            gfx::Image(
+                CreateVectorIcon(kSystemMenuAccessibilityIcon, SK_ColorBLACK)),
+            base::string16() /* display source */, GURL(),
+            message_center::NotifierId(
+                message_center::NotifierId::SYSTEM_COMPONENT,
+                system_notifier::kNotifierAccessibility),
+            message_center::RichNotificationData(), nullptr,
+            kNotificationAccessibilityIcon,
+            SystemNotificationWarningLevel::NORMAL);
+    message_center::MessageCenter::Get()->AddNotification(
+        std::move(notification));
+  } else {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kHighContrastToggleAccelNotificationId, false /* by_user */);
+  }
+
+  controller->SetHighContrastEnabled(will_be_enabled);
 }
 
 void HandleToggleSpokenFeedback() {
