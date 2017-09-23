@@ -4893,19 +4893,20 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectToMixedContentSSLState) {
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
-// Checks that in-page navigations during page load preserves SSL state.
-IN_PROC_BROWSER_TEST_F(SSLUITest, InPageNavigationDuringLoadSSLState) {
+// Checks that same-document navigations during page load preserve SSL state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationDuringLoadSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
   ui_test_utils::NavigateToURL(
       browser(),
-      https_server_.GetURL("/ssl/in_page_navigation_during_load.html"));
+      https_server_.GetURL("/ssl/same_document_navigation_during_load.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
-// Checks that in-page navigations after the page load preserves SSL state.
-IN_PROC_BROWSER_TEST_F(SSLUITest, InPageNavigationAfterLoadSSLState) {
+// Checks that same-document navigations after the page load preserve SSL
+// state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentNavigationAfterLoadSSLState) {
   ASSERT_TRUE(https_server_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
