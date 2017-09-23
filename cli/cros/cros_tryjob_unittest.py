@@ -269,15 +269,14 @@ class TryjobTestCbuildbotArgs(TryjobTest):
   def testCbuildbotArgsMinimal(self):
     result = self.helperOptionsToCbuildbotArgs([
         'foo-build'])
-    self.assertEqual(result, [
-        '--remote-trybot'])
+    self.assertEqual(result, [])
 
   def testCbuildbotArgsSimple(self):
     result = self.helperOptionsToCbuildbotArgs([
         '-g', '123', 'foo-build',
     ])
     self.assertEqual(result, [
-        '--remote-trybot', '-g', '123',
+        '-g', '123',
     ])
 
   def testCbuildbotArgsComplex(self):
@@ -296,7 +295,6 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         'lumpy-paladin', 'lumpy-release',
     ])
     self.assertEqual(result, [
-        '--remote-trybot',
         '--debug', '--no-buildbot-tags',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',

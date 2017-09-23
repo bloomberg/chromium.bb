@@ -58,8 +58,6 @@ def CbuildbotArgs(options):
 
   if options.production:
     args.append('--buildbot')
-  else:
-    args.append('--remote-trybot')
 
   if not options.remote:
     # Explicitly force debug behavior if not on a builder.
@@ -113,6 +111,9 @@ def RunRemote(options, patch_pool):
 
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
+
+  if not options.production:
+    args.append('--remote-trybot')
 
   # Figure out the tryjob description.
   description = options.remote_description

@@ -842,10 +842,6 @@ def main(argv):
   if options.enable_buildbot_tags:
     logging.EnableBuildbotMarkers()
 
-  elif (not options.buildbot and not options.remote_trybot
-        and not options.resume):
-    cros_build_lib.Die('Please use cros tryjob to run local builds.')
-
   elif options.buildbot and not options.debug:
     # Cannot run real builds, except on real build machines.
     if not cros_build_lib.HostIsCIBuilder():
