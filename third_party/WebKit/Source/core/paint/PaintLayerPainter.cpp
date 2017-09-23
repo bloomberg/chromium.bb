@@ -254,6 +254,29 @@ static bool ShouldRepaintSubsequence(
   return needs_repaint;
 }
 
+bool PaintLayerPainter::AdjustForPaintOffsetTranslation(
+    PaintLayerPaintingInfo& painting_info) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return false;
+  // Paint offset translation for transforms is already taken care of.
+  if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()))
+    return false;
+  if (const auto* properties =
+          paint_layer_.GetLayoutObject().FirstFragment()->PaintProperties()) {
+    if (properties->PaintOffsetTranslation()) {
+      painting_info.root_layer = &paint_layer_;
+      painting_info.paint_dirty_rect =
+          properties->PaintOffsetTranslation()->Matrix().Inverse().MapRect(
+              painting_info.paint_dirty_rect);
+
+      painting_info.sub_pixel_accumulation =
+          ToLayoutSize(paint_layer_.GetLayoutObject().PaintOffset());
+      return true;
+    }
+  }
+  return false;
+}
+
 PaintResult PaintLayerPainter::PaintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info_arg,
@@ -345,6 +368,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   }
 
   PaintLayerPaintingInfo painting_info = painting_info_arg;
+  AdjustForPaintOffsetTranslation(painting_info);
 
   LayoutPoint offset_from_root;
   paint_layer_.ConvertToLayerCoords(painting_info.root_layer, offset_from_root);
@@ -882,11 +906,24 @@ PaintResult PaintLayerPainter::PaintChildren(
         scroll_offset_accumulation_for_children;
     // Rare case: accumulate scroll offset of non-stacking-context ancestors up
     // to m_paintLayer.
+    Vector<PaintLayer*> scroll_parents;
     for (PaintLayer* parent_layer = child->Layer()->Parent();
          parent_layer != &paint_layer_; parent_layer = parent_layer->Parent()) {
       if (parent_layer->GetLayoutObject().HasOverflowClip())
-        child_painting_info.scroll_offset_accumulation +=
-            parent_layer->GetLayoutBox()->ScrolledContentOffset();
+        scroll_parents.push_back(parent_layer);
+    }
+
+    // Iterate in reverse order to get ancestor scrollers before descendnat
+    // ones, so that AdjustForPaintOffsetTranslation ends up with the correct
+    // final rootLayer.
+    for (auto scroller = scroll_parents.rbegin();
+         scroller != scroll_parents.rend(); ++scroller) {
+      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        PaintLayerPainter(**scroller)
+            .AdjustForPaintOffsetTranslation(child_painting_info);
+      }
+      child_painting_info.scroll_offset_accumulation +=
+          (*scroller)->GetLayoutBox()->ScrolledContentOffset();
     }
 
     if (child_painter.Paint(context, child_painting_info, paint_flags) ==

@@ -136,7 +136,11 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
       result = LayoutRect(float_rect.Rect());
     }
 
-    // Convert the result to the container's contents space.
+    // Convert the result to the paint invalidation container's contents space.
+    // If the paint invalidation container has a transform node associated
+    // with it (due to scroll or transform), then its PaintOffset
+    // must be zero or equal to its subpixel accumulation, since in all
+    // such cases we allocate a paint offset translation transform.
     result.MoveBy(-context.paint_invalidation_container->PaintOffset());
   }
 
@@ -196,7 +200,11 @@ LayoutPoint PaintInvalidator::ComputeLocationInBacking(
       point = LayoutPoint(rect.Location());
     }
 
-    // Convert the result to the container's contents space.
+    // Convert the result to the paint invalidation container's contents space.
+    // If the paint invalidation container has a transform node associated
+    // with it (due to scroll or transform), then its PaintOffset
+    // must be zero or equal to its subpixel accumulation, since in all
+    // such cases we allocate a paint offset translation transform.
     point.MoveBy(-context.paint_invalidation_container->PaintOffset());
   }
 

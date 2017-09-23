@@ -247,6 +247,22 @@ void PaintPropertyTreeBuilder::UpdateProperties(
   frame_view.SetTotalPropertyTreeStateForContents(std::move(contents_state));
 }
 
+static bool NeedsScrollNode(const LayoutObject& object) {
+  if (!object.HasOverflowClip())
+    return false;
+  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
+}
+
+// True if a scroll translation is needed for static scroll offset (e.g.,
+// overflow hidden with scroll), or if a scroll node is needed for composited
+// scrolling.
+static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
+  if (!object.HasOverflowClip())
+    return false;
+  IntSize scroll_offset = ToLayoutBox(object).ScrolledContentOffset();
+  return !scroll_offset.IsZero() || NeedsScrollNode(object);
+}
+
 static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
@@ -261,7 +277,36 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
                                   kGlobalPaintFlattenCompositingLayers)) {
     return true;
   }
+  if (NeedsScrollOrScrollTranslation(object))
+    return true;
   return false;
+}
+
+IntPoint ApplyPaintOffsetTranslation(const LayoutObject& object,
+                                     LayoutPoint& paint_offset) {
+  // We should use the same subpixel paint offset values for snapping
+  // regardless of whether a transform is present. If there is a transform
+  // we round the paint offset but keep around the residual fractional
+  // component for the transformed content to paint with.  In spv1 this was
+  // called "subpixel accumulation". For more information, see
+  // PaintLayer::subpixelAccumulation() and
+  // PaintLayerPainter::paintFragmentByApplyingTransform.
+  IntPoint paint_offset_translation = RoundedIntPoint(paint_offset);
+  LayoutPoint fractional_paint_offset =
+      LayoutPoint(paint_offset - paint_offset_translation);
+  if (fractional_paint_offset != LayoutPoint()) {
+    // If the object has a non-translation transform, discard the fractional
+    // paint offset which can't be transformed by the transform.
+    TransformationMatrix matrix;
+    object.StyleRef().ApplyTransform(
+        matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
+        ComputedStyle::kIncludeMotionPath,
+        ComputedStyle::kIncludeIndependentTransformProperties);
+    if (!matrix.IsIdentityOrTranslation())
+      fractional_paint_offset = LayoutPoint();
+  }
+  paint_offset = fractional_paint_offset;
+  return paint_offset_translation;
 }
 
 Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
@@ -275,35 +320,14 @@ Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
       // descendants use the correct transform space.
       (object.IsLayoutView() ||
        context.current.paint_offset != LayoutPoint())) {
-    // We should use the same subpixel paint offset values for snapping
-    // regardless of whether a transform is present. If there is a transform
-    // we round the paint offset but keep around the residual fractional
-    // component for the transformed content to paint with.  In spv1 this was
-    // called "subpixel accumulation". For more information, see
-    // PaintLayer::subpixelAccumulation() and
-    // PaintLayerPainter::paintFragmentByApplyingTransform.
-    paint_offset_translation = RoundedIntPoint(context.current.paint_offset);
-    LayoutPoint fractional_paint_offset =
-        LayoutPoint(context.current.paint_offset - *paint_offset_translation);
-    if (fractional_paint_offset != LayoutPoint()) {
-      // If the object has a non-translation transform, discard the fractional
-      // paint offset which can't be transformed by the transform.
-      TransformationMatrix matrix;
-      object.StyleRef().ApplyTransform(
-          matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-          ComputedStyle::kIncludeMotionPath,
-          ComputedStyle::kIncludeIndependentTransformProperties);
-      if (!matrix.IsIdentityOrTranslation())
-        fractional_paint_offset = LayoutPoint();
-    }
-
-    context.current.paint_offset = fractional_paint_offset;
+    paint_offset_translation =
+        ApplyPaintOffsetTranslation(object, context.current.paint_offset);
     context.current.paint_offset_root = ToLayoutBoxModelObject(object).Layer();
 
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
-      context.absolute_position.paint_offset = fractional_paint_offset;
-      context.fixed_position.paint_offset = fractional_paint_offset;
+      context.absolute_position.paint_offset = context.current.paint_offset;
+      context.fixed_position.paint_offset = context.current.paint_offset;
     }
   }
   return paint_offset_translation;
@@ -1058,22 +1082,6 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
                                        ancestor_reasons);
 }
 
-static bool NeedsScrollNode(const LayoutObject& object) {
-  if (!object.HasOverflowClip())
-    return false;
-  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
-}
-
-// True if a scroll translation is needed for static scroll offset (e.g.,
-// overflow hidden with scroll), or if a scroll node is needed for composited
-// scrolling.
-static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
-  if (!object.HasOverflowClip())
-    return false;
-  IntSize scroll_offset = ToLayoutBox(object).ScrolledContentOffset();
-  return !scroll_offset.IsZero() || NeedsScrollNode(object);
-}
-
 void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
     const LayoutObject& object,
     ObjectPaintProperties& properties,
@@ -1273,6 +1281,19 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
   }
 }
 
+static inline LayoutPoint VisualOffsetFromPaintOffsetRoot(
+    const PaintPropertyTreeBuilderFragmentContext& context,
+    const PaintLayer* child) {
+  PaintLayer* paint_offset_root = context.current.paint_offset_root;
+  LayoutPoint result = child->VisualOffsetFromAncestor(paint_offset_root);
+
+  // Don't include scroll offset of paint_offset_root. Any scroll is
+  // already included in a separate transform node.
+  if (paint_offset_root->GetLayoutObject().HasOverflowClip())
+    result += paint_offset_root->GetLayoutBox()->ScrolledContentOffset();
+  return result;
+}
+
 void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     const LayoutObject& object,
     const LayoutObject* container_for_absolute_position,
@@ -1315,12 +1336,16 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     LayoutPoint paint_offset;
     paint_layer->ConvertToLayerCoords(enclosing_pagination_layer, paint_offset);
     paint_offset.MoveBy(fragment_data->PaginationOffset());
-
-    paint_offset.MoveBy(enclosing_pagination_layer->VisualOffsetFromAncestor(
-        context.current.paint_offset_root));
+    paint_offset.MoveBy(
+        VisualOffsetFromPaintOffsetRoot(context, enclosing_pagination_layer));
     // The paint offset root can have a subpixel paint offset adjustment.
     paint_offset.MoveBy(
         context.current.paint_offset_root->GetLayoutObject().PaintOffset());
+
+    if (paint_offset_translation) {
+      paint_offset_translation =
+          ApplyPaintOffsetTranslation(object, paint_offset);
+    }
 
     context.fragment_clip_context->paint_offset = paint_offset;
     fragment_data->SetPaintOffset(paint_offset);
@@ -1478,8 +1503,9 @@ void PaintPropertyTreeBuilder::UpdateFragments(
         {
           DCHECK(full_context.fragments[0].current.paint_offset_root);
           LayoutPoint pagination_visual_offset =
-              enclosing_pagination_layer->VisualOffsetFromAncestor(
-                  full_context.fragments[0].current.paint_offset_root);
+              VisualOffsetFromPaintOffsetRoot(full_context.fragments[0],
+                                              enclosing_pagination_layer);
+
           // Adjust for paint offset of the root, which may have a subpixel
           // component.
           pagination_visual_offset.MoveBy(
