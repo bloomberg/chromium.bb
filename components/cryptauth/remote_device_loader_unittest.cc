@@ -184,6 +184,31 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, BooleanAttributes) {
   EXPECT_FALSE(remote_devices_[1].supports_mobile_hotspot);
 }
 
+TEST_F(CryptAuthRemoteDeviceLoaderTest, LastUpdateTimeMillis) {
+  cryptauth::ExternalDeviceInfo first = CreateDeviceInfo("0");
+  first.set_last_update_time_millis(1000);
+
+  cryptauth::ExternalDeviceInfo second = CreateDeviceInfo("1");
+  second.set_last_update_time_millis(2000);
+
+  std::vector<cryptauth::ExternalDeviceInfo> device_infos{first, second};
+
+  RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
+                            std::move(secure_message_delegate_));
+
+  std::vector<cryptauth::RemoteDevice> result;
+  EXPECT_CALL(*this, LoadCompleted());
+  loader.Load(
+      false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
+                        base::Unretained(this)));
+
+  EXPECT_EQ(2u, remote_devices_.size());
+
+  EXPECT_EQ(1000, remote_devices_[0].last_update_time_millis);
+
+  EXPECT_EQ(2000, remote_devices_[1].last_update_time_millis);
+}
+
 TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadOneDeviceWithAddress) {
   std::vector<cryptauth::ExternalDeviceInfo> device_infos(1,
                                                          CreateDeviceInfo("0"));
