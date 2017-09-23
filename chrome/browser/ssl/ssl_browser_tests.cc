@@ -1788,15 +1788,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
 // Insecure content
 //
 
-#if defined(OS_WIN)
-// http://crbug.com/152940 Flaky on win.
-#define MAYBE_TestDisplaysInsecureContent DISABLED_TestDisplaysInsecureContent
-#else
-#define MAYBE_TestDisplaysInsecureContent TestDisplaysInsecureContent
-#endif
-
 // Visits a page that displays insecure content.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
