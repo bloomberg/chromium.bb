@@ -196,12 +196,14 @@ public class AwAutofillProvider extends AutofillProvider {
     private long mNativeAutofillProvider;
 
     public AwAutofillProvider(Context context, ViewGroup containerView) {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mAutofillManager = new AwAutofillManager(context);
         mContainerView = containerView;
     }
 
     @VisibleForTesting
     public AwAutofillProvider(ViewGroup containerView, AwAutofillManager manager) {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mAutofillManager = manager;
         mContainerView = containerView;
     }
