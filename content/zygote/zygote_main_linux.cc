@@ -91,6 +91,59 @@ void RunTwoClosures(const base::Closure* first, const base::Closure* second) {
   second->Run();
 }
 
+bool ReadTimeStruct(base::PickleIterator* iter,
+                    struct tm* output,
+                    char* timezone_out,
+                    size_t timezone_out_len) {
+  int result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_sec = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_min = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_hour = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_mday = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_mon = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_year = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_wday = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_yday = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_isdst = result;
+  if (!iter->ReadInt(&result))
+    return false;
+  output->tm_gmtoff = result;
+
+  std::string timezone;
+  if (!iter->ReadString(&timezone))
+    return false;
+  if (timezone_out_len) {
+    const size_t copy_len = std::min(timezone_out_len - 1, timezone.size());
+    memcpy(timezone_out, timezone.data(), copy_len);
+    timezone_out[copy_len] = 0;
+    output->tm_zone = timezone_out;
+  } else {
+    base::AutoLock lock(g_timezones_lock.Get());
+    auto ret_pair = g_timezones.Get().insert(timezone);
+    output->tm_zone = ret_pair.first->c_str();
+  }
+
+  return true;
+}
+
 }  // namespace
 
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
@@ -103,35 +156,19 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
   request.WriteString(
       std::string(reinterpret_cast<char*>(&input), sizeof(input)));
 
+  memset(output, 0, sizeof(struct tm));
+
   uint8_t reply_buf[512];
   const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
       GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL, request);
   if (r == -1) {
-    memset(output, 0, sizeof(struct tm));
     return;
   }
 
   base::Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   base::PickleIterator iter(reply);
-  std::string result;
-  std::string timezone;
-  if (!iter.ReadString(&result) ||
-      !iter.ReadString(&timezone) ||
-      result.size() != sizeof(struct tm)) {
+  if (!ReadTimeStruct(&iter, output, timezone_out, timezone_out_len)) {
     memset(output, 0, sizeof(struct tm));
-    return;
-  }
-
-  memcpy(output, result.data(), sizeof(struct tm));
-  if (timezone_out_len) {
-    const size_t copy_len = std::min(timezone_out_len - 1, timezone.size());
-    memcpy(timezone_out, timezone.data(), copy_len);
-    timezone_out[copy_len] = 0;
-    output->tm_zone = timezone_out;
-  } else {
-    base::AutoLock lock(g_timezones_lock.Get());
-    auto ret_pair = g_timezones.Get().insert(timezone);
-    output->tm_zone = ret_pair.first->c_str();
   }
 }
 
