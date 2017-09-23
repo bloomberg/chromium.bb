@@ -69,6 +69,7 @@ struct GLContextAttribs {
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
   bool global_texture_share_group = false;
+  bool robust_resource_initialization = false;
   int client_major_es_version = 3;
   int client_minor_es_version = 0;
   ContextPriority context_priority = ContextPriorityMedium;

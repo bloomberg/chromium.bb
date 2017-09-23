@@ -1421,6 +1421,8 @@ void FeatureInfo::InitializeFeatures() {
       gl::HasExtension(extensions, "GL_NV_pixel_buffer_object");
   feature_flags_.oes_rgb8_rgba8 =
       gl::HasExtension(extensions, "GL_OES_rgb8_rgba8");
+  feature_flags_.angle_robust_resource_initialization =
+      gl::HasExtension(extensions, "GL_ANGLE_robust_resource_initialization");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

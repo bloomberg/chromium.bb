@@ -31,6 +31,8 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     // decoder
     attribs.global_texture_share_group = true;
 
+    attribs.robust_resource_initialization = true;
+
     // Request a specific context version instead of always 3.0
     if (IsWebGL2OrES3ContextType(attribs_helper.context_type)) {
       attribs.client_major_es_version = 3;
@@ -61,7 +63,8 @@ bool PassthroughCommandDecoderSupported() {
   // extensions are exposed
   return gl::GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() &&
          gl::GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() &&
-         gl::GLSurfaceEGL::IsRobustResourceInitSupported() &&
+         (gl::GLSurfaceEGL::IsRobustResourceInitSupported() ||
+          gl::GLSurfaceEGL::IsDisplayRobustResourceInitSupported()) &&
          gl::GLSurfaceEGL::IsDisplayTextureShareGroupSupported() &&
          gl::GLSurfaceEGL::IsCreateContextClientArraysSupported();
 #else
