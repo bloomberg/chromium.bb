@@ -4,6 +4,12 @@
 
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
 
+namespace {
+constexpr int kSmallSnapPoint = 320;
+constexpr int kMediumSnapPoint = 448;
+constexpr int kLargeSnapPoint = 512;
+}  // namespace
+
 gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
   DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
@@ -90,6 +96,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
       return kHarmonyLayoutUnit;
+    case DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT:
+      return kMediumSnapPoint;
     default:
       return ChromeLayoutProvider::GetDistanceMetric(metric);
   }
@@ -113,7 +121,7 @@ bool HarmonyLayoutProvider::IsHarmonyMode() const {
 }
 
 int HarmonyLayoutProvider::GetSnappedDialogWidth(int min_width) const {
-  for (int snap_point : {320, 448, 512}) {
+  for (int snap_point : {kSmallSnapPoint, kMediumSnapPoint, kLargeSnapPoint}) {
     if (min_width <= snap_point)
       return snap_point;
   }

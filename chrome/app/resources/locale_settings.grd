@@ -196,12 +196,6 @@
         25
       </message>
 
-      <!-- The width and height of the "Mozilla Firefox is locked" dialog box in -->
-      <!-- characters and lines (See above). -->
-      <message name="IDS_IMPORTLOCK_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        50
-      </message>
-
       <!-- The language dependent download view size. -->
       <message name="IDS_DOWNLOAD_BIG_PROGRESS_SIZE" use_name_for_id="true">
         52
