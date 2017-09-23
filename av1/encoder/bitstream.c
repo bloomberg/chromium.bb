@@ -5162,9 +5162,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   update_skip_probs(cm, header_bc, counts);
 #endif
 
-  if (frame_is_intra_only(cm)) {
-    av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
-  } else {
+  if (!frame_is_intra_only(cm)) {
 #if !CONFIG_NEW_MULTISYMBOL
     update_inter_mode_probs(cm, header_bc, counts);
 #endif

@@ -3610,9 +3610,8 @@ static const aom_cdf_prob
     };
 #endif
 
-// CDF version of 'av1_kf_y_mode_prob'.
 const aom_cdf_prob
-    av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)] = {
+    default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)] = {
 #if CONFIG_SMOOTH_HV
       {
           { AOM_ICDF(14208), AOM_ICDF(16238), AOM_ICDF(19079), AOM_ICDF(22512),
@@ -4714,6 +4713,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->palette_uv_size_cdf, default_palette_uv_size_cdf);
   av1_copy(fc->palette_y_color_index_cdf, default_palette_y_color_index_cdf);
   av1_copy(fc->palette_uv_color_index_cdf, default_palette_uv_color_index_cdf);
+  av1_copy(fc->kf_y_cdf, default_kf_y_mode_cdf);
 #if CONFIG_MRC_TX
   av1_copy(fc->mrc_mask_inter_cdf, default_mrc_mask_inter_cdf);
   av1_copy(fc->mrc_mask_intra_cdf, default_mrc_mask_intra_cdf);

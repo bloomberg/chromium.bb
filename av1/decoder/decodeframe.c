@@ -5130,9 +5130,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
 #endif
 
-  if (frame_is_intra_only(cm)) {
-    av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
-  } else {
+  if (!frame_is_intra_only(cm)) {
 #if !CONFIG_NEW_MULTISYMBOL
     read_inter_mode_probs(fc, &r);
 #endif
