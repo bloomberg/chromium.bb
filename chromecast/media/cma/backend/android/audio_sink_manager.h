@@ -35,14 +35,14 @@ class AudioSinkManager {
   // Removes the given sink instance from the vector.
   void Remove(AudioSinkAndroid* sink);
 
-  // Sets the type volume level for the given content |type|. Note that this
-  // volume is not actually applied to the sink, as the volume controller
-  // applies it directly in Android OS. Instead the value is just stored and
-  // used to calculate the proper limiter multiplier.
-  void SetTypeVolume(AudioContentType type, float level);
+  // Sets the type volume level (in dBFS) for the given content |type|. Note
+  // that this volume is not actually applied to the sink, as the volume
+  // controller applies it directly in Android OS. Instead the value is just
+  // stored and used to calculate the proper limiter multiplier.
+  void SetTypeVolumeDb(AudioContentType type, float level_db);
 
-  // Sets the volume limit for the given content |type|.
-  void SetOutputLimit(AudioContentType type, float limit);
+  // Sets the volume limit (in dBFS) for the given content |type|.
+  void SetOutputLimitDb(AudioContentType type, float limit_db);
 
  protected:
   AudioSinkManager();
@@ -51,12 +51,8 @@ class AudioSinkManager {
  private:
   // Contains volume control information for an audio content type.
   struct VolumeInfo {
-    // Returns the limiter multiplier such that:
-    //   multiplier * volume = min(volume, limit).
-    float GetLimiterMultiplier();
-
-    float volume = 0.0f;
-    float limit = 1.0f;
+    float volume_db = 0.0f;
+    float limit_db = 1.0f;
   };
 
   // Updates the limiter multipliers for all sinks of the given type.
@@ -64,6 +60,10 @@ class AudioSinkManager {
 
   // Updates the limiter multiplier for the given sink.
   void UpdateLimiterMultiplier(AudioSinkAndroid* sink);
+
+  // Returns the limiter multiplier such that:
+  //   multiplier * volume = min(volume, limit).
+  float GetLimiterMultiplier(AudioContentType type);
 
   base::Lock lock_;
 

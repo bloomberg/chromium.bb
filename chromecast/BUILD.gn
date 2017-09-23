@@ -490,6 +490,7 @@ buildflag_header("chromecast_features") {
   flags = [
     "ENABLE_ASSISTANT=$enable_assistant",
     "ENABLE_ATHINGS_LOOPBACK=$enable_athings_loopback",
+    "ENABLE_VOLUME_TABLES_ACCESS=$enable_volume_tables_access",
     "IS_ANDROID_THINGS=$is_android_things",
     "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
     "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",

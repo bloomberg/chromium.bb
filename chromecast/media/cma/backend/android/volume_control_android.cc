@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,68 +21,53 @@
 #include "base/message_loop/message_loop.h"
 #include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/serializers.h"
+#include "chromecast/chromecast_features.h"
 #include "jni/VolumeControl_jni.h"
+#include "jni/VolumeMap_jni.h"
 
 namespace chromecast {
 namespace media {
 
 namespace {
 
-constexpr float kMinDbFS = -120.0f;
+#if BUILDFLAG(ENABLE_VOLUME_TABLES_ACCESS)
+float VolumeToDbFSByContentType(AudioContentType type, float volume) {
+  return Java_VolumeMap_volumeToDbFs(base::android::AttachCurrentThread(),
+                                     static_cast<int>(type), volume);
+}
 
-// TODO(ckuiper): Update this to reflect Android's default volume table.
-const VolumeMap::LevelToDb kDefaultVolumeMap[] = {{0.0f, kMinDbFS},
-                                                  {0.01f, -58.0f},
-                                                  {0.090909f, -48.0f},
-                                                  {0.818182f, -8.0f},
-                                                  {1.0f, 0.0f}};
+float DbFSToVolumeByContentType(AudioContentType type, float db) {
+  return Java_VolumeMap_dbFsToVolume(base::android::AttachCurrentThread(),
+                                     static_cast<int>(type), db);
+}
 
-base::LazyInstance<VolumeMap>::Leaky g_volume_map = LAZY_INSTANCE_INITIALIZER;
+#else  // Dummy versions.
+float VolumeToDbFSByContentType(AudioContentType type, float volume) {
+  return 1.0f;
+}
 
-base::LazyInstance<VolumeControlAndroid>::Leaky g_volume_control =
-    LAZY_INSTANCE_INITIALIZER;
+float DbFSToVolumeByContentType(AudioContentType type, float db) {
+  return 100;
+}
+#endif
+
+// For the user of the VolumeControl, all volume values are in the volume table
+// domain of kMedia (MUSIC). For volume types other than media, VolumeControl
+// converts them internally into their proper volume table domains.
+float MapIntoDifferentVolumeTableDomain(AudioContentType from_type,
+                                        AudioContentType to_type,
+                                        float level) {
+  if (from_type == to_type) {
+    return level;
+  }
+  float from_db = VolumeToDbFSByContentType(from_type, level);
+  return DbFSToVolumeByContentType(to_type, from_db);
+}
 
 }  // namespace
 
-VolumeMap::VolumeMap() {
-  // TODO(ckuiper): Load active volume table from Android.
-  volume_map_.insert(volume_map_.end(), kDefaultVolumeMap,
-                     kDefaultVolumeMap + arraysize(kDefaultVolumeMap));
-}
-
-VolumeMap::~VolumeMap() {}
-
-float VolumeMap::VolumeToDbFS(float volume) {
-  if (volume <= volume_map_[0].level) {
-    return volume_map_[0].db;
-  }
-  for (size_t i = 1; i < volume_map_.size(); ++i) {
-    if (volume < volume_map_[i].level) {
-      const float x_range = volume_map_[i].level - volume_map_[i - 1].level;
-      const float y_range = volume_map_[i].db - volume_map_[i - 1].db;
-      const float x_pos = volume - volume_map_[i - 1].level;
-
-      return volume_map_[i - 1].db + x_pos * y_range / x_range;
-    }
-  }
-  return volume_map_[volume_map_.size() - 1].db;
-}
-
-float VolumeMap::DbFSToVolume(float db) {
-  if (db <= volume_map_[0].db) {
-    return volume_map_[0].level;
-  }
-  for (size_t i = 1; i < volume_map_.size(); ++i) {
-    if (db < volume_map_[i].db) {
-      const float x_range = volume_map_[i].db - volume_map_[i - 1].db;
-      const float y_range = volume_map_[i].level - volume_map_[i - 1].level;
-      const float x_pos = db - volume_map_[i - 1].db;
-
-      return volume_map_[i - 1].level + x_pos * y_range / x_range;
-    }
-  }
-  return volume_map_[volume_map_.size() - 1].level;
-}
+base::LazyInstance<VolumeControlAndroid>::Leaky g_volume_control =
+    LAZY_INSTANCE_INITIALIZER;
 
 VolumeControlAndroid::VolumeControlAndroid()
     : thread_("VolumeControl"),
@@ -93,9 +77,6 @@ VolumeControlAndroid::VolumeControlAndroid()
   DCHECK(j_volume_control_.is_null());
   j_volume_control_.Reset(Java_VolumeControl_createVolumeControl(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
-
-  // Load volume map to check that the config file is correct.
-  g_volume_map.Get();
 
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -123,14 +104,19 @@ void VolumeControlAndroid::RemoveVolumeObserver(VolumeObserver* observer) {
 
 float VolumeControlAndroid::GetVolume(AudioContentType type) {
   base::AutoLock lock(volume_lock_);
-  return volumes_[type];
+  // The return level needs to be in the kMedia (MUSIC) volume table domain.
+  return MapIntoDifferentVolumeTableDomain(type, AudioContentType::kMedia,
+                                           volumes_[type]);
 }
 
 void VolumeControlAndroid::SetVolume(AudioContentType type, float level) {
   level = std::max(0.0f, std::min(level, 1.0f));
+  // The input level value is in the kMedia (MUSIC) volume table domain.
+  float mapped_level =
+      MapIntoDifferentVolumeTableDomain(AudioContentType::kMedia, type, level);
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VolumeControlAndroid::SetVolumeOnThread,
-                                base::Unretained(this), type, level));
+                                base::Unretained(this), type, mapped_level));
 }
 
 bool VolumeControlAndroid::IsMuted(AudioContentType type) {
@@ -145,8 +131,10 @@ void VolumeControlAndroid::SetMuted(AudioContentType type, bool muted) {
 }
 
 void VolumeControlAndroid::SetOutputLimit(AudioContentType type, float limit) {
+  // The input limit is in the kMedia (MUSIC) volume table domain.
   limit = std::max(0.0f, std::min(limit, 1.0f));
-  AudioSinkManager::Get()->SetOutputLimit(type, limit);
+  float limit_db = VolumeToDbFSByContentType(AudioContentType::kMedia, limit);
+  AudioSinkManager::Get()->SetOutputLimitDb(type, limit_db);
 }
 
 void VolumeControlAndroid::OnVolumeChange(
@@ -179,13 +167,15 @@ void VolumeControlAndroid::InitializeOnThread() {
     volumes_[type] =
         Java_VolumeControl_getVolume(base::android::AttachCurrentThread(),
                                      j_volume_control_, static_cast<int>(type));
-    AudioSinkManager::Get()->SetTypeVolume(type, volumes_[type]);
+    float volume_db = VolumeToDbFSByContentType(type, volumes_[type]);
+    AudioSinkManager::Get()->SetTypeVolumeDb(type, volume_db);
     muted_[type] =
         Java_VolumeControl_isMuted(base::android::AttachCurrentThread(),
                                    j_volume_control_, static_cast<int>(type));
     LOG(INFO) << __func__ << ": Initial values for"
               << " type=" << static_cast<int>(type) << ": "
-              << " volume=" << volumes_[type] << " mute=" << muted_[type];
+              << " volume=" << volumes_[type] << " (" << volume_db << ")"
+              << " mute=" << muted_[type];
   }
   initialize_complete_event_.Signal();
 }
@@ -201,10 +191,11 @@ void VolumeControlAndroid::SetVolumeOnThread(AudioContentType type,
     volumes_[type] = level;
   }
 
-  LOG(INFO) << __func__ << ": level=" << level;
+  float level_db = VolumeToDbFSByContentType(type, level);
+  LOG(INFO) << __func__ << ": level=" << level << " (" << level_db << ")";
   // Provide the type volume to the sink manager so it can properly calculate
   // the limiter multiplier. The volume is *not* applied by the sink though.
-  AudioSinkManager::Get()->SetTypeVolume(type, level);
+  AudioSinkManager::Get()->SetTypeVolumeDb(type, level_db);
   // Set proper volume in Android OS.
   Java_VolumeControl_setVolume(base::android::AttachCurrentThread(),
                                j_volume_control_, static_cast<int>(type),
@@ -231,9 +222,12 @@ void VolumeControlAndroid::SetMutedOnThread(AudioContentType type, bool muted) {
 void VolumeControlAndroid::ReportVolumeChangeOnThread(AudioContentType type,
                                                       float level) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+  // The returned value needs to be in the kMedia (MUSIC) volume table domain.
+  float mapped_level =
+      MapIntoDifferentVolumeTableDomain(type, AudioContentType::kMedia, level);
   base::AutoLock lock(observer_lock_);
   for (VolumeObserver* observer : volume_observers_) {
-    observer->OnVolumeChange(type, level);
+    observer->OnVolumeChange(type, mapped_level);
   }
 }
 
@@ -297,12 +291,14 @@ void VolumeControl::SetOutputLimit(AudioContentType type, float limit) {
 
 // static
 float VolumeControl::VolumeToDbFS(float volume) {
-  return g_volume_map.Get().VolumeToDbFS(volume);
+  // The volume value is the kMedia (MUSIC) volume table domain.
+  return VolumeToDbFSByContentType(AudioContentType::kMedia, volume);
 }
 
 // static
 float VolumeControl::DbFSToVolume(float db) {
-  return g_volume_map.Get().DbFSToVolume(db);
+  // The db value is the kMedia (MUSIC) volume table domain.
+  return DbFSToVolumeByContentType(AudioContentType::kMedia, db);
 }
 
 }  // namespace media

@@ -28,15 +28,6 @@ base::LazyInstance<AudioSinkManagerInstance>::DestructorAtExit
 
 }  // namespace
 
-float AudioSinkManager::VolumeInfo::GetLimiterMultiplier() {
-  // Goal: multiplier * volume = min(volume, limit).
-  if (volume == 0)
-    return 0.0f;
-  if (volume < limit)
-    return 1.0f;
-  return limit / volume;
-}
-
 // static
 AudioSinkManager* AudioSinkManager::Get() {
   return g_sink_manager_instance.Pointer();
@@ -84,21 +75,21 @@ void AudioSinkManager::Remove(AudioSinkAndroid* sink) {
   sinks_.erase(it);
 }
 
-void AudioSinkManager::SetTypeVolume(AudioContentType type, float level) {
-  LOG(INFO) << __func__ << ": Set volume for " << GetAudioContentTypeName(type)
-            << " to level=" << level;
+void AudioSinkManager::SetTypeVolumeDb(AudioContentType type, float level_db) {
+  LOG(INFO) << __func__ << ": level_db=" << level_db
+            << " type=" << GetAudioContentTypeName(type);
   base::AutoLock lock(lock_);
-  volume_info_[type].volume = level;
+  volume_info_[type].volume_db = level_db;
   // Since the type volume changed we need to reflect that in the limiter
   // multipliers.
   UpdateAllLimiterMultipliers(type);
 }
 
-void AudioSinkManager::SetOutputLimit(AudioContentType type, float limit) {
-  LOG(INFO) << __func__ << ": limit=" << limit
+void AudioSinkManager::SetOutputLimitDb(AudioContentType type, float limit_db) {
+  LOG(INFO) << __func__ << ": limit_db=" << limit_db
             << " type=" << GetAudioContentTypeName(type);
   base::AutoLock lock(lock_);
-  volume_info_[type].limit = limit;
+  volume_info_[type].limit_db = limit_db;
   UpdateAllLimiterMultipliers(type);
 }
 
@@ -112,11 +103,19 @@ void AudioSinkManager::UpdateAllLimiterMultipliers(AudioContentType type) {
 void AudioSinkManager::UpdateLimiterMultiplier(AudioSinkAndroid* sink) {
   AudioContentType type = sink->content_type();
   if (sink->primary()) {
-    sink->SetLimiterVolumeMultiplier(volume_info_[type].GetLimiterMultiplier());
+    sink->SetLimiterVolumeMultiplier(GetLimiterMultiplier(type));
   } else {
     // Volume limits don't apply to effects streams.
     sink->SetLimiterVolumeMultiplier(1.0f);
   }
+}
+
+float AudioSinkManager::GetLimiterMultiplier(AudioContentType type) {
+  // Set multiplier so the effective volume is min(level_db, limit_db).
+  VolumeInfo v = volume_info_[type];
+  if (v.volume_db <= v.limit_db)
+    return 1.0f;
+  return std::pow(10, (v.limit_db - v.volume_db) / 20);
 }
 
 }  // namespace media
