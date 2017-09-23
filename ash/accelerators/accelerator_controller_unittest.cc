@@ -238,6 +238,16 @@ class AcceleratorControllerTest : public AshTestBase {
     return GetController()->Process(accelerator);
   }
 
+  bool ContainsHighContrastNotification() const {
+    return nullptr != message_center()->FindVisibleNotificationById(
+                          kHighContrastToggleAccelNotificationId);
+  }
+
+  void RemoveAllNotifications() const {
+    message_center()->RemoveAllNotifications(
+        false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
+  }
+
   static const ui::Accelerator& GetPreviousAccelerator() {
     return GetController()->accelerator_history()->previous_accelerator();
   }
@@ -262,6 +272,10 @@ class AcceleratorControllerTest : public AshTestBase {
   }
   static bool is_exiting(ExitWarningHandler* ewh) {
     return ewh->state_ == ExitWarningHandler::EXITING;
+  }
+
+  message_center::MessageCenter* message_center() const {
+    return message_center::MessageCenter::Get();
   }
 
   void SetBrightnessControlDelegate(
@@ -1239,6 +1253,25 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   }
 }
 
+TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
+  ui::Accelerator accelerator(ui::VKEY_H,
+                              ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+  // High Contrast Mode Enabled notification should be shown.
+  EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_TRUE(ContainsHighContrastNotification());
+
+  // High Contrast Mode Enabled notification should be hidden as the feature is
+  // disabled.
+  EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_FALSE(ContainsHighContrastNotification());
+
+  // It should be shown again when toggled.
+  EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_TRUE(ContainsHighContrastNotification());
+
+  RemoveAllNotifications();
+}
+
 namespace {
 
 // defines a class to test the behavior of deprecated accelerators.
@@ -1268,15 +1301,6 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
 
   bool IsMessageCenterEmpty() const {
     return message_center()->GetVisibleNotifications().empty();
-  }
-
-  void RemoveAllNotifications() const {
-    message_center()->RemoveAllNotifications(
-        false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
-  }
-
-  message_center::MessageCenter* message_center() const {
-    return message_center::MessageCenter::Get();
   }
 
  private:
