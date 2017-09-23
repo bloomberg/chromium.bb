@@ -5057,6 +5057,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_LOOP_RESTORATION
   cm->tx_mode = read_tx_mode(cm, rb);
   cm->reference_mode = read_frame_reference_mode(cm, rb);
+  if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
 #if CONFIG_EXT_INTER
   read_compound_tools(cm, rb);
 #endif  // CONFIG_EXT_INTER
@@ -5167,8 +5168,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
 #endif
 
-    if (cm->reference_mode != SINGLE_REFERENCE)
-      setup_compound_reference_mode(cm);
 #if !CONFIG_NEW_MULTISYMBOL
     read_frame_reference_mode_probs(cm, &r);
 #endif
