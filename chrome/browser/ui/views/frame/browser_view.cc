@@ -865,10 +865,12 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     ExclusiveAccessBubbleType bubble_type,
     ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
   // Immersive mode has no exit bubble because it has a visible strip at the
-  // top that gives the user a hover target.
+  // top that gives the user a hover target. In a public session we show the
+  // bubble.
   // TODO(jamescook): Figure out what to do with mouse-lock.
   if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
-      ShouldUseImmersiveFullscreenForUrl(url)) {
+      (ShouldUseImmersiveFullscreenForUrl(url) &&
+       !profiles::IsPublicSession())) {
     // |exclusive_access_bubble_.reset()| will trigger callback for current
     // bubble with |ExclusiveAccessBubbleHideReason::kInterrupted| if available.
     exclusive_access_bubble_.reset();
@@ -2664,7 +2666,7 @@ gfx::Rect BrowserView::GetClientAreaBoundsInScreen() const {
   return GetWidget()->GetClientAreaBoundsInScreen();
 }
 
-bool BrowserView::IsImmersiveModeEnabled() {
+bool BrowserView::IsImmersiveModeEnabled() const {
   return immersive_mode_controller()->IsEnabled();
 }
 
@@ -2675,6 +2677,10 @@ gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {
 void BrowserView::DestroyAnyExclusiveAccessBubble() {
   exclusive_access_bubble_.reset();
   new_back_shortcut_bubble_.reset();
+}
+
+bool BrowserView::CanTriggerOnMouse() const {
+  return !IsImmersiveModeEnabled();
 }
 
 extensions::ActiveTabPermissionGranter*

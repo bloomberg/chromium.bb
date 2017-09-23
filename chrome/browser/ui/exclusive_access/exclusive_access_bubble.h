@@ -73,9 +73,9 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
 
   virtual bool IsAnimating() = 0;
 
-  // True if the mouse position can trigger sliding in the exit fullscreen
-  // bubble when the bubble is hidden.
-  virtual bool CanMouseTriggerSlideIn() const = 0;
+  // True if the mouse position can trigger showing the exit fullscreen bubble
+  // when the bubble is hidden.
+  virtual bool CanTriggerOnMouse() const = 0;
 
   void StartWatchingMouse();
   void StopWatchingMouse();

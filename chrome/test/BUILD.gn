@@ -425,6 +425,7 @@ if (!is_android) {
       "../browser/apps/app_shim/app_shim_interactive_uitest_mac.mm",
       "../browser/apps/app_shim/app_shim_quit_interactive_uitest_mac.mm",
       "../browser/apps/app_window_interactive_uitest.cc",
+      "../browser/apps/app_window_interactive_uitest.h",
       "../browser/apps/guest_view/web_view_interactive_browsertest.cc",
       "../browser/autofill/autofill_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest_util.cc",
@@ -715,6 +716,7 @@ if (!is_android) {
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc",
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h",
         "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc",
+        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "data/chromeos/service_login.html",
       ]

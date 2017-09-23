@@ -154,7 +154,7 @@ views::View* ExclusiveAccessBubbleViews::GetView() {
 }
 
 void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
-  bool should_watch_mouse = popup_->IsVisible() || CanMouseTriggerSlideIn();
+  bool should_watch_mouse = popup_->IsVisible() || CanTriggerOnMouse();
 
   if (should_watch_mouse == IsWatchingMouse())
     return;
@@ -295,8 +295,8 @@ bool ExclusiveAccessBubbleViews::IsAnimating() {
   return animation_->is_animating();
 }
 
-bool ExclusiveAccessBubbleViews::CanMouseTriggerSlideIn() const {
-  return !bubble_view_context_->IsImmersiveModeEnabled();
+bool ExclusiveAccessBubbleViews::CanTriggerOnMouse() const {
+  return bubble_view_context_->CanTriggerOnMouse();
 }
 
 void ExclusiveAccessBubbleViews::Observe(

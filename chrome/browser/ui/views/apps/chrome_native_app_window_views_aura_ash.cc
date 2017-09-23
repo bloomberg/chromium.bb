@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
+#include <utility>
+
 #include "apps/ui/views/app_window_frame_view.h"
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
@@ -19,11 +21,14 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -34,9 +39,12 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -121,7 +129,9 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 
 }  // namespace
 
-ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh() {
+ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
+    : exclusive_access_manager_(
+          std::make_unique<ExclusiveAccessManager>(this)) {
   // TODO(crbug.com/756046): Remove this check once this class uses
   // TouchViewObserver.
   if (!ash_util::IsRunningInMash()) {
@@ -140,6 +150,8 @@ ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// NativeAppWindowViews implementation:
 void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     AppWindow* app_window,
     const AppWindow::CreateParams& create_params) {
@@ -152,6 +164,8 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ChromeNativeAppWindowViews implementation:
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     const AppWindow::CreateParams& create_params,
     views::Widget::InitParams* init_params,
@@ -219,6 +233,8 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonStandardAppFrame() {
   return frame;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ui::BaseWindow implementation:
 gfx::Rect ChromeNativeAppWindowViewsAuraAsh::GetRestoredBounds() const {
   gfx::Rect* bounds =
       widget()->GetNativeWindow()->GetProperty(ash::kRestoreBoundsOverrideKey);
@@ -268,6 +284,8 @@ bool ChromeNativeAppWindowViewsAuraAsh::IsAlwaysOnTop() const {
   return widget()->IsAlwaysOnTop();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// views::ContextMenuController implementation:
 void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
@@ -298,6 +316,8 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// WidgetDelegate implementation:
 views::NonClientFrameView*
 ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     views::Widget* widget) {
@@ -349,6 +369,8 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   return custom_frame_view;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// NativeAppWindow implementation:
 void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
   ChromeNativeAppWindowViewsAura::SetFullscreen(fullscreen_types);
 
@@ -369,6 +391,17 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
       immersive_fullscreen_controller_->SetEnabled(
           ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
           immersive_enabled);
+
+      // In a public session, display a toast with instructions on exiting
+      // fullscreen.
+      if (profiles::IsPublicSession()) {
+        UpdateExclusiveAccessExitBubbleContent(
+            GURL(),
+            fullscreen_types & AppWindow::FULLSCREEN_TYPE_HTML_API
+                ? EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION
+                : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
+            ExclusiveAccessBubbleHideCallback());
+      }
     }
 
     // Autohide the shelf instead of hiding the shelf completely when only in
@@ -418,6 +451,8 @@ void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
                                            activate_on_pointer);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// ash:TabletModeObserver implementation:
 void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeStarted() {
   // Enter immersive mode if the widget can maximize and the hide titlebars
   // in tablet mode feature is enabled.
@@ -435,6 +470,125 @@ void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeEnded() {
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, false);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ui::AcceleratorProvider implementation:
+bool ChromeNativeAppWindowViewsAuraAsh::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
+  // Normally |accelerator| is used to determine the text in the bubble;
+  // however, for the fullscreen type set in SetFullscreen(), the bubble
+  // currently ignores it, and will always use IDS_APP_ESC_KEY. Be explicit here
+  // anyway.
+  *accelerator = ui::Accelerator(ui::KeyboardCode::VKEY_ESCAPE, ui::EF_NONE);
+  return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ExclusiveAccessContext implementation:
+Profile* ChromeNativeAppWindowViewsAuraAsh::GetProfile() {
+  return Profile::FromBrowserContext(web_view()->browser_context());
+}
+
+bool ChromeNativeAppWindowViewsAuraAsh::IsFullscreen() const {
+  return NativeAppWindowViews::IsFullscreen();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::EnterFullscreen(
+    const GURL& url,
+    ExclusiveAccessBubbleType bubble_type) {
+  // This codepath is never hit for Chrome Apps.
+  NOTREACHED();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::ExitFullscreen() {
+  // This codepath is never hit for Chrome Apps.
+  NOTREACHED();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::UpdateExclusiveAccessExitBubbleContent(
+    const GURL& url,
+    ExclusiveAccessBubbleType bubble_type,
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
+  if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) {
+    exclusive_access_bubble_.reset();
+    if (bubble_first_hide_callback) {
+      std::move(bubble_first_hide_callback)
+          .Run(ExclusiveAccessBubbleHideReason::kNotShown);
+    }
+    return;
+  }
+
+  if (exclusive_access_bubble_) {
+    exclusive_access_bubble_->UpdateContent(
+        url, bubble_type, std::move(bubble_first_hide_callback));
+    return;
+  }
+
+  exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
+      this, url, bubble_type, std::move(bubble_first_hide_callback));
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnExclusiveAccessUserInput() {
+  if (exclusive_access_bubble_)
+    exclusive_access_bubble_->OnUserInput();
+}
+
+content::WebContents*
+ChromeNativeAppWindowViewsAuraAsh::GetActiveWebContents() {
+  return web_view()->web_contents();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::UnhideDownloadShelf() {}
+
+void ChromeNativeAppWindowViewsAuraAsh::HideDownloadShelf() {}
+
+///////////////////////////////////////////////////////////////////////////////
+// ExclusiveAccessBubbleViewsContext implementation:
+ExclusiveAccessManager*
+ChromeNativeAppWindowViewsAuraAsh::GetExclusiveAccessManager() {
+  return exclusive_access_manager_.get();
+}
+
+views::Widget* ChromeNativeAppWindowViewsAuraAsh::GetBubbleAssociatedWidget() {
+  return widget();
+}
+
+ui::AcceleratorProvider*
+ChromeNativeAppWindowViewsAuraAsh::GetAcceleratorProvider() {
+  return this;
+}
+
+gfx::NativeView ChromeNativeAppWindowViewsAuraAsh::GetBubbleParentView() const {
+  return widget()->GetNativeView();
+}
+
+gfx::Point ChromeNativeAppWindowViewsAuraAsh::GetCursorPointInParent() const {
+  gfx::Point cursor_pos = display::Screen::GetScreen()->GetCursorScreenPoint();
+  views::View::ConvertPointFromScreen(widget()->GetRootView(), &cursor_pos);
+  return cursor_pos;
+}
+
+gfx::Rect ChromeNativeAppWindowViewsAuraAsh::GetClientAreaBoundsInScreen()
+    const {
+  return widget()->GetClientAreaBoundsInScreen();
+}
+
+bool ChromeNativeAppWindowViewsAuraAsh::IsImmersiveModeEnabled() const {
+  return immersive_fullscreen_controller_->IsEnabled();
+}
+
+gfx::Rect ChromeNativeAppWindowViewsAuraAsh::GetTopContainerBoundsInScreen() {
+  return immersive_fullscreen_controller_->top_container()->GetBoundsInScreen();
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::DestroyAnyExclusiveAccessBubble() {
+  exclusive_access_bubble_.reset();
+}
+
+bool ChromeNativeAppWindowViewsAuraAsh::CanTriggerOnMouse() const {
+  return true;
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {

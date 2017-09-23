@@ -77,7 +77,7 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   void Hide() override;
   void Show() override;
   bool IsAnimating() override;
-  bool CanMouseTriggerSlideIn() const override;
+  bool CanTriggerOnMouse() const override;
 
   // content::NotificationObserver:
   void Observe(int type,
