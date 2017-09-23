@@ -278,6 +278,11 @@ cr.define('cr.ui.login', function() {
     },
 
     set headerHidden(hidden) {
+      if (this.showingViewsBasedShelf && !hidden) {
+        // When views-based shelf is enabled, toggling header bar visibility
+        // is handled by ash. Prevent showing a duplicate header bar here.
+        return;
+      }
       $('login-header-bar').hidden = hidden;
     },
 
@@ -285,7 +290,8 @@ cr.define('cr.ui.login', function() {
      * The header bar should be hidden when views-based shelf is shown.
      */
     get showingViewsBasedShelf() {
-      return loadTimeData.getString('showMdLogin') == 'on' &&
+      return loadTimeData.valueExists('showMdLogin') &&
+          loadTimeData.getString('showMdLogin') == 'on' &&
           (this.displayType_ == DISPLAY_TYPE.LOCK ||
            this.displayType_ == DISPLAY_TYPE.USER_ADDING);
     },
@@ -412,7 +418,7 @@ cr.define('cr.ui.login', function() {
         if (currentStepId == SCREEN_GAIA_SIGNIN)
           chrome.send('toggleEasyBootstrap');
       } else if (name == ACCELERATOR_BOOTSTRAPPING_SLAVE) {
-          chrome.send('setOobeBootstrappingSlave');
+        chrome.send('setOobeBootstrappingSlave');
       }
     },
 
