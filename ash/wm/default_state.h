@@ -11,18 +11,22 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+namespace mojom {
+enum class WindowStateType;
+}
+
 namespace wm {
 class SetBoundsEvent;
 
 // DefaultState implements Ash behavior without state machine.
 class DefaultState : public WindowState::State {
  public:
-  explicit DefaultState(WindowStateType initial_state_type);
+  explicit DefaultState(mojom::WindowStateType initial_state_type);
   ~DefaultState() override;
 
   // WindowState::State overrides:
   void OnWMEvent(WindowState* window_state, const WMEvent* event) override;
-  WindowStateType GetType() const override;
+  mojom::WindowStateType GetType() const override;
   void AttachState(WindowState* window_state,
                    WindowState::State* previous_state) override;
   void DetachState(WindowState* window_state) override;
@@ -48,7 +52,7 @@ class DefaultState : public WindowState::State {
   // Enters next state. This is used when the state moves from one to another
   // within the same desktop mode.
   void EnterToNextState(wm::WindowState* window_state,
-                        wm::WindowStateType next_state_type);
+                        mojom::WindowStateType next_state_type);
 
   // Reenters the current state. This is called when migrating from
   // previous desktop mode, and the window's state needs to re-construct the
@@ -58,10 +62,10 @@ class DefaultState : public WindowState::State {
 
   // Animates to new window bounds based on the current and previous state type.
   void UpdateBoundsFromState(wm::WindowState* window_state,
-                             wm::WindowStateType old_state_type);
+                             mojom::WindowStateType old_state_type);
 
   // The current type of the window.
-  WindowStateType state_type_;
+  mojom::WindowStateType state_type_;
 
   // The saved window state for the case that the state gets de-/activated.
   gfx::Rect stored_bounds_;

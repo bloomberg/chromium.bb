@@ -49,11 +49,11 @@ using ShellSurfaceTest = test::ExoTestBase;
 
 uint32_t ConfigureFullscreen(uint32_t serial,
                              const gfx::Size& size,
-                             ash::wm::WindowStateType state_type,
+                             ash::mojom::WindowStateType state_type,
                              bool resizing,
                              bool activated,
                              const gfx::Vector2d& origin_offset) {
-  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, state_type);
+  EXPECT_EQ(ash::mojom::WindowStateType::FULLSCREEN, state_type);
   return serial;
 }
 
@@ -520,11 +520,11 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
 }
 
 uint32_t Configure(gfx::Size* suggested_size,
-                   ash::wm::WindowStateType* has_state_type,
+                   ash::mojom::WindowStateType* has_state_type,
                    bool* is_resizing,
                    bool* is_active,
                    const gfx::Size& size,
-                   ash::wm::WindowStateType state_type,
+                   ash::mojom::WindowStateType state_type,
                    bool resizing,
                    bool activated,
                    const gfx::Vector2d& origin_offset) {
@@ -540,7 +540,8 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   gfx::Size suggested_size;
-  ash::wm::WindowStateType has_state_type = ash::wm::WINDOW_STATE_TYPE_NORMAL;
+  ash::mojom::WindowStateType has_state_type =
+      ash::mojom::WindowStateType::NORMAL;
   bool is_resizing = false;
   bool is_active = false;
   shell_surface->set_configure_callback(
@@ -550,7 +551,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->Maximize();
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().width(), suggested_size.width());
-  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_MAXIMIZED, has_state_type);
+  EXPECT_EQ(ash::mojom::WindowStateType::MAXIMIZED, has_state_type);
   shell_surface->Restore();
   shell_surface->AcknowledgeConfigure(0);
 
@@ -558,7 +559,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
             suggested_size.ToString());
-  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, has_state_type);
+  EXPECT_EQ(ash::mojom::WindowStateType::FULLSCREEN, has_state_type);
   shell_surface->SetFullscreen(false);
   shell_surface->AcknowledgeConfigure(0);
 

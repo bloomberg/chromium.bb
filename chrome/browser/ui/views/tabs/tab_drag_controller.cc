@@ -41,7 +41,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/wm/window_state.h"
+#include "ash/public/cpp/window_properties.h"               // nogncheck
+#include "ash/public/interfaces/window_state_type.mojom.h"  // nogncheck
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
@@ -99,9 +100,11 @@ const int kMaximizedWindowInset = 10;  // DIPs.
 // Returns true if |tab_strip| browser window is snapped.
 bool IsSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
-  return window_state->IsSnapped();
+  ash::mojom::WindowStateType type =
+      tab_strip->GetWidget()->GetNativeWindow()->GetProperty(
+          ash::kWindowStateTypeKey);
+  return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
+         type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
 #else
 bool IsSnapped(const TabStrip* tab_strip) {

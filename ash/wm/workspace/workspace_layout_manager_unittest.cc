@@ -582,7 +582,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
+  EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
   const gfx::Rect kWorkAreaBounds = GetPrimaryDisplay().work_area();
   gfx::Rect expected_bounds =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),

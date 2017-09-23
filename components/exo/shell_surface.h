@@ -94,8 +94,8 @@ class ShellSurface : public SurfaceTreeHost,
 
   // Set the callback to run when the surface state changed.
   using StateChangedCallback =
-      base::Callback<void(ash::wm::WindowStateType old_state_type,
-                          ash::wm::WindowStateType new_state_type)>;
+      base::Callback<void(ash::mojom::WindowStateType old_state_type,
+                          ash::mojom::WindowStateType new_state_type)>;
   void set_state_changed_callback(
       const StateChangedCallback& state_changed_callback) {
     state_changed_callback_ = state_changed_callback;
@@ -107,7 +107,7 @@ class ShellSurface : public SurfaceTreeHost,
   // in steps of NxM pixels).
   using ConfigureCallback =
       base::Callback<uint32_t(const gfx::Size& size,
-                              ash::wm::WindowStateType state_type,
+                              ash::mojom::WindowStateType state_type,
                               bool resizing,
                               bool activated,
                               const gfx::Vector2d& origin_offset)>;
@@ -259,10 +259,12 @@ class ShellSurface : public SurfaceTreeHost,
   gfx::Size GetMinimumSize() const override;
 
   // Overridden from ash::wm::WindowStateObserver:
-  void OnPreWindowStateTypeChange(ash::wm::WindowState* window_state,
-                                  ash::wm::WindowStateType old_type) override;
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
-                                   ash::wm::WindowStateType old_type) override;
+  void OnPreWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,

@@ -90,8 +90,8 @@ void TabletModeWindowManager::OnOverviewModeEnded() {
 void TabletModeWindowManager::OnSplitViewModeEnded() {
   // Maximize all snapped windows upon exiting split view mode.
   for (auto& pair : window_state_map_) {
-    if (pair.second->GetType() == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
-        pair.second->GetType() == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED) {
+    if (pair.second->GetType() == mojom::WindowStateType::LEFT_SNAPPED ||
+        pair.second->GetType() == mojom::WindowStateType::RIGHT_SNAPPED) {
       wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
       wm::GetWindowState(pair.first)->OnWMEvent(&event);
     }

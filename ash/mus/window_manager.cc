@@ -24,7 +24,9 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/session/session_controller.h"
@@ -94,6 +96,9 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       ::wm::kShadowElevationKey,
       ui::mojom::WindowManager::kShadowElevation_Property,
       base::Bind(&::wm::IsValidShadowElevation));
+  property_converter_->RegisterPrimitiveProperty(
+      kWindowStateTypeKey, mojom::kWindowStateType_Property,
+      base::Bind(&ash::IsValidWindowStateType));
   property_converter_->RegisterPrimitiveProperty(
       kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
       base::Bind(&ash::IsValidWindowPinType));

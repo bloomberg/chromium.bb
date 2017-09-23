@@ -92,8 +92,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnWindowDestroying(aura::Window* window) override;
 
   // ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
-                                   ash::wm::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(
+      ash::wm::WindowState* window_state,
+      ash::mojom::WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

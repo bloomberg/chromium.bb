@@ -95,7 +95,7 @@ void BackdropController::OnWindowStackingChanged(aura::Window* window) {
 
 void BackdropController::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowStateType old_type) {
+    mojom::WindowStateType old_type) {
   UpdateBackdrop();
 }
 

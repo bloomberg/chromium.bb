@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/drag_details.h"
-#include "ash/wm/wm_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -68,7 +68,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Update WindowState based on |event|.
     virtual void OnWMEvent(WindowState* window_state, const WMEvent* event) = 0;
 
-    virtual WindowStateType GetType() const = 0;
+    virtual mojom::WindowStateType GetType() const = 0;
 
     // Gets called when the state object became active and the managed window
     // needs to be adjusted to the State's requirement.
@@ -99,7 +99,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns the window's current ash state type.
   // Refer to WindowStateType definition in wm_types.h as for why Ash
   // has its own state type.
-  WindowStateType GetStateType() const;
+  mojom::WindowStateType GetStateType() const;
 
   // Predicates to check window state.
   bool IsMinimized() const;
@@ -109,12 +109,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsPinned() const;
   bool IsTrustedPinned() const;
 
-  // True if the window's state type is WINDOW_STATE_TYPE_MAXIMIZED,
-  // WINDOW_STATE_TYPE_FULLSCREEN or WINDOW_STATE_TYPE_PINNED.
+  // True if the window's state type is WindowStateType::MAXIMIZED,
+  // WindowStateType::FULLSCREEN or WindowStateType::PINNED.
   bool IsMaximizedOrFullscreenOrPinned() const;
 
-  // True if the window's state type is WINDOW_STATE_TYPE_NORMAL or
-  // WINDOW_STATE_TYPE_DEFAULT.
+  // True if the window's state type is WindowStateType::NORMAL or
+  // WindowStateType::DEFAULT.
   bool IsNormalStateType() const;
 
   bool IsNormalOrSnapped() const;
@@ -357,8 +357,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Note that this does not update the window bounds.
   void UpdateWindowPropertiesFromStateType();
 
-  void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
-  void NotifyPostStateTypeChange(WindowStateType old_window_state_type);
+  void NotifyPreStateTypeChange(mojom::WindowStateType old_window_state_type);
+  void NotifyPostStateTypeChange(mojom::WindowStateType old_window_state_type);
 
   // Sets |bounds| as is and ensure the layer is aligned with pixel boundary.
   void SetBoundsDirect(const gfx::Rect& bounds);

@@ -17,7 +17,7 @@ ResizeHandleWindowTargeter::ResizeHandleWindowTargeter(
     ImmersiveFullscreenController* controller)
     : window_(window), immersive_controller_(controller) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
-  OnPostWindowStateTypeChange(window_state, wm::WINDOW_STATE_TYPE_DEFAULT);
+  OnPostWindowStateTypeChange(window_state, mojom::WindowStateType::DEFAULT);
   window_state->AddObserver(this);
   window_->AddObserver(this);
 }
@@ -31,7 +31,7 @@ ResizeHandleWindowTargeter::~ResizeHandleWindowTargeter() {
 
 void ResizeHandleWindowTargeter::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowStateType old_type) {
+    mojom::WindowStateType old_type) {
   if (window_state->IsMaximizedOrFullscreenOrPinned()) {
     frame_border_inset_ = gfx::Insets();
   } else {
