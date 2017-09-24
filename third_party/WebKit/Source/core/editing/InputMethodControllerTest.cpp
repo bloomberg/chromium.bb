@@ -2422,4 +2422,55 @@ TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
   EXPECT_EQ(3u, text2_markers[0]->EndOffset());
 }
 
+// The following tests are for http://crbug.com/766680.
+
+TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupBeforeText) {
+  Element* div = InsertHTMLElement(
+      "<div id='div' contenteditable='true'><img />test</div>", "div");
+  // Select the contents of the div element.
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
+          .Build());
+
+  Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
+
+  EXPECT_EQ(1u, div->CountChildren());
+  Text* text = ToText(div->firstChild());
+  EXPECT_EQ("t", text->data());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionDeletesMarkupAfterText) {
+  Element* div = InsertHTMLElement(
+      "<div id='div' contenteditable='true'>test<img /></div>", "div");
+  // Select the contents of the div element.
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
+          .Build());
+
+  Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
+
+  EXPECT_EQ(1u, div->CountChildren());
+  Text* text = ToText(div->firstChild());
+  EXPECT_EQ("t", text->data());
+}
+
+TEST_F(InputMethodControllerTest,
+       SetCompositionDeletesMarkupBeforeAndAfterText) {
+  Element* div = InsertHTMLElement(
+      "<div id='div' contenteditable='true'><img />test<img /></div>", "div");
+  // Select the contents of the div element.
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange::RangeOfContents(*div))
+          .Build());
+
+  Controller().SetComposition("t", Vector<ImeTextSpan>(), 0, 1);
+
+  EXPECT_EQ(1u, div->CountChildren());
+  Text* text = ToText(div->firstChild());
+  EXPECT_EQ("t", text->data());
+}
+
 }  // namespace blink
