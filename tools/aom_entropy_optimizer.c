@@ -76,6 +76,13 @@ typedef unsigned int aom_count_type;
 // A log file recording parsed counts
 static FILE *logfile;  // TODO(yuec): make it a command line option
 
+static INLINE aom_prob get_binary_prob_new(unsigned int n0, unsigned int n1) {
+  // The "+1" will prevent this function from generating extreme probability
+  // when both n0 and n1 are small
+  const unsigned int den = n0 + 1 + n1 + 1;
+  return get_prob(n0 + 1, den);
+}
+
 // Optimized probabilities will be stored in probs[].
 static unsigned int optimize_tree_probs(const aom_tree_index *tree,
                                         unsigned int idx,
@@ -87,7 +94,7 @@ static unsigned int optimize_tree_probs(const aom_tree_index *tree,
   const int r = tree[idx + 1];
   const unsigned int right_count =
       (r <= 0) ? counts[-r] : optimize_tree_probs(tree, r, counts, probs);
-  probs[idx >> 1] = get_binary_prob(left_count, right_count);
+  probs[idx >> 1] = get_binary_prob_new(left_count, right_count);
   return left_count + right_count;
 }
 
@@ -113,7 +120,7 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
       optimize_tree_probs(tree, 0, counts1d, probs);
     } else {
       assert(total_modes == 2);
-      probs[0] = get_binary_prob(counts1d[0], counts1d[1]);
+      probs[0] = get_binary_prob_new(counts1d[0], counts1d[1]);
     }
     if (tabs > 0) fprintf(probsfile, "%*c", tabs * SPACES_PER_TAB, ' ');
     for (int k = 0; k < total_modes - 1; ++k) {
@@ -130,10 +137,10 @@ static int parse_stats(aom_count_type **ct_ptr, FILE *const probsfile, int tabs,
     for (int k = 0; k < cts_each_dim[0]; ++k) {
       if (k == cts_each_dim[0] - 1) {
         fprintf(probsfile, " %3d ",
-                get_binary_prob((*ct_ptr)[0], (*ct_ptr)[1]));
+                get_binary_prob_new((*ct_ptr)[0], (*ct_ptr)[1]));
       } else {
         fprintf(probsfile, " %3d,",
-                get_binary_prob((*ct_ptr)[0], (*ct_ptr)[1]));
+                get_binary_prob_new((*ct_ptr)[0], (*ct_ptr)[1]));
       }
       fprintf(logfile, "%d %d\n", (*ct_ptr)[0], (*ct_ptr)[1]);
       (*ct_ptr) += 2;
