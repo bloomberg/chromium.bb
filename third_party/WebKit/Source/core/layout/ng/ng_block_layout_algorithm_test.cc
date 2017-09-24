@@ -58,6 +58,15 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return *algorithm.ComputeMinMaxSize();
   }
 
+  String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {
+    NGPhysicalFragment::DumpFlags flags =
+        NGPhysicalFragment::DumpHeaderText | NGPhysicalFragment::DumpSubtree |
+        NGPhysicalFragment::DumpIndentation | NGPhysicalFragment::DumpOffset |
+        NGPhysicalFragment::DumpSize;
+
+    return fragment->DumpFragmentTree(flags);
+  }
+
   RefPtr<ComputedStyle> style_;
 };
 
@@ -821,6 +830,38 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
   // The margin strut is now disjoint, this is placed at:
   // 55 = (40 + (-10 + 25))
   EXPECT_EQ(LayoutUnit(55), inflow->Offset().top);
+}
+
+// Tests that when auto margins are applied to a new formatting context, they
+// are applied within the layout opportunity.
+TEST_F(NGBlockLayoutAlgorithmTest, NewFormattingContextAutoMargins) {
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #container { width: 200px; direction: rtl; }
+        #float { width: 100px; height: 60px; background: hotpink; float: left; }
+        #newfc { direction: rtl; width: 50px; height: 20px; background: green; overflow: hidden; }
+      </style>
+      <div id="container">
+        <div id="float"></div>
+        <div id="newfc" style="margin-right: auto;"></div>
+        <div id="newfc" style="margin-left: auto; margin-right: auto;"></div>
+        <div id="newfc" style="margin-left: auto;"></div>
+      </div>
+    )HTML");
+
+  RefPtr<const NGPhysicalBoxFragment> fragment;
+  std::tie(fragment, std::ignore) =
+      RunBlockLayoutAlgorithmForElement(GetElementById("container"));
+
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:200x60
+    offset:0,0 size:100x60
+    offset:100,0 size:50x20
+    offset:125,20 size:50x20
+    offset:150,40 size:50x20
+)DUMP";
+  EXPECT_EQ(expectation, DumpFragmentTree(fragment.Get()));
 }
 
 // Verifies that a box's size includes its borders and padding, and that
