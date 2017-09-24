@@ -24,6 +24,7 @@ Refer to README.md for content description and update process.
  <item id="brandcode_config" hash_code="109679553" content_hash_code="128843792" os_list="linux,windows"/>
  <item id="captive_portal_service" hash_code="88754904" content_hash_code="70737580" os_list="linux,windows"/>
  <item id="certificate_verifier" hash_code="113553577" content_hash_code="62346354" os_list="linux,windows"/>
+ <item id="chrome_cleaner" hash_code="27071967" content_hash_code="111240292" os_list="windows"/>
  <item id="chrome_expect_ct_reporter" hash_code="57276415" content_hash_code="137551346" os_list="linux,windows"/>
  <item id="chrome_feedback_report_app" hash_code="134729048" content_hash_code="73916972" os_list="linux,windows"/>
  <item id="chrome_variations_service" hash_code="115188287" content_hash_code="32485683" os_list="linux,windows"/>
@@ -34,7 +35,7 @@ Refer to README.md for content description and update process.
  <item id="cloud_print_search" hash_code="132055347" content_hash_code="123783474" os_list="linux,windows"/>
  <item id="component_updater_utils" hash_code="125596241" content_hash_code="12311195" os_list="linux,windows"/>
  <item id="content_hash_verification_job" hash_code="64733114" content_hash_code="127912411" os_list="linux,windows"/>
- <item id="content_resource_fetcher" hash_code="70796791" content_hash_code="135648626" os_list="windows,linux"/>
+ <item id="content_resource_fetcher" hash_code="70796791" deprecated="2017-09-16" content_hash_code="135648626"/>
  <item id="content_suggestion_get_favicon" hash_code="16653985" content_hash_code="134280933" os_list="linux,windows"/>
  <item id="credenential_avatar" hash_code="53695122" content_hash_code="113035371" os_list="linux,windows"/>
  <item id="cros_recovery_image_download" hash_code="101725581" content_hash_code="23088027" os_list="linux,windows"/>
@@ -107,8 +108,9 @@ Refer to README.md for content description and update process.
  <item id="metrics_report_ukm" hash_code="727478" content_hash_code="40919254" os_list="linux,windows"/>
  <item id="metrics_report_uma" hash_code="727528" content_hash_code="10176197" os_list="linux,windows"/>
  <item id="missing" hash_code="77012883" reserved="1" os_list="all"/>
- <item id="mojo_context_state" hash_code="93232258" content_hash_code="124821232" os_list="linux"/>
+ <item id="mojo_context_state" hash_code="93232258" content_hash_code="124821232" os_list="linux,windows"/>
  <item id="navigation_url_loader" hash_code="63171670" content_hash_code="129352907" os_list="linux,windows"/>
+ <item id="net_error_helper" hash_code="60071001" content_hash_code="68322861" os_list="linux,windows"/>
  <item id="network_time_component" hash_code="46188932" content_hash_code="28051857" os_list="linux,windows"/>
  <item id="notification_image_reporter" hash_code="70126372" content_hash_code="29754543" os_list="linux,windows"/>
  <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" content_hash_code="29742597" os_list="linux,windows"/>
@@ -128,7 +130,7 @@ Refer to README.md for content description and update process.
  <item id="open_search" hash_code="107267424" content_hash_code="25715812" os_list="linux,windows"/>
  <item id="parallel_download_job" hash_code="135118587" content_hash_code="105330419" os_list="linux,windows"/>
  <item id="password_protection_request" hash_code="66322287" content_hash_code="21270837" os_list="linux,windows"/>
- <item id="payment_instrument_icon_fetcher" hash_code="73309970" content_hash_code="84709873" os_list="linux,windows"/>
+ <item id="payment_instrument_icon_fetcher" hash_code="73309970" deprecated="2017-09-16" content_hash_code="84709873"/>
  <item id="payment_manifest_downloader" hash_code="84045030" content_hash_code="19293316" os_list="linux,windows"/>
  <item id="payments_sync_cards" hash_code="95588446" content_hash_code="56526513" os_list="linux,windows"/>
  <item id="pdf_plugin_placeholder" hash_code="56866367" content_hash_code="16907221" os_list="linux,windows"/>
@@ -170,7 +172,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_v4_get_hash" hash_code="8561691" content_hash_code="132435617" os_list="linux,windows"/>
  <item id="safe_search_url_reporter" hash_code="119677115" content_hash_code="67393078" os_list="linux,windows"/>
  <item id="save_file_manager" hash_code="56275203" content_hash_code="56692339" os_list="linux,windows"/>
- <item id="sdch_dictionary_fetch" hash_code="47152935" content_hash_code="16764294" os_list="linux,windows"/>
+ <item id="sdch_dictionary_fetch" hash_code="47152935" deprecated="2017-09-16" content_hash_code="16764294"/>
  <item id="service_worker_write_to_cache_job" hash_code="117963307" content_hash_code="18065724" os_list="linux,windows"/>
  <item id="signed_in_profile_avatar" hash_code="108903331" content_hash_code="72850619" os_list="linux,windows"/>
  <item id="speech_recognition_downstream" hash_code="26096088" content_hash_code="120733233" os_list="linux,windows"/>

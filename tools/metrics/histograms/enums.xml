@@ -38959,6 +38959,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="26216847" label="gaia_auth_merge_sessions"/>
   <int value="26302604" label="webstore_data_fetcher"/>
   <int value="26372521" label="sync_attachment_downloader"/>
+  <int value="27071967" label="chrome_cleaner"/>
   <int value="27915688" label="oauth2_access_token_fetcher"/>
   <int value="29865866" label="headless_url_request"/>
   <int value="30913825" label="family_info"/>
@@ -39001,6 +39002,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="57276415" label="chrome_expect_ct_reporter"/>
   <int value="58963098" label="resource_dispather_host"/>
   <int value="59592717" label="extension_blacklist"/>
+  <int value="60071001" label="net_error_helper"/>
   <int value="60921996" label="ocsp_start_url_request"/>
   <int value="60946824" label="web_history_expire"/>
   <int value="61656965" label="gcm_registration"/>

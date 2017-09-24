@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "base/files/dir_reader_posix.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -67,14 +67,21 @@ std::string RemoveChar(const std::string& source, char removee) {
 
 const std::string kBlockTypes[] = {"ASSIGNMENT", "ANNOTATION", "CALL"};
 
-const base::FilePath kSafeListPath(
-    FILE_PATH_LITERAL("tools/traffic_annotation/auditor/safe_list.txt"));
+const base::FilePath kSafeListPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("auditor"))
+        .Append(FILE_PATH_LITERAL("safe_list.txt"));
 
 // The folder that includes the latest Clang built-in library. Inside this
 // folder, there should be another folder with version number, like
 // '.../lib/clang/6.0.0', which would be passed to the clang tool.
-const base::FilePath kClangLibraryPath(
-    FILE_PATH_LITERAL("third_party/llvm-build/Release+Asserts/lib/clang"));
+const base::FilePath kClangLibraryPath =
+    base::FilePath(FILE_PATH_LITERAL("third_party"))
+        .Append(FILE_PATH_LITERAL("llvm-build"))
+        .Append(FILE_PATH_LITERAL("Release+Asserts"))
+        .Append(FILE_PATH_LITERAL("lib"))
+        .Append(FILE_PATH_LITERAL("clang"));
 
 }  // namespace
 
@@ -101,26 +108,9 @@ int TrafficAnnotationAuditor::ComputeHashValue(const std::string& unique_id) {
 }
 
 base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
-  base::FilePath base_path = source_path_.Append(kClangLibraryPath);
-  std::string library_folder;
-  base::DirReaderPosix dir_reader(base_path.MaybeAsASCII().c_str());
-
-  while (dir_reader.Next()) {
-    if (strcmp(dir_reader.name(), ".") && strcmp(dir_reader.name(), "..")) {
-      library_folder = dir_reader.name();
-      break;
-    }
-  }
-
-  if (library_folder.empty()) {
-    return base::FilePath();
-  } else {
-#if defined(OS_WIN)
-    return base_path.Append(base::ASCIIToUTF16(library_folder));
-#else
-    return base_path.Append(library_folder);
-#endif
-  }
+  return base::FileEnumerator(source_path_.Append(kClangLibraryPath), false,
+                              base::FileEnumerator::DIRECTORIES)
+      .Next();
 }
 
 bool TrafficAnnotationAuditor::RunClangTool(

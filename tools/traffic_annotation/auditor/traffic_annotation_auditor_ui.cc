@@ -57,8 +57,12 @@ Example:
   traffic_annotation_auditor --build-dir=out/Debug summary-file=report.txt
 )";
 
-const base::FilePath kDownstreamUpdater(FILE_PATH_LITERAL(
-    "tools/traffic_annotation/scripts/annotations_xml_downstream_caller.py"));
+const base::FilePath kDownstreamUpdater =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("scripts"))
+        .Append(FILE_PATH_LITERAL("annotations_xml_downstream_caller.py"));
+
 }  // namespace
 
 // Calls |kDownstreamUpdater| script to update files that depend on
@@ -321,18 +325,17 @@ int main(int argc, char* argv[]) {
                         .Append(base::FilePath::kParentDirectory);
   }
 
+  // Get build directory, if it is empty issue an error.
+  if (build_path.empty()) {
+    LOG(ERROR)
+        << "You must specify a compiled build directory to run the auditor.\n";
+    return 1;
+  }
+
   TrafficAnnotationAuditor auditor(source_path, build_path, tool_path);
 
   // Extract annotations.
   if (extractor_input.empty()) {
-    // Get build directory, if it is empty issue an error.
-    if (build_path.empty()) {
-      LOG(ERROR)
-          << "You must either specify the build directory to run the clang "
-             "tool and extract annotations, or specify the input file where "
-             "extracted annotations already exist.\n";
-      return 1;
-    }
     if (!auditor.RunClangTool(path_filters, full_run)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return 1;
