@@ -36,15 +36,21 @@ const char* kRelevantFiles[] = {
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.cc",
     "tools/traffic_annotation/auditor/tests/relevant_file_name_and_content.mm"};
 
-const base::FilePath kTestsFolder(
-    FILE_PATH_LITERAL("tools/traffic_annotation/auditor/tests"));
+const base::FilePath kTestsFolder =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("auditor"))
+        .Append(FILE_PATH_LITERAL("tests"));
 
-const base::FilePath kClangToolPath(
-    FILE_PATH_LITERAL("tools/traffic_annotation/bin"));
+const base::FilePath kClangToolPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation/bin"));
 
-const base::FilePath kDownstreamUnittests(
-    FILE_PATH_LITERAL("tools/traffic_annotation/scripts/"
-                      "annotations_xml_downstream_caller.py"));
+const base::FilePath kDownstreamUnittests =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("scripts"))
+        .Append(FILE_PATH_LITERAL("annotations_xml_downstream_caller.py"));
 
 }  // namespace
 
@@ -76,7 +82,9 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
     // As build path is not available and not used in tests, the default (empty)
     // build path is passed to auditor.
     auditor_ = std::make_unique<TrafficAnnotationAuditor>(
-        source_path_, source_path_.Append(FILE_PATH_LITERAL("out/Default")),
+        source_path_,
+        source_path_.Append(FILE_PATH_LITERAL("out"))
+            .Append(FILE_PATH_LITERAL("Default")),
         clang_tool_path);
   }
 

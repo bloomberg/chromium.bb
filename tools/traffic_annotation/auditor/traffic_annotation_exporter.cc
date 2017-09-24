@@ -27,8 +27,11 @@ const char* kXmlComment =
     "\nRefer to README.md for content description and update process.\n"
     "-->\n\n";
 
-const base::FilePath kAnnotationsXmlPath(
-    FILE_PATH_LITERAL("tools/traffic_annotation/summary/annotations.xml"));
+const base::FilePath kAnnotationsXmlPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("summary"))
+        .Append(FILE_PATH_LITERAL("annotations.xml"));
 
 }  // namespace
 
@@ -113,6 +116,8 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
   if (report_items_.empty() && !LoadAnnotationsXML())
     return false;
 
+  std::set<int> current_platform_hashcodes;
+
   // Iterate current annotations and add/update.
   for (AnnotationInstance annotation : annotations) {
     // Source tag is not used in computing the hashcode, as we don't need
@@ -135,6 +140,18 @@ bool TrafficAnnotationExporter::UpdateAnnotations(
       new_item.content_hash_code = content_hash_code;
       new_item.os_list.push_back(platform);
       report_items_[annotation.proto.unique_id()] = new_item;
+      modified_ = true;
+    }
+    current_platform_hashcodes.insert(annotation.unique_id_hash_code);
+  }
+
+  // If a none-reserved annotation is removed from current platform, update it.
+  for (auto& item : report_items_) {
+    if (base::ContainsValue(item.second.os_list, platform) &&
+        item.second.content_hash_code != -1 &&
+        !base::ContainsKey(current_platform_hashcodes,
+                           item.second.unique_id_hash_code)) {
+      base::Erase(item.second.os_list, platform);
       modified_ = true;
     }
   }
