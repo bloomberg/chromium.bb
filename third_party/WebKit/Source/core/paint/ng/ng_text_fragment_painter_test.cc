@@ -69,8 +69,10 @@ TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
       ToNGPhysicalTextFragment(*line_box_fragment.Children()[0].Get());
 
   EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 2,
+      RootPaintController().GetDisplayItemList(), 4,
       TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
+      TestDisplayItem(root_fragment, DisplayItem::kBoxDecorationBackground),
+      TestDisplayItem(box_fragment, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(text_fragment, kForegroundType));
 }
 
