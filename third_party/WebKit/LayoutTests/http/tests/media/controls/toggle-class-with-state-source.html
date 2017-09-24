@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<title>Test that player source state is reflected in CSS classes.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../../media-resources/media-controls.js"></script>
+<script src="../../../media-resources/media-file.js"></script>
+<video controls width=400 preload=metadata></video>
+<script>
+async_test(t => {
+  const video = document.querySelector('video');
+  let was_paused = false;
+
+  checkControlsClassName(video, "phase-pre-ready state-no-source");
+
+  video.onstalled = t.step_func(() => {
+    checkControlsClassName(video, "state-loading-metadata");
+  });
+
+  video.onloadeddata = t.step_func(() => {
+    const currentClass = window.internals.shadowRoot(video).firstChild.className;
+    assert_true(currentClass == "phase-ready state-buffering"
+        || currentClass == "phase-ready state-playing");
+  });
+
+  video.onplaying = t.step_func(() => {
+    if (was_paused) {
+      t.done();
+    } else {
+      video.pause();
+      was_paused = true;
+    }
+  });
+
+  video.onpause = t.step_func(() => {
+    checkControlsClassName(video, "phase-ready state-stopped");
+    video.play();
+  });
+
+  // Use a .webm to ensure metadata is near the beginning of the file.
+  const mediaFile = "resources/media-source/webm/test.webm";
+  video.src = "http://127.0.0.1:8000/media/video-throttled-load.cgi?" +
+      "nph=1&name=" + mediaFile + "&throttle=40&type=video/webm";
+  video.play();
+});
+</script>
+</html>

@@ -153,6 +153,33 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Notify us that our controls enclosure has changed size.
   void NotifyElementSizeChanged(DOMRectReadOnly* new_size);
 
+  // Update the CSS class when we think the state has updated.
+  void UpdateCSSClassFromState();
+
+  // Track the state of the controls.
+  enum ControlsState {
+    // There is no video source.
+    kNoSource,
+
+    // Metadata has not been loaded.
+    kNotLoaded,
+
+    // Metadata is being loaded.
+    kLoadingMetadata,
+
+    // Metadata is loaded and the media is ready to play. This can be when the
+    // media is paused, when it has ended or before the media has started
+    // playing.
+    kStopped,
+
+    // The media is playing.
+    kPlaying,
+
+    // Playback has stopped to buffer.
+    kBuffering,
+  };
+  ControlsState State() const;
+
   explicit MediaControlsImpl(HTMLMediaElement&);
 
   void InitializeControls();
@@ -221,6 +248,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnExitedFullscreen();
   void OnPanelKeypress();
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
+  void OnWaiting();
 
   // Media control elements.
   Member<MediaControlOverlayEnclosureElement> overlay_enclosure_;
