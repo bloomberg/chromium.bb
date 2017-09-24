@@ -2053,7 +2053,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
       RDCOST(x->rdmult, 0, tmp_dist) + args->this_rd < args->best_rd) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l);
+                   a, l, 1);
   } else {
     args->exit_early = 1;
     return;
@@ -3355,7 +3355,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
             av1_optimize_b(cm, x, 0, 0, 0, block, BLOCK_8X8, tx_size,
-                           tempa + idx, templ + idy);
+                           tempa + idx, templ + idy, 1);
 #endif  // DISABLE_TRELLISQ_SEARCH
             ratey += av1_cost_coeffs(cpi, x, 0, 0, 0, block, tx_size,
                                      scan_order, tempa + idx, templ + idy,
@@ -3532,7 +3532,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                         BLOCK_8X8, tx_size, coeff_ctx, xform_quant);
 
         av1_optimize_b(cm, x, 0, 0, 0, block, BLOCK_8X8, tx_size, tempa + idx,
-                       templ + idy);
+                       templ + idy, 1);
 #endif  // DISABLE_TRELLISQ_SEARCH
         ratey += av1_cost_coeffs(cpi, x, 0, 0, 0, block, tx_size, scan_order,
                                  tempa + idx, templ + idy,
@@ -4540,7 +4540,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #endif
       RDCOST(x->rdmult, 0, tmp_dist) < rd_stats->ref_rdcost) {
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l);
+                   a, l, 1);
   } else {
     rd_stats->rate += rd_stats->zero_rate;
     rd_stats->dist += tmp_sse >> shift;

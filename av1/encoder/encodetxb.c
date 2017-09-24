@@ -881,7 +881,10 @@ static int nb_ref_offset[NB_REF_OFFSET_NUM][2] = {
 // TODO(angiebird): add static to this function once it's called
 int try_level_down(int coeff_idx, const TxbCache *txb_cache,
                    const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info,
-                   int (*cost_map)[COST_MAP_SIZE]) {
+                   int (*cost_map)[COST_MAP_SIZE], int fast_mode) {
+#if !FAST_OPTIMIZE_TXB
+  (void)fast_mode;
+#endif
   if (cost_map) {
     for (int i = 0; i < COST_MAP_SIZE; ++i) av1_zero(cost_map[i]);
   }
@@ -906,8 +909,15 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   const int col = coeff_idx - (row << txb_info->bwl);
   if (check_nz_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2] = alnb_ref_offset;
-    const int ref_num = ALNB_REF_OFFSET_NUM;
+    int(*ref_offset)[2];
+    int ref_num;
+    if (fast_mode) {
+      ref_offset = alnb_ref_offset;
+      ref_num = ALNB_REF_OFFSET_NUM;
+    } else {
+      ref_offset = sig_ref_offset;
+      ref_num = SIG_REF_OFFSET_NUM;
+    }
 #else
     int(*ref_offset)[2] = sig_ref_offset;
     const int ref_num = SIG_REF_OFFSET_NUM;
@@ -935,11 +945,18 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
 
   if (check_base_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2] = nb_ref_offset;
-    const int ref_num = NB_REF_OFFSET_NUM;
+    int(*ref_offset)[2];
+    int ref_num;
+    if (fast_mode) {
+      ref_offset = nb_ref_offset;
+      ref_num = NB_REF_OFFSET_NUM;
+    } else {
+      ref_offset = base_ref_offset;
+      ref_num = BASE_CONTEXT_POSITION_NUM;
+    }
 #else
     int(*ref_offset)[2] = base_ref_offset;
-    const int ref_num = BASE_CONTEXT_POSITION_NUM;
+    int ref_num = BASE_CONTEXT_POSITION_NUM;
 #endif
     for (int i = 0; i < ref_num; ++i) {
       const int nb_row = row - ref_offset[i][0];
@@ -964,8 +981,15 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
 
   if (check_br_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2] = nb_ref_offset;
-    const int ref_num = NB_REF_OFFSET_NUM;
+    int(*ref_offset)[2];
+    int ref_num;
+    if (fast_mode) {
+      ref_offset = nb_ref_offset;
+      ref_num = NB_REF_OFFSET_NUM;
+    } else {
+      ref_offset = br_ref_offset;
+      ref_num = BR_CONTEXT_POSITION_NUM;
+    }
 #else
     int(*ref_offset)[2] = br_ref_offset;
     const int ref_num = BR_CONTEXT_POSITION_NUM;
@@ -1030,7 +1054,8 @@ static INLINE void set_eob(TxbInfo *txb_info, int eob) {
 
 // TODO(angiebird): add static to this function once it's called
 int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
-                   const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info) {
+                   const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info,
+                   int fast_mode) {
   assert(txb_info->eob > 0);
   const tran_low_t qc = txb_info->qcoeff[coeff_idx];
   const int abs_qc = abs(qc);
@@ -1063,7 +1088,8 @@ int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
 
   const int org_eob = txb_info->eob;
   set_eob(txb_info, *new_eob);
-  cost_diff += try_level_down(coeff_idx, txb_cache, txb_costs, txb_info, NULL);
+  cost_diff += try_level_down(coeff_idx, txb_cache, txb_costs, txb_info, NULL,
+                              fast_mode);
   set_eob(txb_info, org_eob);
 
   if (*new_eob > 0) {
@@ -1355,7 +1381,7 @@ void test_try_change_eob(TxbInfo *txb_info, TxbProbs *txb_probs,
     if (abs(last_coeff) == 1) {
       int new_eob;
       int cost_diff =
-          try_change_eob(&new_eob, last_ci, txb_cache, txb_probs, txb_info);
+          try_change_eob(&new_eob, last_ci, txb_cache, txb_probs, txb_info, 0);
       int org_eob = txb_info->eob;
       int cost = get_txb_cost(txb_info, txb_probs);
 
@@ -1394,7 +1420,7 @@ typedef struct LevelDownStats {
 void try_level_down_facade(LevelDownStats *stats, int scan_idx,
                            const TxbCache *txb_cache,
                            const LV_MAP_COEFF_COST *txb_costs,
-                           TxbInfo *txb_info) {
+                           TxbInfo *txb_info, int fast_mode) {
   const int16_t *scan = txb_info->scan_order->scan;
   const int coeff_idx = scan[scan_idx];
   const tran_low_t qc = txb_info->qcoeff[coeff_idx];
@@ -1420,10 +1446,10 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
   stats->new_eob = txb_info->eob;
   if (scan_idx == txb_info->eob - 1 && abs(qc) == 1) {
     stats->cost_diff = try_change_eob(&stats->new_eob, coeff_idx, txb_cache,
-                                      txb_costs, txb_info);
+                                      txb_costs, txb_info, fast_mode);
   } else {
-    stats->cost_diff =
-        try_level_down(coeff_idx, txb_cache, txb_costs, txb_info, NULL);
+    stats->cost_diff = try_level_down(coeff_idx, txb_cache, txb_costs, txb_info,
+                                      NULL, fast_mode);
 #if TEST_OPTIMIZE_TXB
     test_level_down(coeff_idx, txb_cache, txb_probs, txb_info);
 #endif
@@ -1434,7 +1460,7 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
-                        TxbCache *txb_cache, int dry_run) {
+                        TxbCache *txb_cache, int dry_run, int fast_mode) {
   int update = 0;
   if (txb_info->eob == 0) return update;
   int cost_diff = 0;
@@ -1472,7 +1498,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
     tran_low_t qc = txb_info->qcoeff[coeff_idx];
     if (abs(qc) == 1) {
       LevelDownStats stats;
-      try_level_down_facade(&stats, si, txb_cache, txb_costs, txb_info);
+      try_level_down_facade(&stats, si, txb_cache, txb_costs, txb_info,
+                            fast_mode);
       if (stats.update) {
         update = 1;
         cost_diff += stats.cost_diff;
@@ -1494,7 +1521,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
       continue;
     }
     LevelDownStats stats;
-    try_level_down_facade(&stats, si, txb_cache, txb_costs, txb_info);
+    try_level_down_facade(&stats, si, txb_cache, txb_costs, txb_info,
+                          fast_mode);
     if (stats.update) {
 #if TEST_OPTIMIZE_TXB
 // printf("si %d low_qc %d cost_diff %d dist_diff %ld rd_diff %ld eob %d new_eob
@@ -1540,7 +1568,7 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 
 int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
-                     TXB_CTX *txb_ctx) {
+                     TXB_CTX *txb_ctx, int fast_mode) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
@@ -1587,7 +1615,8 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
 
-  const int update = optimize_txb(&txb_info, &txb_costs, &txb_cache, 0);
+  const int update =
+      optimize_txb(&txb_info, &txb_costs, &txb_cache, 0, fast_mode);
   if (update) p->eobs[block] = txb_info.eob;
   return txb_info.eob;
 }
@@ -2053,7 +2082,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l);
+                   a, l, 1);
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
@@ -2088,7 +2117,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l);
+                   a, l, 1);
 
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                        x->plane[plane].eobs[block]);
