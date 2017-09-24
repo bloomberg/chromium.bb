@@ -40,9 +40,6 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPhysicalBoxFragment& box)
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  // TODO(layout-dev): This results in double painting of decorations (once for
-  // box itself and once for the anonymous fragment). We should either get rid
-  // of the anonymous fragment or unset the style for it.
   if (paint_info.phase == kPaintPhaseForeground)
     PaintBoxDecorationBackground(paint_info, paint_offset);
   PaintChildren(box_fragment_.Children(), paint_info, paint_offset);
