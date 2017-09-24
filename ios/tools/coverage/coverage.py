@@ -14,9 +14,11 @@
         suggested to start with 'url_unittests'.
 
   Example usages:
+  ios/tools/coverage/coverage.py url_unittests -t url/
+  # Generate code coverage report for url_unittests for directory url/.
+
   ios/tools/coverage/coverage.py url_unittests -t url/ -i url/third_party
-  # Generate code coverage report for url_unittests for directory url/ and only
-  # include files under url/third_party.
+  # Only include files under url/third_party.
 
   ios/tools/coverage/coverage.py url_unittests -t url/ -i url/third_party
   -r coverage.profdata
@@ -684,7 +686,7 @@ def _ParseCommandArguments():
                                'report, the path needs to be relative to the '
                                'root of the checkout.')
 
-  arg_parser.add_argument('-i', '--include', action='append', required=True,
+  arg_parser.add_argument('-i', '--include', action='append',
                           help='Directories or build targets to get code '
                                'coverage for. For directories, paths need to '
                                'be relative to the root of the checkoutand and '
@@ -747,7 +749,7 @@ def Main():
   _AssertPathsExist([args.top_level_dir])
 
   include_paths, raw_include_targets = _SeparatePathsAndBuildTargets(
-      args.include)
+      args.include or [])
   exclude_paths, raw_exclude_targets = _SeparatePathsAndBuildTargets(
       args.exclude or [])
   include_targets = _FormatBuildTargetPaths(raw_include_targets)
@@ -762,6 +764,8 @@ def Main():
   if exclude_targets:
     _AssertBuildTargetsExist(exclude_targets)
 
+  if not include_paths:
+    include_paths.append(args.top_level_dir)
   include_sources = include_paths + _GetSourcesOfBuildTargets(include_targets)
   exclude_sources = exclude_paths + _GetSourcesOfBuildTargets(exclude_targets)
 
