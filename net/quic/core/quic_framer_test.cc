@@ -1134,13 +1134,13 @@ TEST_P(QuicFramerTest, NewPaddingFrame) {
     0x00, 0x00,
     // frame type (stream frame with fin)
     0xFF,
-    // data length
-    0x00, 0x0c,
     // stream id
     0x01, 0x02, 0x03, 0x04,
     // offset
     0xBA, 0x98, 0xFE, 0xDC,
     0x32, 0x10, 0x76, 0x54,
+    // data length
+    0x00, 0x0c,
     // data
     'h',  'e',  'l',  'l',
     'o',  ' ',  'w',  'o',
@@ -1256,9 +1256,6 @@ TEST_P(QuicFramerTest, StreamFrame) {
       // frame type (stream frame with fin)
       {"",
        {0xFF}},
-      // data length
-      {"Unable to read data length.",
-       {0x00, 0x0c}},
       // stream id
       {"Unable to read stream_id.",
        {0x01, 0x02, 0x03, 0x04}},
@@ -1266,11 +1263,14 @@ TEST_P(QuicFramerTest, StreamFrame) {
       {"Unable to read offset.",
        {0xBA, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
-      // data
       {"Unable to read frame data.",
-       {'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!'}},
+       {
+         // data length
+         0x00, 0x0c,
+         // data
+         'h',  'e',  'l',  'l',
+         'o',  ' ',  'w',  'o',
+         'r',  'l',  'd',  '!'}},
   };
 
   PacketFragments& fragments =
@@ -1466,9 +1466,6 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
       // frame type (stream frame with fin)
       {"",
        {0xF7}},
-      // data length
-      {"Unable to read data length.",
-       {0x00, 0x0c}},
       // stream id
       {"Unable to read stream_id.",
        {0x02, 0x03, 0x04}},
@@ -1476,11 +1473,14 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
       {"Unable to read offset.",
        {0xBA, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
-      // data
       {"Unable to read frame data.",
-       {'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!'}},
+       {
+         // data length
+         0x00, 0x0c,
+         // data
+         'h',  'e',  'l',  'l',
+         'o',  ' ',  'w',  'o',
+         'r',  'l',  'd',  '!'}},
   };
 
   PacketFragments& fragments =
@@ -1585,9 +1585,6 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
       // frame type (stream frame with fin)
       {"",
        {0xEF}},
-      // data length
-      {"Unable to read data length.",
-       {0x00, 0x0c}},
       // stream id
       {"Unable to read stream_id.",
        {0x03, 0x04}},
@@ -1595,11 +1592,14 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
       {"Unable to read offset.",
        {0xBA, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
-      // data
       {"Unable to read frame data.",
-       {'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!'}},
+       {
+         // data length
+         0x00, 0x0c,
+         // data
+         'h',  'e',  'l',  'l',
+         'o',  ' ',  'w',  'o',
+         'r',  'l',  'd',  '!'}},
   };
 
   PacketFragments& fragments =
@@ -1704,9 +1704,6 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
       // frame type (stream frame with fin)
       {"",
        {0xE7}},
-      // data length
-      {"Unable to read data length.",
-       {0x00, 0x0c}},
       // stream id
       {"Unable to read stream_id.",
        {0x04}},
@@ -1714,11 +1711,14 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
       {"Unable to read offset.",
        {0xBA, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
-      // data
       {"Unable to read frame data.",
-       {'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!'}},
+       {
+         // data length
+         0x00, 0x0c,
+         // data
+         'h',  'e',  'l',  'l',
+         'o',  ' ',  'w',  'o',
+         'r',  'l',  'd',  '!'}},
   };
 
   PacketFragments& fragments =
@@ -1832,9 +1832,6 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
       // frame type (stream frame with fin)
       {"",
        {0xF7}},
-      // data length
-      {"Unable to read data length.",
-       {0x00, 0x0c}},
       // stream id
       {"Unable to read stream_id.",
        {0x02, 0x03, 0x04}},
@@ -1842,11 +1839,14 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
       {"Unable to read offset.",
        {0xBA, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
-      // data
       {"Unable to read frame data.",
-       {'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!'}},
+       {
+         // data length
+         0x00, 0x0c,
+         // data
+         'h',  'e',  'l',  'l',
+         'o',  ' ',  'w',  'o',
+         'r',  'l',  'd',  '!'}},
   };
 
   PacketFragments& fragments =
@@ -3475,13 +3475,13 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
     0x00, 0x00,
     // frame type (stream frame with fin)
     0xFF,
-    // data length
-    0x00, 0x0c,
     // stream id
     0x01, 0x02, 0x03, 0x04,
     // offset
     0xBA, 0x98, 0xFE, 0xDC,
     0x32, 0x10, 0x76, 0x54,
+    // data length
+    0x00, 0x0c,
     // data
     'h',  'e',  'l',  'l',
     'o',  ' ',  'w',  'o',
@@ -5375,13 +5375,13 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
 
     // frame type (stream frame with fin)
     0xFF,
-    // data length
-    0x00, 0x0c,
     // stream id
     0x01, 0x02, 0x03, 0x04,
     // offset
     0xBA, 0x98, 0xFE, 0xDC,
     0x32, 0x10, 0x76, 0x54,
+    // data length
+    0x00, 0x0c,
     // data
     'h',  'e',  'l',  'l',
     'o',  ' ',  'w',  'o',
