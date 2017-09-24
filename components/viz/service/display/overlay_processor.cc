@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_processor.h"
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -119,6 +120,7 @@ void OverlayProcessor::ProcessForOverlays(
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
+  TRACE_EVENT0("viz", "OverlayProcessor::ProcessForOverlays");
 #if defined(OS_ANDROID)
   // Be sure to send out notifications, regardless of whether we get to
   // processing for overlays or not.  If we don't, then we should notify that
@@ -161,8 +163,10 @@ void OverlayProcessor::ProcessForOverlays(
       continue;
 
     UpdateDamageRect(candidates, previous_frame_underlay_rect, damage_rect);
-    return;
+    break;
   }
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
+                 "Scheduled overlay planes", candidates->size());
 }
 
 // Subtract on-top opaque overlays from the damage rect, unless the overlays use
