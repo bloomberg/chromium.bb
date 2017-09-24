@@ -301,8 +301,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-overflow.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-004.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-bfc-001l.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-bfc-001r.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-001l.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-001r.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-top-below-inline-002l.xht [ Failure ]
@@ -314,8 +312,8 @@ crbug.com/723135 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-zero-heig
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats-clear
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-008.xht [ Failure ]
-crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-008.xht [ Failure ]
+crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-012.xht [ Failure ]
 crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-replaced-width-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
@@ -357,9 +355,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-
 
 # Block: percent height in continuations.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-percents-001.xht [ Failure ]
-
-# Block: centering by auto-margins.
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-width-006.xht [ Failure ]
 
 # Block: percent max-height.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-percentage-002.xht [ Failure ]
@@ -405,16 +400,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-in
 crbug.com/714962 virtual/layout_ng/fast/block/float/overhanging-float-crashes-when-sibling-becomes-formatting-context.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning
-# tests absolute-replaced-width-036->071 would pass if reference page rendered correctly. It is an inline bug, not oof bug
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-036.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-037.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-043.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-050.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-051.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-057.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-064.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-065.xht [ Failure ]
-crbug.com/740993 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-replaced-width-071.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-007.xht [ Failure ]
 crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-011.xht [ Failure ]
 crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-012.xht [ Failure ]
@@ -470,7 +455,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/top-113.xht
 ### virtual/layout_ng/fast/block/basic
 crbug.com/635619 virtual/layout_ng/fast/block/basic/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/014.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/016.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/018.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/fieldset-stretch-to-legend.html [ Failure Crash ]
@@ -494,8 +478,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/027.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/028.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/031.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/032.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/034.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/035.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float-2.html [ Failure ]
@@ -550,7 +532,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hit
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash-2.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/shrink-to-fit-width.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.html [ Crash Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
