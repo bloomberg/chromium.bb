@@ -109,9 +109,9 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   base::AutoReset<InputEventType> auto_reset_response_pending_input_event(
       &response_pending_input_event_, causal_input_event);
 
-  if ((start_orientation_ == TouchHandleOrientation::LEFT &&
-       end_orientation_ == TouchHandleOrientation::RIGHT) ||
-      (start_orientation_ == TouchHandleOrientation::RIGHT &&
+  if ((start_orientation_ == TouchHandleOrientation::LEFT ||
+       start_orientation_ == TouchHandleOrientation::RIGHT) &&
+      (end_orientation_ == TouchHandleOrientation::RIGHT ||
        end_orientation_ == TouchHandleOrientation::LEFT)) {
     OnSelectionChanged();
     return;
