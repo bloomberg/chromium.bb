@@ -339,7 +339,6 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   } else {
     load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
   }
-  FireRefreshTokensLoaded();
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
   // map.  The entry could be missing if there is a corruption in the token DB
@@ -363,6 +362,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   }
 
   loading_primary_account_id_.clear();
+  FireRefreshTokensLoaded();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
