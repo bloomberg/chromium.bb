@@ -6,6 +6,7 @@
 #define BASE_THREADING_THREAD_RESTRICTIONS_H_
 
 #include "base/base_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -108,6 +109,168 @@ class StackSamplingProfiler;
 class Thread;
 class ThreadTestHelper;
 
+#if DCHECK_IS_ON()
+#define INLINE_IF_DCHECK_IS_OFF BASE_EXPORT
+#define EMPTY_BODY_IF_DCHECK_IS_OFF
+#else
+#define INLINE_IF_DCHECK_IS_OFF inline
+#define EMPTY_BODY_IF_DCHECK_IS_OFF \
+  {}
+#endif
+
+// A "blocking call" refers to any call that causes the calling thread to wait
+// off-CPU. It includes but is not limited to calls that wait on synchronous
+// file I/O operations: read or write a file from disk, interact with a pipe or
+// a socket, rename or delete a file, enumerate files in a directory, etc.
+// Acquiring a low contention lock is not considered a blocking call.
+
+// Asserts that blocking calls are allowed in the current scope.
+INLINE_IF_DCHECK_IS_OFF void AssertBlockingAllowed()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+// Disallows blocking on the current thread.
+INLINE_IF_DCHECK_IS_OFF void DisallowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+// Disallows blocking calls within its scope.
+class BASE_EXPORT ScopedDisallowBlocking {
+ public:
+  ScopedDisallowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedDisallowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+ private:
+#if DCHECK_IS_ON()
+  const bool was_disallowed_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisallowBlocking);
+};
+
+// ScopedAllowBlocking(ForTesting) allow blocking calls within a scope where
+// they are normally disallowed.
+//
+// Avoid using this. Prefer making blocking calls from tasks posted to
+// base::TaskScheduler with base::MayBlock().
+class BASE_EXPORT ScopedAllowBlocking {
+ private:
+  // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
+  // in unit tests to avoid the friend requirement.
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
+  friend class ScopedAllowBlockingForTesting;
+
+  ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+#if DCHECK_IS_ON()
+  const bool was_disallowed_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowBlocking);
+};
+
+class ScopedAllowBlockingForTesting {
+ public:
+  ScopedAllowBlockingForTesting() {}
+  ~ScopedAllowBlockingForTesting() {}
+
+ private:
+#if DCHECK_IS_ON()
+  ScopedAllowBlocking scoped_allow_blocking_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowBlockingForTesting);
+};
+
+// "Waiting on a //base sync primitive" refers to calling
+// base::WaitableEvent::*Wait* or base::ConditionVariable::*Wait*.
+
+// Disallows waiting on a //base sync primitive on the current thread.
+INLINE_IF_DCHECK_IS_OFF void DisallowBaseSyncPrimitives()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+// ScopedAllowBaseSyncPrimitives(ForTesting)(OutsideBlockingScope) allow waiting
+// on a //base sync primitive within a scope where this is normally disallowed.
+//
+// Avoid using this. Instead of waiting on a WaitableEvent or a
+// ConditionVariable, put the work that should happen after the wait in a
+// callback and post that callback from where the WaitableEvent or
+// ConditionVariable would have been signaled. If something needs to be
+// scheduled after many tasks have executed, use base::BarrierClosure.
+
+// This can only be used in a scope where blocking is allowed.
+class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
+ private:
+  // This can only be instantiated by friends. Use
+  // ScopedAllowBaseSyncPrimitivesForTesting in unit tests to avoid the friend
+  // requirement.
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
+                           ScopedAllowBaseSyncPrimitives);
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
+                           ScopedAllowBaseSyncPrimitivesResetsState);
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
+                           ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
+
+  ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+#if DCHECK_IS_ON()
+  const bool was_disallowed_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitives);
+};
+
+// This can be used in a scope where blocking is disallowed.
+class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
+ private:
+  // This can only be instantiated by friends. Use
+  // ScopedAllowBaseSyncPrimitivesForTesting in unit tests to avoid the friend
+  // requirement.
+  FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
+                           ScopedAllowBaseSyncPrimitivesOutsideBlockingScope);
+  FRIEND_TEST_ALL_PREFIXES(
+      ThreadRestrictionsTest,
+      ScopedAllowBaseSyncPrimitivesOutsideBlockingScopeResetsState);
+
+  ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
+      EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
+      EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+#if DCHECK_IS_ON()
+  const bool was_disallowed_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitivesOutsideBlockingScope);
+};
+
+// This can be used in tests without being a friend of
+// ScopedAllowBaseSyncPrimitives(OutsideBlockingScope).
+class BASE_EXPORT ScopedAllowBaseSyncPrimitivesForTesting {
+ public:
+  ScopedAllowBaseSyncPrimitivesForTesting() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedAllowBaseSyncPrimitivesForTesting() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+ private:
+#if DCHECK_IS_ON()
+  const bool was_disallowed_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitivesForTesting);
+};
+
+namespace internal {
+
+// Asserts that waiting on a //base sync primitive is allowed in the current
+// scope.
+INLINE_IF_DCHECK_IS_OFF void AssertBaseSyncPrimitivesAllowed()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+// Resets all thread restrictions on the current thread.
+INLINE_IF_DCHECK_IS_OFF void ResetThreadRestrictionsForTesting()
+    EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+}  // namespace internal
+
 // Certain behavior is disallowed on certain threads.  ThreadRestrictions helps
 // enforce these rules.  Examples of such rules:
 //
@@ -138,6 +301,8 @@ class BASE_EXPORT ThreadRestrictions {
  public:
   // Constructing a ScopedAllowIO temporarily allows IO for the current
   // thread.  Doing this is almost certainly always incorrect.
+  //
+  // DEPRECATED. Use ScopedAllowBlocking(ForTesting).
   class BASE_EXPORT ScopedAllowIO {
    public:
     ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
@@ -153,11 +318,15 @@ class BASE_EXPORT ThreadRestrictions {
   // Set whether the current thread to make IO calls.
   // Threads start out in the *allowed* state.
   // Returns the previous value.
+  //
+  // DEPRECATED. Use ScopedAllowBlocking(ForTesting) or ScopedDisallowBlocking.
   static bool SetIOAllowed(bool allowed);
 
   // Check whether the current thread is allowed to make IO calls,
   // and DCHECK if not.  See the block comment above the class for
   // a discussion of where to add these checks.
+  //
+  // DEPRECATED. Use AssertBlockingAllowed.
   static void AssertIOAllowed();
 
   // Set whether the current thread can use singletons.  Returns the previous
@@ -170,9 +339,13 @@ class BASE_EXPORT ThreadRestrictions {
 
   // Disable waiting on the current thread. Threads start out in the *allowed*
   // state. Returns the previous value.
+  //
+  // DEPRECATED. Use DisallowBaseSyncPrimitives.
   static void DisallowWaiting();
 
   // Check whether the current thread is allowed to wait, and DCHECK if not.
+  //
+  // DEPRECATED. Use AssertBaseSyncPrimitivesAllowed.
   static void AssertWaitAllowed();
 #else
   // Inline the empty definitions of these functions so that they can be
@@ -247,6 +420,7 @@ class BASE_EXPORT ThreadRestrictions {
 // END USAGE THAT NEEDS TO BE FIXED.
 
 #if DCHECK_IS_ON()
+  // DEPRECATED. Use ScopedAllowBaseSyncPrimitives.
   static bool SetWaitAllowed(bool allowed);
 #else
   static bool SetWaitAllowed(bool allowed) { return true; }
@@ -256,6 +430,8 @@ class BASE_EXPORT ThreadRestrictions {
   // thread.  Doing this is almost always incorrect, which is why we limit who
   // can use this through friend. If you find yourself needing to use this, find
   // another way. Talk to jam or brettw.
+  //
+  // DEPRECATED. Use ScopedAllowBaseSyncPrimitives.
   class BASE_EXPORT ScopedAllowWait {
    public:
     ScopedAllowWait() { previous_value_ = SetWaitAllowed(true); }
