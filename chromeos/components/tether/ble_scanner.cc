@@ -56,7 +56,6 @@ BleScanner::BleScanner(
       adapter_(adapter),
       eid_generator_(std::move(eid_generator)),
       local_device_data_provider_(local_device_data_provider),
-      discovery_session_(nullptr),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
 }
@@ -117,6 +116,8 @@ bool BleScanner::ShouldDiscoverySessionBeActive() {
 }
 
 bool BleScanner::IsDiscoverySessionActive() {
+  ResetDiscoverySessionIfNotActive();
+
   if (discovery_session_) {
     // Once the session is stopped, the pointer is cleared.
     DCHECK(discovery_session_->IsActive());
@@ -168,6 +169,26 @@ void BleScanner::NotifyDiscoverySessionStateChanged(
     bool discovery_session_active) {
   for (auto& observer : observer_list_)
     observer.OnDiscoverySessionStateChanged(discovery_session_active);
+}
+
+void BleScanner::ResetDiscoverySessionIfNotActive() {
+  if (!discovery_session_ || discovery_session_->IsActive())
+    return;
+
+  PA_LOG(ERROR) << "BluetoothDiscoverySession became out of sync. Session is "
+                << "no longer active, but it was never stopped successfully. "
+                << "Resetting session.";
+
+  // |discovery_session_| should be deleted whenever the session is no longer
+  // active. However, due to Bluetooth bugs, this does not always occur
+  // properly. When we detect that this situation has occurred, delete the
+  // pointer and reset discovery state.
+  discovery_session_.reset();
+  is_initializing_discovery_session_ = false;
+  is_stopping_discovery_session_ = false;
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  NotifyDiscoverySessionStateChanged(false /* discovery_session_active */);
 }
 
 void BleScanner::UpdateDiscoveryStatus() {
