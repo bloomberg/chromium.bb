@@ -123,6 +123,7 @@ static const uint16_t kTypePTR = 12;
 static const uint16_t kTypeTXT = 16;
 static const uint16_t kTypeAAAA = 28;
 static const uint16_t kTypeSRV = 33;
+static const uint16_t kTypeOPT = 41;
 static const uint16_t kTypeNSEC = 47;
 
 // DNS reply codes (RCODEs).

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_protocol.h"
@@ -218,6 +219,45 @@ class NET_EXPORT_PRIVATE NsecRecordRdata : public RecordRdata {
   DISALLOW_COPY_AND_ASSIGN(NsecRecordRdata);
 };
 
+// OPT record format (https://tools.ietf.org/html/rfc6891):
+class NET_EXPORT_PRIVATE OptRecordRdata : public RecordRdata {
+ public:
+  class NET_EXPORT_PRIVATE Opt {
+   public:
+    static const size_t kHeaderSize = 4;  // sizeof(code) + sizeof(size)
+
+    Opt(uint16_t code, base::StringPiece data);
+
+    bool operator==(const Opt& other) const;
+
+    uint16_t code() const { return code_; }
+    base::StringPiece data() const { return data_; }
+
+   private:
+    uint16_t code_;
+    std::string data_;
+  };
+
+  static const uint16_t kType = dns_protocol::kTypeOPT;
+
+  OptRecordRdata();
+  ~OptRecordRdata() override;
+  static std::unique_ptr<OptRecordRdata> Create(const base::StringPiece& data,
+                                                const DnsRecordParser& parser);
+  bool IsEqual(const RecordRdata* other) const override;
+  uint16_t Type() const override;
+
+  const std::vector<char>& buf() const { return buf_; }
+
+  const std::vector<Opt>& opts() const { return opts_; }
+  void AddOpt(const Opt& opt);
+
+ private:
+  std::vector<Opt> opts_;
+  std::vector<char> buf_;
+
+  DISALLOW_COPY_AND_ASSIGN(OptRecordRdata);
+};
 
 }  // namespace net
 

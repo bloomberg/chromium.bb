@@ -60,6 +60,9 @@ std::unique_ptr<const RecordParsed> RecordParsed::CreateFrom(
     case NsecRecordRdata::kType:
       rdata = NsecRecordRdata::Create(record.rdata, *parser);
       break;
+    case OptRecordRdata::kType:
+      rdata = OptRecordRdata::Create(record.rdata, *parser);
+      break;
     default:
       DVLOG(1) << "Unknown RData type for received record: " << record.type;
       return std::unique_ptr<const RecordParsed>();
