@@ -222,6 +222,32 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
   EXPECT_EQ(GetParam().path(), path);
 }
 
+TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
+  auto list = base::MakeUnique<base::ListValue>();
+  list->AppendString("example.com");
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, std::move(list));
+  auto manager = base::MakeUnique<URLBlacklistManager>(
+      &pref_service_, base::ThreadTaskRunnerHandle::Get(),
+      base::ThreadTaskRunnerHandle::Get(),
+      URLBlacklistManager::OverrideBlacklistCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(URLBlacklist::URL_IN_BLACKLIST,
+            manager->GetURLBlacklistState(GURL("http://example.com")));
+}
+
+TEST_F(URLBlacklistManagerTest, LoadWhitelistOnCreate) {
+  auto list = base::MakeUnique<base::ListValue>();
+  list->AppendString("example.com");
+  pref_service_.SetManagedPref(policy_prefs::kUrlWhitelist, std::move(list));
+  auto manager = base::MakeUnique<URLBlacklistManager>(
+      &pref_service_, base::ThreadTaskRunnerHandle::Get(),
+      base::ThreadTaskRunnerHandle::Get(),
+      URLBlacklistManager::OverrideBlacklistCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(URLBlacklist::URL_IN_WHITELIST,
+            manager->GetURLBlacklistState(GURL("http://example.com")));
+}
+
 TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
   auto blacklist = base::MakeUnique<base::ListValue>();
   blacklist->AppendString("*.google.com");
