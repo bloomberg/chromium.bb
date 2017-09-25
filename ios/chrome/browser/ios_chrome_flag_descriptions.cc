@@ -74,6 +74,12 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
+const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
+const char kTabSwitcherPresentsBVCDescription[] =
+    "When enabled, the tab switcher will present the BVC, so that when the "
+    "BVC is visible, the tab switcher will remain in the VC hierarchy "
+    "underneath it.";
+
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
