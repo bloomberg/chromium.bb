@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/split_static_library.gni")  # When someone uses that target_type
-import("//testing/test.gni")  # When someone uses the test target_type
 
 declare_args() {
   # If true, use a jumbo build (files compiled together) to speed up
@@ -199,8 +198,8 @@ template("jumbo_source_set") {
 }
 
 set_defaults("jumbo_source_set") {
-  # This sets the default list of configs when the source_set target
-  # is used. The default_compiler_configs comes from BUILDCONFIG.gn and
+  # This sets the default list of configs when the content_source_set target
+  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs
 }
@@ -214,8 +213,8 @@ template("jumbo_static_library") {
 }
 
 set_defaults("jumbo_static_library") {
-  # This sets the default list of configs when the static_library target
-  # is used. The default_compiler_configs comes from BUILDCONFIG.gn and
+  # This sets the default list of configs when the content_source_set target
+  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs
 }
@@ -229,9 +228,8 @@ template("jumbo_split_static_library") {
 }
 
 set_defaults("jumbo_split_static_library") {
-  # This sets the default list of configs when the
-  # split_static_library target is used.
-  # The default_compiler_configs comes from BUILDCONFIG.gn and
+  # This sets the default list of configs when the content_source_set target
+  # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
   configs = default_compiler_configs
 }
@@ -245,8 +243,8 @@ template("jumbo_component") {
 }
 
 set_defaults("jumbo_component") {
-  # This sets the default list of configs when the component
-  # target is used. This code is a clone of set_defaults for the
+  # This sets the default list of configs when the content_source_set
+  # target is defined. This code is a clone of set_defaults for the
   # ordinary "component" template.
   if (is_component_build) {
     configs = default_shared_library_configs
@@ -255,26 +253,5 @@ set_defaults("jumbo_component") {
     }
   } else {
     configs = default_compiler_configs
-  }
-}
-
-# See documentation above by "internal_jumbo_target".
-template("jumbo_test") {
-  internal_jumbo_target(target_name) {
-    target_type = "test"
-    forward_variables_from(invoker, "*")
-  }
-}
-
-set_defaults("jumbo_test") {
-  # This sets the default list of configs when the test target is
-  # used. This code is a clone of set_defaults for the ordinary
-  # "test" template.
-  if (is_android) {
-    configs = default_shared_library_configs
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ "//build/config/android:hide_all_but_jni" ]
-  } else {
-    configs = default_executable_configs
   }
 }
