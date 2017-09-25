@@ -53,7 +53,7 @@ const base::Feature kEnablePasswordForceSaving = {
 
 // Enable the user to trigger password generation manually.
 extern const base::Feature kEnableManualPasswordGeneration = {
-    "enable-manual-password-generation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "enable-manual-password-generation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables username correction while saving username and password details.
 extern const base::Feature kEnableUsernameCorrection{
