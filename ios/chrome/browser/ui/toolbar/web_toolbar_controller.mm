@@ -316,6 +316,13 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture;
 - (void)setImagesForNavButton:(UIButton*)button
         withTabHistoryVisible:(BOOL)tabHistoryVisible;
+// Returns a map where the keys are names of text-to-speech notifications and
+// the values are the selectors to use for these notifications.
++ (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames;
+// Starts or stops observing the NSNotifications from
+// |-selectorsForTTSNotificationNames|.
+- (void)startObservingTTSNotifications;
+- (void)stopObservingTTSNotifications;
 // Received when a TTS player has received audio data.
 - (void)audioReadyForPlayback:(NSNotification*)notification;
 // Updates the TTS button depending on whether or not TTS is currently playing.
@@ -649,26 +656,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [_voiceSearchButton setEnabled:NO];
   }
 
-  // Register for text-to-speech (TTS) events on tablet.
-  if (idiom == IPAD_IDIOM) {
-    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    [defaultCenter addObserver:self
-                      selector:@selector(audioReadyForPlayback:)
-                          name:kTTSAudioReadyForPlaybackNotification
-                        object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(updateIsTTSPlaying:)
-                          name:kTTSWillStartPlayingNotification
-                        object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(updateIsTTSPlaying:)
-                          name:kTTSDidStopPlayingNotification
-                        object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(moveVoiceOverToVoiceSearchButton)
-                          name:kVoiceSearchWillHideNotification
-                        object:nil];
-  }
+  [self startObservingTTSNotifications];
+
   [self.view setDelegate:self];
 
   if (idiom == IPHONE_IDIOM) {
@@ -699,6 +688,21 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+#pragma mark -
+#pragma mark Acessors
+
+- (void)setDelegate:(id<WebToolbarDelegate>)delegate {
+  if (_delegate == delegate)
+    return;
+
+  // TTS notifications cannot be handled without a delegate.
+  if (_delegate)
+    [self stopObservingTTSNotifications];
+  _delegate = delegate;
+  if (_delegate)
+    [self startObservingTTSNotifications];
 }
 
 #pragma mark -
@@ -1729,6 +1733,48 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     _backButtonMode = newMode;
   else
     _forwardButtonMode = newMode;
+}
+
++ (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames {
+  static std::map<__strong NSString*, SEL> selectorsForNotifications;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    selectorsForNotifications[kTTSAudioReadyForPlaybackNotification] =
+        @selector(audioReadyForPlayback:);
+    selectorsForNotifications[kTTSWillStartPlayingNotification] =
+        @selector(updateIsTTSPlaying:);
+    selectorsForNotifications[kTTSDidStopPlayingNotification] =
+        @selector(updateIsTTSPlaying:);
+    selectorsForNotifications[kVoiceSearchWillHideNotification] =
+        @selector(moveVoiceOverToVoiceSearchButton);
+  });
+  return selectorsForNotifications;
+}
+
+- (void)startObservingTTSNotifications {
+  // The toolbar is only used to play text-to-speech search results on iPads.
+  if (IsIPadIdiom()) {
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    const auto& selectorsForTTSNotifications =
+        [[self class] selectorsForTTSNotificationNames];
+    for (const auto& selectorForNotification : selectorsForTTSNotifications) {
+      [defaultCenter addObserver:self
+                        selector:selectorForNotification.second
+                            name:selectorForNotification.first
+                          object:nil];
+    }
+  }
+}
+
+- (void)stopObservingTTSNotifications {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  const auto& selectorsForTTSNotifications =
+      [[self class] selectorsForTTSNotificationNames];
+  for (const auto& selectorForNotification : selectorsForTTSNotifications) {
+    [defaultCenter removeObserver:self
+                             name:selectorForNotification.first
+                           object:nil];
+  }
 }
 
 - (void)audioReadyForPlayback:(NSNotification*)notification {
