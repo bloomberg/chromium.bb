@@ -4,6 +4,7 @@
 
 #include "core/dom/ModulatorImplBase.h"
 
+#include "core/dom/DynamicModuleResolver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ModuleMap.h"
 #include "core/dom/ModuleScript.h"
@@ -29,7 +30,8 @@ ModulatorImplBase::ModulatorImplBase(RefPtr<ScriptState> script_state)
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
-          ExecutionContext::From(script_state_.Get()))) {
+          ExecutionContext::From(script_state_.Get()))),
+      dynamic_module_resolver_(DynamicModuleResolver::Create(this)) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
 }
@@ -104,11 +106,13 @@ bool ModulatorImplBase::HasValidContext() {
   return script_state_->ContextIsValid();
 }
 
-void ModulatorImplBase::ResolveDynamically(const String& specifier,
-                                           const String& referrer_url,
-                                           const ReferrerScriptInfo&,
-                                           ScriptPromiseResolver*) {
-  NOTIMPLEMENTED();
+void ModulatorImplBase::ResolveDynamically(
+    const String& specifier,
+    const String& referrer_url,
+    const ReferrerScriptInfo& referrer_info,
+    ScriptPromiseResolver* resolver) {
+  dynamic_module_resolver_->ResolveDynamically(specifier, referrer_url,
+                                               referrer_info, resolver);
 }
 
 ScriptModule ModulatorImplBase::CompileModule(
@@ -246,6 +250,7 @@ DEFINE_TRACE(ModulatorImplBase) {
   visitor->Trace(loader_registry_);
   visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
+  visitor->Trace(dynamic_module_resolver_);
 }
 
 DEFINE_TRACE_WRAPPERS(ModulatorImplBase) {
