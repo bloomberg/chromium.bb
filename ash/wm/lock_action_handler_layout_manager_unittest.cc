@@ -316,9 +316,14 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInActiveState) {
   EXPECT_TRUE(window->HasFocus());
 }
 
-TEST_F(LockActionHandlerLayoutManagerTest, ReparentOnTrayActionStateChanges) {
+TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInNonActiveState) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
+
+  TestTrayActionClient tray_action_client;
+  Shell::Get()->tray_action()->SetClient(
+      tray_action_client.CreateInterfacePtrAndBind(),
+      mojom::TrayActionState::kLaunching);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -327,25 +332,12 @@ TEST_F(LockActionHandlerLayoutManagerTest, ReparentOnTrayActionStateChanges) {
       widget_params, kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
-  // The window should not be visible if the new note action handler is not
-  // active.
+  // The window should not be visible if the note action is not in active state.
   EXPECT_FALSE(window->IsVisible());
-
-  TestTrayActionClient tray_action_client;
-  Shell::Get()->tray_action()->SetClient(
-      tray_action_client.CreateInterfacePtrAndBind(),
-      mojom::TrayActionState::kActive);
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-
-  // When the action state changes to background, the window should remain
-  // visible, but it should be reparented.
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kBackground);
-  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(window->HasFocus());
 
   // When the action state changes back to active, the window should be
-  // reparented again.
+  // shown.
   Shell::Get()->tray_action()->UpdateLockScreenNoteState(
       mojom::TrayActionState::kActive);
   EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
@@ -353,133 +345,51 @@ TEST_F(LockActionHandlerLayoutManagerTest, ReparentOnTrayActionStateChanges) {
   EXPECT_TRUE(window->IsVisible());
   EXPECT_TRUE(window->HasFocus());
 
+  // The window should be hidden again upon leaving the active state.
   Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kNotAvailable);
+      mojom::TrayActionState::kAvailable);
+  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
+            window->parent());
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_FALSE(window->HasFocus());
+}
+
+TEST_F(LockActionHandlerLayoutManagerTest, FocusWindowWhileInNonActiveState) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+
+  TestTrayActionClient tray_action_client;
+  Shell::Get()->tray_action()->SetClient(
+      tray_action_client.CreateInterfacePtrAndBind(),
+      mojom::TrayActionState::kLaunching);
+
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  std::unique_ptr<aura::Window> window = CreateTestingWindow(
+      widget_params, kShellWindowId_LockActionHandlerContainer,
+      nullptr /* window_delegate */);
 
   EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
             window->parent());
   EXPECT_FALSE(window->IsVisible());
-}
-
-TEST_F(LockActionHandlerLayoutManagerTest, AddWindowWhileInBackgroundState) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  TestTrayActionClient tray_action_client;
-  Shell::Get()->tray_action()->SetClient(
-      tray_action_client.CreateInterfacePtrAndBind(),
-      mojom::TrayActionState::kBackground);
-
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
-  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
-      nullptr /* window_delegate */);
-
-  // The window should be added to the requested container, but it should not
-  // be visible while in background state.
-  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
-            window->parent());
-  EXPECT_FALSE(window->IsVisible());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kActive);
-
-  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
-            window->parent());
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-}
-
-TEST_F(LockActionHandlerLayoutManagerTest,
-       AddSecondaryWindowWhileInBackground) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  TestTrayActionClient tray_action_client;
-  Shell::Get()->tray_action()->SetClient(
-      tray_action_client.CreateInterfacePtrAndBind(),
-      mojom::TrayActionState::kActive);
-
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
-  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
-      nullptr /* window_delegate */);
-
-  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
-            window->parent());
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kBackground);
-
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_FALSE(window->HasFocus());
-
-  std::unique_ptr<aura::Window> secondary_window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
-      nullptr /* window_delegate */);
-
-  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
-            secondary_window->parent());
-  EXPECT_FALSE(secondary_window->IsVisible());
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_FALSE(window->HasFocus());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kActive);
-
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_FALSE(window->HasFocus());
-  EXPECT_TRUE(secondary_window->IsVisible());
-  EXPECT_TRUE(secondary_window->HasFocus());
-}
-
-TEST_F(LockActionHandlerLayoutManagerTest, FocusWindowWhileInBackground) {
-  GetSessionControllerClient()->SetSessionState(
-      session_manager::SessionState::LOCKED);
-
-  TestTrayActionClient tray_action_client;
-  Shell::Get()->tray_action()->SetClient(
-      tray_action_client.CreateInterfacePtrAndBind(),
-      mojom::TrayActionState::kActive);
-
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
-  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
-      nullptr /* window_delegate */);
-
-  EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
-            window->parent());
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kBackground);
-
-  EXPECT_TRUE(window->IsVisible());
   EXPECT_FALSE(window->HasFocus());
 
   window->Focus();
 
-  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(window->IsVisible());
   EXPECT_FALSE(window->HasFocus());
 }
 
-TEST_F(LockActionHandlerLayoutManagerTest, HideShowWindowWhileInBackground) {
+TEST_F(LockActionHandlerLayoutManagerTest,
+       RequestShowWindowOutsideActiveState) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
   TestTrayActionClient tray_action_client;
   Shell::Get()->tray_action()->SetClient(
       tray_action_client.CreateInterfacePtrAndBind(),
-      mojom::TrayActionState::kActive);
+      mojom::TrayActionState::kLaunching);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -490,19 +400,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, HideShowWindowWhileInBackground) {
 
   EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
             window->parent());
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kBackground);
-
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_FALSE(window->HasFocus());
-
-  window->Hide();
-
   EXPECT_FALSE(window->IsVisible());
-  EXPECT_FALSE(window->HasFocus());
 
   window->Show();
 

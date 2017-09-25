@@ -49,22 +49,8 @@ void LockActionHandlerLayoutManager::OnChildWindowVisibilityChanged(
 
 void LockActionHandlerLayoutManager::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
-  // Make sure the container is properly stacked relative to lock screen
-  // container - lock action handler should be above lock screen only when a
-  // lock screen action is active.
-  if (state == mojom::TrayActionState::kActive) {
-    window()->parent()->StackChildAbove(
-        window(),
-        root_window()->GetChildById(kShellWindowId_LockScreenContainer));
-  } else {
-    window()->parent()->StackChildBelow(
-        window(),
-        root_window()->GetChildById(kShellWindowId_LockScreenContainer));
-  }
-
   // Update children state:
-  // * a child can be visible only in background and active states
-  // * children should not be active in background state
+  // * a child can be visible only in active state
   // * on transition to active state:
   //     * show hidden windows, so children that were added when action was not
   //       in active state are shown
@@ -73,10 +59,8 @@ void LockActionHandlerLayoutManager::OnLockScreenNoteStateChanged(
   for (aura::Window* child : window()->children()) {
     if (state == mojom::TrayActionState::kActive) {
       child->Show();
-    } else if (state != mojom::TrayActionState::kBackground) {
+    } else {
       child->Hide();
-    } else if (wm::IsActiveWindow(child)) {
-      wm::DeactivateWindow(child);
     }
   }
 

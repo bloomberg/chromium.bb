@@ -24,8 +24,6 @@ class TrayAction;
 // container state depends on the lock screen "new_note" action state:
 //   * for active action state - the windows should be visible above the lock
 //     screen
-//   * for background action state - the windows should be visible in
-//     background, below lock screen.
 //   * for rest of the states - the windows should not be visible.
 // The layout manager will observe new note action state changes and update
 // the container's children state as needed.
