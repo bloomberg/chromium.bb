@@ -862,6 +862,28 @@ TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
   ASSERT_FALSE(session->config()->HasInitialRoundTripTimeUsToSend());
 }
 
+TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  auto request = std::make_unique<QuicStreamRequest>(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request->Request(host_port_pair_, version_, privacy_mode_,
+                             /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                             &net_error_details_, callback_.callback()));
+  request.reset();
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  // Tearing down a QuicStreamFactory with a pending Job should not cause any
+  // crash. crbug.com/768343.
+  factory_.reset();
+}
+
 TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
