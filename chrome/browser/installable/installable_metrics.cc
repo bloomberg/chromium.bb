@@ -72,11 +72,16 @@ class AccumulatingRecorder : public InstallableMetrics::Recorder {
     }
   }
 
-  void Flush() override {
-    WriteMetricsAndResetCounts(
+  void Flush(bool waiting_for_service_worker) override {
+    InstallabilityCheckStatus status =
         started_ ? InstallabilityCheckStatus::IN_PROGRESS_UNKNOWN
-                 : InstallabilityCheckStatus::NOT_STARTED,
-        AddToHomescreenTimeoutStatus::TIMEOUT_MANIFEST_FETCH_UNKNOWN,
+                 : InstallabilityCheckStatus::NOT_STARTED;
+
+    if (waiting_for_service_worker)
+      status = InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP;
+
+    WriteMetricsAndResetCounts(
+        status, AddToHomescreenTimeoutStatus::TIMEOUT_MANIFEST_FETCH_UNKNOWN,
         AddToHomescreenTimeoutStatus::TIMEOUT_INSTALLABILITY_CHECK_UNKNOWN);
   }
 
@@ -175,7 +180,7 @@ class DirectRecorder : public InstallableMetrics::Recorder {
   ~DirectRecorder() override {}
 
   void Resolve(bool check_passed) override {}
-  void Flush() override {}
+  void Flush(bool waiting_for_service_worker) override {}
   void Start() override {}
   void RecordMenuOpen() override {
     WriteMenuOpenHistogram(installability_check_status_, 1);
@@ -239,6 +244,7 @@ void InstallableMetrics::Start() {
   recorder_->Start();
 }
 
-void InstallableMetrics::Flush() {
-  recorder_->Flush();
+void InstallableMetrics::Flush(bool waiting_for_service_worker) {
+  recorder_->Flush(waiting_for_service_worker);
+  recorder_ = base::MakeUnique<AccumulatingRecorder>();
 }

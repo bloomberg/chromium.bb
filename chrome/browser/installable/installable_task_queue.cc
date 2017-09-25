@@ -11,9 +11,9 @@ void InstallableTaskQueue::Add(InstallableTask task) {
   tasks_.push_back(task);
 }
 
-void InstallableTaskQueue::Reset() {
-  tasks_.clear();
-  paused_tasks_.clear();
+void InstallableTaskQueue::PauseCurrent() {
+  paused_tasks_.push_back(Current());
+  Next();
 }
 
 void InstallableTaskQueue::UnpauseAll() {
@@ -23,14 +23,17 @@ void InstallableTaskQueue::UnpauseAll() {
   paused_tasks_.clear();
 }
 
+bool InstallableTaskQueue::HasCurrent() const {
+  return !tasks_.empty();
+}
+
+bool InstallableTaskQueue::HasPaused() const {
+  return !paused_tasks_.empty();
+}
+
 InstallableTask& InstallableTaskQueue::Current() {
   DCHECK(!tasks_.empty());
   return tasks_[0];
-}
-
-void InstallableTaskQueue::PauseCurrent() {
-  paused_tasks_.push_back(Current());
-  Next();
 }
 
 void InstallableTaskQueue::Next() {
@@ -38,6 +41,7 @@ void InstallableTaskQueue::Next() {
   tasks_.erase(tasks_.begin());
 }
 
-bool InstallableTaskQueue::HasCurrent() const {
-  return !tasks_.empty();
+void InstallableTaskQueue::Reset() {
+  tasks_.clear();
+  paused_tasks_.clear();
 }

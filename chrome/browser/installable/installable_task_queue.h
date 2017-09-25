@@ -31,6 +31,9 @@ class InstallableTaskQueue {
   // Reports whether there are any tasks in the main list.
   bool HasCurrent() const;
 
+  // Reports whether there are any tasks in the paused list.
+  bool HasPaused() const;
+
   // Returns the currently active task.
   InstallableTask& Current();
 
