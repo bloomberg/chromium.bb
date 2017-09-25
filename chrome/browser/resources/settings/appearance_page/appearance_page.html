@@ -51,14 +51,8 @@
               $i18n{openWallpaperApp}
             </div>
           </div>
-          <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
-            <cr-policy-indicator id="wallpaperPolicyIndicator"
-                indicator-type="devicePolicy">
-            </cr-policy-indicator>
-          </template>
-          <button class="icon-external" id="showWallpaperManager"
-              is="paper-icon-button-light" aria-label="$i18n{setWallpaper}"
-              disabled="[[isWallpaperPolicyControlled_]]"
+          <button class="icon-external" is="paper-icon-button-light"
+              aria-label="$i18n{setWallpaper}"
               aria-describedby="wallpaperSecondary"></button>
         </div>
         <div class="settings-box two-line"

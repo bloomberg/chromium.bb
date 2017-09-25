@@ -67,7 +67,6 @@ cr.define('settings_main_page', function() {
       settingsMain = document.createElement('settings-main');
       settingsMain.prefs = settingsPrefs.prefs;
       settingsMain.toolbarSpinnerActive = false;
-      settingsMain.pageVisibility = settings.pageVisibility;
       document.body.appendChild(settingsMain);
     });
 
