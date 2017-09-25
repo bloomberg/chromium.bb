@@ -1827,6 +1827,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   // shelf is not in auto-hide.
   const ShelfItem* item = ShelfItemForView(source);
   if (context_menu && item && item->type != TYPE_APP_LIST &&
+      source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH &&
       shelf()->auto_hide_behavior() == SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
