@@ -72,7 +72,12 @@ body.hide-fakebox-logo #fakebox {
 
 #logo-default,
 #logo-doodle {
+  opacity: 0;
   position: absolute;
+}
+
+#logo-default.fade,
+#logo-doodle.fade {
   transition: opacity 130ms;
 }
 
@@ -92,7 +97,6 @@ body.hide-fakebox-logo #fakebox {
    * left and the right side.
    */
   left: -100px;
-  opacity: 0;
   right: -100px;
   top: 44px;
 }
