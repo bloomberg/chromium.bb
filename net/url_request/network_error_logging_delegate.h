@@ -37,14 +37,8 @@ class NET_EXPORT NetworkErrorLoggingDelegate {
     NextProto protocol;
     int status_code;
     base::TimeDelta elapsed_time;
-    // Used to calculate age.
-    base::TimeTicks time;
     Error type;
   };
-
-  // A callback used to obtain the details of a network error. Should be called
-  // with a pointer to an ErrorDetails struct, and will fill it in.
-  using ErrorDetailsCallback = base::OnceCallback<void(ErrorDetails*)>;
 
   static const char kHeaderName[];
 
@@ -69,17 +63,8 @@ class NET_EXPORT NetworkErrorLoggingDelegate {
 
   // Called when the network stack detects a network error.
   //
-  // |origin| is the origin the network stack was trying to talk to when it
-  // encountered the error.
-  //
-  // |error| is the error the network stack encountered.
-  //
-  // |details_callback| is a callback that will fill in the details of the error
-  // if the delegate wants them (based on |origin| and |error|). If called, it
-  // must be called synchronously, before OnNetworkError returns.
-  virtual void OnNetworkError(const url::Origin& origin,
-                              Error error,
-                              ErrorDetailsCallback details_callback) = 0;
+  // |details| is the details of the network error.
+  virtual void OnNetworkError(const ErrorDetails& details) = 0;
 };
 
 }  // namespace net
