@@ -86,6 +86,19 @@ public class SiteChannelsManager {
     }
 
     /**
+     * Deletes all site channels.
+     */
+    public void deleteAllSiteChannels() {
+        List<NotificationChannel> channels = mNotificationManager.getNotificationChannels();
+        for (NotificationChannel channel : channels) {
+            String channelId = channel.getId();
+            if (isValidSiteChannelId(channelId)) {
+                mNotificationManager.deleteNotificationChannel(channelId);
+            }
+        }
+    }
+
+    /**
      * Deletes the channel associated with this channel ID.
      */
     public void deleteSiteChannel(String channelId) {
