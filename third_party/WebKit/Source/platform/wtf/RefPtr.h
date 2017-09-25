@@ -82,15 +82,6 @@ class RefPtr {
   RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
       : ptr_(o.LeakRef()) {}
 
-  // Hash table deleted values, which are only constructed and never copied or
-  // destroyed.
-  // TODO(tzik): Remove this after updating callsites of this to use
-  // HashTraits<RefPtr<>>::{ConstructDeletedValue,IsHashTableDeletedValue}.
-  RefPtr(HashTableDeletedValueType) : ptr_(HashTableDeletedValue()) {}
-  bool IsHashTableDeletedValue() const {
-    return ptr_ == HashTableDeletedValue();
-  }
-
   ALWAYS_INLINE ~RefPtr() { DerefIfNotNull(ptr_); }
 
   ALWAYS_INLINE T* Get() const { return ptr_; }
@@ -117,8 +108,6 @@ class RefPtr {
   RefPtr& operator=(RefPtrValuePeeker<U>);
 
   void Swap(RefPtr&);
-
-  static T* HashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
  private:
   friend RefPtr AdoptRef<T>(T*);

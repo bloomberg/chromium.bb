@@ -78,16 +78,6 @@ class WTF_EXPORT AtomicString {
   explicit AtomicString(StringImpl* impl) : string_(Add(impl)) {}
   explicit AtomicString(const String& s) : string_(Add(s.Impl())) {}
 
-  // Hash table deleted values, which are only constructed and never copied or
-  // destroyed.
-  // TODO(tzik): Remove this after updating callsites of this to use
-  // HashTraits<AtomicString>::{ConstructDeletedValue,IsHashTableDeletedValue}.
-  AtomicString(WTF::HashTableDeletedValueType)
-      : string_(WTF::kHashTableDeletedValue) {}
-  bool IsHashTableDeletedValue() const {
-    return string_.IsHashTableDeletedValue();
-  }
-
   explicit operator bool() const { return !IsNull(); }
   operator const String&() const { return string_; }
   const String& GetString() const { return string_; }
