@@ -33,7 +33,8 @@
 #include "content/public/test/test_utils.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 using content::BrowserThread;
 using storage::FileSystemURL;
@@ -131,7 +132,7 @@ class SyncFileSystemServiceTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override {
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), in_memory_env_.get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),

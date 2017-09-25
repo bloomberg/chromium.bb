@@ -36,7 +36,8 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 using content::BrowserThread;
 using storage::FileSystemURL;
@@ -113,7 +114,7 @@ class LocalFileSyncServiceTest
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), in_memory_env_.get(),
