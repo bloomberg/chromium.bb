@@ -37,6 +37,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
@@ -228,7 +229,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id = dispatcher()->StartAsync(
-        std::move(request), 0, nullptr, url::Origin(), false, std::move(peer),
+        std::move(request), 0, nullptr, url::Origin(),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
         mojo::ScopedDataPipeConsumerHandle());

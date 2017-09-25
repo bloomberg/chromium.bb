@@ -30,7 +30,8 @@ class URLLoaderClientImplTest : public ::testing::Test,
     mojo_binding_.Bind(mojo::MakeRequest(&url_loader_factory_proxy_));
 
     request_id_ = dispatcher_->StartAsync(
-        base::MakeUnique<ResourceRequest>(), 0, nullptr, url::Origin(), false,
+        base::MakeUnique<ResourceRequest>(), 0, nullptr, url::Origin(),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false,
         base::MakeUnique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         blink::WebURLRequest::LoadingIPCType::kMojo,

@@ -30,6 +30,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -71,6 +72,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
       const url::Origin& frame_origin,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
@@ -83,6 +85,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const url::Origin& frame_origin,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,

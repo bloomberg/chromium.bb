@@ -557,6 +557,7 @@ void ResourceDispatcher::StartSync(
     std::unique_ptr<ResourceRequest> request,
     int routing_id,
     const url::Origin& frame_origin,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
@@ -581,8 +582,9 @@ void ResourceDispatcher::StartSync(
         FROM_HERE,
         base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                        std::move(request), routing_id, frame_origin,
-                       std::move(url_loader_factory_copy), std::move(throttles),
-                       base::Unretained(response), base::Unretained(&event)));
+                       traffic_annotation, std::move(url_loader_factory_copy),
+                       std::move(throttles), base::Unretained(response),
+                       base::Unretained(&event)));
 
     event.Wait();
   } else {
@@ -618,6 +620,7 @@ int ResourceDispatcher::StartAsync(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const url::Origin& frame_origin,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
@@ -651,30 +654,6 @@ int ResourceDispatcher::StartAsync(
 
     return request_id;
   }
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
-      semantics {
-        sender: "Blink Resource Loader"
-        description:
-          "Blink initiated request, which includes all resources for "
-          "normal page loads, chrome URLs, resources for installed "
-          "extensions, as well as downloads."
-        trigger:
-          "Navigating to a URL or downloading a file. A webpage, "
-          "ServiceWorker, chrome:// page, or extension may also initiate "
-          "requests in the background."
-        data: "Anything the initiator wants to send."
-        destination: OTHER
-      }
-      policy {
-        cookies_allowed: YES
-        cookies_store: "user"
-        setting: "These requests cannot be disabled in settings."
-        policy_exception_justification:
-          "Not implemented. Without these requests, Chrome will be unable "
-          "to load any webpage."
-      })");
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =

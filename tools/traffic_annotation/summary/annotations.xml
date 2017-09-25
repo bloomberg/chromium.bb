@@ -18,6 +18,7 @@ Refer to README.md for content description and update process.
  <item id="autofill_upload" hash_code="104798869" content_hash_code="110634763" os_list="linux,windows"/>
  <item id="background_fetch_context" hash_code="16469669" content_hash_code="52235434" os_list="linux,windows"/>
  <item id="background_performance_tracer" hash_code="84575287" content_hash_code="120154250" os_list="linux,windows"/>
+ <item id="blink_extension_resource_loader" hash_code="84165821" content_hash_code="3695143" os_list="linux,windows"/>
  <item id="blink_resource_loader" hash_code="101845102" content_hash_code="69137084" os_list="linux,windows"/>
  <item id="blob_read" hash_code="112303907" content_hash_code="135449692" os_list="linux,windows"/>
  <item id="blob_reader" hash_code="5154306" content_hash_code="39702178" os_list="linux,windows"/>
@@ -74,6 +75,7 @@ Refer to README.md for content description and update process.
  <item id="extension_manifest_fetcher" hash_code="5151071" content_hash_code="57885402" os_list="linux,windows"/>
  <item id="external_policy_fetcher" hash_code="9459438" content_hash_code="64260484" os_list="linux,windows"/>
  <item id="family_info" hash_code="30913825" content_hash_code="25369370" os_list="linux,windows"/>
+ <item id="favicon_loader" hash_code="112189210" content_hash_code="70773116" os_list="linux,windows"/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" content_hash_code="57347000" os_list="linux,windows"/>
  <item id="gaia_auth_exchange_cookies" hash_code="134289752" content_hash_code="66433230" os_list="linux,windows"/>
  <item id="gaia_auth_exchange_device_id" hash_code="39877119" content_hash_code="61857947" os_list="linux,windows"/>

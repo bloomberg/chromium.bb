@@ -39042,6 +39042,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="82462683" label="gaia_oauth_client_refresh_token"/>
   <int value="83476155" label="gaia_oauth_client_get_user_info"/>
   <int value="84045030" label="payment_manifest_downloader"/>
+  <int value="84165821" label="blink_extension_resource_loader"/>
   <int value="84212388" label="omnibox_suggest_deletion"/>
   <int value="84575287" label="background_performance_tracer"/>
   <int value="84889397" label="cryptauth_enrollment_flow_setup"/>
@@ -39080,6 +39081,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="111565057" label="devtools_hard_coded_data_source"/>
   <int value="111712433" label="cloud_print"/>
   <int value="111904019" label="affiliation_lookup"/>
+  <int value="112189210" label="favicon_loader"/>
   <int value="112303907" label="blob_read"/>
   <int value="113231892" label="url_fetcher_downloader"/>
   <int value="113553577" label="certificate_verifier"/>
