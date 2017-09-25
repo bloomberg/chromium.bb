@@ -6328,15 +6328,21 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #else
       mbmi->sb_type >= BLOCK_8X8 &&
 #endif
-      is_inter && !(mbmi->skip || seg_skip)) {
+      is_inter && !(mbmi->skip || seg_skip) &&
+      !xd->lossless[mbmi->segment_id]) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;
     // The new intra coding scheme requires no change of transform size
-    if (is_inter)
-      tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
-    else
+    if (is_inter) {
+      if (xd->lossless[mbmi->segment_id]) {
+        tx_size = TX_4X4;
+      } else {
+        tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
+      }
+    } else {
       tx_size = (bsize > BLOCK_4X4) ? tx_size : TX_4X4;
+    }
     mbmi->tx_size = tx_size;
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }
