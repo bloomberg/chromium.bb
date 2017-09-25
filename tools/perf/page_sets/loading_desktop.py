@@ -22,7 +22,7 @@ class LoadingDesktopStorySet(story.StorySet):
 
     if cache_temperatures is None:
       cache_temperatures = [
-          cache_temperature_module.PCV1_COLD, cache_temperature_module.PCV1_WARM
+          cache_temperature_module.COLD, cache_temperature_module.WARM
       ]
     # Passed as (story, name) tuple.
     self.AddStories(

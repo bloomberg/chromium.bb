@@ -31,8 +31,7 @@ class LoadingDesktop(_LoadingBase):
 
   def CreateStorySet(self, options):
     return page_sets.LoadingDesktopStorySet(
-        cache_temperatures=[cache_temperature.PCV1_COLD,
-                            cache_temperature.PCV1_WARM,])
+        cache_temperatures=[cache_temperature.COLD, cache_temperature.WARM])
 
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
