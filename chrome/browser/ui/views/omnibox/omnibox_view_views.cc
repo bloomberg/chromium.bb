@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -160,7 +161,8 @@ void OmniboxViewViews::Init() {
 
   // Override the default FocusableBorder from Textfield, since the
   // LocationBarView will indicate the focus state.
-  SetBorder(views::NullBorder());
+  SetBorder(views::CreateEmptyBorder(
+      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX)));
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->

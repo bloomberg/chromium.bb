@@ -43,6 +43,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/shadow_border.h"
 #include "ui/views/widget/widget.h"
 
@@ -248,7 +249,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
       (is_fullscreen_app_list_enabled_ ? kInnerPaddingFullscreen
                                        : kInnerPadding) -
-          views::Textfield::kTextPadding);
+          views::LayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
   content_container_->SetLayoutManager(box_layout_);
   box_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

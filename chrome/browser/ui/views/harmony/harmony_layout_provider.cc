@@ -42,8 +42,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       // margin we need to subtract out the padding.
       return kVisibleMargin - kHarmonyLayoutUnit / 4;
     }
-    case views::DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING:
-      return kHarmonyLayoutUnit / 2;
+    case views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:
+      return kHarmonyLayoutUnit / 4;
     case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL:
       return kHarmonyLayoutUnit * 3 / 2;
     case views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT: {
@@ -88,6 +88,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return 0;
     case views::DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN:
       return kHarmonyLayoutUnit;
+    case views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING:
+      return kHarmonyLayoutUnit / 2;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:

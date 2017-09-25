@@ -29,6 +29,7 @@ class VIEWS_EXPORT FocusableBorder : public Border {
 
   // Sets the insets of the border.
   void SetInsets(int top, int left, int bottom, int right);
+  void SetInsets(int vertical, int horizontal);
 
   // Sets the color id to use for this border. When unsupplied, the color will
   // depend on the focus state.

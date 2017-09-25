@@ -78,6 +78,10 @@ void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {
   insets_.Set(top, left, bottom, right);
 }
 
+void FocusableBorder::SetInsets(int vertical, int horizontal) {
+  SetInsets(vertical, horizontal, vertical, horizontal);
+}
+
 SkColor FocusableBorder::GetCurrentColor(const View& view) const {
   ui::NativeTheme::ColorId color_id =
       ui::NativeTheme::kColorId_UnfocusedBorderColor;
