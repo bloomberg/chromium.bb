@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that loading a graph in which a module is already errored results in that module's error. assert_array_equals: property 2, expected object "SyntaxError: The requested module does not provide an export named 'something'" but got object "SyntaxError: The requested module does not provide an export named 'something'"
-Harness: the test ran to completion.
-
