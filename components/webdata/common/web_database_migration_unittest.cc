@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 75;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 76;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -225,8 +225,6 @@ TEST_F(WebDatabaseMigrationTest, RazeDeprecatedVersionAndReinit) {
     ASSERT_FALSE(
         connection.DoesColumnExist("keywords", "suggest_url_post_params"));
     ASSERT_FALSE(
-        connection.DoesColumnExist("keywords", "instant_url_post_params"));
-    ASSERT_FALSE(
         connection.DoesColumnExist("keywords", "image_url_post_params"));
   }
 
@@ -248,8 +246,6 @@ TEST_F(WebDatabaseMigrationTest, RazeDeprecatedVersionAndReinit) {
         connection.DoesColumnExist("keywords", "search_url_post_params"));
     EXPECT_TRUE(
         connection.DoesColumnExist("keywords", "suggest_url_post_params"));
-    EXPECT_TRUE(
-        connection.DoesColumnExist("keywords", "instant_url_post_params"));
     EXPECT_TRUE(
         connection.DoesColumnExist("keywords", "image_url_post_params"));
   }
@@ -1468,5 +1464,44 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion74ToCurrent) {
 
     // No more entries expected.
     ASSERT_FALSE(s_profiles.Step());
+  }
+}
+
+// Tests deletion of Instant-related columns in keywords table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion75ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_75.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 75, 75));
+
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "instant_url"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("keywords", "instant_url_post_params"));
+    EXPECT_TRUE(
+        connection.DoesColumnExist("keywords", "search_terms_replacement_key"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(connection.DoesColumnExist("keywords", "instant_url"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("keywords", "instant_url_post_params"));
+    EXPECT_FALSE(
+        connection.DoesColumnExist("keywords", "search_terms_replacement_key"));
   }
 }
