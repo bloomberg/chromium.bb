@@ -334,10 +334,11 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   return newmv_count;
 }
 
-static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
-                         int bs) {
-  const int mask_row = mi_row & MAX_MIB_MASK;
-  const int mask_col = mi_col & MAX_MIB_MASK;
+static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                         int mi_row, int mi_col, int bs) {
+  const int sb_mi_size = mi_size_wide[cm->sb_size];
+  const int mask_row = mi_row & (sb_mi_size - 1);
+  const int mask_col = mi_col & (sb_mi_size - 1);
 
   // In a split partition all apart from the bottom right has a top right
   int has_tr = !((mask_row & bs) && (mask_col & bs));
@@ -348,7 +349,7 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
   // For each 4x4 group of blocks, when the bottom right is decoded the blocks
   // to the right have not been decoded therefore the bottom right does
   // not have a top right
-  while (bs < MAX_MIB_SIZE) {
+  while (bs < sb_mi_size) {
     if (mask_col & bs) {
       if ((mask_col & (2 * bs)) && (mask_row & (2 * bs))) {
         has_tr = 0;
@@ -381,13 +382,15 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
 }
 
 #if CONFIG_MFMV
-static int check_sb_border(const int mi_row, const int mi_col,
-                           const int row_offset, const int col_offset) {
-  const int row = mi_row & MAX_MIB_MASK;
-  const int col = mi_col & MAX_MIB_MASK;
+static int check_sb_border(const AV1_COMMON *cm, const int mi_row,
+                           const int mi_col, const int row_offset,
+                           const int col_offset) {
+  const int sb_mi_size = mi_size_wide[cm->sb_size];
+  const int row = mi_row & (sb_mi_size - 1);
+  const int col = mi_col & (sb_mi_size - 1);
 
-  if (row + row_offset < 0 || row + row_offset >= MAX_MIB_SIZE ||
-      col + col_offset < 0 || col + col_offset >= MAX_MIB_SIZE)
+  if (row + row_offset < 0 || row + row_offset >= sb_mi_size ||
+      col + col_offset < 0 || col + col_offset >= sb_mi_size)
     return 0;
 
   return 1;
@@ -581,7 +584,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif
 
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
-  const int has_tr = has_top_right(xd, mi_row, mi_col, bs);
+  const int has_tr = has_top_right(cm, xd, mi_row, mi_col, bs);
   MV_REFERENCE_FRAME rf[2];
 
   const TileInfo *const tile = &xd->tile;
@@ -661,7 +664,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     blk_row = tpl_sample_pos[i][0];
     blk_col = tpl_sample_pos[i][1];
 
-    if (!check_sb_border(mi_row, mi_col, blk_row, blk_col)) continue;
+    if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
 
     coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
                                      mi_col, ref_frame, blk_row, blk_col,
@@ -838,6 +841,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              void *const data, int16_t *mode_context,
                              int_mv zeromv) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
+  const int sb_mi_size = mi_size_wide[cm->sb_size];
   int i, refmv_count = 0;
   int different_ref_found = 0;
   int context_counter = 0;
@@ -943,8 +947,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
               ? NULL
               : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
       if (candidate == NULL) continue;
-      if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
-          (mi_col % MAX_MIB_SIZE) + mv_ref->col >= MAX_MIB_SIZE)
+      if ((mi_row & (sb_mi_size - 1)) + mv_ref->row >= sb_mi_size ||
+          (mi_col & (sb_mi_size - 1)) + mv_ref->col >= sb_mi_size)
         continue;
       different_ref_found = 1;
 
@@ -995,8 +999,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                 ? NULL
                 : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
         if (candidate == NULL) continue;
-        if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
-            (mi_col % MAX_MIB_SIZE) + mv_ref->col >= MAX_MIB_SIZE)
+        if ((mi_row & (sb_mi_size - 1)) + mv_ref->row >= sb_mi_size ||
+            (mi_col & (sb_mi_size - 1)) + mv_ref->col >= sb_mi_size)
           continue;
 
         // If the candidate is INTRA we don't want to consider its mv.
@@ -1989,7 +1993,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
   // Top-right block
-  if (do_tr && has_top_right(xd, mi_row, mi_col, AOMMAX(xd->n8_w, xd->n8_h))) {
+  if (do_tr &&
+      has_top_right(cm, xd, mi_row, mi_col, AOMMAX(xd->n8_w, xd->n8_h))) {
     POSITION trb_pos = { -1, xd->n8_w };
 
     if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, &trb_pos)) {

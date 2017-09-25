@@ -521,8 +521,8 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                         int top_available, int right_available,
+static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
+                         int mi_col, int top_available, int right_available,
 #if CONFIG_EXT_PARTITION_TYPES
                          PARTITION_TYPE partition,
 #endif
@@ -561,8 +561,9 @@ static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 
     const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
     const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
-    const int blk_row_in_sb = (mi_row & MAX_MIB_MASK) >> bh_in_mi_log2;
-    const int blk_col_in_sb = (mi_col & MAX_MIB_MASK) >> bw_in_mi_log2;
+    const int sb_mi_size = mi_size_high[cm->sb_size];
+    const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
+    const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;
 
     // Top row of superblock: so top-right pixels are in the top and/or
     // top-right superblocks, both of which are already available.
@@ -570,7 +571,7 @@ static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 
     // Rightmost column of superblock (and not the top row): so top-right pixels
     // fall in the right superblock, which is not available yet.
-    if (((blk_col_in_sb + 1) << bw_in_mi_log2) >= MAX_MIB_SIZE) return 0;
+    if (((blk_col_in_sb + 1) << bw_in_mi_log2) >= sb_mi_size) return 0;
 
     // General case (neither top row nor rightmost column): check if the
     // top-right block is coded before the current block.
@@ -591,8 +592,8 @@ static int has_top_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   }
 }
 
-static int has_bottom_left(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                           int bottom_available, int left_available,
+static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
+                           int mi_col, int bottom_available, int left_available,
                            TX_SIZE txsz, int row_off, int col_off, int ss_y) {
   if (!bottom_available || !left_available) return 0;
 
@@ -614,8 +615,9 @@ static int has_bottom_left(BLOCK_SIZE bsize, int mi_row, int mi_col,
 
     const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
     const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
-    const int blk_row_in_sb = (mi_row & MAX_MIB_MASK) >> bh_in_mi_log2;
-    const int blk_col_in_sb = (mi_col & MAX_MIB_MASK) >> bw_in_mi_log2;
+    const int sb_mi_size = mi_size_high[cm->sb_size];
+    const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
+    const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;
 
     // Leftmost column of superblock: so bottom-left pixels maybe in the left
     // and/or bottom-left superblocks. But only the left superblock is
@@ -627,13 +629,13 @@ static int has_bottom_left(BLOCK_SIZE bsize, int mi_row, int mi_col,
                                     ss_y;
       const int row_off_in_sb = blk_start_row_off + row_off;
       const int sb_height_unit =
-          MAX_MIB_SIZE << (MI_SIZE_LOG2 - tx_size_wide_log2[0]) >> ss_y;
+          sb_mi_size << (MI_SIZE_LOG2 - tx_size_wide_log2[0]) >> ss_y;
       return row_off_in_sb + bottom_left_count_unit < sb_height_unit;
     }
 
     // Bottom row of superblock (and not the leftmost column): so bottom-left
     // pixels fall in the bottom superblock, which is not available yet.
-    if (((blk_row_in_sb + 1) << bh_in_mi_log2) >= MAX_MIB_SIZE) return 0;
+    if (((blk_row_in_sb + 1) << bh_in_mi_log2) >= sb_mi_size) return 0;
 
     // General case (neither leftmost column nor bottom row): check if the
     // bottom-left block is coded before the current block.
@@ -2917,7 +2919,8 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 }
 
-static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
+static void predict_intra_block_helper(const AV1_COMMON *cm,
+                                       const MACROBLOCKD *xd, int wpx, int hpx,
                                        TX_SIZE tx_size, PREDICTION_MODE mode,
                                        const uint8_t *ref, int ref_stride,
                                        uint8_t *dst, int dst_stride,
@@ -2974,13 +2977,13 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
 #endif
 
   const int have_top_right =
-      has_top_right(bsize, mi_row, mi_col, have_top, right_available,
+      has_top_right(cm, bsize, mi_row, mi_col, have_top, right_available,
 #if CONFIG_EXT_PARTITION_TYPES
                     partition,
 #endif
                     tx_size, row_off, col_off, pd->subsampling_x);
   const int have_bottom_left =
-      has_bottom_left(bsize, mi_row, mi_col, bottom_available, have_left,
+      has_bottom_left(cm, bsize, mi_row, mi_col, bottom_available, have_left,
                       tx_size, row_off, col_off, pd->subsampling_y);
   if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane != 0] > 0) {
     const int stride = wpx;
@@ -3029,8 +3032,9 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
                          have_bottom_left ? AOMMIN(txhpx, yd) : 0, plane);
 }
 
-void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
-                                    int blk_col, int blk_row, TX_SIZE tx_size) {
+void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    int plane, int block_idx, int blk_col,
+                                    int blk_row, TX_SIZE tx_size) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -3058,9 +3062,9 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
   }
 #endif
 
-  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
-                          mode, dst, dst_stride, dst, dst_stride, blk_col,
-                          blk_row, plane);
+  av1_predict_intra_block(cm, xd, pd->width, pd->height,
+                          txsize_to_bsize[tx_size], mode, dst, dst_stride, dst,
+                          dst_stride, blk_col, blk_row, plane);
 }
 
 #if INTRA_USES_EXT_TRANSFORMS
@@ -3168,11 +3172,11 @@ static void restore_ref_col(int buf_flags, int block_height,
 }
 #endif  // #if INTRA_USES_EXT_TRANSFORMS
 
-void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
-                             BLOCK_SIZE bsize, PREDICTION_MODE mode,
-                             const uint8_t *ref, int ref_stride, uint8_t *dst,
-                             int dst_stride, int col_off, int row_off,
-                             int plane) {
+void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                             int wpx, int hpx, BLOCK_SIZE bsize,
+                             PREDICTION_MODE mode, const uint8_t *ref,
+                             int ref_stride, uint8_t *dst, int dst_stride,
+                             int col_off, int row_off, int plane) {
   const int block_width = block_size_wide[bsize];
   const int block_height = block_size_high[bsize];
 #if INTRA_USES_RECT_TRANSFORMS
@@ -3186,8 +3190,8 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   // Start by running the helper to predict either the entire block
   // (if the block is square or the same size as tx_size) or the top
   // or left of the block if it's tall and thin or short and wide.
-  predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride, dst,
-                             dst_stride, col_off, row_off, plane);
+  predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, ref, ref_stride,
+                             dst, dst_stride, col_off, row_off, plane);
 
 // If we're not using extended transforms, this function should
 // always be called with a square block.
@@ -3252,7 +3256,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
       const uint8_t *next_ref_row = ref + next_row_idx * ref_stride;
       uint8_t *next_dst_row = dst + next_row_idx * dst_stride;
 
-      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, next_ref_row,
+      predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, next_ref_row,
                                  ref_stride, next_dst_row, dst_stride, col_off,
                                  next_row_off, plane);
 
@@ -3289,7 +3293,7 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
       const uint8_t *next_ref_col = ref + next_col_idx;
       uint8_t *next_dst_col = dst + next_col_idx;
 
-      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, next_ref_col,
+      predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, next_ref_col,
                                  ref_stride, next_dst_col, dst_stride,
                                  next_col_off, row_off, plane);
 

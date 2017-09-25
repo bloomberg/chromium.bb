@@ -479,7 +479,7 @@ static void predict_and_reconstruct_intra_block(
 #if CONFIG_PVQ
   (void)r;
 #endif
-  av1_predict_intra_block_facade(xd, plane, block_idx, col, row, tx_size);
+  av1_predict_intra_block_facade(cm, xd, plane, block_idx, col, row, tx_size);
 
   if (!mbmi->skip) {
 #if !CONFIG_PVQ

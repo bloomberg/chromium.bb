@@ -1991,9 +1991,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   const AV1_COMP *cpi = args->cpi;
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
-#if !CONFIG_TXK_SEL
   const AV1_COMMON *cm = &cpi->common;
-#endif
   int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
 
@@ -2019,7 +2017,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   if (args->exit_early) return;
 
   if (!is_inter_block(mbmi)) {
-    av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
+    av1_predict_intra_block_facade(cm, xd, plane, block, blk_col, blk_row,
+                                   tx_size);
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
 
@@ -2893,6 +2892,7 @@ static int conditional_skipintra(PREDICTION_MODE mode,
 // Model based RD estimation for luma intra blocks.
 static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                BLOCK_SIZE bsize, int mode_cost) {
+  const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   assert(!is_inter_block(mbmi));
@@ -2910,7 +2910,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int block = 0;
   for (row = 0; row < max_blocks_high; row += stepr) {
     for (col = 0; col < max_blocks_wide; col += stepc) {
-      av1_predict_intra_block_facade(xd, 0, block, col, row, tx_size);
+      av1_predict_intra_block_facade(cm, xd, 0, block, col, row, tx_size);
       block += step;
     }
   }
@@ -3282,8 +3282,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                          block == 0 || block == 2));
           xd->mi[0]->bmi[block_raster_idx].as_mode = mode;
           av1_predict_intra_block(
-              xd, pd->width, pd->height, txsize_to_bsize[tx_size], mode, dst,
-              dst_stride, dst, dst_stride, col + idx, row + idy, 0);
+              cm, xd, pd->width, pd->height, txsize_to_bsize[tx_size], mode,
+              dst, dst_stride, dst, dst_stride, col + idx, row + idy, 0);
 #if !CONFIG_PVQ
           aom_highbd_subtract_block(tx_height, tx_width, src_diff, 8, src,
                                     src_stride, dst, dst_stride, xd->bd);
@@ -3490,7 +3490,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
         assert(IMPLIES(tx_size == TX_4X8 || tx_size == TX_8X4,
                        block == 0 || block == 2));
         xd->mi[0]->bmi[block_raster_idx].as_mode = mode;
-        av1_predict_intra_block(xd, pd->width, pd->height,
+        av1_predict_intra_block(cm, xd, pd->width, pd->height,
                                 txsize_to_bsize[tx_size], mode, dst, dst_stride,
                                 dst, dst_stride,
 #if CONFIG_CB4X4
@@ -9013,7 +9013,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  HandleInterModeArgs *args,
                                  const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
-  (void)cm;
   MACROBLOCKD *xd = &x->e_mbd;
   MODE_INFO *mi = xd->mi[0];
   MB_MODE_INFO *mbmi = &mi->mbmi;
@@ -9546,7 +9545,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     for (j = 0; j < INTERINTRA_MODES; ++j) {
       mbmi->interintra_mode = (INTERINTRA_MODE)j;
       rmode = interintra_mode_cost[mbmi->interintra_mode];
-      av1_build_intra_predictors_for_interintra(xd, bsize, 0, &orig_dst,
+      av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, &orig_dst,
                                                 intrapred, bw);
       av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
       model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum,
@@ -9559,7 +9558,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
     mbmi->interintra_mode = best_interintra_mode;
     rmode = interintra_mode_cost[mbmi->interintra_mode];
-    av1_build_intra_predictors_for_interintra(xd, bsize, 0, &orig_dst,
+    av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, &orig_dst,
                                               intrapred, bw);
     av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
     av1_subtract_plane(x, bsize, 0);

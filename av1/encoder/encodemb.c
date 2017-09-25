@@ -1077,7 +1077,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 
-  av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
+  av1_predict_intra_block_facade(cm, xd, plane, block, blk_col, blk_row,
+                                 tx_size);
 
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
