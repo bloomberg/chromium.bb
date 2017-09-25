@@ -40,10 +40,6 @@ void NGPhysicalTextFragment::UpdateVisualRect() const {
 
   // TODO(kojii): Implement emphasis marks.
 
-  // letter-spacing, including negative, is built into ShapeResult.
-  // No need to take it into account here.
-  // TODO(kojii): Is this ture? Need to test.
-
   if (ShadowList* text_shadow = style.TextShadow()) {
     // TODO(kojii): Implement text shadow.
   }

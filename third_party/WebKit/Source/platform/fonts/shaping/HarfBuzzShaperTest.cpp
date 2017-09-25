@@ -11,6 +11,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontTestUtilities.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
@@ -360,6 +361,23 @@ TEST_F(HarfBuzzShaperTest, MissingGlyph) {
   RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(string.length(), result->EndIndexForResult());
+}
+
+TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
+  String string(u"Hello");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  float width = result->Width();
+  FloatRect bounds = result->Bounds();
+
+  ShapeResultSpacing<String> spacing(string);
+  FontDescription font_description;
+  font_description.SetLetterSpacing(-5);
+  spacing.SetSpacing(font_description);
+  result->ApplySpacing(spacing);
+
+  EXPECT_EQ(5 * 5, width - result->Width());
+  EXPECT_EQ(5 * 4 - 1, bounds.Width() - result->Bounds().Width());
 }
 
 TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
