@@ -47,11 +47,13 @@ NET_EXPORT_PRIVATE std::string GetFilenameFromKeyAndFileIndex(
     int file_index);
 
 // Same as |GetFilenameFromKeyAndIndex| above, but using a hex string.
-std::string GetFilenameFromEntryHashAndFileIndex(uint64_t entry_hash,
-                                                 int file_index);
+NET_EXPORT_PRIVATE std::string GetFilenameFromEntryHashAndFileIndex(
+    uint64_t entry_hash,
+    int file_index);
 
 // Given a |key| for an entry, returns the name of the sparse data file.
-std::string GetSparseFilenameFromEntryHash(uint64_t entry_hash);
+NET_EXPORT_PRIVATE std::string GetSparseFilenameFromEntryHash(
+    uint64_t entry_hash);
 
 // Given the size of a key, the size in bytes of the header at the beginning
 // of a simple cache file.
