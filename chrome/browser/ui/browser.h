@@ -219,10 +219,6 @@ class Browser : public TabStripModelObserver,
   explicit Browser(const CreateParams& params);
   ~Browser() override;
 
-  // Returns the Browser that contains the specified WebContents. May return
-  // null if no Browser has that WebContents as a tab.
-  static Browser* FromWebContents(content::WebContents* web_contents);
-
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
     override_bounds_ = bounds;
