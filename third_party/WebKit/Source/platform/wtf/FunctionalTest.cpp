@@ -319,7 +319,7 @@ TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
 class Number : public RefCounted<Number> {
  public:
   static RefPtr<Number> Create(int value) {
-    return AdoptRef(new Number(value));
+    return WTF::AdoptRef(new Number(value));
   }
 
   ~Number() { value_ = 0; }

@@ -180,7 +180,7 @@ int DummyRefCounted::ref_invokes_count_ = 0;
 
 TEST(HashSetTest, HashSetRefPtr) {
   bool is_deleted = false;
-  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
+  RefPtr<DummyRefCounted> ptr = WTF::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
   HashSet<RefPtr<DummyRefCounted>> set;
   set.insert(ptr);

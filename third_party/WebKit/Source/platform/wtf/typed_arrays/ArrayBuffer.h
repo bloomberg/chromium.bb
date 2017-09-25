@@ -138,14 +138,14 @@ RefPtr<ArrayBuffer> ArrayBuffer::Create(const void* source,
                                ArrayBufferContents::kDontInitialize);
   if (UNLIKELY(!contents.Data()))
     OOM_CRASH();
-  RefPtr<ArrayBuffer> buffer = AdoptRef(new ArrayBuffer(contents));
+  RefPtr<ArrayBuffer> buffer = WTF::AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->Data(), source, byte_length);
   return buffer;
 }
 
 RefPtr<ArrayBuffer> ArrayBuffer::Create(ArrayBufferContents& contents) {
   CHECK(contents.DataMaybeShared());
-  return AdoptRef(new ArrayBuffer(contents));
+  return WTF::AdoptRef(new ArrayBuffer(contents));
 }
 
 RefPtr<ArrayBuffer> ArrayBuffer::CreateOrNull(unsigned num_elements,
@@ -169,7 +169,7 @@ RefPtr<ArrayBuffer> ArrayBuffer::Create(
                                ArrayBufferContents::kNotShared, policy);
   if (UNLIKELY(!contents.Data()))
     OOM_CRASH();
-  return AdoptRef(new ArrayBuffer(contents));
+  return WTF::AdoptRef(new ArrayBuffer(contents));
 }
 
 RefPtr<ArrayBuffer> ArrayBuffer::CreateOrNull(
@@ -180,7 +180,7 @@ RefPtr<ArrayBuffer> ArrayBuffer::CreateOrNull(
                                ArrayBufferContents::kNotShared, policy);
   if (!contents.Data())
     return nullptr;
-  return AdoptRef(new ArrayBuffer(contents));
+  return WTF::AdoptRef(new ArrayBuffer(contents));
 }
 
 RefPtr<ArrayBuffer> ArrayBuffer::CreateShared(unsigned num_elements,
@@ -194,7 +194,7 @@ RefPtr<ArrayBuffer> ArrayBuffer::CreateShared(const void* source,
   ArrayBufferContents contents(byte_length, 1, ArrayBufferContents::kShared,
                                ArrayBufferContents::kDontInitialize);
   CHECK(contents.DataShared());
-  RefPtr<ArrayBuffer> buffer = AdoptRef(new ArrayBuffer(contents));
+  RefPtr<ArrayBuffer> buffer = WTF::AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->DataShared(), source, byte_length);
   return buffer;
 }
@@ -206,7 +206,7 @@ RefPtr<ArrayBuffer> ArrayBuffer::CreateShared(
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kShared, policy);
   CHECK(contents.DataShared());
-  return AdoptRef(new ArrayBuffer(contents));
+  return WTF::AdoptRef(new ArrayBuffer(contents));
 }
 
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)

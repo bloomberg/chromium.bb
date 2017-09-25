@@ -402,7 +402,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   using Set = TypeParam;
   bool is_deleted = false;
   DummyRefCounted::ref_invokes_count_ = 0;
-  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
+  RefPtr<DummyRefCounted> ptr = WTF::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
 
   Set set;
@@ -434,8 +434,9 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   bool is_deleted = false;
   bool is_deleted2 = false;
 
-  RefPtr<DummyRefCounted> ptr = AdoptRef(new DummyRefCounted(is_deleted));
-  RefPtr<DummyRefCounted> ptr2 = AdoptRef(new DummyRefCounted(is_deleted2));
+  RefPtr<DummyRefCounted> ptr = WTF::AdoptRef(new DummyRefCounted(is_deleted));
+  RefPtr<DummyRefCounted> ptr2 =
+      WTF::AdoptRef(new DummyRefCounted(is_deleted2));
 
   typename Set::AddResult add_result = set.insert(ptr);
   EXPECT_TRUE(add_result.is_new_entry);

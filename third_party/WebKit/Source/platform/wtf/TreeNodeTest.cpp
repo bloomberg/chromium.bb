@@ -33,7 +33,7 @@ namespace WTF {
 
 class TestTree : public RefCounted<TestTree>, public TreeNode<TestTree> {
  public:
-  static RefPtr<TestTree> Create() { return AdoptRef(new TestTree()); }
+  static RefPtr<TestTree> Create() { return WTF::AdoptRef(new TestTree()); }
 };
 
 TEST(TreeNodeTest, AppendChild) {
