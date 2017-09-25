@@ -93,6 +93,8 @@ class BLINK_EXPORT WebNode {
   // If the JS API would have thrown this returns null instead.
   WebElement QuerySelector(const WebString& selector) const;
 
+  WebVector<WebElement> QuerySelectorAll(const WebString& selector) const;
+
   bool Focused() const;
 
   WebPluginContainer* PluginContainer() const;

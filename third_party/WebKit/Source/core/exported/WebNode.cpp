@@ -187,6 +187,22 @@ WebElement WebNode::QuerySelector(const WebString& selector) const {
       ->QuerySelector(selector, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
+WebVector<WebElement> WebNode::QuerySelectorAll(
+    const WebString& selector) const {
+  if (!private_->IsContainerNode())
+    return WebVector<WebElement>();
+  StaticElementList* elements =
+      ToContainerNode(private_.Get())
+          ->QuerySelectorAll(selector, IGNORE_EXCEPTION_FOR_TESTING);
+  if (elements) {
+    WebVector<WebElement> vector((size_t)elements->length());
+    for (unsigned i = 0; i < elements->length(); ++i)
+      vector[i] = elements->item(i);
+    return vector;
+  }
+  return WebVector<WebElement>();
+}
+
 bool WebNode::Focused() const {
   return private_->IsFocused();
 }
