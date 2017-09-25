@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -22,8 +23,7 @@ class SerialWorkerTest : public testing::Test {
   // The class under test
   class TestSerialWorker : public SerialWorker {
    public:
-    explicit TestSerialWorker(SerialWorkerTest* t)
-      : test_(t) {}
+    explicit TestSerialWorker(SerialWorkerTest* t) : test_(t) {}
     void DoWork() override {
       ASSERT_TRUE(test_);
       test_->OnWork();
@@ -46,8 +46,12 @@ class SerialWorkerTest : public testing::Test {
       work_running_ = true;
     }
     BreakNow("OnWork");
-    work_allowed_.Wait();
-    // Calling from WorkerPool, but protected by work_allowed_/work_called_.
+    {
+      base::ScopedAllowBaseSyncPrimitivesForTesting
+          scoped_allow_base_sync_primitives;
+      work_allowed_.Wait();
+    }
+    // Calling from TaskScheduler, but protected by work_allowed_/work_called_.
     output_value_ = input_value_;
 
     { // This lock might be destroyed after work_called_ is signalled.
