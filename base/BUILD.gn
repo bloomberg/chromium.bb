@@ -2191,6 +2191,7 @@ test("base_unittests") {
     "threading/thread_id_name_manager_unittest.cc",
     "threading/thread_local_storage_unittest.cc",
     "threading/thread_local_unittest.cc",
+    "threading/thread_restrictions_unittest.cc",
     "threading/thread_task_runner_handle_unittest.cc",
     "threading/thread_unittest.cc",
     "threading/watchdog_unittest.cc",
