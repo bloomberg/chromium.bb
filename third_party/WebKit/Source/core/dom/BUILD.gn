@@ -104,6 +104,8 @@ blink_core_sources("dom") {
     "DocumentType.h",
     "DocumentWriteIntervention.cpp",
     "DocumentWriteIntervention.h",
+    "DynamicModuleResolver.cpp",
+    "DynamicModuleResolver.h",
     "Element.cpp",
     "Element.h",
     "ElementData.cpp",
