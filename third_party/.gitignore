@@ -49,6 +49,7 @@
 /cygwin
 /depot_tools
 /deqp/src
+/devtools-node-modules
 /directxsdk
 /dom_distiller_js/dist
 /drmemory/drmemory-windows-sfx.exe
