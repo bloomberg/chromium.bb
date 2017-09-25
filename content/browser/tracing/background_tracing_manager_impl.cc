@@ -560,7 +560,8 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     trace_data_sink = TracingControllerImpl::CreateCompressedStringSink(
         TracingControllerImpl::CreateCallbackEndpoint(
             base::Bind(&BackgroundTracingManagerImpl::OnFinalizeStarted,
-                       base::Unretained(this))));
+                       base::Unretained(this))),
+        true /* compress_with_background_priority */);
     RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
     AddCustomMetadata();
   } else {

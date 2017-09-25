@@ -56,7 +56,8 @@ class TracingControllerImpl
                                 base::RefCountedString*)>& callback);
 
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
-      scoped_refptr<TraceDataEndpoint> endpoint);
+      scoped_refptr<TraceDataEndpoint> endpoint,
+      bool compress_with_background_priority);
   static scoped_refptr<TraceDataSink> CreateJSONSink(
       scoped_refptr<TraceDataEndpoint> endpoint);
 

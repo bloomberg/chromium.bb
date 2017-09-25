@@ -193,30 +193,34 @@ class JSONTraceDataSink : public TraceDataSinkImplBase {
 
 class CompressedTraceDataEndpoint : public TraceDataEndpoint {
  public:
-  explicit CompressedTraceDataEndpoint(
-      scoped_refptr<TraceDataEndpoint> endpoint)
-      : endpoint_(endpoint), already_tried_open_(false) {}
+  CompressedTraceDataEndpoint(scoped_refptr<TraceDataEndpoint> endpoint,
+                              bool compress_with_background_priority)
+      : endpoint_(endpoint),
+        already_tried_open_(false),
+        background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+            {compress_with_background_priority
+                 ? base::TaskPriority::BACKGROUND
+                 : base::TaskPriority::USER_VISIBLE})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&CompressedTraceDataEndpoint::CompressOnFileThread, this,
-                       base::Passed(std::move(chunk))));
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CompressedTraceDataEndpoint::CompressOnBackgroundThread,
+                       this, base::Passed(std::move(chunk))));
   }
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&CompressedTraceDataEndpoint::CloseOnFileThread, this,
-                       base::Passed(std::move(metadata))));
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CompressedTraceDataEndpoint::CloseOnBackgroundThread,
+                       this, base::Passed(std::move(metadata))));
   }
 
  private:
   ~CompressedTraceDataEndpoint() override {}
 
-  bool OpenZStreamOnFileThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  bool OpenZStreamOnBackgroundThread() {
     if (stream_)
       return true;
 
@@ -238,19 +242,16 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
     return result == 0;
   }
 
-  void CompressOnFileThread(std::unique_ptr<std::string> chunk) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    if (!OpenZStreamOnFileThread())
+  void CompressOnBackgroundThread(std::unique_ptr<std::string> chunk) {
+    if (!OpenZStreamOnBackgroundThread())
       return;
 
     stream_->avail_in = chunk->size();
     stream_->next_in = reinterpret_cast<unsigned char*>(&*chunk->begin());
-    DrainStreamOnFileThread(false);
+    DrainStreamOnBackgroundThread(false);
   }
 
-  void DrainStreamOnFileThread(bool finished) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
+  void DrainStreamOnBackgroundThread(bool finished) {
     int err;
     const int kChunkSize = 0x4000;
     char buffer[kChunkSize];
@@ -272,13 +273,12 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
     } while (stream_->avail_out == 0);
   }
 
-  void CloseOnFileThread(
+  void CloseOnBackgroundThread(
       std::unique_ptr<const base::DictionaryValue> metadata) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    if (!OpenZStreamOnFileThread())
+    if (!OpenZStreamOnBackgroundThread())
       return;
 
-    DrainStreamOnFileThread(true);
+    DrainStreamOnBackgroundThread(true);
     deflateEnd(stream_.get());
     stream_.reset();
 
@@ -288,6 +288,7 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
   scoped_refptr<TraceDataEndpoint> endpoint_;
   std::unique_ptr<z_stream> stream_;
   bool already_tried_open_;
+  const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CompressedTraceDataEndpoint);
 };
@@ -333,8 +334,10 @@ TracingController::CreateFileSink(const base::FilePath& file_path,
 
 scoped_refptr<TracingController::TraceDataSink>
 TracingControllerImpl::CreateCompressedStringSink(
-    scoped_refptr<TraceDataEndpoint> endpoint) {
-  return new JSONTraceDataSink(new CompressedTraceDataEndpoint(endpoint));
+    scoped_refptr<TraceDataEndpoint> endpoint,
+    bool compress_with_background_priority) {
+  return new JSONTraceDataSink(new CompressedTraceDataEndpoint(
+      endpoint, compress_with_background_priority));
 }
 
 scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateCallbackEndpoint(
