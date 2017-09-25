@@ -5,7 +5,6 @@
 #include "modules/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/fetch/BodyStreamBuffer.h"

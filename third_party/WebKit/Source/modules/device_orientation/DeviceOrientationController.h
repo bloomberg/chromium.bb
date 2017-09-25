@@ -5,7 +5,6 @@
 #ifndef DeviceOrientationController_h
 #define DeviceOrientationController_h
 
-#include "core/dom/Document.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
 #include "modules/ModulesExport.h"
 

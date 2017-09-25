@@ -8,7 +8,6 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "core/dom/Document.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"

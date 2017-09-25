@@ -7,7 +7,6 @@
 #include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"

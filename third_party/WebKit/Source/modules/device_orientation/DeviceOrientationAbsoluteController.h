@@ -5,7 +5,6 @@
 #ifndef DeviceOrientationAbsoluteController_h
 #define DeviceOrientationAbsoluteController_h
 
-#include "core/dom/Document.h"
 #include "modules/ModulesExport.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 

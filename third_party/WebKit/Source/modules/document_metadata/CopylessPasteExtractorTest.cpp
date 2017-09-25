@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/document_metadata/CopylessPasteExtractor.h"

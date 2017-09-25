@@ -33,7 +33,6 @@
 #include "SkMatrix44.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarker.h"

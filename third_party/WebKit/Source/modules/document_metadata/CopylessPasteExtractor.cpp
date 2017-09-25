@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "core/HTMLNames.h"
-#include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"

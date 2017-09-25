@@ -30,7 +30,6 @@
 
 #include "public/web/WebUserMediaRequest.h"
 
-#include "core/dom/Document.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
