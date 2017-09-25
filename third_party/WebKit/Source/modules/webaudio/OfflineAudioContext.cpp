@@ -367,6 +367,8 @@ void OfflineAudioContext::FireCompletionEvent() {
     complete_resolver_->Reject(DOMException::Create(
         kInvalidStateError, "the execution context does not exist"));
   }
+
+  is_rendering_started_ = false;
 }
 
 bool OfflineAudioContext::HandlePreOfflineRenderTasks() {
@@ -456,6 +458,10 @@ bool OfflineAudioContext::ShouldSuspend() {
     return true;
 
   return false;
+}
+
+bool OfflineAudioContext::HasPendingActivity() const {
+  return is_rendering_started_;
 }
 
 }  // namespace blink
