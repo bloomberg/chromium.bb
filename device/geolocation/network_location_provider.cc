@@ -91,17 +91,10 @@ bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
   return !key->empty();
 }
 
-// NetworkLocationProvider factory function
-LocationProvider* NewNetworkLocationProvider(
-    const scoped_refptr<net::URLRequestContextGetter>& context,
-    const GURL& url) {
-  return new NetworkLocationProvider(context, url);
-}
-
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
     const scoped_refptr<net::URLRequestContextGetter>& url_context_getter,
-    const GURL& url)
+    const std::string& api_key)
     : wifi_data_provider_manager_(nullptr),
       wifi_data_update_callback_(
           base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
@@ -111,7 +104,7 @@ NetworkLocationProvider::NetworkLocationProvider(
       is_new_data_available_(false),
       request_(new NetworkLocationRequest(
           url_context_getter,
-          url,
+          api_key,
           base::Bind(&NetworkLocationProvider::OnLocationResponse,
                      base::Unretained(this)))),
       position_cache_(new PositionCache),

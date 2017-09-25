@@ -434,6 +434,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, ResourceContext* context);
 
+  // Allows an embedder to provide a Google API Key to use for network
+  // geolocation queries.
+  // * May be called from any thread.
+  // * Default implementation returns empty string, meaning send no API key.
+  virtual std::string GetGeolocationApiKey();
+
   // Allow the embedder to specify a string version of the storage partition
   // config with a site.
   virtual std::string GetStoragePartitionIdForSite(

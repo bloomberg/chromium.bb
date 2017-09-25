@@ -64,7 +64,6 @@ component("geolocation") {
 
   deps = [
     "//base",
-    "//google_apis:google_apis",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//net",

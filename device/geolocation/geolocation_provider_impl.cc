@@ -24,7 +24,8 @@ namespace device {
 namespace {
 base::LazyInstance<std::unique_ptr<GeolocationDelegate>>::Leaky g_delegate =
     LAZY_INSTANCE_INITIALIZER;
-}  // anonymous namespace
+base::LazyInstance<std::string>::Leaky g_api_key = LAZY_INSTANCE_INITIALIZER;
+}  // namespace
 
 // static
 GeolocationProvider* GeolocationProvider::GetInstance() {
@@ -36,6 +37,11 @@ void GeolocationProvider::SetGeolocationDelegate(
     GeolocationDelegate* delegate) {
   DCHECK(!g_delegate.Get());
   g_delegate.Get().reset(delegate);
+}
+
+// static
+void GeolocationProvider::SetApiKey(const std::string& api_key) {
+  g_api_key.Get() = api_key;
 }
 
 std::unique_ptr<GeolocationProvider::Subscription>
@@ -187,17 +193,18 @@ void GeolocationProviderImpl::NotifyClients(const Geoposition& position) {
 void GeolocationProviderImpl::Init() {
   DCHECK(OnGeolocationThread());
 
-  if (!arbitrator_) {
-    LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
-        &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-    // Use the embedder's |g_delegate| or fall back to the default one.
-    if (!g_delegate.Get())
-      g_delegate.Get().reset(new GeolocationDelegate);
+  if (arbitrator_)
+    return;
 
-    arbitrator_ = std::make_unique<LocationArbitrator>(
-        base::WrapUnique(g_delegate.Get().get()));
-    arbitrator_->SetUpdateCallback(callback);
-  }
+  LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
+      &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
+  // Use the embedder's |g_delegate| or fall back to the default one.
+  if (!g_delegate.Get())
+    g_delegate.Get().reset(new GeolocationDelegate);
+
+  arbitrator_ = std::make_unique<LocationArbitrator>(
+      base::WrapUnique(g_delegate.Get().get()), g_api_key.Get());
+  arbitrator_->SetUpdateCallback(callback);
 }
 
 void GeolocationProviderImpl::CleanUp() {
