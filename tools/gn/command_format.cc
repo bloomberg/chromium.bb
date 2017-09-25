@@ -336,7 +336,7 @@ void Printer::SortIfSourcesOrDeps(const BinaryOpNode* binop) {
        binop->op().value() == "-=") &&
       ident && list) {
     const base::StringPiece lhs = ident->value().value();
-    if (lhs == "sources")
+    if (lhs == "public" || lhs == "sources")
       const_cast<ListNode*>(list)->SortAsStringsList();
     else if (lhs == "deps" || lhs == "public_deps")
       const_cast<ListNode*>(list)->SortAsDepsList();
