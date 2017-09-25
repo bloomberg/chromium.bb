@@ -9,6 +9,7 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/common/cast_messages.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/cast/logging/logging_defines.h"
 #include "net/base/ip_address.h"
@@ -21,7 +22,7 @@ class CastTransportHostFilterTest : public testing::Test {
   CastTransportHostFilterTest()
       : browser_thread_bundle_(
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    filter_ = new cast::CastTransportHostFilter();
+    filter_ = new cast::CastTransportHostFilter(&profile_);
     static_cast<cast::CastTransportHostFilter*>(filter_.get())
         ->InitializeNoOpWakeLockForTesting();
     // 127.0.0.1:7 is the local echo service port, which
@@ -38,6 +39,7 @@ class CastTransportHostFilterTest : public testing::Test {
 
   base::DictionaryValue options_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
+  TestingProfile profile_;
   scoped_refptr<content::BrowserMessageFilter> filter_;
   net::IPEndPoint receive_endpoint_;
 };

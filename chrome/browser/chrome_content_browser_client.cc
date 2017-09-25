@@ -1017,7 +1017,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  host->AddFilter(new cast::CastTransportHostFilter);
+  host->AddFilter(new cast::CastTransportHostFilter(profile));
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
