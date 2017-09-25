@@ -811,17 +811,6 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     ColorTransform::Intent intent) {
   if (intent == ColorTransform::Intent::INTENT_PERCEPTUAL) {
     switch (src.transfer_) {
-      case ColorSpace::TransferID::BT709:
-      case ColorSpace::TransferID::SMPTE170M:
-        // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
-        // content. However, most displays actually use a gamma of 2.2, and
-        // user studies shows that users don't really care. Using the same
-        // gamma as the destination will let us optimize a lot more, so use it
-        // if we can.
-        if (dst.transfer_ == ColorSpace::TransferID::IEC61966_2_1)
-          src.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
-        break;
-
       case ColorSpace::TransferID::SMPTEST2084:
         if (!dst.IsHDR()) {
           // We don't have an HDR display, so replace SMPTE 2084 with
