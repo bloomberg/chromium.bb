@@ -3339,12 +3339,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCaptureThumbnailOnNavigatingAway)},
 
 #if defined(OS_CHROMEOS)
-    {"use-cros-midi-service", flag_descriptions::kUseCrosMidiServiceName,
-     flag_descriptions::kUseCrosMidiServiceNameDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(midi::features::kMidiManagerCros)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"disable-lock-screen-apps", flag_descriptions::kDisableLockScreenAppsName,
      flag_descriptions::kDisableLockScreenAppsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kDisableLockScreenApps)},

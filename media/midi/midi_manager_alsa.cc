@@ -1383,10 +1383,8 @@ MidiManagerAlsa::CreateScopedSndMidiEventPtr(size_t size) {
   return ScopedSndMidiEventPtr(coder);
 }
 
-#if !defined(OS_CHROMEOS)
 MidiManager* MidiManager::Create(MidiService* service) {
   return new MidiManagerAlsa(service);
 }
-#endif
 
 }  // namespace midi
