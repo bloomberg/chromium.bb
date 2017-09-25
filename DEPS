@@ -125,8 +125,8 @@ allowed_hosts = [
 ]
 
 deps = {
-  'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '1c6d1613966eab5d77531e85f3b60c40124b43f0',
+  'src/breakpad/src':
+    Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '6b59fc07474c9338e7727c52a6d8a92010a105ad',
 
   'src/buildtools':
     Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
@@ -532,11 +532,11 @@ include_rules = [
 
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
+  'breakpad',
   'native_client_sdk',
   'out',
   'skia',
   'testing',
-  'third_party/breakpad/breakpad',
   'v8',
   'win8',
 ]

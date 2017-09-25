@@ -199,6 +199,8 @@ if (!is_android && !is_mac) {
           ":file_pre_reader",
           ":visual_elements_resources",
           "//base",
+          "//breakpad:breakpad_handler",
+          "//breakpad:breakpad_sender",
           "//chrome/app/version_assembly:chrome_exe_manifest",
           "//chrome/browser:active_use_util",
           "//chrome/browser:chrome_process_finder",
@@ -217,8 +219,6 @@ if (!is_android && !is_mac) {
           "//crypto",
           "//gpu/config:crash_keys",
           "//sandbox",
-          "//third_party/breakpad:breakpad_handler",
-          "//third_party/breakpad:breakpad_sender",
         ]
         data_deps = [
           "//chrome/app/version_assembly:version_assembly_manifest",
@@ -1366,8 +1366,8 @@ if (is_win) {
         ":chrome_app",
         ":chrome_framework",
         ":chrome_helper_app",
+        "//breakpad:dump_syms",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
-        "//third_party/breakpad:dump_syms",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
       ]
     }
@@ -1821,7 +1821,7 @@ if (is_linux) {
     action("linux_symbols") {
       script = "//build/linux/dump_app_syms.py"
 
-      dump_syms_label = "//third_party/breakpad:dump_syms($host_toolchain)"
+      dump_syms_label = "//breakpad:dump_syms($host_toolchain)"
       dump_syms_binary =
           get_label_info(dump_syms_label, "root_out_dir") + "/" + "dump_syms"
 

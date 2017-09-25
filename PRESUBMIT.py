@@ -10,13 +10,13 @@ for more details about the presubmit API built into depot_tools.
 
 
 _EXCLUDED_PATHS = (
+    r"^breakpad[\\\/].*",
     r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_rules.py",
     r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_simple.py",
     r"^native_client_sdk[\\\/]src[\\\/]tools[\\\/].*.mk",
     r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
     r"^skia[\\\/].*",
     r"^third_party[\\\/](WebKit|blink)[\\\/].*",
-    r"^third_party[\\\/]breakpad[\\\/].*",
     r"^v8[\\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",

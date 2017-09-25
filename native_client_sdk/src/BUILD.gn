@@ -56,9 +56,9 @@ if (enable_nacl) {
     # http://crbug.com/245456
     if (!is_win && target_cpu == "x64") {
       deps += [
-        "//third_party/breakpad:dump_syms($host_toolchain)",
-        "//third_party/breakpad:minidump_dump($host_toolchain)",
-        "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
+        "//breakpad:dump_syms($host_toolchain)",
+        "//breakpad:minidump_dump($host_toolchain)",
+        "//breakpad:minidump_stackwalk($host_toolchain)",
       ]
     }
   }

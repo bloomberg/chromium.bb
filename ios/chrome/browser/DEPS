@@ -1,4 +1,6 @@
 include_rules = [
+  "+breakpad/src/client/ios",
+  "+breakpad/src/common",
   "+components/about_handler",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
@@ -103,8 +105,6 @@ include_rules = [
   "+net",
   "+rlz/features",
   "+services/metrics",
-  "+third_party/breakpad/breakpad/src/client/ios",
-  "+third_party/breakpad/breakpad/src/common",
   "+third_party/brotli",
   "+third_party/google_toolbox_for_mac",
   "+third_party/libaddressinput",

@@ -64,6 +64,7 @@ check_targets = [
   "//ash/*",
   "//base/*",
   "//blink/*",
+  "//breakpad/*",
   "//build/*",
   "//cc/*",
 
@@ -134,7 +135,6 @@ check_targets = [
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
-  "//third_party/breakpad/*",
   "//third_party/brotli/*",
   "//third_party/hunspell/*",
   "//third_party/leveldatabase/*",
