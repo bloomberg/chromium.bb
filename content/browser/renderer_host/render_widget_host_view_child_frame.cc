@@ -511,7 +511,7 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
 
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   current_surface_size_ = frame.size_in_pixels();
   current_surface_scale_factor_ = frame.device_scale_factor();
 
@@ -562,7 +562,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
 
 void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
   last_scroll_offset_ = frame.metadata.root_scroll_offset;

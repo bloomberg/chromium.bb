@@ -8,11 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
@@ -147,7 +147,7 @@ class DisplayTest : public testing::Test {
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
-    cc::CompositorFrame frame = test::MakeCompositorFrame();
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -358,7 +358,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = test::MakeCompositorFrame();
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
@@ -390,7 +390,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = test::MakeCompositorFrame();
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -478,7 +478,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    cc::CompositorFrame frame = test::MakeCompositorFrame();
+    CompositorFrame frame = test::MakeCompositorFrame();
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 

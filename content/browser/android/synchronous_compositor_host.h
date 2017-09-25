@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -69,7 +69,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
 
   // Called by SynchronousCompositorBrowserFilter.
   int routing_id() const { return routing_id_; }
-  void UpdateFrameMetaData(cc::CompositorFrameMetadata frame_metadata);
+  void UpdateFrameMetaData(viz::CompositorFrameMetadata frame_metadata);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
 
   SynchronousCompositorClient* client() { return client_; }

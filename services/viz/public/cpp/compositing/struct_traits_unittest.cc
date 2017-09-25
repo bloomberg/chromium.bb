@@ -8,8 +8,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -406,10 +406,10 @@ TEST_F(StructTraitsTest, Selection) {
   end.SetEdge(gfx::PointF(1337.5f, 52124.f), gfx::PointF(1234.3f, 8765.6f));
   end.set_visible(false);
   end.set_type(gfx::SelectionBound::RIGHT);
-  cc::Selection<gfx::SelectionBound> input;
+  Selection<gfx::SelectionBound> input;
   input.start = start;
   input.end = end;
-  cc::Selection<gfx::SelectionBound> output;
+  Selection<gfx::SelectionBound> output;
   SerializeAndDeserialize<mojom::Selection>(input, &output);
   EXPECT_EQ(start, output.start);
   EXPECT_EQ(end, output.end);
@@ -518,7 +518,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const uint32_t content_source_id = 3;
   const BeginFrameAck begin_frame_ack(5, 10, false);
 
-  cc::CompositorFrame input;
+  CompositorFrame input;
   input.metadata.device_scale_factor = device_scale_factor;
   input.metadata.root_scroll_offset = root_scroll_offset;
   input.metadata.page_scale_factor = page_scale_factor;
@@ -528,7 +528,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.metadata.content_source_id = content_source_id;
   input.metadata.begin_frame_ack = begin_frame_ack;
 
-  cc::CompositorFrame output;
+  CompositorFrame output;
   SerializeAndDeserialize<mojom::CompositorFrame>(input, &output);
 
   EXPECT_EQ(device_scale_factor, output.metadata.device_scale_factor);
@@ -641,7 +641,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float bottom_bar_height(1234.5f);
   const float bottom_bar_shown_ratio(1.0f);
   const uint32_t root_background_color = 1337;
-  cc::Selection<gfx::SelectionBound> selection;
+  Selection<gfx::SelectionBound> selection;
   selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
                           gfx::PointF(5432.1f, 1987.6f));
   selection.start.set_visible(true);
@@ -666,7 +666,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   uint32_t frame_token = 0xdeadbeef;
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
 
-  cc::CompositorFrameMetadata input;
+  CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;
   input.root_scroll_offset = root_scroll_offset;
   input.page_scale_factor = page_scale_factor;
@@ -691,7 +691,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.frame_token = frame_token;
   input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
 
-  cc::CompositorFrameMetadata output;
+  CompositorFrameMetadata output;
   SerializeAndDeserialize<mojom::CompositorFrameMetadata>(input, &output);
   EXPECT_EQ(device_scale_factor, output.device_scale_factor);
   EXPECT_EQ(root_scroll_offset, output.root_scroll_offset);

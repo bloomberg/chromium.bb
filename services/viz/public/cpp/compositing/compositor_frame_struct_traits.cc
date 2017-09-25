@@ -12,8 +12,8 @@
 namespace mojo {
 
 // static
-bool StructTraits<viz::mojom::CompositorFrameDataView, cc::CompositorFrame>::
-    Read(viz::mojom::CompositorFrameDataView data, cc::CompositorFrame* out) {
+bool StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame>::
+    Read(viz::mojom::CompositorFrameDataView data, viz::CompositorFrame* out) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "StructTraits::CompositorFrame::Read");
   return data.ReadPasses(&out->render_pass_list) &&

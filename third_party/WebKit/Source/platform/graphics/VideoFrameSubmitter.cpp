@@ -70,7 +70,7 @@ void VideoFrameSubmitter::SubmitFrame(viz::BeginFrameAck begin_frame_ack) {
   if (!provider_)
     return;
 
-  cc::CompositorFrame compositor_frame;
+  viz::CompositorFrame compositor_frame;
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();

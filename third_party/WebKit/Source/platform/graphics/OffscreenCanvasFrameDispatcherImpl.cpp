@@ -4,7 +4,7 @@
 
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "platform/CrossThreadFunctional.h"
@@ -119,7 +119,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     PostImageToPlaceholder(std::move(image));
     return;
   }
-  cc::CompositorFrame frame;
+  viz::CompositorFrame frame;
   // TODO(crbug.com/652931): update the device_scale_factor
   frame.metadata.device_scale_factor = 1.0f;
   if (current_begin_frame_ack_.sequence_number ==

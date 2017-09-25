@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/display_client.h"
 #include "ipc/ipc_message.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -49,7 +49,7 @@ class SynchronousLayerTreeFrameSinkClient {
   virtual void DidActivatePendingTree() = 0;
   virtual void Invalidate() = 0;
   virtual void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
-                                     cc::CompositorFrame frame) = 0;
+                                     viz::CompositorFrame frame) = 0;
 
  protected:
   virtual ~SynchronousLayerTreeFrameSinkClient() {}
@@ -85,7 +85,7 @@ class SynchronousLayerTreeFrameSink
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
-  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void Invalidate() override;
 

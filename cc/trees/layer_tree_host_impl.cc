@@ -45,8 +45,6 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -78,6 +76,8 @@
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -1662,8 +1662,9 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
   client_->OnCanDrawStateChanged(CanDraw());
 }
 
-CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
-  CompositorFrameMetadata metadata;
+viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata()
+    const {
+  viz::CompositorFrameMetadata metadata;
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
 
@@ -1777,7 +1778,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         frame->render_passes);
   }
 
-  CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
   active_tree()->FinishSwapPromises(&metadata);
@@ -1808,7 +1809,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
             frame->begin_frame_ack.sequence_number);
   metadata.begin_frame_ack = frame->begin_frame_ack;
 
-  CompositorFrame compositor_frame;
+  viz::CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
   resource_provider_->PrepareSendToParent(resources,
                                           &compositor_frame.resource_list);

@@ -1063,7 +1063,7 @@ void RenderFrameDevToolsAgentHost::WasHidden() {
 }
 
 void RenderFrameDevToolsAgentHost::DidReceiveCompositorFrame() {
-  const cc::CompositorFrameMetadata& metadata =
+  const viz::CompositorFrameMetadata& metadata =
       RenderWidgetHostImpl::From(
           web_contents()->GetRenderViewHost()->GetWidget())
           ->last_frame_metadata();
@@ -1274,7 +1274,7 @@ base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
 
 void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
     RenderFrameHost* frame_host,
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   scoped_refptr<RenderFrameDevToolsAgentHost> dtah(FindAgentHost(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
@@ -1288,7 +1288,7 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   for (auto* page : protocol::PageHandler::ForAgentHost(this))
     page->OnSynchronousSwapCompositorFrame(frame_metadata.Clone());
   for (auto* input : protocol::InputHandler::ForAgentHost(this))

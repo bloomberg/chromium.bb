@@ -86,7 +86,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
 
   auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
   frame_ptr->layer_tree_frame_sink_id = std::get<0>(param);
-  base::Optional<cc::CompositorFrame>& compositor_frame = std::get<1>(param);
+  base::Optional<viz::CompositorFrame>& compositor_frame = std::get<1>(param);
   if (compositor_frame) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -94,7 +94,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
             &SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread,
             this, routing_id,
             base::Passed(compositor_frame->metadata.Clone())));
-    frame_ptr->frame.reset(new cc::CompositorFrame);
+    frame_ptr->frame.reset(new viz::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
   }
   future->SetFrame(std::move(frame_ptr));
@@ -103,7 +103,7 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
 
 void SynchronousCompositorBrowserFilter::ProcessFrameMetadataOnUIThread(
     int routing_id,
-    cc::CompositorFrameMetadata metadata) {
+    viz::CompositorFrameMetadata metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto itr = hosts_.find(routing_id);
   if (itr == hosts_.end())

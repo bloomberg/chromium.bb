@@ -11,7 +11,6 @@
 #include "ui/compositor/compositor.h"
 
 namespace cc {
-class CompositorFrame;
 class FakeLayerTreeFrameSink;
 class ResourceSettings;
 class TestTaskGraphRunner;
@@ -19,6 +18,7 @@ class TestGpuMemoryBufferManager;
 }
 
 namespace viz {
+class CompositorFrame;
 class ContextProvider;
 }
 
@@ -29,7 +29,7 @@ class FakeContextFactory : public ui::ContextFactory {
   FakeContextFactory();
   ~FakeContextFactory() override;
 
-  const cc::CompositorFrame& GetLastCompositorFrame() const;
+  const viz::CompositorFrame& GetLastCompositorFrame() const;
 
   // ui::ContextFactory:
   void CreateLayerTreeFrameSink(

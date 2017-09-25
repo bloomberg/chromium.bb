@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
@@ -117,8 +117,8 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
   return browser_view_renderer_->GetActiveCompositorForTesting();
 }
 
-std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
-  auto compositor_frame = base::MakeUnique<cc::CompositorFrame>(
+std::unique_ptr<viz::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
+  auto compositor_frame = base::MakeUnique<viz::CompositorFrame>(
       viz::test::MakeEmptyCompositorFrame());
   std::unique_ptr<viz::RenderPass> root_pass(viz::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
@@ -127,9 +127,9 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   return compositor_frame;
 }
 
-std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructFrame(
+std::unique_ptr<viz::CompositorFrame> RenderingTest::ConstructFrame(
     viz::ResourceId resource_id) {
-  std::unique_ptr<cc::CompositorFrame> compositor_frame(ConstructEmptyFrame());
+  std::unique_ptr<viz::CompositorFrame> compositor_frame(ConstructEmptyFrame());
   viz::TransferableResource resource;
   resource.id = resource_id;
   compositor_frame->resource_list.push_back(resource);

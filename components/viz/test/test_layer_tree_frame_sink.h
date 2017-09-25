@@ -39,8 +39,7 @@ class TestLayerTreeFrameSinkClient {
 
   virtual void DisplayReceivedLocalSurfaceId(
       const LocalSurfaceId& local_surface_id) = 0;
-  virtual void DisplayReceivedCompositorFrame(
-      const cc::CompositorFrame& frame) = 0;
+  virtual void DisplayReceivedCompositorFrame(const CompositorFrame& frame) = 0;
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                                       const RenderPassList& render_passes) = 0;
   virtual void DisplayDidDrawAndSwap() = 0;
@@ -88,7 +87,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
-  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
 
   // mojom::CompositorFrameSinkClient implementation.

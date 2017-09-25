@@ -2282,7 +2282,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
     wt2()->AttachCompositorFrameSink(window_1_100_in_ws2,
                                      mojo::MakeRequest(&surface_ptr),
                                      std::move(surface_client_ptr));
-    cc::CompositorFrame compositor_frame;
+    viz::CompositorFrame compositor_frame;
     std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     gfx::Rect frame_rect(0, 0, 100, 100);
     render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
@@ -2322,7 +2322,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
     wt2()->AttachCompositorFrameSink(window_2_101,
                                      mojo::MakeRequest(&surface_ptr),
                                      std::move(surface_client_ptr));
-    cc::CompositorFrame compositor_frame;
+    viz::CompositorFrame compositor_frame;
     std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     gfx::Rect frame_rect(0, 0, 100, 100);
     render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());

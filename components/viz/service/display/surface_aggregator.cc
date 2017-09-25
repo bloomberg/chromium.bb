@@ -17,8 +17,8 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/resources/display_resource_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -249,7 +249,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
   }
   ++uma_stats_.valid_surface;
 
-  const cc::CompositorFrame& frame = surface->GetActiveFrame();
+  const CompositorFrame& frame = surface->GetActiveFrame();
   bool has_transparent_background =
       frame.metadata.root_background_color == SK_ColorTRANSPARENT;
 
@@ -623,7 +623,7 @@ void SurfaceAggregator::CopyQuadsToPass(
   }
 }
 
-void SurfaceAggregator::CopyPasses(const cc::CompositorFrame& frame,
+void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
                                    Surface* surface) {
   // The root surface is allowed to have copy output requests, so grab them
   // off its render passes. This map contains a set of CopyOutputRequests
@@ -729,7 +729,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
   if (!surface->HasActiveFrame())
     return gfx::Rect();
-  const cc::CompositorFrame& frame = surface->GetActiveFrame();
+  const CompositorFrame& frame = surface->GetActiveFrame();
   int child_id = 0;
   // TODO(jbauman): hack for unit tests that don't set up rp
   if (provider_) {
@@ -930,7 +930,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
       continue;
     if (!surface->HasActiveFrame())
       continue;
-    const cc::CompositorFrame& frame = surface->GetActiveFrame();
+    const CompositorFrame& frame = surface->GetActiveFrame();
     bool surface_has_copy_requests = false;
     for (const auto& render_pass : frame.render_pass_list) {
       surface_has_copy_requests |= !render_pass->copy_requests.empty();
@@ -974,7 +974,7 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
   }
 }
 
-cc::CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
+CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   uma_stats_.Reset();
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
@@ -984,10 +984,10 @@ cc::CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   if (!surface->HasActiveFrame())
     return {};
 
-  const cc::CompositorFrame& root_surface_frame = surface->GetActiveFrame();
+  const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
   TRACE_EVENT0("viz", "SurfaceAggregator::Aggregate");
 
-  cc::CompositorFrame frame;
+  CompositorFrame frame;
 
   dest_pass_list_ = &frame.render_pass_list;
 

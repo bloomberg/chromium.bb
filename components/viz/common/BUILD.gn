@@ -56,6 +56,10 @@ viz_component("common") {
     "gpu/vulkan_in_process_context_provider.cc",
     "gpu/vulkan_in_process_context_provider.h",
     "hit_test/aggregated_hit_test_region.h",
+    "quads/compositor_frame.cc",
+    "quads/compositor_frame.h",
+    "quads/compositor_frame_metadata.cc",
+    "quads/compositor_frame_metadata.h",
     "quads/content_draw_quad_base.cc",
     "quads/content_draw_quad_base.h",
     "quads/copy_output_request.cc",
@@ -75,6 +79,7 @@ viz_component("common") {
     "quads/render_pass.h",
     "quads/render_pass_draw_quad.cc",
     "quads/render_pass_draw_quad.h",
+    "quads/selection.h",
     "quads/shared_bitmap.cc",
     "quads/shared_bitmap.h",
     "quads/shared_quad_state.cc",
@@ -150,6 +155,7 @@ viz_component("common") {
     "//ui/gfx:color_space",
     "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",
+    "//ui/latency",
   ]
 
   public_deps = [

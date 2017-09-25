@@ -36,7 +36,7 @@ void TouchSelectionControllerClientChildFrame::DidStopFlinging() {
 }
 
 void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
-    const cc::Selection<gfx::SelectionBound>& selection,
+    const viz::Selection<gfx::SelectionBound>& selection,
     float device_scale_factor) {
   gfx::PointF start_edge_top = selection.start.edge_top();
   gfx::PointF start_edge_bottom = selection.start.edge_bottom();
@@ -59,7 +59,7 @@ void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
   end_edge_top += offset_v;
   end_edge_bottom += offset_v;
 
-  cc::Selection<gfx::SelectionBound> transformed_selection(selection);
+  viz::Selection<gfx::SelectionBound> transformed_selection(selection);
   transformed_selection.start.SetEdge(start_edge_top, start_edge_bottom);
   transformed_selection.end.SetEdge(end_edge_top, end_edge_bottom);
 

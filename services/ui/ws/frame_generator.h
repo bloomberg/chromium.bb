@@ -53,7 +53,7 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
 
-  cc::CompositorFrame GenerateCompositorFrame();
+  viz::CompositorFrame GenerateCompositorFrame();
 
   viz::mojom::HitTestRegionListPtr GenerateHitTestRegionList() const;
 

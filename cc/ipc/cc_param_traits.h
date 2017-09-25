@@ -10,7 +10,7 @@
 #include "cc/base/filter_operation.h"
 #include "cc/ipc/cc_ipc_export.h"
 #include "cc/ipc/cc_param_traits_macros.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -104,8 +104,8 @@ struct CC_IPC_EXPORT ParamTraits<viz::SurfaceInfo> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::CompositorFrame> {
-  typedef cc::CompositorFrame param_type;
+struct CC_IPC_EXPORT ParamTraits<viz::CompositorFrame> {
+  typedef viz::CompositorFrame param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

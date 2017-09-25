@@ -4914,7 +4914,7 @@ class TestSwapPromise : public SwapPromise {
     result_->did_activate_called = true;
   }
 
-  void WillSwap(CompositorFrameMetadata* metadata) override {
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
@@ -7546,7 +7546,7 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
   }
 
   void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     EXPECT_EQ(2.0f, frame.metadata.device_scale_factor);
     EndTest();
   }
@@ -7684,7 +7684,7 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
   }
 
   void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     EXPECT_EQ(1, ++num_swaps_);
 
     EXPECT_EQ(drawn_viewport_, frame.render_pass_list.back()->output_rect);
@@ -7730,7 +7730,7 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
   }
 
   void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     EXPECT_EQ(2u, frame.render_pass_list.size());
     // Each render pass has 10 resources in it. And the root render pass has a
     // mask resource used when drawing the child render pass. The number 10 may
@@ -7763,7 +7763,7 @@ class LayerTreeHostTestContentSourceId : public LayerTreeHostTest {
   }
 
   void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     EXPECT_EQ(5U, frame.metadata.content_source_id);
     EndTest();
   }
@@ -7791,7 +7791,7 @@ class LayerTreeHostTestBeginFrameAcks : public LayerTreeHostTest {
   }
 
   void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     if (compositor_frame_submitted_)
       return;
     compositor_frame_submitted_ = true;

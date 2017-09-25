@@ -44,7 +44,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void OnComputeScroll(base::TimeTicks animate_time) override {}
 
   void SetHardwareFrame(uint32_t layer_tree_frame_sink_id,
-                        std::unique_ptr<cc::CompositorFrame> frame);
+                        std::unique_ptr<viz::CompositorFrame> frame);
 
   struct ReturnedResources {
     ReturnedResources();

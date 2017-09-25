@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 
 namespace content {
 
@@ -62,7 +62,7 @@ bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
 
 void TestSynchronousCompositor::SetHardwareFrame(
     uint32_t layer_tree_frame_sink_id,
-    std::unique_ptr<cc::CompositorFrame> frame) {
+    std::unique_ptr<viz::CompositorFrame> frame) {
   hardware_frame_.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   hardware_frame_.frame = std::move(frame);
 }

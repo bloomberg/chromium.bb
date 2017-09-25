@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
-#define CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_COMPOSITOR_FRAME_METADATA_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_COMPOSITOR_FRAME_METADATA_H_
 
 #include <stdint.h>
 
 #include <vector>
 
-#include "cc/cc_export.h"
-#include "cc/input/selection.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/latency/latency_info.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT CompositorFrameMetadata {
+class VIZ_COMMON_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
   CompositorFrameMetadata(CompositorFrameMetadata&& other);
@@ -83,7 +83,7 @@ class CC_EXPORT CompositorFrameMetadata {
   // determine which surfaces to retain and which to evict. It will likely
   // be unnecessary for the embedder to explicitly specify which surfaces to
   // retain. Thus, this field will likely go away.
-  std::vector<viz::SurfaceId> referenced_surfaces;
+  std::vector<SurfaceId> referenced_surfaces;
 
   // This is the set of dependent SurfaceIds that should be active in the
   // display compositor before this CompositorFrame can be activated. Note
@@ -96,7 +96,7 @@ class CC_EXPORT CompositorFrameMetadata {
   //       |referenced_surfaces|. |activation_dependencies| is the set of
   //       surface IDs that this frame would like to block on until they
   //       become available or a deadline hits.
-  std::vector<viz::SurfaceId> activation_dependencies;
+  std::vector<SurfaceId> activation_dependencies;
 
   // This indicates whether this CompositorFrame can be activated before
   // dependencies have been resolved.
@@ -108,8 +108,8 @@ class CC_EXPORT CompositorFrameMetadata {
   // become available in all renderer processes. See https://crbug.com/695579.
   uint32_t content_source_id = 0;
 
-  // viz::BeginFrameAck for the BeginFrame that this CompositorFrame answers.
-  viz::BeginFrameAck begin_frame_ack;
+  // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
+  BeginFrameAck begin_frame_ack;
 
   // Once the display compositor processes a frame containing a non-zero frame
   // token, the token is sent to embedder of the frame. This is helpful when
@@ -121,6 +121,6 @@ class CC_EXPORT CompositorFrameMetadata {
   CompositorFrameMetadata operator=(const CompositorFrameMetadata&) = delete;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_COMPOSITOR_FRAME_METADATA_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_COMPOSITOR_FRAME_METADATA_H_

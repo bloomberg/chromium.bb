@@ -583,7 +583,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       viz::mojom::CompositorFrameSinkRequest request,
       viz::mojom::CompositorFrameSinkClientPtr client);
 
-  const cc::CompositorFrameMetadata& last_frame_metadata() {
+  const viz::CompositorFrameMetadata& last_frame_metadata() {
     return last_frame_metadata_;
   }
 
@@ -593,7 +593,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
-      cc::CompositorFrame frame,
+      viz::CompositorFrame frame,
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
@@ -1008,7 +1008,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
-  cc::CompositorFrameMetadata last_frame_metadata_;
+  viz::CompositorFrameMetadata last_frame_metadata_;
 
   // Last non-zero frame token received from the renderer. Any swap messsages
   // having a token less than or equal to this value will be processed.
@@ -1022,7 +1022,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // exist yet, we keep it here until they are available.
   struct {
     viz::LocalSurfaceId local_surface_id;
-    cc::CompositorFrame frame;
+    viz::CompositorFrame frame;
     uint32_t max_shared_bitmap_sequence_number = 0;
     viz::mojom::HitTestRegionListPtr hit_test_region_list;
   } saved_frame_;

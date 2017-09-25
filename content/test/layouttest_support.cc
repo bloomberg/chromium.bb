@@ -308,7 +308,7 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
     DCHECK(layer_tree_frame_sink_from_commit_);
   }
   void DidActivate() override {}
-  void WillSwap(cc::CompositorFrameMetadata*) override {
+  void WillSwap(viz::CompositorFrameMetadata*) override {
     layer_tree_frame_sink_from_commit_->RequestCopyOfOutput(
         std::move(copy_request_));
   }
@@ -419,7 +419,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   void DisplayReceivedLocalSurfaceId(
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
-      const cc::CompositorFrame& frame) override {}
+      const viz::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(
       bool will_draw_and_swap,
       const viz::RenderPassList& render_passes) override {}

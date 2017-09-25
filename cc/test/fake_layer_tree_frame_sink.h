@@ -12,13 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 
@@ -63,12 +63,12 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   // LayerTreeFrameSink implementation.
-  void SubmitCompositorFrame(CompositorFrame frame) override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   bool BindToClient(LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
 
-  CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
+  viz::CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
   LayerTreeFrameSinkClient* client() { return client_; }
@@ -89,7 +89,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
   TestSharedBitmapManager test_shared_bitmap_manager_;
 
-  std::unique_ptr<CompositorFrame> last_sent_frame_;
+  std::unique_ptr<viz::CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   std::vector<viz::TransferableResource> resources_held_by_parent_;
   gfx::Rect last_swap_rect_;

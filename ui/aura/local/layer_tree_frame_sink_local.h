@@ -48,7 +48,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
-  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
 
   // viz::mojom::CompositorFrameSinkClient:

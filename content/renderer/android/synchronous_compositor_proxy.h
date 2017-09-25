@@ -21,7 +21,7 @@ class Message;
 class Sender;
 }  // namespace IPC
 
-namespace cc {
+namespace viz {
 class CompositorFrame;
 }  // namespace cc
 
@@ -55,7 +55,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void DidActivatePendingTree() override;
   void Invalidate() override;
   void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
-                             cc::CompositorFrame frame) override;
+                             viz::CompositorFrame frame) override;
 
   void SetLayerTreeFrameSink(
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
@@ -85,18 +85,18 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
   void SubmitCompositorFrameHwAsync(uint32_t layer_tree_frame_sink_id,
-                                    cc::CompositorFrame frame);
+                                    viz::CompositorFrame frame);
   void SubmitCompositorFrameHw(uint32_t layer_tree_frame_sink_id,
-                               cc::CompositorFrame frame);
-  void SendDemandDrawHwReply(base::Optional<cc::CompositorFrame> frame,
+                               viz::CompositorFrame frame);
+  void SendDemandDrawHwReply(base::Optional<viz::CompositorFrame> frame,
                              uint32_t layer_tree_frame_sink_id,
                              IPC::Message* reply_message);
-  void SendDemandDrawHwReplyAsync(base::Optional<cc::CompositorFrame> frame,
+  void SendDemandDrawHwReplyAsync(base::Optional<viz::CompositorFrame> frame,
                                   uint32_t layer_tree_frame_sink_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
-  void SubmitCompositorFrameSw(cc::CompositorFrame frame);
+  void SubmitCompositorFrameSw(viz::CompositorFrame frame);
   void SendDemandDrawSwReply(
-      base::Optional<cc::CompositorFrameMetadata> metadata,
+      base::Optional<viz::CompositorFrameMetadata> metadata,
       IPC::Message* reply_message);
   void SendAsyncRendererStateIfNeeded();
   void DoDemandDrawHw(const SyncCompositorDemandDrawHwParams& params,

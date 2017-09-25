@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 
-namespace cc {
+namespace viz {
 class CompositorFrameMetadata;
 }
 
@@ -19,7 +19,7 @@ namespace content {
 //   (indicating that this is a mobile-optimized or responsive web design);
 // - page that prevents zooming in or out.
 CONTENT_EXPORT bool IsMobileOptimizedFrame(
-    const cc::CompositorFrameMetadata& frame_metadata);
+    const viz::CompositorFrameMetadata& frame_metadata);
 
 }  // namespace content
 

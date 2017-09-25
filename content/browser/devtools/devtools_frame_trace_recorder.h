@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace cc {
+namespace viz {
 class CompositorFrameMetadata;
 }
 
@@ -26,15 +26,15 @@ class DevToolsFrameTraceRecorder {
 
   void OnSwapCompositorFrame(
       RenderFrameHostImpl* host,
-      const cc::CompositorFrameMetadata& frame_metadata);
+      const viz::CompositorFrameMetadata& frame_metadata);
 
   void OnSynchronousSwapCompositorFrame(
       RenderFrameHostImpl* host,
-      const cc::CompositorFrameMetadata& frame_metadata);
+      const viz::CompositorFrameMetadata& frame_metadata);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);
-  std::unique_ptr<cc::CompositorFrameMetadata> last_metadata_;
+  std::unique_ptr<viz::CompositorFrameMetadata> last_metadata_;
 };
 
 }  // namespace content

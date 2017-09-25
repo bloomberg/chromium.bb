@@ -31,12 +31,12 @@ class TracedValue;
 }
 }
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace gfx {
 class Path;
+}
+
+namespace viz {
+class CompositorFrame;
 }
 
 namespace exo {
@@ -154,7 +154,7 @@ class Surface final : public ui::PropertyHandler {
       const gfx::Point& origin,
       float device_scale_factor,
       LayerTreeFrameSinkHolder* frame_sink_holder,
-      cc::CompositorFrame* frame);
+      viz::CompositorFrame* frame);
 
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
@@ -268,7 +268,7 @@ class Surface final : public ui::PropertyHandler {
   // the |frame|.
   void AppendContentsToFrame(const gfx::Point& origin,
                              float device_scale_factor,
-                             cc::CompositorFrame* frame);
+                             viz::CompositorFrame* frame);
 
   // Update surface content size base on current buffer size.
   void UpdateContentSize();

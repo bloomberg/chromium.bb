@@ -517,7 +517,7 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     const gfx::Point& origin,
     float device_scale_factor,
     LayerTreeFrameSinkHolder* frame_sink_holder,
-    cc::CompositorFrame* frame) {
+    viz::CompositorFrame* frame) {
   // The top most sub-surface is at the front of the RenderPass's quad_list,
   // so we need composite sub-surface in reversed order.
   for (const auto& sub_surface_entry : base::Reversed(sub_surfaces_)) {
@@ -731,7 +731,7 @@ void Surface::UpdateBufferTransform() {
 
 void Surface::AppendContentsToFrame(const gfx::Point& origin,
                                     float device_scale_factor,
-                                    cc::CompositorFrame* frame) {
+                                    viz::CompositorFrame* frame) {
   const std::unique_ptr<viz::RenderPass>& render_pass =
       frame->render_pass_list.back();
   gfx::Rect output_rect(origin, content_size_);

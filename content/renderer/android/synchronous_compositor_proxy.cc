@@ -198,7 +198,7 @@ void SynchronousCompositorProxy::DoDemandDrawHw(
 
 void SynchronousCompositorProxy::SubmitCompositorFrameHwAsync(
     uint32_t layer_tree_frame_sink_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(hardware_draw_reply_async_);
   SendDemandDrawHwReplyAsync(std::move(frame), layer_tree_frame_sink_id);
@@ -207,7 +207,7 @@ void SynchronousCompositorProxy::SubmitCompositorFrameHwAsync(
 
 void SynchronousCompositorProxy::SubmitCompositorFrameHw(
     uint32_t layer_tree_frame_sink_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(hardware_draw_reply_);
   SendDemandDrawHwReply(std::move(frame), layer_tree_frame_sink_id,
@@ -216,14 +216,14 @@ void SynchronousCompositorProxy::SubmitCompositorFrameHw(
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReplyAsync(
-    base::Optional<cc::CompositorFrame> frame,
+    base::Optional<viz::CompositorFrame> frame,
     uint32_t layer_tree_frame_sink_id) {
   Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_,
                                              layer_tree_frame_sink_id, frame));
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReply(
-    base::Optional<cc::CompositorFrame> frame,
+    base::Optional<viz::CompositorFrame> frame,
     uint32_t layer_tree_frame_sink_id,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
@@ -320,7 +320,7 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
 }
 
 void SynchronousCompositorProxy::SubmitCompositorFrameSw(
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(software_draw_reply_);
   SendDemandDrawSwReply(std::move(frame.metadata), software_draw_reply_);
@@ -328,7 +328,7 @@ void SynchronousCompositorProxy::SubmitCompositorFrameSw(
 }
 
 void SynchronousCompositorProxy::SendDemandDrawSwReply(
-    base::Optional<cc::CompositorFrameMetadata> metadata,
+    base::Optional<viz::CompositorFrameMetadata> metadata,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
   PopulateCommonParams(&common_renderer_params);
@@ -339,7 +339,7 @@ void SynchronousCompositorProxy::SendDemandDrawSwReply(
 
 void SynchronousCompositorProxy::SubmitCompositorFrame(
     uint32_t layer_tree_frame_sink_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   // Verify that exactly one of these is true.
   DCHECK(hardware_draw_reply_async_ || hardware_draw_reply_ ||
          software_draw_reply_);

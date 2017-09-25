@@ -10,21 +10,19 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace viz {
+class CompositorFrame;
+
 namespace test {
 
-// Creates a valid cc::CompositorFrame.
-cc::CompositorFrame MakeCompositorFrame();
+// Creates a valid CompositorFrame.
+CompositorFrame MakeCompositorFrame();
 
-// Creates a cc::CompositorFrame that will be valid once its render_pass_list is
+// Creates a CompositorFrame that will be valid once its render_pass_list is
 // initialized.
-cc::CompositorFrame MakeEmptyCompositorFrame();
+CompositorFrame MakeEmptyCompositorFrame();
 
-cc::CompositorFrame MakeCompositorFrame(
+CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> activation_dependencies,
     std::vector<SurfaceId> referenced_surfaces,
     std::vector<TransferableResource> resource_list);

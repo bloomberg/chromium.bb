@@ -18,7 +18,7 @@ class SurfaceManager;
 // blocked on that surface ID. SurfaceDependencyTracker observes when
 // dependent frames activate, and informs blocked surfaces.
 //
-// When a blocking cc::CompositorFrame is first submitted,
+// When a blocking CompositorFrame is first submitted,
 // SurfaceDependencyTracker will begin listening for BeginFrames, setting a
 // deadline some number of BeginFrames in the future. If there are unresolved
 // dependencies when the deadline hits, then SurfaceDependencyTracker will clear
@@ -30,7 +30,7 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   explicit SurfaceDependencyTracker(SurfaceManager* surface_manager);
   ~SurfaceDependencyTracker();
 
-  // Called when |surface| has a pending cc::CompositorFrame and it wishes to be
+  // Called when |surface| has a pending CompositorFrame and it wishes to be
   // informed when that surface's dependencies are resolved.
   void RequestSurfaceResolution(Surface* surface);
 
@@ -51,7 +51,7 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
 
   // Indicates whether |surface| is late. A surface is late if it hasn't had its
   // first activation before a embedder is forced to activate its own
-  // cc::CompositorFrame. A surface may no longer be considered late if the set
+  // CompositorFrame. A surface may no longer be considered late if the set
   // of activation dependencies for dependent surfaces change.
   bool IsSurfaceLate(Surface* surface);
 

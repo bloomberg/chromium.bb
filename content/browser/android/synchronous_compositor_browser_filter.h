@@ -11,7 +11,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/android/window_android_observer.h"
@@ -53,7 +53,7 @@ class SynchronousCompositorBrowserFilter : public BrowserMessageFilter {
 
   bool ReceiveFrame(const IPC::Message& message);
   void ProcessFrameMetadataOnUIThread(int routing_id,
-                                      cc::CompositorFrameMetadata metadata);
+                                      viz::CompositorFrameMetadata metadata);
   void SignalAllFutures();
 
   RenderProcessHost* const render_process_host_;

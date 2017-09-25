@@ -44,7 +44,7 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   void DisplayReceivedLocalSurfaceId(
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(
-      const cc::CompositorFrame& frame) override {}
+      const viz::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(
       bool will_draw_and_swap,
       const viz::RenderPassList& render_passes) override {}

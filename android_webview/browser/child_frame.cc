@@ -7,14 +7,14 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 
 namespace android_webview {
 
 ChildFrame::ChildFrame(
     scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
     uint32_t layer_tree_frame_sink_id,
-    std::unique_ptr<cc::CompositorFrame> frame,
+    std::unique_ptr<viz::CompositorFrame> frame,
     const CompositorID& compositor_id,
     bool viewport_rect_for_tile_priority_empty,
     const gfx::Transform& transform_for_tile_priority,

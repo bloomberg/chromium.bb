@@ -642,8 +642,8 @@ struct FuzzTraits<base::DictionaryValue> {
 };
 
 template <>
-struct FuzzTraits<cc::CompositorFrame> {
-  static bool Fuzz(cc::CompositorFrame* p, Fuzzer* fuzzer) {
+struct FuzzTraits<viz::CompositorFrame> {
+  static bool Fuzz(viz::CompositorFrame* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): Support mutation.
     if (!fuzzer->ShouldGenerate())
       return true;

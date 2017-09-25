@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_INPUT_SELECTION_H_
-#define CC_INPUT_SELECTION_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_SELECTION_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_SELECTION_H_
 
-#include "cc/cc_export.h"
-
-namespace cc {
+namespace viz {
 
 template <typename BoundType>
-struct CC_EXPORT Selection {
-  Selection() {}
-  ~Selection() {}
+struct Selection {
+  Selection() = default;
+  ~Selection() = default;
 
   BoundType start, end;
 };
@@ -29,6 +27,6 @@ inline bool operator!=(const Selection<BoundType>& lhs,
   return !(lhs == rhs);
 }
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_INPUT_SELECTION_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_SELECTION_H_

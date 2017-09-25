@@ -65,7 +65,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  cc::CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = test::MakeCompositorFrame();
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   Surface* surface = surface_manager->GetSurfaceForId(surface_id);
   ASSERT_TRUE(!!surface);
@@ -79,7 +79,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   int max_frame = 3, start_id = 200;
   for (int i = 0; i < max_frame; ++i) {
-    cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
+    CompositorFrame frame = test::MakeEmptyCompositorFrame();
     frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->id = i * 3 + start_id;
     frame.render_pass_list.push_back(RenderPass::Create());

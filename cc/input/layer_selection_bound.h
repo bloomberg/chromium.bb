@@ -6,7 +6,7 @@
 #define CC_INPUT_LAYER_SELECTION_BOUND_H_
 
 #include "cc/cc_export.h"
-#include "cc/input/selection.h"
+#include "components/viz/common/quads/selection.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"
 
@@ -30,7 +30,7 @@ struct CC_EXPORT LayerSelectionBound {
   bool operator!=(const LayerSelectionBound& other) const;
 };
 
-typedef Selection<LayerSelectionBound> LayerSelection;
+using LayerSelection = viz::Selection<LayerSelectionBound>;
 
 }  // namespace cc
 

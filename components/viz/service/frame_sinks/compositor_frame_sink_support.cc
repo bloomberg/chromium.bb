@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -138,7 +138,7 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
 
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame,
+    CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
   SubmitCompositorFrame(local_surface_id, std::move(frame),
@@ -147,7 +147,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 
 bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame,
+    CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list) {
   TRACE_EVENT0("cc", "CompositorFrameSinkSupport::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());

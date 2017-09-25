@@ -33,10 +33,6 @@
 #include <string>
 #endif
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace viz {
 
 namespace test {

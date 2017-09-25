@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/readback_types.h"
@@ -78,7 +78,7 @@ void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
 }
 
 void CaptureFrame(RenderFrameHostImpl* host,
-                  const cc::CompositorFrameMetadata& metadata) {
+                  const viz::CompositorFrameMetadata& metadata) {
   RenderWidgetHostViewBase* view =
       static_cast<RenderWidgetHostViewBase*>(host->GetView());
   if (!view)
@@ -118,7 +118,7 @@ DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() { }
 
 void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
     RenderFrameHostImpl* host,
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const viz::CompositorFrameMetadata& frame_metadata) {
   if (!host || !ScreenshotCategoryEnabled())
     return;
   CaptureFrame(host, frame_metadata);
@@ -126,7 +126,7 @@ void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
 
 void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
     RenderFrameHostImpl* host,
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const viz::CompositorFrameMetadata& frame_metadata) {
   if (!host || !ScreenshotCategoryEnabled()) {
     last_metadata_.reset();
     return;
@@ -136,7 +136,7 @@ void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (!is_new_trace && last_metadata_)
     CaptureFrame(host, *last_metadata_);
-  last_metadata_.reset(new cc::CompositorFrameMetadata);
+  last_metadata_.reset(new viz::CompositorFrameMetadata);
   *last_metadata_ = frame_metadata.Clone();
 }
 

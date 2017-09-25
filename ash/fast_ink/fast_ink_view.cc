@@ -12,9 +12,9 @@
 #include "ash/shell.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -399,7 +399,7 @@ void FastInkView::UpdateSurface() {
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
-  cc::CompositorFrame frame;
+  viz::CompositorFrame frame;
   // TODO(eseckler): FastInkView should use BeginFrames and set the ack
   // accordingly.
   frame.metadata.begin_frame_ack =

@@ -17,12 +17,11 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/geometry/size_f.h"
 
-namespace cc {
+namespace viz {
 class CompositorFrameMetadata;
 }
 
 namespace content {
-
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
 
@@ -39,7 +38,8 @@ class InputHandler : public DevToolsDomainHandler,
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderFrameHost(RenderFrameHostImpl* host) override;
-  void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
+  void OnSwapCompositorFrame(
+      const viz::CompositorFrameMetadata& frame_metadata);
   Response Disable() override;
 
   void DispatchKeyEvent(

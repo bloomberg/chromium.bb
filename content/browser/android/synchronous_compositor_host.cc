@@ -120,7 +120,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
   uint32_t layer_tree_frame_sink_id;
-  base::Optional<cc::CompositorFrame> compositor_frame;
+  base::Optional<viz::CompositorFrame> compositor_frame;
   SyncCompositorCommonRendererParams common_renderer_params;
 
   {
@@ -138,7 +138,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     return SynchronousCompositor::Frame();
 
   SynchronousCompositor::Frame frame;
-  frame.frame.reset(new cc::CompositorFrame);
+  frame.frame.reset(new viz::CompositorFrame);
   frame.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   *frame.frame = std::move(*compositor_frame);
   UpdateFrameMetaData(frame.frame->metadata.Clone());
@@ -146,7 +146,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
 }
 
 void SynchronousCompositorHost::UpdateFrameMetaData(
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   rwhva_->SynchronousFrameMetadata(std::move(frame_metadata));
 }
 
@@ -176,7 +176,7 @@ class ScopedSetSkCanvas {
 
 bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   SyncCompositorCommonRendererParams common_renderer_params;
-  base::Optional<cc::CompositorFrameMetadata> metadata;
+  base::Optional<viz::CompositorFrameMetadata> metadata;
   ScopedSetSkCanvas set_sk_canvas(canvas);
   SyncCompositorDemandDrawSwParams params;  // Unused.
   {
@@ -241,7 +241,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (!software_draw_shm_)
     return false;
 
-  base::Optional<cc::CompositorFrameMetadata> metadata;
+  base::Optional<viz::CompositorFrameMetadata> metadata;
   SyncCompositorCommonRendererParams common_renderer_params;
   {
     base::ThreadRestrictions::ScopedAllowWait wait;

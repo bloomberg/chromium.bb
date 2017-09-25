@@ -4,7 +4,7 @@
 
 #include "components/viz/service/surfaces/surface_hittest.h"
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -257,7 +257,7 @@ const RenderPass* SurfaceHittest::GetRenderPassForSurfaceById(
     return nullptr;
   if (!surface->HasActiveFrame())
     return nullptr;
-  const cc::CompositorFrame& surface_frame = surface->GetActiveFrame();
+  const CompositorFrame& surface_frame = surface->GetActiveFrame();
 
   if (!render_pass_id)
     return surface_frame.render_pass_list.back().get();

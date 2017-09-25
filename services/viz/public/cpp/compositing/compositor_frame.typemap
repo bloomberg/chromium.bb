@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//services/viz/public/interfaces/compositing/compositor_frame.mojom"
-public_headers = [ "//cc/output/compositor_frame.h" ]
+public_headers = [ "//components/viz/common/quads/compositor_frame.h" ]
 traits_headers =
     [ "//services/viz/public/cpp/compositing/compositor_frame_struct_traits.h" ]
 sources = [
@@ -12,4 +12,4 @@ sources = [
 deps = [
   "//cc",
 ]
-type_mappings = [ "viz.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]
+type_mappings = [ "viz.mojom.CompositorFrame=viz::CompositorFrame[move_only]" ]

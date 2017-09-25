@@ -9,7 +9,7 @@ namespace content {
 // static
 RenderWidgetSurfaceProperties
 RenderWidgetSurfaceProperties::FromCompositorFrame(
-    const cc::CompositorFrame& frame) {
+    const viz::CompositorFrame& frame) {
   RenderWidgetSurfaceProperties properties;
   properties.size = frame.size_in_pixels();
   properties.device_scale_factor = frame.device_scale_factor();

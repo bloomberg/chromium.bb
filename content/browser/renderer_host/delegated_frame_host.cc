@@ -14,8 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 #include "cc/base/switches.h"
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
@@ -400,7 +400,7 @@ void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
 
 void DelegatedFrameHost::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
 #if defined(OS_CHROMEOS)
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
