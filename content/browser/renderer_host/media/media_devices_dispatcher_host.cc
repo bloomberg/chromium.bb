@@ -206,6 +206,22 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
                  weak_factory_.GetWeakPtr(), base::Passed(&client_callback)));
 }
 
+void MediaDevicesDispatcherHost::GetAllVideoInputDeviceFormats(
+    const std::string& device_id,
+    GetAllVideoInputDeviceFormatsCallback client_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetVideoInputDeviceFormats(device_id, false /* try_in_use_first */,
+                             std::move(client_callback));
+}
+
+void MediaDevicesDispatcherHost::GetAvailableVideoInputDeviceFormats(
+    const std::string& device_id,
+    GetAvailableVideoInputDeviceFormatsCallback client_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetVideoInputDeviceFormats(device_id, true /* try_in_use_first */,
+                             std::move(client_callback));
+}
+
 void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
     GetAudioInputCapabilitiesCallback client_callback) {
   base::PostTaskAndReplyWithResult(
@@ -408,18 +424,8 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
     ::mojom::VideoInputDeviceCapabilitiesPtr capabilities =
         ::mojom::VideoInputDeviceCapabilities::New();
     capabilities->device_id = std::move(hmac_device_id);
-    capabilities->formats = GetVideoInputFormats(descriptor.device_id);
-    if (capabilities->formats.empty()) {
-      // The device does not seem to support capability enumeration. Compose
-      // a fallback list of capabilities.
-      for (const auto& resolution : kFallbackVideoResolutions) {
-        for (const auto frame_rate : kFallbackVideoFrameRates) {
-          capabilities->formats.push_back(media::VideoCaptureFormat(
-              gfx::Size(resolution.width, resolution.height), frame_rate,
-              media::PIXEL_FORMAT_I420));
-        }
-      }
-    }
+    capabilities->formats =
+        GetVideoInputFormats(descriptor.device_id, true /* try_in_use_first */);
     capabilities->facing_mode = ToFacingMode(descriptor.facing);
 #if defined(OS_ANDROID)
     // On Android, the facing mode is not available in the |facing| field,
@@ -442,16 +448,64 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
   std::move(client_callback).Run(std::move(video_input_capabilities));
 }
 
+void MediaDevicesDispatcherHost::GetVideoInputDeviceFormats(
+    const std::string& device_id,
+    bool try_in_use_first,
+    GetVideoInputDeviceFormatsCallback client_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(), FROM_HERE,
+      base::Bind(GetOrigin, render_process_id_, render_frame_id_,
+                 security_origin_for_testing_),
+      base::Bind(&MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats,
+                 weak_factory_.GetWeakPtr(), base::Passed(&client_callback),
+                 device_id, try_in_use_first));
+}
+
+void MediaDevicesDispatcherHost::EnumerateVideoDevicesForFormats(
+    GetVideoInputDeviceFormatsCallback client_callback,
+    const std::string& device_id,
+    bool try_in_use_first,
+    const url::Origin& security_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  media_stream_manager_->video_capture_manager()->EnumerateDevices(base::Bind(
+      &MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats,
+      weak_factory_.GetWeakPtr(), base::Passed(&client_callback), device_id,
+      try_in_use_first, security_origin));
+}
+
+void MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats(
+    GetVideoInputDeviceFormatsCallback client_callback,
+    const std::string& device_id,
+    bool try_in_use_first,
+    const url::Origin& security_origin,
+    const media::VideoCaptureDeviceDescriptors& device_descriptors) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const auto& descriptor : device_descriptors) {
+    if (DoesMediaDeviceIDMatchHMAC(device_id_salt_, security_origin, device_id,
+                                   descriptor.device_id)) {
+      std::move(client_callback)
+          .Run(GetVideoInputFormats(descriptor.device_id, try_in_use_first));
+      return;
+    }
+  }
+  std::move(client_callback).Run(media::VideoCaptureFormats());
+}
+
 media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
-    const std::string& device_id) {
+    const std::string& device_id,
+    bool try_in_use_first) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::VideoCaptureFormats formats;
-  base::Optional<media::VideoCaptureFormat> format =
-      media_stream_manager_->video_capture_manager()->GetDeviceFormatInUse(
-          MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
-  if (format.has_value()) {
-    formats.push_back(format.value());
-    return formats;
+
+  if (try_in_use_first) {
+    base::Optional<media::VideoCaptureFormat> format =
+        media_stream_manager_->video_capture_manager()->GetDeviceFormatInUse(
+            MEDIA_DEVICE_VIDEO_CAPTURE, device_id);
+    if (format.has_value()) {
+      formats.push_back(format.value());
+      return formats;
+    }
   }
 
   media_stream_manager_->video_capture_manager()->GetDeviceSupportedFormats(
@@ -462,6 +516,18 @@ media::VideoCaptureFormats MediaDevicesDispatcherHost::GetVideoInputFormats(
                                  return format.frame_size.GetArea() <= 0;
                                }),
                 formats.end());
+
+  // If the device does not report any valid format, use a fallback list of
+  // standard formats.
+  if (formats.empty()) {
+    for (const auto& resolution : kFallbackVideoResolutions) {
+      for (const auto frame_rate : kFallbackVideoFrameRates) {
+        formats.push_back(media::VideoCaptureFormat(
+            gfx::Size(resolution.width, resolution.height), frame_rate,
+            media::PIXEL_FORMAT_I420));
+      }
+    }
+  }
 
   return formats;
 }

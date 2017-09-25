@@ -46,6 +46,12 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                         EnumerateDevicesCallback client_callback) override;
   void GetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback) override;
+  void GetAllVideoInputDeviceFormats(
+      const std::string& device_id,
+      GetAllVideoInputDeviceFormatsCallback client_callback) override;
+  void GetAvailableVideoInputDeviceFormats(
+      const std::string& device_id,
+      GetAvailableVideoInputDeviceFormatsCallback client_callback) override;
   void GetAudioInputCapabilities(
       GetAudioInputCapabilitiesCallback client_callback) override;
   void SubscribeDeviceChangeNotifications(MediaDeviceType type,
@@ -66,6 +72,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void SetSecurityOriginForTesting(const url::Origin& origin);
 
  private:
+  using GetVideoInputDeviceFormatsCallback =
+      GetAllVideoInputDeviceFormatsCallback;
+
   void CheckPermissionsForEnumerateDevices(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
       EnumerateDevicesCallback client_callback,
@@ -114,8 +123,28 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   void FinalizeGetAudioInputCapabilities();
 
-  // Returns the currently supported video formats for the given |device_id|.
-  media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id);
+  void GetVideoInputDeviceFormats(
+      const std::string& device_id,
+      bool try_in_use_first,
+      GetVideoInputDeviceFormatsCallback client_callback);
+  void EnumerateVideoDevicesForFormats(
+      GetVideoInputDeviceFormatsCallback client_callback,
+      const std::string& device_id,
+      bool try_in_use_first,
+      const url::Origin& security_origin);
+  void FinalizeGetVideoInputDeviceFormats(
+      GetVideoInputDeviceFormatsCallback client_callback,
+      const std::string& device_id,
+      bool try_in_use_first,
+      const url::Origin& security_origin,
+      const media::VideoCaptureDeviceDescriptors& device_descriptors);
+
+  // Returns the supported video formats for the given |device_id|.
+  // If |try_in_use_first| is true and the device is being used, only the format
+  // in use is returned. Otherwise, all formats supported by the device are
+  // returned.
+  media::VideoCaptureFormats GetVideoInputFormats(const std::string& device_id,
+                                                  bool try_in_use_first);
 
   void NotifyDeviceChangeOnUIThread(const std::vector<uint32_t>& subscriptions,
                                     MediaDeviceType type,

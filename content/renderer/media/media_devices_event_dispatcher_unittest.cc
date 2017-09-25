@@ -57,6 +57,18 @@ class MockMediaDevicesDispatcherHost
     NOTREACHED();
   }
 
+  void GetAllVideoInputDeviceFormats(
+      const std::string&,
+      GetAllVideoInputDeviceFormatsCallback) override {
+    NOTREACHED();
+  }
+
+  void GetAvailableVideoInputDeviceFormats(
+      const std::string&,
+      GetAvailableVideoInputDeviceFormatsCallback) override {
+    NOTREACHED();
+  }
+
   ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     ::mojom::MediaDevicesDispatcherHostPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));

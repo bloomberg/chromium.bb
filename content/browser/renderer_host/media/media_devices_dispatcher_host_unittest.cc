@@ -161,6 +161,8 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
                void(const std::vector<std::vector<MediaDeviceInfo>>&));
   MOCK_METHOD0(MockVideoInputCapabilitiesCallback, void());
   MOCK_METHOD0(MockAudioInputCapabilitiesCallback, void());
+  MOCK_METHOD0(MockAllVideoInputDeviceFormatsCallback, void());
+  MOCK_METHOD0(MockAvailableVideoInputDeviceFormatsCallback, void());
 
   void VideoInputCapabilitiesCallback(
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr> capabilities) {
@@ -199,6 +201,30 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     EXPECT_EQ(expected_first_device_id, capabilities[0]->device_id);
     for (const auto& capability : capabilities)
       EXPECT_TRUE(capability->parameters.IsValid());
+  }
+
+  void AllVideoInputDeviceFormatsCallback(
+      const std::vector<media::VideoCaptureFormat>& formats) {
+    MockAllVideoInputDeviceFormatsCallback();
+    EXPECT_GT(formats.size(), 0U);
+    for (const auto& format : formats) {
+      EXPECT_GT(format.frame_size.GetArea(), 0);
+      EXPECT_GE(format.frame_rate, 0.0);
+    }
+  }
+
+  void AvailableVideoInputDeviceFormatsCallback(
+      const std::vector<media::VideoCaptureFormat>& formats) {
+    MockAvailableVideoInputDeviceFormatsCallback();
+    EXPECT_EQ(formats.size(), 4U);
+    EXPECT_EQ(formats[0], media::VideoCaptureFormat(gfx::Size(640, 480), 30.0,
+                                                    media::PIXEL_FORMAT_I420));
+    EXPECT_EQ(formats[1], media::VideoCaptureFormat(gfx::Size(800, 600), 30.0,
+                                                    media::PIXEL_FORMAT_I420));
+    EXPECT_EQ(formats[2], media::VideoCaptureFormat(gfx::Size(1020, 780), 30.0,
+                                                    media::PIXEL_FORMAT_I420));
+    EXPECT_EQ(formats[3], media::VideoCaptureFormat(gfx::Size(1920, 1080), 20.0,
+                                                    media::PIXEL_FORMAT_I420));
   }
 
  protected:
@@ -425,6 +451,32 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAudioInputCapabilities) {
   host_->GetAudioInputCapabilities(base::BindOnce(
       &MediaDevicesDispatcherHostTest::AudioInputCapabilitiesCallback,
       base::Unretained(this)));
+  run_loop.Run();
+}
+
+TEST_P(MediaDevicesDispatcherHostTest, GetAllVideoInputDeviceFormats) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MockAllVideoInputDeviceFormatsCallback())
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  host_->GetAllVideoInputDeviceFormats(
+      GetHMACForMediaDeviceID(browser_context_.GetMediaDeviceIDSalt(), origin_,
+                              kDefaultVideoDeviceID),
+      base::BindOnce(
+          &MediaDevicesDispatcherHostTest::AllVideoInputDeviceFormatsCallback,
+          base::Unretained(this)));
+  run_loop.Run();
+}
+
+TEST_P(MediaDevicesDispatcherHostTest, GetAvailableVideoInputDeviceFormats) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, MockAvailableVideoInputDeviceFormatsCallback())
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+  host_->GetAvailableVideoInputDeviceFormats(
+      GetHMACForMediaDeviceID(browser_context_.GetMediaDeviceIDSalt(), origin_,
+                              kNormalVideoDeviceID),
+      base::BindOnce(&MediaDevicesDispatcherHostTest::
+                         AvailableVideoInputDeviceFormatsCallback,
+                     base::Unretained(this)));
   run_loop.Run();
 }
 
