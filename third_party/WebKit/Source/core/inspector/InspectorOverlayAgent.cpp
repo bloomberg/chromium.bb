@@ -850,15 +850,13 @@ Page* InspectorOverlayAgent::OverlayPage() {
       LocalFrame::Create(&dummy_local_frame_client, *overlay_page_, 0);
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
-  FrameLoader& loader = frame->Loader();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
   const WebData& overlay_page_html_resource =
       Platform::Current()->GetDataResource("InspectorOverlayPage.html");
-  loader.Load(FrameLoadRequest(
-      0, ResourceRequest(BlankURL()),
-      SubstituteData(overlay_page_html_resource, kForceSynchronousLoad)));
+  frame->ForceSynchronousDocumentInstall("text/html",
+                                         overlay_page_html_resource);
   v8::Isolate* isolate = ToIsolate(frame);
   ScriptState* script_state = ToScriptStateForMainWorld(frame);
   DCHECK(script_state);

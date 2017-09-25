@@ -106,10 +106,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void AppendData(const char*, size_t);
   virtual void FinishAsError(const ResourceError&);
 
-  void SetNeedsSynchronousCacheHit(bool needs_synchronous_cache_hit) {
-    needs_synchronous_cache_hit_ = needs_synchronous_cache_hit;
-  }
-
   void SetLinkPreload(bool is_link_preload) { link_preload_ = is_link_preload; }
   bool IsLinkPreload() const { return link_preload_; }
 
@@ -453,7 +449,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   String cache_identifier_;
 
-  bool needs_synchronous_cache_hit_;
   bool link_preload_;
   bool is_revalidating_;
   bool is_alive_;

@@ -154,10 +154,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   // Propagate deprecated DSF for platforms without use-zoom-for-dsf.
   page_->SetDeviceScaleFactorDeprecated(
       main_page_->DeviceScaleFactorDeprecated());
-  frame->Loader().Load(
-      FrameLoadRequest(nullptr, ResourceRequest(BlankURL()),
-                       SubstituteData(data, "text/html", "UTF-8", KURL(),
-                                      kForceSynchronousLoad)));
+  frame->ForceSynchronousDocumentInstall("text/html", data);
 
   Element& container = GetElementById("container");
   if (LayoutTestSupport::IsRunningLayoutTest()) {
