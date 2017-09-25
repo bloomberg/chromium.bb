@@ -1491,11 +1491,12 @@ static int64_t av1_block_error2_c(const tran_low_t *coeff,
                                   const tran_low_t *ref, intptr_t block_size,
                                   int64_t *ssz) {
   int64_t error;
+  int64_t ssz_trash;
   // Use the existing sse codes for calculating distortion of decoded signal:
   // i.e. (orig - decoded)^2
-  error = av1_block_error_fp(coeff, dqcoeff, block_size);
+  error = av1_block_error(coeff, dqcoeff, block_size, &ssz_trash);
   // prediction residue^2 = (orig - ref)^2
-  *ssz = av1_block_error_fp(coeff, ref, block_size);
+  *ssz = av1_block_error(coeff, ref, block_size, &ssz_trash);
   return error;
 }
 #endif  // CONFIG_HIGHBITDEPTH
