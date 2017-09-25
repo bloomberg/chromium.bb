@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_int_wrapper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "build/build_config.h"

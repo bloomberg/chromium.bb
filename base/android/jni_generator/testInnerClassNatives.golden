@@ -14,8 +14,6 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
-#include "base/android/jni_int_wrapper.h"
-
 // Step 1: forward declarations.
 JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni[];
 const char kClassPath_org_chromium_TestJni[] = "org/chromium/TestJni";
