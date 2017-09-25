@@ -61,6 +61,7 @@ void RoundedDownMonthDifference(const base::Time& start,
   if (end < start) {
     *rounded_months_difference = 0;
     *has_partial_month = false;
+    return;
   }
 
   *has_partial_month = true;
