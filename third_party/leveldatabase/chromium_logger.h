@@ -11,7 +11,9 @@
 
 #include "base/files/file.h"
 #include "base/format_macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace leveldb {
 
