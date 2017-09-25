@@ -530,10 +530,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateWarning) {
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
 
-  ASSERT_EQ(1u, explanation.insecure_explanations.size());
-  ASSERT_EQ(0u, explanation.neutral_explanations.size());
+  ASSERT_EQ(0u, explanation.insecure_explanations.size());
+  ASSERT_EQ(1u, explanation.neutral_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SHA1),
-            explanation.insecure_explanations[0].summary);
+            explanation.neutral_explanations[0].summary);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContent) {
