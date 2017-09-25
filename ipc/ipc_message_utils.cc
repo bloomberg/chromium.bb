@@ -119,14 +119,14 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     }
     case base::Value::Type::BINARY: {
       m->WriteData(value->GetBlob().data(),
-                   static_cast<int>(value->GetBlob().size()));
+                   base::checked_cast<int>(value->GetBlob().size()));
       break;
     }
     case base::Value::Type::DICTIONARY: {
       const base::DictionaryValue* dict =
           static_cast<const base::DictionaryValue*>(value);
 
-      WriteParam(m, static_cast<int>(dict->size()));
+      WriteParam(m, base::checked_cast<int>(dict->size()));
 
       for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
            it.Advance()) {
@@ -137,7 +137,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     }
     case base::Value::Type::LIST: {
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
-      WriteParam(m, static_cast<int>(list->GetSize()));
+      WriteParam(m, base::checked_cast<int>(list->GetSize()));
       for (const auto& entry : *list) {
         WriteValue(m, &entry, recursion + 1);
       }
@@ -402,7 +402,7 @@ void ParamTraits<std::vector<char>>::Write(base::Pickle* m,
   if (p.empty()) {
     m->WriteData(NULL, 0);
   } else {
-    m->WriteData(&p.front(), static_cast<int>(p.size()));
+    m->WriteData(&p.front(), base::checked_cast<int>(p.size()));
   }
 }
 
@@ -429,7 +429,7 @@ void ParamTraits<std::vector<unsigned char>>::Write(base::Pickle* m,
     m->WriteData(NULL, 0);
   } else {
     m->WriteData(reinterpret_cast<const char*>(&p.front()),
-                 static_cast<int>(p.size()));
+                 base::checked_cast<int>(p.size()));
   }
 }
 
@@ -453,7 +453,7 @@ void ParamTraits<std::vector<unsigned char> >::Log(const param_type& p,
 
 void ParamTraits<std::vector<bool>>::Write(base::Pickle* m,
                                            const param_type& p) {
-  WriteParam(m, static_cast<int>(p.size()));
+  WriteParam(m, base::checked_cast<int>(p.size()));
   // Cast to bool below is required because libc++'s
   // vector<bool>::const_reference is different from bool, and we want to avoid
   // writing an extra specialization of ParamTraits for it.
