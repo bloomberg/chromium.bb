@@ -375,7 +375,7 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
 
     match = re.search(
         r'(?:\[([^[]*)\]\s*)?'
-        r'(interface|callback\s+interface|partial\s+interface)\s+'
+        r'(interface|callback\s+interface|partial\s+interface|dictionary)\s+'
         r'(\w+)\s*'
         r'(:\s*\w+\s*)?'
         r'{',

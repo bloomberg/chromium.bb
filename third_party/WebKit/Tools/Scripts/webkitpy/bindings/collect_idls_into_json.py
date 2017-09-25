@@ -11,13 +11,8 @@ import json
 import os
 import sys
 
-_bindings_path = os.path.normpath(
-    os.path.join(os.path.dirname(__file__),
-                 os.pardir, os.pardir, os.pardir, os.pardir,
-                 'Source', 'bindings', 'scripts'))
-
-if _bindings_path not in sys.path:
-    sys.path.append(_bindings_path)
+from webkitpy.common import path_finder
+path_finder.add_bindings_scripts_dir_to_sys_path()
 
 import utilities
 from blink_idl_parser import parse_file, BlinkIDLParser
