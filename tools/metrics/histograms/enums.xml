@@ -39921,7 +39921,9 @@ Called by update_traffic_annotation_histograms.py.-->
 <enum name="VPNDriver">
   <int value="0" label="OpenVPN"/>
   <int value="1" label="L2TP/IPSec"/>
-  <int value="2" label="Third Party"/>
+  <int value="2" label="Third Party (CrOS)"/>
+  <int value="3" label="Third Party (Android)"/>
+  <int value="4" label="PPTP"/>
 </enum>
 
 <enum name="VPNRemoteAuthenticationType">

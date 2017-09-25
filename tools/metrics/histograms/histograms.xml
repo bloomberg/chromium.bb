@@ -46419,7 +46419,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.Driver" enum="VPNDriver">
-  <owner>quiche@chromium.org</owner>
+  <owner>cernekee@chromium.org</owner>
   <summary>
     Chrome OS network usage metric sampled on each successful VPN connection
     that tracks the VPN connection type.
