@@ -35,6 +35,10 @@ namespace translate {
 // Feature flag for "Translate UI 2016 Q2" project.
 extern const base::Feature kTranslateUI2016Q2;
 
+// Enables or disables the new improved language settings.
+// These settings support the new UI.
+extern const base::Feature kImprovedLanguageSettings;
+
 // The trial (study) name in finch study config.
 extern const char kTranslateUI2016Q2TrialName[];
 
