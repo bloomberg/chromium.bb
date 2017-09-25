@@ -1404,6 +1404,7 @@ jumbo_component("platform") {
     "text/TextRunIterator.h",
     "text/TextStream.cpp",
     "text/TextStream.h",
+    "text/Truncation.h",
     "text/UnicodeBidi.h",
     "text/UnicodeRange.cpp",
     "text/UnicodeRange.h",
