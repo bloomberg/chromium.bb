@@ -70,6 +70,8 @@ void MemlogReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
     } else if (bytes_read == 0) {
       // Other end closed the pipe.
       if (receiver_) {
+        // Temporary debugging for https://crbug.com/765836.
+        LOG(ERROR) << "Memlog debugging: 0 bytes read. Closing pipe";
         controller_.StopWatchingFileDescriptor();
         DCHECK(receiver_task_runner_);
         receiver_task_runner_->PostTask(
