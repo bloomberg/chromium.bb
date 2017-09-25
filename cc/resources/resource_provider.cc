@@ -384,7 +384,6 @@ ResourceProvider::ResourceProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    BlockingTaskRunner* blocking_main_thread_task_runner,
     bool delegated_sync_points_required,
     bool enable_color_correct_rasterization,
     const viz::ResourceSettings& resource_settings)
@@ -395,7 +394,6 @@ ResourceProvider::ResourceProvider(
       compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
       next_id_(1),
       next_child_(1),
       lost_context_provider_(false),
@@ -638,7 +636,7 @@ viz::ResourceId ResourceProvider::CreateBitmapResource(
 
 viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
-    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
     bool read_lock_fences_enabled,
     gfx::BufferFormat buffer_format) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -666,9 +664,9 @@ viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource->allocated = true;
   resource->SetMailbox(mailbox);
   resource->color_space = mailbox.color_space();
-  resource->release_callback_impl =
-      base::Bind(&SingleReleaseCallbackImpl::Run,
-                 base::Owned(release_callback_impl.release()));
+  resource->release_callback =
+      base::Bind(&viz::SingleReleaseCallback::Run,
+                 base::Owned(release_callback.release()));
   resource->read_lock_fences_enabled = read_lock_fences_enabled;
   resource->buffer_format = buffer_format;
   resource->is_overlay_candidate = mailbox.is_overlay_candidate();
@@ -686,18 +684,18 @@ viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
 
 viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
-    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
     bool read_lock_fences_enabled) {
-  return CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback_impl), read_lock_fences_enabled,
-      gfx::BufferFormat::RGBA_8888);
+  return CreateResourceFromTextureMailbox(mailbox, std::move(release_callback),
+                                          read_lock_fences_enabled,
+                                          gfx::BufferFormat::RGBA_8888);
 }
 
 viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const viz::TextureMailbox& mailbox,
-    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
-  return CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback_impl), false);
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
+  return CreateResourceFromTextureMailbox(mailbox, std::move(release_callback),
+                                          false);
 }
 
 void ResourceProvider::DeleteResource(viz::ResourceId id) {
@@ -773,8 +771,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       resource->shared_bitmap = nullptr;
       resource->pixels = nullptr;
     }
-    resource->release_callback_impl.Run(sync_token, lost_resource,
-                                        blocking_main_thread_task_runner_);
+    resource->release_callback.Run(sync_token, lost_resource);
   }
 
   if (resource->gl_id) {

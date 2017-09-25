@@ -11,9 +11,9 @@
 
 #include "base/strings/stringprintf.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -41,7 +41,7 @@ TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(
     const viz::TextureMailbox& mailbox,
-    std::unique_ptr<SingleReleaseCallbackImpl> release_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
@@ -248,12 +248,8 @@ const char* TextureLayerImpl::LayerTypeAsString() const {
 void TextureLayerImpl::FreeTextureMailbox() {
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
-    if (release_callback_) {
-      release_callback_->Run(texture_mailbox_.sync_token(), false,
-                             layer_tree_impl()
-                                 ->task_runner_provider()
-                                 ->blocking_main_thread_task_runner());
-    }
+    if (release_callback_)
+      release_callback_->Run(texture_mailbox_.sync_token(), false);
     texture_mailbox_ = viz::TextureMailbox();
     release_callback_ = nullptr;
   } else if (external_texture_resource_) {

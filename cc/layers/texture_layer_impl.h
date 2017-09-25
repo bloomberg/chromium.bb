@@ -13,8 +13,11 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 
+namespace viz {
+class SingleReleaseCallback;
+}
+
 namespace cc {
-class SingleReleaseCallbackImpl;
 class ScopedResource;
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
@@ -55,7 +58,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   void SetTextureMailbox(
       const viz::TextureMailbox& mailbox,
-      std::unique_ptr<SingleReleaseCallbackImpl> release_callback);
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
  private:
   TextureLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -75,7 +78,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   std::unique_ptr<ScopedResource> texture_copy_;
 
   viz::TextureMailbox texture_mailbox_;
-  std::unique_ptr<SingleReleaseCallbackImpl> release_callback_;
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
   bool own_mailbox_;
   bool valid_texture_copy_;
 

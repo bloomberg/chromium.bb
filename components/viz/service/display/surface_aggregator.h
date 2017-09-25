@@ -20,7 +20,6 @@
 #include "ui/gfx/color_space.h"
 
 namespace cc {
-class BlockingTaskRunner;
 class DisplayResourceProvider;
 }  // namespace cc
 
@@ -144,8 +143,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                                  const gfx::Rect& full_rect) const;
 
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
-                             const std::vector<ReturnedResource>& resources,
-                             cc::BlockingTaskRunner* main_thread_task_runner);
+                             const std::vector<ReturnedResource>& resources);
 
   SurfaceManager* manager_;
   cc::DisplayResourceProvider* provider_;

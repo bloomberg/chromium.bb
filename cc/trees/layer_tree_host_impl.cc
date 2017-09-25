@@ -2610,7 +2610,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
       layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->shared_bitmap_manager(),
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),
-      task_runner_provider_->blocking_main_thread_task_runner(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);

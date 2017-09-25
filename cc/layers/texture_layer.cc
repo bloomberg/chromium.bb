@@ -13,8 +13,6 @@
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
-#include "cc/resources/single_release_callback_impl.h"
-#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/quads/single_release_callback.h"
 
@@ -219,14 +217,15 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   if (needs_set_mailbox_) {
     viz::TextureMailbox texture_mailbox;
-    std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
     if (holder_ref_) {
       TextureMailboxHolder* holder = holder_ref_->holder();
       texture_mailbox = holder->mailbox();
-      release_callback_impl = holder->GetCallbackForImplThread();
+      release_callback = holder->GetCallbackForImplThread(
+          layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
     }
     texture_layer->SetTextureMailbox(texture_mailbox,
-                                     std::move(release_callback_impl));
+                                     std::move(release_callback));
     needs_set_mailbox_ = false;
   }
 }
@@ -271,14 +270,16 @@ void TextureLayer::TextureMailboxHolder::Return(
   is_lost_ = is_lost;
 }
 
-std::unique_ptr<SingleReleaseCallbackImpl>
-TextureLayer::TextureMailboxHolder::GetCallbackForImplThread() {
+std::unique_ptr<viz::SingleReleaseCallback>
+TextureLayer::TextureMailboxHolder::GetCallbackForImplThread(
+    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   // We can't call GetCallbackForImplThread if we released the main thread
   // reference.
   DCHECK_GT(internal_references_, 0u);
   InternalAddRef();
-  return SingleReleaseCallbackImpl::Create(
-      base::Bind(&TextureMailboxHolder::ReturnAndReleaseOnImplThread, this));
+  return viz::SingleReleaseCallback::Create(
+      base::Bind(&TextureMailboxHolder::ReturnAndReleaseOnImplThread, this,
+                 std::move(main_thread_task_runner)));
 }
 
 void TextureLayer::TextureMailboxHolder::InternalAddRef() {
@@ -295,9 +296,9 @@ void TextureLayer::TextureMailboxHolder::InternalRelease() {
 }
 
 void TextureLayer::TextureMailboxHolder::ReturnAndReleaseOnImplThread(
+    const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
     const gpu::SyncToken& sync_token,
-    bool is_lost,
-    BlockingTaskRunner* main_thread_task_runner) {
+    bool is_lost) {
   Return(sync_token, is_lost);
   main_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&TextureMailboxHolder::InternalRelease, this));

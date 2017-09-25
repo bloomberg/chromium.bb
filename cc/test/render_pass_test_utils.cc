@@ -102,8 +102,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
 }
 
 static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
-                                 bool lost_resource,
-                                 BlockingTaskRunner* main_thread_task_runner) {}
+                                 bool lost_resource) {}
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
                            ResourceProvider* resource_provider,
@@ -152,8 +151,8 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  std::unique_ptr<SingleReleaseCallbackImpl> callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
+  std::unique_ptr<viz::SingleReleaseCallback> callback =
+      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
   viz::TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad,
                               target);
   viz::ResourceId resource8 =
@@ -249,9 +248,9 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
                    gfx::ColorSpace::CreateREC601(), 0.0, 1.0, 8);
 }
 
-static void CollectResources(std::vector<viz::ReturnedResource>* array,
-                             const std::vector<viz::ReturnedResource>& returned,
-                             BlockingTaskRunner* main_thread_task_runner) {}
+static void CollectResources(
+    std::vector<viz::ReturnedResource>* array,
+    const std::vector<viz::ReturnedResource>& returned) {}
 
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
@@ -309,8 +308,8 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  std::unique_ptr<SingleReleaseCallbackImpl> callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
+  std::unique_ptr<viz::SingleReleaseCallback> callback =
+      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
   viz::TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad,
                               target);
   viz::ResourceId resource8 =

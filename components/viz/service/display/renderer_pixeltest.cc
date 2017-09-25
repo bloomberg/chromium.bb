@@ -251,21 +251,21 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
   ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
       resources.mailboxes[media::VideoFrame::kYPlane],
-      cc::SingleReleaseCallbackImpl::Create(
+      SingleReleaseCallback::Create(
           resources.release_callbacks[media::VideoFrame::kYPlane]));
   ResourceId u_resource = resource_provider->CreateResourceFromTextureMailbox(
       resources.mailboxes[media::VideoFrame::kUPlane],
-      cc::SingleReleaseCallbackImpl::Create(
+      SingleReleaseCallback::Create(
           resources.release_callbacks[media::VideoFrame::kUPlane]));
   ResourceId v_resource = resource_provider->CreateResourceFromTextureMailbox(
       resources.mailboxes[media::VideoFrame::kVPlane],
-      cc::SingleReleaseCallbackImpl::Create(
+      SingleReleaseCallback::Create(
           resources.release_callbacks[media::VideoFrame::kVPlane]));
   ResourceId a_resource = 0;
   if (with_alpha) {
     a_resource = resource_provider->CreateResourceFromTextureMailbox(
         resources.mailboxes[media::VideoFrame::kAPlane],
-        cc::SingleReleaseCallbackImpl::Create(
+        SingleReleaseCallback::Create(
             resources.release_callbacks[media::VideoFrame::kAPlane]));
   }
 
@@ -337,7 +337,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
 
   ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
       resources.mailboxes[0],
-      cc::SingleReleaseCallbackImpl::Create(resources.release_callbacks[0]));
+      SingleReleaseCallback::Create(resources.release_callbacks[0]));
 
   auto* quad = render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   bool needs_blending = true;
