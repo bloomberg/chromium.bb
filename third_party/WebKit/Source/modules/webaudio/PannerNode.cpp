@@ -61,12 +61,12 @@ PannerHandler::PannerHandler(AudioNode& node,
       cached_azimuth_(0),
       cached_elevation_(0),
       cached_distance_cone_gain_(1.0f),
-      position_x_(position_x),
-      position_y_(position_y),
-      position_z_(position_z),
-      orientation_x_(orientation_x),
-      orientation_y_(orientation_y),
-      orientation_z_(orientation_z) {
+      position_x_(&position_x),
+      position_y_(&position_y),
+      position_z_(&position_z),
+      orientation_x_(&orientation_x),
+      orientation_y_(&orientation_y),
+      orientation_z_(&orientation_z) {
   AddInput();
   AddOutput(2);
 

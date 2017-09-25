@@ -47,12 +47,12 @@ DynamicsCompressorHandler::DynamicsCompressorHandler(
     AudioParamHandler& attack,
     AudioParamHandler& release)
     : AudioHandler(kNodeTypeDynamicsCompressor, node, sample_rate),
-      threshold_(threshold),
-      knee_(knee),
-      ratio_(ratio),
+      threshold_(&threshold),
+      knee_(&knee),
+      ratio_(&ratio),
       reduction_(0),
-      attack_(attack),
-      release_(release) {
+      attack_(&attack),
+      release_(&release) {
   AddInput();
   AddOutput(defaultNumberOfOutputChannels);
   Initialize();

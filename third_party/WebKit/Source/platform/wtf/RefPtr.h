@@ -70,7 +70,6 @@ class RefPtr {
   ALWAYS_INLINE RefPtr() : ptr_(nullptr) {}
   ALWAYS_INLINE RefPtr(std::nullptr_t) : ptr_(nullptr) {}
   ALWAYS_INLINE RefPtr(T* ptr) : ptr_(ptr) { RefIfNotNull(ptr); }
-  ALWAYS_INLINE explicit RefPtr(T& ref) : ptr_(&ref) { ptr_->Ref(); }
   ALWAYS_INLINE RefPtr(const RefPtr& o) : ptr_(o.ptr_) { RefIfNotNull(ptr_); }
   template <typename U>
   RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))

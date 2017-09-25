@@ -52,7 +52,7 @@ V8AbstractEventListener::V8AbstractEventListener(bool is_attribute,
     : EventListener(kJSEventListenerType),
       listener_(nullptr),
       is_attribute_(is_attribute),
-      world_(world),
+      world_(&world),
       isolate_(isolate),
       worker_global_scope_(nullptr) {
   if (IsMainThread())
