@@ -2563,11 +2563,6 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
-const char kUseCrosMidiServiceName[] = "Use Chrome OS MIDI Service";
-const char kUseCrosMidiServiceNameDescription[] =
-    "Use Chrome OS MIDI Service for Web MIDI and allow ARC to support Android "
-    "MIDI.";
-
 const char kUseMusName[] = "Mus";
 const char kUseMusDescription[] = "Enable the Mojo UI service.";
 const char kEnableMashDescription[] =
