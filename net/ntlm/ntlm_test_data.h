@@ -21,6 +21,8 @@ constexpr base::char16 kPassword[] = {'P', 'a', 's', 's', 'w',
                                       'o', 'r', 'd', '\0'};
 constexpr base::char16 kNtlmDomain[] = {'D', 'o', 'm', 'a', 'i', 'n', '\0'};
 constexpr base::char16 kUser[] = {'U', 's', 'e', 'r', '\0'};
+constexpr base::char16 kDomainUserCombined[] = {'D',  'o', 'm', 'a', 'i', 'n',
+                                                '\\', 'U', 's', 'e', 'r', '\0'};
 constexpr base::char16 kHostname[] = {'C', 'O', 'M', 'P', 'U',
                                       'T', 'E', 'R', '\0'};
 

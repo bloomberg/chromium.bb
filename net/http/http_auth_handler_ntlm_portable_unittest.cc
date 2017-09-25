@@ -174,7 +174,7 @@ TEST_F(HttpAuthHandlerNtlmPortableTest, VerifyType1Message) {
   // The type 1 message generated is always the same. The only variable
   // part of the message is the flags and this implementation always offers
   // the same set of flags.
-  ASSERT_EQ("NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=", token);
+  ASSERT_EQ("NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAgAAAAAAAAACAAAAA=", token);
 }
 
 TEST_F(HttpAuthHandlerNtlmPortableTest, EmptyTokenFails) {
