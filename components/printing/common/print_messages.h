@@ -354,6 +354,9 @@ IPC_MESSAGE_ROUTED1(PrintMsg_SetPrintingEnabled, bool /* enabled */)
 // called multiple times as the user updates settings.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
                     base::DictionaryValue /* settings */)
+
+// Tells the RenderFrame that print preview dialog was closed.
+IPC_MESSAGE_ROUTED0(PrintMsg_ClosePrintPreviewDialog)
 #endif
 
 // Messages sent from the renderer to the browser.

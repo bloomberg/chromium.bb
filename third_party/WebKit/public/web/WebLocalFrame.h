@@ -762,6 +762,11 @@ class WebLocalFrame : public WebFrame {
 
   // Printing ------------------------------------------------------------
 
+  // Dispatch |beforeprint| event, and execute event handlers. They might detach
+  // this frame from the owner WebView.
+  // This function should be called before pairs of PrintBegin() and PrintEnd().
+  virtual void DispatchBeforePrintEvent() = 0;
+
   // Reformats the WebFrame for printing. WebPrintParams specifies the printable
   // content size, paper size, printable area size, printer DPI and print
   // scaling option. If constrainToNode node is specified, then only the given
@@ -784,6 +789,11 @@ class WebLocalFrame : public WebFrame {
 
   // Reformats the WebFrame for screen display.
   virtual void PrintEnd() = 0;
+
+  // Dispatch |afterprint| event, and execute event handlers. They might detach
+  // this frame from the owner WebView.
+  // This function should be called after pairs of PrintBegin() and PrintEnd().
+  virtual void DispatchAfterPrintEvent() = 0;
 
   // If the frame contains a full-frame plugin or the given node refers to a
   // plugin whose content indicates that printed output should not be scaled,

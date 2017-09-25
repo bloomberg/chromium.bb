@@ -540,6 +540,9 @@ void WebLocalFrameImpl::Close() {
 
   if (print_context_)
     PrintEnd();
+#if DCHECK_IS_ON()
+  is_in_printing_ = false;
+#endif
 }
 
 WebString WebLocalFrameImpl::AssignedName() const {
@@ -1366,6 +1369,27 @@ WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
   if (container && container->SupportsInputMethod())
     return container->Plugin();
   return 0;
+}
+
+void WebLocalFrameImpl::DispatchBeforePrintEvent() {
+#if DCHECK_IS_ON()
+  DCHECK(!is_in_printing_) << "DispatchAfterPrintEvent() should have been "
+                              "called after the previous "
+                              "DispatchBeforePrintEvent() call.";
+  is_in_printing_ = true;
+#endif
+
+  // TODO(tkent): Dispatch the event. crbug.com/218205
+}
+
+void WebLocalFrameImpl::DispatchAfterPrintEvent() {
+#if DCHECK_IS_ON()
+  DCHECK(is_in_printing_) << "DispatchBeforePrintEvent() should be called "
+                             "before DispatchAfterPrintEvent().";
+  is_in_printing_ = false;
+#endif
+
+  // TODO(tkent): Dispatch the event. crbug.com/218205
 }
 
 int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,

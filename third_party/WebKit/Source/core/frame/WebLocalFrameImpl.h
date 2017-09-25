@@ -207,11 +207,13 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DeleteSurroundingText(int before, int after) override;
   void DeleteSurroundingTextInCodePoints(int before, int after) override;
   void SetCaretVisible(bool) override;
+  void DispatchBeforePrintEvent() override;
   int PrintBegin(const WebPrintParams&,
                  const WebNode& constrain_to_node) override;
   float PrintPage(int page_to_print, WebCanvas*) override;
   float GetPrintPageShrink(int page) override;
   void PrintEnd() override;
+  void DispatchAfterPrintEvent() override;
   bool IsPrintScalingDisabledForPlugin(const WebNode&) override;
   bool GetPrintPresetOptionsForPlugin(const WebNode&,
                                       WebPrintPresetOptions*) override;
@@ -513,6 +515,12 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Accomplish that by keeping a self-referential Persistent<>. It is
   // cleared upon close().
   SelfKeepAlive<WebLocalFrameImpl> self_keep_alive_;
+
+#if DCHECK_IS_ON()
+  // True if DispatchBeforePrintEvent() was called, and
+  // DispatchAfterPrintEvent() is not called yet.
+  bool is_in_printing_ = false;
+#endif
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl,
