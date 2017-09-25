@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
@@ -1050,6 +1051,26 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   else
     EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
               view->app_list_state());
+}
+
+// Tests that a drag can not make the app list smaller than the shelf height.
+TEST_F(FullscreenAppListPresenterDelegateTest,
+       LauncherCannotGetSmallerThanShelf) {
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+
+  // Try to place the app list 1 px below the shelf, it should stay at shelf
+  // height.
+  int target_y = GetPrimaryShelf()
+                     ->GetShelfViewForTesting()
+                     ->GetBoundsInScreen()
+                     .top_right()
+                     .y();
+  const int expected_app_list_y = target_y;
+  target_y += 1;
+  view->UpdateYPositionAndOpacity(target_y, 1);
+
+  EXPECT_EQ(expected_app_list_y, view->GetBoundsInScreen().top_right().y());
 }
 
 }  // namespace ash

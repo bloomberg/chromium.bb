@@ -1286,14 +1286,16 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
 
 void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
                                             float background_opacity) {
+  DCHECK(!is_side_shelf_);
   if (app_list_state_ == CLOSED)
     return;
 
   SetIsInDrag(true);
   background_opacity_ = background_opacity;
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
-  app_list_y_position_in_screen_ =
-      std::max(y_position_in_screen, GetDisplayNearestView().bounds().y());
+  app_list_y_position_in_screen_ = std::min(
+      std::max(y_position_in_screen, GetDisplayNearestView().bounds().y()),
+      GetDisplayNearestView().bounds().bottom() - kShelfSize);
   new_widget_bounds.set_y(app_list_y_position_in_screen_);
   gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
