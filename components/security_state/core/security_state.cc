@@ -359,4 +359,19 @@ VisibleSecurityState::VisibleSecurityState()
 
 VisibleSecurityState::~VisibleSecurityState() {}
 
+bool IsSchemeCryptographic(const GURL& url) {
+  return url.is_valid() && url.SchemeIsCryptographic();
+}
+
+bool IsOriginLocalhostOrFile(const GURL& url) {
+  return url.is_valid() &&
+         (net::IsLocalhost(url.HostNoBracketsPiece()) || url.SchemeIsFile());
+}
+
+bool IsSslCertificateValid(security_state::SecurityLevel security_level) {
+  return security_level == security_state::SECURE ||
+         security_level == security_state::EV_SECURE ||
+         security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
+}
+
 }  // namespace security_state
