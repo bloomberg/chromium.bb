@@ -195,6 +195,11 @@ DEFINE_TRACE_WRAPPERS(MIDIPort) {
 }
 
 void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
+  // The frame should exist, but it may be already detached and the execution
+  // context may be lost here.
+  if (!GetExecutionContext())
+    return;
+
   UseCounter::Count(*ToDocument(GetExecutionContext()),
                     WebFeature::kMIDIPortOpen);
   DCHECK_NE(0u, running_open_count_);
@@ -219,6 +224,11 @@ void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
 }
 
 void MIDIPort::CloseAsynchronously(ScriptPromiseResolver* resolver) {
+  // The frame should exist, but it may be already detached and the execution
+  // context may be lost here.
+  if (!GetExecutionContext())
+    return;
+
   DCHECK(resolver);
   // TODO(toyoshim): Do clear() operation on MIDIOutput.
   // TODO(toyoshim): Add blink API to perform a real close operation.
