@@ -391,7 +391,8 @@ LayoutUnit ResolveUsedColumnInlineSize(int computed_count,
                                        LayoutUnit available_size) {
   int used_count = ResolveUsedColumnCount(computed_count, computed_size,
                                           used_gap, available_size);
-  return ((available_size + used_gap) / used_count) - used_gap;
+  return std::max(((available_size + used_gap) / used_count) - used_gap,
+                  LayoutUnit());
 }
 
 LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
