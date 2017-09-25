@@ -443,8 +443,7 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
     return StoryExpectations()
 
 
-@benchmark.Owner(emails=['cblume@chromium.org',
-                         'reveman@chromium.org'])
+@benchmark.Owner(emails=['cblume@chromium.org'])
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
   tag = 'image_decoder'
   subdir = 'ImageDecoder'
