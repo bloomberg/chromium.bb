@@ -83,26 +83,31 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
   // Returns the final RenderFrameHost after navigation commits.
   RenderFrameHost* NavigateFrame(const std::string& url,
                                  RenderFrameHost* frame) {
+    GURL gurl(url);
     auto navigation_simulator =
-        NavigationSimulator::CreateRendererInitiated(GURL(url), frame);
+        NavigationSimulator::CreateRendererInitiated(gurl, frame);
     navigation_simulator->Commit();
-    return navigation_simulator->GetFinalRenderFrameHost();
+    RenderFrameHost* final_frame_host =
+        navigation_simulator->GetFinalRenderFrameHost();
+    // Call the trigger's FinishLoad event handler directly since it doesn't
+    // happen as part of the navigation.
+    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
+        ->DidFinishLoad(final_frame_host, gurl);
+    return final_frame_host;
   }
 
   // Returns the final RenderFrameHost after navigation commits.
   RenderFrameHost* NavigateMainFrame(const std::string& url) {
     return NavigateFrame(url, web_contents()->GetMainFrame());
   }
+
   // Returns the final RenderFrameHost after navigation commits.
   RenderFrameHost* CreateAndNavigateSubFrame(const std::string& url,
                                              const std::string& frame_name,
                                              RenderFrameHost* parent) {
     RenderFrameHost* subframe =
         RenderFrameHostTester::For(parent)->AppendChild(frame_name);
-    auto navigation_simulator =
-        NavigationSimulator::CreateRendererInitiated(GURL(url), subframe);
-    navigation_simulator->Commit();
-    return navigation_simulator->GetFinalRenderFrameHost();
+    return NavigateFrame(url, subframe);
   }
 
   MockTriggerManager* get_trigger_manager() { return &trigger_manager_; }

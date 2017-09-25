@@ -53,7 +53,8 @@ size_t GetSamplerFrequencyDenominator() {
              : kSamplerFrequencyDisabled;
 }
 
-bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
+bool DetectGoogleAd(content::RenderFrameHost* render_frame_host,
+                    const GURL& frame_url) {
   // TODO(crbug.com/742397): This function is temporarily copied from
   // c/b/page_load_metrics/observers/ads_page_load_metrics_observer.cc
   // This code should be updated to use shared infrastructure when available.
@@ -65,11 +66,8 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
   // We use the unsafe method of FindFrameByFrameTreeNodeId because we're not
   // concerned with which process the frame lives on (we only want to know if an
   // ad could be present on the page right now).
-  content::RenderFrameHost* current_frame_host =
-      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
-          navigation_handle->GetFrameTreeNodeId());
-  if (current_frame_host) {
-    const std::string& frame_name = current_frame_host->GetFrameName();
+  if (render_frame_host) {
+    const std::string& frame_name = render_frame_host->GetFrameName();
     if (base::StartsWith(frame_name, "google_ads_iframe",
                          base::CompareCase::SENSITIVE) ||
         base::StartsWith(frame_name, "google_ads_frame",
@@ -78,9 +76,8 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
     }
   }
 
-  const GURL& url = navigation_handle->GetURL();
-  return url.host_piece() == "tpc.googlesyndication.com" &&
-         base::StartsWith(url.path_piece(), "/safeframe",
+  return frame_url.host_piece() == "tpc.googlesyndication.com" &&
+         base::StartsWith(frame_url.path_piece(), "/safeframe",
                           base::CompareCase::SENSITIVE);
 }
 
@@ -123,15 +120,14 @@ void AdSamplerTrigger::CreateForWebContents(
   }
 }
 
-// TODO(lpz): In some cases, this event may be too early for ads to finish
-// loading on the page. Investigate later events or possible timer delays.
-void AdSamplerTrigger::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
+void AdSamplerTrigger::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
   UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName, TRIGGER_CHECK,
                             MAX_ACTIONS);
   // We are using light-weight ad detection logic here so it's safe to do the
   // check on each navigation for the sake of metrics.
-  if (!DetectGoogleAd(navigation_handle)) {
+  if (!DetectGoogleAd(render_frame_host, validated_url)) {
     UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName,
                               NO_SAMPLE_NO_AD, MAX_ACTIONS);
     return;

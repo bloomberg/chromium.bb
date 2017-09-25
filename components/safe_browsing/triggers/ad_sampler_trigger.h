@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace content {
-class NavigationHandle;
-}
-
 namespace history {
 class HistoryService;
 }
@@ -69,8 +65,8 @@ class AdSamplerTrigger : public content::WebContentsObserver,
       history::HistoryService* history_service);
 
   // content::WebContentsObserver implementation.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
  private:
   friend class AdSamplerTriggerTest;
