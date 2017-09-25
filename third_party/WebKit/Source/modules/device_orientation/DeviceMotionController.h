@@ -5,7 +5,6 @@
 #ifndef DeviceMotionController_h
 #define DeviceMotionController_h
 
-#include "core/dom/Document.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
 #include "modules/ModulesExport.h"
 

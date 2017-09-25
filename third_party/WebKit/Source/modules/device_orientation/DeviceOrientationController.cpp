@@ -4,7 +4,6 @@
 
 #include "modules/device_orientation/DeviceOrientationController.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/Settings.h"

@@ -4,7 +4,6 @@
 
 #include "modules/encryptedmedia/MediaKeysController.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/web/WebFrameClient.h"

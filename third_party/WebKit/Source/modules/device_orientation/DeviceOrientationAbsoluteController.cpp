@@ -4,7 +4,6 @@
 
 #include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
 
-#include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 

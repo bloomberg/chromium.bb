@@ -4,7 +4,6 @@
 
 #include "modules/fetch/BlobBytesConsumer.h"
 
-#include "core/dom/Document.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"

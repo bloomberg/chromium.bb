@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"

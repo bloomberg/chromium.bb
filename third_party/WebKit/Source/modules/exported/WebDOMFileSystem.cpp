@@ -33,7 +33,6 @@
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8DirectoryEntry.h"
 #include "bindings/modules/v8/V8FileEntry.h"
-#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "modules/filesystem/DOMFileSystem.h"

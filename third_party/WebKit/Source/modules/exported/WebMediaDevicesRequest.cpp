@@ -25,7 +25,6 @@
 
 #include "public/web/WebMediaDevicesRequest.h"
 
-#include "core/dom/Document.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Vector.h"
