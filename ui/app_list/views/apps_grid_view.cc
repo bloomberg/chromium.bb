@@ -1924,8 +1924,10 @@ void AppsGridView::UpdateOpacity() {
                              kSuggestedAppsOpacityStartFraction),
                         0.f),
                1.0f);
-  suggestions_container_->layer()->SetOpacity(should_restore_opacity ? 1.0f
-                                                                     : opacity);
+  if (suggestions_container_) {
+    suggestions_container_->layer()->SetOpacity(
+        should_restore_opacity ? 1.0f : opacity);
+  }
 
   // The opacity of expand arrow during dragging from collapsed(0) to peeking(1)
   // state. When the dragging amount fraction changes from
@@ -1955,8 +1957,10 @@ void AppsGridView::UpdateOpacity() {
                                    kAllAppsIndicatorOpacityStartFraction),
                               0.f),
                      1.0f);
-  all_apps_indicator_->layer()->SetOpacity(should_restore_opacity ? 1.0f
-                                                                  : opacity);
+  if (all_apps_indicator_) {
+    all_apps_indicator_->layer()->SetOpacity(should_restore_opacity ? 1.0f
+                                                                    : opacity);
+  }
 
   // The opacity of expand arrow during dragging from peeking(0) to
   // fullscreen(1) state. When the dragging amount fraction changes from
@@ -1968,14 +1972,15 @@ void AppsGridView::UpdateOpacity() {
                              kExpandArrowDismissEndFraction),
                         0.f),
                1.0f);
-
-  if (app_list_y_position_in_screen <
-      (work_area_bottom + kShelfSize - kPeekingAppListHeight)) {
-    expand_arrow_view_->layer()->SetOpacity(
-        should_restore_opacity ? 1.0f : arrow_fullscreen_opacity);
-  } else {
-    expand_arrow_view_->layer()->SetOpacity(
-        should_restore_opacity ? 1.0f : arrow_peeking_opacity);
+  if (expand_arrow_view_) {
+    if (app_list_y_position_in_screen <
+        (work_area_bottom + kShelfSize - kPeekingAppListHeight)) {
+      expand_arrow_view_->layer()->SetOpacity(
+          should_restore_opacity ? 1.0f : arrow_fullscreen_opacity);
+    } else {
+      expand_arrow_view_->layer()->SetOpacity(
+          should_restore_opacity ? 1.0f : arrow_peeking_opacity);
+    }
   }
 
   // Updates the opacity of all apps. The opacity of the app starting at 0.f
@@ -2577,7 +2582,7 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
   if (!is_fullscreen_app_list_enabled_ || folder_delegate_)
     return 0;
 
-  if (page == 0) {
+  if (page == 0 && suggestions_container_ && all_apps_indicator_) {
     return kSearchBoxFullscreenBottomPadding +
            suggestions_container_->GetPreferredSize().height() +
            kSuggestionsAllAppsIndicatorPadding +
