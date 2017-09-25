@@ -945,7 +945,7 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     const AudioBus* audio_bus = fifo_.Consume();
     DCHECK_EQ(audio_bus->frames(), static_cast<int>(number_of_frames_));
 
-    sink_->OnData(this, audio_bus, capture_time, normalized_volume);
+    sink_->OnData(audio_bus, capture_time, normalized_volume);
 
     // Move the capture time forward for each vended block.
     capture_time += AudioTimestampHelper::FramesToTime(audio_bus->frames(),
@@ -1142,7 +1142,7 @@ void AUAudioInputStream::HandleError(OSStatus err) {
   NOTREACHED() << "error " << logging::DescriptionFromOSStatus(err) << " ("
                << err << ")";
   if (sink_)
-    sink_->OnError(this);
+    sink_->OnError();
 }
 
 bool AUAudioInputStream::IsVolumeSettableOnChannel(int channel) {

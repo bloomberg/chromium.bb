@@ -253,9 +253,7 @@ void WebContentsAudioInputStream::Impl::DecrementCapturerCount() {
 void WebContentsAudioInputStream::Impl::ReportError() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(miu): Need clean-up of AudioInputCallback interface in a future
-  // change, since its only implementation ignores the first argument entirely
-  callback_->OnError(NULL);
+  callback_->OnError();
 }
 
 void WebContentsAudioInputStream::Impl::StartMirroring() {

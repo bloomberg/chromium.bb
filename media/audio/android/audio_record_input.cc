@@ -59,7 +59,7 @@ void AudioRecordInputStream::OnData(JNIEnv* env,
   // hardware volume slider.
   audio_bus_->FromInterleaved(direct_buffer_address_, audio_bus_->frames(),
                               bytes_per_sample_);
-  callback_->OnData(this, audio_bus_.get(),
+  callback_->OnData(audio_bus_.get(),
                     base::TimeTicks::Now() -
                         base::TimeDelta::FromMilliseconds(hardware_delay_ms),
                     0.0);

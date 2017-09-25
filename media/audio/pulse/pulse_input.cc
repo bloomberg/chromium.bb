@@ -264,7 +264,7 @@ void PulseAudioInputStream::StreamNotifyCallback(pa_stream* s,
 
   if (s && stream->callback_ &&
       pa_stream_get_state(s) == PA_STREAM_FAILED) {
-    stream->callback_->OnError(stream);
+    stream->callback_->OnError();
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
@@ -314,7 +314,7 @@ void PulseAudioInputStream::ReadData() {
   while (fifo_.available_blocks()) {
     const AudioBus* audio_bus = fifo_.Consume();
 
-    callback_->OnData(this, audio_bus, capture_time, normalized_volume);
+    callback_->OnData(audio_bus, capture_time, normalized_volume);
 
     // Move the capture time forward for each vended block.
     capture_time += AudioTimestampHelper::FramesToTime(audio_bus->frames(),

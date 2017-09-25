@@ -37,19 +37,18 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
   MockInputCallback()
       : data_pushed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
-    ON_CALL(*this, OnData(_, _, _, _))
+    ON_CALL(*this, OnData(_, _, _))
         .WillByDefault(
             InvokeWithoutArgs(&data_pushed_, &base::WaitableEvent::Signal));
   }
 
   virtual ~MockInputCallback() {}
 
-  MOCK_METHOD4(OnData,
-               void(AudioInputStream* stream,
-                    const AudioBus* source,
+  MOCK_METHOD3(OnData,
+               void(const AudioBus* source,
                     base::TimeTicks capture_time,
                     double volume));
-  MOCK_METHOD1(OnError, void(AudioInputStream* stream));
+  MOCK_METHOD0(OnError, void());
 
   void WaitForDataPushes() {
     for (int i = 0; i < 3; ++i) {
@@ -126,7 +125,7 @@ class VirtualAudioInputStreamTest : public testing::TestWithParam<bool> {
   }
 
   void Start() {
-    EXPECT_CALL(input_callback_, OnData(_, NotNull(), _, _)).Times(AtLeast(1));
+    EXPECT_CALL(input_callback_, OnData(NotNull(), _, _)).Times(AtLeast(1));
 
     ASSERT_TRUE(stream_);
     stream_->Start(&input_callback_);

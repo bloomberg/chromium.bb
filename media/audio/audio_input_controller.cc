@@ -115,8 +115,7 @@ class AudioInputController::AudioCallback
   bool error_during_callback() const { return error_during_callback_; }
 
  private:
-  void OnData(AudioInputStream* stream,
-              const AudioBus* source,
+  void OnData(const AudioBus* source,
               base::TimeTicks capture_time,
               double volume) override {
     TRACE_EVENT0("audio", "AC::OnData");
@@ -130,7 +129,7 @@ class AudioInputController::AudioCallback
 #endif
   }
 
-  void OnError(AudioInputStream* stream) override {
+  void OnError() override {
     error_during_callback_ = true;
     controller_->task_runner_->PostTask(
         FROM_HERE,

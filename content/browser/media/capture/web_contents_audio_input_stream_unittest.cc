@@ -168,12 +168,11 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   MockAudioInputCallback() {}
 
-  MOCK_METHOD4(OnData,
-               void(AudioInputStream* stream,
-                    const media::AudioBus* src,
+  MOCK_METHOD3(OnData,
+               void(const media::AudioBus* src,
                     base::TimeTicks capture_time,
                     double volume));
-  MOCK_METHOD1(OnError, void(AudioInputStream* stream));
+  MOCK_METHOD0(OnError, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputCallback);
@@ -254,7 +253,7 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
             static_cast<AudioMirroringManager::MirroringDestination*>(NULL)))
         .RetiresOnSaturation();
 
-    EXPECT_CALL(mock_input_callback_, OnData(NotNull(), NotNull(), _, _))
+    EXPECT_CALL(mock_input_callback_, OnData(NotNull(), _, _))
         .WillRepeatedly(
             InvokeWithoutArgs(&on_data_event_, &base::WaitableEvent::Signal));
 
@@ -364,7 +363,7 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
   }
 
   void LoseMirroringTarget() {
-    EXPECT_CALL(mock_input_callback_, OnError(_));
+    EXPECT_CALL(mock_input_callback_, OnError());
 
     SimulateChangeCallback(-1, -1);
   }

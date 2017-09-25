@@ -210,7 +210,7 @@ void AlsaPcmInputStream::ReadAudio() {
       base::TimeDelta hardware_delay = base::TimeDelta::FromSecondsD(
           avail_frames / static_cast<double>(params_.sample_rate()));
 
-      callback_->OnData(this, audio_bus_.get(),
+      callback_->OnData(audio_bus_.get(),
                         base::TimeTicks::Now() - hardware_delay,
                         normalized_volume);
     } else if (frames_read < 0) {
@@ -345,7 +345,7 @@ bool AlsaPcmInputStream::IsMuted() {
 
 void AlsaPcmInputStream::HandleError(const char* method, int error) {
   LOG(WARNING) << method << ": " << wrapper_->StrError(error);
-  callback_->OnError(this);
+  callback_->OnError();
 }
 
 }  // namespace media

@@ -125,8 +125,7 @@ class MEDIA_EXPORT AudioInputStream {
     // received. The age of the audio data may be calculated by subtracting
     // |capture_time| from base::TimeTicks::Now(). |capture_time| is always
     // monotonically increasing.
-    virtual void OnData(AudioInputStream* stream,
-                        const AudioBus* source,
+    virtual void OnData(const AudioBus* source,
                         base::TimeTicks capture_time,
                         double volume) = 0;
 
@@ -134,7 +133,7 @@ class MEDIA_EXPORT AudioInputStream {
     // destroyed yet. No direct action needed by the AudioInputStream, but it
     // is a good place to stop accumulating sound data since is is likely that
     // recording will not continue.
-    virtual void OnError(AudioInputStream* stream) = 0;
+    virtual void OnError() = 0;
 
    protected:
     virtual ~AudioInputCallback() {}
