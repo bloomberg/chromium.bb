@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/button.h"
 
@@ -39,6 +40,8 @@ class ASH_EXPORT ShelfButton : public views::Button {
     STATE_FOCUSED = 1 << 4,
     // Hide the status (temporarily for some animations).
     STATE_HIDDEN = 1 << 5,
+    // Button is being dragged by scroll gestures.
+    STATE_TOUCH_DRAGGING = 1 << 6,
   };
 
   ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view);
@@ -99,6 +102,13 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // alignment. This may add or remove views, layout and paint.
   void UpdateState();
 
+  // Invoked when |touch_drag_timer_| fires to show dragging UI.
+  void OnTouchDragTimer();
+
+  // Scales up app icon if |scale_up| is true, otherwise scales it back to
+  // normal size.
+  void ScaleAppIcon(bool scale_up);
+
   InkDropButtonListener* listener_;
 
   // The shelf view hosting this button.
@@ -119,6 +129,9 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // If non-null the destuctor sets this to true. This is set while the menu is
   // showing and used to detect if the menu was deleted while running.
   bool* destroyed_flag_;
+
+  // A timer to defer showing drag UI when the shelf button is touch pressed.
+  base::OneShotTimer touch_drag_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfButton);
 };
