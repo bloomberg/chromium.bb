@@ -62,15 +62,18 @@ const std::string ColumnsForVersion(int version, bool concatenated) {
     columns.push_back("logo_id");
   }
   columns.push_back("created_by_policy");
-  columns.push_back("instant_url");
+  if (version <= 75) {
+    // Column removed after version 75.
+    columns.push_back("instant_url");
+  }
   columns.push_back("last_modified");
   columns.push_back("sync_guid");
   if (version >= 47) {
     // Column added in version 47.
     columns.push_back("alternate_urls");
   }
-  if (version >= 49) {
-    // Column added in version 49.
+  if (version >= 49 && version <= 75) {
+    // Column added in version 49 and removed after version 75.
     columns.push_back("search_terms_replacement_key");
   }
   if (version >= 52) {
@@ -78,7 +81,13 @@ const std::string ColumnsForVersion(int version, bool concatenated) {
     columns.push_back("image_url");
     columns.push_back("search_url_post_params");
     columns.push_back("suggest_url_post_params");
+  }
+  if (version >= 52 && version <= 75) {
+    // Column added in version 52 and removed after version 75.
     columns.push_back("instant_url_post_params");
+  }
+  if (version >= 52) {
+    // Column added in version 52.
     columns.push_back("image_url_post_params");
   }
   if (version >= 53) {
@@ -130,18 +139,15 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindString(starting_column + 9, data.suggestions_url);
   s->BindInt(starting_column + 10, data.prepopulate_id);
   s->BindBool(starting_column + 11, data.created_by_policy);
-  s->BindString(starting_column + 12, std::string());
-  s->BindInt64(starting_column + 13, data.last_modified.ToTimeT());
-  s->BindString(starting_column + 14, data.sync_guid);
-  s->BindString(starting_column + 15, alternate_urls);
-  s->BindString(starting_column + 16, std::string());
-  s->BindString(starting_column + 17, data.image_url);
-  s->BindString(starting_column + 18, data.search_url_post_params);
-  s->BindString(starting_column + 19, data.suggestions_url_post_params);
-  s->BindString(starting_column + 20, std::string());
-  s->BindString(starting_column + 21, data.image_url_post_params);
-  s->BindString(starting_column + 22, data.new_tab_url);
-  s->BindInt64(starting_column + 23, data.last_visited.ToTimeT());
+  s->BindInt64(starting_column + 12, data.last_modified.ToTimeT());
+  s->BindString(starting_column + 13, data.sync_guid);
+  s->BindString(starting_column + 14, alternate_urls);
+  s->BindString(starting_column + 15, data.image_url);
+  s->BindString(starting_column + 16, data.search_url_post_params);
+  s->BindString(starting_column + 17, data.suggestions_url_post_params);
+  s->BindString(starting_column + 18, data.image_url_post_params);
+  s->BindString(starting_column + 19, data.new_tab_url);
+  s->BindInt64(starting_column + 20, data.last_visited.ToTimeT());
 }
 
 WebDatabaseTable::TypeKey GetKey() {
@@ -168,32 +174,30 @@ WebDatabaseTable::TypeKey KeywordTable::GetTypeKey() const {
 
 bool KeywordTable::CreateTablesIfNecessary() {
   return db_->DoesTableExist("keywords") ||
-      db_->Execute("CREATE TABLE keywords ("
-          "id INTEGER PRIMARY KEY,"
-          "short_name VARCHAR NOT NULL,"
-          "keyword VARCHAR NOT NULL,"
-          "favicon_url VARCHAR NOT NULL,"
-          "url VARCHAR NOT NULL,"
-          "safe_for_autoreplace INTEGER,"
-          "originating_url VARCHAR,"
-          "date_created INTEGER DEFAULT 0,"
-          "usage_count INTEGER DEFAULT 0,"
-          "input_encodings VARCHAR,"
-          "suggest_url VARCHAR,"
-          "prepopulate_id INTEGER DEFAULT 0,"
-          "created_by_policy INTEGER DEFAULT 0,"
-          "instant_url VARCHAR,"
-          "last_modified INTEGER DEFAULT 0,"
-          "sync_guid VARCHAR,"
-          "alternate_urls VARCHAR,"
-          "search_terms_replacement_key VARCHAR,"
-          "image_url VARCHAR,"
-          "search_url_post_params VARCHAR,"
-          "suggest_url_post_params VARCHAR,"
-          "instant_url_post_params VARCHAR,"
-          "image_url_post_params VARCHAR,"
-          "new_tab_url VARCHAR,"
-          " last_visited INTEGER DEFAULT 0)");
+         db_->Execute(
+             "CREATE TABLE keywords ("
+             "id INTEGER PRIMARY KEY,"
+             "short_name VARCHAR NOT NULL,"
+             "keyword VARCHAR NOT NULL,"
+             "favicon_url VARCHAR NOT NULL,"
+             "url VARCHAR NOT NULL,"
+             "safe_for_autoreplace INTEGER,"
+             "originating_url VARCHAR,"
+             "date_created INTEGER DEFAULT 0,"
+             "usage_count INTEGER DEFAULT 0,"
+             "input_encodings VARCHAR,"
+             "suggest_url VARCHAR,"
+             "prepopulate_id INTEGER DEFAULT 0,"
+             "created_by_policy INTEGER DEFAULT 0,"
+             "last_modified INTEGER DEFAULT 0,"
+             "sync_guid VARCHAR,"
+             "alternate_urls VARCHAR,"
+             "image_url VARCHAR,"
+             "search_url_post_params VARCHAR,"
+             "suggest_url_post_params VARCHAR,"
+             "image_url_post_params VARCHAR,"
+             "new_tab_url VARCHAR,"
+             "last_visited INTEGER DEFAULT 0)");
 }
 
 bool KeywordTable::IsSyncable() {
@@ -215,6 +219,9 @@ bool KeywordTable::MigrateToVersion(int version,
       return MigrateToVersion68RemoveShowInDefaultListColumn();
     case 69:
       return MigrateToVersion69AddLastVisitedColumn();
+    case 76:
+      *update_compatible_version = true;
+      return MigrateToVersion76RemoveInstantColumns();
   }
 
   return true;
@@ -349,6 +356,46 @@ bool KeywordTable::MigrateToVersion69AddLastVisitedColumn() {
                       "INTEGER DEFAULT 0");
 }
 
+// SQLite does not support DROP COLUMN operation. So a new table is created
+// without the removed columns. Data from all but the dropped columns of the old
+// table is copied into it. After that, the old table is dropped and the new
+// table is renamed to it.
+bool KeywordTable::MigrateToVersion76RemoveInstantColumns() {
+  sql::Transaction transaction(db_);
+  std::string query_str =
+      std::string("INSERT INTO temp_keywords SELECT " +
+                  ColumnsForVersion(76, false) + " FROM keywords");
+  const char* clone_query = query_str.c_str();
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE temp_keywords ("
+             "id INTEGER PRIMARY KEY,"
+             "short_name VARCHAR NOT NULL,"
+             "keyword VARCHAR NOT NULL,"
+             "favicon_url VARCHAR NOT NULL,"
+             "url VARCHAR NOT NULL,"
+             "safe_for_autoreplace INTEGER,"
+             "originating_url VARCHAR,"
+             "date_created INTEGER DEFAULT 0,"
+             "usage_count INTEGER DEFAULT 0,"
+             "input_encodings VARCHAR,"
+             "suggest_url VARCHAR,"
+             "prepopulate_id INTEGER DEFAULT 0,"
+             "created_by_policy INTEGER DEFAULT 0,"
+             "last_modified INTEGER DEFAULT 0,"
+             "sync_guid VARCHAR,"
+             "alternate_urls VARCHAR,"
+             "image_url VARCHAR,"
+             "search_url_post_params VARCHAR,"
+             "suggest_url_post_params VARCHAR,"
+             "image_url_post_params VARCHAR,"
+             "new_tab_url VARCHAR,"
+             "last_visited INTEGER DEFAULT 0)") &&
+         db_->Execute(clone_query) && db_->Execute("DROP TABLE keywords") &&
+         db_->Execute("ALTER TABLE temp_keywords RENAME TO keywords") &&
+         transaction.Commit();
+}
+
 // static
 bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
                                                TemplateURLData* data) {
@@ -364,11 +411,11 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
     return false;
   data->SetURL(s.ColumnString(4));
   data->suggestions_url = s.ColumnString(10);
-  data->image_url = s.ColumnString(18);
-  data->new_tab_url = s.ColumnString(23);
-  data->search_url_post_params = s.ColumnString(19);
-  data->suggestions_url_post_params = s.ColumnString(20);
-  data->image_url_post_params = s.ColumnString(22);
+  data->image_url = s.ColumnString(16);
+  data->new_tab_url = s.ColumnString(20);
+  data->search_url_post_params = s.ColumnString(17);
+  data->suggestions_url_post_params = s.ColumnString(18);
+  data->image_url_post_params = s.ColumnString(19);
   data->favicon_url = GURL(s.ColumnString(3));
   data->originating_url = GURL(s.ColumnString(6));
   data->safe_for_autoreplace = s.ColumnBool(5);
@@ -376,16 +423,16 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
       s.ColumnString(9), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->id = s.ColumnInt64(0);
   data->date_created = Time::FromTimeT(s.ColumnInt64(7));
-  data->last_modified = Time::FromTimeT(s.ColumnInt64(14));
+  data->last_modified = Time::FromTimeT(s.ColumnInt64(13));
   data->created_by_policy = s.ColumnBool(12);
   data->usage_count = s.ColumnInt(8);
   data->prepopulate_id = s.ColumnInt(11);
-  data->sync_guid = s.ColumnString(15);
+  data->sync_guid = s.ColumnString(14);
 
   data->alternate_urls.clear();
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value(
-      json_reader.ReadToValue(s.ColumnString(16)));
+      json_reader.ReadToValue(s.ColumnString(15)));
   base::ListValue* alternate_urls_value;
   if (value.get() && value->GetAsList(&alternate_urls_value)) {
     std::string alternate_url;
@@ -395,16 +442,16 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
     }
   }
 
-  data->last_visited = Time::FromTimeT(s.ColumnInt64(24));
+  data->last_visited = Time::FromTimeT(s.ColumnInt64(21));
 
   return true;
 }
 
 bool KeywordTable::AddKeyword(const TemplateURLData& data) {
   DCHECK(data.id);
-  std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
-                    "        ?,?)");
+  std::string query("INSERT INTO keywords (" + GetKeywordColumns() +
+                    ") "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()));
   BindURLToStatement(data, &s, 0, 1);
 
@@ -426,13 +473,11 @@ bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
       SQL_FROM_HERE,
       "UPDATE keywords SET short_name=?, keyword=?, favicon_url=?, url=?, "
       "safe_for_autoreplace=?, originating_url=?, date_created=?, "
-      "usage_count=?, input_encodings=?, suggest_url=?, "
-      "prepopulate_id=?, created_by_policy=?, instant_url=?, "
-      "last_modified=?, sync_guid=?, alternate_urls=?, "
-      "search_terms_replacement_key=?, image_url=?, search_url_post_params=?, "
-      "suggest_url_post_params=?, instant_url_post_params=?, "
+      "usage_count=?, input_encodings=?, suggest_url=?, prepopulate_id=?, "
+      "created_by_policy=?, last_modified=?, sync_guid=?, alternate_urls=?, "
+      "image_url=?, search_url_post_params=?, suggest_url_post_params=?, "
       "image_url_post_params=?, new_tab_url=?, last_visited=? WHERE id=?"));
-  BindURLToStatement(data, &s, 24, 0);  // "24" binds id() as the last item.
+  BindURLToStatement(data, &s, 21, 0);  // "21" binds id() as the last item.
 
   return s.Run();
 }
