@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import serve
 
 if __name__ == "__main__":
-    serve.main()
+    from tools.wpt import wpt
+    wpt.main()

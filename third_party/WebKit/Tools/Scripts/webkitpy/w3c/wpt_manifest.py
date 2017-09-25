@@ -125,9 +125,9 @@ class WPTManifest(object):
         """Generates MANIFEST.json on the specified directory."""
         executive = host.executive
         finder = PathFinder(host.filesystem)
-        manifest_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'manifest')
+        wpt_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'wpt')
 
-        cmd = ['python', manifest_exec_path, '--work', '--tests-root', dest_path]
+        cmd = ['python', wpt_exec_path, 'manifest', '--work', '--tests-root', dest_path]
         _log.debug('Running command: %s', ' '.join(cmd))
         proc = executive.popen(cmd, stdout=executive.PIPE, stderr=executive.PIPE, stdin=executive.PIPE)
         out, err = proc.communicate('')

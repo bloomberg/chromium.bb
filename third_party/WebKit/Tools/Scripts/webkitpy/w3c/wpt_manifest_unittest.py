@@ -24,7 +24,8 @@ class WPTManifestUnitTest(unittest.TestCase):
             [
                 [
                     'python',
-                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                    'manifest',
                     '--work',
                     '--tests-root',
                     webkit_base + '/LayoutTests/external/wpt',
@@ -48,7 +49,8 @@ class WPTManifestUnitTest(unittest.TestCase):
             [
                 [
                     'python',
-                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    webkit_base + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                    'manifest',
                     '--work',
                     '--tests-root',
                     webkit_base + '/LayoutTests/external/wpt',

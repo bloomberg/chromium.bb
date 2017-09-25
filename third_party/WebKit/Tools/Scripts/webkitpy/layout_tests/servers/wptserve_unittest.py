@@ -22,7 +22,8 @@ class TestWPTServe(LoggingTestCase):
             [
                 'python',
                 '-u',
-                '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/serve',
+                '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                'serve',
                 '--config',
                 '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json',
                 '--doc_root',
