@@ -783,6 +783,9 @@ OCSPRevocationStatus CheckOCSP(
       response_data, certificate.get(), issuer_certificate.get(), verify_time,
       response_details);
 
+  // TODO(eroman): Process the OCSP extensions. In particular, must reject if
+  // there are any critical extensions that are not understood.
+
   // Check that the OCSP response has a valid signature. It must either be
   // signed directly by the issuing certificate, or a valid authorized
   // responder.
