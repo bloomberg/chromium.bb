@@ -30,7 +30,6 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -3093,8 +3092,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u,
-            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3225,33 +3222,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
       id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
   EXPECT_FALSE(views[1]->released_front_lock_active());
 
-  for (size_t i = 0; i < renderer_count - 1; ++i)
-    views[i]->Hide();
-
-  // Allocate enough bitmaps so that two frames (proportionally) would be
-  // enough hit the handle limit.
-  int handles_per_frame = 5;
-  FrameEvictionManager::GetInstance()->set_max_handles(handles_per_frame * 2);
-
-  viz::SharedBitmapAllocationNotifierImpl notifier(
-      viz::ServerSharedBitmapManager::current());
-
-  for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
-    notifier.ChildAllocatedSharedBitmap(1, base::SharedMemoryHandle(),
-                                        viz::SharedBitmap::GenerateId());
-  }
-
-  // Hiding this last bitmap should evict all but two frames.
-  views[renderer_count - 1]->Hide();
-  for (size_t i = 0; i < renderer_count; ++i) {
-    if (i + 2 < renderer_count)
-      EXPECT_FALSE(views[i]->HasFrameData());
-    else
-      EXPECT_TRUE(views[i]->HasFrameData());
-  }
-  FrameEvictionManager::GetInstance()->set_max_handles(
-      base::SharedMemory::GetHandleLimit());
-
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
     delete hosts[i];
@@ -3267,8 +3237,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   size_t renderer_count = max_renderer_frames + 1;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u,
-            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3340,8 +3308,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   size_t renderer_count = kMaxRendererFrames;
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
-  DCHECK_EQ(0u,
-            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);

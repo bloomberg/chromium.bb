@@ -46,7 +46,6 @@ class VIZ_SERVICE_EXPORT FrameEvictionManager
   void set_max_number_of_saved_frames(size_t max_number_of_saved_frames) {
     max_number_of_saved_frames_ = max_number_of_saved_frames;
   }
-  void set_max_handles(float max_handles) { max_handles_ = max_handles; }
 
   // React on memory pressure events to adjust the number of cached frames.
   // Please make this private when crbug.com/443824 has been fixed.
@@ -73,7 +72,6 @@ class VIZ_SERVICE_EXPORT FrameEvictionManager
   std::map<FrameEvictionManagerClient*, size_t> locked_frames_;
   std::list<FrameEvictionManagerClient*> unlocked_frames_;
   size_t max_number_of_saved_frames_;
-  float max_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameEvictionManager);
 };
