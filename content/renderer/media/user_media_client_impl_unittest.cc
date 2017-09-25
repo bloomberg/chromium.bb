@@ -197,6 +197,18 @@ class MockMediaDevicesDispatcherHost
   MOCK_METHOD2(UnsubscribeDeviceChangeNotifications,
                void(MediaDeviceType type, uint32_t subscription_id));
 
+  void GetAllVideoInputDeviceFormats(
+      const std::string&,
+      GetAllVideoInputDeviceFormatsCallback) override {
+    NOTREACHED();
+  }
+
+  void GetAvailableVideoInputDeviceFormats(
+      const std::string&,
+      GetAvailableVideoInputDeviceFormatsCallback) override {
+    NOTREACHED();
+  }
+
  private:
   media::AudioParameters audio_parameters_ =
       media::AudioParameters::UnavailableDeviceParams();

@@ -57,6 +57,20 @@ interface MediaDevicesDispatcherHost {
   GetVideoInputCapabilities()
       => (array<VideoInputDeviceCapabilities> video_input_device_capabilities);
 
+  // Returns a list of all video formats supported by a given device, regardless
+  // of whether the device is being used or not. If the given |device_id| is
+  // invalid, the result is empty.
+  GetAllVideoInputDeviceFormats(string device_id)
+      => (array<media.mojom.VideoCaptureFormat> formats);
+
+  // Returns a list of video formats currently available for a given device.
+  // When the device is in use, it is expected that the result will contain only
+  // one entry. When the device is not in use, the result should be the same as
+  // for GetAllVideoInputDeviceFormats. If the given |device_id| is not valid,
+  // the result is empty.
+  GetAvailableVideoInputDeviceFormats(string device_id)
+      => (array<media.mojom.VideoCaptureFormat> formats);
+
   // Returns a list of audio input devices and their capabilities.
   // If there is a user-preferred device, it is the first in the result.
   // Otherwise, the system-default device is the first in the result.
