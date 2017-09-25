@@ -14,6 +14,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
@@ -179,6 +180,10 @@ ScrollView::ScrollView()
       horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
       vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
       corner_view_(new ScrollCornerView()),
+      more_content_left_(base::MakeUnique<Separator>()),
+      more_content_top_(base::MakeUnique<Separator>()),
+      more_content_right_(base::MakeUnique<Separator>()),
+      more_content_bottom_(base::MakeUnique<Separator>()),
       min_height_(-1),
       max_height_(-1),
       hide_horizontal_scrollbar_(false),
@@ -197,8 +202,24 @@ ScrollView::ScrollView()
   vert_sb_->set_controller(this);
   corner_view_->SetVisible(false);
 
+  // Just make sure the more_content indicators aren't visible for now. They'll
+  // be added as child controls and appropriately made visible depending on
+  // |show_edges_with_hidden_content_|.
+  more_content_left_->SetVisible(false);
+  more_content_top_->SetVisible(false);
+  more_content_right_->SetVisible(false);
+  more_content_bottom_->SetVisible(false);
+
   if (scroll_with_layers_enabled_)
     EnableViewPortLayer();
+
+  // If we're scrolling with layers, paint the overflow indicators to the layer.
+  if (ScrollsWithLayers()) {
+    more_content_left_->SetPaintToLayer();
+    more_content_top_->SetPaintToLayer();
+    more_content_right_->SetPaintToLayer();
+    more_content_bottom_->SetPaintToLayer();
+  }
   UpdateBackground();
 }
 
@@ -363,6 +384,10 @@ void ScrollView::Layout() {
     contents_->SetSize(gfx::Size(content_width, content_height));
   }
 
+  // Place an overflow indicator on each of the four edges of the content
+  // bounds.
+  PositionOverflowIndicators();
+
   // Most views will want to auto-fit the available space. Most of them want to
   // use all available width (without overflowing) and only overflow in
   // height. Examples are HistoryView, MostVisitedView, DownloadTabView, etc.
@@ -488,6 +513,8 @@ void ScrollView::Layout() {
                           scroll_with_layers_enabled_);
   SchedulePaint();
   UpdateScrollBarPositions();
+  if (contents_)
+    UpdateOverflowIndicatorVisibility(CurrentOffset());
 }
 
 bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -768,6 +795,7 @@ void ScrollView::ScrollToOffset(const gfx::ScrollOffset& offset) {
     contents_->SetPosition(gfx::Point(-offset.x(), -offset.y()));
     ScrollHeader();
   }
+  UpdateOverflowIndicatorVisibility(offset);
 }
 
 bool ScrollView::ScrollsWithLayers() const {
@@ -784,6 +812,10 @@ void ScrollView::EnableViewPortLayer() {
 
   contents_viewport_->SetPaintToLayer();
   contents_viewport_->layer()->SetMasksToBounds(true);
+  more_content_left_->SetPaintToLayer();
+  more_content_top_->SetPaintToLayer();
+  more_content_right_->SetPaintToLayer();
+  more_content_bottom_->SetPaintToLayer();
   UpdateBackground();
 }
 
@@ -842,6 +874,37 @@ SkColor ScrollView::GetBackgroundColor() const {
   return use_color_id_
              ? GetNativeTheme()->GetSystemColor(background_color_data_.color_id)
              : background_color_data_.color;
+}
+
+void ScrollView::PositionOverflowIndicators() {
+  const gfx::Rect bounds = GetContentsBounds();
+  const int x = bounds.x();
+  const int y = bounds.y();
+  const int w = bounds.width();
+  const int h = bounds.height();
+  const int t = Separator::kThickness;
+  more_content_left_->SetBounds(x, y, t, h);
+  more_content_top_->SetBounds(x, y, w, t);
+  more_content_right_->SetBounds(bounds.right() - t, y, t, h);
+  more_content_bottom_->SetBounds(x, bounds.bottom() - t, w, t);
+}
+
+void ScrollView::UpdateOverflowIndicatorVisibility(
+    const gfx::ScrollOffset& offset) {
+  SetControlVisibility(more_content_top_.get(),
+                       !draw_border_ && !header_ && vert_sb_->visible() &&
+                           offset.y() > vert_sb_->GetMinPosition());
+  SetControlVisibility(more_content_bottom_.get(),
+                       !draw_border_ && vert_sb_->visible() &&
+                           !horiz_sb_->visible() &&
+                           offset.y() < vert_sb_->GetMaxPosition());
+  SetControlVisibility(more_content_left_.get(),
+                       !draw_border_ && horiz_sb_->visible() &&
+                           offset.x() > horiz_sb_->GetMinPosition());
+  SetControlVisibility(more_content_right_.get(),
+                       !draw_border_ && horiz_sb_->visible() &&
+                           !vert_sb_->visible() &&
+                           offset.x() < horiz_sb_->GetMaxPosition());
 }
 
 // VariableRowHeightScrollHelper ----------------------------------------------
