@@ -147,6 +147,9 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 
 - (void)setPending:(BOOL)pending {
   _pending = pending;
+
+  [_updatePaymentSummaryItemTimer invalidate];
+
   [_viewController setPending:pending];
   [_viewController loadModel];
   [[_viewController collectionView] reloadData];
