@@ -38,7 +38,7 @@ const TestParams kTestParams[] = {
     {"no_response.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::NO_MATCHING_RESPONSE},
 
-    {"malformed_status.pem", OCSPRevocationStatus::UNKNOWN,
+    {"malformed_request.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::ERROR_RESPONSE},
 
     {"bad_status.pem", OCSPRevocationStatus::UNKNOWN,
