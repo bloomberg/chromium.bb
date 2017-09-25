@@ -74,7 +74,7 @@ class BASE_EXPORT RefCountedBase {
     }
 #endif
 
-    ++ref_count_;
+    AddRefImpl();
   }
 
   // Returns true if the object should self-delete.
@@ -132,11 +132,17 @@ class BASE_EXPORT RefCountedBase {
 #endif
   }
 
+#if defined(ARCH_CPU_64_BIT)
+  void AddRefImpl() const;
+#else
+  void AddRefImpl() const { ++ref_count_; }
+#endif
+
 #if DCHECK_IS_ON()
   bool CalledOnValidSequence() const;
 #endif
 
-  mutable size_t ref_count_ = 0;
+  mutable uint32_t ref_count_ = 0;
 
 #if DCHECK_IS_ON()
   mutable bool needs_adopt_ref_ = false;
