@@ -40,16 +40,16 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
+#include "breakpad/src/client/linux/crash_generation/crash_generation_client.h"
+#include "breakpad/src/client/linux/handler/exception_handler.h"
+#include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
+#include "breakpad/src/common/linux/linux_libc_support.h"
+#include "breakpad/src/common/memory.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_descriptors.h"
-#include "third_party/breakpad/breakpad/src/client/linux/crash_generation/crash_generation_client.h"
-#include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
-#include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/directory_reader.h"
-#include "third_party/breakpad/breakpad/src/common/linux/linux_libc_support.h"
-#include "third_party/breakpad/breakpad/src/common/memory.h"
 
 #if defined(OS_ANDROID)
 #include <android/log.h>
@@ -192,8 +192,8 @@ void SetProcessStartTime() {
 }
 
 // uint64_t version of my_int_len() from
-// third_party/breakpad/breakpad/src/common/linux/linux_libc_support.h. Return
-// the length of the given, non-negative integer when expressed in base 10.
+// breakpad/src/common/linux/linux_libc_support.h. Return the length of the
+// given, non-negative integer when expressed in base 10.
 unsigned my_uint64_len(uint64_t i) {
   if (!i)
     return 1;
@@ -208,8 +208,8 @@ unsigned my_uint64_len(uint64_t i) {
 }
 
 // uint64_t version of my_uitos() from
-// third_party/breakpad/breakpad/src/common/linux/linux_libc_support.h. Convert
-// a non-negative integer to a string (not null-terminated).
+// breakpad/src/common/linux/linux_libc_support.h. Convert a non-negative
+// integer to a string (not null-terminated).
 void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
   for (unsigned index = i_len; index; --index, i /= 10)
     output[index - 1] = '0' + (i % 10);

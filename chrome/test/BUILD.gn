@@ -209,8 +209,8 @@ static_library("test_support") {
       "//chrome/app/chrome_crash_reporter_client_mac.mm",
     ]
     public_deps += [
+      "//breakpad",
       "//components/crash/content/app",
-      "//third_party/breakpad",
       "//third_party/ocmock",
     ]
   }
@@ -5096,12 +5096,12 @@ if (!is_android) {
       ":test_support",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
+      "//breakpad:client",
       "//chrome/browser",
       "//chrome/child",
       "//components/crash/core/common",
       "//components/flags_ui:switches",
       "//gpu/config:crash_keys",
-      "//third_party/breakpad:client",
     ]
   }
 }

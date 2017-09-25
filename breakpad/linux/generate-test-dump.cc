@@ -27,10 +27,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef BREAKPAD_GOOGLETEST_INCLUDES_H__
-#define BREAKPAD_GOOGLETEST_INCLUDES_H__
+// This code exists to generate minidump files for testing.
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include <stdlib.h>
 
-#endif  // BREAKPAD_GOOGLETEST_INCLUDES_H__
+#include <unistd.h>
+
+#include "breakpad/src/client/linux/handler/exception_handler.h"
+#include "breakpad/src/common/linux/linux_libc_support.h"
+#include "third_party/lss/linux_syscall_support.h"
+
+static bool DumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
+                         void* context, bool success) {
+  if (!success) {
+    static const char msg[] = "Failed to write minidump\n";
+    sys_write(2, msg, sizeof(msg) - 1);
+    return false;
+  }
+
+  static const char msg[] = "Wrote minidump: ";
+  sys_write(2, msg, sizeof(msg) - 1);
+  sys_write(2, descriptor.path(), strlen(descriptor.path()));
+  sys_write(2, "\n", 1);
+
+  return true;
+}
+
+static void DoSomethingWhichCrashes() {
+  int local_var = 1;
+  *reinterpret_cast<volatile char*>(NULL) = 1;
+}
+
+int main() {
+  google_breakpad::MinidumpDescriptor minidump(".");
+  google_breakpad::ExceptionHandler breakpad(minidump, NULL, DumpCallback, NULL,
+                                             true, -1);
+  DoSomethingWhichCrashes();
+  return 0;
+}

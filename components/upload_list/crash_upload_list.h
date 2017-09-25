@@ -10,7 +10,7 @@
 class CrashUploadList {
  public:
   // Should match kReporterLogFilename in
-  // third_party/breakpad/breakpad/src/client/apple/Framework/BreakpadDefines.h.
+  // breakpad/src/client/apple/Framework/BreakpadDefines.h.
   static const char kReporterLogFilename[];
 
  private:

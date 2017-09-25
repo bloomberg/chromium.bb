@@ -50,6 +50,7 @@ source_set("steps") {
   deps = [
     ":step_runner",
     "//base",
+    "//breakpad:client",
     "//components/content_settings/core/browser",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/startup",
@@ -68,7 +69,6 @@ source_set("steps") {
     "//ios/clean/chrome/browser/ui/root",
     "//ios/net",
     "//ios/web",
-    "//third_party/breakpad:client",
   ]
 }
 

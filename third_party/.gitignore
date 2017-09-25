@@ -29,7 +29,6 @@
 /bison
 /boringssl/src
 /bouncycastle/lib/*.jar
-/breakpad/breakpad
 /byte_buddy/lib/*.jar
 /cacheinvalidation/cacheinvalidation_unittests_run.xml
 /cardboard-java/src
