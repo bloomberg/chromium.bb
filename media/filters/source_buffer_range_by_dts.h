@@ -75,14 +75,6 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
   // CanSeekTo(start) ==  CanSeekTo(end) == true.
   bool SameConfigThruRange(DecodeTimestamp start, DecodeTimestamp end);
 
-  // Updates |next_buffer_index_| to point to next keyframe after or equal to
-  // |timestamp|.
-  void SeekAheadTo(DecodeTimestamp timestamp);
-
-  // Updates |next_buffer_index_| to point to next keyframe strictly after
-  // |timestamp|.
-  void SeekAheadPast(DecodeTimestamp timestamp);
-
   // Finds the next keyframe from |buffers_| starting at or after |timestamp|
   // and creates and returns a new SourceBufferRangeByDts with the buffers from
   // that keyframe onward. The buffers in the new SourceBufferRangeByDts are
@@ -182,11 +174,6 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
   // Implementation of protected SourceBufferRange interface.
   bool TruncateAt(const BufferQueue::iterator& starting_point,
                   BufferQueue* deleted_buffers) override;
-
-  // Seeks the range to the next keyframe after |timestamp|. If
-  // |skip_given_timestamp| is true, the seek will go to a keyframe with a
-  // timestamp strictly greater than |timestamp|.
-  void SeekAhead(DecodeTimestamp timestamp, bool skip_given_timestamp);
 
   // Returns an iterator in |buffers_| pointing to the buffer at |timestamp|.
   // If |skip_given_timestamp| is true, this returns the first buffer with

@@ -145,14 +145,6 @@ bool SourceBufferRangeByDts::SameConfigThruRange(DecodeTimestamp start,
   return true;
 }
 
-void SourceBufferRangeByDts::SeekAheadTo(DecodeTimestamp timestamp) {
-  SeekAhead(timestamp, false);
-}
-
-void SourceBufferRangeByDts::SeekAheadPast(DecodeTimestamp timestamp) {
-  SeekAhead(timestamp, true);
-}
-
 std::unique_ptr<SourceBufferRangeByDts> SourceBufferRangeByDts::SplitRange(
     DecodeTimestamp timestamp) {
   CHECK(!buffers_.empty());
@@ -492,23 +484,6 @@ bool SourceBufferRangeByDts::GetBuffersInRange(DecodeTimestamp start,
     buffers->push_back(buffer);
   }
   return previous_size < buffers->size();
-}
-
-void SourceBufferRangeByDts::SeekAhead(DecodeTimestamp timestamp,
-                                       bool skip_given_timestamp) {
-  DCHECK(!keyframe_map_.empty());
-
-  KeyframeMap::iterator result =
-      GetFirstKeyframeAt(timestamp, skip_given_timestamp);
-
-  // If there isn't a keyframe after |timestamp|, then seek to end and return
-  // kNoTimestamp to signal such.
-  if (result == keyframe_map_.end()) {
-    next_buffer_index_ = -1;
-    return;
-  }
-  next_buffer_index_ = result->second - keyframe_map_index_base_;
-  DCHECK_LT(next_buffer_index_, static_cast<int>(buffers_.size()));
 }
 
 SourceBufferRange::BufferQueue::iterator SourceBufferRangeByDts::GetBufferItrAt(
