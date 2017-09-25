@@ -36,7 +36,6 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//breakpad:client",
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
     "//components/browser_sync",
@@ -87,6 +86,7 @@ source_set("test_support") {
     "//ios/web/public/test",
     "//net",
     "//net:test_support",
+    "//third_party/breakpad:client",
     "//url",
   ]
 }

@@ -22,11 +22,11 @@ source_set("crash_report") {
 
   deps = [
     "//base",
-    "//breakpad:client",
     "//components/crash/core/common",
     "//components/upload_list",
     "//ios/chrome/browser",
     "//ios/web",
+    "//third_party/breakpad:client",
   ]
 }
 
@@ -70,7 +70,6 @@ source_set("unit_tests") {
     ":crash_report",
     ":crash_report_internal",
     "//base",
-    "//breakpad:client",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/sessions:serialisation",
@@ -79,6 +78,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/breakpad:client",
     "//third_party/ocmock",
   ]
 }

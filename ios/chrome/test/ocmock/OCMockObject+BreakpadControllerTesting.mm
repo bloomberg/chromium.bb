@@ -4,8 +4,8 @@
 
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 
-#import "breakpad/src/client/ios/BreakpadController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

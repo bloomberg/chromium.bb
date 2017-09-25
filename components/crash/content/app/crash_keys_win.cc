@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "third_party/breakpad/breakpad/src/client/windows/common/ipc_protocol.h"
 
 namespace breakpad {
 

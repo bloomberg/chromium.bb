@@ -118,9 +118,9 @@ source_set("breakpad") {
   ]
 
   if (is_mac) {
-    deps += [ "//breakpad" ]
+    deps += [ "//third_party/breakpad" ]
   } else if (is_win) {
-    deps += [ "//breakpad:breakpad_handler" ]
+    deps += [ "//third_party/breakpad:breakpad_handler" ]
   }
 }
 
@@ -178,7 +178,7 @@ source_set("unit_tests") {
   ]
 
   if (is_win || is_mac || is_chromeos) {
-    deps += [ "//breakpad:client" ]
+    deps += [ "//third_party/breakpad:client" ]
   }
 
   if (is_win) {

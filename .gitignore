@@ -61,7 +61,6 @@ vs-chromium-project.txt
 /android_emulator_sdk
 /ash/ash_unittests_run.xml
 /base/base_unittests_run.xml
-/breakpad/src/
 # See build/.gitignore for entries covering src/build.
 /buildtools
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.

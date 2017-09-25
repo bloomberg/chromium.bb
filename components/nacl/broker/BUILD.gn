@@ -106,7 +106,6 @@ if (current_cpu == "x86") {
       ":nacl64_content",
       ":nacl64_crash_reporter_client",
       "//base",
-      "//breakpad:breakpad_handler",
       "//build/win:default_exe_manifest",
       "//chrome:nacl64_exe_version",
       "//chrome/install_static:install_static_util",
@@ -116,6 +115,7 @@ if (current_cpu == "x86") {
       "//content/public/common:static_switches",
       "//ppapi/proxy:ipc",
       "//sandbox",
+      "//third_party/breakpad:breakpad_handler",
     ]
   }
 
