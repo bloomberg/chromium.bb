@@ -5,8 +5,6 @@
 package com.android.webview.chromium;
 
 import android.content.ContentResolver;
-import android.webkit.WebIconDatabase;
-import android.webkit.WebIconDatabase.IconListener;
 
 import org.chromium.android_webview.AwContents;
 
@@ -14,7 +12,7 @@ import org.chromium.android_webview.AwContents;
  * Chromium implementation of WebIconDatabase -- big old no-op (base class is deprecated).
  */
 @SuppressWarnings("deprecation")
-final class WebIconDatabaseAdapter extends WebIconDatabase {
+final class WebIconDatabaseAdapter extends android.webkit.WebIconDatabase {
     @Override
     public void open(String path) {
         AwContents.setShouldDownloadFavicons();
