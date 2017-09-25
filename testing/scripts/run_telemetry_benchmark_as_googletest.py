@@ -53,6 +53,26 @@ def main():
   args, rest_args = parser.parse_known_args()
   for output_format in args.output_format:
     rest_args.append('--output-format=' + output_format)
+
+  rc, chartresults, json_test_results = run_benchmark(args, rest_args)
+
+  if chartresults:
+    if args.isolated_script_test_perf_output:
+      filename = args.isolated_script_test_perf_output
+    elif args.isolated_script_test_chartjson_output:
+      filename = args.isolated_script_test_chartjson_output
+    else:
+      filename = None
+
+    if filename is not None:
+      with open(filename, 'w') as chartjson_output_file:
+        json.dump(chartresults, chartjson_output_file)
+
+  json.dump(json_test_results, args.isolated_script_test_output)
+
+  return rc
+
+def run_benchmark(args, rest_args):
   env = os.environ.copy()
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
@@ -105,20 +125,7 @@ def main():
     if rc == 0:
       rc = 1  # Signal an abnormal exit.
 
-  if chartjson_results_present:
-    if args.isolated_script_test_perf_output:
-      filename = args.isolated_script_test_perf_output
-    elif args.isolated_script_test_chartjson_output:
-      filename = args.isolated_script_test_chartjson_output
-    else:
-      filename = None
-
-    if filename is not None:
-      with open(filename, 'w') as chartjson_output_file:
-        json.dump(chartresults, chartjson_output_file)
-
-  json.dump(json_test_results, args.isolated_script_test_output)
-  return rc
+  return rc, chartresults, json_test_results
 
 
 # This is not really a "script test" so does not need to manually add
