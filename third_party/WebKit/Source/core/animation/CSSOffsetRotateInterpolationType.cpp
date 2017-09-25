@@ -18,7 +18,8 @@ class CSSOffsetRotationNonInterpolableValue : public NonInterpolableValue {
 
   static RefPtr<CSSOffsetRotationNonInterpolableValue> Create(
       OffsetRotationType rotation_type) {
-    return AdoptRef(new CSSOffsetRotationNonInterpolableValue(rotation_type));
+    return WTF::AdoptRef(
+        new CSSOffsetRotationNonInterpolableValue(rotation_type));
   }
 
   OffsetRotationType RotationType() const { return rotation_type_; }

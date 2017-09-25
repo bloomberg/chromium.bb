@@ -43,7 +43,7 @@ class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
   static RefPtr<AnimatableTransform> Create(
       const TransformOperations& transform,
       double zoom) {
-    return AdoptRef(new AnimatableTransform(transform, zoom));
+    return WTF::AdoptRef(new AnimatableTransform(transform, zoom));
   }
   const TransformOperations& GetTransformOperations() const {
     return transform_;

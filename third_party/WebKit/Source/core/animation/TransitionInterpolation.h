@@ -45,7 +45,7 @@ class TransitionInterpolation : public Interpolation {
       InterpolationValue&& end,
       const RefPtr<AnimatableValue> compositor_start,
       const RefPtr<AnimatableValue> compositor_end) {
-    return AdoptRef(new TransitionInterpolation(
+    return WTF::AdoptRef(new TransitionInterpolation(
         property, type, std::move(start), std::move(end),
         std::move(compositor_start), std::move(compositor_end)));
   }

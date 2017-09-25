@@ -21,7 +21,7 @@ class SVGTransformNonInterpolableValue : public NonInterpolableValue {
 
   static RefPtr<SVGTransformNonInterpolableValue> Create(
       Vector<SVGTransformType>& transform_types) {
-    return AdoptRef(new SVGTransformNonInterpolableValue(transform_types));
+    return WTF::AdoptRef(new SVGTransformNonInterpolableValue(transform_types));
   }
 
   const Vector<SVGTransformType>& TransformTypes() const {

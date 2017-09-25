@@ -79,12 +79,12 @@ class CSSBorderImageLengthBoxNonInterpolableValue
   static RefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Create(
       const SideTypes& side_types,
       Vector<RefPtr<NonInterpolableValue>>&& side_non_interpolable_values) {
-    return AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
+    return WTF::AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
         side_types, std::move(side_non_interpolable_values)));
   }
 
   RefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Clone() {
-    return AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
+    return WTF::AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
         side_types_,
         Vector<RefPtr<NonInterpolableValue>>(side_non_interpolable_values_)));
   }
