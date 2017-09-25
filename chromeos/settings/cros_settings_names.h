@@ -128,6 +128,8 @@ CHROMEOS_EXPORT extern const char kDevicePrintersAccessMode[];
 CHROMEOS_EXPORT extern const char kDevicePrintersBlacklist[];
 CHROMEOS_EXPORT extern const char kDevicePrintersWhitelist[];
 
+CHROMEOS_EXPORT extern const char kTPMFirmwareUpdateSettings[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

@@ -3249,6 +3249,16 @@
     ]
   },
 
+  "TPMFirmwareUpdateSettings": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "allow-user-initiated-powerwash": true
+    },
+    "pref_mappings": [
+      { "pref": "cros.tpm_firmware_update_settings" }
+    ]
+  },
+
 
   "----- Chrome Frame policies -------------------------------------------": {},
 
