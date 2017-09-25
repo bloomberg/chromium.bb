@@ -404,8 +404,8 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
               AlignToPageSize(sizeof(SharedState)),
           AlignToPageSize(mapped_size_));
       if (discard_result != ERROR_SUCCESS) {
-        DLOG(FATAL) << "DiscardVirtualMemory() failed in Purge(): "
-                    << logging::SystemErrorCodeToString(discard_result);
+        DLOG(DCHECK) << "DiscardVirtualMemory() failed in Purge(): "
+                     << logging::SystemErrorCodeToString(discard_result);
       }
     }
   }
