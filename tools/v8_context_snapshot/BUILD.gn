@@ -7,20 +7,14 @@
 # third_party/WebKit/Source/bindings/core/v8/V8ContextSnapshot.{cpp|h}.
 # to speedup creating a V8 context and setting up around it.
 
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+
 import("//build/config/c++/c++.gni")
-import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/v8_target_cpu.gni")
 import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-}
-
-declare_args() {
-  # TODO(crbug.com/764576): Enable the feature on more environments.
-  use_v8_context_snapshot = !is_chromeos && !is_android && !is_chromecast &&
-                            (v8_target_cpu == target_cpu || is_msan)
 }
 
 if (is_android) {
@@ -40,6 +34,12 @@ group("v8_context_snapshot") {
     public_deps = [
       ":generate_v8_context_snapshot",
     ]
+  }
+}
+
+config("use_v8_context_snapshot") {
+  if (use_v8_context_snapshot) {
+    defines = [ "USE_V8_CONTEXT_SNAPSHOT" ]
   }
 }
 

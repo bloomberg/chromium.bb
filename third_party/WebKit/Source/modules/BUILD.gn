@@ -80,6 +80,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source:non_test_config",
     "//third_party/WebKit/Source:inside_blink",
     "//third_party/WebKit/Source/core:blink_core_pch",
+    "//tools/v8_context_snapshot:use_v8_context_snapshot",
   ]
 
   deps = [

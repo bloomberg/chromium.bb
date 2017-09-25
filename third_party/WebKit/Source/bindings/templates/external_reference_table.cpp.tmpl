@@ -14,7 +14,7 @@ namespace blink {
 
 const intptr_t* {{class}}::GetTable() {
   static const intptr_t reference_table[] = {
-#if !defined(OS_ANDROID)
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
     // Android is sensitive on its APK size, and this table improves it.
     // So we drop the table entries until the V8 context snapshot feature
     // is released on Android.
@@ -44,9 +44,9 @@ const intptr_t* {{class}}::GetTable() {
                   (not method.overloads.has_partial_overloads or not interface.is_partial)) or
                  (not method.overloads and method.visible) %}
     {# TODO(bashi): Remove this 'if' condition when crbug.com/630986 is fixed. #}
-    {% if not interface.is_callback %}
+    {%          if not interface.is_callback %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{method.name}}MethodCallback{{world_suffix}}),
-    {% endif %}
+    {%          endif %}
     {%        endif %}
     {%      endif %}{# overload(_index) #}
     {%         if method.is_cross_origin and method.visible %}
@@ -109,7 +109,7 @@ const intptr_t* {{class}}::GetTable() {
     {% endfor %}{# interfaces #}
 
     reinterpret_cast<intptr_t>(V8ObjectConstructor::IsValidConstructorMode),
-#endif  // OS_ANDROID
+#endif  // USE_V8_CONTEXT_SNAPSHOT
     0  // terminate with a null
   };
 
