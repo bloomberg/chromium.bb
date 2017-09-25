@@ -8,11 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
@@ -66,15 +66,15 @@ namespace data_reduction_proxy {
 
 class DataReductionProxyIODataTest : public testing::Test {
  public:
+  DataReductionProxyIODataTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+
   void SetUp() override {
     RegisterSimpleProfilePrefs(prefs_.registry());
   }
 
   void RequestCallback(int err) {
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return loop_.task_runner();
   }
 
   net::TestDelegate* delegate() {
@@ -93,8 +93,10 @@ class DataReductionProxyIODataTest : public testing::Test {
     return &prefs_;
   }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
-  base::MessageLoopForIO loop_;
   net::TestDelegate delegate_;
   net::TestURLRequestContext context_;
   net::NetLog net_log_;
@@ -103,10 +105,12 @@ class DataReductionProxyIODataTest : public testing::Test {
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   std::unique_ptr<DataReductionProxyIOData> io_data(
-      new DataReductionProxyIOData(Client::UNKNOWN, net_log(), task_runner(),
-                                   task_runner(), false /* enabled */,
-                                   std::string() /* user_agent */,
-                                   std::string() /* channel */));
+      new DataReductionProxyIOData(
+          Client::UNKNOWN, net_log(),
+          scoped_task_environment_.GetMainThreadTaskRunner(),
+          scoped_task_environment_.GetMainThreadTaskRunner(),
+          false /* enabled */, std::string() /* user_agent */,
+          std::string() /* channel */));
 
   // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.
   net::URLRequestContext* request_context =

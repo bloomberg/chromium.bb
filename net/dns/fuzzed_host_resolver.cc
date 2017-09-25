@@ -140,7 +140,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
 FuzzedHostResolver::FuzzedHostResolver(const Options& options,
                                        NetLog* net_log,
                                        base::FuzzedDataProvider* data_provider)
-    : HostResolverImpl(options, net_log, base::ThreadTaskRunnerHandle::Get()),
+    : HostResolverImpl(options, net_log),
       data_provider_(data_provider),
       socket_factory_(data_provider),
       is_ipv6_reachable_(data_provider->ConsumeBool()),
