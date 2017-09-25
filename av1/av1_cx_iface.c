@@ -34,8 +34,12 @@ struct av1_extracfg {
   unsigned int noise_sensitivity;
   unsigned int sharpness;
   unsigned int static_thresh;
-  unsigned int tile_columns;
-  unsigned int tile_rows;
+  unsigned int tile_columns;  // log2 number of tile columns
+  unsigned int tile_rows;     // log2 number of tile rows
+#if CONFIG_MAX_TILE
+  unsigned int tile_width;   // tile width in superblocks  (if non zero)
+  unsigned int tile_height;  // tile height in superblocks (if non zero)
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
   unsigned int dependent_horz_tiles;
 #endif
@@ -101,6 +105,10 @@ static struct av1_extracfg default_extra_cfg = {
   0,    // static_thresh
   0,    // tile_columns
   0,    // tile_rows
+#if CONFIG_MAX_TILE
+  0,  // tile_width
+  0,  // tile_height
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
   0,  // Dependent Horizontal tiles
 #endif
@@ -308,6 +316,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_MAX_TILE
     RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
     RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
+    RANGE_CHECK_HI(extra_cfg, tile_width, MAX_TILE_WIDTH_SB);
 #else   // CONFIG_MAX_TILE
   RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
   RANGE_CHECK_HI(extra_cfg, tile_rows, 2);
@@ -629,6 +638,10 @@ static aom_codec_err_t set_encoder_config(
   }
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_MAX_TILE
+  oxcf->tile_width = extra_cfg->tile_width;
+  oxcf->tile_height = extra_cfg->tile_height;
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
   oxcf->dependent_horz_tiles =
 #if CONFIG_EXT_TILE
@@ -773,6 +786,22 @@ static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
   extra_cfg.tile_rows = CAST(AV1E_SET_TILE_ROWS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+#if CONFIG_MAX_TILE
+static aom_codec_err_t ctrl_set_tile_width(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.tile_width = CAST(AV1E_SET_TILE_WIDTH, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_tile_height(aom_codec_alg_priv_t *ctx,
+                                            va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.tile_height = CAST(AV1E_SET_TILE_HEIGHT, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
 static aom_codec_err_t ctrl_set_tile_dependent_rows(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
@@ -1551,6 +1580,10 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
+#if CONFIG_MAX_TILE
+  { AV1E_SET_TILE_WIDTH, ctrl_set_tile_width },
+  { AV1E_SET_TILE_HEIGHT, ctrl_set_tile_height },
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
   { AV1E_SET_TILE_DEPENDENT_ROWS, ctrl_set_tile_dependent_rows },
 #endif

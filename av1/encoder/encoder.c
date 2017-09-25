@@ -866,16 +866,26 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
 
 static void set_tile_info_max_tile(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  int i, start_sb;
 
   av1_get_tile_limits(cm);
-  // Configure uniform spaced tiles
-  // (API is not yet upgraded to general tiles)
-  cm->uniform_tile_spacing_flag = 1;
 
   // configure tile columns
-  if (cm->uniform_tile_spacing_flag) {
+  if (cpi->oxcf.tile_width == 0 || cpi->oxcf.tile_height == 0) {
+    cm->uniform_tile_spacing_flag = 1;
     cm->log2_tile_cols = AOMMAX(cpi->oxcf.tile_columns, cm->min_log2_tile_cols);
     cm->log2_tile_cols = AOMMIN(cm->log2_tile_cols, cm->max_log2_tile_cols);
+  } else {
+    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+    int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
+    int size_sb = AOMMIN(cpi->oxcf.tile_width, MAX_TILE_WIDTH_SB);
+    cm->uniform_tile_spacing_flag = 0;
+    for (i = 0, start_sb = 0; start_sb < sb_cols && i < MAX_TILE_COLS; i++) {
+      cm->tile_col_start_sb[i] = start_sb;
+      start_sb += size_sb;
+    }
+    cm->tile_cols = i;
+    cm->tile_col_start_sb[i] = sb_cols;
   }
   av1_calculate_tile_cols(cm);
 
@@ -883,6 +893,16 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
   if (cm->uniform_tile_spacing_flag) {
     cm->log2_tile_rows = AOMMAX(cpi->oxcf.tile_rows, cm->min_log2_tile_rows);
     cm->log2_tile_rows = AOMMIN(cm->log2_tile_rows, cm->max_log2_tile_rows);
+  } else {
+    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+    int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+    int size_sb = AOMMIN(cpi->oxcf.tile_height, cm->max_tile_height_sb);
+    for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
+      cm->tile_row_start_sb[i] = start_sb;
+      start_sb += size_sb;
+    }
+    cm->tile_rows = i;
+    cm->tile_row_start_sb[i] = sb_rows;
   }
   av1_calculate_tile_rows(cm);
 }

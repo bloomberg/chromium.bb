@@ -431,6 +431,9 @@ typedef struct AV1Common {
   int log2_tile_rows;                        // only valid for uniform tiles
   int tile_col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
   int tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
+#if CONFIG_DEPENDENT_HORZTILES
+  int tile_row_independent[MAX_TILE_ROWS];  // valid for 0 <= i <  tile_rows
+#endif
 #else
   int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_width, tile_height;         // In MI units

@@ -3246,14 +3246,14 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
       cm->log2_tile_cols++;
     }
   } else {
-    for (i = 0, start_sb = 0; width_sb > 0; i++) {
+    for (i = 0, start_sb = 0; width_sb > 0 && i < MAX_TILE_COLS; i++) {
       size_sb = 1 + rb_read_uniform(rb, AOMMIN(width_sb, MAX_TILE_WIDTH_SB));
       cm->tile_col_start_sb[i] = start_sb;
       start_sb += size_sb;
       width_sb -= size_sb;
     }
     cm->tile_cols = i;
-    cm->tile_col_start_sb[i] = start_sb;
+    cm->tile_col_start_sb[i] = start_sb + width_sb;
   }
   av1_calculate_tile_cols(cm);
 
@@ -3267,7 +3267,7 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
       cm->log2_tile_rows++;
     }
   } else {
-    for (i = 0, start_sb = 0; height_sb > 0; i++) {
+    for (i = 0, start_sb = 0; height_sb > 0 && i < MAX_TILE_ROWS; i++) {
       size_sb =
           1 + rb_read_uniform(rb, AOMMIN(height_sb, cm->max_tile_height_sb));
       cm->tile_row_start_sb[i] = start_sb;
@@ -3275,7 +3275,7 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
       height_sb -= size_sb;
     }
     cm->tile_rows = i;
-    cm->tile_row_start_sb[i] = start_sb;
+    cm->tile_row_start_sb[i] = start_sb + height_sb;
   }
   av1_calculate_tile_rows(cm);
 }

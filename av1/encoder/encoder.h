@@ -269,6 +269,10 @@ typedef struct AV1EncoderConfig {
 
   int tile_columns;
   int tile_rows;
+#if CONFIG_MAX_TILE
+  int tile_width;
+  int tile_height;
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;
 #endif

@@ -4180,8 +4180,8 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     }
     // Write the final tile group size
     if (n_log2_tiles) {
-      aom_wb_overwrite_literal(&tg_params_wb, (1 << n_log2_tiles) - tile_count,
-                               n_log2_tiles);
+      aom_wb_overwrite_literal(
+          &tg_params_wb, (tile_cols * tile_rows) - tile_count, n_log2_tiles);
       aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
     }
     // Remux if possible. TODO (Thomas Davies): do this for more than one tile

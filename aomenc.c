@@ -412,6 +412,12 @@ static const arg_def_t tile_cols =
 static const arg_def_t tile_rows =
     ARG_DEF(NULL, "tile-rows", 1,
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
+#if CONFIG_MAX_TILE
+static const arg_def_t tile_width =
+    ARG_DEF(NULL, "tile-width", 1, "Width of each tile");
+static const arg_def_t tile_height =
+    ARG_DEF(NULL, "tile-height", 1, "Height of each tile");
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
 static const arg_def_t tile_dependent_rows =
     ARG_DEF(NULL, "tile-dependent-rows", 1, "Enable dependent Tile rows");
@@ -547,6 +553,10 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #endif  // CONFIG_EXT_TILE
                                        &tile_cols,
                                        &tile_rows,
+#if CONFIG_MAX_TILE
+                                       &tile_width,
+                                       &tile_height,
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                        &tile_dependent_rows,
 #endif
@@ -604,6 +614,10 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif  // CONFIG_EXT_TILE
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
+#if CONFIG_MAX_TILE
+                                        AV1E_SET_TILE_WIDTH,
+                                        AV1E_SET_TILE_HEIGHT,
+#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                         AV1E_SET_TILE_DEPENDENT_ROWS,
 #endif

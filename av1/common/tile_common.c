@@ -26,6 +26,11 @@ void av1_tile_set_tg_boundary(TileInfo *tile, const AV1_COMMON *const cm,
     tile->tg_horz_boundary =
         (row == cm->tile_group_start_row[row][col] ? 1 : 0);
   }
+#if CONFIG_MAX_TILE
+  if (cm->tile_row_independent[row]) {
+    tile->tg_horz_boundary = 1;  // this tile row is independent
+  }
+#endif
 }
 #endif
 void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
@@ -53,8 +58,8 @@ void av1_get_tile_limits(AV1_COMMON *const cm) {
   int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
 
   cm->min_log2_tile_cols = tile_log2(MAX_TILE_WIDTH_SB, sb_cols);
-  cm->max_log2_tile_cols = tile_log2(1, sb_cols);
-  cm->max_log2_tile_rows = tile_log2(1, sb_rows);
+  cm->max_log2_tile_cols = tile_log2(1, AOMMIN(sb_cols, MAX_TILE_COLS));
+  cm->max_log2_tile_rows = tile_log2(1, AOMMIN(sb_rows, MAX_TILE_ROWS));
   cm->min_log2_tiles = tile_log2(MAX_TILE_AREA_SB, sb_cols * sb_rows);
   cm->min_log2_tiles = AOMMAX(cm->min_log2_tiles, cm->min_log2_tile_cols);
   // TODO(dominic.symes@arm.com):
@@ -78,11 +83,13 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
       start_sb += size_sb;
     }
     cm->tile_cols = i;
-    cm->tile_col_start_sb[i] = start_sb;
+    cm->tile_col_start_sb[i] = sb_cols;
     cm->min_log2_tile_rows = AOMMAX(cm->min_log2_tiles - cm->log2_tile_cols, 0);
+    cm->max_tile_height_sb = sb_rows >> cm->min_log2_tile_rows;
   } else {
     int max_tile_area_sb = (sb_rows * sb_cols);
     int max_tile_width_sb = 0;
+    cm->log2_tile_cols = tile_log2(1, cm->tile_cols);
     for (i = 0; i < cm->tile_cols; i++) {
       int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
       max_tile_width_sb = AOMMAX(max_tile_width_sb, size_sb);
@@ -108,10 +115,21 @@ void av1_calculate_tile_rows(AV1_COMMON *const cm) {
       start_sb += size_sb;
     }
     cm->tile_rows = i;
-    cm->tile_row_start_sb[i] = start_sb;
+    cm->tile_row_start_sb[i] = sb_rows;
   } else {
-    // No action
+    cm->log2_tile_rows = tile_log2(1, cm->tile_rows);
   }
+
+#if CONFIG_DEPENDENT_HORZTILES
+  // Record which tile rows must be indpendent for parallelism
+  for (i = 0, start_sb = 0; i < cm->tile_rows; i++) {
+    cm->tile_row_independent[i] = 0;
+    if (cm->tile_row_start_sb[i + 1] - start_sb > cm->max_tile_height_sb) {
+      cm->tile_row_independent[i] = 1;
+      start_sb = cm->tile_row_start_sb[i];
+    }
+  }
+#endif
 }
 
 void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
