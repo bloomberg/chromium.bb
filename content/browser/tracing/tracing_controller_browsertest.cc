@@ -295,7 +295,8 @@ class TracingControllerTest : public ContentBrowserTest {
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
           TracingControllerImpl::CreateCompressedStringSink(
-              new TracingControllerTestEndpoint(callback)));
+              new TracingControllerTestEndpoint(callback),
+              true /* compress_with_background_priority */));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);

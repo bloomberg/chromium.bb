@@ -131,7 +131,8 @@ bool OnBeginJSONRequest(const std::string& path,
     scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
         TracingControllerImpl::CreateCompressedStringSink(
             TracingControllerImpl::CreateCallbackEndpoint(
-                base::Bind(TracingCallbackWrapperBase64, callback)));
+                base::Bind(TracingCallbackWrapperBase64, callback)),
+            false /* compress_with_background_priority */);
     return TracingController::GetInstance()->StopTracing(data_sink);
   }
 
