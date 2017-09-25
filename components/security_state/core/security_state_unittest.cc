@@ -28,6 +28,10 @@ namespace {
 
 const char kHttpsUrl[] = "https://foo.test/";
 const char kHttpUrl[] = "http://foo.test/";
+const char kHttpsSoUrl[] = "https-so://foo.test/";
+const char kLocalhostUrl[] = "http://localhost";
+const char kFileOrigin[] = "file://example_file";
+const char kWssUrl[] = "wss://foo.test/";
 
 // This list doesn't include data: URL, as data: URLs will be explicitly marked
 // as not secure.
@@ -633,6 +637,39 @@ TEST(SecurityStateTest, FieldEdit) {
     helper.GetSecurityInfo(&security_info);
     EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
   }
+}
+
+// Tests IsSchemeCryptographic function.
+TEST(SecurityStateTest, CryptographicSchemeUrl) {
+  // HTTPS is a cryptographic scheme.
+  EXPECT_TRUE(IsSchemeCryptographic(GURL(kHttpsUrl)));
+  // HTTPS-SO is a cryptographic scheme.
+  EXPECT_TRUE(IsSchemeCryptographic(GURL(kHttpsSoUrl)));
+  // WSS is a cryptographic scheme.
+  EXPECT_TRUE(IsSchemeCryptographic(GURL(kWssUrl)));
+  // HTTP is not a cryptographic scheme.
+  EXPECT_FALSE(IsSchemeCryptographic(GURL(kHttpUrl)));
+  // Return true only for valid |url|
+  EXPECT_FALSE(IsSchemeCryptographic(GURL("https://")));
+}
+
+// Tests IsOriginLocalhostOrFile function.
+TEST(SecurityStateTest, LocalhostOrFileUrl) {
+  EXPECT_TRUE(IsOriginLocalhostOrFile(GURL(kLocalhostUrl)));
+  EXPECT_TRUE(IsOriginLocalhostOrFile(GURL(kFileOrigin)));
+  EXPECT_FALSE(IsOriginLocalhostOrFile(GURL(kHttpsUrl)));
+}
+
+// Tests IsSslCertificateValid function.
+TEST(SecurityStateTest, SslCertificateValid) {
+  EXPECT_TRUE(IsSslCertificateValid(SecurityLevel::SECURE));
+  EXPECT_TRUE(IsSslCertificateValid(SecurityLevel::EV_SECURE));
+  EXPECT_TRUE(
+      IsSslCertificateValid(SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT));
+
+  EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::NONE));
+  EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::DANGEROUS));
+  EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::HTTP_SHOW_WARNING));
 }
 
 }  // namespace security_state

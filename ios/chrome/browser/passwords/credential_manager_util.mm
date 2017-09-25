@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 
 #include "components/security_state/core/security_state.h"
-#include "ios/chrome/browser/payments/origin_security_checker.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/web/public/origin_util.h"
 #include "url/origin.h"
@@ -14,11 +13,6 @@ using password_manager::CredentialManagerError;
 using password_manager::CredentialInfo;
 using password_manager::CredentialType;
 using password_manager::CredentialMediationRequirement;
-
-// TODO(crbug.com/435048): This file should not depend on payments. As soon as
-// https://chromium-review.googlesource.com/c/chromium/src/+/631881 is landed
-// make sure there are no payments dependencies.
-using payments::OriginSecurityChecker;
 
 namespace {
 
@@ -205,18 +199,19 @@ bool WebStateContentIsSecureHtml(const web::WebState* web_state) {
 
   const GURL last_committed_url = web_state->GetLastCommittedURL();
 
-  if (!OriginSecurityChecker::IsContextSecure(last_committed_url)) {
+  if (!web::IsOriginSecure(last_committed_url) ||
+      last_committed_url.scheme() == url::kDataScheme) {
     return false;
   }
 
   // If scheme is not cryptographic, the origin must be either localhost or a
   // file.
-  if (!OriginSecurityChecker::IsSchemeCryptographic(last_committed_url)) {
-    return OriginSecurityChecker::IsOriginLocalhostOrFile(last_committed_url);
+  if (!security_state::IsSchemeCryptographic(last_committed_url)) {
+    return security_state::IsOriginLocalhostOrFile(last_committed_url);
   }
 
   // If scheme is cryptographic, valid SSL certificate is required.
   security_state::SecurityLevel security_level =
       GetSecurityLevelForWebState(web_state);
-  return OriginSecurityChecker::IsSSLCertificateValid(security_level);
+  return security_state::IsSslCertificateValid(security_level);
 }

@@ -72,10 +72,6 @@ source_set("passwords") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
-
-    # TODO(crbug.com/435048): Remove payments dependency after landing
-    # https://chromium-review.googlesource.com/c/chromium/src/+/631881.
-    "//ios/chrome/browser/payments",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/glue",

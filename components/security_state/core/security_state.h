@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/security_state/core/insecure_input_event_data.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -223,6 +224,17 @@ void GetSecurityInfo(
 // and credit cards is enabled. This warning UI can be enabled with the
 // |kHttpFormWarningFeature| feature.
 bool IsHttpWarningInFormEnabled();
+
+// Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS,
+// HTTPS-SO, WSS.
+bool IsSchemeCryptographic(const GURL& url);
+
+// Returns true for a valid |url| with localhost or file:// scheme origin.
+bool IsOriginLocalhostOrFile(const GURL& url);
+
+// Returns true if the page has a valid SSL certificate. Only EV_SECURE,
+// SECURE, and SECURE_WITH_POLICY_INSTALLED_CERT are considered valid.
+bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 
 }  // namespace security_state
 

@@ -46,7 +46,6 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
-#include "ios/chrome/browser/payments/origin_security_checker.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_cache.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
@@ -911,23 +910,21 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
 
   const GURL lastCommittedURL = _activeWebState->GetLastCommittedURL();
 
-  if (!payments::OriginSecurityChecker::IsContextSecure(lastCommittedURL)) {
-    LOG(ERROR) << "Not in a secure context.";
+  if (!web::IsOriginSecure(lastCommittedURL) ||
+      lastCommittedURL.scheme() == url::kDataScheme) {
+    DLOG(ERROR) << "Not in a secure context.";
     return NO;
   }
 
-  if (!payments::OriginSecurityChecker::IsSchemeCryptographic(
-          lastCommittedURL) &&
-      !payments::OriginSecurityChecker::IsOriginLocalhostOrFile(
-          lastCommittedURL)) {
-    LOG(ERROR) << "Not localhost, or with file or cryptographic scheme.";
+  if (!security_state::IsSchemeCryptographic(lastCommittedURL) &&
+      !security_state::IsOriginLocalhostOrFile(lastCommittedURL)) {
+    DLOG(ERROR) << "Not localhost, or with file or cryptographic scheme.";
     return NO;
   }
 
   // If the scheme is cryptographic, the SSL certificate must also be valid.
-  return !payments::OriginSecurityChecker::IsSchemeCryptographic(
-             lastCommittedURL) ||
-         payments::OriginSecurityChecker::IsSSLCertificateValid(
+  return !security_state::IsSchemeCryptographic(lastCommittedURL) ||
+         security_state::IsSslCertificateValid(
              _toolbarModel->GetToolbarModel()->GetSecurityLevel(true));
 }
 
@@ -1117,8 +1114,10 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
   // Set the JS isContextSecure global variable at the earliest opportunity.
   [_paymentRequestJsManager
-       setContextSecure:payments::OriginSecurityChecker::IsContextSecure(
-                            _activeWebState->GetLastCommittedURL())
+       setContextSecure:(web::IsOriginSecure(
+                             _activeWebState->GetLastCommittedURL()) &&
+                         _activeWebState->GetLastCommittedURL().scheme() !=
+                             url::kDataScheme)
       completionHandler:nil];
 }
 
