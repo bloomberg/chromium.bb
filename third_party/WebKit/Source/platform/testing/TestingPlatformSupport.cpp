@@ -63,6 +63,7 @@
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebImageLayer.h"
+#include "public/platform/WebRuntimeFeatures.h"
 #include "public/platform/WebScrollbarLayer.h"
 
 namespace blink {
@@ -370,6 +371,8 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
 
   InitializePlatformLanguage();
   FontFamilyNames::init();
+  WebRuntimeFeatures::EnableExperimentalFeatures(true);
+  WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 }
 
 ScopedUnittestsEnvironmentSetup::~ScopedUnittestsEnvironmentSetup() {}
