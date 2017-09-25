@@ -151,16 +151,8 @@ class EventFactoryWriter(json5_generator.Writer):
             # Avoid duplicate includes.
             if cpp_name in includes:
                 continue
-            if self.suffix == 'Modules':
-                subdir_name = 'modules'
-            else:
-                subdir_name = 'core'
-            binding_name = self.get_file_basename('V8' + name_utilities.script_name(entry))
-            includes[cpp_name] = '#include "%(path)s"\n#include "bindings/%(subdir_name)s/v8/%(binding_name)s.h"' % {
-                'binding_name': binding_name,
-                'path': self._headers_header_include_path(entry),
-                'subdir_name': subdir_name,
-            }
+            includes[cpp_name] = ('#include "%s"' %
+                                  self._headers_header_include_path(entry))
         return includes.values()
 
     def generate_headers_header(self):
