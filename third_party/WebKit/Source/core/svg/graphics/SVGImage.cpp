@@ -29,6 +29,7 @@
 
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/dom/DocumentParser.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -793,10 +794,8 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   page_ = page;
 
   TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
-  loader.Load(FrameLoadRequest(
-      0, ResourceRequest(BlankURL()),
-      SubstituteData(Data(), AtomicString("image/svg+xml"),
-                     AtomicString("UTF-8"), NullURL(), kForceSynchronousLoad)));
+
+  frame->ForceSynchronousDocumentInstall("image/svg+xml", Data());
 
   // Set the concrete object size before a container size is available.
   intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(

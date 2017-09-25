@@ -680,8 +680,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   DCHECK(frame_->GetPage());
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
-  if ((substitute_data_.IsValid() && substitute_data_.ForceSynchronousLoad()) ||
-      !Document::ThreadedParsingEnabledForTesting())
+  if (!Document::ThreadedParsingEnabledForTesting())
     parsing_policy = kForceSynchronousParsing;
 
   InstallNewDocument(Url(), owner_document, should_reuse_default_view,

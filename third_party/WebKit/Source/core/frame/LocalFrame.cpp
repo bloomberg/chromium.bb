@@ -37,6 +37,7 @@
 #include "core/CoreProbeSink.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/ChildFrameDisconnector.h"
+#include "core/dom/DocumentParser.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/events/Event.h"
 #include "core/editing/EditingUtilities.h"
@@ -1109,6 +1110,30 @@ void LocalFrame::SetViewportIntersectionFromParent(
     if (View())
       View()->ScheduleAnimation();
   }
+}
+
+void LocalFrame::ForceSynchronousDocumentInstall(const AtomicString& mime_type,
+                                                 RefPtr<SharedBuffer> data) {
+  CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
+  DCHECK(!Client()->IsLocalFrameClientImpl());
+
+  // Any Document requires Shutdown() before detach, even the initial empty
+  // document.
+  GetDocument()->Shutdown();
+
+  DomWindow()->InstallNewDocument(
+      mime_type, DocumentInit::Create().WithFrame(this), false);
+  loader_.StateMachine()->AdvanceTo(
+      FrameLoaderStateMachine::kCommittedFirstRealLoad);
+
+  GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
+                                   AtomicString("UTF-8"));
+  data->ForEachSegment(
+      [this](const char* segment, size_t segment_size, size_t segment_offset) {
+        GetDocument()->Parser()->AppendBytes(segment, segment_size);
+        return true;
+      });
+  GetDocument()->Parser()->Finish();
 }
 
 void LocalFrame::NotifyUserActivation() {

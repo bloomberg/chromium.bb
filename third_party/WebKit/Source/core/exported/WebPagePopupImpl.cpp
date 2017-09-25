@@ -321,9 +321,7 @@ bool WebPagePopupImpl::InitializePage() {
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.Get());
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
-  frame->Loader().Load(
-      FrameLoadRequest(0, ResourceRequest(BlankURL()),
-                       SubstituteData(data, kForceSynchronousLoad)));
+  frame->ForceSynchronousDocumentInstall("text/html", data);
   return true;
 }
 

@@ -274,6 +274,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
       LocalFrame*,
       UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
 
+  // Replaces the initial empty document with a Document suitable for
+  // |mime_type| and populated with the contents of |data|. Only intended for
+  // use in internal-implementation LocalFrames that aren't in the frame tree.
+  void ForceSynchronousDocumentInstall(const AtomicString& mime_type,
+                                       RefPtr<SharedBuffer> data);
+
  private:
   friend class FrameNavigationDisabler;
 

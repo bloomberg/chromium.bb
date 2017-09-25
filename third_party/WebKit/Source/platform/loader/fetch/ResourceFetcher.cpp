@@ -456,7 +456,6 @@ Resource* ResourceFetcher::ResourceForStaticData(
 
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
-  resource->SetNeedsSynchronousCacheHit(substitute_data.ForceSynchronousLoad());
   // FIXME: We should provide a body stream here.
   resource->SetStatus(ResourceStatus::kPending);
   resource->NotifyStartLoad();
@@ -612,10 +611,8 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
       reporting_policy, params.GetOriginRestriction(),
       resource_request.GetRedirectStatus());
-  if (blocked_reason != ResourceRequestBlockedReason::kNone) {
-    DCHECK(!substitute_data.ForceSynchronousLoad());
+  if (blocked_reason != ResourceRequestBlockedReason::kNone)
     return kBlock;
-  }
 
   // For initial requests, call prepareRequest() here before revalidation
   // policy is determined.

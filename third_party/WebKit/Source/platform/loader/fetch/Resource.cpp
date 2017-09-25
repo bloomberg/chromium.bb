@@ -271,7 +271,6 @@ Resource::Resource(const ResourceRequest& request,
       decoded_size_(0),
       overhead_size_(CalculateOverheadSize()),
       cache_identifier_(MemoryCache::DefaultCacheIdentifier()),
-      needs_synchronous_cache_hit_(false),
       link_preload_(false),
       is_revalidating_(false),
       is_alive_(false),
@@ -691,10 +690,9 @@ void Resource::AddClient(ResourceClient* client) {
   }
 
   // If an error has occurred or we have existing data to send to the new client
-  // and the resource type supprts it, send it asynchronously.
+  // and the resource type supports it, send it asynchronously.
   if ((ErrorOccurred() || !GetResponse().IsNull()) &&
-      !TypeNeedsSynchronousCacheHit(GetType()) &&
-      !needs_synchronous_cache_hit_) {
+      !TypeNeedsSynchronousCacheHit(GetType())) {
     clients_awaiting_callback_.insert(client);
     if (!async_finish_pending_clients_task_.IsActive()) {
       async_finish_pending_clients_task_ =
