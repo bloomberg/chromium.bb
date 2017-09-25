@@ -147,8 +147,11 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseHeader() {
   if (!ReadBytes(sizeof(StreamHeader), &header))
     return READ_NO_DATA;
 
-  if (header.signature != kStreamSignature)
+  if (header.signature != kStreamSignature) {
+    // Temporary debugging for https://crbug.com/765836.
+    LOG(ERROR) << "Memlog error parsing signature: " << header.signature;
     return READ_ERROR;
+  }
 
   receiver_->OnHeader(header);
   return READ_OK;
@@ -164,8 +167,14 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
   // Validate data.
   if (alloc_packet.stack_len > kMaxStackEntries ||
       alloc_packet.context_byte_len > kMaxContextLen ||
-      alloc_packet.allocator >= AllocatorType::kCount)
+      alloc_packet.allocator >= AllocatorType::kCount) {
+    // Temporary debugging for https://crbug.com/765836.
+    LOG(ERROR) << "Memlog error validating data. Stack length: "
+               << alloc_packet.stack_len
+               << ". Context byte length: " << alloc_packet.context_byte_len
+               << ". Allocator: " << static_cast<int>(alloc_packet.allocator);
     return READ_ERROR;
+  }
 
   std::vector<Address> stack;
   stack.resize(alloc_packet.stack_len);
