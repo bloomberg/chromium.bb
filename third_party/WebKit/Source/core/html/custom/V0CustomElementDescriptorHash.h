@@ -66,6 +66,15 @@ struct HashTraits<blink::V0CustomElementDescriptor>
   STATIC_ONLY(HashTraits);
   static const bool kEmptyValueIsZero =
       HashTraits<AtomicString>::kEmptyValueIsZero;
+
+  static bool IsDeletedValue(const blink::V0CustomElementDescriptor& value) {
+    return HashTraits<AtomicString>::IsDeletedValue(value.type_);
+  }
+
+  static void ConstructDeletedValue(blink::V0CustomElementDescriptor& slot,
+                                    bool zero_value) {
+    HashTraits<AtomicString>::ConstructDeletedValue(slot.type_, zero_value);
+  }
 };
 
 }  // namespace WTF

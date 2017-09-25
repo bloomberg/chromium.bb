@@ -50,6 +50,7 @@ class V0CustomElementDescriptor {
                             const AtomicString& local_name)
       : type_(type), namespace_uri_(namespace_uri), local_name_(local_name) {}
 
+  V0CustomElementDescriptor() {}
   ~V0CustomElementDescriptor() {}
 
   // Specifies whether the custom element is in the HTML or SVG
@@ -66,21 +67,13 @@ class V0CustomElementDescriptor {
 
   bool IsTypeExtension() const { return type_ != local_name_; }
 
-  // Stuff for hashing.
-
-  V0CustomElementDescriptor() {}
-  explicit V0CustomElementDescriptor(WTF::HashTableDeletedValueType value)
-      : type_(value) {}
-  bool IsHashTableDeletedValue() const {
-    return type_.IsHashTableDeletedValue();
-  }
-
   bool operator==(const V0CustomElementDescriptor& other) const {
     return type_ == other.type_ && local_name_ == other.local_name_ &&
            namespace_uri_ == other.namespace_uri_;
   }
 
  private:
+  friend struct WTF::HashTraits<blink::V0CustomElementDescriptor>;
   AtomicString type_;
   AtomicString namespace_uri_;
   AtomicString local_name_;
