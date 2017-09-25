@@ -47,10 +47,8 @@ typedef AsyncFileTestHelper::FileEntryList FileEntryList;
 // Random root paths in which we create each file/directory of the
 // RegularTestCases (so that we can simulate a drop with files/directories
 // from multiple directories).
-static const base::FilePath::CharType* kRootPaths[] = {
-  FILE_PATH_LITERAL("a"),
-  FILE_PATH_LITERAL("b/c"),
-  FILE_PATH_LITERAL("etc"),
+constexpr const base::FilePath::CharType* kRootPaths[] = {
+    FILE_PATH_LITERAL("a"), FILE_PATH_LITERAL("b/c"), FILE_PATH_LITERAL("etc"),
 };
 
 base::FilePath GetTopLevelPath(const base::FilePath& path) {

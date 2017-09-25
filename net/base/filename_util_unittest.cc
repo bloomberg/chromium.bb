@@ -78,17 +78,13 @@ void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case) {
       << GetLocaleWarningString();
 }
 
-}  // namespace
-
-static const base::FilePath::CharType* kSafePortableBasenames[] = {
-    FILE_PATH_LITERAL("a"),
-    FILE_PATH_LITERAL("a.txt"),
-    FILE_PATH_LITERAL("a b.txt"),
-    FILE_PATH_LITERAL("a-b.txt"),
+constexpr const base::FilePath::CharType* kSafePortableBasenames[] = {
+    FILE_PATH_LITERAL("a"),           FILE_PATH_LITERAL("a.txt"),
+    FILE_PATH_LITERAL("a b.txt"),     FILE_PATH_LITERAL("a-b.txt"),
     FILE_PATH_LITERAL("My Computer"),
 };
 
-static const base::FilePath::CharType* kUnsafePortableBasenames[] = {
+constexpr const base::FilePath::CharType* kUnsafePortableBasenames[] = {
     FILE_PATH_LITERAL(""),
     FILE_PATH_LITERAL("."),
     FILE_PATH_LITERAL(".."),
@@ -115,19 +111,19 @@ static const base::FilePath::CharType* kUnsafePortableBasenames[] = {
 #endif
 };
 
-static const base::FilePath::CharType* kUnsafePortableBasenamesForWindows[] = {
-    FILE_PATH_LITERAL("con"),
-    FILE_PATH_LITERAL("con.zip"),
-    FILE_PATH_LITERAL("NUL"),
-    FILE_PATH_LITERAL("NUL.zip"),
+constexpr const base::FilePath::CharType* kUnsafePortableBasenamesForWin[] = {
+    FILE_PATH_LITERAL("con"), FILE_PATH_LITERAL("con.zip"),
+    FILE_PATH_LITERAL("NUL"), FILE_PATH_LITERAL("NUL.zip"),
 };
 
-static const base::FilePath::CharType* kSafePortableRelativePaths[] = {
+constexpr const base::FilePath::CharType* kSafePortableRelativePaths[] = {
     FILE_PATH_LITERAL("a/a"),
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("a\\a"),
 #endif
 };
+
+}  // namespace
 
 TEST(FilenameUtilTest, IsSafePortablePathComponent) {
   for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
@@ -1072,10 +1068,10 @@ TEST(FilenameUtilTest, IsReservedNameOnWindows) {
         << kSafePortableBasenames[i];
   }
 
-  for (size_t i = 0; i < arraysize(kUnsafePortableBasenamesForWindows); ++i) {
+  for (size_t i = 0; i < arraysize(kUnsafePortableBasenamesForWin); ++i) {
     EXPECT_TRUE(IsReservedNameOnWindows(
-        base::FilePath(kUnsafePortableBasenamesForWindows[i]).value()))
-        << kUnsafePortableBasenamesForWindows[i];
+        base::FilePath(kUnsafePortableBasenamesForWin[i]).value()))
+        << kUnsafePortableBasenamesForWin[i];
   }
 }
 
