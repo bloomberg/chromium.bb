@@ -2546,8 +2546,7 @@
               },
             },
           },
-          'future': True,
-          'supported_on': ['chrome.*:40-', 'chrome_os:40-'],
+          'supported_on': ['chrome.*:62-', 'chrome_os:62-'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2610,9 +2609,6 @@
           <ph name="BLOCKED_INSTALL_MESSAGE">"blocked_install_message"</ph>: If a user tries to install an extension, but it is blocked by policy the Chrome Webstore displays a generic error message. This setting allows you to append text to the error message. This could be be used to direct users to your help desk, explain why a particular extension is blocked, or something else. This error message will be truncated if longer than 1000 characters.
           <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests / webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS">https://developer.chrome.com/extensions/match_patterns</ph> except no paths may be defined. e.g. "*://*.example.com". This also supports effective TLD wildcarding e.g. "*://example.*".
           <ph name="RUNTIME_ALLOWED_HOSTS">"runtime_allowed_hosts"</ph>: Accepts a list of hosts that an extension can interact with regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>.
-
-
-          This policy isn't ready for usage yet, please don't use it.
           '''
         },
       ],
