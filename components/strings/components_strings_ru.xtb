@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Автоматически отправлять в Google<ph name="END_WHITEPAPER_LINK" /> информацию о возможных проблемах безопасности. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Не удалось обработать платеж</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1201895884277373915">Другие записи по этому сайту</translation>
 <translation id="1206967143813997005">Начальная подпись недействительна</translation>
@@ -615,7 +616,6 @@
 <translation id="5631439013527180824">Токен устройства недействителен</translation>
 <translation id="5633066919399395251">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Мошеннический контент заблокирован</translation>
-<translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5669703222995421982">Получение персонализированного контента</translation>
 <translation id="5675650730144413517">Страница недоступна</translation>
@@ -918,6 +918,7 @@
 <translation id="8249320324621329438">Время последней загрузки:</translation>
 <translation id="8253091569723639551">Необходимо указать платежный адрес</translation>
 <translation id="8261506727792406068">Удалить</translation>
+<translation id="8267698848189296333">Вход в аккаунт <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Уточните информацию у администратора сети.</translation>
 <translation id="8293206222192510085">Добавление закладки</translation>
 <translation id="8294431847097064396">Источник</translation>

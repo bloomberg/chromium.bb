@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
+<translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">隐身</translation>
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3295602654194328831">隐藏信息</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
-<translation id="3319792846664697699">导航面板</translation>
 <translation id="3321222012623826478">该服务需要以匿名方式将此网址发送到 Google 服务器进行验证。</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3341058695485821946">查看您已节省多少数据流量</translation>
@@ -268,6 +268,7 @@
 
 要调整搜索字词，请长按将其选中。要缩小搜索范围，请将面板向上滑动到顶部，然后触摸搜索框。</translation>
 <translation id="3616113530831147358">音频</translation>
+<translation id="3620176948598597475">这项重置操作会清空流量节省程序的历史记录，包括曾访问过的网站的列表。</translation>
 <translation id="3632295766818638029">显示密码</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，系统会在您每次登录网站之前要求您进行验证。</translation>
 <translation id="3649663272864015643">已选择“首页”标签页</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">此处没有任何历史记录</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3706423975342040244">娱乐</translation>
+<translation id="3712575778697986964">重置流量节省程序？</translation>
 <translation id="3714981814255182093">打开查找栏</translation>
 <translation id="3734660163659757482">上拉即可查看书签及更多内容</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
-<translation id="3845539888601087042">目前显示的是您登录过的设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="3859306556332390985">前进</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
 <translation id="3946611741043634542">继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="3950820424414687140">登录</translation>
+<translation id="395206256282351086">搜索和网站建议已停用</translation>
 <translation id="395922942268463099">定期更新的页面</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
-<translation id="4248297594476034182">要将您的标签页同步到您的所有设备上，请登录 Chrome。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4254813446494774748">翻译语言：</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
@@ -453,7 +454,6 @@
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
 <translation id="5424588387303617268">可用存储空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
-<translation id="5435775191620395718">目前显示的是此设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="5441522332038954058">跳转到地址栏</translation>
 <translation id="5447201525962359567">所有网站存储数据，包括 Cookie 及其他本地存储的数据</translation>
 <translation id="5447765697759493033">系统不会翻译此网站</translation>
@@ -480,7 +480,6 @@
 <translation id="5620928963363755975">通过“更多选项”按钮在“下载内容”中查找您的文件和网页</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5639724618331995626">允许访问所有网站</translation>
-<translation id="5646376287012673985">位置</translation>
 <translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5655963694829536461">搜索您的下载内容</translation>
 <translation id="5659593005791499971">电子邮件</translation>
@@ -550,6 +549,7 @@
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
 例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
+<translation id="6255999984061454636">内容建议</translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="6320088164292336938">振动</translation>
@@ -626,6 +626,7 @@
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
 <translation id="6896758677409633944">复制</translation>
+<translation id="6910211073230771657">已删除</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -676,6 +677,7 @@
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
+<translation id="7453467225369441013">您会从大多数网站退出，但不会因此退出自己的 Google 帐号。</translation>
 <translation id="7455923816558154057">点按即可查看</translation>
 <translation id="7464701184726199289">这将清除所有设备上的已同步数据。已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">不，谢谢</translation>
@@ -742,6 +744,7 @@
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
+<translation id="805047784848435650">根据您的浏览记录</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用</translation>
 <translation id="8058746566562539958">在新的 Chrome 标签页中打开</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1326317727527857210">Da bi se prikazale kartice s vaših ostalih uređaja, prijavite se na Chrome.</translation>
 <translation id="1685087038067318291">Otkrijte web-stranice koje šalju objekti u blizini. Kada je Bluetooth uključen, Chrome može prikupljati web-stranice koje su povezane s objektima oko vas i anonimno ih slati Googleu kako bi pronašao najkorisnije. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Chrome nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="415767770115540173">Doživite Google na bolji način u Chromeu na temelju svoje lokacije.</translation>
-<translation id="4248297594476034182">Da biste imali svoje kartice na svim svojim uređajima, prijavite se na Chrome.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="4615174829807303908">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromeu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>

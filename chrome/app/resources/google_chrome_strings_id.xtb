@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Dapatkan bantuan tentang penggunaan Chrome OS</translation>
 <translation id="1795405610103747296">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke ponsel Anda: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
@@ -58,7 +57,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="2446511512801740068">Chrome telah kedaluwarsa karena tidak diluncurkan selama beberapa waktu. Pembaruan telah tersedia dan akan diterapkan setelah Anda meluncurkan ulang.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
-<translation id="2582790009689336987">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena sistem Linux ini sudah tidak didukung.</translation>
 <translation id="2586406160782125153">Tindakan ini akan menghapus data browsing dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Lisensi sumber terbuka Chrome OS</translation>
@@ -84,7 +82,6 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 
 Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
-<translation id="3311976847535831054">Komputer ini tidak akan menerima pembaruan Google Chrome 32-bit. Tingkatkan versi ke Google Chrome 64-bit.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="3395323229510056640">Dapatkan bantuan Chrome OS</translation>
 <translation id="3396977131400919238">Terjadi kesalahan pada sistem operasi saat penginstalan berlangsung. Download kembali Google Chrome.</translation>
@@ -114,7 +111,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4309555186815777032">(Chrome perlu <ph name="BEGIN_BUTTON" />dimulai ulang<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Komputer ini tidak akan menerima pembaruan Google Chrome karena sistem Linux ini sudah tidak didukung.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
 <translation id="4458462641685292929">Operasi lain di Google Chrome sedang berlangsung. Coba lagi nanti.</translation>
@@ -128,7 +124,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="4750550185319565338">Muat ulang Chrome untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Komputer ini akan segera berhenti menerima pembaruan Google Chrome 32-bit. Tingkatkan versi ke Google Chrome 64-bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">File ini mungkin berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="4794050651896644714">Simpan detail di Chrome</translation>
@@ -205,7 +200,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="7106741999175697885">Pengelola Tugas - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chrome secara manual.</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
 <translation id="7164397146364144019">Anda dapat membantu membuat Chrome lebih aman dan lebih mudah digunakan dengan melaporkan detail secara otomatis tentang kemungkinan insiden keamanan ke Google.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan ke Chrome.</translation>

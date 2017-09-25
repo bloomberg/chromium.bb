@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">få Chromium på iPhone</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
-<translation id="2372704305038231957">Det kan hende 32-bit-versjonen av Chromium ikke fungerer skikkelig, fordi den ikke støttes på dette Linux-systemet lenger. Oppgrader til 64-bit-versjonen av Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Chromium?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Chromium?}}</translation>
 <translation id="2396765026452590966">Utvidelsen «<ph name="EXTENSION_NAME" />» har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2483889755041906834">I Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(krever at Chromium <ph name="BEGIN_BUTTON" />startes på nytt<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium er nesten klar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium kunne ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chromium.</translation>
-<translation id="5859963531214966875">Fremtidige versjoner av Chromium kommer ikke til å støtte dette Linux-systemet.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium må ha lagringstilgang for å laste ned filer.</translation>
-<translation id="6584627348340620412">Fremtidige versjoner av 32-bit-versjonen av Chromium kommer ikke til å støtte dette Linux-systemet. Oppgrader til 64-bit-versjonen av Chromium.</translation>
-<translation id="6593914713218535185">Det kan hende Chromium ikke fungerer skikkelig fordi det ikke støttes på dette Linux-systemet lenger.</translation>
 <translation id="6638567566961868659">Finn bokmerkene dine i Chromium-menyen eller på bokmerkeraden.</translation>
 <translation id="6676384891291319759">Gå til Internett</translation>
 <translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
@@ -182,7 +177,6 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>
-<translation id="7027298027173928763">Chromium kunne ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må installere Chromium på nytt manuelt.</translation>
 <translation id="705851970750939768">Oppdater Chromium</translation>
 <translation id="7066436765290594559">Chromium kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="707471633328071618">Google Payments (kopiert til Chromium)</translation>

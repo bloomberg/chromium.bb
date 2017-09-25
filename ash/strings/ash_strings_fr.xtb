@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
+<translation id="119944043368869598">Tout effacer</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1267032506238418139">Modification du raccourci</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">L'activation des données mobiles active également le Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
+<translation id="2482878487686419369">Notifications</translation>
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
+<translation id="3582792037806681688">La connexion multicompte a été désactivée pour un utilisateur de cette session.</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
 <translation id="3606978283550408104">La plage braille est connectée.</translation>
 <translation id="3621202678540785336">Entrée</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">Appareil USB de type C (port situé sur la droite de l'appareil)</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6521655319214113338">Écriture manuscrite</translation>
+<translation id="6528179044667508675">Ne pas déranger</translation>
 <translation id="6537270692134705506">Capturer l'écran</translation>
+<translation id="6580955892089546165">Cette fonctionnalité vous permet d'accéder rapidement à tout compte connecté sans mot de passe.
+
+N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
+<translation id="7054808953701320293">OK, ne plus afficher</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
+<translation id="7135556860107312402">Autoriser les notifications des éléments suivants :</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micro arrière</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">Palette d'emoji</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
+<translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
+<translation id="7658239707568436148">Annuler</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
 <translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles…</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
+<translation id="8056430285089645882">OK, ne plus afficher</translation>
+<translation id="8088137642766812908">Attention, cette fonctionnalité peut avoir des comportements étranges</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation…</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8392234662362215700">Appuyez sur Ctrl+Maj+Espace pour changer la disposition du clavier.</translation>
+<translation id="8392688371657486010">Vous n'avez aucune notification.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8433977262951327081">Le raccourci pour afficher l'info-bulle du menu des options de saisie dans l'étagère a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> au lieu de <ph name="OLD_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
+<translation id="8814715559352963456">Si vous déplacez des fenêtres vers un autre écran, elles peuvent présenter des comportements inattendus.
+
+Suite à cette opération, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="8825534185036233643">La duplication d'écran avec plus de deux écrans n'est pas acceptée.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Recherche+Échap</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">Le micro est en cours d'utilisation.</translation>
 <translation id="9089416786594320554">Modes de saisie</translation>
 <translation id="9091626656156419976">Suppression de l'écran <ph name="DISPLAY_NAME" /></translation>
+<translation id="9111102763498581341">Déverrouiller</translation>
 <translation id="9151726767154816831">Redémarrer, puis lancer la réinitialisation Powerwash pour mettre à jour le système</translation>
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
 <translation id="9201131092683066720">La batterie est chargée à <ph name="PERCENTAGE" /> %.</translation>

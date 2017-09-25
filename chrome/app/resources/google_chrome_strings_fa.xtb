@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏دریافت راهنمایی برای استفاده از سیستم عامل Chrome </translation>
 <translation id="1795405610103747296">‏Chrome را در تلفنتان نصب کنید. پیامکی به تلفنتان ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">‏Chrome به‌طور خودکار به جدیدترین نسخه به‌روزرسانی نشد، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست خواهید داد. باید Chrome را به‌روزرسانی کنید.</translation>
 <translation id="1874309113135274312">‏Google Chrome نسخه بتا (mDNS-In)</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="2063848847527508675">‏برای اعمال به‌روزرسانی، سیستم‌عامل Chrome باید راه‌اندازی مجدد شود.</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">‏Chrome قدیمی است چون برای مدتی راه‌اندازی مجدد نشده است. یک نسخه به‌روز دردسترس است و به‌محض راه‌اندازی مجدد اعمال خواهد شد.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="2580411288591421699">‏نمی‌توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
-<translation id="2582790009689336987">‏این رایانه به زودی دریافت به‌روزرسانی‌های Google Chrome را متوقف می‌کند، زیرا این سیستم Linux دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="2586406160782125153">‏این کار داده‌های محصول مرورتان را برای همیشه از این دستگاه حذف می‌کند. برای بازیابی داده‌هایتان در فرصتی دیگر، با <ph name="USER_EMAIL" /> وارد سیستم Chrome شوید.</translation>
 <translation id="2588322182880276190">‏نشان‌واره Chrome</translation>
 <translation id="2664962310688259219">‏مجوزهای منبع باز سیستم عامل Chrome</translation>
@@ -84,7 +82,6 @@
 
 برای دستورالعمل‌های بیشتر، لطفاً رایانامه‌تان (<ph name="ACCOUNT_EMAIL" />) را بررسی کنید.</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
-<translation id="3311976847535831054">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome ‏۳۲ بیتی را دریافت نخواهد کرد. لطفاً به Google Chrome ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="3395323229510056640">‏دریافت کمک از سیستم عامل Chrome</translation>
 <translation id="3396977131400919238">‏هنگام نصب یک خطای سیستم عامل رخ داد. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
@@ -115,7 +112,6 @@
 <translation id="4328355335528187361">‏Google Chrome نسخه Dev‏، (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند، زیرا این سیستم Linux دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -129,7 +125,6 @@
 <translation id="4728575227883772061">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4743926867934016338">پذیرش و جستجو</translation>
 <translation id="4750550185319565338">‏برای فعال کردن <ph name="PLUGIN_NAME" />، ‏Chrome را راه‌اندازی مجدد کنید</translation>
-<translation id="4751441238232965030">‏به‌زودی دریافت به‌روزرسانی‌های Google Chrome ‏۳۲ بیتی در این رایانه متوقف خواهد شد. لطفاً به Google Chrome ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="4754614261631455953">‏Google Chrome Canary (ورودی mDNS)</translation>
 <translation id="4771048833395599659">‏این فایل ممکن است خطرناک باشد، بنابراین Chrome آن را مسدود کرده است.</translation>
 <translation id="4794050651896644714">‏ذخیره جزئیات در Chrome</translation>
@@ -206,7 +201,6 @@
 <translation id="6989339256997917931">‏Google Chrome به روز شده است اما حداقل ۳۰ روز از آن استفاده نکرده‌اید.</translation>
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>
 <translation id="7106741999175697885">‏مدیر فعالیت‌ها - Google Chrome</translation>
-<translation id="7125719106133729027">‏Chrome به‌طور خودکار به جدیدترین نسخه به‌روزرسانی نشد، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست خواهید داد. باید Chrome را به صورت دستی دوباره نصب کنید.</translation>
 <translation id="7161904924553537242">‏به Google Chrome خوش آمدید</translation>
 <translation id="7164397146364144019">‏می‌توانید با گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google به ایمن‌تر شدن Chrome و استفاده آسان‌تر از آن کمک کنید.</translation>
 <translation id="7185038942300673794">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شد.</translation>

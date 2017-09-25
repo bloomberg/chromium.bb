@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">Tik op de tikdoelen op je scherm.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Melding uitvouwen</translation>
-<translation id="2482878487686419369">Meldingen</translation>
 <translation id="2497284189126895209">Alle bestanden</translation>
 <translation id="2522350507219695259">Kalibratie is voltooid</translation>
 <translation id="252373100621549798">Onbekend display</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sec. geleden}other{# sec. geleden}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 seconde geleden}other{# seconden geleden}}</translation>
-<translation id="6528179044667508675">Niet storen</translation>
 <translation id="6612467943526193239">Druk op Esc om de kalibratie af te sluiten.</translation>
 <translation id="6620110761915583480">Bestand opslaan</translation>
 <translation id="6699343763173986273">Volgende track voor media</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">Naamloze webpagina</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Nog 1 jaar}other{Nog # jaar}}</translation>
-<translation id="6918245111648057970">Melden van het volgende toestaan voor elke gebruiker:</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">MEEST WAARSCHIJNLIJK</translation>
-<translation id="7135556860107312402">Meldingen toestaan van het volgende:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min. resterend}other{# min. resterend}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min. geleden}other{# min. geleden}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuut resterend}other{# minuten resterend}}</translation>
-<translation id="7457942297256758195">Alles wissen</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">Ontgrendel het apparaat om je meldingen weer te geven</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="7814458197256864873">&amp;Kopiëren</translation>
-<translation id="7850320739366109486">Niet storen</translation>
 <translation id="7907591526440419938">Bestand openen</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 uur geleden}other{# uur geleden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec. resterend}other{# sec. resterend}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 jaar}other{# jaar}}</translation>
 <translation id="8371695176452482769">Begin nu te spreken</translation>
 <translation id="838869780401515933">Selecteren</translation>
-<translation id="8392688371657486010">Je hebt geen meldingen</translation>
 <translation id="8394908167088220973">Media afspelen/onderbreken</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">Instellingen</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 j}other{# j}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-bestand (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" />  KB/s</translation>

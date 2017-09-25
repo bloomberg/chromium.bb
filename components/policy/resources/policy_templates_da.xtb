@@ -682,6 +682,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
+<translation id="332771718998993005">Beslut dig for et navn, der angives som en destination for <ph name="PRODUCT_NAME" />.
+
+          Hvis denne politik er angivet som en udfyldt streng, anvendes strengen som navnet på destinationen for <ph name="PRODUCT_NAME" />. Hvis ikke, er navnet på destinationen det samme som navnet på enheden. Hvis denne politik ikke er angivet, er navnet på destinationen det samme som navnet på enheden, og enhedsejeren (eller en bruger fra domænet, som administrerer enheden) kan ændre det. Navnet må højst indeholde 24 tegn.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -1165,6 +1168,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Værdien for politikken aktiveres inden for millisekunder. Værdierne er låste til mindre end eller det samme som inaktivitetsforsinkelsen.</translation>
 <translation id="5307432759655324440">Inkognitotilstandens tilgængelighed</translation>
 <translation id="5318185076587284965">Aktivér brugen af relæservere for hosten for fjernadgang</translation>
+<translation id="5323128137188992869">Tillad, at indhold castes til enheden via <ph name="PRODUCT_NAME" />.
+
+          Hvis denne politik er angivet som Falsk, kan brugerne ikke caste indhold til deres enheder. Hvis denne politik er angivet som Sand, kan brugerne caste indhold. Hvis politikken ikke er angivet, kan brugerne ikke caste indhold til tilmeldte Chrome OS-enheder, men de kan caste indhold til andre enheder.</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper</translation>
 <translation id="5365946944967967336">Vis knap til startsiden på værktøjslinjen</translation>
 <translation id="5366977351895725771">Hvis dette er angivet som falsk, vil oprettelse af administrerede brugere være deaktiveret for denne bruger. Alle eksisterende administrerede brugere vil stadig være tilgængelige.
@@ -1370,6 +1376,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6111936128861357925">Tillad det ekstra dinosaurspil</translation>
 <translation id="6114416803310251055">frarådet</translation>
 <translation id="6133088669883929098">Tillad alle websites at anvende nøglegenerering</translation>
+<translation id="6139485614509308022">Hvis politikken "OffHours" er angivet, ignoreres de angivne enhedspolitikker (brug standardindstillingerne for disse politikker) i de angivne tidsrum. Enhedspolitikker anvendes igen af Chrome hver gang tidsrummet for "OffHours" starter eller slutter. Brugeren underrettes og tvinges til at logge ud, når tidspunktet for "OffHours" slutter, og indstillinger for enhedspolitikker ændres (dvs. når brugeren ikke er logget ind med en tilladt konto).</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="614662973812186053">Denne politik styrer også indsamling af brugs- og diagnosticeringsdata i Android.</translation>
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
@@ -1692,7 +1699,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis politikken ikke indstilles eller indstilles til falsk, aktiveres <ph name="TLS_FALSE_START" />. Hvis den indstilles til sand, deaktiveres <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktiver Direkte</translation>
 <translation id="7443616896860707393">Påmindelser om HTTP Basic Auth med krydsoprindelse</translation>
-<translation id="7468416082528382842">Placering af Windows-registreringsdatabase:</translation>
 <translation id="7469554574977894907">Aktiver søgeforslag</translation>
 <translation id="7474249562477552702">Om certifikater med SHA-1-signatur, som er udstedt af lokale tillidsankre, er tilladt eller ej</translation>
 <translation id="7485481791539008776">Regler for valg af standardprinter</translation>

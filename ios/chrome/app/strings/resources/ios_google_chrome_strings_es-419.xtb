@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="1685087038067318291">Descubre las páginas web que envían los objetos cercanos. Cuando Bluetooth está activado, Chrome puede identificar las páginas web asociadas con los objetos cercanos y enviarlas de forma anónima a Google para determinar cuáles son las más útiles. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome no puede acceder a tus fotos ni videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="415767770115540173">Obtén una mejor experiencia de Google en Chrome según tu ubicación.</translation>
-<translation id="4248297594476034182">Accede a Chrome para que tus pestañas estén en todos tus dispositivos.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4523886039239821078">Algunos complementos causan bloqueos en Chrome. Desinstala:</translation>
 <translation id="4615174829807303908">Estás saliendo de una cuenta administrada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Esta acción borrará tus datos de Chrome en este dispositivo, pero permanecerán en tu cuenta de Google.</translation>

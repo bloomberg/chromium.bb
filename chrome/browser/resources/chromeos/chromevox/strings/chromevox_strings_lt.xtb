@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">„ChromeVox“ suteikia „Chrome“ balsą</translation>
-<translation id="1226487719524433143">Norėtume sužinoti jūsų nuomonę apie šias naujas funkcijas. Atsiųskite atsiliepimą tiesiogiai paspausdami „Search“ + a, tada – i. Paspauskite mygtuką „Kitas“, jei norite toliau žiūrėti mokymo programą ir sužinoti viską, ko reikia norint pradėti.</translation>
 <translation id="1229276918471378188">Ankstesnis perėjimas</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Kita 6 lygio antraštė</translation>
 <translation id="1275718070701477396">Pasirinkta</translation>
-<translation id="1310230882256010289">Vidiniai naujovinimai. Pertvarkėme „ChromeVox“ veikimą iš pagrindų. Dabar jis veikia našiau, stabiliau ir pasižymi geresniu žiniatinklio palaikymu bei suderinamumu.</translation>
 <translation id="1319608975892113573">Nėra ankstesnės įtraukos.</translation>
 <translation id="1321576897702511272">Slėpti „ChromeVox“ pagalbą</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> iš <ph name="TOTAL" /></translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">Tuščia stulpelio antraštė</translation>
 <translation id="316542773973815724">Naršymas</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{tarpas}one{# tarpas}few{# tarpai}many{# spaces}other{# tarpų}}</translation>
-<translation id="3183233191569362040">Sveikiname! Sužinojote pagrindinę informaciją, kaip sėkmingai naudoti „ChromeVox Next“ (beta versijos). Atminkite, kad bet kada galite atidaryti „ChromeVox“ komandų meniu paspausdami „Search“ ir taško klavišą. Jei norite sužinoti dar daugiau apie „ChromeVox“ ir „Chrome“ OS, žr. nurodytus straipsnius.
-Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektumėte uždarymo mygtuką ir spustelėtumėte jį.</translation>
 <translation id="320961988183078793">įvesta <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, skirtukas</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -338,7 +334,6 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3909320334364316587">Ankstesnė 6 lygio antraštė</translation>
 <translation id="3914173277599553213">Būtina</translation>
-<translation id="3951424903203718058">Ar „ChromeVox Next“ ekrano skaitymo balsu funkciją naudojate pirmą kartą? Šioje trumpoje mokymo programoje pateikiama pagrindinė informacija, kaip pradėti naudoti „ChromeVox Next“.</translation>
 <translation id="3962990492275676168">Pradėti skaityti nuo dabartinės vietos</translation>
 <translation id="4004802134384979325">pažymėta</translation>
 <translation id="4006140876663370126">img</translation>
@@ -432,7 +427,6 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="4846487886195635104">Perbraukimo pabaiga</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Ankstesnis panašus elementas.</translation>
-<translation id="485011152882364255">„ChromeVox Next“ klavišas „Search“ yra modifikavimo klavišas. Dauguma „ChromeVox“ sparčiųjų klavišų prasideda klavišu „Search“. Be to, naršydami galite naudoti rodyklių klavišus.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Įgalinti TĮK įrašymą į žurnalą</translation>
 <translation id="4877261390094455813">Įveskite paieškos užklaus.</translation>
@@ -501,7 +495,6 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="5444587279251314700">(aktyvus)</translation>
 <translation id="5451268436205074266">Taškai: <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Papildomas</translation>
-<translation id="5458780372341732962">Naudoti „ChromeVox Next“ (beta versija)</translation>
 <translation id="5485036206801896268">Nėra ankstesnio grafinio vaizdo.</translation>
 <translation id="5486947920110100234">Nėra kitos perėjimo vietos.</translation>
 <translation id="549602578321198708">Žodis</translation>
@@ -510,7 +503,6 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="5507663321906818013">Derinimo palyginimas</translation>
 <translation id="5518443085409638729">Redaguodami tekstą nuveskite žymeklį tarp simbolių (pvz., „Mac OS X“).</translation>
 <translation id="552195134157544755">Akutė</translation>
-<translation id="5531530875187439488">Nauji garsiniai ženkleliai. Atnaujinome girdimų garso įrašų piktogramų rinkinį, kad naršymas būtų interaktyvesnis.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">Nėra ankstesnės 5 lygio antraštės.</translation>
 <translation id="556042886152191864">Mygtukas</translation>
@@ -537,7 +529,6 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="5682113568322255809">Orientyras</translation>
 <translation id="5683155931978483559">Ankstesnis žymimasis laukelis</translation>
 <translation id="5684277895745049190">Sąrašas</translation>
-<translation id="5684905390246898631">Sveiki! Tai – „ChromeVox Next“!</translation>
 <translation id="5695831708991916435">Toliau pateikti keli spartieji klavišai nėra „ChromeVox“ komandos, bet jie vis tiek labai naudingi norint išnaudoti visas „Chrome“ galimybes.
 Jei norite pereiti nuo vieno suaktyvinamo elemento, pvz., mygtuko ar nuorodos, prie kito, paspauskite tabuliavimo klavišą. Jei norite grįžti atgal, paspauskite „Shift“ ir tabuliavimo klavišą. 
 Kad pereitumėte į „Chrome“ naršyklės adreso laukelį, kuris dar vadinamas „omnibox“, paspauskite „Control“ ir L. 
@@ -572,7 +563,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="5937336320314038555">{COUNT,plural, =1{lygybės ženklas}one{# lygybės ženklas}few{# lygybės ženklai}many{# equal signs}other{# lygybės ženklų}}</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5948123859135882163">Kaitalioti struktūrinį ir semantinį matematinių reiškinių interpretavimą</translation>
-<translation id="5948485979596965684">Jūsų versija atnaujinta į pagrindinį naują „ChromeVox“ leidimą!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Dialogo langas</translation>
 <translation id="5963413905009737549">Skiltis</translation>
@@ -651,7 +641,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6786800275320335305">Straipsnis</translation>
 <translation id="6787839852456839824">Spartieji klavišai</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">Sunkiai dirbome kurdami naujas ir patobulintas „ChromeVox“ funkcijas. Štai, kas naujo</translation>
 <translation id="6833103209700200188">Poraštė</translation>
 <translation id="6871161210040114857">Nepaisoma didžiųjų ir mažųjų raidžių rašybos.</translation>
 <translation id="6877435256196695200">Nėra kito grafinio elemento.</translation>
@@ -669,7 +658,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="7037042857287298941">Ankstesnis sąrašas</translation>
 <translation id="7041173719775863268">Baigti rinktis</translation>
 <translation id="7086377898680121060">šviesumo didinimas</translation>
-<translation id="7094527465295945904">Nauji klavišų susiejimai. Klavišą „Search“ nustatėme kaip „ChromeVox“ modifikatorių ir gerokai supaprastinome klavišų derinius.</translation>
 <translation id="7095834689119144465">Redaguoti tik skaitinį tekstą</translation>
 <translation id="7096001299300236431">Ankstesnis medijų raktas</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +761,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8066678206530322333">Reklamjuostė</translation>
 <translation id="8076492880354921740">Skirtukai</translation>
 <translation id="8091452896542422286">Tarpas</translation>
-<translation id="8104178626892949749">Paspaudę įjunkite „ChromeVox“, kad sužinotumėte daugiau apie „ChromeVox Next“.</translation>
 <translation id="8110647606445335195">Nėra ARIA orientyrų.</translation>
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{apatinis brūkšnys}one{# apatinis brūkšnys}few{# apatiniai brūkšniai}many{# underscores}other{# apatinių brūkšnių}}</translation>
@@ -783,7 +770,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8199231515320852133">Pranešti apie dabartinio langelio antraštes</translation>
 <translation id="820417203470636242">Tuščias langelis.</translation>
 <translation id="8215202828671303819">Kelių elementų pasirinkimas</translation>
-<translation id="8224171046658870249">Perjungta į „ChromeVox Next“</translation>
 <translation id="826991282343985864">eil$1st$2</translation>
 <translation id="8276439074553447000">Pereiti prie ankstesni elemento, kurį galima fokusuoti</translation>
 <translation id="8278417001922463147">Nėra jokių ankstesnių straipsnių.</translation>
@@ -828,7 +814,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="8664519043722036194">sekundės</translation>
 <translation id="867187640362843212">5 antraštė</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{statusis brūkšnys}one{# statusis brūkšnys}few{# statieji brūkšniai}many{# vertical pipes}other{# stačiųjų brūkšnių}}</translation>
-<translation id="8721861170709424373">„ChromeVox Next“ komandos nuoroda</translation>
 <translation id="8735450637152821465">Pradėti rinktis</translation>
 <translation id="8743786158317878347">įveskite struktūrinį turinį, pvz., lenteles</translation>
 <translation id="8747966237988593539">Rūšiuotas sąrašas</translation>
@@ -881,7 +866,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="923331726185079994">„ChromeVox“ atnaujintas</translation>
 <translation id="930275611743429116">Pradėti arba baigti pasirinkimą.</translation>
 <translation id="948171205378458592">Sumažinti kalbos tempą</translation>
-<translation id="955917170449423694">Perjungta į klasikinį „ChromeVox“ režimą</translation>
 <translation id="962913030769097253">Kita 1 lygio antraštė</translation>
 <translation id="973955474346881951">Įgalinti pritraukimo režimą / neleisti jo</translation>
 <translation id="976849232629612000">Elementų nėra.</translation>

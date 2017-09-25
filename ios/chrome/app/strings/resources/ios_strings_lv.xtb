@@ -66,6 +66,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="209018056901015185">Pieprasīt datora vietni</translation>
 <translation id="2103075008456228677">Atvērt history.google.com</translation>
 <translation id="2116625576999540962">Pārvietoti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Lai pārlūkotu tīmekli privāti, atveriet inkognito režīma cilni.</translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
 <translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
@@ -178,6 +179,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4281844954008187215">Google pakalpojumu noteikumi</translation>
 <translation id="430793432425771671">Sinhronizēt visu</translation>
 <translation id="4342284590510997375">Jauns</translation>
+<translation id="434816576838749873">E-pasta lietotnes atlasīšana</translation>
 <translation id="4359125752503270327">Šī lapa tiks atvērta citā lietojumprogrammā.</translation>
 <translation id="4370827530403103842">Sinhronizācija nedarbojas. Pieskarieties, lai novērstu problēmu.</translation>
 <translation id="4375040482473363939">Meklēšana ar QR kodu</translation>
@@ -309,6 +311,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6785453220513215166">Notiek avārijas ziņojuma sūtīšana...</translation>
 <translation id="679325081238418596">Iegūstiet savas grāmatzīmes, vēsturi, paroles un citus iestatījumus visās savās ierīcēs</translation>
 <translation id="6797885426782475225">Meklēšana ar balsi</translation>
+<translation id="6807889908376551050">Rādīt visus...</translation>
 <translation id="681368974849482173">Vienums izveidots</translation>
 <translation id="6896758677409633944">Kopēt</translation>
 <translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
@@ -416,6 +419,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
 <translation id="9148126808321036104">Pierakstieties vēlreiz</translation>
 <translation id="914898748153555155">Jebkurā brīdī varat mainīt šo preferenci Chrome iestatījumos.</translation>
+<translation id="91549621916703028">Izveidojiet vairākas cilnes visiem saviem uzdevumiem.</translation>
 <translation id="9157836665414082580">Nerādīt dialoglodziņus</translation>
 <translation id="9188680907066685419">Izrakstīšanās no pārvaldīta konta</translation>
 <translation id="9203116392574189331">Handoff</translation>

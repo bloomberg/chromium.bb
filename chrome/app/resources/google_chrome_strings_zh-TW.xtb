@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
 <translation id="1795405610103747296">在手機上安裝 Chrome。我們會傳送簡訊到你的手機：<ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，你現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
 <translation id="1874309113135274312">Google Chrome 測試版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chrome 已有一段時間未重新啟動，現用版本因此過舊。重新啟動後，即會套用可用的更新。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2580411288591421699">你無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
-<translation id="2582790009689336987">Google Chrome 將停止支援這種 Linux 系統，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="2586406160782125153">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 標誌</translation>
 <translation id="2664962310688259219">Chrome 作業系統開放原始碼授權</translation>
@@ -84,7 +82,6 @@
 
 如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
-<translation id="3311976847535831054">這台電腦將不會再收到 32 位元的 Google Chrome 更新，請升級至 64 位元的 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="3395323229510056640">前往 Chrome 作業系統說明頁面</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>
@@ -114,7 +111,6 @@
 <translation id="4309555186815777032">(必須<ph name="BEGIN_BUTTON" />重新啟動<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome 開發人員版 (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Google Chrome 已停止支援這種 Linux 系統，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
 <translation id="4458462641685292929">Google Chrome 正在執行另一項作業，請稍後再試。</translation>
@@ -128,7 +124,6 @@
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果 Google Chrome 目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4750550185319565338">重新啟動 Chrome 即可啟用 <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">這台電腦將不會再收到 32 位元的 Google Chrome 更新，請升級至 64 位元的 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">這個檔案可能不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
@@ -207,7 +202,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但你至少已有 30 天未使用該瀏覽器。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用你的麥克風。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
-<translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，你現在無法使用各種最新功能和安全性修正。請以人工方式重新安裝 Chrome。</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
 <translation id="7164397146364144019">你可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
 <translation id="7185038942300673794">已將 <ph name="EXTENSION_NAME" /> 加到 Chrome。</translation>

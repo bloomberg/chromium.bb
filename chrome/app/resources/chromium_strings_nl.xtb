@@ -37,7 +37,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2265088490657775772">Download Chromium naar je iPhone</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
-<translation id="2372704305038231957">De 32-bits versie van Chromium werkt mogelijk niet correct omdat deze niet meer wordt ondersteund op dit Linux-systeem. Upgrade naar de 64-bits versie van Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Er wordt momenteel een download uitgevoerd. Wil je de download annuleren en Chromium afsluiten?}other{Er worden momenteel # downloads uitgevoerd. Wil je de downloads annuleren en Chromium afsluiten?}}</translation>
 <translation id="2396765026452590966">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2483889755041906834">In Chromium</translation>
@@ -142,8 +141,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5772805321386874569">(je moet Chromium <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is bijna klaar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chromium updaten.</translation>
-<translation id="5859963531214966875">Toekomstige versies van Chromium bieden geen ondersteuning meer voor dit Linux-systeem.</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
@@ -169,8 +166,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6505742536731484931">Chromium heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
 <translation id="6526111688217511984">Chromium heeft toegang tot de opslag nodig om deze bestanden te downloaden.</translation>
-<translation id="6584627348340620412">Toekomstige 32-bits versies van Chromium bieden geen ondersteuning meer voor dit Linux-systeem. Upgrade naar de 64-bits versie van Chromium.</translation>
-<translation id="6593914713218535185">Chromium werkt wellicht niet correct omdat dit niet meer wordt ondersteund op dit Linux-systeem.</translation>
 <translation id="6638567566961868659">Je vindt je bladwijzers in het menu 'Chromium' of in de bladwijzerbalk.</translation>
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
 <translation id="6717134281241384636">Je profiel kan niet worden gebruikt, omdat dit is gemaakt in een recentere versie van Chromium.
@@ -184,7 +179,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
-<translation id="7027298027173928763">Chromium kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chromium handmatig opnieuw installeren.</translation>
 <translation id="705851970750939768">Chromium updaten</translation>
 <translation id="7066436765290594559">Chromium OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="707471633328071618">Google Payments (gekopieerd naar Chromium)</translation>

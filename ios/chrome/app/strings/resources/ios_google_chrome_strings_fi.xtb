@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1326317727527857210">Käytä välilehtiä muilta laitteiltasi kirjautumalla Chromeen.</translation>
 <translation id="1685087038067318291">Katsele lähistöllä olevien esineiden lähettämiä verkkosivuja. Kun Bluetooth on käytössä, Chrome voi kerätä ympärillä oleviin esineisiin liittyviä verkkosivuja, lähettää ne nimettömästi Googlelle tarkistettaviksi ja näyttää käyttäjälle hyödyllisimmät sivut. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
 <translation id="4099578267706723511">Auta parantamaan Chromea lähettämällä käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="415767770115540173">Saat paremman Googlen käyttökokemuksen Chromessa sijaintisi perusteella.</translation>
-<translation id="4248297594476034182">Kirjaudu sisään Chromeen, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
 <translation id="4523886039239821078">Jokin laajennus kaataa Chromen. Kokeile poistaa seuraavat:</translation>
 <translation id="4615174829807303908">Olet kirjautumassa ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> hallinnoimalta tililtä. Chrome-tietosi poistetaan tältä laitteelta, mutta tietosi säilyvät Google-tililläsi.</translation>

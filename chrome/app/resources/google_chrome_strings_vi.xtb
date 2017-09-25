@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Nhận trợ giúp về cách sử dụng Chrome OS</translation>
 <translation id="1795405610103747296">Cài đặt Chrome trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới điện thoại của bạn: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome đã lỗi thời</translation>
 <translation id="2063848847527508675">Chrome OS cần được khởi động lại để áp dụng bản cập nhật.</translation>
@@ -60,7 +59,6 @@
 <translation id="2446511512801740068">Chrome đã lỗi thời vì ứng dụng này chưa được chạy lại trong một thời gian. Đã có bản cập nhật và bản cập nhật này sẽ được áp dụng ngay khi bạn chạy lại.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
-<translation id="2582790009689336987">Máy tính này sắp dừng nhận bản cập nhật của Google Chrome do hệ thống Linux này sẽ không được hỗ trợ nữa.</translation>
 <translation id="2586406160782125153">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
@@ -86,7 +84,6 @@
 
 Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết thêm hướng dẫn.</translation>
 <translation id="3282568296779691940">Đăng nhập vào Chrome</translation>
-<translation id="3311976847535831054">Máy tính này sẽ không còn nhận bản cập nhật Google Chrome 32 bit nữa. Vui lòng nâng cấp lên Google Chrome 64 bit.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
 <translation id="3395323229510056640">Nhận trợ giúp về Chrome OS</translation>
 <translation id="3396977131400919238">Đã xảy ra lỗi hệ điều hành trong quá trình cài đặt. Vui lòng tải xuống lại Google Chrome.</translation>
@@ -95,7 +92,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="345171907106878721">Thêm chính bạn vào Chrome</translation>
 <translation id="3612333635265770873">Một mô-đun có cùng tên đã được xác định là xung đột với Google Chrome.</translation>
 <translation id="3622797965165704966">Giờ đây, việc sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính được chia sẻ trở nên dễ dàng hơn.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ <ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome OS</translation>
+<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome OS</translation>
 <translation id="3718181793972440140">Thao tác này sẽ xóa 1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
@@ -117,7 +114,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome do hệ thống Linux này không được hỗ trợ nữa.</translation>
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="4458462641685292929">Một hoạt động khác trên Google Chrome đang diễn ra. Vui lòng thử lại sau.</translation>
@@ -131,7 +127,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="4743926867934016338">Chấp nhận và tìm kiếm</translation>
 <translation id="4750550185319565338">Khởi động lại Chrome để bật <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Máy tính này sắp ngừng nhận bản cập nhật Google Chrome 32 bit. Vui lòng nâng cấp lên Google Chrome 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tệp này có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="4794050651896644714">Lưu chi tiết trong Chrome</translation>
@@ -210,7 +205,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
 <translation id="7098166902387133879">Google Chrome đang sử dụng micrô của bạn.</translation>
 <translation id="7106741999175697885">Trình quản lý Tác vụ - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chrome theo cách thủ công.</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
 <translation id="7164397146364144019">Bạn có thể giúp Chrome an toàn và dễ sử dụng hơn bằng cách tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> đã được thêm vào Chrome.</translation>

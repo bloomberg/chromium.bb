@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Напред</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – Chrome получава глас</translation>
-<translation id="1226487719524433143">С нетърпение очакваме да разберем какво мислите за новата версия. Изпратете ни отзив директно, като натиснете клавиша „търсене“ + А и след това i. Натиснете бутона за преминаване напред, за да продължите към урока, в който ще научите всичко необходимо за първите стъпки.</translation>
 <translation id="1229276918471378188">Предишният преход</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Следващото заглавие от шесто ниво</translation>
 <translation id="1275718070701477396">Избрано</translation>
-<translation id="1310230882256010289">Основни надстройки. Изцяло променихме начина на работа на ChromeVox. Очаквайте подобрения в ефективността, стабилността и уеб поддръжката/съвместимостта с мрежата.</translation>
 <translation id="1319608975892113573">Няма предишен блоков цитат.</translation>
 <translation id="1321576897702511272">Скриване на помощта за ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> от <ph name="TOTAL" /></translation>
@@ -224,8 +222,6 @@
 <translation id="3163593631834463955">Празна заглавка на графа</translation>
 <translation id="316542773973815724">Навигация</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{интервал}other{# интервала}}</translation>
-<translation id="3183233191569362040">Поздравления! Успешно научихте основните положения за работа с ChromeVox Next (бета). Не забравяйте, че можете по всяко време да отворите менюто с команди на ChromeVox, като натиснете „търсене“ + точка. За да научите още повече за ChromeVox и Chrome OS, вижте следните статии.
-Ако сте приключили с урока, използвайте ChromeVox, за да стигнете до бутона „Затваряне“ и да кликнете върху него.</translation>
 <translation id="320961988183078793">влязохте в/ъв <ph name="TYPE" /></translation>
 <translation id="3223701887221307104">„<ph name="NAME" />“, раздел</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -337,7 +333,6 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909320334364316587">Предишното заглавие от шесто ниво</translation>
 <translation id="3914173277599553213">Задължително</translation>
-<translation id="3951424903203718058">За първи път ли използвате обратната връзка с говор на ChromeVox Next? Този кратък урок обяснява основните положения за започване на работа с ChromeVox Next.</translation>
 <translation id="3962990492275676168">Стартиране на четенето от текущото местоположение</translation>
 <translation id="4004802134384979325">с отметка</translation>
 <translation id="4006140876663370126">изображение</translation>
@@ -431,7 +426,6 @@
 <translation id="4846487886195635104">Край на зачеркнатия текст</translation>
 <translation id="4848993367330139335">таймер</translation>
 <translation id="4850023505158945298">Предишният подобен елемент.</translation>
-<translation id="485011152882364255">В ChromeVox Next модифициращият клавиш е клавишът „търсене“. Повечето клавишни комбинации в ChromeVox започват с него. Също така за навигация се използват клавишите със стрелки.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Активиране на регистрирането за синтезирания говор</translation>
 <translation id="4877261390094455813">Въведете заявка за търсене.</translation>
@@ -500,7 +494,6 @@
 <translation id="5444587279251314700">(активен раздел)</translation>
 <translation id="5451268436205074266">точки <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Допълнение</translation>
-<translation id="5458780372341732962">Използване на ChromeVox Next (бета)</translation>
 <translation id="5485036206801896268">Няма предишна графика.</translation>
 <translation id="5486947920110100234">Няма следваща точка за преминаване.</translation>
 <translation id="549602578321198708">Дума</translation>
@@ -509,7 +502,6 @@
 <translation id="5507663321906818013">Тест за отстраняване на програмни дефекти</translation>
 <translation id="5518443085409638729">Поставяне на курсора между знаците при редактиране на текст (както при Mac OS X).</translation>
 <translation id="552195134157544755">Бутон за избор</translation>
-<translation id="5531530875187439488">Нови аудиоикони. Актуализирахме набора от звуци, които ще чувате, за да осигурим по-добра обратна връзка при сърфиране.</translation>
 <translation id="5534303576632885660">заглавка</translation>
 <translation id="5546092960038624944">Няма предишно заглавие от пето ниво.</translation>
 <translation id="556042886152191864">Бутон</translation>
@@ -536,7 +528,6 @@
 <translation id="5682113568322255809">Ориентир</translation>
 <translation id="5683155931978483559">Предишното квадратче за отметка</translation>
 <translation id="5684277895745049190">Списък</translation>
-<translation id="5684905390246898631">Добре дошли в ChromeVox Next!</translation>
 <translation id="5695831708991916435">Следващите няколко клавишни комбинации не са команди на ChromeVox, но са много полезни за пълноценна работа с Chrome.
 За придвижване напред през позволяващи действие елементи, като бутони и връзки, натиснете клавиша Tab. За придвижване назад натиснете Shift + Tab.
 За да влезете в полето за адрес в браузъра Chrome, наричано също „поле за всичко“, натиснете Control + L. 
@@ -571,7 +562,6 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{знак за равенство}other{# знака за равенство}}</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5948123859135882163">Превключвайте между структурно и семантично интерпретиране на математическите изрази</translation>
-<translation id="5948485979596965684">Екранният четец ChromeVox бе актуализиран до много по-различна нова версия!</translation>
 <translation id="5955304353782037793">приложение</translation>
 <translation id="5956928062748260866">Диалогов прозорец</translation>
 <translation id="5963413905009737549">Секция</translation>
@@ -650,7 +640,6 @@
 <translation id="6786800275320335305">Статия</translation>
 <translation id="6787839852456839824">Клавишни комбинации</translation>
 <translation id="6793101435925451627">списъчно поле</translation>
-<translation id="6818172019016005152">Работихме усърдно по създаването на нова и подобрена версия на ChromeVox. Ето новите неща в нея</translation>
 <translation id="6833103209700200188">Долен колонтитул</translation>
 <translation id="6871161210040114857">Регистърът на буквите се пренебрегва.</translation>
 <translation id="6877435256196695200">Няма следваща графика.</translation>
@@ -668,7 +657,6 @@
 <translation id="7037042857287298941">Предишният списък</translation>
 <translation id="7041173719775863268">Край на открояването</translation>
 <translation id="7086377898680121060">увеличаване на яркостта</translation>
-<translation id="7094527465295945904">Нови клавишни комбинации. Направихме клавиша „търсене“ модификатор на ChromeVox и драстично опростихме клавишните комбинации.</translation>
 <translation id="7095834689119144465">Поле само за цифри</translation>
 <translation id="7096001299300236431">Предишният мултимедиен елемент</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -772,7 +760,6 @@
 <translation id="8066678206530322333">Банер</translation>
 <translation id="8076492880354921740">Раздели</translation>
 <translation id="8091452896542422286">Празен ред</translation>
-<translation id="8104178626892949749">Натиснете „o“ и „n“ в ChromeVox, за да научите повече за ChromeVox Next.</translation>
 <translation id="8110647606445335195">Няма отличителни белези на ARIA.</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
@@ -782,7 +769,6 @@
 <translation id="8199231515320852133">Съобщаване на заглавките за текущата клетка</translation>
 <translation id="820417203470636242">Празна клетка.</translation>
 <translation id="8215202828671303819">Избор на няколко елемента</translation>
-<translation id="8224171046658870249">Превключихте към ChromeVox Next</translation>
 <translation id="826991282343985864">р$1к$2</translation>
 <translation id="8276439074553447000">Преминаване към предишния елемент, който може да получи фокус</translation>
 <translation id="8278417001922463147">Няма предишна статия.</translation>
@@ -827,7 +813,6 @@
 <translation id="8664519043722036194">секунди</translation>
 <translation id="867187640362843212">Заглавие от пето ниво</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикална черта}other{# вертикални черти}}</translation>
-<translation id="8721861170709424373">Справочник на командите на ChromeVox Next</translation>
 <translation id="8735450637152821465">Начало на открояването</translation>
 <translation id="8743786158317878347">вход в структурирано съдържание, като например таблици</translation>
 <translation id="8747966237988593539">Подреден списък</translation>
@@ -880,7 +865,6 @@
 <translation id="923331726185079994">Екранният четец ChromeVox е актуализиран</translation>
 <translation id="930275611743429116">Начало или край на открояването.</translation>
 <translation id="948171205378458592">Намаляване на скоростта на говора</translation>
-<translation id="955917170449423694">Превключихте към класическата версия на ChromeVox</translation>
 <translation id="962913030769097253">Следващото заглавие от първо ниво</translation>
 <translation id="973955474346881951">Активиране/деактивиране на фиксирания режим</translation>
 <translation id="976849232629612000">Няма елементи.</translation>

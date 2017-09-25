@@ -36,7 +36,6 @@
 <translation id="2265088490657775772">Chromium तुमच्या iPhone वर मिळवा</translation>
 <translation id="2316129865977710310">नाही, नको</translation>
 <translation id="2347108572062610441">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
-<translation id="2372704305038231957">32-बिट Chromium यापुढे या Linux सिस्टीमवर समर्थित नसल्याने कदाचित तो योग्यरितीने कार्य करू शकत नाही. कृपया 64-बिट Chromium वर श्रेणीसुधारित करा.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{एक डाउनलोड सध्या प्रगतीपथावर आहे. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}one{सध्या # डाउनलोड प्रगतीपथावर आहे. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}other{सध्या # डाउनलोड प्रगतीपथावर आहेत. आपण डाउनलोड रद्द करू आणि Chromium च्या बाहेर पडू इच्छिता?}}</translation>
 <translation id="2396765026452590966">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे "<ph name="EXTENSION_NAME" />" विस्ताराने बदलले आहे.</translation>
 <translation id="2483889755041906834">Chromium मध्ये</translation>
@@ -141,8 +140,6 @@
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />रीस्टार्ट<ph name="END_BUTTON" /> करणे आवश्यक)</translation>
 <translation id="5796460469508169315">Chromium जवळजवळ तयार आहे</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium नवीनतम आवृत्तीमध्ये स्वतःस अपडेट करत नाही, म्हणून आपल्याकडे अद्भुत नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे नाहीत. आपल्याला Chromium अपडेट करण्याची आवश्यकता आहे.</translation>
-<translation id="5859963531214966875">Chromium च्या भविष्यातील आवृत्त्या यापुढे या Linux सिस्टीमला समर्थन देणार नाहीत.</translation>
 <translation id="5862307444128926510">Chromium वर आपले स्‍वागत आहे</translation>
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी आपले डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
@@ -168,8 +165,6 @@
 <translation id="6505742536731484931">या साइटसह तुमचे स्थान शेअर करण्यासाठी Chromium ला तुमच्या स्थानामध्ये अॅक्सेस हवा आहे.</translation>
 <translation id="6510925080656968729">Chromium विस्‍थापित करा</translation>
 <translation id="6526111688217511984">Chromium ला फायली डाउनलोड करण्यासाठी संचय प्रवेश आवश्यक आहे.</translation>
-<translation id="6584627348340620412">32-बिट Chromium च्या भविष्‍यातील आवृत्त्या यापुढे या Linux सिस्टीमला समर्थन देणार नाही, कृपया 64-बिट Chromium वर श्रेणीसुधारित करा.</translation>
-<translation id="6593914713218535185">या Linux सिस्टीमवर Chromium समर्थित नसल्याने कदाचित ते योग्यरितीने कार्य करू शकत नाही.</translation>
 <translation id="6638567566961868659">Chromium मेनू मध्ये किंवा बुकमार्क बारवर आपले बुकमार्क शोधा.</translation>
 <translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
 <translation id="6717134281241384636">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Chromium च्‍या नवीनतम आवृत्तीमधील आहे.
@@ -183,7 +178,6 @@
 <translation id="6893813176749746474">Chromium अपडेट केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
 <translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
 <translation id="6970811910055250180">आपले डिव्हाइस अपडेट करीत आहे...</translation>
-<translation id="7027298027173928763">Chromium नवीनतम आवृत्तीमध्ये स्वतःस अपडेट करू शकले नाही, म्हणून आपल्याकडे अद्भुत नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे नाहीत. आपल्याला Chromium व्यक्तिचलितपणे पुनर्स्थापित करण्याची आवश्यकता आहे.</translation>
 <translation id="705851970750939768">Chromium अपडेट करा</translation>
 <translation id="7066436765290594559">Chromium OS आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन सांकेतिक वाक्यांश अपडेट करा.</translation>
 <translation id="707471633328071618">Google Payments (Chromium वर कॉपी केले)</translation>

@@ -66,6 +66,7 @@
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
+<translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
 <translation id="2149973817440762519">修改书签</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2230173723195178503">已加载网页</translation>
@@ -178,6 +179,7 @@
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>
 <translation id="4342284590510997375">新工具</translation>
+<translation id="434816576838749873">选择电子邮件应用</translation>
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
 <translation id="4370827530403103842">同步功能无法正常运行。点按即可修复此问题。</translation>
 <translation id="4375040482473363939">QR 码搜索</translation>
@@ -309,6 +311,7 @@
 <translation id="6785453220513215166">正在发送崩溃报告…</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>
 <translation id="6797885426782475225">语音搜索</translation>
+<translation id="6807889908376551050">全部显示...</translation>
 <translation id="681368974849482173">书签已创建</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6903907808598579934">开启同步功能</translation>
@@ -416,6 +419,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="914898748153555155">您随时可在 Chrome 设置中更改此项偏好设置</translation>
+<translation id="91549621916703028">为您的所有任务创建多个标签页</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9203116392574189331">Handoff</translation>

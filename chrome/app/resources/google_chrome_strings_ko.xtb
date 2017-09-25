@@ -36,7 +36,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS 사용에 대한 도움말</translation>
 <translation id="1795405610103747296">휴대전화에 Chrome을 설치하세요. 다음 휴대전화로 SMS를 보내 드리겠습니다. <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
 <translation id="1874309113135274312">Chrome 베타(mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
@@ -62,7 +61,6 @@
 <translation id="2446511512801740068">한동안 사용하지 않아 Chrome의 버전이 오래되었습니다. 업데이트를 사용할 수 있으며 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
-<translation id="2582790009689336987">이 Linux 시스템이 더 이상 지원되지 않을 예정이므로 곧 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="2586406160782125153">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
 <translation id="2664962310688259219">Chrome OS 오픈소스 라이선스</translation>
@@ -88,7 +86,6 @@
 
 자세한 안내를 보려면 <ph name="ACCOUNT_EMAIL" />에서 이메일을 확인하세요.</translation>
 <translation id="3282568296779691940">Chrome에 로그인</translation>
-<translation id="3311976847535831054">이 컴퓨터에서 더 이상 32비트 Chrome 업데이트를 사용할 수 없습니다. 64비트 Chrome으로 업그레이드하세요.</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="3395323229510056640">Chrome OS 도움말 보기</translation>
 <translation id="3396977131400919238">설치 중 운영체제 오류가 발생했습니다. Chrome을 다시 다운로드하세요.</translation>
@@ -118,7 +115,6 @@
 <translation id="4309555186815777032">(Chrome을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="4328355335528187361">Chrome 개발자(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">이 Linux 시스템이 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="4407807842708586359">Chrome OS</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4458462641685292929">Chrome에서 다른 작업이 진행 중입니다. 나중에 다시 시도해 주세요.</translation>
@@ -132,7 +128,6 @@
 <translation id="4728575227883772061">확인되지 않은 오류로 설치에 실패했습니다. Chrome이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />을(를) 사용하려면 Chrome을 다시 시작하세요.</translation>
-<translation id="4751441238232965030">이 컴퓨터에서 32비트 Chrome 업데이트가 곧 중단됩니다. 64비트 Chrome으로 업그레이드하세요.</translation>
 <translation id="4754614261631455953">Chrome Canary(mDNS-In)</translation>
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
@@ -213,7 +208,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6989339256997917931">Chrome이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="7098166902387133879">Chrome에서 마이크를 사용 중입니다.</translation>
 <translation id="7106741999175697885">작업 관리자 - Chrome</translation>
-<translation id="7125719106133729027">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 직접 다시 설치해야 합니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
 <translation id="7164397146364144019">Google에 발생할 수 있는 보안 문제에 대한 세부정보를 자동으로 보고하도록 설정하면 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가되었습니다.</translation>

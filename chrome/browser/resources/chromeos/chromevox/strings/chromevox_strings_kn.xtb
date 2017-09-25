@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
 <translation id="1206619573307042055">ಮಾರ್ಕ್ಯೂ</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ಗೆ ಧ್ವನಿ ನೀಡುವುದು</translation>
-<translation id="1226487719524433143">ನಾವು ಈ ಹೊಸ ಅನುಭವದ ಕುರಿತು ನಿಮ್ಮಿಂದ ಕೇಳಲು ಉತ್ಸುಕರಾಗಿದ್ದೇವೆ. ಹುಡುಕಾಟ+a ನಂತರ i ಒತ್ತುವ ಮೂಲಕ ನೇರವಾಗಿ ನಮಗೆ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ. ನೀವು ಪ್ರಾರಂಭಿಸುವುದಕ್ಕೆ ಎಲ್ಲವನ್ನೂ ತಿಳಿಯಲು ಟ್ಯುಟೋರಿಯಲ್ ಮುಂದುವರಿಸಲು ಮುಂದೆ ಬಟನ್ ಒತ್ತಿ.</translation>
 <translation id="1229276918471378188">ಹಿಂದಿನ ಜಂಪ್</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">ಮುಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="1275718070701477396">ಆಯ್ಕೆ ಮಾಡಿದ</translation>
-<translation id="1310230882256010289">ಹುಡ್‌ ಅಪ್‌ಗ್ರೇಡ್‌ಗಳ ಅಡಿಯಲ್ಲಿ. ನಾವು ಕೆಳಗಿನಿಂದ ಮೇಲಕ್ಕೆ ChromeVox ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ ಎಂಬುದನ್ನು ಪರಿಷ್ಕರಿಸಿದ್ದೇವೆ. ಉತ್ತಮ ಕಾರ್ಯಕ್ಷಮತೆ, ಸ್ಥಿರತೆ ಮತ್ತು ವೆಬ್ ಬೆಂಬಲ/ಅನುಸರಣೆಯನ್ನು ನಿರೀಕ್ಷಿಸಬಹುದು.</translation>
 <translation id="1319608975892113573">ಹಿಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
 <translation id="1321576897702511272">ChromeVox ಸಹಾಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> / <ph name="INDEX" /></translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">ಕಾಲಮ್  ಶಿರೋನಾಮೆ ಖಾಲಿಯಿದೆ</translation>
 <translation id="316542773973815724">ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ಅಂತರ}one{# ಅಂತರಗಳು}other{# ಅಂತರಗಳು}}</translation>
-<translation id="3183233191569362040">ಅಭಿನಂದನೆಗಳು! ನೀವು ChromeVox Next (ಬೀಟಾ) ಬಳಸುವ ಮೂಲಭೂತ ಅಂಶಗಳನ್ನು ಯಶಸ್ವಿಯಾಗಿ ತಿಳಿದುಕೊಂಡಿರುವಿರಿ. ನೀವು ಹುಡುಕಾಟ+ಪಿರಿಯಡ್ ಒತ್ತುವ ಮೂಲಕ ಯಾವ ಸಮಯದಲ್ಲಾದರೂ ChromeVox ಆದೇಶ ಮೆನುವನ್ನು ತೆರೆಯಬಹುದು ಎಂಬುದನ್ನು ನೆನಪಿಡಿ. ChromeVox ಮತ್ತು Chrome OS ಕುರಿತು ಮತ್ತಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಲು, ಈ ಲೇಖನಗಳಿಗೆ ಭೇಟಿ ನೀಡಿ.
-ನೀವು ಟ್ಯುಟೋರಿಯಲ್ ಮುಗಿಸಿದಾಗ, ಮುಚ್ಚು ಬಟನ್‌ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ChromeVox ಬಳಸಿ ಮತ್ತು ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="320961988183078793">ನಮೂದಿಸಲಾಗಿದೆ <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ಟ್ಯಾಬ್</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -300,6 +296,7 @@
 <translation id="3458865416877308321"><ph name="NAME" />, ಆಫ್ ಮಾಡಿ</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, ಬಟನ್</translation>
 <translation id="3466530247399808663">ಅಮಾನ್ಯವಾದ ಕೀಲಿ ಒತ್ತುವಿಕೆ</translation>
+<translation id="3468959318854349468">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಯಿಲ್ಲ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ನಿಂದ <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ಬಲ ಆವರಣ}one{# ಬಲ ಆವರಣಗಳು}other{# ಬಲ ಆವರಣಗಳು}}</translation>
@@ -338,7 +335,6 @@
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3909320334364316587">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="3914173277599553213">ಅಗತ್ಯವಿರುವುದು</translation>
-<translation id="3951424903203718058">ನೀವು ಮೊದಲ ಬಾರಿಗೆ ChromeVox Next ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಬಳಸುತ್ತಿರುವಿರಾ? ChromeVox Next ಪ್ರಾರಂಭಿಸುವ ಮೂಲಭೂತ ಅಂಶಗಳ ಕುರಿತು ಈ ತ್ವರಿತ ಟ್ಯುಟೋರಿಯಲ್ ವಿವರಿಸುತ್ತದೆ.</translation>
 <translation id="3962990492275676168">ಪ್ರಸ್ತುತ ಸ್ಥಾನದಿಂದ ಓದುವಿಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4004802134384979325">ಗುರುತಿಸಲಾಗಿದೆ</translation>
 <translation id="4006140876663370126">img</translation>
@@ -432,7 +428,6 @@
 <translation id="4846487886195635104">ಸ್ಟ್ರೈಕ್‌ ಮೂಲಕ ಮುಕ್ತಾಯ</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">ಹಿಂದಿನ ಒಂದೇ ರೀತಿಯ ಅಂಶ.</translation>
-<translation id="485011152882364255">ChromeVox Next ನಲ್ಲಿ, ಹುಡುಕಾಟ ಕೀ ಎನ್ನುವುದು ಮಾರ್ಪಡಿಸುವ ಕೀ ಆಗಿದೆ. ಹೆಚ್ಚಿನ ChromeVox ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಹುಡುಕಾಟ ಕೀ ಜೊತೆಗೆ ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತವೆ. ನೀವು ನ್ಯಾವಿಗೇಶನ್‌ಗೆ ಬಾಣದ ಕೀಲಿಗಳನ್ನು ಬಳಸುತ್ತೀರಿ.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS ಲಾಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4877261390094455813">ಹುಡುಕಾಟದ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
@@ -501,7 +496,6 @@
 <translation id="5444587279251314700">(ಸಕ್ರಿಯವಾಗಿದೆ)</translation>
 <translation id="5451268436205074266">ಚುಕ್ಕೆಗಳು <ph name="DOT" /></translation>
 <translation id="5455441614648621694">ಪೂರಕವಾಗಿ</translation>
-<translation id="5458780372341732962">ChromeVox Next (ಬೀಟಾ) ಬಳಸಿ</translation>
 <translation id="5485036206801896268">ಹಿಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
 <translation id="5486947920110100234">ಯಾವುದೇ ಮುಂದಿನ ಅಂಶವಿಲ್ಲ.</translation>
 <translation id="549602578321198708">ಪದ</translation>
@@ -510,7 +504,6 @@
 <translation id="5507663321906818013">ಬೆಂಚ್‌ಮಾರ್ಕ್ ಅನ್ನು ಡೀಬಗ್ ಮಾಡಿ</translation>
 <translation id="5518443085409638729">ಪಠ್ಯವನ್ನು ಸಂಪಾದಿಸುತ್ತಿರುವಾಗ (Mac OS X ನಂತಹ) ಅಕ್ಷರಗಳ ನಡುವೆ ಕರ್ಸರ್ ಇರಿಸಿ.</translation>
 <translation id="552195134157544755">ರೇಡಿಯೊ ಬಟನ್</translation>
-<translation id="5531530875187439488">ಹೊಸ ಈಯರ್‌‌ಕಾನ್‌ಗಳು. ನೀವು ಹೆಚ್ಚು ಕ್ರಿಯಾಶೀಲರಾಗಿ ಬ್ರೌಸಿಂಗ್ ಮಾಡುವಂತೆ ಮಾಡಲು ನಾವು ಆಡಿಯೋ ಐಕಾನ್‌ಗಳ ಸೆಟ್‌ ಅನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿದ್ದೇವೆ.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">ಹಿಂದಿನ ಹಂತದ 5 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="556042886152191864">ಬಟನ್</translation>
@@ -537,7 +530,6 @@
 <translation id="5682113568322255809">ಹೆಗ್ಗುರುತು</translation>
 <translation id="5683155931978483559">ಹಿಂದಿನ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="5684277895745049190">ಪಟ್ಟಿ</translation>
-<translation id="5684905390246898631">ChromeVox Next ಗೆ ಸುಸ್ವಾಗತ!</translation>
 <translation id="5695831708991916435">ಮುಂದಿನ ಕೆಲವು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ChromeVox ಆದೇಶಗಳಲ್ಲ, ಆದರೆ ಇನ್ನೂ ಸಹ ಅವುಗಳು Chrome ನಿಂದ ಹೆಚ್ಚಿನದನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ತೀರಾ ಉಪಯುಕ್ತವಾಗಿವೆ.
 ಬಟನ್‌ಗಳು ಮತ್ತು ಲಿಂಕ್‌ಗಳಂತಹ ಕ್ರಿಯಾತ್ಮಕಗೊಳಿಸಬಹುದಾದ ಐಟಂಗಳ ಮೂಲಕ ಮುಂದಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು, Tab ಕೀ ಒತ್ತಿ. ಹಿಂದಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು, Shift+Tab ಒತ್ತಿ. 
 ಆಮ್ನಿಬಾಕ್ಸ್‌‌ ಎಂದು ಕರೆಯಲಾಗುವ Chrome ಬ್ರೌಸರ್ ವಿಳಾಸ ಪೆಟ್ಟಿಗೆಯನ್ನು ನಮೂದಿಸಲು, Control + L ಒತ್ತಿ. 
@@ -572,7 +564,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="5937336320314038555">{COUNT,plural, =1{ಸಮ}one{# ಸಮ ಚಿಹ್ನೆಗಳು}other{# ಸಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="5948123859135882163">ರಚನಾತ್ಮಕ ಮತ್ತು ಶಬ್ದಾರ್ಥದ ನಡುವಿನ ಗಣಿತದ ಅಭಿವ್ಯಕ್ತಿಗಳ ವ್ಯಾಖ್ಯಾನವನ್ನು ಬದಲಾಯಿಸಿ</translation>
-<translation id="5948485979596965684">ನೀವು ChromeVox ನ ಪ್ರಮುಖ ಹೊಸ ಬಿಡುಗಡೆಗೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿರುವಿರಿ!</translation>
 <translation id="5955304353782037793">ಅಪ್ಲಿಕೇಶನ್‌</translation>
 <translation id="5956928062748260866">ಸಂವಾದ</translation>
 <translation id="5963413905009737549">ವಿಭಾಗ</translation>
@@ -651,7 +642,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="6786800275320335305">ಆರ್ಟಿಕಲ್</translation>
 <translation id="6787839852456839824">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">ನಾವು ಹೊಸದು ಮತ್ತು ಸುಧಾರಿತ ChromeVox ಅನುಭವದ ಕುರಿತು ಕಠಿಣ ಕೆಲಸ ಮಾಡುತ್ತಿದ್ದೇವೆ; ಹೊಸ ಸಂಗತಿ ಕುರಿತು ಇಲ್ಲಿದೆ</translation>
 <translation id="6833103209700200188">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="6871161210040114857">ಕೇಸ್ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="6877435256196695200">ಮುಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
@@ -669,7 +659,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7037042857287298941">ಹಿಂದಿನ ಪಟ್ಟಿ</translation>
 <translation id="7041173719775863268">ಆಯ್ಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಿ</translation>
 <translation id="7086377898680121060">ಪ್ರಖರತೆ ಹೆಚ್ಚು ಮಾಡಿ</translation>
-<translation id="7094527465295945904">ಹೊಸ ಕೀ ಬೈಂಡಿಂಗ್‌ಗಳು. ನಾವು ChromeVox ಮಾರ್ಪಡಿಸುವಿಕೆ ಹುಡುಕಾಟ ರಚಿಸಿದ್ದೇವೆ ಮತ್ತು ಗಣನೀಯವಾಗಿ ಕೀ ಸಂಯೋಜನೆಗಳನ್ನು ಸರಳೀಕೃತಗೊಳಿಸಿದ್ದೇವೆ.</translation>
 <translation id="7095834689119144465">ಪಠ್ಯ ಸಂಖ್ಯೆ ಮಾತ್ರ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="7096001299300236431">ಹಿಂದಿನ ಮಾಧ್ಯಮ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +762,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8066678206530322333">ಬ್ಯಾನರ್</translation>
 <translation id="8076492880354921740">ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="8091452896542422286">ಸ್ಪೇಸ್</translation>
-<translation id="8104178626892949749">ChromeVox Next ಕುರಿತು ಮತ್ತಷ್ಟು ತಿಳಿಯಲು ChromeVox o, n ಒತ್ತಿ.</translation>
 <translation id="8110647606445335195">ಯಾವುದೇ ARIA ಹೆಗ್ಗುರುತುಗಳಿಲ್ಲ.</translation>
 <translation id="8153880621934657047">ಕೋಷ್ಟಕದ ಒಳಗೆ ಇಲ್ಲ.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ಅಡಿಗೆರೆ}one{# ಅಡಿಗೆರೆಗಳು}other{# ಅಡಿಗೆರೆಗಳು}}</translation>
@@ -783,7 +771,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8199231515320852133">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನ ಶಿರೋನಾಮೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="820417203470636242">ಕೋಶವನ್ನು ಖಾಲಿಗೊಳಿಸಿ.</translation>
 <translation id="8215202828671303819">ಬಹು ಆಯ್ಕೆ</translation>
-<translation id="8224171046658870249">ChromeVox Next ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ಹಿಂದೆ ಗಮನಹರಿಸಿದಂತಹ ಐಟಂಗೆ ಹೋಗಿ</translation>
 <translation id="8278417001922463147">ಯಾವುದೇ ಹಿಂದಿನ ಲೇಖನವಿಲ್ಲ.</translation>
@@ -828,7 +815,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8664519043722036194">ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="867187640362843212">ಶೀರ್ಷಿಕೆ 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{ಪೈಪ್}one{# ಲಂಬ ಪೈಪ್‌ಗಳು}other{# ಲಂಬ ಪೈಪ್‌ಗಳು}}</translation>
-<translation id="8721861170709424373">ChromeVox Next ಆದೇಶ ಉಲ್ಲೇಖ</translation>
 <translation id="8735450637152821465">ಆಯ್ಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8743786158317878347">ಕೋಷ್ಟಕಗಳಂತಹ, ವ್ಯವಸ್ಥಿತಗೊಳಿಸಿದ ವಿಷಯ ನಮೂದಿಸಿ</translation>
 <translation id="8747966237988593539">ವ್ಯವಸ್ಥಿತವಾದ ಪಟ್ಟಿ</translation>
@@ -881,7 +867,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="923331726185079994">ChromeVox ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="930275611743429116">ಪ್ರಾರಂಭ ಅಥವಾ ಅಂತ್ಯದ ಆಯ್ಕೆ.</translation>
 <translation id="948171205378458592">ಮಾತಿನ ಪ್ರಮಾಣವನ್ನು ಇಳಿಸಿ</translation>
-<translation id="955917170449423694">ಕ್ಲಾಸಿಕ್ ChromeVox ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="962913030769097253">ಮುಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆ</translation>
 <translation id="973955474346881951">ಜಟಿಲವಾದ ಮೋಡ್‌ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ/ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="976849232629612000">ಯಾವುದೇ ಐಟಂಗಳಿಲ್ಲ</translation>

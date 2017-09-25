@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">hankige oma iPhone'ile Chromium</translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
-<translation id="2372704305038231957">32-bitine Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis. Viige Chromium üle 64-bitisele versioonile.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Allalaadimine on praegu pooleli. Kas soovite allalaadimise tühistada ja Chromiumist väljuda?}other{# allalaadimist on praegu pooleli. Kas soovite allalaadimised tühistada ja Chromiumist väljuda?}}</translation>
 <translation id="2396765026452590966">Laiendus „<ph name="EXTENSION_NAME" />” muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="2483889755041906834">Chromiumis</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(nõuab Chromiumi <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on peaaegu valmis.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chromiumi värskendama.</translation>
-<translation id="5859963531214966875">Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi.</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium vajab juurdepääsu teie asukohale, et seda selle saidiga jagada.</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6526111688217511984">Chromium vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
-<translation id="6584627348340620412">32-bitise Chromiumi tulevased versioonid ei toeta enam seda Linuxi süsteemi. Viige Chromium üle 64-bitisele versioonile.</translation>
-<translation id="6593914713218535185">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis.</translation>
 <translation id="6638567566961868659">Otsige oma järjehoidjaid Chromiumi menüüst või järjehoidjaribalt.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="6717134281241384636">Teie profiili ei saa kasutada, kuna see pärineb Chromiumi uuemast versioonist.
@@ -182,7 +177,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="6893813176749746474">Chromiumi on värskendatud, kuid te ei ole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="6944967875980567883">Chromiumi laaditud moodulid</translation>
 <translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
-<translation id="7027298027173928763">Chromium ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chromiumi käsitsi uuesti installima.</translation>
 <translation id="705851970750939768">Värskenda Chromiumi</translation>
 <translation id="7066436765290594559">Chromium OS ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="707471633328071618">Google Payments (Chromiumi kopeeritud)</translation>

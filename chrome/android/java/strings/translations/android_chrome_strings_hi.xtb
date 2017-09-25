@@ -3,6 +3,7 @@
 <translationbundle lang="hi">
 <translation id="1006017844123154345">ऑनलाइन खोलें</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> जोड़ा जा रहा है...</translation>
+<translation id="1041308826830691739">वेबसाइटों की ओर से</translation>
 <translation id="1049743911850919806">गुप्त</translation>
 <translation id="10614374240317010">कभी नहीं सहेजा गया</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> भाषा के पेज का कभी भी अनुवाद न करें</translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
 <translation id="3295602654194328831">जानकारी छिपाएं</translation>
 <translation id="3303414029551471755">सामग्री डाउनलोड करने के लिए आगे बढ़ें?</translation>
-<translation id="3319792846664697699">नेविगेशन पैनल</translation>
 <translation id="3321222012623826478">इस सेवा को इस वेबसाइट के पते की पुष्टि करने के लिए, पते को अनाम रूप से Google के सर्वर पर भेजना होगा.</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3341058695485821946">देखें कि आपने कितना डेटा बचाया है</translation>
@@ -268,6 +268,7 @@
 
 अपने खोज शब्‍द को एडजस्‍ट करने के लिए, चुनने हेतु देर तक दबाएं. अपनी खोज को परिष्‍कृत करने के लिए, फलक को सीधे ऊपर स्‍लाइड करें और खोज बॉक्‍स को स्‍पर्श करें.</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
+<translation id="3620176948598597475">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ, डेटा बचाने के साधन का इतिहास हमेशा के लिए मिट जाता है.</translation>
 <translation id="3632295766818638029">पासवर्ड दिखाएं</translation>
 <translation id="363596933471559332">संग्रहित क्रेडेंशियल का उपयोग करके वेबसाइटों में अपने आप प्रवेश करें. सुविधा के बंद होने पर, किसी वेबसाइट में प्रवेश करने से पहले आपसे हर बार सत्‍यापन के लिए कहा जाएगा.</translation>
 <translation id="3649663272864015643">होम टैब चयनित है</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">यहां कोई इतिहास नहीं है</translation>
 <translation id="3672452749423051839">मार्गदर्शक गड़बड़ी सुझाव</translation>
 <translation id="3706423975342040244">मनोरंजन</translation>
+<translation id="3712575778697986964">डेटा बचाने का साधन रीसेट करें?</translation>
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3734660163659757482">बुकमार्क आदि देखने के लिए ऊपर खींचें</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">प्रबंधित करें</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटाए गए</translation>
 <translation id="3822502789641063741">साइट मेमोरी साफ़ करें?</translation>
-<translation id="3845539888601087042">आपके प्रवेश किए गए डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
 <translation id="3946611741043634542">जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
+<translation id="395206256282351086">सर्च और साइट सुझाव बंद हैं</translation>
 <translation id="395922942268463099">पेज नियमित रूप से अपडेट होता है</translation>
 <translation id="3967822245660637423">डाउनलोड पूर्ण</translation>
 <translation id="397583555483684758">समन्‍वयन ने कार्य करना बंद कर दिया है</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
-<translation id="4248297594476034182">अपने सभी डिवाइस पर अपने टैब प्राप्‍त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="424864128008805179">Chrome से प्रस्थान करें?</translation>
 <translation id="4254813446494774748">अनुवाद की भाषा:</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
@@ -453,7 +454,6 @@
 <translation id="5423934151118863508">आपके द्वारा सबसे अधिक देखे गए पेज यहां दिखाई देंगे</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB उपलब्ध है</translation>
 <translation id="5433691172869980887">उपयोगकर्ता नाम कॉपी किया गया</translation>
-<translation id="5435775191620395718">इस डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">सीधे पता बार पर जाएं</translation>
 <translation id="5447201525962359567">सभी साइट मेमोरी, जिसमें कुकी और स्थानीय रूप से संग्रहित अन्य डेटा शामिल है</translation>
 <translation id="5447765697759493033">इस साइट का अनुवाद नहीं किया जाएगा</translation>
@@ -480,7 +480,6 @@
 <translation id="5620928963363755975">अधिक विकल्प बटन से डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5626134646977739690">नाम:</translation>
 <translation id="5639724618331995626">सभी साइटों को अनुमति दें</translation>
-<translation id="5646376287012673985">स्थान</translation>
 <translation id="5648166631817621825">पिछले 7 दिन</translation>
 <translation id="5655963694829536461">अपने डाउनलोड खोजें</translation>
 <translation id="5659593005791499971">ईमेल</translation>
@@ -550,6 +549,7 @@
 <translation id="6232535412751077445">“नज़र न रखें” सक्षम करने का अर्थ है कि आपके ब्राउज़िंग ट्रैफ़िक के साथ एक अनुरोध शामिल किया जाएगा. कोई भी प्रभाव इस बात पर निर्भर करता है कि वेबसाइट अनुरोध का प्रतिसाद देती है या नहीं और अनुरोध को किस तरह समझा जाता है.
 
 उदाहरण के लिए, कुछ वेबसाइट इस अनुरोध का प्रतिसाद आपको ऐसे विज्ञापन दिखाकर दे सकती हैं जो आपके द्वारा देखी गई अन्य वेबसाइट पर आधारित नहीं हैं. कई वेबसाइट अब भी आपके ब्राउज़िंग डेटा को संग्रहित करेंगी और उसका उपयोग करेंगी — उदाहरण के लिए सुरक्षा को बेहतर बनाने के लिए, सामग्री, विज्ञापन और सुझाव प्रदान करने के लिए और रिपोर्टिंग के आकंड़े जेनरेट करने के लिए.</translation>
+<translation id="6255999984061454636">सामग्री के सुझाव</translation>
 <translation id="6277522088822131679">पेज को प्रिंट करने में समस्या थी. कृपया फिर से प्रयास करें.</translation>
 <translation id="6295158916970320988">सभी साइटें</translation>
 <translation id="6320088164292336938">कंपन</translation>
@@ -626,6 +626,7 @@
 <translation id="688738109438487280">मौजूदा डेटा <ph name="TO_ACCOUNT" /> में जोड़ें.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
 <translation id="6896758677409633944">कॉपी बनाएं</translation>
+<translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
 <translation id="6965382102122355670">ठीक</translation>
@@ -676,6 +677,7 @@
 <translation id="7423098979219808738">पहले पूछें</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="7445411102860286510">साइटों को म्यूट किए गए वीडियो अपने आप चलाने की अनुमति दें (अनुशंसित)</translation>
+<translation id="7453467225369441013">आपको ज़्यादातर साइटों से साइन आउट कर देता है. आप अपने Google खाते से साइन आउट नहीं होंगे.</translation>
 <translation id="7455923816558154057">देखने के लिए टैप करें</translation>
 <translation id="7464701184726199289">इससे सभी डिवाइस में समन्वयित डेटा साफ़ हो जाता है. सहेजी गई साइट सेटिंग नहीं हटाई जाएंगी और इससे आपका ब्राउज़िंग व्यवहार प्रदर्शित हो सकता है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
@@ -742,6 +744,7 @@
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन शेष</translation>
+<translation id="805047784848435650">आपके ब्राउज़िंग इतिहास के आधार पर</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
 <translation id="8058746566562539958">नए Chrome टैब में खोलें</translation>
 <translation id="8063895661287329888">बुकमार्क जोड़ने में विफल रहा.</translation>

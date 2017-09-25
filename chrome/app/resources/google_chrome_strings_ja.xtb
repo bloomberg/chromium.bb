@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1795405610103747296">Chrome をスマートフォンにインストールしませんか。お客様の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
-<translation id="1818142563254268765">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を更新する必要があります。</translation>
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chrome はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
-<translation id="2582790009689336987">この Linux システムはサポートが終了するため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="2586406160782125153">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
 <translation id="2664962310688259219">Chrome OS オープンソース ライセンス</translation>
@@ -84,7 +82,6 @@
 
 詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
-<translation id="3311976847535831054">このパソコンは 32 ビットの Google Chrome アップデートを受信しなくなります。64 ビットの Google Chrome にアップグレードしてください。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Chrome OS のヘルプを見る</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>
@@ -114,7 +111,6 @@
 <translation id="4309555186815777032">（Chrome を<ph name="BEGIN_BUTTON" />再起動<ph name="END_BUTTON" />する必要があります）</translation>
 <translation id="4328355335528187361">Google Chrome Dev（mDNS-In）</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">この Linux システムはサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4458462641685292929">Google Chrome で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
@@ -128,7 +124,6 @@
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4743926867934016338">承諾して検索</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> を有効にするには Chrome を再起動してください</translation>
-<translation id="4751441238232965030">このパソコンはまもなく 32 ビットの Google Chrome アップデートの受信を停止します。64 ビットの Google Chrome にアップグレードしてください。</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
 <translation id="4771048833395599659">このファイルは危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
 <translation id="4794050651896644714">Chrome で詳細を保存する</translation>
@@ -205,7 +200,6 @@
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を手動で再インストールする必要があります。</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>

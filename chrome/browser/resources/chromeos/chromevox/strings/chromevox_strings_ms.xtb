@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1206619573307042055">marki</translation>
 <translation id="1213216066620407844">ChromeVox - Memberikan Suara kepada Chrome</translation>
-<translation id="1226487719524433143">Kami amat teruja untuk mendengar pendapat anda tentang pengalaman baharu ini. Hantarkan terus maklum balas anda kepada kami dengan menekan Carian+a, kemudian i. Tekan butang seterusnya untuk meneruskan tutorial bagi mempelajari segala yang anda perlukan untuk bermula.</translation>
 <translation id="1229276918471378188">Langkauan sebelumnya</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Tajuk tahap 6 seterusnya</translation>
 <translation id="1275718070701477396">Dipilih</translation>
-<translation id="1310230882256010289">Peningkatan yang tidak disiarkan. Kami telah mempertingkatkan cara ChromeVox berfungsi dari mula. Nantikan prestasi, kestabilan dan sokongan/pematuhan web yang lebih baik.</translation>
 <translation id="1319608975892113573">Tiada petikan blok terdahulu.</translation>
 <translation id="1321576897702511272">Sembunyikan bantuan ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> daripada <ph name="TOTAL" /></translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">Pengepala lajur kosong</translation>
 <translation id="316542773973815724">Navigasi</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ruang}other{# ruang}}</translation>
-<translation id="3183233191569362040">Tahniah! Anda telah berjaya mempelajari perkara asas untuk menggunakan ChromeVox Next (beta). Sila ingat bahawa anda boleh membuka menu perintah ChromeVox dengan menekan Carian + Titik, pada bila-bila masa. Untuk mengetahui lebih lanjut lagi tentang ChromeVox dan OS Chrome, sila baca artikel berikut.
-Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke butang Tutup dan klik butang itu.</translation>
 <translation id="320961988183078793">memasukkan <ph name="TYPE" /></translation>
 <translation id="3223701887221307104">Tab, <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
@@ -338,7 +334,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Tajuk tahap 6 sebelumnya</translation>
 <translation id="3914173277599553213">Diperlukan</translation>
-<translation id="3951424903203718058">Adakah ini kali pertama anda menggunakan maklum balas yang dituturkan ChromeVox Next? Tutorial pantas ini menerangkan perkara asas untuk bermula dengan ChromeVox Next.</translation>
 <translation id="3962990492275676168">Mula membaca dari lokasi semasa</translation>
 <translation id="4004802134384979325">ditandai</translation>
 <translation id="4006140876663370126">img</translation>
@@ -432,7 +427,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4846487886195635104">Garisan lorek tamat</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemen serupa terdahulu.</translation>
-<translation id="485011152882364255">Pada ChromeVox Next, kekunci Carian merupakan kekunci pengubah suai. Kebanyakan pintasan ChromeVox bermula dengan kekunci Carian. Anda juga boleh menggunakan kekunci anak panah untuk navigasi.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Dayakan pengelogan TTS</translation>
 <translation id="4877261390094455813">Masukkan carian pertanyaan.</translation>
@@ -501,7 +495,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5444587279251314700">(aktif)</translation>
 <translation id="5451268436205074266">titik <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Percuma</translation>
-<translation id="5458780372341732962">Gunakan ChromeVox Next (beta)</translation>
 <translation id="5485036206801896268">Tiada grafik terdahulu.</translation>
 <translation id="5486947920110100234">Tiada titik langkau seterusnya.</translation>
 <translation id="549602578321198708">Perkataan</translation>
@@ -510,7 +503,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5507663321906818013">Penanda aras nyahpepijat</translation>
 <translation id="5518443085409638729">Letakkan kursor antara aksara apabila mengedit teks (seperti Mac OS X).</translation>
 <translation id="552195134157544755">Butang radio</translation>
-<translation id="5531530875187439488">Earcon baharu. Kami telah memperbaharui set ikon audio yang anda dengar untuk menjadikan penyemakan imbas lebih responsif.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">Tiada tajuk tahap 5 terdahulu.</translation>
 <translation id="556042886152191864">Butang</translation>
@@ -537,7 +529,6 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5682113568322255809">Mercu Tanda</translation>
 <translation id="5683155931978483559">Kotak pilihan sebelumnya</translation>
 <translation id="5684277895745049190">Senarai</translation>
-<translation id="5684905390246898631">Selamat datang ke ChromeVox Next!</translation>
 <translation id="5695831708991916435">Beberapa pintasan yang berikut ini bukan merupakan perintah ChromeVox, tetapi pintasan ini sangat berguna untuk memanfaatkan sepenuhnya Chrome.
 Untuk menavigasi ke hadapan dari satu item yang boleh diambil tindakan ke satu item yang lain seperti butang dan pautan, tekan kekunci Tab. Untuk menavigasi ke belakang, tekan Shift + Tab. 
 Untuk pergi ke kotak alamat penyemak imbas Chrome, yang juga dikenali sebagai kotak omni, tekan Control + L. 
@@ -572,7 +563,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{sama dengan}other{# tanda sama dengan}}</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5948123859135882163">Togol tafsiran ungkapan matematik antara struktur dan semantik</translation>
-<translation id="5948485979596965684">Anda telah dikemas kini kepada keluaran utama ChromeVox yang baharu!</translation>
 <translation id="5955304353782037793">apl</translation>
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Bahagian</translation>
@@ -651,7 +641,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6786800275320335305">Artikel</translation>
 <translation id="6787839852456839824">Pintasan papan kekunci</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">Kami telah berusaha keras untuk menyediakan pengalaman ChromeVox yang baharu dan dipertingkatkan, berikut ialah perkara yang baharu tentangnya</translation>
 <translation id="6833103209700200188">Pengaki</translation>
 <translation id="6871161210040114857">Mengabaikan huruf.</translation>
 <translation id="6877435256196695200">Tiada grafik seterusnya.</translation>
@@ -669,7 +658,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="7037042857287298941">Senarai sebelumnya</translation>
 <translation id="7041173719775863268">Tamatkan pemilihan</translation>
 <translation id="7086377898680121060">Tambahkan kecerahan</translation>
-<translation id="7094527465295945904">Gabungan baharu yang penting. Kami telah membuat pengubah suai Cari di ChromeVox dan mempermudahkan kombinasi kekunci dengan ketara.</translation>
 <translation id="7095834689119144465">Edit teks angka sahaja</translation>
 <translation id="7096001299300236431">Media sebelumnya</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +761,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8066678206530322333">Sepanduk</translation>
 <translation id="8076492880354921740">Tab</translation>
 <translation id="8091452896542422286">Ruang</translation>
-<translation id="8104178626892949749">Tekan o, n ChromeVox untuk mengetahui lebih lanjut tentang ChromeVox Next.</translation>
 <translation id="8110647606445335195">Tiada mercu tanda ARIA.</translation>
 <translation id="8153880621934657047">Bukan dalam jadual.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
@@ -783,7 +770,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8199231515320852133">Umumkan pengepala sel semasa</translation>
 <translation id="820417203470636242">Sel kosong.</translation>
 <translation id="8215202828671303819">Berbilang pilihan</translation>
-<translation id="8224171046658870249">Anda telah bertukar kepada ChromeVox Next</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Langkau ke item boleh fokus sebelumnya</translation>
 <translation id="8278417001922463147">Tiada artikel sebelumnya.</translation>
@@ -828,7 +814,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8664519043722036194">saat</translation>
 <translation id="867187640362843212">Tajuk 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{paip}other{# paip menegak}}</translation>
-<translation id="8721861170709424373">Rujukan Perintah ChromeVox Next</translation>
 <translation id="8735450637152821465">Mulakan pemilihan</translation>
 <translation id="8743786158317878347">masukkan kandungan berstruktur, seperti jadual</translation>
 <translation id="8747966237988593539">Senarai Bertertib</translation>
@@ -881,7 +866,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="923331726185079994">ChromeVox Dikemas Kini</translation>
 <translation id="930275611743429116">Mulakan atau tamatkan pemilihan.</translation>
 <translation id="948171205378458592">Kurangkan kadar pertuturan</translation>
-<translation id="955917170449423694">Anda telah bertukar kepada ChromeVox Klasik</translation>
 <translation id="962913030769097253">Tajuk tahap 1 seterusnya</translation>
 <translation id="973955474346881951">Dayakan/Lumpuhkan mod lekit</translation>
 <translation id="976849232629612000">Tiada item.</translation>

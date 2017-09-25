@@ -711,6 +711,9 @@
 <translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
+<translation id="332771718998993005">Tumutukoy sa pangalang na-advertise bilang patutunguhan ng <ph name="PRODUCT_NAME" />.
+
+          Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng patutunguhan ng <ph name="PRODUCT_NAME" />. Kung hindi naman, ipapangalan ang patutunguhan sa pangalan ng device. Kung hindi nakatakda ang patakarang ito, ipapangalan ang patutunguhan sa pangalan ng device at mababago ito ng may-ari ng device (o ng isang user mula sa domain na namamahala sa device). Limitado ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -1221,6 +1224,9 @@
           Ang halaga ng patakaran ay dapat tukuyin gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
 <translation id="5307432759655324440">Availability ng mode na incognito</translation>
 <translation id="5318185076587284965">I-enable ang paggamit ng mga relay server ng host ng malayuang pag-access</translation>
+<translation id="5323128137188992869">Nagpapahintulot ng pag-cast ng content sa device gamit ang <ph name="PRODUCT_NAME" />.
+
+          Kung nakatakda ang patakarang ito sa False, hindi makakapag-cast ng content ang mga user sa kanilang device. Kung nakatakda ang patakarang ito sa True, makakapag-cast ng content ang mga user. Kung hindi nakatakda ang patakarang ito, hindi makakapag-cast ng content ang mga user sa mga naka-enroll na Chrome OS device, ngunit maaari silang mag-cast sa mga hindi naka-enroll na device.</translation>
 <translation id="5330684698007383292">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pangasiwaan ang mga sumusunod na uri ng nilalaman</translation>
 <translation id="5365946944967967336">Ipakita ang button na Home sa toolbar</translation>
 <translation id="5366977351895725771">Kung nakatakda sa false, idi-disable ang paggawa ng pinapangasiwaang user para sa user na ito. Magiging available pa rin ang sinumang mga umiiral na pinapangasiwaang user.
@@ -1451,6 +1457,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
 <translation id="6133088669883929098">Payagan ang lahat ng site na gumamit ng pagbuo ng key</translation>
+<translation id="6139485614509308022">Kung nakatakda ang patakarang "OffHours," babalewalain ang mga tinukoy na patakaran sa device (gamitin ang mga default na setting ng mga patakarang ito) sa mga tinukoy na agwat ng panahon. Ipapatupad muli ng Chrome ang mga patakaran sa device sa bawat kaganapan kapag nagsimula o natapos ang panahon ng "OffHours." Aabisuhan ang user at sapilitang isa-sign out kapag natapos ang panahon ng "OffHours" at nabago ang mga setting ng patakaran sa device (ibig sabihin, kapag naka-log in ang user sa isang hindi pinapayagang account).</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1806,7 +1813,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kungh indi nakatakda ang patakaran, o nakatakda sa false, ie-enable ang <ph name="TLS_FALSE_START" />. Kung nakatakda ito sa true, idi-disable ang <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Paganahin ang Instant</translation>
 <translation id="7443616896860707393">Mga prompt ng Cross-origin HTTP Basic Auth</translation>
-<translation id="7468416082528382842">Lokasyon ng registry ng window:</translation>
 <translation id="7469554574977894907">Paganahin ang mga suhestiyon sa paghahanap</translation>
 <translation id="7474249562477552702">Kung pinapayagan ang mga SHA-1 signed certificate na ibinigay ng mga lokal na trust anchor</translation>
 <translation id="7485481791539008776">Mga panuntunan sa pagpili ng default na printer</translation>

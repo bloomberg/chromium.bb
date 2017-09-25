@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Další</translation>
 <translation id="1206619573307042055">běžící text</translation>
 <translation id="1213216066620407844">ChromeVox – hlas Chromu</translation>
-<translation id="1226487719524433143">Velmi uvítáme váš názor na toto nové prostředí. Zpětnou vazbu nám můžete odeslat přímo tak, že stisknete kombinaci kláves Hledat+a a poté klávesu i. Stisknutím tlačítka Další přejdete do výukového programu, ve kterém se dozvíte vše potřebné k tomu, abyste mohli začít.</translation>
 <translation id="1229276918471378188">Předchozí skok</translation>
 <translation id="1237866625126425153">skup přep</translation>
 <translation id="1251750620252348585">Další nadpis 6. úrovně</translation>
 <translation id="1275718070701477396">Vybráno</translation>
-<translation id="1310230882256010289">Aktualizace pod kapotou. Zcela jsme přepracovali fungování funkce ChromeVox. Můžete očekávat lepší výkon, stabilitu a podporu a soulad s webem.</translation>
 <translation id="1319608975892113573">Žádná předchozí bloková citace.</translation>
 <translation id="1321576897702511272">Skrýt nápovědu programu ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
@@ -224,8 +222,6 @@
 <translation id="3163593631834463955">Prázdné záhlaví sloupce</translation>
 <translation id="316542773973815724">Navigace</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mezera}few{# mezery}many{# spaces}other{# mezer}}</translation>
-<translation id="3183233191569362040">Gratulujeme vám! Naučili jste se základy používání nástroje ChromeVox Next (beta). Nabídku příkazů nástroje ChromeVox můžete kdykoliv otevřít stisknutím kláves Hledat + Tečka. Další informace o nástroji ChromeVox a systému Chrome OS naleznete v následujících článcích.
-Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na tlačítko Zavřít a klikněte na něj.</translation>
 <translation id="320961988183078793">zadá: <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, karta</translation>
 <translation id="3226035351387556942">zaškrt pol</translation>
@@ -337,7 +333,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3897092660631435901">Nabídka</translation>
 <translation id="3909320334364316587">Předchozí nadpis 6. úrovně</translation>
 <translation id="3914173277599553213">Vyžadováno</translation>
-<translation id="3951424903203718058">Používáte hlasovou odezvu ChromeVox Next poprvé? Tento stručný výukový program vysvětluje základy, které vám pomohou začít nástroj ChromeVox Next používat.</translation>
 <translation id="3962990492275676168">Začít číst z aktuálního místa</translation>
 <translation id="4004802134384979325">zaškrtnuto</translation>
 <translation id="4006140876663370126">obr</translation>
@@ -431,7 +426,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4846487886195635104">Začátek přeškrtnutého textu</translation>
 <translation id="4848993367330139335">časovač</translation>
 <translation id="4850023505158945298">Předchozí podobný prvek.</translation>
-<translation id="485011152882364255">Klávesa Hledat v nástroji ChromeVox Next funguje jako modifikační klávesa. Většina klávesových zkratek nástroje ChromeVox začíná klávesou Hledat. K navigaci se používají také klávesy se šipkami.</translation>
 <translation id="4866956062845190338">přep pol nabíd</translation>
 <translation id="4867316986324544967">Povolit protokolování TTS</translation>
 <translation id="4877261390094455813">Zadejte vyhledávací dotaz.</translation>
@@ -500,7 +494,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5444587279251314700">(aktivní)</translation>
 <translation id="5451268436205074266">body <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Doplňkové</translation>
-<translation id="5458780372341732962">Používat ChromeVox Next (beta)</translation>
 <translation id="5485036206801896268">Žádný předchozí obrázek.</translation>
 <translation id="5486947920110100234">Žádný další bod skoku.</translation>
 <translation id="549602578321198708">Slovo</translation>
@@ -509,7 +502,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5507663321906818013">Ukazatel ladění</translation>
 <translation id="5518443085409638729">Při úpravě textu kurzor umístit mezi znaky (jako v systému Mac OS X).</translation>
 <translation id="552195134157544755">Přepínač</translation>
-<translation id="5531530875187439488">Nové zvukové signály. Aktualizovali jsme sadu zvukových signálů tak, aby procházení bylo responzivnější.</translation>
 <translation id="5534303576632885660">nadpis</translation>
 <translation id="5546092960038624944">Žádný předchozí nadpis 5. úrovně.</translation>
 <translation id="556042886152191864">Tlačítko</translation>
@@ -536,7 +528,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5682113568322255809">Orientační bod</translation>
 <translation id="5683155931978483559">Předchozí zaškrtávací políčko</translation>
 <translation id="5684277895745049190">Seznam</translation>
-<translation id="5684905390246898631">Vítejte v nástroji ChromeVox Next!</translation>
 <translation id="5695831708991916435">Následující klávesové zkratky nejsou příkazy nástroje ChromeVox, ale přesto jsou velmi užitečné pro maximální využití Chromu. 
 Chcete-li přejít na další položku, která umožňuje provedení akce (například tlačítko nebo odkaz), stiskněte tabulátor. Zpět přejdete stisknutím kláves Shift + Tabulátor. 
 Chcete-li přejít do adresního řádku prohlížeče Chrome (omniboxu), stiskněte Control + L. 
@@ -571,7 +562,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="5937336320314038555">{COUNT,plural, =1{rovná se}few{# znaky rovná se}many{# equal signs}other{# znaků rovná se}}</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5948123859135882163">Přepnout mezi strukturální a sémantickou interpretací matematických výrazů</translation>
-<translation id="5948485979596965684">Byla u vás provedena aktualizace na významné nové vydání funkce ChromeVox!</translation>
 <translation id="5955304353782037793">aplik</translation>
 <translation id="5956928062748260866">Dialogové okno</translation>
 <translation id="5963413905009737549">Sekce</translation>
@@ -650,7 +640,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="6786800275320335305">Článek</translation>
 <translation id="6787839852456839824">Klávesové zkratky</translation>
 <translation id="6793101435925451627">nabíd</translation>
-<translation id="6818172019016005152">Tvrdě jsme pracovali na novém vylepšeném prostředí funkce ChromeVox. Zde jsou novinky.</translation>
 <translation id="6833103209700200188">Zápatí</translation>
 <translation id="6871161210040114857">Velká a malá písmena jsou ignorována.</translation>
 <translation id="6877435256196695200">Žádný další obrázek.</translation>
@@ -668,7 +657,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7037042857287298941">Předchozí seznam</translation>
 <translation id="7041173719775863268">Ukončit výběr</translation>
 <translation id="7086377898680121060">Zvýšit jas</translation>
-<translation id="7094527465295945904">Nové přiřazení kláves. Jako modifikátor pro ChromeVox jsme nastavili klávesu Hledat a dramaticky jsme zjednodušili kombinace kláves.</translation>
 <translation id="7095834689119144465">Úprava textu – pouze číslice</translation>
 <translation id="7096001299300236431">Předchozí mediální objekt</translation>
 <translation id="7116595520562830928">více řádků</translation>
@@ -772,7 +760,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8091452896542422286">Mezera</translation>
-<translation id="8104178626892949749">Další informace o nástroji ChromeVox Next získáte stisknutím kláves ChromeVox + O + N.</translation>
 <translation id="8110647606445335195">Žádné orientační body ARIA.</translation>
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
@@ -782,7 +769,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8199231515320852133">Oznámit záhlaví aktuální buňky</translation>
 <translation id="820417203470636242">Prázdná buňka.</translation>
 <translation id="8215202828671303819">Vícenásobný výběr</translation>
-<translation id="8224171046658870249">Přepnuto na ChromeVox Next</translation>
 <translation id="826991282343985864">ř$1s$2</translation>
 <translation id="8276439074553447000">Přejít na předchozí zaměřitelnou položku</translation>
 <translation id="8278417001922463147">Žádný předchozí článek.</translation>
@@ -827,7 +813,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8664519043722036194">s</translation>
 <translation id="867187640362843212">Nadpis 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{svislá čára}few{# svislé čáry}many{# vertical pipes}other{# svislých čar}}</translation>
-<translation id="8721861170709424373">Reference s příkazy nástroje ChromeVox Next</translation>
 <translation id="8735450637152821465">Zahájit výběr</translation>
 <translation id="8743786158317878347">vstoupit do strukturovaného obsahu, například tabulky</translation>
 <translation id="8747966237988593539">Seřazený seznam</translation>
@@ -880,7 +865,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="923331726185079994">Čtečka ChromeVox byla aktualizována</translation>
 <translation id="930275611743429116">Zahájit nebo ukončit výběr.</translation>
 <translation id="948171205378458592">Snížit rychlost řeči</translation>
-<translation id="955917170449423694">Přepnuto na klasický nástroj ChromeVox</translation>
 <translation id="962913030769097253">Další nadpis 1. úrovně</translation>
 <translation id="973955474346881951">Aktivovat či deaktivovat režim Jedním prstem</translation>
 <translation id="976849232629612000">Žádné položky</translation>

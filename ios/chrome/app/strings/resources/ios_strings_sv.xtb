@@ -66,6 +66,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
+<translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
@@ -178,6 +179,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="430793432425771671">Synkronisera allt</translation>
 <translation id="4342284590510997375">Ny</translation>
+<translation id="434816576838749873">Välj e-postapp</translation>
 <translation id="4359125752503270327">Sidan öppnas i en annan app.</translation>
 <translation id="4370827530403103842">Det går inte att synkronisera. Tryck här för att åtgärda detta.</translation>
 <translation id="4375040482473363939">Sök med QR-koder</translation>
@@ -309,6 +311,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6785453220513215166">Skickar en felrapport ...</translation>
 <translation id="679325081238418596">Använd bokmärken, historik och andra inställningar på alla dina enheter</translation>
 <translation id="6797885426782475225">Röstsökning</translation>
+<translation id="6807889908376551050">Visa alla ...</translation>
 <translation id="681368974849482173">Bokmärket har skapats</translation>
 <translation id="6896758677409633944">Kopiera</translation>
 <translation id="6903907808598579934">Aktivera synkronisering</translation>
@@ -416,6 +419,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
 <translation id="914898748153555155">Du kan när som helst ändra detta i inställningarna för Chrome</translation>
+<translation id="91549621916703028">Använd flera flikar för olika uppgifter</translation>
 <translation id="9157836665414082580">Visa inte dialogrutor</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

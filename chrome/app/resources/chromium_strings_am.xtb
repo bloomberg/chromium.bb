@@ -37,7 +37,6 @@
 <translation id="2265088490657775772">በእርስዎ iPhone ላይ Chromiumን ያግኙት</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="2347108572062610441">ይህ ቅጥያ Chromiumን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
-<translation id="2372704305038231957">32-ቢት Chromium በዚህ የLinux ስርዓት ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል። እባክዎን ወደ 64-ቢት ያልቁ።</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{አንድ ማውረድ አሁን በሂደት ላይ ነው። ማውረዱን መተው እና ከChromium መውጣት ይፈልጋሉ?}one{# ማውረዶች አሁን በሂደት ላይ ናቸው። ማውረዶቹን መተው እና ከChromium መውጣት ይፈልጋሉ?}other{# ማውረዶች አሁን በሂደት ላይ ናቸው። ማውረዶቹን መተው እና ከChromium መውጣት ይፈልጋሉ?}}</translation>
 <translation id="2396765026452590966">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ Chromiumን ሲጀምሩት የሚታየውን ገጽ ቀይሮታል።</translation>
 <translation id="2483889755041906834">በChromium ውስጥ</translation>
@@ -142,8 +141,6 @@
 <translation id="5772805321386874569">(የChromium <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
-<translation id="5823381412099532241">Chromium እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጠዎት ነው። Chromiumን ማዘመን አለብዎት።</translation>
-<translation id="5859963531214966875">የወደፊት የChromium ስሪቶች ከአሁን በኋላ ይህንን የLinux ስርዓት አይደግፍም።</translation>
 <translation id="5862307444128926510">ወደ Chromium እንኳን በደህና መጡ</translation>
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
@@ -169,8 +166,6 @@
 <translation id="6505742536731484931">Chromium አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
 <translation id="6526111688217511984">Chromium ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
-<translation id="6584627348340620412">የወደፊት 32-ቢት የChromium ስሪቶች ከአሁን በኋላ ይህንን የLinux ስርዓት አይደግፍም። እባክዎ ወደ 64-ቢት Chromium ያልቁ።</translation>
-<translation id="6593914713218535185">በዚህ የLinux ስርዓት ላይ ከእንግዲህ ስለማይደገፍ Chromium በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="6638567566961868659">ዕልባቶችዎን በChromium ምናሌ ውስጥ ወይም በዕልባቶች አሞሌው ላይ ይፈልጉ።</translation>
 <translation id="6676384891291319759">በይነመረብን ተዳረስ</translation>
 <translation id="6717134281241384636">መገለጫዎ ከአዲስ የChromium ስሪት ስለሆነ የመጣው ስራ ላይ ሊውል አይችልም።
@@ -184,7 +179,6 @@
 <translation id="6893813176749746474">Chromium ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
 <translation id="6944967875980567883">Chromium ላይ የተጫኑ ሞዱሎች</translation>
 <translation id="6970811910055250180">መሣሪያዎን በማዘመን ላይ...</translation>
-<translation id="7027298027173928763">Chromium እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጠዎት ነው። Chromiumን እራስዎ ዳግም መጫን አለብዎት።</translation>
 <translation id="705851970750939768">Chromiumን አዘምን</translation>
 <translation id="7066436765290594559">Chromium OS የእርስዎን ውሂብ ማመሳሰል አልቻለም። የእርስዎን የማመሳሰያ የይለፍ ሐረግ እባክዎ ያዘምኑ።</translation>
 <translation id="707471633328071618">Google Payments (ወደ Chromium ተቀድቷል)</translation>

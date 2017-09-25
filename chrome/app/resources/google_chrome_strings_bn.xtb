@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS ব্যবহার করে সাহায্য নিন</translation>
 <translation id="1795405610103747296">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে Chrome আপডেট করতে হবে।</translation>
 <translation id="1874309113135274312">Google Chrome বিটা (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="2063848847527508675">আপডেটটি প্রয়োগ করতে Chrome OS আবার চালু করা প্রয়োজন।</translation>
@@ -60,7 +59,6 @@
 <translation id="2446511512801740068">Chrome পুরানো হয়ে গেছে কারণ কিছু সময় ধরে এটিকে পুনঃলঞ্চ করা হয়নি। একটি আপডেট উপলব্ধ রয়েছে এবং আপনি পুনঃলঞ্চ করার সাথে সাথেই এটি প্রয়োগ করা হবে।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2580411288591421699">বর্তমানে Google Chrome এর যে সংস্করণটি চলছে সেটি ইনস্টল করতে পারে না৷ দয়া করে Google Chrome বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
-<translation id="2582790009689336987">এই কম্পিউটারটি শীঘ্রই Google Chrome এর আপডেটগুলি গ্রহণ করা বন্ধ করবে কারণ এই Linux সিস্টেম আর সমর্থন করা হবে না।</translation>
 <translation id="2586406160782125153">এটি এই ডিভাইস থেকে আপনার ব্রাউজিং ডেটা মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
 <translation id="2588322182880276190">Chrome লোগো</translation>
 <translation id="2664962310688259219">Chrome OS মুক্ত উৎসের লাইসেন্সগুলি</translation>
@@ -86,7 +84,6 @@
 
 অতিরিক্ত নির্দেশাবলীর জন্য দয়া করে <ph name="ACCOUNT_EMAIL" /> এ গিয়ে আপনার ইমেল দেখুন।</translation>
 <translation id="3282568296779691940">Chrome-এ প্রবেশ করুন</translation>
-<translation id="3311976847535831054">এই কম্পিউটারটি আর ৩২-বিট Google Chrome আপডেট পাবে না। দয়া করে ৬৪-বিট Google Chrome এ আপগ্রেড করুন।</translation>
 <translation id="3360895254066713204">Chrome সহায়তাকারী</translation>
 <translation id="3395323229510056640">Chrome OS সম্পর্কে সহায়তা পান</translation>
 <translation id="3396977131400919238">ইনস্টলেশনের সময় অপারেটিং সিস্টেমে একটি ত্রুটি ঘটেছিল৷ দয়া করে আবার Google Chrome ডাউনলোড করুন৷</translation>
@@ -95,6 +92,7 @@
 <translation id="345171907106878721">Chrome এর সাথে নিজেকে যোগ করুন</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
 <translation id="3622797965165704966">এখন আপনার Google অ্যাকাউন্ট ও শেয়ার করা কম্পিউটারগুলিতে Chrome ব্যবহার করা আরও সহজ৷</translation>
+<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />পরিষেবার শর্তাবলী<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">এটি এই ডিভাইস থেকে ১টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
 <translation id="3735758079232443276">আপনি Chrome শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশান পরিবর্তন করেছে।</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
@@ -115,7 +113,6 @@
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />আবার চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="4328355335528187361">Google Chrome ডেভেলপার (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">এই কম্পিউটারটি আর Google Chrome এর আপডেটগুলি গ্রহণ করবে না কারণ এই Linux  সিস্টেম আর সমর্থিত নয়৷</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে প্রস্থান করুন এবং পুনরায় প্রবেশ করুন৷</translation>
 <translation id="4458462641685292929">Google Chrome এ আরেকটি ক্রিয়াকলাপ প্রক্রিয়ায় আছে। দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -129,7 +126,6 @@
 <translation id="4728575227883772061">অনির্দিষ্ট ত্রুটির জন্য ইনস্টলেশন ব্যর্থ হয়েছে৷ যদি Google Chrome বর্তমানে চলতে থাকে তবে দয়া করে এটি বন্ধ করে আবার চেষ্টা করুন৷</translation>
 <translation id="4743926867934016338">স্বীকার ও খুঁজুন</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> সক্ষম করার জন্য Chrome আবার চালু করুন</translation>
-<translation id="4751441238232965030">এই কম্পিউটারটি শীঘ্রই ৩২-বিট Google Chrome আপডেট গ্রহণ করা বন্ধ করবে। দয়া করে ৬৪-বিট Google Chrome এ আপগ্রেড করুন।</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="4794050651896644714">Chrome এ বিবরণ সেভ করুন</translation>
@@ -208,7 +204,6 @@
 <translation id="6989339256997917931">Google Chrome আপডেট হয়েছে তবে আপনি এটি কমপক্ষে 30 দিন যাবত ব্যবহার করেন নি৷</translation>
 <translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="7106741999175697885">কার্য পরিচালক - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে নিজে Chrome আবার ইন্সটল করতে হবে।</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
 <translation id="7164397146364144019">আপনি Google এ নিরাপত্তার সম্ভাব্য লঙ্ঘনের ঘটনাগুলি স্বয়ংক্রিয়ভাবে প্রতিবেদন করার মাধ্যমে Chrome কে নিরাপদ ও সহজে ব্যবহারযোগ্য করতে তুলতে সাহায্য করতে পারেন।</translation>
 <translation id="7185038942300673794">Chrome-এ <ph name="EXTENSION_NAME" />-টি জোড়া হয়েছে৷</translation>

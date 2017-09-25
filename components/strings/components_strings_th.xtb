@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">พอดีกับความกว้าง</translation>
 <translation id="1088860948719068836">เพิ่มชื่อบนบัตร</translation>
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE" />ทุกครั้ง</translation>
+<translation id="1103778128462718200">แสดงรหัสผ่านที่บันทึกไว้ทั้งหมด...</translation>
 <translation id="1107591249535594099">หากเลือก Chrome จะจัดเก็บสำเนาของบัตรบนอุปกรณ์นี้เพื่อการกรอกข้อมูลแบบฟอร์มอย่างรวดเร็ว</translation>
 <translation id="1111153019813902504">บุ๊กมาร์กที่เพิ่งดู</translation>
 <translation id="1113869188872983271">&amp;เลิกทำการจัดลำดับใหม่</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="1181037720776840403">ลบ</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />รายงาน<ph name="END_WHITEPAPER_LINK" />รายละเอียดของเหตุการณ์ความปลอดภัยที่เป็นไปได้ต่อ Google โดยอัตโนมัติ <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">การชำระเงินไม่เสร็จสมบูรณ์</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1201895884277373915">เพิ่มเติมจากไซต์นี้</translation>
 <translation id="1206967143813997005">ลายเซ็นเริ่มต้นไม่ถูกต้อง</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">ไม่พบบทความที่ขอ</translation>
 <translation id="5541546772353173584">เพิ่มอีเมล</translation>
 <translation id="5544037170328430102">หน้าที่ฝังไว้ใน <ph name="SITE" /> บอกว่า:</translation>
+<translation id="5545756402275714221">บทความสำหรับคุณ</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5560088892362098740">วันที่หมดอายุ</translation>
 <translation id="5565735124758917034">ใช้งานอยู่</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">โทเค็นการจัดการอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="5633066919399395251">ผู้โจมตีที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งจะขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในคอมพิวเตอร์ของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">บล็อกเนื้อหาที่หลอกลวงแล้ว</translation>
-<translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5669703222995421982">รับเนื้อหาที่ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5675650730144413517">หน้านี้ใช้ไม่ได้</translation>
+<translation id="5689199277474810259">ส่งออกไปยัง JSON</translation>
 <translation id="5710435578057952990">ข้อมูลประจำตัวของเว็บไซต์นี้ยังไม่ได้รับการยืนยัน</translation>
 <translation id="5719499550583120431">รับบัตรเติมเงิน</translation>
 <translation id="5720705177508910913">ผู้ใช้ปัจจุบัน</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">เรียกดูครั้งสุดท้ายเมื่อ:</translation>
 <translation id="8253091569723639551">ต้องใส่ที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="8261506727792406068">ลบ</translation>
+<translation id="8267698848189296333">ลงชื่อเข้าใช้ด้วย <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">ติดต่อผู้ดูแลระบบเครือข่ายของคุณหากไม่แน่ใจว่าข้อความนี้หมายถึงอะไร</translation>
 <translation id="8293206222192510085">เพิ่มบุ๊กมาร์ก</translation>
 <translation id="8294431847097064396">แหล่งที่มา</translation>

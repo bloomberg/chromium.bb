@@ -66,7 +66,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="209018056901015185">Ubah situs desktop</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipindah</translation>
-<translation id="213900355088104901">Untuk melakukan browsing secara rahasia, buka tab penyamaran</translation>
+<translation id="213900355088104901">Untuk melakukan browsing rahasia, buka tab penyamaran</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
@@ -179,6 +179,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="430793432425771671">Sinkronkan Semua</translation>
 <translation id="4342284590510997375">Baru</translation>
+<translation id="434816576838749873">Pilih Aplikasi Email</translation>
 <translation id="4359125752503270327">Laman ini akan dibuka di aplikasi lain.</translation>
 <translation id="4370827530403103842">Sinkronisasi tidak berfungsi. Ketuk untuk memperbaiki.</translation>
 <translation id="4375040482473363939">Telusuri kode QR</translation>
@@ -310,6 +311,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="6785453220513215166">Mengirim laporan kerusakan...</translation>
 <translation id="679325081238418596">Dapatkan bookmark, riwayat, sandi, dan setelan lainnya di semua perangkat Anda</translation>
 <translation id="6797885426782475225">Penelusuran Suara</translation>
+<translation id="6807889908376551050">Tampilkan Semua...</translation>
 <translation id="681368974849482173">Item dibuat</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6903907808598579934">Aktifkan sinkronisasi</translation>

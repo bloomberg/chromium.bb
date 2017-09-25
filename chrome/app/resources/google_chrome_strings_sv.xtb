@@ -36,7 +36,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Få hjälp med att använda Chrome OS</translation>
 <translation id="1795405610103747296">Installera Chrome på mobilen. Vi skickar ett sms till mobilen: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste uppdatera Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-in)</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="2063848847527508675">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
@@ -62,7 +61,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2446511512801740068">Chrome är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
-<translation id="2582790009689336987">Den här datorn slutar snart att få uppdateringar för Google Chrome eftersom dess Linux-system inte längre stöds.</translation>
 <translation id="2586406160782125153">Webbinformationen raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
 <translation id="2664962310688259219">Licenser för öppen källkod för Chrome OS</translation>
@@ -88,7 +86,6 @@ Kom ihåg att låsa din profil när du inte använder Chrome om <ph name="NEW_PR
 
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
-<translation id="3311976847535831054">Den här datorn får inte längre uppdateringar för 32-bitarsversionen av Google Chrome. Uppgradera till Google Chrome med 64 bitar.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Få hjälp med Chrome OS</translation>
 <translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Ladda ned Google Chrome igen.</translation>
@@ -118,7 +115,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4309555186815777032">(Chrome måste <ph name="BEGIN_BUTTON" />startas om<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-in)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Den här datorn får inte längre uppdateringar för Google Chrome eftersom dess Linux-system inte längre stöds.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4458462641685292929">En annan process i Google Chrome pågår. Försök igen senare.</translation>
@@ -132,7 +128,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="4743926867934016338">Acceptera och sök</translation>
 <translation id="4750550185319565338">Starta om Chrome om du vill aktivera <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Den här datorn får snart inte längre uppdateringar för 32-bitarsversionen av Google Chrome. Uppgradera till Google Chrome med 64 bitar.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Filen kan vara farlig och har blockerats av Chrome.</translation>
 <translation id="4794050651896644714">Spara information i Chrome</translation>
@@ -213,7 +208,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome kunde inte uppdateras till den senaste versionen automatiskt. Därför missar du de senaste nya funktionerna och säkerhetsuppdateringarna. Du måste installera om Chrome manuellt.</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>
 <translation id="7164397146364144019">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> har lagts till i Chrome.</translation>

@@ -234,7 +234,6 @@
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3303414029551471755">Continuar com o download do conteúdo?</translation>
-<translation id="3319792846664697699">Painel de navegação</translation>
 <translation id="3321222012623826478">Esse serviço precisa enviar o endereço desse website anonimamente aos servidores do Google para verificação.</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que você salvou</translation>
@@ -290,7 +289,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3810973564298564668">Gerenciar</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads excluídos</translation>
 <translation id="3822502789641063741">Limpar armaz. de sites?</translation>
-<translation id="3845539888601087042">Exibindo histórico dos seus dispositivos conectados. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Avançar</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
@@ -333,7 +331,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4226663524361240545">É possível que as notificações façam o dispositivo vibrar</translation>
 <translation id="4242533952199664413">Abrir configurações.</translation>
-<translation id="4248297594476034182">Para ver suas guias em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -456,7 +453,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5423934151118863508">Suas páginas mais visitadas aparecerão aqui</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB disponível(is)</translation>
 <translation id="5433691172869980887">Nome de usuário copiado</translation>
-<translation id="5435775191620395718">Exibindo histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Ir para a barra de endereço</translation>
 <translation id="5447201525962359567">Todos os dados de armazenamento de sites, incluindo cookies e outros dados armazenados localmente</translation>
 <translation id="5447765697759493033">Este site não será traduzido</translation>
@@ -483,7 +479,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5620928963363755975">Procure seus arquivos e páginas em Downloads, usando o botão Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
-<translation id="5646376287012673985">Local</translation>
 <translation id="5648166631817621825">Últimos sete dias</translation>
 <translation id="5655963694829536461">Pesquisar seus downloads</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -629,6 +624,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="688738109438487280">Adicionar dados já existentes à conta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d guia aberta}one{%1$d guia aberta}other{%1$d guias abertas}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6910211073230771657">Excluído</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6965382102122355670">OK</translation>

@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="1153356358378277386">Eşlenen cihazlar</translation>
 <translation id="1195412055398077112">fazla tarama</translation>
+<translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1247372569136754018">Mikrofon (dahili)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> güç kaynağından şarj ediliyor</translation>
 <translation id="1267032506238418139">Kısayol değişikliği</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">Mobil veri etkinleştirildiğinde Bluetooth açılır.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2501920221385095727">Yapışkan tuşlar</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Fare imlecini vurgula</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
+<translation id="3582792037806681688">Bu oturumdaki bir kullanıcı için çoklu oturum açma engellendi</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="3621202678540785336">Giriş</translation>
@@ -199,7 +202,11 @@
 <translation id="6490471652906364588">USB-C cihaz (sağ bağlantı noktası)</translation>
 <translation id="6501401484702599040">Ekran, <ph name="RECEIVER_NAME" /> üzerinde yayınlanıyor</translation>
 <translation id="6521655319214113338">El yazısı girişi</translation>
+<translation id="6528179044667508675">Rahatsız etmeyin</translation>
 <translation id="6537270692134705506">Ekran görüntüsünü kaydet</translation>
+<translation id="6580955892089546165">Bu özellik oturum açmış tüm kullanıcılara şifre gerektirmeden hızlı bir şekilde erişmenize olanak verir.
+
+Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
@@ -216,9 +223,11 @@
 <translation id="7029814467594812963">Oturumdan çık</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> sekmesi <ph name="RECEIVER_NAME" /> üzerinde yayınlanıyor</translation>
 <translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
+<translation id="7054808953701320293">Anladım, bunu bir daha gösterme.</translation>
 <translation id="7066646422045619941">Bu ağ, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="7067196344162293536">Otomatik döndür</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
+<translation id="7135556860107312402">Şunlardan gelen bildirimlere izin ver:</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
@@ -234,7 +243,9 @@
 <translation id="7562368315689366235">Emoji paleti</translation>
 <translation id="7569509451529460200">Braille ve ChromeVox etkinleştirildi</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
+<translation id="7647488630410863958">Bildirimlerinizi görüntülemek için cihazınızın kilidini açın</translation>
 <translation id="7649070708921625228">Yardım</translation>
+<translation id="7658239707568436148">İptal</translation>
 <translation id="7692480393933218409">Bağlı USB-C cihazlar şarj ediliyor</translation>
 <translation id="776344839111254542">Güncelleme ayrıntılarını görüntülemek için tıklayın</translation>
 <translation id="7798302898096527229">İptal etmek için Ara veya Üst Karakter tuşuna basın.</translation>
@@ -242,8 +253,11 @@
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="7977927628060636163">Mobil ağlar aranıyor...</translation>
 <translation id="7982789257301363584">Ağ</translation>
+<translation id="7994370417837006925">Çoklu oturum açma</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
+<translation id="8056430285089645882">Anladım, bunu bir daha gösterme.</translation>
+<translation id="8088137642766812908">Dikkat! Bu özellik istenmeyen şeylere neden olabilir</translation>
 <translation id="8098591350844501178">Ekranın <ph name="RECEIVER_NAME" /> cihazına yayınını durdur</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> ağına bağlanıldı</translation>
 <translation id="813913629614996137">İlk kullanıma hazırlanıyor...</translation>
@@ -254,6 +268,7 @@
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="8351131234907093545">Not oluştur</translation>
 <translation id="8392234662362215700">Klavye düzenini değiştirmek için Control-Üst Karakter-Boşluk tuşlarına basın.</translation>
+<translation id="8392688371657486010">Bildirim yok</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
@@ -266,6 +281,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
+<translation id="8814715559352963456">Pencereleri başka bir masaüstüne taşımak beklenmeyen davranışlara neden olabilir.
+
+Pencereler taşındıktan sonra gelen bildirimler, pencereler ve iletişim kutuları masaüstleri arasında bölünebilir.</translation>
 <translation id="8825534185036233643">İkiden fazla ekranla yansıtma desteklenmez.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Ara+Esc</translation>
@@ -278,6 +296,7 @@
 <translation id="9080206825613744995">Mikrofon kullanımda.</translation>
 <translation id="9089416786594320554">Giriş yöntemleri</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> adlı ekran kaldırıldı</translation>
+<translation id="9111102763498581341">Kilidi Aç</translation>
 <translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>
 <translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
 <translation id="9201131092683066720">Pil %<ph name="PERCENTAGE" /> dolu.</translation>

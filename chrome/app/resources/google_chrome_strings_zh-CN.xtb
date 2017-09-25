@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1795405610103747296">请在您的手机上安装 Chrome。我们会将一条短信发送到您的手机：<ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
 <translation id="1874309113135274312">Google Chrome 测试版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chrome 已有一段时间未重新启动，因此现在已不是最新版本。目前有可用更新，系统会在您重新启动 Chrome 后应用这些更新。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
-<translation id="2582790009689336987">Google Chrome 将不再支持此 Linux 系统，因此这台计算机很快将停止接收 Google Chrome 更新。</translation>
 <translation id="2586406160782125153">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="2588322182880276190">Chrome 徽标</translation>
 <translation id="2664962310688259219">Chrome操作系统开放源代码许可</translation>
@@ -84,7 +82,6 @@
 
 有关详细说明，请查看 <ph name="ACCOUNT_EMAIL" /> 中的电子邮件。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
-<translation id="3311976847535831054">此计算机将不再接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
 <translation id="3395323229510056640">获取有关 Chrome 操作系统的帮助</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>
@@ -115,7 +112,6 @@
 <translation id="4328355335528187361">Google Chrome 开发者版 (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">Google Chrome 不再支持此 Linux 系统，因此这台计算机将不再接收 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4458462641685292929">Google Chrome 正在执行另一项操作，请稍后重试。</translation>
@@ -129,7 +125,6 @@
 <translation id="4728575227883772061">未知错误导致安装失败。如果 Google Chrome 浏览器正在运行，请将其关闭，然后重试。</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
 <translation id="4750550185319565338">重新启动 Chrome 以启用 <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">此计算机很快将停止接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
@@ -206,7 +201,6 @@
 <translation id="6989339256997917931">Google Chrome 浏览器已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chrome。</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>
 <translation id="7164397146364144019">您可以选择自动向 Google 报告可能出现的安全事件详情，以帮助我们提高 Chrome 的安全性和易用性。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />已添加到 Chrome 浏览器。</translation>

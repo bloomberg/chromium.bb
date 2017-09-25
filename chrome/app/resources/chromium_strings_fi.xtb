@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">lataa Chromium iPhoneen</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2347108572062610441">Tämä laajennus on vaihtanut Chromiumin aloitussivun.</translation>
-<translation id="2372704305038231957">32-bittinen Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta. Päivitä Chromium 64-bittiseen versioon.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Lataus on parhaillaan käynnissä. Haluatko peruuttaa latauksen ja poistua Chromiumista?}other{# latausta on parhaillaan käynnissä. Haluatko peruuttaa lataukset ja poistua Chromiumista?}}</translation>
 <translation id="2396765026452590966">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="2483889755041906834">Chromiumissa</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(vaatii Chromiumin <ph name="BEGIN_BUTTON" />uudelleenkäynnistyksen<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
-<translation id="5823381412099532241">Chromium ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chromium.</translation>
-<translation id="5859963531214966875">Chromiumin tulevat versiot eivät enää tue tätä Linux-järjestelmää.</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
 <translation id="6510925080656968729">Poista Chromium</translation>
 <translation id="6526111688217511984">Chromium tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
-<translation id="6584627348340620412">32-bittisen Chromiumin tulevat versiot eivät enää tue tätä Linux-järjestelmää. Päivitä Chromium 64-bittiseen versioon.</translation>
-<translation id="6593914713218535185">Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta.</translation>
 <translation id="6638567566961868659">Etsi kirjanmerkit Chromium-valikosta tai kirjanmerkkipalkista.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="6717134281241384636">Profiiliasi ei voi käyttää, sillä se on peräisin Chromiumin uudemmasta versiosta.
@@ -182,7 +177,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="6944967875980567883">Chromiumiin ladatut moduulit</translation>
 <translation id="6970811910055250180">Päivitetään laitetta...</translation>
-<translation id="7027298027173928763">Chromium ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Asenna Chromium uudelleen manuaalisesti.</translation>
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="707471633328071618">Google Payments (kopioitu Chromiumiin)</translation>

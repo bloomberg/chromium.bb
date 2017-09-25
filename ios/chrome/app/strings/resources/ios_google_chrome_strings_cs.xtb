@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1685087038067318291">Objevujte webové stránky odesílané objekty v okolí. Když zapnete Bluetooth, Chrome bude moci načítat webové stránky přidružené k objektům v okolí a odesílat je do Googlu, aby vybral ty nejužitečnější. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome nemá přístup k vašim fotkám nebo videím. Povolte přístup v systému iOS v Nastavení &gt; Soukromí &gt; Fotky.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="415767770115540173">Služby Google mohou v prohlížeči Chrome díky údajům o poloze fungovat lépe.</translation>
-<translation id="4248297594476034182">Chcete-li karty synchronizovat do všech zařízení, přihlaste se do Chromu.</translation>
 <translation id="424864128008805179">Odhlásit se z Chromu?</translation>
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4615174829807303908">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí smažete svá data prohlížeče Chrome z tohoto zařízení, ve vašem účtu Google však vaše data zůstanou.</translation>

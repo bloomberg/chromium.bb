@@ -348,7 +348,7 @@
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "BlockPopups" e o utilizador poderá alterá-la.</translation>
-<translation id="2274864612594831715">Esta política configura a ativação do teclado virtual como um dispositivo de introdução no SO Chrome. Os utilizadores não podem substituir esta política.
+<translation id="2274864612594831715">Esta política configura a ativação do teclado virtual como um dispositivo de introdução no Chrome OS. Os utilizadores não podem substituir esta política.
 
       Se a política for definida como verdadeira, o teclado virtual no ecrã fica sempre ativado.
 
@@ -546,7 +546,7 @@
       </translation>
 <translation id="2801230735743888564">Permitir aos utilizadores jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline.
 
-      Se esta política estiver definida como falsa, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline. Se esta política estiver definida como verdadeira, os utilizadores podem jogar o jogo do dinossauro. Se esta política não estiver definida, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro em dispositivos com o SO Chrome inscritos, mas podem jogá-lo noutras circunstâncias.</translation>
+      Se esta política estiver definida como falsa, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline. Se esta política estiver definida como verdadeira, os utilizadores podem jogar o jogo do dinossauro. Se esta política não estiver definida, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro em dispositivos com o Chrome OS inscritos, mas podem jogá-lo noutras circunstâncias.</translation>
 <translation id="2805707493867224476">Permitir que todos os sites mostrem pop-ups</translation>
 <translation id="2808013382476173118">Ativa a utilização de servidores STUN quando existirem clientes remotos a tentar estabelecer ligação a esta máquina.
 
@@ -869,9 +869,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="3973371701361892765">Nunca ocultar automaticamente a prateleira</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> mantém os dados de contas locais depois de terminar sessão. Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> não mantém contas persistentes e todos os dados da sessão do utilizador serão rejeitados depois de terminar sessão. Se estiver definida como falsa ou não estiver configurada, o dispositivo pode manter dados de utilizadores locais (encriptados).</translation>
 <translation id="3997519162482760140">URLs aos quais será concedido acesso a dispositivos de captura de vídeo nas páginas de início de sessão SAML</translation>
-<translation id="4001275826058808087">Os administradores de TI para dispositivos empresariais podem utilizar este sinalizador para permitir que os utilizadores resgatem ofertas através do Registo no SO Chrome.
+<translation id="4001275826058808087">Os administradores de TI para dispositivos empresariais podem utilizar este sinalizador para permitir que os utilizadores resgatem ofertas através do Registo no Chrome OS.
 
-      Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no SO Chrome.
+      Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no Chrome OS.
 
       Se esta política estiver definida como falsa, os utilizadores não poderão resgatar ofertas.</translation>
 <translation id="4010738624545340900">Permitir a invocação de caixas de diálogo de seleção de ficheiros</translation>
@@ -1179,7 +1179,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5318185076587284965">Ativar a utilização de servidores de retransmissão através do anfitrião de acesso remoto</translation>
 <translation id="5323128137188992869">Permite a transmissão de conteúdo para o dispositivo através do <ph name="PRODUCT_NAME" />.
 
-          Se esta política estiver definida como falsa, os utilizadores não podem transmitir conteúdo para o respetivo dispositivo. Se esta política estiver definida como verdadeira, os utilizadores podem transmitir conteúdo. Se esta política não estiver definida, os utilizadores não podem transmitir conteúdo para dispositivos do SO Chrome inscritos, mas podem fazê-lo para dispositivos não inscritos.</translation>
+          Se esta política estiver definida como falsa, os utilizadores não podem transmitir conteúdo para o respetivo dispositivo. Se esta política estiver definida como verdadeira, os utilizadores podem transmitir conteúdo. Se esta política não estiver definida, os utilizadores não podem transmitir conteúdo para dispositivos do Chrome OS inscritos, mas podem fazê-lo para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo</translation>
 <translation id="5365946944967967336">Mostrar o botão Página Inicial na barra de ferramentas</translation>
 <translation id="5366977351895725771">Se definido como "false", é desativada a criação de utilizadores supervisionados por parte deste utilizador. Todos os utilizadores supervisionados continuarão disponíveis.
@@ -1395,7 +1395,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6111936128861357925">Permitir o jogo do ovo da Páscoa do dinossauro</translation>
 <translation id="6114416803310251055">obsoleta</translation>
 <translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>
-<translation id="6139485614509308022">Se a política "OffHours" estiver definida, as políticas do dispositivo especificadas são ignoradas (utilize as predefinições destas políticas) durante os intervalos de tempo definidos. O Chrome volta a aplicar as políticas do dispositivo em todos os eventos quando começa ou termina o período "OffHours". O utilizador é notificado e obrigado a terminar sessão quando o período "OffHours" termina e as definições da política do dispositivo são alteradas (por exemplo, quando o utilizador tem sessão iniciada com uma conta não autorizada).</translation>
+<translation id="6139485614509308022">Se a política "DeviceOffHours" estiver definida, as políticas do dispositivo especificadas são ignoradas (utilize as predefinições destas políticas) durante os intervalos de tempo definidos. O Chrome volta a aplicar as políticas do dispositivo em todos os eventos quando começa ou termina o período "DeviceOffHours". O utilizador é notificado e obrigado a terminar sessão quando o período "DeviceOffHours" termina e as definições da política do dispositivo são alteradas (por exemplo, quando o utilizador tem sessão iniciada com uma conta não autorizada).</translation>
 <translation id="6145799962557135888">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="614662973812186053">Esta política também controla a recolha de dados de utilização e de diagnóstico do Android.</translation>
 <translation id="6155936611791017817">Definir o estado predefinido do cursor grande no ecrã de início de sessão</translation>
@@ -1720,7 +1720,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se a política não for definida ou for definida como falsa, o <ph name="TLS_FALSE_START" /> fica ativado. Se for definida como verdadeira, o <ph name="TLS_FALSE_START" /> fica desativado.</translation>
 <translation id="7433714841194914373">Ativar Instantâneo</translation>
 <translation id="7443616896860707393">Mensagens de Autorização Básica de HTTP de origem cruzada</translation>
-<translation id="7468416082528382842">Local de registo do Windows:</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados assinados SHA-1 emitidos por âncoras fidedignas locais são ou não autorizados</translation>
 <translation id="7485481791539008776">Regras de seleção da impressora predefinida</translation>
@@ -1906,7 +1905,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se a política estiver definida como "false", a lista de interfaces não será comunicada.</translation>
 <translation id="8141795997560411818">Esta política não impede o utilizador de utilizar a aplicação Google Drive para Android. Se pretender evitar o acesso ao Google Drive, deve remover também a autorização para instalar a aplicação Google Drive para Android.</translation>
-<translation id="8146727383888924340">Permitir que os utilizadores resgatem ofertas através do Registo no SO Chrome</translation>
+<translation id="8146727383888924340">Permitir que os utilizadores resgatem ofertas através do Registo no Chrome OS</translation>
 <translation id="8148785525797916822">Suprime o aviso apresentado quando o <ph name="PRODUCT_NAME" /> está em execução num computador ou num sistema operativo que já não é suportado.</translation>
 <translation id="8148901634826284024">Ativar a funcionalidade de acessibilidade do modo de alto contraste.
 
@@ -1974,7 +1973,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       transporte não protegido ou detetados através de WPAD inseguro).
 
       A predefinição é Verdadeira (funcionalidade de segurança ativada), exceto para
-      os utilizadores empresariais do SO Chrome, na qual a predefinição é Falsa.
+      os utilizadores empresariais do Chrome OS, na qual a predefinição é Falsa.
 
       Recomenda-se que a política seja definida como Verdadeira. O único motivo
       para a definir como Falsa é se provocar problemas de incompatibilidade com
@@ -2083,7 +2082,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Para aplicações Android, esta política afeta apenas a câmara integrada. Se esta política for definida como verdadeira, a câmara é desativada para todas as aplicações Android, sem exceções.</translation>
-<translation id="8649763579836720255">Os dispositivos SO Chrome podem utilizar a comprovação remota (Acesso confirmado) para obter um certificado emitido pela AC do SO Chrome que declara que o dispositivo é elegível para reproduzir conteúdo protegido. Este processo envolve o envio de informações de garantia de hardware para a AC do SO Chrome, que identifica de forma única o dispositivo.
+<translation id="8649763579836720255">Os dispositivos Chrome OS podem utilizar a comprovação remota (Acesso confirmado) para obter um certificado emitido pela AC do Chrome OS que declara que o dispositivo é elegível para reproduzir conteúdo protegido. Este processo envolve o envio de informações de garantia de hardware para a AC do Chrome OS, que identifica de forma única o dispositivo.
 
           Se esta definição for falsa, o dispositivo não utilizará a comprovação remota para proteção de conteúdo e o dispositivo poderá não conseguir reproduzir conteúdo protegido.
 
@@ -2216,7 +2215,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão máxima predefinida.
 
       Caso contrário, pode ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS superiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
-<translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o SO Chrome pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
+<translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o Chrome OS pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,
       {
@@ -2224,7 +2223,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
         "hash": "examplewallpaperhash"
       }
 
-      Se a política de imagem de fundo do dispositivo estiver definida, o dispositivo com o SO Chrome transfere e utiliza a imagem de fundo no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. Depois de o utilizador iniciar sessão, é aplicada a política de imagem de fundo do mesmo.
+      Se a política de imagem de fundo do dispositivo estiver definida, o dispositivo com o Chrome OS transfere e utiliza a imagem de fundo no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. Depois de o utilizador iniciar sessão, é aplicada a política de imagem de fundo do mesmo.
 
       Se a política de imagem de fundo do dispositivo não estiver definida, cabe à política de imagem de fundo do utilizador decidir o que deve apresentar se estiver definida.</translation>
 <translation id="9217154963008402249">Frequência dos pacotes de monitorização de rede</translation>

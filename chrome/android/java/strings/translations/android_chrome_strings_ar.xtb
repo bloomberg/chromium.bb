@@ -3,6 +3,7 @@
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح عبر الإنترنت</translation>
 <translation id="1036727731225946849">جارٍ إضافة <ph name="WEBAPK_NAME" />...</translation>
+<translation id="1041308826830691739">من المواقع الإلكترونية</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
-<translation id="3319792846664697699">لوحة التنقل</translation>
 <translation id="3321222012623826478">‏تحتاج هذه الخدمة إلى إرسال عنوان موقع الويب هذا بدون الكشف عن الهوية إلى خوادم Google للتحقق.</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3341058695485821946">الاطلاع على مقدار البيانات التي حفظتها</translation>
@@ -268,6 +268,7 @@
 
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="3616113530831147358">الصوت</translation>
+<translation id="3620176948598597475">تؤدي إعادة الضبط إلى محو سجلّ توفير البيانات، بما في ذلك قائمة المواقع التي تمت زيارتها.</translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
 <translation id="3649663272864015643">تم تحديد علامة تبويب "الصفحة الرئيسية"</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
 <translation id="3706423975342040244">الترفيه</translation>
+<translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3734660163659757482">اسحب لأعلى للاطلاع على الإشارات المرجعية والمزيد</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
 <translation id="3822502789641063741">أتمحو سعة تخزين الموقع؟</translation>
-<translation id="3845539888601087042">عرض السجلّ من الأجهزة التي تم تسجيل الدخول عليها. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
 <translation id="3895926599014793903">فرض تمكين التكبير/التصغير</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3946611741043634542">‏من خلال المتابعة، فإنك توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> من Chrome.</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
+<translation id="395206256282351086">اقتراحات البحث والمواقع الإلكترونية معطّلة</translation>
 <translation id="395922942268463099">صفحات تم تحديثها بانتظام</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
-<translation id="4248297594476034182">‏للحصول على علامات التبويب على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
@@ -454,7 +455,6 @@
 <translation id="5423934151118863508">ستظهر صفحاتك الأكثر زيارة هنا</translation>
 <translation id="5424588387303617268">يتوفر <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="5433691172869980887">تم نسخ اسم المستخدم</translation>
-<translation id="5435775191620395718">عرض السجل من هذا الجهاز. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">الانتقال السريع إلى شريط العناوين</translation>
 <translation id="5447201525962359567">سعة التخزين في الموقع كاملة، بما في ذلك ملفات تعريف الارتباط وغيرها من البيانات المُخزَّنَة محليًا</translation>
 <translation id="5447765697759493033">لن تتم ترجمة هذا الموقع</translation>
@@ -481,7 +481,6 @@
 <translation id="5620928963363755975">العثور على الملفات والصفحات في التنزيلات من الزر "مزيد من الخيارات"</translation>
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5639724618331995626">السماح بجميع المواقع</translation>
-<translation id="5646376287012673985">الموقع</translation>
 <translation id="5648166631817621825">آخر 7 أيام</translation>
 <translation id="5655963694829536461">البحث في التنزيلات</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
@@ -551,6 +550,7 @@
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
 
 فعلى سبيل المثال، قد تستجيب بعض مواقع الويب لهذا الطلب بعرض إعلانات غير موجودة في مواقع الويب الأخرى التي زرتها. وستستمر العديد من مواقع الويب في جمع بيانات التصفح واستخدامها - على سبيل المثال لتحسين الأمان، وتقديم المحتوى والإعلانات والمقترحات، وإنشاء إحصاءات التقارير.</translation>
+<translation id="6255999984061454636">اقتراحات المحتوى</translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. يُرجى إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6320088164292336938">اهتزاز</translation>
@@ -627,6 +627,7 @@
 <translation id="688738109438487280">يمكنك إضافة البيانات الحالية إلى <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏علامة تبويب واحدة (%1$d) مفتوحة}zero{‏%1$d علامة تبويب مفتوحة}two{‏علامتا تبويب (%1$d) مفتوحتان}few{‏%1$d علامات تبويب مفتوحة}many{‏%1$d علامة تبويب مفتوحة}other{‏%1$d علامة تبويب مفتوحة}}</translation>
 <translation id="6896758677409633944">نسخ</translation>
+<translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>
@@ -677,6 +678,7 @@
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7445411102860286510">السماح للمواقع بتشغيل مقاطع الفيديو مكتومة الصوت تلقائيًا (مُستحسن)</translation>
+<translation id="7453467225369441013">‏يُسجِّل خروجك من معظم مواقع الويب. لن يُسجَّل خروجك من حسابك في Google.</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7464701184726199289">يمحو هذا الخيار البيانات المتزامنة من كافة الأجهزة. لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
@@ -743,6 +745,7 @@
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8037750541064988519">عدد الأيام المتبقية: <ph name="DAYS" /></translation>
+<translation id="805047784848435650">استنادًا إلى سجلّ التصفح</translation>
 <translation id="8051695050440594747">هناك <ph name="MEGABYTES" /> ميغابايت متوفرة</translation>
 <translation id="8058746566562539958">‏فتح بعلامة تبويب Chrome جديدة</translation>
 <translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>

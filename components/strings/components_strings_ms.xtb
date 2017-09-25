@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Laporkan secara automatik<ph name="END_WHITEPAPER_LINK" /> tentang butiran kemungkinan insiden keselamatan kepada Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Bayaran Belum Diselesaikan</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1201895884277373915">Lagi dari tapak ini</translation>
 <translation id="1206967143813997005">Tandatangan awal tidak sah</translation>
@@ -617,7 +618,6 @@
 <translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
 <translation id="5633066919399395251">Penyerang yang sedang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin cuba memasang atur cara berbahaya pada komputer anda. Atur cara tersebut boleh mencuri atau memadamkan maklumat anda (contohnya, foto, kata laluan, mesej dan kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Kandungan mengelirukan disekat.</translation>
-<translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5669703222995421982">Dapatkan kandungan yang diperibadikan</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
@@ -920,6 +920,7 @@
 <translation id="8249320324621329438">Diambil kali terakhir:</translation>
 <translation id="8253091569723639551">Alamat pengebilan diperlukan</translation>
 <translation id="8261506727792406068">Padam</translation>
+<translation id="8267698848189296333">Log masuk sebagai <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Hubungi pentadbir rangkaian anda jika anda tidak pasti apa yang dimaksudkan ini.</translation>
 <translation id="8293206222192510085">Tambah Penanda Halaman</translation>
 <translation id="8294431847097064396">Sumber</translation>

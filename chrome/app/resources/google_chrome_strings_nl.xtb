@@ -36,7 +36,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Hulp bij het gebruik van Chrome OS</translation>
 <translation id="1795405610103747296">Installeer Chrome op je telefoon. We sturen een sms naar je telefoon: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome updaten.</translation>
 <translation id="1874309113135274312">Google Chrome Bèta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome is verouderd</translation>
 <translation id="2063848847527508675">Chrome OS moet opnieuw worden gestart om de update toe te passen.</translation>
@@ -62,7 +61,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="2446511512801740068">Chrome is verouderd omdat het programma al een tijd niet opnieuw is gestart. Er is een update beschikbaar die wordt toegepast zodra je het programma opnieuw start.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
-<translation id="2582790009689336987">Deze computer ontvangt binnenkort geen Google Chrome-updates meer omdat dit Linux-systeem niet meer wordt ondersteund.</translation>
 <translation id="2586406160782125153">Hiermee worden je browsergegevens verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="2664962310688259219">Open-sourcelicenties van Chrome OS</translation>
@@ -88,7 +86,6 @@ Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je a
 
 Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
-<translation id="3311976847535831054">Deze computer ontvangt geen updates meer voor de 32-bits versie van Google Chrome. Upgrade naar de 64-bits versie van Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Hulp bij Chrome OS</translation>
 <translation id="3396977131400919238">Er is tijdens de installatie een probleem opgetreden met het besturingssysteem. Download Google Chrome opnieuw.</translation>
@@ -118,7 +115,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="4309555186815777032">(je moet Chrome <ph name="BEGIN_BUTTON" />opnieuw starten<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Deze computer ontvangt geen Google Chrome-updates meer omdat dit Linux-systeem niet meer wordt ondersteund.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4458462641685292929">Er wordt een andere bewerking in Google Chrome uitgevoerd. Probeer het later opnieuw.</translation>
@@ -132,7 +128,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit je het programma af en probeer je het opnieuw.</translation>
 <translation id="4743926867934016338">Accepteren en zoeken</translation>
 <translation id="4750550185319565338">Start Chrome opnieuw op om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
-<translation id="4751441238232965030">Deze computer ontvangt binnenkort geen updates meer voor de 32-bits versie van Google Chrome. Upgrade naar de 64-bits versie van Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Dit bestand kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
 <translation id="4794050651896644714">Details opslaan in Chrome</translation>
@@ -211,7 +206,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="7098166902387133879">Google Chrome gebruikt je microfoon.</translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome kan niet automatisch worden geüpdatet naar de nieuwste versie, waardoor je geweldige nieuwe functies en beveiligingsoplossingen misloopt. Je moet Chrome handmatig opnieuw installeren.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="7164397146364144019">Je kunt helpen Chrome veiliger en gebruiksvriendelijker te maken door automatisch informatie over mogelijke beveiligingsincidenten aan Google te melden.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chrome.</translation>

@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">మీ iPhoneలో Chromiumని పొందండి</translation>
 <translation id="2316129865977710310">వద్దు, ధన్యవాదాలు</translation>
 <translation id="2347108572062610441">ఈ పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
-<translation id="2372704305038231957">ఈ Linux సిస్టమ్‌లో 32-బిట్ Chromiumకి మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు. దయచేసి 64-బిట్ Chromiumకి అప్‌గ్రేడ్ చేయండి.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{డౌన్‌లోడ్ ప్రస్తుతం ప్రోగ్రెస్‌లో ఉంది. మీరు డౌన్‌లోడ్‌ను రద్దు చేసి, Chromium నుండి నిష్క్రమించాలనుకుంటున్నారా?}other{# డౌన్‌లోడ్‌లు ప్రస్తుతం ప్రోగ్రెస్‌లో ఉన్నాయి. మీరు డౌన్‌లోడ్‌లను రద్దు చేసి, Chromium నుండి నిష్క్రమించాలనుకుంటున్నారా?}}</translation>
 <translation id="2396765026452590966"><ph name="EXTENSION_NAME" /> పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="2483889755041906834">Chromiumలో</translation>
@@ -138,8 +137,6 @@
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromiumను నవీకరించాలి.</translation>
-<translation id="5859963531214966875">Chromium భవిష్యత్తు సంస్కరణలు ఇకపై ఈ Linux సిస్టమ్‌కు మద్దతు ఇవ్వవు.</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
@@ -165,8 +162,6 @@
 <translation id="6505742536731484931">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromiumకు మీ స్థాన ప్రాప్యత అవసరం.</translation>
 <translation id="6510925080656968729">Chromiumని అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="6526111688217511984">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromiumకు నిల్వ ప్రాప్యత అవసరం.</translation>
-<translation id="6584627348340620412">భవిష్యత్తు 32-బిట్ Chromium సంస్కరణల్లో ఇకపై ఈ Linux సిస్టమ్‌కు మద్దతు ఉండదు, దయచేసి 64-బిట్ Chromiumకి అప్‌గ్రేడ్ చేయండి.</translation>
-<translation id="6593914713218535185">Chromiumకు ఈ Linux సిస్టమ్‌లో మద్దతు లేనందున సరిగ్గా పని చేయకపోవచ్చు.</translation>
 <translation id="6638567566961868659">మీ బుక్‌మార్క్‌లను Chromium మెనులో లేదా బుక్‌మార్క్‌ల బార్‌లో కనుగొనండి.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
 <translation id="6717134281241384636">మీ ప్రొఫైల్ క్రొత్త Chromium సంస్కరణ అయినందున ఇది ఉపయోగించబడదు.
@@ -180,7 +175,6 @@
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6944967875980567883">మాడ్యూల్‌లు Chromiumలో లోడ్ చేయబడ్డాయి</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
-<translation id="7027298027173928763">Chromium దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromiumను మాన్యువల్‌గా మళ్లీ ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="705851970750939768">Chromiumని నవీకరించు</translation>
 <translation id="7066436765290594559">Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
 <translation id="707471633328071618">Google చెల్లింపులు (Chromiumకి కాపీ చేయబడింది)</translation>

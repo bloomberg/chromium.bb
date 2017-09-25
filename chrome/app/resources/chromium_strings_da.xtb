@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">få Chromium på din iPhone</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2347108572062610441">Denne udvidelse har ændret din startside i Chromium.</translation>
-<translation id="2372704305038231957">32-bit Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i dette Linux-system. Opgrader til 64-bit Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Der er et download i gang i øjeblikket. Vil du at annullere dit download og lukke Chromium?}one{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}other{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Chromium?}}</translation>
 <translation id="2396765026452590966">Udvidelsen "<ph name="EXTENSION_NAME" />" har ændret din startside i Chromium.</translation>
 <translation id="2483889755041906834">I Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(kræver en <ph name="BEGIN_BUTTON" />genstart<ph name="END_BUTTON" /> af Chromium)</translation>
 <translation id="5796460469508169315">Chromium er næsten klar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal opdatere Chromium.</translation>
-<translation id="5859963531214966875">Fremtidige versioner af Chromium vil ikke længere understøtte dette Linux-system.</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5895138241574237353">Genstart</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
 <translation id="6526111688217511984">Chromium skal have lageradgang for at kunne downloade filer.</translation>
-<translation id="6584627348340620412">Fremtidige versioner af 32-bit Chromium vil ikke længere understøtte dette Linux-system. Opgrader til 64-bit Chromium.</translation>
-<translation id="6593914713218535185">Chromium fungerer muligvis ikke korrekt, da det ikke længere understøttes af dette Linux-system.</translation>
 <translation id="6638567566961868659">Find dine bogmærker i Chromium-menuen eller på bogmærkelinjen.</translation>
 <translation id="6676384891291319759">Få adgang til internettet</translation>
 <translation id="6717134281241384636">Din profil kan ikke bruges, da den stammer fra en nyere version af Chromium.
@@ -182,7 +177,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="6893813176749746474">Chromium er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="6944967875980567883">Moduler indlæst i Chromium</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
-<translation id="7027298027173928763">Chromium kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal geninstallere Chromium manuelt.</translation>
 <translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="7066436765290594559">Chromium OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="707471633328071618">Google Payments (kopieret til Chromium)</translation>

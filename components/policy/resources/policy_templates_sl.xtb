@@ -715,6 +715,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3322771899429619102">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo uporabljati ustvarjanje ključev. Če je vzorec URL-ja v »KeygenBlockedForUrls«, to preglasi te izjeme.
 
          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
+<translation id="332771718998993005">Določanje sporočenega imena cilja za napravo <ph name="PRODUCT_NAME" />.
+
+          Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3417418267404583991">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> omogoči prijave gostov. Prijave gostov so anonimne seje uporabnikov in ne zahtevajo gesla.
 
@@ -1233,6 +1236,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="5307432759655324440">Razpoložljivost načina brez beleženja zgodovine</translation>
 <translation id="5318185076587284965">Gostitelju oddaljenega dostopa omogoči uporabo posredovalnih strežnikov</translation>
+<translation id="5323128137188992869">Omogočanje predvajanja predstavnosti v napravi z napravo <ph name="PRODUCT_NAME" />.
+
+          Če je ta pravilnik onemogočen, uporabniki ne bodo mogli predajati vsebine v tej napravi. Če je pravilnik omogočen, je uporabnikom dovoljeno predvajanje vsebine. Če ta pravilnik ni nastavljen, uporabnikom ni dovoljeno predvajati vsebine v včlanjenih napravah OS Chrome, vendar jo lahko predvajajo v napravah, ki niso včlanjene.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="5366977351895725771">Če pravilnik ni vklopljen, ta uporabnik ne more ustvarjati zaščitenih uporabnikov. Obstoječi zaščiteni uporabniki so še vedno na voljo.
@@ -1463,6 +1469,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6111936128861357925">Dovoli skrito igro z dinozavrom</translation>
 <translation id="6114416803310251055">zastarelo</translation>
 <translation id="6133088669883929098">Vsem spletnim mestom dovoli uporabo ustvarjanja ključev</translation>
+<translation id="6139485614509308022">Če je nastavljen pravilnik »OffHours«, so določeni pravilniki za naprave prezrti (uporabite privzete nastavitve teh pravilnikov) med določenimi časovnimi intervali. Chrome znova uporabi pravilnike za naprave pri vsakem dogodku, ko se začne ali konča obdobje »OffHours«. Uporabnik bo obveščen in prisiljen, da se odjavi, ko bodo spremenjeni konec obdobja »OffHours« in nastavitve pravilnikov za naprave (tj. če je uporabnik prijavljen z nedovoljenim računom).</translation>
 <translation id="6145799962557135888">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo izvajati JavaScript.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1817,7 +1824,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen ali je onemogočen, je funkcija <ph name="TLS_FALSE_START" /> omogočena. Če je omogočen, je funkcija <ph name="TLS_FALSE_START" /> onemogočena.</translation>
 <translation id="7433714841194914373">Omogoči Dinamično iskanje</translation>
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
-<translation id="7468416082528382842">Lokacija registra sistema Windows:</translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
 <translation id="7474249562477552702">Ali so dovoljena potrdila, podpisana z algoritmom SHA-1, ki jih izdajo lokalna sidra zaupanja</translation>
 <translation id="7485481791539008776">Pravila za izbiro privzetega tiskalnika</translation>

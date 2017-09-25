@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">baixa Chromium al teu dispositiu iPhone</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
-<translation id="2372704305038231957">Pot ser que Chromium de 32 bits no funcioni correctament perquè ja no és compatible amb aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Hi ha una baixada en curs. Voleu cancel·lar-la i sortir de Chromium?}other{Hi ha # baixades en curs. Voleu cancel·lar-les i sortir de Chromium?}}</translation>
 <translation id="2396765026452590966">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="2483889755041906834">A Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(cal <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu d'actualitzar Chromium.</translation>
-<translation id="5859963531214966875">Les versions futures de Chromium ja no admetran aquest sistema Linux.</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium necessita accés a la teva ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="6526111688217511984">Chromium necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
-<translation id="6584627348340620412">Les versions futures de Chromium de 32 bits ja no admetran aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
-<translation id="6593914713218535185">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb aquest sistema Linux.</translation>
 <translation id="6638567566961868659">Cerqueu les adreces d'interès al menú de Chromium o a la Barra d'adreces d'interès.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
 <translation id="6717134281241384636">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Chromium.
@@ -182,7 +177,6 @@
 <translation id="6893813176749746474">S'ha actualitzat Chromium, però fa almenys 30 dies que no l'heu utilitzat.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
 <translation id="6970811910055250180">S'està actualitzant el dispositiu...</translation>
-<translation id="7027298027173928763">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu de tornar a instal·lar Chromium manualment.</translation>
 <translation id="705851970750939768">Actualitza Chromium</translation>
 <translation id="7066436765290594559">Chromium OS no ha pogut sincronitzar les vostres dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="707471633328071618">Google Payments (copiada a Chromium)</translation>

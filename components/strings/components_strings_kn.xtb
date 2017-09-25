@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">ಅಗಲಕ್ಕೆ ಹೊಂದಿಸಿ</translation>
 <translation id="1088860948719068836">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">ಉಳಿಸಿದ ಎಲ್ಲ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ...</translation>
 <translation id="1107591249535594099">ಪರಿಶೀಲಿಸಿದರೆ, ವೇಗವಾಗಿ ಫಾರ್ಮ್ ಭರ್ತಿ ಮಾಡಲು Chrome ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಪ್ರತಿಯನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ.</translation>
 <translation id="1111153019813902504">ಇತ್ತೀಚಿನ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;ಮುದ್ರಿಸಿ...</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1184214524891303587">ಸಂಭಾವ್ಯ ಸುರಕ್ಷತೆ ಸಂಬಂಧಿಸಿದ ಘಟನೆಗಳ ವಿವರಗಳನ್ನು Google ಗೆ <ph name="BEGIN_WHITEPAPER_LINK" />ಸ್ವಯಂಚಾಲಿತವಾಗಿ ವರದಿಮಾಡಿ<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">ಪಾವತಿ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ</translation>
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
 <translation id="1201895884277373915">ಈ ಸೈಟ್‌ನಿಂದ ಇನ್ನಷ್ಟು</translation>
 <translation id="1206967143813997005">ತಪ್ಪು ಪ್ರಾರಂಭಿಕ ಸಹಿ</translation>
@@ -591,6 +593,7 @@
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5541546772353173584">ಇಮೇಲ್ ಸೇರಿಸಿ</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> ನಲ್ಲಿ ಎಂಬೆಡ್ ಮಾಡಲಾದ ಪುಟವು ಹೀಗೆ ಹೇಳುತ್ತದೆ:</translation>
+<translation id="5545756402275714221">ನಿಮಗಾಗಿ ಲೇಖನಗಳು</translation>
 <translation id="5556459405103347317">ಮರುಲೋಡ್‌</translation>
 <translation id="5560088892362098740">ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕ</translation>
 <translation id="5565735124758917034">ಸಕ್ರಿಯ</translation>
@@ -608,10 +611,10 @@
 <translation id="5631439013527180824">ಅಮಾನ್ಯವಾದ ಸಾಧನ ನಿರ್ವಹಣೆ ಟೋಕನ್</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನ ದಾಳಿಕೋರರು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಮಾಹಿತಿಯನ್ನು (ಉದಾಹರಣೆಗೆ, ಫೋಟೋಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಗಳು) ಕದಿಯಲು ಇಲ್ಲವೇ ಅಳಿಸಲು ಅಪಾಯಕಾರಿ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಸ್ಥಾಪಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು. <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">ವಂಚನೀಯ ವಿಷಯವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
-<translation id="5646376287012673985">ಸ್ಥಳ</translation>
 <translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5669703222995421982">ವೈಯಕ್ತೀಕರಿಸಲಾದ ವಿಷಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="5675650730144413517">ಈ ಪುಟ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ</translation>
+<translation id="5689199277474810259">JSON ಗೆ ರಫ್ತು ಮಾಡಿ</translation>
 <translation id="5710435578057952990">ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="5719499550583120431">ಪ್ರೀಪೇಯ್ಡ್ ಕಾರ್ಡ್‌ಗಳನ್ನು ಸಮ್ಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="5720705177508910913">ಪ್ರಸ್ತುತ ಬಳಕೆದಾರ</translation>
@@ -909,6 +912,7 @@
 <translation id="8249320324621329438">ಕಳೆದ ಬಾರಿ ಪಡೆದಿರುವುದು:</translation>
 <translation id="8253091569723639551">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" /> ನಂತೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8289355894181816810">ಇದರ ಅರ್ಥವೇನೆಂದು ನಿಮಗೆ ಖಚಿತವಾಗದಿದ್ದರೆ ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
 <translation id="8293206222192510085">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸು</translation>
 <translation id="8294431847097064396">ಮೂಲ</translation>

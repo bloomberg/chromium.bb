@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1795405610103747296">Telepítse a Chrome-ot telefonjára. SMS-t küldünk majd a következő telefonszámra: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome frissítése szükséges.</translation>
 <translation id="1874309113135274312">Google Chrome Béta (mDNS-In)</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="2063848847527508675">A frissítés alkalmazásához újra kell indítani a Chrome OS-t.</translation>
@@ -58,7 +57,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2446511512801740068">A Chrome elavult, mert nem volt újraindítva egy ideje. Megjelent egy frissítés, amelyik az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
-<translation id="2582790009689336987">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző többé nem fogja támogatni ezt a Linux rendszert.</translation>
 <translation id="2586406160782125153">Ezzel az eszközön lévő összes böngészési adat törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome embléma</translation>
 <translation id="2664962310688259219">Chrome OS nyílt forráskódú licencek</translation>
@@ -84,7 +82,6 @@ Ha szeretné megakadályozni, hogy <ph name="NEW_PROFILE_NAME" /> hozzáférjen 
 
 További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-mailekben talál.</translation>
 <translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
-<translation id="3311976847535831054">Ez a számítógép a továbbiakban nem kapja meg a Google Chrome 32 bites változatának frissítéseit. Kérjük, frissítsen a Google Chrome 64 bites változatára.</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="3395323229510056640">Segítség a Chrome OS használatával kapcsolatban</translation>
 <translation id="3396977131400919238">Az operációs rendszer hibát jelzett a telepítés során.</translation>
@@ -114,7 +111,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4309555186815777032">(a Chrome <ph name="BEGIN_BUTTON" />újraindítását<ph name="END_BUTTON" /> igényli)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Mivel a jelenlegi Linux rendszer támogatása megszűnik, ez a számítógép a továbbiakban nem kap Google Chrome-frissítéseket.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4458462641685292929">Egy másik Google Chrome-művelet is folyamatban van. Próbálkozzon újra később.</translation>
@@ -128,7 +124,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4743926867934016338">Elfogadás és keresés</translation>
 <translation id="4750550185319565338">A Chrome újraindítása a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
-<translation id="4751441238232965030">Ez a számítógép hamarosan nem kap további frissítéseket a Google Chrome 32 bites változatához. Kérjük, frissítsen a Google Chrome 64 bites változatára.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ez a fájl veszélyes lehet, ezért a Chrome letiltotta.</translation>
 <translation id="4794050651896644714">Részletek mentése a Chrome-ban</translation>
@@ -205,7 +200,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
 <translation id="7098166902387133879">A Google Chrome használja a mikrofont.</translation>
 <translation id="7106741999175697885">Feladatkezelő - Google Chrome</translation>
-<translation id="7125719106133729027">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome kézi újratelepítése szükséges.</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
 <translation id="7164397146364144019">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chrome használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="7185038942300673794">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chrome-hoz.</translation>

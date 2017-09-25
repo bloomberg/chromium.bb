@@ -36,7 +36,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome ስርዓተ ክወናን መጠቀም ላይ እገዛን ያግኙ</translation>
 <translation id="1795405610103747296">Chromeን በእርስዎ ስልክ ላይ ይጫኑት። አንድ ኤስኤምኤስ ወደ ስልክዎ እንልካለን። <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን ማዘመን አለብዎት።</translation>
 <translation id="1874309113135274312">Google Chrome ቅድመ-ይሁነታ (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ጊዜው አልፎበታል</translation>
 <translation id="2063848847527508675">Chrome OS ዝማኔውን ለመተግበር ዳግም መጀመር አለበት።</translation>
@@ -62,7 +61,6 @@
 <translation id="2446511512801740068">Chrome ለሆነ ጊዜ ያህል ዳግም ስላልተጀመረ ጊዜው አልፎበታል። አንድ ዝማኔ አለ እና ልክ ዳግም ሲያስጀምሩት ይተገበራል።</translation>
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="2580411288591421699">አሁን እየሰራ ካለው Google Chrome ጋር አንድ አይነት የሆነ ስሪት መጫን አይቻልም። እባክዎ Google Chrome ይዝጉና እንደገና ይሞክሩ።</translation>
-<translation id="2582790009689336987">የLinux ስርዓት ከአሁን በኋላ ስለማይደገፉ ይህ ኮምፒውተር በቅርቡ የGoogle Chrome ዝማኔዎችን መቀበል ያቆማል።</translation>
 <translation id="2586406160782125153">ይሄ የአሰሳ ውሂብዎን ከዚህ መሣሪያዎ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="2588322182880276190">የChrome አርማ</translation>
 <translation id="2664962310688259219">Chrome OS የክፍት ምንጭ ፈቃዶች</translation>
@@ -88,7 +86,6 @@
 
 ለተጨማሪ መመሪያዎች እባክዎ በ<ph name="ACCOUNT_EMAIL" /> ላይ የእርስዎን ኢሜይል ይፈትሹ።</translation>
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
-<translation id="3311976847535831054">ይህ ኮምፒውተር ከአሁን በኋላ 32-ቢት የGoogle Chrome ዝማኔዎችን አይቀበልም። እባክዎን ወደ 64-ቢት Google Chrome ያሻሽሉ።</translation>
 <translation id="3360895254066713204">Chrome አጋዥ</translation>
 <translation id="3395323229510056640">Chrome OS ላይ እገዛ ያግኙ</translation>
 <translation id="3396977131400919238">በመጫን ጊዜ የሥርዓተ ክወና ስህተት ተፈጥሯል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
@@ -118,7 +115,6 @@
 <translation id="4309555186815777032">(የChrome <ph name="BEGIN_BUTTON" />ዳግም መጀመር<ph name="END_BUTTON" /> ያስፈልገዋል)</translation>
 <translation id="4328355335528187361">Google Chrome ገንቢ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome ስርዓተ ክወና</translation>
-<translation id="437002079035561265">ይህ ኮምፒውተር የLinux ስርዓት ከአሁን በኋላ ስለማይደገፍ የGoogle Chrome ዝማኔዎችን ከአሁን በኋላ አይቀበልም።</translation>
 <translation id="4407807842708586359">Google Chrome ስርዓተ ክወና</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4458462641685292929">በGoogle Chrome ላይ ሌላ ሥርዓተ ክወና በሂደት ላይ ነው። እባክዎ በኋላ ላይ እንደገና ይሞክሩ።</translation>
@@ -132,7 +128,6 @@
 <translation id="4728575227883772061">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Google Chrome አሁን እያሄደ ከሆነ ፣ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
 <translation id="4743926867934016338">ተቀበል እና ፈልግ</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ን ለማንቃት Chromeን ዳግም ያስጀምሩ</translation>
-<translation id="4751441238232965030">ይህ ኮምፒውተር በቅርቡ 32-ቢት የGoogle Chrome ዝማኔዎችን አይቀበልም። እባክዎን ወደ 64-ቢት Google Chrome ያሻሽሉ።</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
 <translation id="4794050651896644714">ዝርዝሮችን Chrome ውስጥ አስቀምጥ</translation>
@@ -213,7 +208,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6989339256997917931">Google Chrome ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
 <translation id="7098166902387133879">Google Chrome የእርስዎን ማይክሮፎን እየተጠቀመ ነው።</translation>
 <translation id="7106741999175697885">ተግባር መሪ - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን እራስዎ ዳግም መጫን ያስፈልግዎታል።</translation>
 <translation id="7161904924553537242">ወደ Google Chrome እንኳን ደህና መጡ</translation>
 <translation id="7164397146364144019">የደህንነት ሊሆኑ የሚችሉ ክስተቶችን በራስ-ሰር ለGoogle ሪፖርት በማድረግ Chrome ይበልጥ ደህንነቱ የተጠበቀ እና ለመጠቀም ቀላል እንዲሆን ማድረግ ይችላሉ።</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> ወደ Chrome ታክሏል።</translation>

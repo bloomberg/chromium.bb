@@ -66,6 +66,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="209018056901015185">Taotle Desktopi saiti</translation>
 <translation id="2103075008456228677">Ava history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on teisaldatud</translation>
+<translation id="213900355088104901">Privaatselt sirvimiseks avage inkognito vaheleht</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
@@ -178,6 +179,7 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4281844954008187215">Teenusetingimused</translation>
 <translation id="430793432425771671">Sünkrooni kõik</translation>
 <translation id="4342284590510997375">Uus</translation>
+<translation id="434816576838749873">E-posti rakenduse valimine</translation>
 <translation id="4359125752503270327">See leht avatakse teises rakenduses.</translation>
 <translation id="4370827530403103842">Sünkroonimine ei tööta. Puudutage parandamiseks.</translation>
 <translation id="4375040482473363939">QR-koodi otsing</translation>
@@ -309,6 +311,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6785453220513215166">Krahhiaruande saatmine ...</translation>
 <translation id="679325081238418596">Kasutage kõigis seadmetes oma järjehoidjaid, ajalugu, paroole ja muid seadeid</translation>
 <translation id="6797885426782475225">Häälotsing</translation>
+<translation id="6807889908376551050">Kuva kõik ...</translation>
 <translation id="681368974849482173">Üksus on loodud</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
 <translation id="6903907808598579934">Lülita sünkroonimine sisse</translation>
@@ -416,6 +419,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="9100610230175265781">Parool on vajalik</translation>
 <translation id="9148126808321036104">Logige uuesti sisse</translation>
 <translation id="914898748153555155">Seda eelistust saab alati muuta Chrome'i seadetes</translation>
+<translation id="91549621916703028">Looge kõigi oma toimingute jaoks mitu vahelehte</translation>
 <translation id="9157836665414082580">Blokeeri dialoogid</translation>
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -712,6 +712,9 @@
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
+<translation id="332771718998993005">Määratakse nimi, mis esitatakse teenuse <ph name="PRODUCT_NAME" /> sihtkohana.
+
+          Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi teenuse <ph name="PRODUCT_NAME" /> sihtkohana. Muul juhul on sihtkoha nimeks seadme nimi. Kui see reegel jäetakse määramata, on sihtkoha nimeks seadme nimi ja seadme omanik (või seadet haldava domeeni kasutaja) saab seda muuta. Nimi tohib olla maksimaalselt 24 tähemärki.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3417418267404583991">Kui lubate selle reegli või jätate seadistamata, siis lubab <ph name="PRODUCT_OS_NAME" /> külastajatel sisse logida. Külastajana sisse logides kasutatakse anonüümseid seansse ja selleks ei ole vaja parooli sisestada.
 
@@ -1223,6 +1226,9 @@
           Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
 <translation id="5307432759655324440">Inkognito režiimi saadavus</translation>
 <translation id="5318185076587284965">Luba kaugjuurdepääsuhostil kasutada releeservereid</translation>
+<translation id="5323128137188992869">Sisu lubatakse teenuse <ph name="PRODUCT_NAME" /> kaudu seadmesse üle kanda.
+
+          Kui selle reegli väärtuseks on määratud Väär, ei saa kasutajad sisu oma seadmesse üle kanda. Kui selle reegli väärtuseks on määratud Tõene, lubatakse kasutajatel sisu üle kanda. Kui see reegel jäetakse määramata, ei lubata kasutajatel sisu registreeritud Chrome OS-i seadmetesse üle kanda, kuid registreerimata seadmete puhul saab seda teha.</translation>
 <translation id="5330684698007383292">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME" /> järgmiste sisutüüpide töötlemise lubamine</translation>
 <translation id="5365946944967967336">Kuva tööriistaribal nuppu Avaleht</translation>
 <translation id="5366977351895725771">Kui väärtuseks on seatud valik Väär, siis keelatakse sellel kasutajal järelevalvega kasutajate loomine. Kõik olemasolevad järelevalvega kasutajad on ikka saadaval.
@@ -1453,6 +1459,7 @@
 <translation id="6111936128861357925">Luba dinosauruse üllatusmäng</translation>
 <translation id="6114416803310251055">iganenud</translation>
 <translation id="6133088669883929098">Luba kõikidel saitidel võtmeid luua</translation>
+<translation id="6139485614509308022">Kui reegel „OffHours” on määratud, siis eiratakse määratud ajavahemikes seadme määratud reegleid (kasutage nende reeglite vaikeseadeid). Chrome rakendab seadme reeglid uuesti iga sündmuse korral, kui periood „OffHours” algab või lõpeb. Kui aeg „OffHours” lõpeb ja seadme reeglite seadeid muudetakse, teavitatakse sellest kasutajat ja ta logitakse välja (näiteks kui kasutaja pole sisse logitud lubatud kontoga).</translation>
 <translation id="6145799962557135888">Võimaldab määrata URL-i mustrite nimekirja, mis määrab saidid, millel on lubatud käitada JavaScripti.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -1808,7 +1815,6 @@
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis <ph name="TLS_FALSE_START" /> lubatakse. Kui väärtuseks on määratud Tõene, siis <ph name="TLS_FALSE_START" /> keelatakse.</translation>
 <translation id="7433714841194914373">Luba Instant</translation>
 <translation id="7443616896860707393">Erineva päritoluga HTTP Basic Authi viibad</translation>
-<translation id="7468416082528382842">Windowsi registri asukoht:</translation>
 <translation id="7469554574977894907">Luba otsingusoovitused</translation>
 <translation id="7474249562477552702">Kas kohalike usaldusvõtmete väljastatud SHA-1 allkirjastatud sertifikaadid on lubatud?</translation>
 <translation id="7485481791539008776">Vaikeprinteri valimise reeglid</translation>

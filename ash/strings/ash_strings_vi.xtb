@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Tự động ẩn giá</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1195412055398077112">quét quá mức</translation>
+<translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1247372569136754018">Micrô (bên trong)</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
 <translation id="1267032506238418139">Thay đổi phím tắt</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">Bật dữ liệu di động sẽ bật Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">Thông báo</translation>
 <translation id="2501920221385095727">Phím cố định</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Đánh dấu con trỏ chuột</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
+<translation id="3582792037806681688">Đã bỏ cho phép đăng nhập nhiều tài khoản đối với người dùng trong phiên này</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">Thiết bị USB-C (cổng bên phải)</translation>
 <translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Nhập bằng chữ viết tay</translation>
+<translation id="6528179044667508675">Không làm phiền</translation>
 <translation id="6537270692134705506">Chụp màn hình</translation>
+<translation id="6580955892089546165">Tính năng này cho phép bạn truy cập nhanh bất kỳ người dùng đã đăng nhập nào mà không cần mật khẩu.
+
+Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởng.</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tìm kiếm+Shift+K</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="7034339000180558234">Đang truyền <ph name="TAB_NAME" /> tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
+<translation id="7054808953701320293">Tôi hiểu rồi, đừng hiển thị lại thông báo này.</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
+<translation id="7135556860107312402">Cho phép thông báo từ:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
+<translation id="7647488630410863958">Mở khóa thiết bị để xem thông báo của bạn</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
+<translation id="7658239707568436148">Hủy</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
 <translation id="7982789257301363584">Mạng</translation>
+<translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
+<translation id="8056430285089645882">Đã nhận, không hiển thị lại nội dung này.</translation>
+<translation id="8088137642766812908">Hãy cẩn thận, tính năng này có thể gây sự cố</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392234662362215700">Ấn Control-Shift-Space để chuyển đổi bố cục bàn phím.</translation>
+<translation id="8392688371657486010">Bạn không có thông báo</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814715559352963456">Di chuyển cửa sổ sang màn hình khác có thể gây ra hoạt động không mong muốn.
+
+Các thông báo, cửa sổ và hộp thoại tiếp theo có thể bị phân tách giữa các màn hình.</translation>
 <translation id="8825534185036233643">Không hỗ trợ tính năng phản chiếu với hai màn hình trở lên.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">Micrô đang được sử dụng.</translation>
 <translation id="9089416786594320554">Phương thức nhập</translation>
 <translation id="9091626656156419976">Đã xóa màn hình <ph name="DISPLAY_NAME" /></translation>
+<translation id="9111102763498581341">Mở khóa</translation>
 <translation id="9151726767154816831">Khởi động lại và powerwash để cập nhật</translation>
 <translation id="9194617393863864469">Đăng nhập người dùng khác...</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>

@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">వెడల్పు సరిపోయేలా అమర్చు</translation>
 <translation id="1088860948719068836">కార్డ్‌లో పేరుని జోడించండి</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
+<translation id="1103778128462718200">సేవ్ చేసిన అన్ని పాస్‌వర్డ్‌లను చూపు...</translation>
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="1111153019813902504">ఇటీవలి బుక్‌మార్క్‌లు</translation>
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="1181037720776840403">తొలగించు</translation>
 <translation id="1184214524891303587">సంభావ్య భద్రతా సంఘటనల గురించిన వివరాలను Googleకి <ph name="BEGIN_WHITEPAPER_LINK" />స్వయంచాలకంగా నివేదిస్తుంది<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">చెల్లింపు పూర్తి కాలేదు</translation>
 <translation id="1201402288615127009">తదుపరి</translation>
 <translation id="1201895884277373915">ఈ సైట్ నుండి మరింత</translation>
 <translation id="1206967143813997005">తప్పు ప్రారంభ సంతకం</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">అభ్యర్థించిన కథనాన్ని కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="5541546772353173584">ఇమెయిల్‌ను జోడించండి</translation>
 <translation id="5544037170328430102"><ph name="SITE" />లో పొందుపరిచిన పేజీ ఇలా చెబుతోంది:</translation>
+<translation id="5545756402275714221">మీ కోసం కథనాలు</translation>
 <translation id="5556459405103347317">రీలోడ్</translation>
 <translation id="5560088892362098740">గడువు ముగింపు తేదీ</translation>
 <translation id="5565735124758917034">సక్రియం</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లో హ్యాకర్‌లు మీ సమాచారాన్ని (ఉదాహరణకు, ఫోటోలు, పాస్‌వర్డ్‌లు, సందేశాలు మరియు క్రెడిట్ కార్డ్‌లు) దొంగిలించగల లేదా తొలగించగల హానికరమైన ప్రోగ్రామ్‌లను మీ కంప్యూటర్‌లో ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">మోసపూరితమైన కంటెంట్ బ్లాక్ చేయబడింది.</translation>
-<translation id="5646376287012673985">స్థానం</translation>
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5669703222995421982">వ్యక్తిగతీకరించిన కంటెంట్‌ను పొందండి</translation>
 <translation id="5675650730144413517">ఈ పేజీ పని చేయడం లేదు</translation>
+<translation id="5689199277474810259">JSONకు ఎగుమతి చేయి</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
 <translation id="5719499550583120431">ప్రీపెయిడ్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
 <translation id="8253091569723639551">బిల్లింగ్ చిరునామా ఆవశ్యకం</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" />గా సైన్ ఇన్ చేస్తోంది</translation>
 <translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుని సంప్రదించండి.</translation>
 <translation id="8293206222192510085">బుక్‌మార్క్‌లను జోడించు</translation>
 <translation id="8294431847097064396">మూలం</translation>

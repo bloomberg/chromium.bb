@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="1685087038067318291">Consente di trovare le pagine web inviate da dispositivi vicini. Quando il Bluetooth è attivo, Chrome può raccogliere le pagine web associate ai dispositivi nelle vicinanze e inviarle in forma anonima a Google per individuare le pagine più utili. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
 <translation id="4099578267706723511">Aiutaci a migliorare Chrome inviando a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="415767770115540173">Migliora la tua esperienza di Chrome tramite l'accesso alla tua posizione.</translation>
-<translation id="4248297594476034182">Accedi a Chrome per trovare le tue schede su tutti i dispositivi.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="4615174829807303908">Stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />. I dati di Chrome verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo account Google.</translation>

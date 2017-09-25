@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Уклопите по ширини</translation>
 <translation id="1088860948719068836">Додајте име са картице</translation>
 <translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Прикажи све сачуване лозинке…</translation>
 <translation id="1107591249535594099">Ако означите ову опцију, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="1111153019813902504">Недавно коришћени обележивачи</translation>
 <translation id="1113869188872983271">&amp;Опозови промену редоследа</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Одштампај...</translation>
 <translation id="1181037720776840403">Уклони</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Аутоматски пријави<ph name="END_WHITEPAPER_LINK" /> Google-у детаље о могућим безбедносним инцидентима. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Плаћање није довршено</translation>
 <translation id="1201402288615127009">Даље</translation>
 <translation id="1201895884277373915">Више са овог сајта</translation>
 <translation id="1206967143813997005">Неисправан потпис иницијалима</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
 <translation id="5541546772353173584">Додајте имејл</translation>
 <translation id="5544037170328430102">Уграђена страница на <ph name="SITE" /> каже:</translation>
+<translation id="5545756402275714221">Чланци за вас</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5560088892362098740">Датум истека</translation>
 <translation id="5565735124758917034">Активно</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Неважећи токен за управљање уређајима</translation>
 <translation id="5633066919399395251">Нападачи на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ће можда покушати да инсталирају опасне програме на рачунару који краду или бришу информације (на пример, слике, лозинке, поруке и бројеве кредитних картица). <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Обмањујући садржај је блокиран.</translation>
-<translation id="5646376287012673985">Локација</translation>
 <translation id="5659593005791499971">Имејл</translation>
 <translation id="5669703222995421982">Добијте персонализовани садржај</translation>
 <translation id="5675650730144413517">Ова страница не функционише</translation>
+<translation id="5689199277474810259">Извези у JSON</translation>
 <translation id="5710435578057952990">Идентитет овог веб-сајта није верификован.</translation>
 <translation id="5719499550583120431">Прихватају се припејд картице.</translation>
 <translation id="5720705177508910913">Тренутни корисник</translation>
@@ -915,6 +918,7 @@
 <translation id="8249320324621329438">Последње учитано:</translation>
 <translation id="8253091569723639551">Адреса за обрачун је обавезна</translation>
 <translation id="8261506727792406068">Избриши</translation>
+<translation id="8267698848189296333">Пријављујете се као <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Контактирајте администратора мреже ако нисте сигурни шта то значи.</translation>
 <translation id="8293206222192510085">Додавање обележивача</translation>
 <translation id="8294431847097064396">Извор</translation>

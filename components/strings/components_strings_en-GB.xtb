@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Print...</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatically report<ph name="END_WHITEPAPER_LINK" /> details of possible security incidents to Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Payment Not Completed</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1201895884277373915">More from this site</translation>
 <translation id="1206967143813997005">Bad initial signature</translation>
@@ -616,7 +617,6 @@
 <translation id="5631439013527180824">Invalid device management token</translation>
 <translation id="5633066919399395251">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Deceptive content blocked.</translation>
-<translation id="5646376287012673985">Location</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Get personalised content</translation>
 <translation id="5675650730144413517">This page isn’t working</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Last fetched:</translation>
 <translation id="8253091569723639551">Billing address required</translation>
 <translation id="8261506727792406068">Delete</translation>
+<translation id="8267698848189296333">Signing in as <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Contact your network administrator if you're not sure what this means.</translation>
 <translation id="8293206222192510085">Add Bookmark</translation>
 <translation id="8294431847097064396">Source</translation>

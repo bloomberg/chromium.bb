@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">પહોળાઈ પ્રમાણે ફિટ કરો</translation>
 <translation id="1088860948719068836">કાર્ડ પર નામ ઉમેરો</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> નો હંમેશાં અનુવાદ કરો</translation>
+<translation id="1103778128462718200">બધા સાચવેલા પાસવર્ડ બતાવો...</translation>
 <translation id="1107591249535594099">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="1111153019813902504">હાલનાં બુકમાર્ક્સ</translation>
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;છાપો...</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="1184214524891303587">Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની <ph name="BEGIN_WHITEPAPER_LINK" />આપમેળે જાણ કરો<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">ચુકવણી પૂર્ણ થઇ નથી</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1201895884277373915">આ સાઇટથી વધુ</translation>
 <translation id="1206967143813997005">ખોટી નાની સહી</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
 <translation id="5541546772353173584">ઇમેઇલ ઍડ્રેસ ઉમેરો</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> પરનું એમ્બેડ કરેલ પૃષ્ઠ આ કહે છે:</translation>
+<translation id="5545756402275714221">તમારા માટે લેખ</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5560088892362098740">સમાપ્તિ તારીખ</translation>
 <translation id="5565735124758917034">સક્રિય</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">અમાન્ય ઉપકરણ સંચાલન ટોકન</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો કદાચ હાલમાં તમારા કમ્પ્યુટર પર જોખમી પ્રોગ્રામ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે તમારી માહિતી (ઉદાહરણ તરીકે, ફોટા, પાસવર્ડ, સંદેશા અને ક્રેડિટ કાર્ડ) ચોરી અથવા કાઢી નાખી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">ભ્રામક કન્ટેન્ટ અવરોધિત કરી</translation>
-<translation id="5646376287012673985">સ્થાન</translation>
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5669703222995421982">વ્યક્તિગત કરેલ સામગ્રી મેળવો</translation>
 <translation id="5675650730144413517">આ પૃષ્ઠ કામ કરી રહ્યું નથી</translation>
+<translation id="5689199277474810259">JSON પર નિકાસ કરો</translation>
 <translation id="5710435578057952990">આ વેબસાઇટની ઓળખ ચકાસવામાં આવી નથી.</translation>
 <translation id="5719499550583120431">પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
 <translation id="8253091569723639551">બિલિંગ સરનામું આવશ્યક</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" /> તરીકે સાઇન ઇન કરી રહ્યાં છે</translation>
 <translation id="8289355894181816810">આ શું છે તે ખાતરીપૂર્વક જાણતા ન હો તો તમારા નેટવર્ક વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
 <translation id="8293206222192510085">બુકમાર્ક ઉમેરો</translation>
 <translation id="8294431847097064396">સ્રોત</translation>

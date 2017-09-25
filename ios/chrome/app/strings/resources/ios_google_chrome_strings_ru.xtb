@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1326317727527857210">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="1685087038067318291">Если на устройстве включен Bluetooth, Chrome находит и анонимно отправляет в Google веб-страницы, связанные с находящимися рядом объектами, а затем предлагает вам интересные и полезные ресурсы. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome определил, что сертификат сайта выпущен компанией <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">У Google Chrome нет доступа к вашим фото и видео. Чтобы предоставить его, нажмите "Настройки &gt; Конфиденциальность &gt; Фотографии".</translation>
 <translation id="4099578267706723511">Отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="415767770115540173">Разрешите браузеру определять ваше местоположение и пользуйтесь дополнительными возможностями Chrome.</translation>
-<translation id="4248297594476034182">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4523886039239821078">Некоторые дополнения вызывают сбой Chrome. Необходимо удалить:</translation>
 <translation id="4615174829807303908">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>

@@ -66,6 +66,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="209018056901015185">Mostra com a ordinador</translation>
 <translation id="2103075008456228677">Obre history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
+<translation id="213900355088104901">Per navegar de manera privada, obre una pestanya d'incògnit</translation>
 <translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
@@ -178,6 +179,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4281844954008187215">Termes i condicions</translation>
 <translation id="430793432425771671">Sincronitza-ho tot</translation>
 <translation id="4342284590510997375">Nou</translation>
+<translation id="434816576838749873">Tria l'aplicació de correu electrònic</translation>
 <translation id="4359125752503270327">Aquesta pàgina s'obrirà en una altra aplicació.</translation>
 <translation id="4370827530403103842">La sincronització no funciona. Toqueu per solucionar-ho.</translation>
 <translation id="4375040482473363939">Cerca mitjançant un codi QR</translation>
@@ -309,6 +311,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6785453220513215166">S'està enviant l'informe d'error...</translation>
 <translation id="679325081238418596">Accediu a les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius</translation>
 <translation id="6797885426782475225">Cerca per veu</translation>
+<translation id="6807889908376551050">Mostra-ho tot...</translation>
 <translation id="681368974849482173">S'ha creat un element.</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Activa la sincronització</translation>
@@ -416,6 +419,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9148126808321036104">Torneu a iniciar la sessió</translation>
 <translation id="914898748153555155">Pots canviar aquesta preferència en qualsevol moment des de la configuració de Chrome</translation>
+<translation id="91549621916703028">Crea diverses pestanyes per a totes les tasques</translation>
 <translation id="9157836665414082580">Suprimeix quadres de diàleg</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

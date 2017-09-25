@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Samodejno skrivanje police</translation>
 <translation id="1153356358378277386">Seznanjene naprave</translation>
 <translation id="1195412055398077112">upodabljanje čez rob zaslona</translation>
+<translation id="119944043368869598">Izbriši vse</translation>
 <translation id="1247372569136754018">Mikrofon (vgrajeni)</translation>
 <translation id="1252999807265626933">Polnjenje iz: <ph name="POWER_SOURCE" /></translation>
 <translation id="1267032506238418139">Sprememba bližnjice</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">Obvestila</translation>
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Označitev miškinega kazalca</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
+<translation id="3582792037806681688">V tej seji uporabniku ni dovoljena uporaba prijave z več računi</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
 <translation id="3606978283550408104">Povezava z braillovo vrstico je vzpostavljena.</translation>
 <translation id="3621202678540785336">Vhod</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">Naprava USB-C (desna vrata)</translation>
 <translation id="6501401484702599040">Predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Vnos z rokopisom</translation>
+<translation id="6528179044667508675">Ne moti</translation>
 <translation id="6537270692134705506">Zajem zaslona</translation>
+<translation id="6580955892089546165">S to funkcijo lahko hitro dostopate do poljubnega prijavljenega uporabnika, ne da bi vam bilo treba vnesti geslo.
+
+Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">Zapusti sejo</translation>
 <translation id="7034339000180558234">Predvajanje zavihka v <ph name="TAB_NAME" /> sprejemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Nastavi sliko za ozadje ...</translation>
+<translation id="7054808953701320293">Razumem. Tega sporočila ne kaži več.</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
+<translation id="7135556860107312402">Omogočanje obvestil teh aplikacij:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">Paleta znakov »emoji«</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
+<translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7649070708921625228">Pomoč</translation>
+<translation id="7658239707568436148">Prekliči</translation>
 <translation id="7692480393933218409">Polnjenje povezanih naprav USB-C</translation>
 <translation id="776344839111254542">Kliknite, če si želite ogledati podrobnosti o posodobitvi</translation>
 <translation id="7798302898096527229">Za preklic pritisnite tipko za iskanje ali Shift.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
 <translation id="7982789257301363584">Omrežje</translation>
+<translation id="7994370417837006925">Prijava z več računi</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
+<translation id="8056430285089645882">Razumem. Tega sporočila ne kaži več.</translation>
+<translation id="8088137642766812908">Previdno, s to funkcijo se lahko opečete</translation>
 <translation id="8098591350844501178">Ustavi predvajanje zaslona v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Povezava z <ph name="NAME" /> je vzpostavljena </translation>
 <translation id="813913629614996137">Inicializiranje ...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">Prejšnji meni</translation>
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392234662362215700">Pritisnite Control + Shift + preslednico, če želite preklopiti razporeditev tipkovnice.</translation>
+<translation id="8392688371657486010">Nimate obvestil</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433186206711564395">Omrežne nastavitve</translation>
 <translation id="8433977262951327081">Bližnjica za prikaz oblačka menija z možnostmi vnosa na polici se je spremenila. Namesto <ph name="OLD_SHORTCUT" /> uporabite <ph name="NEW_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814715559352963456">Če okna premaknete na drugo namizje, lahko pride do nepričakovanega delovanja.
+
+Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
 <translation id="8825534185036233643">Zrcaljenje z več kot dvema zaslonoma ni podprto.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>
 <translation id="9089416786594320554">Načini vnosa</translation>
 <translation id="9091626656156419976">Odstranjen zaslon <ph name="DISPLAY_NAME" /></translation>
+<translation id="9111102763498581341">Odkleni</translation>
 <translation id="9151726767154816831">Če želite posodobiti, znova zaženite in uporabite funkcijo Powerwash</translation>
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
 <translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>

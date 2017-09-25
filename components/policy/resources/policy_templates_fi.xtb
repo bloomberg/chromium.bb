@@ -684,6 +684,9 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="332771718998993005">Määritä laitteelle nimi, jonka <ph name="PRODUCT_NAME" /> näyttää kohteena.
+
+          Jos tämän käytännön arvo on ei-tyhjä merkkijono, <ph name="PRODUCT_NAME" /> näyttää kyseisen merkkijonon kohdenimenä. Muussa tapauksessa kohdenimenä käytetään laitteen nimeä. Jos tätä käytäntöä ei ole määritetty, kohdenimenä käytetään laitteen nimeä ja laitteen omistaja (tai laitetta hallinnoivan verkkotunnuksen käyttäjä) voi vaihtaa nimen. Nimen enimmäispituus on 24 merkkiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
@@ -1167,6 +1170,9 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Käytännön arvo tulee määrittää millisekunneissa. Arvon on oltava sama tai pienempi kuin käyttämättömyysviiveen.</translation>
 <translation id="5307432759655324440">Incognito-tilan saatavuus</translation>
 <translation id="5318185076587284965">Salli etäkäytön isännän käyttää relay-palvelimia</translation>
+<translation id="5323128137188992869">Määritä, onko <ph name="PRODUCT_NAME" /> käytettävissä sisällön suoratoistamiseen laitteeseen.
+
+          Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi suoratoistaa sisältöä laitteeseen. Jos arvo on tosi, käyttäjät saavat suoratoistaa sisältöä. Jos tätä käytäntöä ei ole määritetty, käyttäjät eivät voi suoratoistaa sisältöä rekisteröityihin Chrome-käyttöjärjestelmää käyttäviin laitteisiin, mutta he voivat suoratoistaa sisältöä rekisteröimättömiin laitteisiin.</translation>
 <translation id="5330684698007383292">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä</translation>
 <translation id="5365946944967967336">Näytä etusivupainike työkalupalkissa</translation>
 <translation id="5366977351895725771">Jos asetuksen arvo on epätosi, tämä käyttäjä ei voi luoda valvottuja käyttäjiä. Kaikki aiemmin luodut valvotut käyttäjät ovat kuitenkin käytettävissä.
@@ -1382,6 +1388,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6111936128861357925">Salli dinosauruspeli</translation>
 <translation id="6114416803310251055">poistettu</translation>
 <translation id="6133088669883929098">Salli kaikkien sivustojen käyttää avainten luomistoimintoa.</translation>
+<translation id="6139485614509308022">Jos OffHours-käytäntö on määritetty, valitut laitekäytännöt ohitetaan (tällöin käytössä ovat niiden oletusasetukset) määritettyjen ajanjaksojen aikana. Chrome ottaa laitekäytännöt uudelleen käyttöön aina, kun OffHours-ajanjakso alkaa tai päättyy. Käyttäjä saa ilmoituksen ja pakotetaan kirjautumaan ulos, kun OffHours-ajan päättymiseen ja laitekäytäntöihin liittyviä asetuksia muutetaan (eli kun käyttäjä ei ole kirjautuneena sisään sallitulla tilillä).</translation>
 <translation id="6145799962557135888">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="614662973812186053">Tämä käytäntö hallinnoi myös Androidin käyttöä ja diagnostiikkatietojen keräämistä.</translation>
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
@@ -1704,7 +1711,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on Epätosi, <ph name="TLS_FALSE_START" /> otetaan käyttöön. Jos käytännön arvo on Tosi, <ph name="TLS_FALSE_START" /> poistetaan käytöstä.</translation>
 <translation id="7433714841194914373">Ota Instant käyttöön</translation>
 <translation id="7443616896860707393">Eri lähteiden HTTP-todennuskehotteet</translation>
-<translation id="7468416082528382842">Windows-rekisterin sijainti:</translation>
 <translation id="7469554574977894907">Ota hakuehdotukset käyttöön</translation>
 <translation id="7474249562477552702">Hyväksytäänkö paikallisten luottamusankkureiden myöntämät SHA-1-allekirjoitetut varmenteet</translation>
 <translation id="7485481791539008776">Oletustulostimen valinnan säännöt</translation>

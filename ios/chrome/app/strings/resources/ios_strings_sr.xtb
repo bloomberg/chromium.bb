@@ -66,6 +66,7 @@
 <translation id="209018056901015185">Захтевај сајт за рачунар</translation>
 <translation id="2103075008456228677">Отвори history.google.com</translation>
 <translation id="2116625576999540962">Број премештених ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Да бисте прегледали приватно, отворите картицу без архивирања</translation>
 <translation id="2149973817440762519">Измените обележивач</translation>
 <translation id="2154710561487035718">Копирање URL адресе</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
@@ -178,6 +179,7 @@
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="430793432425771671">Синхронизуј све</translation>
 <translation id="4342284590510997375">Ново</translation>
+<translation id="434816576838749873">Одаберите апликацију за имејл</translation>
 <translation id="4359125752503270327">Ова страница ће се отворити у другој апликацији.</translation>
 <translation id="4370827530403103842">Синхронизација не функционише. Додирните да бисте решили проблем.</translation>
 <translation id="4375040482473363939">Претрага QR кодова</translation>
@@ -309,6 +311,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6785453220513215166">Слање извештаја о отказивању...</translation>
 <translation id="679325081238418596">Имаћете обележиваче, историју, лозинке и друга подешавања на свим уређајима</translation>
 <translation id="6797885426782475225">Гласовна претрага</translation>
+<translation id="6807889908376551050">Прикажи све...</translation>
 <translation id="681368974849482173">Ставка је направљена</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
@@ -416,6 +419,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9148126808321036104">Пријави ме поново</translation>
 <translation id="914898748153555155">Можете да промените ово подешавање у било ком тренутку у подешавањима Chrome-а</translation>
+<translation id="91549621916703028">Направите више картица за све задатке</translation>
 <translation id="9157836665414082580">Спречи дијалоге</translation>
 <translation id="9188680907066685419">Одјавите се са налога којим се управља</translation>
 <translation id="9203116392574189331">Handoff</translation>

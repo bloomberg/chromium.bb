@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - dare voce a Chrome</translation>
-<translation id="1226487719524433143">Non vediamo l'ora di sapere cosa pensi di questa nuova esperienza. Inviaci direttamente la tua opinione premendo tasto per la ricerca + A, quindi I. Premi il pulsante Avanti per continuare con il tutorial e imparare tutto ciò che serve per iniziare.</translation>
 <translation id="1229276918471378188">Collegamento precedente</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Intestazione livello 6 successiva</translation>
 <translation id="1275718070701477396">Selezionato</translation>
-<translation id="1310230882256010289">Grandi novità. Abbiamo rinnovato completamente il funzionamento di ChromeVox, che ora offre prestazioni migliori, maggiore stabilità e supporto/conformità web.</translation>
 <translation id="1319608975892113573">Nessuna citazione lunga precedente.</translation>
 <translation id="1321576897702511272">Nascondi guida di ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> di <ph name="TOTAL" /></translation>
@@ -224,8 +222,6 @@
 <translation id="3163593631834463955">Intestazione di colonna vuota</translation>
 <translation id="316542773973815724">Navigazione</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{spazio}other{# spazi}}</translation>
-<translation id="3183233191569362040">Complimenti! Hai imparato le nozioni fondamentali per l'utilizzo di ChromeVox Next (beta). Ricorda che puoi aprire il menu dei comandi di ChromeVox in qualsiasi momento premendo il tasto per la ricerca + Punto. Per avere altre informazioni su ChromeVox e Chrome OS, consulta gli articoli riportati di seguito.
-Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsante di chiusura e fai clic su di esso.</translation>
 <translation id="320961988183078793">Elemento <ph name="TYPE" /> inserito</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, scheda</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -337,7 +333,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Intestazione livello 6 precedente</translation>
 <translation id="3914173277599553213">Obbligatorie</translation>
-<translation id="3951424903203718058">È la prima volta che utilizzi la funzione di lettura vocale di ChromeVox Next? Questo breve tutorial spiega le nozioni di base per iniziare a utilizzare ChromeVox Next.</translation>
 <translation id="3962990492275676168">Inizia a leggere dalla posizione corrente</translation>
 <translation id="4004802134384979325">selezionata</translation>
 <translation id="4006140876663370126">img</translation>
@@ -431,7 +426,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4846487886195635104">Fine del testo barrato</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemento simile precedente.</translation>
-<translation id="485011152882364255">In ChromeVox Next il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox inizia con il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Attiva la registrazione TTS</translation>
 <translation id="4877261390094455813">Inserisci una query di ricerca.</translation>
@@ -500,7 +494,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5444587279251314700">(attiva)</translation>
 <translation id="5451268436205074266">punti <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Complementare</translation>
-<translation id="5458780372341732962">Utilizza ChromeVox Next (beta)</translation>
 <translation id="5485036206801896268">Nessuna immagine precedente.</translation>
 <translation id="5486947920110100234">Nessun passaggio successivo.</translation>
 <translation id="549602578321198708">Parola</translation>
@@ -509,7 +502,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5507663321906818013">Debug benchmark</translation>
 <translation id="5518443085409638729">Posiziona il cursore tra i caratteri durante la modifica di testo (come in Mac OS X).</translation>
 <translation id="552195134157544755">Pulsante di opzione</translation>
-<translation id="5531530875187439488">Nuove earcon. Abbiamo aggiornato l'insieme di icone audio che ti vengono lette per rendere più reattiva la navigazione.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">Nessuna intestazione livello 5 precedente.</translation>
 <translation id="556042886152191864">Pulsante</translation>
@@ -536,7 +528,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5682113568322255809">Punto di riferimento</translation>
 <translation id="5683155931978483559">Casella di controllo precedente</translation>
 <translation id="5684277895745049190">Elenco</translation>
-<translation id="5684905390246898631">Benvenuto in ChromeVox Next</translation>
 <translation id="5695831708991916435">Le scorciatoie riportate di seguito non sono comandi di ChromeVox, ma sono comunque molto utili per utilizzare al meglio Chrome.
 Per avanzare tra gli elementi su cui è possibile eseguire azioni, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB. 
 Per andare alla casella dell'indirizzo del browser Chrome, chiamata anche omnibox, premi CTRL+ L.
@@ -571,7 +562,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{uguale}other{# segni di uguale}}</translation>
 <translation id="5939518447894949180">Ripristina</translation>
 <translation id="5948123859135882163">Passa dall'interpretazione strutturale a quella semantica delle espressioni matematiche</translation>
-<translation id="5948485979596965684">È stato effettuato l'aggiornamento a una nuova e importante versione di ChromeVox.</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Finestra di dialogo</translation>
 <translation id="5963413905009737549">Sezione</translation>
@@ -650,7 +640,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6786800275320335305">Articolo</translation>
 <translation id="6787839852456839824">Scorciatoie da tastiera</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">Stiamo sviluppando una nuova versione migliorata di ChromeVox; ecco le novità</translation>
 <translation id="6833103209700200188">Piè di pagina</translation>
 <translation id="6871161210040114857">Le maiuscole/minuscole vengono ignorate.</translation>
 <translation id="6877435256196695200">Nessuna immagine successiva.</translation>
@@ -668,7 +657,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7037042857287298941">Elenco precedente</translation>
 <translation id="7041173719775863268">Termina selezione</translation>
 <translation id="7086377898680121060">Aumenta luminosità</translation>
-<translation id="7094527465295945904">Nuove associazioni di tasti. Abbiamo creato il tasto di modifica Cerca in ChromeVox e semplificato notevolmente le combinazioni di tasti.</translation>
 <translation id="7095834689119144465">Modifica solo caratteri numerici e di testo</translation>
 <translation id="7096001299300236431">Elemento multimediale precedente</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -772,7 +760,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Schede</translation>
 <translation id="8091452896542422286">Spazio</translation>
-<translation id="8104178626892949749">Premi i tasti O e N con ChromeVox per avere ulteriori informazioni su ChromeVox Next.</translation>
 <translation id="8110647606445335195">Nessun landmark ARIA.</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
@@ -782,7 +769,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8199231515320852133">Pronuncia le intestazioni della cella corrente</translation>
 <translation id="820417203470636242">Cella vuota.</translation>
 <translation id="8215202828671303819">Selezione multipla</translation>
-<translation id="8224171046658870249">Sei passato a ChromeVox Next</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Passa a elemento attivabile precedente</translation>
 <translation id="8278417001922463147">Nessun articolo precedente.</translation>
@@ -827,7 +813,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8664519043722036194">secondi</translation>
 <translation id="867187640362843212">Intestazione 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra verticale}other{# barre verticali}}</translation>
-<translation id="8721861170709424373">Riferimenti per i comandi di ChromeVox Next</translation>
 <translation id="8735450637152821465">Inizia selezione</translation>
 <translation id="8743786158317878347">entra in contenuti strutturati, come tabelle</translation>
 <translation id="8747966237988593539">Elenco ordinato</translation>
@@ -880,7 +865,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="923331726185079994">ChromeVox aggiornato</translation>
 <translation id="930275611743429116">Inizia o termina la selezione.</translation>
 <translation id="948171205378458592">Diminuisci velocità comandi vocali</translation>
-<translation id="955917170449423694">Sei passato alla versione classica di ChromeVox</translation>
 <translation id="962913030769097253">Intestazione livello 1 successiva</translation>
 <translation id="973955474346881951">Attiva/disattiva modalità persistente</translation>
 <translation id="976849232629612000">Nessun elemento.</translation>

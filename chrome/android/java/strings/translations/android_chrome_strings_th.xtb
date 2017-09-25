@@ -3,6 +3,7 @@
 <translationbundle lang="th">
 <translation id="1006017844123154345">เปิดแบบออนไลน์</translation>
 <translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
+<translation id="1041308826830691739">จากเว็บไซต์</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3295602654194328831">ซ่อนข้อมูล</translation>
 <translation id="3303414029551471755">ต้องการดำเนินการดาวน์โหลดเนื้อหานี้ไหม</translation>
-<translation id="3319792846664697699">แผงการนำทาง</translation>
 <translation id="3321222012623826478">บริการนี้ต้องส่งที่อยู่เว็บไซต์นี้แบบไม่ระบุตัวตนไปยังเซิร์ฟเวอร์ของ Google เพื่อการยืนยัน</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="3341058695485821946">ดูปริมาณอินเทอร์เน็ตที่คุณประหยัดไปได้</translation>
@@ -268,6 +268,7 @@
 
 หากต้องการแก้ไขข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับการค้นหา ให้เลื่อนแผงขึ้นและแตะช่องค้นหา</translation>
 <translation id="3616113530831147358">เสียง</translation>
+<translation id="3620176948598597475">การรีเซ็ตจะลบประวัติโปรแกรมประหยัดอินเทอร์เน็ต รวมถึงรายการไซต์ที่เข้าชม</translation>
 <translation id="3632295766818638029">เปิดเผยรหัสผ่าน</translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="3649663272864015643">เลือกแท็บ "หน้าแรก" แล้ว</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
 <translation id="3706423975342040244">ความบันเทิง</translation>
+<translation id="3712575778697986964">รีเซ็ตโปรแกรมประหยัดอินเทอร์เน็ตไหม</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3734660163659757482">ดึงขึ้นเพื่อดูบุ๊กมาร์กและอื่นๆ</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
-<translation id="3845539888601087042">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์ที่คุณลงชื่อเข้าใช้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
 <translation id="3946611741043634542">เมื่อดำเนินการต่อ แสดงว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /></translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
+<translation id="395206256282351086">ปิดใช้คำแนะนำการค้นหาและไซต์แล้ว</translation>
 <translation id="395922942268463099">หน้าที่อัปเดตเป็นประจำ</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
-<translation id="4248297594476034182">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4254813446494774748">ภาษาที่แปล:</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
@@ -453,7 +454,6 @@
 <translation id="5423934151118863508">หน้าที่มีการเข้าชมมากที่สุดของคุณจะปรากฏที่นี่</translation>
 <translation id="5424588387303617268">ว่าง <ph name="GIGABYTES" /> GB</translation>
 <translation id="5433691172869980887">คัดลอกชื่อผู้ใช้แล้ว</translation>
-<translation id="5435775191620395718">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์นี้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">ข้ามไปยังแถบที่อยู่เว็บ</translation>
 <translation id="5447201525962359567">พื้นที่เก็บข้อมูลเว็บไซต์ทั้งหมด รวมถึงคุกกี้และข้อมูลอื่นๆ ที่เก็บไว้ในเครื่อง</translation>
 <translation id="5447765697759493033">ระบบจะไม่แปลไซต์นี้</translation>
@@ -480,7 +480,6 @@
 <translation id="5620928963363755975">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลดจากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5639724618331995626">อนุญาตทุกไซต์</translation>
-<translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5648166631817621825">7 วันที่แล้ว</translation>
 <translation id="5655963694829536461">ค้นหาการดาวน์โหลด</translation>
 <translation id="5659593005791499971">อีเมล</translation>
@@ -550,6 +549,7 @@
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
 
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
+<translation id="6255999984061454636">การแนะนำเนื้อหา</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">ไซต์ทั้งหมด</translation>
 <translation id="6320088164292336938">สั่น</translation>
@@ -626,6 +626,7 @@
 <translation id="688738109438487280">เพิ่มข้อมูลที่มีอยู่ลงใน <ph name="TO_ACCOUNT" /></translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{แท็บที่เปิดอยู่ %1$d แท็บ}other{แท็บที่เปิดอยู่ %1$d แท็บ}}</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
+<translation id="6910211073230771657">ลบแล้ว</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
@@ -676,6 +677,7 @@
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="7445411102860286510">อนุญาตให้เว็บไซต์เล่นวิดีโอที่ปิดเสียงโดยอัตโนมัติ (แนะนำ)</translation>
+<translation id="7453467225369441013">นำคุณออกจากระบบของไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="7455923816558154057">แตะเพื่อดู</translation>
 <translation id="7464701184726199289">การดำเนินการนี้จะล้างข้อมูลที่ซิงค์จากอุปกรณ์ทั้งหมด การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
@@ -742,6 +744,7 @@
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="8035133914807600019">โฟลเดอร์ใหม่…</translation>
 <translation id="8037750541064988519">เหลือ <ph name="DAYS" /> วัน</translation>
+<translation id="805047784848435650">อิงจากประวัติการท่องเว็บของคุณ</translation>
 <translation id="8051695050440594747">สามารถใช้งานได้ <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">เปิดในแท็บใหม่ของ Chrome</translation>
 <translation id="8063895661287329888">เพิ่มบุ๊กมาร์กไม่สำเร็จ</translation>

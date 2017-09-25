@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome OS</translation>
 <translation id="1795405610103747296">ติดตั้ง Chrome ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดฟีเจอร์เจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องอัปเดต Chrome</translation>
 <translation id="1874309113135274312">Google Chrome เบต้า (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ล้าสมัย</translation>
 <translation id="2063848847527508675">ต้องรีสตาร์ท Chrome OS เพื่อใช้การอัปเดต</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chrome ล้าสมัยเพราะไม่ได้เปิดใช้งานใหม่มาระยะหนึ่งแล้ว มีเวอร์ชันอัปเดตพร้อมใช้งานและระบบจะนำเวอร์ชันอัปเดตดังกล่าวไปใช้เมื่อคุณเปิดแอปใหม่</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
-<translation id="2582790009689336987">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเนื่องจากไม่มีการสนับสนุนระบบ Linux นี้อีกต่อไป</translation>
 <translation id="2586406160782125153">การดำเนินการนี้จะลบข้อมูลการท่องเว็บออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="2588322182880276190">โลโก้ Chrome</translation>
 <translation id="2664962310688259219">ใบอนุญาตโอเพนซอร์สของ Chrome OS</translation>
@@ -84,7 +82,6 @@
 
 โปรดตรวจสอบอีเมลของคุณที่ <ph name="ACCOUNT_EMAIL" /> สำหรับคำแนะนำเพิ่มเติม</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
-<translation id="3311976847535831054">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome แบบ 32 บิตอีกแล้ว โปรดอัปเกรดเป็น Google Chrome แบบ 64 บิต</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="3395323229510056640">รับความช่วยเหลือเกี่ยวกับ Chrome OS</translation>
 <translation id="3396977131400919238">มีข้อผิดพลาดของระบบปฏิบัติการเกิดขึ้นในระหว่างการติดตั้ง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
@@ -115,7 +112,6 @@
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีกแล้วเนื่องจากไม่มีการสนับสนุนระบบ Linux นี้อีกต่อไป</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4458462641685292929">Google Chrome กำลังดำเนินการอย่างอื่นอยู่ โปรดลองอีกครั้งในภายหลัง</translation>
@@ -129,7 +125,6 @@
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4743926867934016338">ยอมรับและค้นหา</translation>
 <translation id="4750550185319565338">รีสตาร์ท Chrome เพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">ในไม่ช้านี้คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome แบบ 32 บิตอีกแล้ว โปรดอัปเกรดเป็น Google Chrome แบบ 64 บิต</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="4794050651896644714">บันทึกรายละเอียดใน Chrome</translation>
@@ -206,7 +201,6 @@
 <translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="7098166902387133879">Google Chrome ใช้ไมโครโฟนอยู่</translation>
 <translation id="7106741999175697885">ตัวจัดการงาน - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดฟีเจอร์เจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องติดตั้ง Chrome ใหม่ด้วยตนเอง</translation>
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>
 <translation id="7164397146364144019">คุณสามารถช่วยปรับปรุงให้ Chrome ปลอดภัยและใช้งานง่ายขึ้นโดยรายงานรายละเอียดของเหตุการณ์ด้านความปลอดภัยที่อาจจะเกิดขึ้นต่อ Google โดยอัตโนมัติ</translation>
 <translation id="7185038942300673794">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chrome แล้ว</translation>

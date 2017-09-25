@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">ನಿಮ್ಮ ಪರದೆಯಲ್ಲಿ ಸ್ಪರ್ಶ ಟಾರ್ಗೆಟ್‌ಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">ವಿಸ್ತರಿಸುವ ಅಧಿಸೂಚನೆ</translation>
-<translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="2522350507219695259">ಮಾಪನಾಂಕವು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="252373100621549798">ಅಪರಿಚಿತ ಪ್ರದರ್ಶನ</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">ಅರ್ಧವಿರಾಮ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ಸೆಕೆಂ ಹಿಂದೆ}one{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}other{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಹಿಂದೆ}one{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}other{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}}</translation>
-<translation id="6528179044667508675">ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>
 <translation id="6612467943526193239">ಮಾಪನಾಂಕದಿಂದ ನಿರ್ಗಮಿಸಲು Esc ಒತ್ತಿರಿ.</translation>
 <translation id="6620110761915583480">ಫೈಲ್ ಉಳಿಸು</translation>
 <translation id="6699343763173986273">ಮೀಡಿಯಾದ ಮುಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">ಶೀರ್ಷಿಕೆರಹಿತ ವೆಬ್‌ಪುಟ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 ವರ್ಷ ಉಳಿದಿದೆ}one{# ವರ್ಷಗಳು ಉಳಿದಿವೆ}other{# ವರ್ಷಗಳು ಉಳಿದಿವೆ}}</translation>
-<translation id="6918245111648057970">ಪ್ರತಿ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಕೆಳಗಿನವುಗಳಿಂದ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ:</translation>
 <translation id="6945221475159498467">ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">ಹೆಚ್ಚಿನ ಸಾಧ್ಯತೆ ಇದೆ</translation>
-<translation id="7135556860107312402">ಕೆಳಗಿನವುಗಳಿಂದ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ನಿಮಿಷ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 ನಿಮಿ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" /> -</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 ನಿಮಿಷ ಉಳಿದಿದೆ}one{# ನಿಮಿಷಗಳು ಉಳಿದಿವೆ}other{# ನಿಮಿಷಗಳು ಉಳಿದಿವೆ}}</translation>
-<translation id="7457942297256758195">ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">ನಿಮ್ಮ ಅಧಿಸೂಚನೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="7781829728241885113">ನಿನ್ನೆ</translation>
 <translation id="7814458197256864873">&amp;ನಕಲಿಸಿ</translation>
-<translation id="7850320739366109486">ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>
 <translation id="7907591526440419938">ಫೈಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ಗಂಟೆ ಹಿಂದೆ}one{# ಗಂಟೆಗಳ ಹಿಂದೆ}other{# ಗಂಟೆಗಳ ಹಿಂದೆ}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 ವರ್ಷ}one{# ವರ್ಷಗಳು}other{# ವರ್ಷಗಳು}}</translation>
 <translation id="8371695176452482769">ಈಗ ಮಾತನಾಡಿ</translation>
 <translation id="838869780401515933">ಪರಿಶೀಲಿಸಿ</translation>
-<translation id="8392688371657486010">ನೀವು ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿಲ್ಲ</translation>
 <translation id="8394908167088220973">ಮೀಡಿಯಾ ಪ್ಲೇ/ವಿರಾಮ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1ವ}one{#ವ}other{#ವ}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ಫೈಲ್ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s </translation>

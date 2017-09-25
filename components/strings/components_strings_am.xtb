@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;አትም…</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1184214524891303587">የደህንነት ሊሆኑ የሚችሉ የክስተቶች ዝርዝሮችን በራስ-ሰር ለGoogle <ph name="BEGIN_WHITEPAPER_LINK" />ሪፖርት ያድርጉ<ph name="END_WHITEPAPER_LINK" />። <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">ክፍያ አልተጠናቀቀም</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1201895884277373915">ተጨማሪ ከዚህ ጣቢያ</translation>
 <translation id="1206967143813997005">መጥፎ የመጀመሪያ ፊርማ</translation>
@@ -615,7 +616,6 @@
 <translation id="5631439013527180824">ልክ ያልሆነ የመሣሪያ አስተዳደር ማስመሰያ</translation>
 <translation id="5633066919399395251">በአሁኑ ጊዜ በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ የሚገኙ አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፦ ፎቶዎች፣ የይለፍ ቃላት፣ መልዕክቶች እና ክሬዲት ካርዶች) የሚሰርቁ ወይም የሚሰርዙ አደገኛ ፕሮግራሞችን በእርስዎ ኮምፒውተር ላይ ለመጫን እየሞከሩ ሊሆኑ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">አታላይ ይዘት ታግዷል።</translation>
-<translation id="5646376287012673985">አካባቢ</translation>
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5669703222995421982">ግላዊነት የተላበሰ ይዘት ያግኙ</translation>
 <translation id="5675650730144413517">ይህ ገጽ እየሠራ አይደለም</translation>
@@ -918,6 +918,7 @@
 <translation id="8249320324621329438">ለመጨረሻ ጊዜ የመጣው፦</translation>
 <translation id="8253091569723639551">የማስከፈያ አድራሻ ያስፈልጋል</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
+<translation id="8267698848189296333">እንደ <ph name="USERNAME" /> በመግባት ላይ</translation>
 <translation id="8289355894181816810">ይሄ ምን ማለት እንደሆነ እርግጠኛ ካልሆኑ የአውታረ መረብ አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="8293206222192510085">እልባት ያክሉ</translation>
 <translation id="8294431847097064396">ምንጭ</translation>

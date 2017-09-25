@@ -8,6 +8,7 @@
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1153356358378277386">இணைத்த சாதனங்கள்</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
+<translation id="119944043368869598">அனைத்தையும் அழி</translation>
 <translation id="1247372569136754018">மைக்ரோஃபோன் (அகம்)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> இலிருந்து சார்ஜ் செய்யப்படுகிறது</translation>
 <translation id="1267032506238418139">ஷார்ட்கட் மாற்றம்</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">மொபைல் டேட்டாவை இயக்கினால், புளூடூத் இயக்கப்படும்.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">அறிவிப்புகள்</translation>
 <translation id="2501920221385095727">ஸ்டிக்கி விசைகள்</translation>
 <translation id="2509468283778169019">CAPS LOCK இயக்கத்தில்</translation>
 <translation id="2532589005999780174">அதிக ஒளி மாறுபாட்டுப் பயன்முறை</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">மவுஸ் கர்சரைத் தனிப்படுத்து</translation>
 <translation id="3547954654003013442">ப்ராக்ஸி அமைப்புகள்</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
+<translation id="3582792037806681688">இந்த அமர்வில் பயனருக்கான பல உள்நுழைவு மறுக்கப்பட்டுள்ளது</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
 <translation id="3621202678540785336">உள்ளீடு</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">USB-C சாதனம் (வலது போர்ட்)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புகிறது</translation>
 <translation id="6521655319214113338">கையெழுத்து உள்ளீடு</translation>
+<translation id="6528179044667508675">தொந்தரவு செய்யாதே</translation>
 <translation id="6537270692134705506">திரையைப் படமெடு</translation>
+<translation id="6580955892089546165">உள்நுழைந்துள்ள எந்தப் பயனரையும், இந்த அம்சத்தின் மூலம், கடவுச்சொல் கேட்கப்படாமல் விரைவாக அணுகலாம்.
+
+நீங்கள் நம்பும் கணக்குகளுடன் மட்டும் இந்த அம்சத்தைப் பயன்படுத்தவும்.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6627638273713273709">தேடல்+ஷிஃப்ட்+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />ஐ <ph name="RECEIVER_NAME" />க்கு அனுப்புகிறது</translation>
 <translation id="7052914147756339792">வால்பேப்பரை அமை...</translation>
+<translation id="7054808953701320293">புரிந்தது, மீண்டும் காட்ட வேண்டாம்.</translation>
 <translation id="7066646422045619941">இந்த நெட்வொர்க் உங்கள் நிர்வாகியால் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="7067196344162293536">தானியங்கு சுழற்றல்</translation>
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
+<translation id="7135556860107312402">பின்வருபவற்றிலிருந்து வரும் அறிவிப்புகளை அனுமதி:</translation>
 <translation id="7165278925115064263">ஆல்ட்+ஷிஃப்ட்+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="7256634071279256947">பின்பக்க மைக்ரோஃபோன்</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">ஈமொஜி தட்டு</translation>
 <translation id="7569509451529460200">பிரெய்லி மற்றும் ChromeVox இயக்கப்பட்டன</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
+<translation id="7647488630410863958">அறிவிப்புகளைப் பார்க்க, சாதனத்தைத் திறக்கவும்</translation>
 <translation id="7649070708921625228">உதவி</translation>
+<translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7692480393933218409">இணைக்கப்பட்ட USB-C சாதனங்களுக்குச் சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="776344839111254542">புதுப்பிப்பு விவரங்களைப் பார்க்க, கிளிக் செய்யவும்</translation>
 <translation id="7798302898096527229">ரத்துசெய்ய, தேடல் அல்லது ஷிஃப்ட் விசையை அழுத்தவும்.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
 <translation id="7977927628060636163">மொபைல் நெட்வொர்க்குகளைத் தேடுகிறது...</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
+<translation id="7994370417837006925">பல உள்நுழைவு</translation>
 <translation id="8000066093800657092">நெட்வொர்க் இல்லை</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
+<translation id="8056430285089645882">புரிந்தது, இதை மீண்டும் காட்ட வேண்டாம்.</translation>
+<translation id="8088137642766812908">கவனம், இந்த அம்சம் பாதிப்பை ஏற்படுத்தலாம்</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புவதை நிறுத்து</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> உடன் இணைக்கப்பட்டது</translation>
 <translation id="813913629614996137">துவக்குகிறது...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8351131234907093545">குறிப்பை உருவாக்கு</translation>
 <translation id="8392234662362215700">விசைப்பலகை தளவமைப்பை மாற்ற, கன்ட்ரோல்-ஷிஃப்ட்-ஸ்பேஸ் விசையை அழுத்தவும்.</translation>
+<translation id="8392688371657486010">அறிவிப்புகள் எதுவுமில்லை</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8433186206711564395">நெட்வொர்க் அமைப்புகள்</translation>
 <translation id="8433977262951327081">உள்ளீட்டு விருப்பங்கள் மெனு குமிழியை, ஷெல்ஃபில் காட்டுவதற்கான குறுக்குவழி மாறியுள்ளது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">குறைந்த சக்தியிலான சார்ஜர் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="8814190375133053267">வைஃபை</translation>
+<translation id="8814715559352963456">சாளரத்தை வேறு டெஸ்க்டாப்புக்கு மாற்றினால், அது எதிர்பாராதவிதமாகச் செயல்படலாம்.
+
+அடுத்தடுத்து வரும் அறிவிப்புகள், சாளரங்கள், உரையாடல்கள் ஆகியவை டெஸ்க்டாப்புகளுக்கு இடையே பிரிக்கப்படலாம்.</translation>
 <translation id="8825534185036233643">இரண்டிற்கும் மேற்பட்ட திரைகளில் பிரதிபலிப்பது ஆதரிக்கப்படவில்லை.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது.</translation>
 <translation id="9089416786594320554">உள்ளீட்டு முறைகள்</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> டிஸ்ப்ளே அகற்றப்பட்டது</translation>
+<translation id="9111102763498581341">பூட்டைத் திற</translation>
 <translation id="9151726767154816831">புதுப்பிக்க, மறுதுவக்கம் செய்து பவர்வாஷ் செய்யவும்</translation>
 <translation id="9194617393863864469">வேறொருவராக உள்நுழை...</translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது.</translation>

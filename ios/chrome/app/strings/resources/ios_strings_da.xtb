@@ -66,6 +66,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="209018056901015185">Vis computerversion</translation>
 <translation id="2103075008456228677">Åbn history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
+<translation id="213900355088104901">Hvis du vil bruge nettet privat, skal du åbne en inkognitofane</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
@@ -178,6 +179,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="430793432425771671">Synkroniser alt</translation>
 <translation id="4342284590510997375">Nyt</translation>
+<translation id="434816576838749873">Vælg mailapp</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
 <translation id="4370827530403103842">Synkronisering fungerer ikke. Tryk for at rette problemet.</translation>
 <translation id="4375040482473363939">Søgning efter QR-kode</translation>
@@ -309,6 +311,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6785453220513215166">Der sendes en nedbrudsrapport...</translation>
 <translation id="679325081238418596">Få dine bogmærker, din historik, dine adgangskoder og dine indstillinger på alle dine enheder</translation>
 <translation id="6797885426782475225">Talesøgning</translation>
+<translation id="6807889908376551050">Vis alle...</translation>
 <translation id="681368974849482173">Elementet blev oprettet</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
@@ -416,6 +419,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
 <translation id="914898748153555155">Du kan til enhver tid ændre denne præference i Chrome-indstillingerne</translation>
+<translation id="91549621916703028">Opret flere faner til alle dine opgaver</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -36,7 +36,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Пронађи помоћ за коришћење Chrome ОС-а</translation>
 <translation id="1795405610103747296">Инсталирајте Chrome на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба да ажурирате Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
 <translation id="2063848847527508675">Треба да рестартујете Chrome OS да бисте применили ажурирање.</translation>
@@ -62,7 +61,6 @@
 <translation id="2446511512801740068">Chrome је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
-<translation id="2582790009689336987">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер овај Linux систем више неће бити подржан.</translation>
 <translation id="2586406160782125153">Овим ћете избрисати податке прегледања са уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome логотип</translation>
 <translation id="2664962310688259219">Лиценце отвореног кода за Chrome ОС</translation>
@@ -88,7 +86,6 @@
 
 Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
-<translation id="3311976847535831054">Овај рачунар више неће добијати ажурирања за 32-битни Google Chrome. Надоградите Google Chrome на 64-битну верзију.</translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
 <translation id="3395323229510056640">Пронађите помоћ за Chrome OS</translation>
 <translation id="3396977131400919238">Током инсталације је дошло до грешке у оперативном систему. Преузмите Google Chrome поново.</translation>
@@ -118,7 +115,6 @@
 <translation id="4309555186815777032">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chrome-а)</translation>
 <translation id="4328355335528187361">Програмерска верзија Google Chrome-а (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome ОС</translation>
-<translation id="437002079035561265">Овај рачунар више неће добијати ажурирања за Google Chrome јер овај Linux систем више није подржан.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4458462641685292929">Друга радња у Google Chrome-у је у току. Пробајте поново касније.</translation>
@@ -132,7 +128,6 @@
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4743926867934016338">Прихватам, претражи</translation>
 <translation id="4750550185319565338">Поново покрените Chrome да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Овај рачунар ће ускоро престати да добија ажурирања за 32-битни Google Chrome. Надоградите Google Chrome на 64-битну верзију.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ова датотека може да буде опасна, па ју је Chrome блокирао.</translation>
 <translation id="4794050651896644714">Сачувај детаље у Chrome-у</translation>
@@ -213,7 +208,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6989339256997917931">Google Chrome је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="7098166902387133879">Google Chrome користи микрофон.</translation>
 <translation id="7106741999175697885">Менаџер задатака – Google Chrome</translation>
-<translation id="7125719106133729027">Chrome не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба ручно поново да инсталирате Chrome.</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
 <translation id="7164397146364144019">Можете да помогнете да Chrome буде безбеднији и једноставнији за коришћење ако аутоматски пријављујете Google-у детаље могућих безбедносних инцидената.</translation>
 <translation id="7185038942300673794">Додатак <ph name="EXTENSION_NAME" /> је додат у Chrome.</translation>

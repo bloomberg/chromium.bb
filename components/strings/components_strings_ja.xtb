@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
 <translation id="1088860948719068836">名義人名の追加</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
+<translation id="1103778128462718200">保存したパスワードをすべて表示...</translation>
 <translation id="1107591249535594099">チェックボックスをオンにすると、Chrome はフォームに迅速に入力するために、カード情報のコピーをこのデバイスに保存します。</translation>
 <translation id="1111153019813902504">最近アクセスしたブックマーク</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">印刷(&amp;P)...</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1184214524891303587">セキュリティに関する事象についての詳細を Google に<ph name="BEGIN_WHITEPAPER_LINK" />自動送信<ph name="END_WHITEPAPER_LINK" />する。<ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">支払い処理を完了できませんでした</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1201895884277373915">このサイトからの他の履歴</translation>
 <translation id="1206967143813997005">最初の署名に問題があります</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
 <translation id="5541546772353173584">メールの追加</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> に埋め込まれているページの内容:</translation>
+<translation id="5545756402275714221">おすすめの記事</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5560088892362098740">有効期限</translation>
 <translation id="5565735124758917034">有効</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって、お使いのパソコン上に危険なプログラム（写真、パスワード、メッセージ、クレジット カードなどの情報を盗んだり削除したりするプログラム）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">不正の可能性があるコンテンツがブロックされました。</translation>
-<translation id="5646376287012673985">現在地</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669703222995421982">自分向けのコンテンツを表示</translation>
 <translation id="5675650730144413517">このページは動作していません</translation>
+<translation id="5689199277474810259">JSON にエクスポート</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5719499550583120431">プリペイド カードをご利用いただけます。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">前回の取得:</translation>
 <translation id="8253091569723639551">請求先住所が必要です</translation>
 <translation id="8261506727792406068">削除</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" /> としてログイン</translation>
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>
 <translation id="8294431847097064396">ソース</translation>

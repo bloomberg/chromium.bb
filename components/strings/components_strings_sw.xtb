@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Chapisha...</translation>
 <translation id="1181037720776840403">Ondoa</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Ripoti kiotomatiki<ph name="END_WHITEPAPER_LINK" /> kwa Google kuhusu maelezo ya uwezekano wa matukio yasiyo salama. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Malipo Hayajakamilika</translation>
 <translation id="1201402288615127009">Ifuatayo</translation>
 <translation id="1201895884277373915">Zaidi kutoka kwenye tovuti hii</translation>
 <translation id="1206967143813997005">Sahihi mbaya ya mwanzo</translation>
@@ -616,11 +617,10 @@
 <translation id="5631439013527180824">Ishara ya usimamizi wa kifaa batili</translation>
 <translation id="5633066919399395251">Wavamizi ambao sasa wako kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> huenda wakajaribu kusakinisha programu hatari kwenye kompyuta yako ambazo zinaiba au kufuta maelezo yako (kwa mfano, picha, manenosiri, ujumbe na kadi za mikopo). <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Maudhui ya udanganyifu yamezuiwa.</translation>
-<translation id="5646376287012673985">Mahali</translation>
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5669703222995421982">Pata maudhui yanayokufaa</translation>
 <translation id="5675650730144413517">Ukurasa huu haufanyi kazi</translation>
-<translation id="5689199277474810259">Hamisha katika mfumo wa JSON</translation>
+<translation id="5689199277474810259">Hamishia katika mfumo wa JSON</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5719499550583120431">Kadi za kulipia awali zinakubaliwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Iliyoletwa mwisho:</translation>
 <translation id="8253091569723639551">Anwani ya kutuma bili sharti iandikwe</translation>
 <translation id="8261506727792406068">Futa</translation>
+<translation id="8267698848189296333">Ingia katika akaunti ukitumia <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Wasiliana na msimamizi wako wa mtandao iwapo huna uhakika kile ambacho hiki kinamaanisha.</translation>
 <translation id="8293206222192510085">Ongeza Alamisho</translation>
 <translation id="8294431847097064396">Chanzo</translation>

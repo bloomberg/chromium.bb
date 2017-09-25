@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1326317727527857210">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="1685087038067318291">Etraftaki nesneler tarafından gönderilen web sayfalarını keşfedin. Bluetooth açıkken Chrome, etrafınızdaki nesnelerle ilişkilendirilen web sayfalarını toplayabilir ve sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google'a gönderebilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
 <translation id="415767770115540173">Chrome'da, konumunuza dayalı olarak daha iyi bir Google deneyimi yaşayın.</translation>
-<translation id="4248297594476034182">Sekmelerinize tüm cihazlarınızda ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4523886039239821078">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen şunların yüklemelerini kaldırın:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google hesabınızda kalmaya devam eder.</translation>

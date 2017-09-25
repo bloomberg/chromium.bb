@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">แตะเป้าหมายการสัมผัสในหน้าจอ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/วินาที</translation>
 <translation id="24452542372838207">ขยายการแจ้งเตือน</translation>
-<translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
 <translation id="2522350507219695259">การปรับเทียบเสร็จสมบูรณ์</translation>
 <translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">จุลภาค</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ 1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
-<translation id="6528179044667508675">ห้ามรบกวน</translation>
 <translation id="6612467943526193239">หากต้องการออกจากการปรับเทียบ ให้กด Esc</translation>
 <translation id="6620110761915583480">บันทึกไฟล์</translation>
 <translation id="6699343763173986273">แทร็กถัดไปของสื่อ</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">หน้าเว็บที่ไม่มีชื่อ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/วินาที</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{เหลือ 1 ปี}other{เหลือ # ปี}}</translation>
-<translation id="6918245111648057970">อนุญาตให้มีการแจ้งเตือนจากรายการต่อไปนี้สำหรับผู้ใช้แต่ละคน:</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">น่าจะใช้มากที่สุด</translation>
-<translation id="7135556860107312402">อนุญาตให้มีการแจ้งเตือนจากรายการต่อไปนี้</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>
-<translation id="7457942297256758195">ล้างทั้งหมด</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">ปลดล็อกอุปกรณ์เพื่อดูการแจ้งเตือน</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="7814458197256864873">&amp;คัดลอก</translation>
-<translation id="7850320739366109486">ห้ามรบกวน</translation>
 <translation id="7907591526440419938">เปิดไฟล์</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ชั่วโมงที่ผ่านมา}other{# ชั่วโมงที่ผ่านมา}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 ปี}other{# ปี}}</translation>
 <translation id="8371695176452482769">เชิญพูดเลย</translation>
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
-<translation id="8392688371657486010">คุณไม่มีการแจ้งเตือน</translation>
 <translation id="8394908167088220973">เล่น/หยุดสื่อชั่วคราว</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 ปี}other{# ปี}}</translation>
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/วินาที</translation>

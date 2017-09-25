@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏עזרה לשימוש ב-Chrome OS</translation>
 <translation id="1795405610103747296">‏התקן את Chrome בטלפון שלך, ונשלח הודעת SMS למספר: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">‏העדכון העצמי של Chrome לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chrome.</translation>
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="2063848847527508675">‏יש להפעיל מחדש את מערכת ההפעלה של Chrome כדי להחיל את העדכון.</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">‏Chrome אינו מעודכן מכיוון שהוא לא הופעל לאחרונה. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
-<translation id="2582790009689336987">‏בקרוב המחשב הזה יפסיק לקבל עדכונים של Google Chrome בשל הפסקת התמיכה במערכת Linux זו.</translation>
 <translation id="2586406160782125153">‏הפעולה תמחק את נתוני הגלישה מהמכשיר. כדי לאחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏הלוגו של Chrome</translation>
 <translation id="2664962310688259219">‏רישיונות קוד פתוח של מערכת ההפעלה של Chrome</translation>
@@ -84,7 +82,6 @@
 
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
-<translation id="3311976847535831054">‏מחשב זה לא יקבל עוד עדכוני Google Chrome ב-32 סיביות. שדרג ל-Google Chrome ב-64 סיביות.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">‏קבל עזרה בנושא מערכת ההפעלה של Chrome</translation>
 <translation id="3396977131400919238">‏במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Google Chrome.</translation>
@@ -114,7 +111,6 @@
 <translation id="4309555186815777032">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chrome)</translation>
 <translation id="4328355335528187361">‏גרסת הפיתוח של Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">‏המחשב הזה יפסיק לקבל עדכונים של Google Chrome כי מערכת Linux זו אינה נתמכת יותר.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
 <translation id="4458462641685292929">‏מתבצעת כרגע פעולה אחרת ב-Google Chrome. נסה שוב מאוחר יותר.</translation>
@@ -128,7 +124,6 @@
 <translation id="4728575227883772061">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="4743926867934016338">אשר וחפש</translation>
 <translation id="4750550185319565338">‏הפעל מחדש את Chrome כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">‏מחשב זה יפסיק בקרוב לקבל עדכוני Google Chrome ב-32 סיביות. שדרג ל-Google Chrome ב-64 סיביות.</translation>
 <translation id="4754614261631455953">‏גרסה ניסיונית של Google Chrome‏ (mDNS-In)</translation>
 <translation id="4771048833395599659">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="4794050651896644714">‏שמור פרטים ב-Chrome</translation>
@@ -205,7 +200,6 @@
 <translation id="6989339256997917931">‏Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="7098166902387133879">‏Google Chrome משתמש במיקרופון שלך.</translation>
 <translation id="7106741999175697885">‏מנהל המשימות - Google Chrome</translation>
-<translation id="7125719106133729027">‏העדכון העצמי של Chrome לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך להתקין מחדש את Chrome באופן ידני.</translation>
 <translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>
 <translation id="7164397146364144019">‏אתה יכול לעזור לשפר את הבטיחות של Chrome ולהקל את השימוש בו על ידי דיווח אוטומטי על פרטים של בעיות אבטחה אפשריות ל-Google.</translation>
 <translation id="7185038942300673794">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chrome.</translation>

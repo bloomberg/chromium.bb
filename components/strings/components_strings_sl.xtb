@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
 <translation id="1088860948719068836">Dodajanje imena na kartico</translation>
 <translation id="1103523840287552314">Vedno prevedi ta jezik: <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Pokaži vsa shranjena gesla …</translation>
 <translation id="1107591249535594099">Če je izbrana ta možnost, bo shranil kopijo kartice v tej napravi za hitrejše izpolnjevanje obrazcev.</translation>
 <translation id="1111153019813902504">Nedavni zaznamki</translation>
 <translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Natisni ...</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Samodejno poročanje<ph name="END_WHITEPAPER_LINK" /> podrobnosti morebitnih varnostnih dogodkov Googlu. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Plačilo ni dokončano</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1201895884277373915">Več s tega mesta</translation>
 <translation id="1206967143813997005">Neveljaven prvotni podpis</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
 <translation id="5541546772353173584">Dodajanje e-poštnega naslova</translation>
 <translation id="5544037170328430102">Vdelana stran na spletnem mestu <ph name="SITE" /> sporoča:</translation>
+<translation id="5545756402275714221">Članki za vas</translation>
 <translation id="5556459405103347317">Ponovno naloži</translation>
 <translation id="5560088892362098740">Datum poteka</translation>
 <translation id="5565735124758917034">Aktivno</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Neveljaven žeton za upravljanje naprave</translation>
 <translation id="5633066919399395251">Napadalci na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> lahko poskusijo v vašem računalniku namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Zavajajoča vsebina blokirana.</translation>
-<translation id="5646376287012673985">Lokacija</translation>
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669703222995421982">Prilagojena vsebina</translation>
 <translation id="5675650730144413517">Ta stran ne deluje</translation>
+<translation id="5689199277474810259">Izvozi v JSON</translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5719499550583120431">Sprejema predplačniške kartice.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Nazadnje preneseno:</translation>
 <translation id="8253091569723639551">Naslov za izstavitev računa je obvezen</translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="8267698848189296333">Prijava kot: <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Če niste prepričani, kaj to pomeni, se obrnite na skrbnika omrežja.</translation>
 <translation id="8293206222192510085">Dodaj zaznamek</translation>
 <translation id="8294431847097064396">Vir</translation>

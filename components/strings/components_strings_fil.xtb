@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Pagkasyahin sa lapad</translation>
 <translation id="1088860948719068836">Magdagdag ng Pangalan sa Card</translation>
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Ipakita ang lahat ng naka-save na password...</translation>
 <translation id="1107591249535594099">Kung lalagyan ng check, mag-iimbak ang Chrome ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
 <translation id="1111153019813902504">Mga kamakailang bookmark</translation>
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;I-print...</translation>
 <translation id="1181037720776840403">Alisin</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Awtomatikong iulat<ph name="END_WHITEPAPER_LINK" /> ang mga detalye ng mga posibleng insidente ng seguridad sa Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Hindi Nakumpleto ang Pagbabayad</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1201895884277373915">Higit pa mula sa site na ito</translation>
 <translation id="1206967143813997005">Hindi magandang paunang signature</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
 <translation id="5541546772353173584">Magdagdag ng Email</translation>
 <translation id="5544037170328430102">Isinasaad ng isang naka-embed na page sa <ph name="SITE" /> na:</translation>
+<translation id="5545756402275714221">Mga Artikulo para sa Iyo</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5560088892362098740">Petsa ng Pag-expire</translation>
 <translation id="5565735124758917034">Aktibo</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Di-wastong token sa pamamahala ng device</translation>
 <translation id="5633066919399395251">Maaaring magtangka ang mga attacker na kasalukuyang nasa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> na mag-install ng mga mapanganib na program sa iyong computer na magnanakaw o magde-delete ng impormasyon mo (halimbawa, mga larawan, password, mensahe, at credit card). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Na-block ang mapanlinlang na content.</translation>
-<translation id="5646376287012673985">Lokasyon</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Makakuha ng naka-personalize na content</translation>
 <translation id="5675650730144413517">Hindi gumagana ang page na ito</translation>
+<translation id="5689199277474810259">I-export sa JSON</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5719499550583120431">Tinatanggap ang mga prepaid card.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Huling kinuha:</translation>
 <translation id="8253091569723639551">Kinakailangan ang billing address</translation>
 <translation id="8261506727792406068">I-delete</translation>
+<translation id="8267698848189296333">Nagsa-sign in bilang <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Makipag-ugnay sa administrator ng iyong network kung hindi ka sigurado kung ano ang ibig sabihin nito.</translation>
 <translation id="8293206222192510085">Magdagdag ng Bookmark</translation>
 <translation id="8294431847097064396">Pinagmulan</translation>

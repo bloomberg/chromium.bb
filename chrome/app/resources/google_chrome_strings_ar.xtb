@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
 <translation id="1795405610103747296">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة SMS إلى هاتفك: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chrome.</translation>
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="2063848847527508675">‏يلزم إعادة تشغيل نظام التشغيل Chrome حتى يتم تطبيق التحديث.</translation>
@@ -60,7 +59,6 @@
 <translation id="2446511512801740068">‏Chrome غير محدّث لأنه لم تتم إعادة تشغيله منذ فترة. هناك تحديث متوفر وسيتم تطبيقه بمجرد إعادة تشغيله.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. يُرجى إغلاق Google Chrome وإعادة المحاولة.</translation>
-<translation id="2582790009689336987">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقي تحديثات Google Chrome نظرًا لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="2586406160782125153">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">‏شعار Chrome</translation>
 <translation id="2664962310688259219">‏تراخيص مفتوحة المصدر لنظام التشغيل Chrome</translation>
@@ -86,7 +84,6 @@
 
 يُرجى التحقق من بريدك الإلكتروني على <ph name="ACCOUNT_EMAIL" /> للحصول على مزيد من التعليمات.</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
-<translation id="3311976847535831054">‏لن يتلقى هذا الكمبيوتر تحديثات Google Chrome إصدار 32 بت بعد الآن. يُرجى الترقية إلى Google Chrome إصدار 64 بت.</translation>
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="3395323229510056640">‏الحصول على مساعدة في نظام التشغيل Chrome</translation>
 <translation id="3396977131400919238">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
@@ -116,7 +113,6 @@
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chrome مطلوبة)</translation>
 <translation id="4328355335528187361">‏إصدار مطوّري البرامج من Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">‏لم يعد يتلقى جهاز الكمبيوتر هذا تحديثات Google Chrome؛ لأن نظام Linux هذا لم يعد مدعومًا.</translation>
 <translation id="4407807842708586359">‏نظام تشغيل Google Chrome</translation>
 <translation id="4458285410772214805">يُرجى الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4458462641685292929">‏عملية أخرى على Google Chrome قيد التقدم. يُرجى المحاولة مرة أخرى لاحقًا.</translation>
@@ -130,7 +126,6 @@
 <translation id="4728575227883772061">‏فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4743926867934016338">موافقة وبحث</translation>
 <translation id="4750550185319565338">‏إعادة تشغيل Chrome لتمكين <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">‏سيتوقف هذا الكمبيوتر قريبًا عن تلقِّي تحديثات Google Chrome إصدار 32 بت. يُرجى الترقية إلى Google Chrome إصدار 64 بت.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
@@ -209,7 +204,6 @@
 <translation id="6989339256997917931">‏تم تحديث متصفح Google Chrome، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="7098166902387133879">‏يستخدم Google Chrome الميكروفون.</translation>
 <translation id="7106741999175697885">‏مدير المهام - Google Chrome</translation>
-<translation id="7125719106133729027">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chrome يدويًا.</translation>
 <translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>
 <translation id="7164397146364144019">‏يمكنك المساعدة في جعل Chrome أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="7185038942300673794">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chrome.</translation>

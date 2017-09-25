@@ -37,7 +37,6 @@
 <translation id="2265088490657775772">iPhone에 Chromium 다운로드하기</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
-<translation id="2372704305038231957">이 Linux 시스템에서 더 이상 32비트 Chromium이 지원되지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다. 64비트 Chromium으로 업그레이드하세요.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{현재 다운로드가 진행 중입니다. 다운로드를 취소하고 Chromium을 종료하시겠습니까?}other{현재 #개의 다운로드가 진행 중입니다. 다운로드를 취소하고 Chromium을 종료하시겠습니까?}}</translation>
 <translation id="2396765026452590966">Chromium을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2483889755041906834">Chromium에서</translation>
@@ -142,8 +141,6 @@
 <translation id="5772805321386874569">(Chromium을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="5796460469508169315">Chromium 준비가 거의 완료되었습니다.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 업데이트해야 합니다.</translation>
-<translation id="5859963531214966875">Chromium 향후 버전에서는 더 이상 이 Linux 시스템을 지원하지 않습니다.</translation>
 <translation id="5862307444128926510">Chromium에 오신 것을 환영합니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
@@ -169,8 +166,6 @@
 <translation id="6505742536731484931">Chromium이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
 <translation id="6526111688217511984">Chromium에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
-<translation id="6584627348340620412">향후 32비트 Chromium 버전에서는 더 이상 이 Linux 시스템을 지원하지 않습니다. 64비트 Chromium으로 업그레이드하세요.</translation>
-<translation id="6593914713218535185">이 Linux 시스템에서 더 이상 Chromium이 지원되지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
@@ -184,7 +179,6 @@
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
-<translation id="7027298027173928763">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 직접 다시 설치해야 합니다.</translation>
 <translation id="705851970750939768">Chromium 업데이트</translation>
 <translation id="7066436765290594559">Chromium OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="707471633328071618">Google Payments(Chromium에 복사됨)</translation>

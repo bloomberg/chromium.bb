@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">dapatkan Chromium di iPhone</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
-<translation id="2372704305038231957">Chromium 32-bit mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini. Tingkatkan versi ke Chromium 64-bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}other{# download sedang berlangsung. Ingin membatalkan download dan keluar dari Chromium?}}</translation>
 <translation id="2396765026452590966">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
 <translation id="2483889755041906834">Di Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(Chromium perlu <ph name="BEGIN_BUTTON" />dimulai ulang<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda melewatkan perbaikan keamanan dan fitur baru yang keren. Anda perlu memperbarui Chromium.</translation>
-<translation id="5859963531214966875">Versi Chromium berikutnya sudah tidak mendukung sistem Linux ini.</translation>
 <translation id="5862307444128926510">Selamat Datang di Chromium</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini.</translation>
 <translation id="6510925080656968729">Uninstal Chromium</translation>
 <translation id="6526111688217511984">Chromium memerlukan akses penyimpanan untuk mendownload file.</translation>
-<translation id="6584627348340620412">Versi Chromium 32-bit berikutnya sudah tidak mendukung sistem Linux ini, tingkatkan versi ke Chromium 64-bit.</translation>
-<translation id="6593914713218535185">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini.</translation>
 <translation id="6638567566961868659">Cari bookmark Anda dalam menu Chromium atau di bilah bookmark.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
@@ -182,7 +177,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
-<translation id="7027298027173928763">Chromium tidak dapat memperbarui dirinya sendiri ke versi terbaru, jadi Anda ketinggalan perbaikan keamanan dan fitur baru yang keren. Anda perlu memasang ulang Chromium secara manual.</translation>
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="707471633328071618">Google Payments (disalin ke Chromium)</translation>

@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">tải Chromium trên iPhone của bạn</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2347108572062610441">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
-<translation id="2372704305038231957">Chromium 32 bit có thể không hoạt động đúng do không được hỗ trợ trên hệ thống Linux này nữa. Vui lòng nâng cấp lên Chromium 64 bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Một tải xuống hiện đang diễn ra. Bạn có muốn hủy tải xuống và thoát khỏi Chromium không?}other{# tải xuống hiện đang diễn ra. Bạn có muốn hủy tải xuống và thoát khỏi Chromium không?}}</translation>
 <translation id="2396765026452590966">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="2483889755041906834">Trong Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(yêu cầu Chromium <ph name="BEGIN_BUTTON" />khởi động lại<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
-<translation id="5823381412099532241">Chromium không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chromium.</translation>
-<translation id="5859963531214966875">Các phiên bản Chromium trong tương lai sẽ không hỗ trợ hệ thống Linux này nữa.</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium cần truy cập vị trí của bạn để chia sẻ thông tin vị trí của bạn với trang web này.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
 <translation id="6526111688217511984">Chromium cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
-<translation id="6584627348340620412">Các phiên bản Chromium 32 bit trong tương lai sẽ không hỗ trợ hệ thống Linux này nữa. Vui lòng nâng cấp lên Chromium 64 bit.</translation>
-<translation id="6593914713218535185">Chromium có thể không hoạt động đúng cách do không được hỗ trợ trên hệ thống Linux này nữa.</translation>
 <translation id="6638567566961868659">Tìm dấu trang của bạn trong menu Chromium hoặc trên thanh dấu trang.</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
@@ -182,7 +177,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6944967875980567883">Mô-đun được tải vào Chromium</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
-<translation id="7027298027173928763">Chromium không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cài đặt lại Chromium theo cách thủ công.</translation>
 <translation id="705851970750939768">Cập nhật Chromium</translation>
 <translation id="7066436765290594559">Chromium OS không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="707471633328071618">Google Payments (đã sao chép vào Chromium)</translation>

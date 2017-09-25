@@ -37,7 +37,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2265088490657775772">pata Chromium kwenye iPhone yako</translation>
 <translation id="2316129865977710310">La, asante</translation>
 <translation id="2347108572062610441">Kiendelezi hiki kimebadilisha ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
-<translation id="2372704305038231957">Huenda Chromium ya 32-bit haitafanya kazi vizuri kwa sababu haitumiki tena kwenye mfumo wa Linux. Tafadhali pata toleo jipya la Chromium la 64-bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Kipakuliwa kinaendelea kwa sasa. Unataka kughairi kipakuliwa na kuondoka Chromium?}other{Vipakuliwa # vinaendelea kwa sasa. Unataka kughairi vipakuliwa na kuondoka Chromium?}}</translation>
 <translation id="2396765026452590966">Kiendelezi hiki "<ph name="EXTENSION_NAME" />" kimebadilisha ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
 <translation id="2483889755041906834">Katika Chromium</translation>
@@ -142,8 +141,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="5772805321386874569">(inahitaji uanzishaji upya wa  <ph name="BEGIN_BUTTON" />Chromium<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium inakaribia kuwa tayari.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chromium.</translation>
-<translation id="5859963531214966875">Matoleo ya baadaye ya Chromium hayatatumia tena mfumo huu wa Linux.</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5877064549588274448">Kituo kimebadilishwa. Zima na uwashe kifaa chako ili mabadiliko yaanze kutumika.</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
@@ -169,8 +166,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="6505742536731484931">Chromium inahitaji kufikia maelezo ya mahali ulipo ili kushiriki maelezo ya mahali na tovuti hii.</translation>
 <translation id="6510925080656968729">Sanidua Chromium</translation>
 <translation id="6526111688217511984">Chromium inahitaji idhini ya kufikia hifadhi ili ipakue faili.</translation>
-<translation id="6584627348340620412">Matoleo ya baadaye ya Chromium ya 32-bit hayatatumia tena mfumo huu wa Linux, tafadhali pata toleo jipya la Chromium la 64-bit.</translation>
-<translation id="6593914713218535185">Huenda Chromium haitafanya kazi vizuri kwa sababu haitumiki tena kwenye mfumo huu wa Linux.</translation>
 <translation id="6638567566961868659">Pata alamisho zako katika menyu ya Chromium au kwenye upau wa alamisho.</translation>
 <translation id="6676384891291319759">Fika kwenye wavuti</translation>
 <translation id="6717134281241384636">Wasifu wako hauwezi kutumiwa kwa sababu umetoka katika toleo jipya la Chromium.
@@ -184,7 +179,6 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="6893813176749746474">Chromium imesasishwa, lakini hujaitumia angalau kwa siku 30.</translation>
 <translation id="6944967875980567883">Vipengee vilivyopakiwa kwenye Chromium</translation>
 <translation id="6970811910055250180">Inasasisha kifaa chako...</translation>
-<translation id="7027298027173928763">Chromium haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kusakinisha Chromium tena mwenyewe.</translation>
 <translation id="705851970750939768">Sasisha Chromium</translation>
 <translation id="7066436765290594559">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia kusawazisha.</translation>
 <translation id="707471633328071618">Google Payments (imenakiliwa kwenye Chromium)</translation>

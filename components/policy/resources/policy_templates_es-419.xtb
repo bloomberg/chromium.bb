@@ -1375,7 +1375,7 @@ Si se usa esta política, el usuario accede a todas las impresoras, excepto los 
 <translation id="6111936128861357925">Permitir juego del huevo de pascua del dinosaurio</translation>
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>
-<translation id="6139485614509308022">Se se establece la política "OffHours", se ignorarán las políticas de dispositivo especificadas (se usará la configuración predeterminada de estas políticas) durante los intervalos definidos. Chrome vuelve a aplicar las políticas de dispositivo en todos los eventos cuando comienza y finaliza el período de "OffHours". Se le notificará al usuario y se lo obligará a salir de su cuenta cuando finalice el tiempo de "OffHours" y se modificará la configuración de las políticas de dispositivo (p. ej., cuando el usuario accede con una cuenta no habilitada).</translation>
+<translation id="6139485614509308022">Si se establece la política "OffHours", se ignorarán las políticas de dispositivo especificadas (se usará la configuración predeterminada de estas políticas) durante los intervalos definidos. Chrome vuelve a aplicar las políticas de dispositivo en todos los eventos cuando comienza y finaliza el período de "OffHours". Se le notificará al usuario y se lo obligará a salir de su cuenta cuando finalice el tiempo de "OffHours" y se modifique la configuración de las políticas de dispositivo (p. ej., cuando el usuario accede con una cuenta no habilitada).</translation>
 <translation id="6145799962557135888">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar JavaScript. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
@@ -1700,7 +1700,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si la política se establece en false o no se configura, <ph name="TLS_FALSE_START" /> se habilitará. Si se establece en true, <ph name="TLS_FALSE_START" /> se inhabilitará.</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
 <translation id="7443616896860707393">Avisos de autenticación básica de HTTP de origen cruzado</translation>
-<translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
 <translation id="7474249562477552702">Establecer si se permiten los certificados firmados con SHA-1 y emitidos por los anclajes de confianza locales</translation>
 <translation id="7485481791539008776">Normas de selección de la impresora predeterminada</translation>

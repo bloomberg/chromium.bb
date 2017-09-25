@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">আপনার iPhone এ Chromium ইনস্টল করুন</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2347108572062610441">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশানটি পরিবর্তন করেছে।</translation>
-<translation id="2372704305038231957">৩২-বিট Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর এই Linux সিস্টেমে সমর্থিত নয়। দয়া করে ৬৪-বিট Chromium এ আপগ্রেড করুন।</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{বর্তমানে একটি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোড বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}one{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}other{বর্তমানে #টি ডাউনলোড হচ্ছে। আপনি কি ডাউনলোডগুলি বাতিল করে Chromium থেকে বেরিয়ে যেতে চান?}}</translation>
 <translation id="2396765026452590966">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশান পরিবর্তন করেছে।</translation>
 <translation id="2483889755041906834">Chromium এ</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />আবার চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="5796460469508169315">Chromium প্রায় প্রস্তুত।</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে Chromium আপডেট করতে হবে।</translation>
-<translation id="5859963531214966875">Chromium এর ভবিষ্যৎ সংস্করণগুলি আর এই Linux সিস্টেম সমর্থন করবে না।</translation>
 <translation id="5862307444128926510">Chromium-এ স্বাগতম</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস আবার শুরু করুন৷</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">এই সাইটটির সাথে আপনার অবস্থান শেয়ার করার জন্য Chromium কে আপনার অবস্থানের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
 <translation id="6526111688217511984">ফাইল ডাউনলোড করতে Chromium এর জন্য সঞ্চয়স্থানের অ্যাক্সেস প্রয়োজন।</translation>
-<translation id="6584627348340620412">৩২-বিট Chromium এর ভবিষ্যৎ সংস্করণগুলি আর এই Linux সিস্টেম সমর্থন করবে না, দয়া করে ৬৪-বিট Chromium এ আপগ্রেড করুন।</translation>
-<translation id="6593914713218535185">Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর এই Linux সিস্টেমে সমর্থিত নয়।</translation>
 <translation id="6638567566961868659">Chromium মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
@@ -180,7 +175,6 @@
 <translation id="6893813176749746474"> Chromium আপডেট করা হয়েছে৷ কিন্তু আপনি এটি অন্ততঃপক্ষে 30 দিন ব্যবহার করতে পারবেন না৷</translation>
 <translation id="6944967875980567883">Chromium-এ মডিউলগুলি লোড হয়েছে</translation>
 <translation id="6970811910055250180">আপনার ডিভাইস আপডেট করা হচ্ছে ...</translation>
-<translation id="7027298027173928763">Chromium নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে নিজে Chromium আবার ইন্সটল করতে হবে।</translation>
 <translation id="705851970750939768">Chromium আপডেট করুন</translation>
 <translation id="7066436765290594559">Chromium OS আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="707471633328071618">Google Payments (Chromium এ অনুলিপি করা হয়েছে)</translation>

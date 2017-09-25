@@ -234,7 +234,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="3295602654194328831">Skryť informácie</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
-<translation id="3319792846664697699">Navigačný panel</translation>
 <translation id="3321222012623826478">Táto služba vyžaduje na účely overenia anonymné odoslanie webovej adresy na servery Google.</translation>
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3341058695485821946">Zistite, koľko dát ste ušetrili</translation>
@@ -291,7 +290,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3810973564298564668">Spravovať</translation>
 <translation id="3819178904835489326">Počet odstránených stiahnutých súborov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Vymazať úložisko webu?</translation>
-<translation id="3845539888601087042">Zobrazuje sa história zo zariadení, na ktorých ste prihlásený/-á. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
@@ -334,7 +332,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="4226663524361240545">Upozornenia môžu pri prijatí na zariadení spustiť vibrovanie</translation>
 <translation id="4242533952199664413">Otvoriť nastavenia</translation>
-<translation id="4248297594476034182">Ak chcete mať svoje karty na všetkých zariadeniach, prihláste sa do Chromu.</translation>
 <translation id="424864128008805179">Odhlásiť sa z prehliadača Chrome?</translation>
 <translation id="4254813446494774748">Jazyk prekladu:</translation>
 <translation id="4256782883801055595">Licencie open source</translation>
@@ -457,7 +454,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5423934151118863508">Tu sa zobrazia vaše najnavštevovanejšie stránky.</translation>
 <translation id="5424588387303617268">K dispozícii je <ph name="GIGABYTES" /> GB</translation>
 <translation id="5433691172869980887">Používateľské meno bolo skopírované</translation>
-<translation id="5435775191620395718">Zobrazuje sa história z tohto zariadenia. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">Prechod na panel s adresou</translation>
 <translation id="5447201525962359567">Celé úložisko webu vrátane súborov cookie a ďalších lokálne uložených dát</translation>
 <translation id="5447765697759493033">Tento web nebude preložený</translation>
@@ -484,7 +480,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5620928963363755975">Súbory a stránky nájdete v priečinku Stiahnuté súbory po použití tlačidla Ďalšie možnosti</translation>
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="5639724618331995626">Povoliť všetky weby</translation>
-<translation id="5646376287012673985">Poloha</translation>
 <translation id="5648166631817621825">Posledných 7 dní</translation>
 <translation id="5655963694829536461">Hľadajte medzi stiahnutými súbormi</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -631,6 +626,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="688738109438487280">Pridať existujúce dáta do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorená karta}few{%1$d otvorené karty}many{%1$d otvorenej karty}other{%1$d otvorených kariet}}</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
+<translation id="6910211073230771657">Odstránené</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6963766334940102469">Odstrániť záložky</translation>
 <translation id="6965382102122355670">OK</translation>

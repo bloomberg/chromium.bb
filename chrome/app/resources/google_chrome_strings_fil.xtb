@@ -36,7 +36,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Kumuha ng tulong sa paggamit ng Chrome OS</translation>
 <translation id="1795405610103747296">I-install ang Chrome sa iyong telepono. Magpapadala kami ng SMS sa telepono mo: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Luma na ang Chrome</translation>
 <translation id="2063848847527508675">Kailangang ma-restart ang Chrome OS upang mailapat ang update.</translation>
@@ -62,7 +61,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2446511512801740068">Luma na ang Chrome dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2580411288591421699">Hindi ma-install ang parehong bersyon ng Google Chrome na kasalukuyang tumatakbo. Mangyaring isara ang Google Chrome at muling subukan.</translation>
-<translation id="2582790009689336987">Malapit nang hindi makatanggap ng mga update sa Google Chrome ang computer na ito dahil hindi na susuportahan ang Linux system na ito.</translation>
 <translation id="2586406160782125153">Ide-delete nito ang iyong data mula sa pag-browse sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo ng Chrome</translation>
 <translation id="2664962310688259219">Mga lisensya ng open source ng Chrome OS</translation>
@@ -88,7 +86,6 @@ Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account
 
 Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
-<translation id="3311976847535831054">Hindi na tatanggap ang computer na ito ng mga update sa 32-bit na Google Chrome. Mangyaring mag-upgrade sa 64-bit na Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Humingi ng tulong sa Chrome OS</translation>
 <translation id="3396977131400919238">Nagkaroon ng error sa operating system habang nag-i-install. Paki-download muli ang Google Chrome.</translation>
@@ -118,7 +115,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4309555186815777032">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Hindi na makakatanggap ng mga update sa Google Chrome ang computer na ito dahil hindi na sinusuportahan ang Linux system na ito.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4458462641685292929">May kasalukuyang isinasagawang isa pang pagpapatakbo sa Google Chrome. Pakisubukang muli sa ibang pagkakataon.</translation>
@@ -132,7 +128,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
 <translation id="4750550185319565338">I-restart ang Chrome upang ma-enable ang <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Malapit nang huminto sa pagtanggap ang computer na ito ng mga update sa 32-bit na Google Chrome. Mangyaring mag-upgrade sa 64-bit na Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Maaaring mapanganib ang file na ito, kaya na-block ito ng Chrome.</translation>
 <translation id="4794050651896644714">I-save ang mga detalye sa Chrome</translation>
@@ -213,7 +208,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
 <translation id="7098166902387133879">Ginagamit ng Google Chrome ang iyong mikropono.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="7125719106133729027">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chrome nang manu-mano.</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>
 <translation id="7164397146364144019">Makakatulong ka na gawing mas ligtas at mas madaling gamitin ang Chrome sa pamamagitan ng awtomatikong pag-uulat ng mga detalye ng mga posibleng isyu sa seguridad sa Google.</translation>
 <translation id="7185038942300673794">Naidagdag ang <ph name="EXTENSION_NAME" /> sa Chrome.</translation>

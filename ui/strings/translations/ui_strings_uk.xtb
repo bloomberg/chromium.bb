@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">Торкніться елементів для дотику на екрані.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек.</translation>
 <translation id="24452542372838207">Розгорнути сповіщення</translation>
-<translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2497284189126895209">Усі файли</translation>
 <translation id="2522350507219695259">Калібрування завершено</translation>
 <translation id="252373100621549798">Невідомий дисплей</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">Кома</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 с тому}one{# с тому}few{# с тому}many{# с тому}other{# с тому}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 секунду тому}one{# секунду тому}few{# секунди тому}many{# секунд тому}other{# секунди тому}}</translation>
-<translation id="6528179044667508675">Не турбувати</translation>
 <translation id="6612467943526193239">Натисніть клавішу Esc, щоб вийти з режиму калібрування.</translation>
 <translation id="6620110761915583480">Зберегти файл</translation>
 <translation id="6699343763173986273">Наступна композиція</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">Веб-сторінка без назви</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> Пб/сек.</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Залишився 1 рік}one{Залишився # рік}few{Залишилося # роки}many{Залишилося # років}other{Залишилося # року}}</translation>
-<translation id="6918245111648057970">Дозволити сповіщення для кожного користувача:</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6965382102122355670">ТАК</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">НАЙІМОВІРНІШЕ</translation>
-<translation id="7135556860107312402">Дозволити сповіщення з перелічених нижче джерел.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Залишилась 1 хв}one{Залишилася # хв}few{Залишилося # хв}many{Залишилося # хв}other{Залишилося # хв}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 хв тому}one{# хв тому}few{# хв тому}many{# хв тому}other{# хв тому}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Залишилась 1 хвилина}one{Залишилася # хвилина}few{Залишилося # хвилини}many{Залишилося # хвилин}other{Залишилося # хвилини}}</translation>
-<translation id="7457942297256758195">Очистити все</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
-<translation id="7647488630410863958">Розблокуйте пристрій, щоб переглянути сповіщення</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7814458197256864873">&amp;Копіювати</translation>
-<translation id="7850320739366109486">Не турбувати</translation>
 <translation id="7907591526440419938">Відкрити файл</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 рік}one{# рік}few{# роки}many{# років}other{# року}}</translation>
 <translation id="8371695176452482769">Диктуйте</translation>
 <translation id="838869780401515933">установити прапорець</translation>
-<translation id="8392688371657486010">сповіщень</translation>
 <translation id="8394908167088220973">Відтворити чи призупинити</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">Налаштування</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 р.}one{# р.}few{# р.}many{# р.}other{# р.}}</translation>
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1685087038067318291">发现附近物体播报的网页。蓝牙功能处于开启状态时，Chrome 可以收集与您周围的物体关联的网页，并将这些网页以匿名方式发送给 Google，以便找到最实用的网页。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="415767770115540173">要在 Chrome 中获得更好的 Google 使用体验，需要用到您的位置信息。</translation>
-<translation id="4248297594476034182">要将您的标签页同步到您的所有设备上，请登录 Chrome。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="4615174829807303908">您正要退出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>

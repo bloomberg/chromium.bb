@@ -663,6 +663,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
+<translation id="332771718998993005">Determina el nom anunciat com a destinació per a <ph name="PRODUCT_NAME" />.
+
+          Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació per a <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -981,7 +984,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4555850956567117258">Activa el testimoni remot per a l'usuari.</translation>
 <translation id="4557134566541205630">URL de la pestanya nova del proveïdor de cerca predeterminat</translation>
-<translation id="4558592878156368639">Intervals de poca activitat quan s'apliquen les |ignored_policies| OffHours del dispositiu</translation>
+<translation id="4558592878156368639">Intervals "OffHours" en què s'apliquen les |ignored_policies| "OffHours" del dispositiu</translation>
 <translation id="4600786265870346112">Activa el cursor gran</translation>
 <translation id="4604931264910482931">Configura la llista negra de missatgeria nativa</translation>
 <translation id="4617338332148204752">Omet la comprovació de metaetiquetes a <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1139,6 +1142,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es restringeixen perquè siguin menors que o iguals al retard d'inactivitat.</translation>
 <translation id="5307432759655324440">Disponibilitat del mode d'incògnit</translation>
 <translation id="5318185076587284965">Permet que l'amfitrió d'accés remot pugui utilitzar els servidors de tramesa</translation>
+<translation id="5323128137188992869">Permet que s'emeti el contingut al dispositiu mitjançant <ph name="PRODUCT_NAME" />.
+
+          Si aquesta política es defineix com a "false", els usuaris no podran emetre contingut al seu dispositiu. Si es defineix com a "true", els usuaris podran emetre contingut. Si no es defineix, els usuaris no podran emetre contingut en dispositius de Chrome OS inscrits, però sí que ho podran fer en dispositius no inscrits.</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
@@ -1352,6 +1358,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
+<translation id="6139485614509308022">Si es defineix la política "OffHours", les polítiques específiques del dispositiu s'ignoraran durant els intervals de temps definits i s'utilitzarà la configuració predeterminada d'aquestes polítiques. Chrome tornarà a aplicar les polítiques del dispositiu en cada esdeveniment quan el període "OffHours" s'iniciï o finalitzi. L'usuari rebrà una notificació i se'l forçarà a tancar la sessió quan finalitzi el temps establert a "OffHours" i es modifiqui la configuració de la política del dispositiu (per exemple, quan un usuari iniciï la sessió amb un compte no permès).</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="614662973812186053">Aquesta política també controla la recopilació de dades d'ús i de diagnòstic d'Android.</translation>
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
@@ -1676,7 +1683,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si la política no s'estableix o s'estableix en false, s'activarà <ph name="TLS_FALSE_START" />. Si s'estableix en true, <ph name="TLS_FALSE_START" /> es desactivarà.</translation>
 <translation id="7433714841194914373">Activa Instant</translation>
 <translation id="7443616896860707393">Línies d'ordre d'autenticació bàsica HTTP de diversos orígens</translation>
-<translation id="7468416082528382842">Ubicació del registre de Windows:</translation>
 <translation id="7469554574977894907">Activa els suggeriments de cerca</translation>
 <translation id="7474249562477552702">Defineix si es permeten els certificats SHA-1 signats emesos per ancoratges de confiança local</translation>
 <translation id="7485481791539008776">Regles de selecció de la impressora predeterminada</translation>

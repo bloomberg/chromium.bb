@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">dapatkan Chromium pada iPhone anda</translation>
 <translation id="2316129865977710310">Tidak, terima kasih</translation>
 <translation id="2347108572062610441">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
-<translation id="2372704305038231957">Chromium 32 bit mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi. Sila tingkatkan kepada Chromium 64 bit.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Chromium?}}</translation>
 <translation id="2396765026452590966">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
 <translation id="2483889755041906834">Dalam Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(memerlukan Chromium <ph name="BEGIN_BUTTON" />dimulakan semula<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium hampir sedia.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chromium.</translation>
-<translation id="5859963531214966875">Versi Chromium yang akan datang tidak akan menyokong sistem Linux ini lagi.</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
 <translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6526111688217511984">Chromium memerlukan akses storan untuk memuat turun fail.</translation>
-<translation id="6584627348340620412">Versi Chromium 32 bit yang akan datang tidak akan menyokong sistem Linux ini lagi, sila tingkatkan kepada Chromium 64 bit.</translation>
-<translation id="6593914713218535185">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak disokong pada sistem Linux ini lagi.</translation>
 <translation id="6638567566961868659">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6717134281241384636">Profil anda tidak boleh digunakan kerana profil anda dihasilkan dari versi Chromium yang lebih baharu.
@@ -182,7 +177,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="6893813176749746474">Chromium telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
 <translation id="6970811910055250180">Mengemas kini peranti anda...</translation>
-<translation id="7027298027173928763">Chromium tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu memasang semula Chromium secara manual.</translation>
 <translation id="705851970750939768">Kemas kini Chromium</translation>
 <translation id="7066436765290594559">OS Chromium tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
 <translation id="707471633328071618">Google Payments (disalin ke Chromium)</translation>

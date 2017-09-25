@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtén ajuda per a l'ús de Chrome OS</translation>
 <translation id="1795405610103747296">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que actualitzeu Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no està actualitzat</translation>
 <translation id="2063848847527508675">Cal reiniciar Chrome OS per aplicar l'actualització.</translation>
@@ -58,7 +57,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2446511512801740068">Chrome no està actualitzat perquè fa temps que no s'inicia. Hi ha una actualització disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
-<translation id="2582790009689336987">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome perquè aquest sistema Linux ja no serà compatible.</translation>
 <translation id="2586406160782125153">Amb aquesta acció, se suprimiran les teves dades de navegació d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chrome com a <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotip de Chrome</translation>
 <translation id="2664962310688259219">Llicències de programari lliure de Chrome OS</translation>
@@ -84,7 +82,6 @@ Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloqu
 
 Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
-<translation id="3311976847535831054">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome de 32 bits. Feu l'actualització a Google Chrome de 64 bits.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
 <translation id="3395323229510056640">Obtén ajuda per a Chrome OS</translation>
 <translation id="3396977131400919238">S'ha produït un error en el sistema operatiu durant la instal·lació. Torna a baixar Google Chrome.</translation>
@@ -114,7 +111,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="4309555186815777032">(cal <ph name="BEGIN_BUTTON" />reiniciar<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè aquest sistema Linux ja no és compatible.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
 <translation id="4458462641685292929">Hi ha una altra operació en curs a Google Chrome. Torna-ho a provar més tard.</translation>
@@ -128,7 +124,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
 <translation id="4743926867934016338">Accepta i cerca</translation>
 <translation id="4750550185319565338">Reinicia Chrome per activar <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Aquest ordinador aviat deixarà de rebre actualitzacions de Google Chrome de 32 bits. Feu l'actualització a Google Chrome de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome ha bloquejat aquest fitxer perquè pot ser perillós.</translation>
 <translation id="4794050651896644714">Desa els detalls a Chrome</translation>
@@ -205,7 +200,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
-<translation id="7125719106133729027">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que torneu a instal·lar Chrome manualment.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
 <translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> s'ha afegit a Chrome.</translation>

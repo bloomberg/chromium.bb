@@ -1823,7 +1823,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If the policy is not set or is set to false, then <ph name="TLS_FALSE_START" /> will be enabled. If it is set to true, <ph name="TLS_FALSE_START" /> will be disabled.</translation>
 <translation id="7433714841194914373">Enable Instant</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
-<translation id="7468416082528382842">Windows registry location:</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
 <translation id="7474249562477552702">Whether SHA-1 signed certificates issued by local trust anchors are allowed</translation>
 <translation id="7485481791539008776">Default printer selection rules</translation>

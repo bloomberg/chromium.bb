@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1685087038067318291">Descubra páginas Web enviadas por objetos próximos. Quando o Bluetooth está ativado, o Chrome pode recolher páginas Web associadas a objetos à sua volta e enviá-las anonimamente para o Google para procurar as que lhe são mais úteis. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">O Google Chrome não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="415767770115540173">Obter uma melhor experiência no Google Chrome com base na sua localização.</translation>
-<translation id="4248297594476034182">Para obter os seus separadores em todos os dispositivos, inicie sessão no Chrome.</translation>
 <translation id="424864128008805179">Pretende terminar sessão no Chrome?</translation>
 <translation id="4523886039239821078">Alguns suplementos provocam falhas no sistema do Chrome. Desinstale:</translation>
 <translation id="4615174829807303908">Está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Esta ação elimina os seus dados do Chrome deste dispositivo, embora permaneçam na Conta Google.</translation>

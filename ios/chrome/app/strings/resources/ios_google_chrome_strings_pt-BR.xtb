@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1326317727527857210">Para ver as guias dos seus outros dispositivos, faça login no Chrome.</translation>
 <translation id="1685087038067318291">Descubra páginas da Web enviadas por objetos nas proximidades. Quando o Bluetooth está ativado, o Chrome pode reunir páginas da Web associadas a objetos ao seu redor e enviá-las anonimamente ao Google para encontrar as mais úteis.<ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado desse website.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">O Google Chrome não têm acesso às suas fotos ou vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
 <translation id="415767770115540173">Melhore sua experiência do Google no Chrome de acordo com seu local.</translation>
-<translation id="4248297594476034182">Para ver suas guias em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
 <translation id="4615174829807303908">Você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>

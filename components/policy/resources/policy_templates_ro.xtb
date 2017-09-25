@@ -687,6 +687,9 @@
 <translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
 
           Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+<translation id="332771718998993005">Stabilește numele anunțat ca o destinație pentru <ph name="PRODUCT_NAME" />.
+
+          Dacă această politică este setată la un șir completat, acel șir va fi folosit ca nume al destinației pentru <ph name="PRODUCT_NAME" />. În caz contrar, numele destinației va fi numele dispozitivului. Dacă această politică nu este setată, numele destinației va fi numele dispozitivului, iar proprietarului dispozitivului (sau unui utilizator de pe domeniul care gestionează dispozitivul) i se va permite să îl modifice. Numele este limitat la 24 de caractere.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
@@ -1179,6 +1182,9 @@
           Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
 <translation id="5307432759655324440">Disponibilitatea modului incognito</translation>
 <translation id="5318185076587284965">Activați folosirea serverelor de transmisie de către gazdele de acces la distanță</translation>
+<translation id="5323128137188992869">Permite proiectarea conținutului pe dispozitiv folosind <ph name="PRODUCT_NAME" />.
+
+      Dacă această politică este dezactivată, utilizatorii nu vor putea să proiecteze conținut pe dispozitivul lor. Dacă această politică este activată, utilizatorii pot să proiecteze conținut. Dacă această politică nu este configurată, utilizatorii nu pot să proiecteze conținut pe dispozitivele cu sistemul de operare Chrome înregistrate, însă pot să facă acest lucru pe alte dispozitive.</translation>
 <translation id="5330684698007383292">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut</translation>
 <translation id="5365946944967967336">Afișează butonul Pagina de pornire în bara de instrumente</translation>
 <translation id="5366977351895725771">Dacă această politică nu este activată, crearea utilizatorilor monitorizați de către acest utilizator va fi dezactivată. Utilizatorii monitorizați existenți vor fi în continuare disponibili.
@@ -1394,6 +1400,7 @@
 <translation id="6111936128861357925">Permite jocul ascuns cu dinozaurul</translation>
 <translation id="6114416803310251055">învechit</translation>
 <translation id="6133088669883929098">Permite tuturor site-urilor să folosească generarea cheilor</translation>
+<translation id="6139485614509308022">Dacă politica „OffHours” este configurată, politicile privind dispozitivele specificate sunt ignorate (se folosesc setările prestabilite ale acestor politici) în intervalele de timp definite. Politicile privind dispozitivele sunt aplicate din nou de Chrome la fiecare eveniment când perioada setată prin „OffHours” începe sau se încheie. Utilizatorul va fi notificat și forțat să se deconecteze când perioada setată prin „OffHours” se încheie și setările politicii privind dispozitivele sunt modificate (de ex., când utilizatorul nu este conectat cu un cont permis).</translation>
 <translation id="6145799962557135888">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula JavaScript. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="614662973812186053">Această politică controlează și culegerea datelor Android privind utilizarea și diagnosticarea.</translation>
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
@@ -1718,7 +1725,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica nu este configurată sau este dezactivată, optimizarea <ph name="TLS_FALSE_START" /> va fi activată. Dacă politica este activată, optimizarea <ph name="TLS_FALSE_START" /> va fi dezactivată.</translation>
 <translation id="7433714841194914373">Activează Instant</translation>
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
-<translation id="7468416082528382842">Locația din registry-ul Windows:</translation>
 <translation id="7469554574977894907">Activează sugestiile de căutare</translation>
 <translation id="7474249562477552702">Dacă sunt permise certificatele semnate cu SHA-1, emise de ancorele de încredere locale</translation>
 <translation id="7485481791539008776">Reguli de selectare a imprimantei prestabilite</translation>

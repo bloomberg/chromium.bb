@@ -66,6 +66,7 @@
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
 <translation id="2103075008456228677">‏فتح history.google.com</translation>
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
+<translation id="213900355088104901">لتتصفَّح بشكل خاص، افتح علامة تبويب في وضع التصفح المتخفي</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
@@ -178,6 +179,7 @@
 <translation id="4281844954008187215">شروط الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
 <translation id="4342284590510997375">جديدة</translation>
+<translation id="434816576838749873">اختيار تطبيق البريد الإلكتروني</translation>
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4370827530403103842">المزامنة لا تعمل. انقر للإصلاح.</translation>
 <translation id="4375040482473363939">البحث عن رمز الاستجابة السريعة</translation>
@@ -309,6 +311,7 @@
 <translation id="6785453220513215166">جارٍ إرسال تقرير بالأعطال…</translation>
 <translation id="679325081238418596">يمكنك الحصول على الإشارات المرجعية والسِجل وكلمات المرور والإعدادات الأخرى على جميع أجهزتك</translation>
 <translation id="6797885426782475225">البحث الصوتي</translation>
+<translation id="6807889908376551050">إظهار الكل...</translation>
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
@@ -416,6 +419,7 @@
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
 <translation id="914898748153555155">‏يمكنك تغيير هذا التفضيل في أي وقت في إعدادات Chrome</translation>
+<translation id="91549621916703028">إنشاء علامات تبويب متعددة لجميع مهامك</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9203116392574189331">Handoff</translation>

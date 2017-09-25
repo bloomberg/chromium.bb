@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Ocultar automáticamente estantería</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1195412055398077112">reajustar</translation>
+<translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">La conexión Bluetooth se activará al habilitar los datos móviles.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
+<translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2501920221385095727">Teclas persistentes</translation>
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
+<translation id="3582792037806681688">Se ha inhabilitado el inicio de sesión múltiple para un usuario en esta sesión</translation>
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3606978283550408104">La pantalla braille está conectada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Escritura a mano</translation>
+<translation id="6528179044667508675">No molestar</translation>
 <translation id="6537270692134705506">Capturar pantalla</translation>
+<translation id="6580955892089546165">Esta función te permite acceder rápidamente a cualquier usuario que haya iniciado sesión sin tener que introducir una contraseña.
+
+Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tecla de búsqueda + Mayús + K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7052914147756339792">Establecer fondo de pantalla...</translation>
+<translation id="7054808953701320293">No volver a mostrar.</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
+<translation id="7135556860107312402">Permitir notificaciones de:</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7569509451529460200">Braille y ChromeVox están habilitados</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
+<translation id="7647488630410863958">Desbloquear el dispositivo para ver las notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
+<translation id="7658239707568436148">Cancelar</translation>
 <translation id="7692480393933218409">Cargando los dispositivos USB tipo C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
 <translation id="7798302898096527229">Pulsa la tecla de búsqueda o Mayús para cancelarlo.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
+<translation id="7994370417837006925">Inicio de sesión múltiple</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
+<translation id="8056430285089645882">No volver a mostrar.</translation>
+<translation id="8088137642766812908">Ten cuidado con esta función</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crear nota</translation>
 <translation id="8392234662362215700">Pulsa Control+Mayús+Espacio para cambiar de diseño de teclado.</translation>
+<translation id="8392688371657486010">No tienes notificaciones</translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433186206711564395">Configuración de red</translation>
 <translation id="8433977262951327081">La combinación de teclas para mostrar el cuadro del menú de opciones de entrada en la estantería ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814715559352963456">Si mueves ventanas a otro escritorio, es posible que se produzca un comportamiento inesperado.
+
+Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezcan después de realizar esta acción se dividan entre los escritorios.</translation>
 <translation id="8825534185036233643">No se puede proyectar contenido en más de dos pantallas.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">El micrófono se está utilizando.</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Se ha quitado la pantalla <ph name="DISPLAY_NAME" /></translation>
+<translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reinicia y aplica la función Powerwash para actualizar el sistema</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>

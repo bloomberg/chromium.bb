@@ -1714,7 +1714,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a <ph name="TLS_FALSE_START" /> engedélyezve lesz. Ha értéke igaz, akkor a <ph name="TLS_FALSE_START" /> le lesz tiltva.</translation>
 <translation id="7433714841194914373">Az Instant funkció engedélyezése</translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth-kérdés</translation>
-<translation id="7468416082528382842">Windows beállításjegyzékének helye:</translation>
 <translation id="7469554574977894907">Keresési javaslatok engedélyezése</translation>
 <translation id="7474249562477552702">A helyi bizalmi horgonyok által nyújtott SHA-1-aláírással rendelkező tanúsítványok engedélyezése</translation>
 <translation id="7485481791539008776">Alapértelmezett nyomtató kiválasztására vonatkozó szabályok</translation>

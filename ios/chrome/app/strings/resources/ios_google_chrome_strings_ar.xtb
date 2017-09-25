@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="1685087038067318291">‏يمكنك التعرَّف على صفحات الويب التي أرسلتها الأجهزة المجاورة. عند تشغيل البلوتوث، يتمكّن Chrome من جمع صفحات الويب المرتبطة بالأجهزة الموجودة حولك وإرسالها دون الكشف عن هويتها إلى Google لمعرفة أكثرها نفعًا لك. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">‏لقد تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة الموقع الإلكتروني.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">‏لا تتوفر لدي Google Chrome إمكانية الدخول إلى الصور أو مقاطع الفيديو. تستطيع تمكين الدخول في إعدادات iOS &gt; الخصوصية &gt; الصور.</translation>
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="415767770115540173">‏احصل على تجربة أفضل لاستخدام Google في Chrome استنادًا إلى موقعك.</translation>
-<translation id="4248297594476034182">‏للحصول على علامات التبويب على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4523886039239821078">‏تتسبب بعض الإضافات في تعطل Chrome. يُرجى إزالتها:</translation>
 <translation id="4615174829807303908">‏يتم تسجيل خروجك من حساب تتم إدارته من خلال <ph name="SIGNOUT_MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بيانات Chrome من هذا الجهاز، ولكن ستظل البيانات في حسابك في Google.</translation>

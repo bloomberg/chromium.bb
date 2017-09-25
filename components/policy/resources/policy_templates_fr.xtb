@@ -352,7 +352,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
       Si cette règle est définie sur "AllowMigration", les utilisateurs disposant d'un répertoire d'accueil eCryptfs pourront le faire migrer vers un chiffrement ext4 si nécessaire (à l'heure actuelle, proposé lorsqu'Android N est disponible sur l'appareil).
 
-      Cette règle ne s'applique pas aux applications kiosque, qui sont migrées automatiquement. Si cette règle n'est pas définie, l'appareil se comportera par défaut comme si elle était définie sur "DisallowArc".</translation>
+      Cette règle ne s'applique pas aux applications kiosque, qui sont migrées automatiquement. Si vous ne définissez pas de valeur pour cette règle, l'appareil se comportera par défaut comme si elle était définie sur "DisallowArc".</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
@@ -728,6 +728,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3322771899429619102">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à utiliser la génération de clé. Si la règle "KeygenBlockedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
 
           Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="332771718998993005">Détermine le nom de la destination <ph name="PRODUCT_NAME" />.
+
+          Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
@@ -1071,7 +1074,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="4541530620466526913">Comptes locaux de l'appareil</translation>
 <translation id="4555850956567117258">Activer l'attestation à distance pour l'utilisateur</translation>
 <translation id="4557134566541205630">URL de la page Nouvel onglet du moteur de recherche par défaut</translation>
-<translation id="4558592878156368639">Intervalles de désactivation (en heures) pendant lesquels les |ignored_policies| de désactivation de l'appareil sont disponibles</translation>
+<translation id="4558592878156368639">Intervalles de désactivation (en heures) pendant lesquels les règles OffHours |ignored_policies| de désactivation de l'appareil sont disponibles</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1249,6 +1252,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Cette valeur, qui doit être inférieure ou égale au délai d'inactivité, est définie en millisecondes.</translation>
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
+<translation id="5323128137188992869">Permet de caster du contenu sur l'appareil avec <ph name="PRODUCT_NAME" />.
+
+          Si cette règle est définie sur "False", les utilisateurs ne peuvent pas caster de contenu sur leur appareil. Si elle est définie sur "True", les utilisateurs sont autorisés à caster du contenu. Si elle n'est pas définie, les utilisateurs ne peuvent pas caster de contenu sur les appareils Chrome OS enregistrés, mais ils peuvent le faire sur des appareils non enregistrés.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
@@ -1480,6 +1486,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
 <translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
+<translation id="6139485614509308022">Si la règle de désactivation "OffHours" est définie, les règles spécifiées de l'appareil sont ignorées (utilisation des paramètres par défaut de ces règles) pendant la période définie. Les règles relatives à l'appareil sont de nouveau appliquées par Chrome à chaque événement lorsque la période de désactivation OffHours commence ou se termine. L'utilisateur reçoit une notification et est obligé de se déconnecter à la fin de la période de désactivation OffHours et lorsque les paramètres des règles relatives à l'appareil sont modifiés (par exemple, si l'utilisateur est connecté avec un compte non autorisé).</translation>
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1797,7 +1804,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter.</translation>
+<translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de devoir se reconnecter.</translation>
 <translation id="7329842439428490522">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de la batterie
 
                       Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> éteigne l'écran.
@@ -1834,7 +1841,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", <ph name="TLS_FALSE_START" /> est activé. Si elle est définie sur "True", <ph name="TLS_FALSE_START" /> est désactivé.</translation>
 <translation id="7433714841194914373">Activer la recherche instantanée</translation>
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
-<translation id="7468416082528382842">Emplacement dans le registre Windows :</translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
 <translation id="7474249562477552702">Définir si les certificats signés par SHA-1 émis par les ancres d'approbation locales sont autorisés</translation>
 <translation id="7485481791539008776">Instructions de sélection de l'imprimante par défaut</translation>
@@ -2062,7 +2068,7 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
       Si "AllowAll" est sélectionné, toutes les imprimantes sont affichées.
       Si "BlacklistRestriction" est sélectionné, "NativePrintersBulkBlacklist"
       est utilisé pour limiter l'accès aux imprimantes spécifiées. Si
-      "WhitelistPrintersOnly" est sélectionné, "DeviceNativePrintersWhitelist"
+      "WhitelistPrintersOnly" est sélectionné, "NativePrintersWhitelist"
       indique uniquement les imprimantes qui peuvent être sélectionnées.
       Si cette règle n'est pas définie, "BlacklistRestriction" est supposé
       s'appliquer.

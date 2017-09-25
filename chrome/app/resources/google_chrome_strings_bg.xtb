@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
 <translation id="1795405610103747296">Инсталирайте Chrome на телефона си. Ще ви изпратим SMS на него: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се да актуализирате браузъра.</translation>
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome не е актуален</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
@@ -60,7 +59,6 @@
 <translation id="2446511512801740068">Chrome не е актуален, защото не е бил стартиран отново известно време. Налице е актуализация, която ще бъде приложена веднага, когато рестартирате.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2580411288591421699">Не може да се инсталира същата версия на Google Chrome, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
-<translation id="2582790009689336987">Компютърът скоро ще спре да получава актуализации на Google Chrome, тъй като тази система Linux вече няма да се поддържа.</translation>
 <translation id="2586406160782125153">Данните за сърфирането ви ще се изтрият от това устройство. За да ги извлечете по-късно, влезте в Chrome като <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Лого на Chrome</translation>
 <translation id="2664962310688259219">Лицензи за отворен код за Chrome OS</translation>
@@ -86,7 +84,6 @@
 
 За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
-<translation id="3311976847535831054">Този компютър вече няма да получава актуализации за 32-битовата версия на Google Chrome. Моля, надстройте до 64-битовата версия на браузъра.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Получаване на помощ за Chrome OS</translation>
 <translation id="3396977131400919238">По време на инсталирането възникна грешка в операционната система. Моля, изтеглете Google Chrome отново.</translation>
@@ -116,7 +113,6 @@
 <translation id="4309555186815777032">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Занапред компютърът няма да получава актуализации на Google Chrome, защото тази система Linux вече не се поддържа.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
@@ -130,7 +126,6 @@
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4743926867934016338">Приемане и търсене</translation>
 <translation id="4750550185319565338">Рестартирайте Chrome, за да активирате <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Този компютър скоро ще спре да получава актуализации за 32-битовата версия на Google Chrome. Моля, надстройте до 64-битовата версия на браузъра.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (входящ трафик за mDNS)</translation>
 <translation id="4771048833395599659">Chrome блокира този файл, тъй като може да е опасен.</translation>
 <translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
@@ -207,7 +202,6 @@
 <translation id="6989339256997917931">Google Chrome е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="7098166902387133879">Google Chrome използва микрофона ви.</translation>
 <translation id="7106741999175697885">Диспечер на задачите - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се ръчно да инсталирате отново браузъра.</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="7164397146364144019">Можете да ни помогнете да направим Chrome по-надежден и по-лесен за използване, като автоматично ни съобщавате подробности за инциденти, свързани със сигурността.</translation>
 <translation id="7185038942300673794">Разширението <ph name="EXTENSION_NAME" /> е добавено към Chrome.</translation>

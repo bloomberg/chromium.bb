@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
 <translation id="1088860948719068836">Kortelėje nurodytų vardo ir pavardės pridėjimas</translation>
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Rodyti visus išsaugotus slaptažodžius...</translation>
 <translation id="1107591249535594099">Jei pažymėta, „Chrome“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="1111153019813902504">Naujausios žymės</translation>
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Spausdinti...</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatiškai pateikti<ph name="END_WHITEPAPER_LINK" /> išsamią informaciją apie galimas saugos problemas sistemoje „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Mokėjimas neatliktas</translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="1201895884277373915">Daugiau iš šios svetainės</translation>
 <translation id="1206967143813997005">Netinkamas pirminis parašas</translation>
@@ -598,6 +600,7 @@
 <translation id="5540224163453853">Nepavyko rasti straipsnio, dėl kurio pateikta užklausa.</translation>
 <translation id="5541546772353173584">El. pašto adreso pridėjimas</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> įterptame puslapyje sakoma:</translation>
+<translation id="5545756402275714221">Jums skirti straipsniai</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5560088892362098740">Galiojimo laiko pabaigos data</translation>
 <translation id="5565735124758917034">Aktyvus</translation>
@@ -615,10 +618,10 @@
 <translation id="5631439013527180824">Netinkamas įrenginio tvarkymo prieigos raktas</translation>
 <translation id="5633066919399395251">Šiuo metu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolikai gali jūsų kompiuteryje bandyti įdiegti pavojingas programas, kurios vagia arba ištrina informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ir kredito kortelių duomenis). <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Klaidinantis turinys užblokuotas.</translation>
-<translation id="5646376287012673985">Vietovė</translation>
 <translation id="5659593005791499971">El. paštas</translation>
 <translation id="5669703222995421982">Suasmeninto turinio gavimas</translation>
 <translation id="5675650730144413517">Šis puslapis neveikia</translation>
+<translation id="5689199277474810259">Eksportuoti kaip JSON</translation>
 <translation id="5710435578057952990">Šio tinklalapio tapatybė nenustatyta.</translation>
 <translation id="5719499550583120431">Išankstinio mokėjimo kortelės tinkamos.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
@@ -917,6 +920,7 @@
 <translation id="8249320324621329438">Paskutinį kartą gauta:</translation>
 <translation id="8253091569723639551">Būtina pateikti atsiskaitymo adresą</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
+<translation id="8267698848189296333">Prisijungiama kaip <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Jei nesate tikri, ką tai reiškia, susisiekite su tinklo administratoriumi.</translation>
 <translation id="8293206222192510085">Pridėti žymę</translation>
 <translation id="8294431847097064396">Šaltinis</translation>

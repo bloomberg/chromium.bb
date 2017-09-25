@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">รับ Chromium ใน iPhone ของคุณ</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
 <translation id="2347108572062610441">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chromium</translation>
-<translation id="2372704305038231957">Chromium แบบ 32 บิตอาจทำงานได้ไม่ถูกต้องเนื่องจากระบบ Linux นี้ไม่รองรับอีกต่อไป โปรดอัปเกรดเป็น Chromium แบบ 64 บิต</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{ขณะนี้อยู่ระหว่างการดาวน์โหลด 1 รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Chromium ไหม}other{ขณะนี้อยู่ระหว่างการดาวน์โหลด # รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Chromium ไหม}}</translation>
 <translation id="2396765026452590966">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chromium</translation>
 <translation id="2483889755041906834">ใน Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(จำเป็นต้อง <ph name="BEGIN_BUTTON" />รีสตาร์ท<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium เกือบจะพร้อมใช้งานแล้ว</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดฟีเจอร์เจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องอัปเดต Chromium</translation>
-<translation id="5859963531214966875">Chromium เวอร์ชันต่อไปจะไม่รองรับระบบ Linux อีกต่อไป</translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
 <translation id="6526111688217511984">Chromium ต้องสามารถเข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
-<translation id="6584627348340620412">Chromium แบบ 32 บิตเวอร์ชันต่อไปจะไม่รองรับระบบ Linux นี้อีกต่อไป โปรดอัปเกรดเป็น Chromium แบบ 64 บิต</translation>
-<translation id="6593914713218535185">Chromium อาจทำงานได้ไม่ถูกต้องเนื่องจากระบบ Linux นี้ไม่รองรับอีกต่อไป</translation>
 <translation id="6638567566961868659">ค้นหาบุ๊กมาร์กของคุณในเมนู Chromium หรือในแถบบุ๊กมาร์ก</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6717134281241384636">โปรไฟล์ของคุณไม่สามารถใช้ได้เนื่องจากมาจาก Chromium รุ่นใหม่
@@ -182,7 +177,6 @@
 <translation id="6893813176749746474">Chromium ได้รับการอัปเดตแล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="6944967875980567883">โมดูลที่โหลดเข้าไปใน Chromium</translation>
 <translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
-<translation id="7027298027173928763">Chromium ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดฟีเจอร์เจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องติดตั้ง Chromium ใหม่ด้วยตนเอง</translation>
 <translation id="705851970750939768">อัปเดต Chromium</translation>
 <translation id="7066436765290594559">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านสำหรับการซิงค์</translation>
 <translation id="707471633328071618">Google Payments (คัดลอกลงใน Chromium แล้ว)</translation>

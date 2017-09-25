@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1685087038067318291">근처 사물에서 전송한 웹페이지를 탐색하세요. 블루투스를 사용 설정하면 Chrome은 근처 사물과 관련된 웹페이지를 수집한 후 익명으로 Google로 전달하여 사용자에게 가장 유용한 웹페이지를 찾습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome이 <ph name="ISSUER" />에서 이 웹사이트의 인증서를 발행했음을 확인했습니다.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Chrome이 사진 또는 동영상에 액세스할 수 없습니다. 'iOS 설정 &gt; 개인정보 보호 &gt; 사진'에서 액세스를 허용하세요.</translation>
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="415767770115540173">위치 정보를 기반으로 Chrome에서 더 나은 Google 환경을 이용할 수 있습니다.</translation>
-<translation id="4248297594476034182">어느 기기에서나 내 탭을 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="4523886039239821078">일부 부가기능이 Chrome을 비정상 종료시킵니다. 다음 항목을 제거하세요.</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>

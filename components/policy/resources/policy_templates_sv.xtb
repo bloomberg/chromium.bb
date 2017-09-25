@@ -716,6 +716,9 @@
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
+<translation id="332771718998993005">Ange vilket namn som ska visas som mål för <ph name="PRODUCT_NAME" />.
+
+          Om principen är inställd på något annat än en tom sträng används den strängen som namn på målet för <ph name="PRODUCT_NAME" />. I annat fall används enhetens namn som målnamn. Om principen lämnas utan inställning används enhetens namn som målnamn och enhetens ägare (eller en användare på den domän som hanterar enheten) kan ändra det. Namnet får vara högst 24 tecken långt.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
@@ -1236,6 +1239,9 @@
           Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
+<translation id="5323128137188992869">Tillåt att innehåll castas till enheten med <ph name="PRODUCT_NAME" />.
+
+          Om principen är inställd på falskt får användarna inte casta till enheten. Om principen är inställd på sant får användarna casta innehåll. Om principen lämnas utan inställning får användarna inte casta till registrerade Chrome OS-enheter, men däremot till enheter som inte är registrerade.</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
@@ -1466,6 +1472,7 @@
 <translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="6133088669883929098">Tillåt alla webbplatser att använda nyckelgenerering</translation>
+<translation id="6139485614509308022">När principen OffHours har ställts in ignoreras de angivna enhetsprinciperna (använd standardinställningarna för dessa principer) under de angivna tidsperioderna. Varje gång en OffHours-period börjar eller slutar ändras tillämpningen av enhetsprinciperna i Chrome. Användarna aviseras och måste logga ut när OffHours-perioden slutar och enhetens principinställningar ändras (t.ex. om användaren är inloggad med ett konto som inte är tillåtet).</translation>
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1819,7 +1826,6 @@
       Om principen inte har konfigurerats eller har ställts in på falskt aktiveras f<ph name="TLS_FALSE_START" />. Om principen har ställts in på sant inaktiveras <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktivera Instant</translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
-<translation id="7468416082528382842">Windows-registerplats:</translation>
 <translation id="7469554574977894907">Aktivera sökförslag</translation>
 <translation id="7474249562477552702">Om SHA-1-signerade certifikat som utfärdats av lokala tillitsankare tillåts eller inte</translation>
 <translation id="7485481791539008776">Skrivarens standardurvalsregler</translation>
