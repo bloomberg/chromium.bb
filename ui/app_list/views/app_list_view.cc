@@ -681,30 +681,26 @@ void AppListView::EndDrag(const gfx::Point& location) {
         }
         break;
       case FULLSCREEN_SEARCH:
-        if (std::abs(drag_delta) > app_list_threshold)
+        if (drag_delta < -app_list_threshold)
           Dismiss();
         else
           SetState(app_list_state_);
         break;
       case HALF:
-        if (std::abs(drag_delta) > app_list_threshold) {
-          if (drag_delta > 0)
-            SetState(FULLSCREEN_SEARCH);
-          else
-            Dismiss();
-        } else {
+        if (drag_delta > app_list_threshold)
+          SetState(FULLSCREEN_SEARCH);
+        else if (drag_delta < -app_list_threshold)
+          Dismiss();
+        else
           SetState(app_list_state_);
-        }
         break;
       case PEEKING:
-        if (std::abs(drag_delta) > app_list_threshold) {
-          if (drag_delta > 0) {
-            SetState(FULLSCREEN_ALL_APPS);
-            UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram,
-                                      kSwipe, kMaxPeekingToFullscreen);
-          } else {
-            Dismiss();
-          }
+        if (drag_delta > app_list_threshold) {
+          SetState(FULLSCREEN_ALL_APPS);
+          UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram,
+                                    kSwipe, kMaxPeekingToFullscreen);
+        } else if (drag_delta < -app_list_threshold) {
+          Dismiss();
         } else {
           SetState(app_list_state_);
         }

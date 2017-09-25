@@ -1020,12 +1020,19 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
   ASSERT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
 }
 
-TEST_F(FullscreenAppListPresenterDelegateTest,
+TEST_P(FullscreenAppListPresenterDelegateTest,
        LongUpwardDragInFullscreenShouldNotClose) {
+  const bool test_fullscreen_search = GetParam();
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   app_list::AppListView* view = app_list_presenter_impl()->GetView();
   FlingUpOrDown(GetEventGenerator(), view, true);
   EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
+
+  if (test_fullscreen_search) {
+    // Enter a character into the searchbox to transition to FULLSCREEN_SEARCH.
+    GetEventGenerator().PressKey(ui::VKEY_0, 0);
+    EXPECT_EQ(app_list::AppListView::FULLSCREEN_SEARCH, view->app_list_state());
+  }
 
   // Drag from the center of the applist to the top of the screen very slowly.
   // This should not trigger a state transition.
@@ -1038,8 +1045,11 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
       GetEventGenerator().CalculateScrollDurationForFlingVelocity(
           drag_start, drag_end, 1, 1000),
       1000);
-
-  EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
+  if (test_fullscreen_search)
+    EXPECT_EQ(app_list::AppListView::FULLSCREEN_SEARCH, view->app_list_state());
+  else
+    EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
+              view->app_list_state());
 }
 
 }  // namespace ash
