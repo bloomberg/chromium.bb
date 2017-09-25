@@ -176,8 +176,12 @@ if (enable_java_templates) {
     package_output_dir = "${base_output_dir}/${jni_package}"
     jni_output_dir = "${package_output_dir}/jni"
 
-    jni_generator_include =
-        "//base/android/jni_generator/jni_generator_helper.h"
+    if (defined(invoker.jni_generator_include)) {
+      jni_generator_include = invoker.jni_generator_include
+    } else {
+      jni_generator_include =
+          "//base/android/jni_generator/jni_generator_helper.h"
+    }
 
     foreach_target_name = "${target_name}__jni_gen"
     action_foreach(foreach_target_name) {

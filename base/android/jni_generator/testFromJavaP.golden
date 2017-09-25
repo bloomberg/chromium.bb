@@ -14,8 +14,6 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 
-#include "base/android/jni_int_wrapper.h"
-
 // Step 1: forward declarations.
 JNI_REGISTRATION_EXPORT extern const char kClassPath_java_io_InputStream[];
 const char kClassPath_java_io_InputStream[] = "java/io/InputStream";

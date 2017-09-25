@@ -888,8 +888,6 @@ class InlHeaderFileGenerator(object):
 
 ${INCLUDES}
 
-#include "base/android/jni_int_wrapper.h"
-
 // Step 1: forward declarations.
 $CLASS_PATH_DEFINITIONS
 
