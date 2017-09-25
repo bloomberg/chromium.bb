@@ -405,7 +405,9 @@ TEST_F(CTPolicyEnforcerTest,
     base::Time validity_start;
     base::Time validity_end;
     size_t scts_required;
-  } kTestData[] = {{// Cert valid for 14 months, needs 2 SCTs.
+  } kTestData[] = {{// Cert valid for -14 months (nonsensical), needs 2 SCTs.
+                    time_2016_6_0_6_11_25_0_0, time_2015_3_0_25_11_25_0_0, 2},
+                   {// Cert valid for 14 months, needs 2 SCTs.
                     time_2015_3_0_25_11_25_0_0, time_2016_6_0_6_11_25_0_0, 2},
                    {// Cert valid for exactly 15 months, needs 3 SCTs.
                     time_2015_3_0_25_11_25_0_0, time_2016_6_0_25_11_25_0_0, 3},
