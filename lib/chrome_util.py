@@ -376,7 +376,7 @@ _COPY_PATHS_CHROME = (
          blacklist=(r'libwidevine.*\.so$',),
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
-    Path('locales/'),
+    Path('locales/*.pak'),
     Path('Packages/chrome_content_browser/manifest.json', optional=True),
     Path('Packages/chrome_content_gpu/manifest.json', optional=True),
     Path('Packages/chrome_content_plugin/manifest.json', optional=True),
