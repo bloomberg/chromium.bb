@@ -26,6 +26,7 @@
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
+#include "core/layout/line/LineVerticalPositionType.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/text/TextDirection.h"
 
@@ -38,19 +39,6 @@ class LayoutObject;
 class RootInlineBox;
 
 enum MarkLineBoxes { kMarkLineBoxesDirty, kDontMarkLineBoxes };
-
-enum class LineVerticalPositionType {
-  // TextTop and TextBottom are the top/bottom of the content area.
-  // This is where 'vertical-align: text-top/text-bottom' aligns to.
-  // This is explicitly undefined in CSS2.
-  // https://drafts.csswg.org/css2/visudet.html#inline-non-replaced
-  TextTop,
-  TextBottom,
-  // Em height as being discussed in Font Metrics API.
-  // https://drafts.css-houdini.org/font-metrics-api-1/#fontmetrics
-  TopOfEmHeight,
-  BottomOfEmHeight
-};
 
 // Returns whether the position type is CSS "line-over"; i.e., ascender side
 // or "top" side of a line box.
