@@ -91,31 +91,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGFragment& fragment,
       bool empty_block_affected_by_clearance);
 
-  // Positions the fragment that establishes a new formatting context.
-  //
-  // This uses Layout Opportunity iterator to position the fragment.
-  // That's because an element that establishes a new block formatting context
-  // must not overlap the margin box of any floats in the same block formatting
-  // context as the element itself.
-  //
-  // So if necessary, we clear the new BFC by placing it below any preceding
-  // floats or place it adjacent to such floats if there is sufficient space.
-  //
-  // Example:
-  // <div id="container">
-  //   <div id="float"></div>
-  //   <div id="new-fc" style="margin-top: 20px;"></div>
-  // </div>
-  // 1) If #new-fc is small enough to fit the available space right from #float
-  //    then it will be placed there and we collapse its margin.
-  // 2) If #new-fc is too big then we need to clear its position and place it
-  //    below #float ignoring its vertical margin.
-  bool PositionNewFc(const NGLayoutInputNode& child,
-                     const NGPreviousInflowPosition&,
-                     const NGLayoutResult&,
-                     const NGInflowChildData& child_data,
-                     const NGConstraintSpace& child_space,
-                     WTF::Optional<NGBfcOffset>* child_bfc_offset);
 
   // Positions the fragment that knows its BFC offset.
   WTF::Optional<NGBfcOffset> PositionWithBfcOffset(
@@ -141,9 +116,30 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                    NGBlockNode,
                    NGBlockBreakToken*);
 
-  // Handle an in-flow child. Returns true if everything went smoothly and we
-  // can continue to the next sibling. Returns false if we need to abort,
-  // because a previously unknown BFC offset now has been resolved.
+  // This uses the NGLayoutOpporunityIterator to position the fragment.
+  //
+  // An element that establishes a new formatting context must not overlap the
+  // margin box of any floats within the current BFC.
+  //
+  // Example:
+  // <div id="container">
+  //   <div id="float"></div>
+  //   <div id="new-fc" style="margin-top: 20px;"></div>
+  // </div>
+  // 1) If #new-fc is small enough to fit the available space right from #float
+  //    then it will be placed there and we collapse its margin.
+  // 2) If #new-fc is too big then we need to clear its position and place it
+  //    below #float ignoring its vertical margin.
+  //
+  // Returns false if we need to abort layout, because a previously unknown BFC
+  // offset has now been resolved.
+  bool HandleNewFormattingContext(NGLayoutInputNode child,
+                                  NGBreakToken* child_break_token,
+                                  NGPreviousInflowPosition*);
+
+  // Handle an in-flow child.
+  // Returns false if we need to abort layout, because a previously unknown BFC
+  // offset has now been resolved. (Same as HandleNewFormattingContext).
   bool HandleInflow(NGLayoutInputNode child,
                     NGBreakToken* child_break_token,
                     NGPreviousInflowPosition*);
@@ -171,6 +167,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool AddBaseline(const NGBaselineRequest&,
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
+
+  void UpdateContentSize(const NGBoxStrut& margins,
+                         const NGLogicalOffset& logical_offset,
+                         bool is_empty_block,
+                         const NGFragment&);
 
   // Calculates logical offset for the current fragment using either
   // {@code content_size_} when the fragment doesn't know it's offset
