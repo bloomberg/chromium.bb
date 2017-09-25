@@ -21,13 +21,16 @@ class WebGestureEvent;
 }
 
 namespace cc {
-class CompositorFrameMetadata;
 class Layer;
 }
 
 namespace ui {
 class WindowAndroidCompositor;
 struct DidOverscrollParams;
+}
+
+namespace viz {
+class CompositorFrameMetadata;
 }
 
 namespace content {
@@ -67,7 +70,7 @@ class CONTENT_EXPORT OverscrollControllerAndroid
   bool Animate(base::TimeTicks current_time, cc::Layer* parent_layer);
 
   // To be called whenever the content frame has been updated.
-  void OnFrameMetadataUpdated(const cc::CompositorFrameMetadata& metadata);
+  void OnFrameMetadataUpdated(const viz::CompositorFrameMetadata& metadata);
 
   // Toggle activity of any overscroll effects. When disabled, events will be
   // ignored until the controller is re-enabled.

@@ -1426,7 +1426,7 @@ void RenderWidgetHostViewMac::DidCreateNewRendererCompositorFrameSink(
 
 void RenderWidgetHostViewMac::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   last_frame_root_background_color_ = frame.metadata.root_background_color;

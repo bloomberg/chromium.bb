@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_RENDER_WIDGET_SURFACE_PROPERTIES_H_
 #define CONTENT_COMMON_RENDER_WIDGET_SURFACE_PROPERTIES_H_
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -14,7 +14,7 @@ namespace content {
 // CompositorFrames that the renderer submits to the same surface.
 struct CONTENT_EXPORT RenderWidgetSurfaceProperties {
   static RenderWidgetSurfaceProperties FromCompositorFrame(
-      const cc::CompositorFrame& frame);
+      const viz::CompositorFrame& frame);
 
   RenderWidgetSurfaceProperties();
   RenderWidgetSurfaceProperties(const RenderWidgetSurfaceProperties& other);
@@ -33,7 +33,7 @@ struct CONTENT_EXPORT RenderWidgetSurfaceProperties {
   float top_controls_shown_ratio = 0;
   float bottom_controls_height = 0;
   float bottom_controls_shown_ratio = 0;
-  cc::Selection<gfx::SelectionBound> selection;
+  viz::Selection<gfx::SelectionBound> selection;
   bool has_transparent_background = false;
 #endif
 };

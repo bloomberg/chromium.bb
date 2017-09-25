@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 
-namespace cc {
+namespace viz {
 
 CompositorFrameMetadata::CompositorFrameMetadata() = default;
 
 CompositorFrameMetadata::CompositorFrameMetadata(
     CompositorFrameMetadata&& other) = default;
 
-CompositorFrameMetadata::~CompositorFrameMetadata() {
-}
+CompositorFrameMetadata::~CompositorFrameMetadata() {}
 
 CompositorFrameMetadata& CompositorFrameMetadata::operator=(
     CompositorFrameMetadata&& other) = default;
@@ -25,4 +24,4 @@ CompositorFrameMetadata CompositorFrameMetadata::Clone() const {
 CompositorFrameMetadata::CompositorFrameMetadata(
     const CompositorFrameMetadata& other) = default;
 
-}  // namespace cc
+}  // namespace viz

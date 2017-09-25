@@ -21,11 +21,11 @@
 
 namespace cc {
 class BlockingTaskRunner;
-class CompositorFrame;
 class DisplayResourceProvider;
 }  // namespace cc
 
 namespace viz {
+class CompositorFrame;
 class Surface;
 class SurfaceClient;
 class SurfaceDrawQuad;
@@ -40,7 +40,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
-  cc::CompositorFrame Aggregate(const SurfaceId& surface_id);
+  CompositorFrame Aggregate(const SurfaceId& surface_id);
   void ReleaseResources(const SurfaceId& surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
@@ -127,7 +127,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                         int parent_pass,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
-  void CopyPasses(const cc::CompositorFrame& frame, Surface* surface);
+  void CopyPasses(const CompositorFrame& frame, Surface* surface);
   void AddColorConversionPass();
 
   // Remove Surfaces that were referenced before but aren't currently

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/ipc/cc_param_traits.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "ipc/ipc_message.h"
@@ -22,7 +22,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using cc::CompositorFrame;
+using viz::CompositorFrame;
 using cc::FilterOperation;
 using cc::FilterOperations;
 using cc::ResourceProvider;

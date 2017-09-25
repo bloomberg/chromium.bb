@@ -12,7 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "cc/base/filter_operations.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
@@ -735,8 +735,8 @@ void ParamTraits<viz::SurfaceInfo>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-void ParamTraits<cc::CompositorFrame>::Write(base::Pickle* m,
-                                             const param_type& p) {
+void ParamTraits<viz::CompositorFrame>::Write(base::Pickle* m,
+                                              const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::CompositorFrame::Write");
   WriteParam(m, p.metadata);
@@ -758,9 +758,9 @@ void ParamTraits<cc::CompositorFrame>::Write(base::Pickle* m,
   }
 }
 
-bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
-                                            base::PickleIterator* iter,
-                                            param_type* p) {
+bool ParamTraits<viz::CompositorFrame>::Read(const base::Pickle* m,
+                                             base::PickleIterator* iter,
+                                             param_type* p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::CompositorFrame::Read");
   if (!ReadParam(m, iter, &p->metadata))
@@ -807,8 +807,8 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
-                                           std::string* l) {
+void ParamTraits<viz::CompositorFrame>::Log(const param_type& p,
+                                            std::string* l) {
   l->append("CompositorFrame(");
   LogParam(p.metadata, l);
   l->append(", ");

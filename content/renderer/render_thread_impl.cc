@@ -427,7 +427,7 @@ void CreateSingleSampleMetricsProvider(
 class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
  public:
   const viz::LocalSurfaceId& GetLocalSurfaceIdForFrame(
-      const cc::CompositorFrame& frame) override {
+      const viz::CompositorFrame& frame) override {
     auto new_surface_properties =
         RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
     if (!local_surface_id_.is_valid() ||

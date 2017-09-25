@@ -160,7 +160,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
   scoped_refptr<TestSyncMessageFilter> sync_message_filter_;
   std::vector<IPC::Message> messages_;
   std::vector<std::unique_ptr<cc::SwapPromise>> promises_;
-  cc::CompositorFrameMetadata dummy_metadata_;
+  viz::CompositorFrameMetadata dummy_metadata_;
 
  private:
   std::vector<std::unique_ptr<IPC::Message>> next_swap_messages_;

@@ -7,30 +7,30 @@
 
 #include <vector>
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<viz::mojom::CompositorFrameDataView, cc::CompositorFrame> {
-  static const cc::CompositorFrameMetadata& metadata(
-      const cc::CompositorFrame& input) {
+struct StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame> {
+  static const viz::CompositorFrameMetadata& metadata(
+      const viz::CompositorFrame& input) {
     return input.metadata;
   }
 
   static const std::vector<viz::TransferableResource>& resources(
-      const cc::CompositorFrame& input) {
+      const viz::CompositorFrame& input) {
     return input.resource_list;
   }
 
-  static const viz::RenderPassList& passes(const cc::CompositorFrame& input) {
+  static const viz::RenderPassList& passes(const viz::CompositorFrame& input) {
     return input.render_pass_list;
   }
 
   static bool Read(viz::mojom::CompositorFrameDataView data,
-                   cc::CompositorFrame* out);
+                   viz::CompositorFrame* out);
 };
 
 }  // namespace mojo

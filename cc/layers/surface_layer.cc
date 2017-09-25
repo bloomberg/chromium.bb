@@ -32,7 +32,7 @@ class SatisfySwapPromise : public SwapPromise {
  private:
   void DidActivate() override {}
 
-  void WillSwap(CompositorFrameMetadata* metadata) override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
 
   void DidSwap() override {
     main_task_runner_->PostTask(FROM_HERE, reference_returner_);

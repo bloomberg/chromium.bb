@@ -6,7 +6,7 @@ module viz.mojom;
 
 import "ui/gfx/mojo/selection_bound.mojom";
 
-// See cc/input/selection.h.
+// See components/viz/common/quads/selection.h.
 struct Selection {
   gfx.mojom.SelectionBound start;
   gfx.mojom.SelectionBound end;

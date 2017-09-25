@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -88,7 +88,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
@@ -162,7 +162,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
@@ -292,7 +292,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
-  cc::CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
+  CompositorFrame aggregated_frame = aggregator.Aggregate(root_surface_id);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);

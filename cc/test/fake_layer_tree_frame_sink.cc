@@ -46,10 +46,10 @@ void FakeLayerTreeFrameSink::DetachFromClient() {
   LayerTreeFrameSink::DetachFromClient();
 }
 
-void FakeLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void FakeLayerTreeFrameSink::SubmitCompositorFrame(viz::CompositorFrame frame) {
   ReturnResourcesHeldByParent();
 
-  last_sent_frame_.reset(new CompositorFrame(std::move(frame)));
+  last_sent_frame_ = std::make_unique<viz::CompositorFrame>(std::move(frame));
   ++num_sent_frames_;
 
   last_swap_rect_ = last_sent_frame_->render_pass_list.back()->damage_rect;

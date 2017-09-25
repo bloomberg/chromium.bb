@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/threading/thread_restrictions.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 
 namespace content {
 

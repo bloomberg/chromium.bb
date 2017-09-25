@@ -9,8 +9,8 @@
 
 #include "base/memory/shared_memory_handle.h"
 #include "base/optional.h"
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -133,7 +133,7 @@ IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorDemandDrawHwParams,
                            content::SyncCompositorCommonRendererParams,
                            uint32_t /* layer_tree_frame_sink_id */,
-                           base::Optional<cc::CompositorFrame>);
+                           base::Optional<viz::CompositorFrame>);
 
 IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
                            content::SyncCompositorSetSharedMemoryParams,
@@ -145,7 +145,7 @@ IPC_MESSAGE_ROUTED0(SyncCompositorMsg_ZeroSharedMemory);
 IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_DemandDrawSw,
                            content::SyncCompositorDemandDrawSwParams,
                            content::SyncCompositorCommonRendererParams,
-                           base::Optional<cc::CompositorFrameMetadata>)
+                           base::Optional<viz::CompositorFrameMetadata>)
 
 IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_ZoomBy,
                            float /* delta */,
@@ -171,6 +171,6 @@ IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
 
 IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_ReturnFrame,
                     uint32_t /* layer_tree_frame_sink_id */,
-                    base::Optional<cc::CompositorFrame>);
+                    base::Optional<viz::CompositorFrame>);
 
 #endif  // CONTENT_COMMON_ANDROID_SYNC_COMPOSITOR_MESSAGES_H_

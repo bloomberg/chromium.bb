@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -99,7 +99,7 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
   last_begin_frame_args_ = begin_frame_args;
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
-  cc::CompositorFrame frame(GenerateCompositorFrame());
+  viz::CompositorFrame frame(GenerateCompositorFrame());
   if (!local_surface_id_.is_valid() ||
       frame.size_in_pixels() != last_submitted_frame_size_ ||
       frame.device_scale_factor() != last_device_scale_factor_) {
@@ -114,7 +114,7 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
   SetNeedsBeginFrame(false);
 }
 
-cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
+viz::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   const int render_pass_id = 1;
   const gfx::Rect bounds(pixel_size_);
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
@@ -122,7 +122,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
 
   DrawWindow(render_pass.get());
 
-  cc::CompositorFrame frame;
+  viz::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
   if (high_contrast_mode_enabled_) {
     std::unique_ptr<viz::RenderPass> invert_pass = viz::RenderPass::Create();

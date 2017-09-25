@@ -25,10 +25,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/single_release_callback.h"
@@ -1237,7 +1237,7 @@ void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
 
 void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   if (!delegated_frame_host_) {
     DCHECK(!using_browser_compositor_);
     return;
@@ -1250,7 +1250,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
   current_surface_size_ = root_pass->output_rect.size();
   bool is_transparent = root_pass->has_transparent_background;
 
-  cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
+  viz::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
   bool has_content = !current_surface_size_.IsEmpty();
 
@@ -1321,7 +1321,7 @@ void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   if (!content_view_core_)
     return;
 
@@ -1473,7 +1473,7 @@ RenderWidgetHostViewAndroid::GetWebContentsAccessibilityAndroid() const {
 }
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
-    const cc::CompositorFrameMetadata& frame_metadata,
+    const viz::CompositorFrameMetadata& frame_metadata,
     bool is_transparent) {
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
   gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);

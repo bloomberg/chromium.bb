@@ -31,7 +31,6 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -39,6 +38,7 @@
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -389,7 +389,7 @@ class VulkanOutputSurface : public viz::OutputSurface {
     return true;
   }
 
-  void SwapBuffers(cc::CompositorFrame frame) override {
+  void SwapBuffers(viz::CompositorFrame frame) override {
     surface_->SwapBuffers();
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&VulkanOutputSurface::SwapBuffersAck,

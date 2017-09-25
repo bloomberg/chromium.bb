@@ -171,7 +171,7 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void PageHandler::OnSwapCompositorFrame(
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   last_compositor_frame_metadata_ = std::move(frame_metadata);
   has_compositor_frame_metadata_ = true;
 
@@ -180,7 +180,7 @@ void PageHandler::OnSwapCompositorFrame(
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
-    cc::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata frame_metadata) {
   if (has_compositor_frame_metadata_) {
     last_compositor_frame_metadata_ =
         std::move(next_compositor_frame_metadata_);
@@ -690,7 +690,7 @@ void PageHandler::InnerSwapCompositorFrame() {
   // TODO(vkuzkokov): do not use previous frame metadata.
   // TODO(miu): RWHV to provide an API to provide actual rendering size.
   // http://crbug.com/73362
-  cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
+  viz::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
 
   gfx::SizeF viewport_size_dip = gfx::ScaleSize(
       metadata.scrollable_viewport_size, metadata.page_scale_factor);
@@ -729,7 +729,7 @@ void PageHandler::InnerSwapCompositorFrame() {
   }
 }
 
-void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
+void PageHandler::ScreencastFrameCaptured(viz::CompositorFrameMetadata metadata,
                                           const SkBitmap& bitmap,
                                           ReadbackResponse response) {
   if (response != READBACK_SUCCESS) {
@@ -753,7 +753,7 @@ void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
                  base::Time::Now()));
 }
 
-void PageHandler::ScreencastFrameEncoded(cc::CompositorFrameMetadata metadata,
+void PageHandler::ScreencastFrameEncoded(viz::CompositorFrameMetadata metadata,
                                          const base::Time& timestamp,
                                          const std::string& data) {
   // Consider metadata empty in case it has no device scale factor.

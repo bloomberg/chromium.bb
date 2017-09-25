@@ -146,7 +146,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                        viz::SurfaceDrawQuadType::PRIMARY, SK_ColorWHITE,
                        nullptr);
 
-  cc::CompositorFrame frame;
+  viz::CompositorFrame frame;
   // We draw synchronously, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
@@ -196,7 +196,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   solid_quad->SetNew(quad_state, rect, rect, SK_ColorBLACK, false);
-  cc::CompositorFrame frame;
+  viz::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
   // We draw synchronously, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =

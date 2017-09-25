@@ -48,13 +48,13 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
 
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& id,
-      cc::CompositorFrame frame,
+      viz::CompositorFrame frame,
       ::viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) {
     DoSubmitCompositorFrame(id, &frame);
   }
   MOCK_METHOD2(DoSubmitCompositorFrame,
-               void(const viz::LocalSurfaceId&, cc::CompositorFrame*));
+               void(const viz::LocalSurfaceId&, viz::CompositorFrame*));
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
 
  private:

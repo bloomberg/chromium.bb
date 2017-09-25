@@ -156,10 +156,10 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrameTest);
 };
 
-cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
-                                         gfx::Size size,
-                                         const gfx::Rect& damage) {
-  cc::CompositorFrame frame;
+viz::CompositorFrame CreateDelegatedFrame(float scale_factor,
+                                          gfx::Size size,
+                                          const gfx::Rect& damage) {
+  viz::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
   frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
 

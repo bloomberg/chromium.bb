@@ -13,10 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -229,7 +229,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
 }
 
 void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
 
@@ -241,7 +241,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     return;
   }
 
-  cc::CompositorFrame submit_frame;
+  viz::CompositorFrame submit_frame;
 
   if (in_software_draw_) {
     // The frame we send to the client is actually just the metadata. Preserve
@@ -287,7 +287,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     // TODO(danakj): We could apply the transform here instead of passing it to
     // the LayerTreeFrameSink client too? (We'd have to do the same for
     // hardware frames in SurfacesInstance?)
-    cc::CompositorFrame embed_frame;
+    viz::CompositorFrame embed_frame;
     embed_frame.metadata.begin_frame_ack = frame.metadata.begin_frame_ack;
     embed_frame.metadata.device_scale_factor =
         frame.metadata.device_scale_factor;

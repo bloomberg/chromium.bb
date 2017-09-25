@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 
-namespace cc {
+namespace viz {
 
 CompositorFrame::CompositorFrame() = default;
 
@@ -14,4 +14,4 @@ CompositorFrame::~CompositorFrame() = default;
 
 CompositorFrame& CompositorFrame::operator=(CompositorFrame&& other) = default;
 
-}  // namespace cc
+}  // namespace viz

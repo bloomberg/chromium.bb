@@ -25,7 +25,7 @@ void CompositorFrameSinkClientBinding::SetNeedsBeginFrame(
 
 void CompositorFrameSinkClientBinding::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame,
+    viz::CompositorFrame frame,
     viz::mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
   if (local_surface_id != local_surface_id_) {

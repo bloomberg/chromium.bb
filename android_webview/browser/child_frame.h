@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
-namespace cc {
+namespace viz {
 class CompositorFrame;
 }
 
@@ -26,7 +26,7 @@ class ChildFrame {
   ChildFrame(
       scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
       uint32_t layer_tree_frame_sink_id,
-      std::unique_ptr<cc::CompositorFrame> frame,
+      std::unique_ptr<viz::CompositorFrame> frame,
       const CompositorID& compositor_id,
       bool viewport_rect_for_tile_priority_empty,
       const gfx::Transform& transform_for_tile_priority,
@@ -42,7 +42,7 @@ class ChildFrame {
   scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future;
   // These two fields are not const to make async path easier.
   uint32_t layer_tree_frame_sink_id;
-  std::unique_ptr<cc::CompositorFrame> frame;
+  std::unique_ptr<viz::CompositorFrame> frame;
   // The id of the compositor this |frame| comes from.
   const CompositorID compositor_id;
   const bool viewport_rect_for_tile_priority_empty;

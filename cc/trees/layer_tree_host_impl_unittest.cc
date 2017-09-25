@@ -35,7 +35,6 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/layers/viewport.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/animation_test_common.h"
@@ -62,6 +61,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -3904,7 +3904,7 @@ TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
 }
 
 // This test verifies that only SurfaceLayers in the viewport and have fallbacks
-// that are different are included in CompositorFrameMetadata's
+// that are different are included in viz::CompositorFrameMetadata's
 // |activation_dependencies|.
 TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
@@ -3947,7 +3947,7 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
 
   auto* fake_layer_tree_frame_sink =
       static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-  const CompositorFrameMetadata& metadata =
+  const viz::CompositorFrameMetadata& metadata =
       fake_layer_tree_frame_sink->last_sent_frame()->metadata;
   EXPECT_THAT(
       metadata.activation_dependencies,
@@ -3964,7 +3964,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   {
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(), metadata.root_scroll_offset);
     EXPECT_EQ(1.f, metadata.page_scale_factor);
@@ -3984,13 +3984,13 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
           .thread);
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   {
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
   }
   host_impl_->ScrollEnd(EndState().get());
   {
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
   }
@@ -4003,7 +4003,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->test_properties()
         ->user_scrollable_horizontal = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
@@ -4029,7 +4029,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->test_properties()
         ->user_scrollable_vertical = true;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_FALSE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
@@ -4043,7 +4043,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->test_properties()
         ->user_scrollable_horizontal = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
@@ -4066,7 +4066,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   host_impl_->PinchGestureEnd();
   host_impl_->ScrollEnd(EndState().get());
   {
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(2.f, metadata.page_scale_factor);
@@ -4081,7 +4081,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   host_impl_->active_tree()->PushPageScaleFromMainThread(4.f, 0.5f, 4.f);
   host_impl_->active_tree()->SetPageScaleOnActiveTree(4.f);
   {
-    CompositorFrameMetadata metadata =
+    viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(4.f, metadata.page_scale_factor);
@@ -8432,7 +8432,7 @@ class FakeDrawableLayerImpl : public LayerImpl {
       : LayerImpl(tree_impl, id) {}
 };
 
-// Make sure damage tracking propagates all the way to the CompositorFrame
+// Make sure damage tracking propagates all the way to the viz::CompositorFrame
 // submitted to the LayerTreeFrameSink, where it should request to swap only
 // the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
@@ -9170,7 +9170,8 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
 
   void DisplayReceivedLocalSurfaceId(
       const viz::LocalSurfaceId& local_surface_id) override {}
-  void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {}
+  void DisplayReceivedCompositorFrame(
+      const viz::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(
       bool will_draw_and_swap,
       const viz::RenderPassList& render_passes) override {}
@@ -9545,7 +9546,7 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
 }
 
 // Make sure LatencyInfo carried by LatencyInfoSwapPromise are passed
-// in CompositorFrameMetadata.
+// in viz::CompositorFrameMetadata.
 TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   std::unique_ptr<SolidColorLayerImpl> root =
       SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
@@ -9618,7 +9619,7 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   host_impl_->DidDrawAllLayers(frame);
 
   // Ensure the selection bounds have propagated to the frame metadata.
-  const Selection<gfx::SelectionBound>& selection_after =
+  const viz::Selection<gfx::SelectionBound>& selection_after =
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
@@ -9669,7 +9670,7 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   host_impl_->DidDrawAllLayers(frame);
 
   // Ensure the selection bounds have propagated to the frame metadata.
-  const Selection<gfx::SelectionBound>& selection_after =
+  const viz::Selection<gfx::SelectionBound>& selection_after =
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());

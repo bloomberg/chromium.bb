@@ -23,14 +23,13 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
+class CompositorFrame;
 class LocalSurfaceId;
 class SharedBitmapManager;
 struct BeginFrameAck;
 }  // namespace viz
 
 namespace cc {
-
-class CompositorFrame;
 class LayerTreeFrameSinkClient;
 
 // An interface for submitting CompositorFrames to a display compositor
@@ -124,7 +123,7 @@ class CC_EXPORT LayerTreeFrameSink {
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
-  virtual void SubmitCompositorFrame(CompositorFrame frame) = 0;
+  virtual void SubmitCompositorFrame(viz::CompositorFrame frame) = 0;
 
   // Signals that a BeginFrame issued by the viz::BeginFrameSource provided to
   // the client did not lead to a CompositorFrame submission.

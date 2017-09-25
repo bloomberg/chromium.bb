@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/client/local_surface_id_provider.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 
 namespace viz {
 
@@ -14,7 +14,7 @@ LocalSurfaceIdProvider::~LocalSurfaceIdProvider() = default;
 DefaultLocalSurfaceIdProvider::DefaultLocalSurfaceIdProvider() = default;
 
 const LocalSurfaceId& DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdForFrame(
-    const cc::CompositorFrame& frame) {
+    const CompositorFrame& frame) {
   if (!local_surface_id_.is_valid() ||
       surface_size_ != frame.size_in_pixels() ||
       frame.device_scale_factor() != device_scale_factor_) {

@@ -19,18 +19,17 @@
 
 class SkCanvas;
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace gfx {
 class Point;
 class ScrollOffset;
 class Transform;
-};
+}  // namespace gfx
+
+namespace viz {
+class CompositorFrame;
+}
 
 namespace content {
-
 class SynchronousCompositorClient;
 class WebContents;
 
@@ -53,7 +52,7 @@ class CONTENT_EXPORT SynchronousCompositor {
     Frame& operator=(Frame&& rhs);
 
     uint32_t layer_tree_frame_sink_id;
-    std::unique_ptr<cc::CompositorFrame> frame;
+    std::unique_ptr<viz::CompositorFrame> frame;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);

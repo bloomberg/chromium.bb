@@ -77,7 +77,8 @@ void LayerTreeFrameSinkLocal::SetLocalSurfaceId(
   local_surface_id_ = local_surface_id;
 }
 
-void LayerTreeFrameSinkLocal::SubmitCompositorFrame(cc::CompositorFrame frame) {
+void LayerTreeFrameSinkLocal::SubmitCompositorFrame(
+    viz::CompositorFrame frame) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   DCHECK(frame.metadata.begin_frame_ack.has_damage);

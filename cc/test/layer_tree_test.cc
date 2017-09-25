@@ -482,7 +482,8 @@ class LayerTreeTestLayerTreeFrameSinkClient
       const viz::LocalSurfaceId& local_surface_id) override {
     hooks_->DisplayReceivedLocalSurfaceIdOnThread(local_surface_id);
   }
-  void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
+  void DisplayReceivedCompositorFrame(
+      const viz::CompositorFrame& frame) override {
     hooks_->DisplayReceivedCompositorFrameOnThread(frame);
   }
   void DisplayWillDrawAndSwap(

@@ -18,11 +18,9 @@ namespace gfx {
 class Transform;
 }
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace viz {
+class CompositorFrame;
+
 namespace test {
 
 void CreateSharedQuadState(RenderPass* pass,
@@ -51,11 +49,11 @@ void CreateRenderPass(int render_pass_id,
                       const gfx::Transform& transform_to_root_target,
                       RenderPassList* render_pass_list);
 
-cc::CompositorFrame CreateCompositorFrameWithRenderPassList(
+CompositorFrame CreateCompositorFrameWithRenderPassList(
     RenderPassList* render_pass_list);
 
-cc::CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
-                                          RenderPass** render_pass);
+CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
+                                      RenderPass** render_pass);
 
 class TestSurfaceHittestDelegate : public SurfaceHittestDelegate {
  public:

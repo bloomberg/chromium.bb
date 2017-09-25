@@ -523,7 +523,7 @@ void SurfaceManager::FirstSurfaceActivation(const SurfaceInfo& surface_info) {
 
 void SurfaceManager::SurfaceActivated(Surface* surface) {
   // Trigger a display frame if necessary.
-  const cc::CompositorFrame& frame = surface->GetActiveFrame();
+  const CompositorFrame& frame = surface->GetActiveFrame();
   if (!SurfaceModified(surface->surface_id(), frame.metadata.begin_frame_ack)) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
     surface->RunDrawCallback();
@@ -591,13 +591,13 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
 
     if (surface->HasPendingFrame()) {
       // This provides the surface size from the root render pass.
-      const cc::CompositorFrame& frame = surface->GetPendingFrame();
+      const CompositorFrame& frame = surface->GetPendingFrame();
       *str << " pending " << frame.size_in_pixels().ToString();
     }
 
     if (surface->HasActiveFrame()) {
       // This provides the surface size from the root render pass.
-      const cc::CompositorFrame& frame = surface->GetActiveFrame();
+      const CompositorFrame& frame = surface->GetActiveFrame();
       *str << " active " << frame.size_in_pixels().ToString();
     }
   } else {

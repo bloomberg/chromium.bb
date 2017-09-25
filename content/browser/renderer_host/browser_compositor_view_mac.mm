@@ -294,7 +294,7 @@ void BrowserCompositorMac::DidCreateNewRendererCompositorFrameSink(
 
 void BrowserCompositorMac::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   // Compute the frame size based on the root render pass rect size.
   viz::RenderPass* root_pass = frame.render_pass_list.back().get();
   float scale_factor = frame.metadata.device_scale_factor;

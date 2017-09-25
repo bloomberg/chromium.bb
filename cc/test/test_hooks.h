@@ -11,12 +11,11 @@
 #include "cc/trees/layer_tree_host_impl.h"
 
 namespace viz {
+class CompositorFrame;
 class OutputSurface;
 }
 
 namespace cc {
-
-class CompositorFrame;
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public AnimationDelegate {
@@ -82,7 +81,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DisplayReceivedLocalSurfaceIdOnThread(
       const viz::LocalSurfaceId& local_surface_id) {}
   virtual void DisplayReceivedCompositorFrameOnThread(
-      const CompositorFrame& frame) {}
+      const viz::CompositorFrame& frame) {}
   virtual void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
       const viz::RenderPassList& render_passes) {}

@@ -19,7 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -652,7 +652,7 @@ class FrameWatcher : public WebContentsObserver {
   void WaitFrames(int frames_to_wait);
 
   // Return the last received CompositorFrame's metadata.
-  const cc::CompositorFrameMetadata& LastMetadata();
+  const viz::CompositorFrameMetadata& LastMetadata();
 
   // Call this method to start observing a WebContents for CompositorFrames.
   using WebContentsObserver::Observe;

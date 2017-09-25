@@ -23,10 +23,10 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_metadata.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -2428,10 +2428,10 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
 }
 
-cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
-                                       gfx::Size size,
-                                       gfx::Rect damage) {
-  cc::CompositorFrame frame;
+viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
+                                        gfx::Size size,
+                                        gfx::Rect damage) {
+  viz::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
   frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
 
@@ -2495,7 +2495,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   sink_->ClearMessages();
 
   // Submit a frame with resources.
-  cc::CompositorFrame frame = MakeDelegatedFrame(1.f, view_size, view_rect);
+  viz::CompositorFrame frame = MakeDelegatedFrame(1.f, view_size, view_rect);
   viz::TransferableResource resource;
   resource.id = 1;
   frame.resource_list.push_back(resource);
@@ -2629,7 +2629,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
       gfx::Rect());
   view_->SetSize(large_size);
   view_->Show();
-  cc::CompositorFrame frame =
+  viz::CompositorFrame frame =
       MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
   frame.metadata.root_background_color = SK_ColorRED;
   view_->SubmitCompositorFrame(small_id, std::move(frame));
@@ -3453,7 +3453,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   {
     // Ack from CompositorFrame is forwarded.
     viz::BeginFrameAck ack(source_id, 5, true);
-    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
+    viz::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
     view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     view_->RunOnCompositingDidCommit();

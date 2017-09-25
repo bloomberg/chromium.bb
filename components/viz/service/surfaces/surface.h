@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -118,11 +118,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
 
   // Returns false if |frame| is invalid.
   // |draw_callback| is called once to notify the client that the previously
-  // submitted cc::CompositorFrame is processed and that another frame can be
+  // submitted CompositorFrame is processed and that another frame can be
   // there is visible damage.
   // |will_draw_callback| is called when |surface| is scheduled for a draw and
   // there is visible damage.
-  bool QueueFrame(cc::CompositorFrame frame,
+  bool QueueFrame(CompositorFrame frame,
                   uint64_t frame_index,
                   base::OnceClosure draw_callback,
                   const WillDrawCallback& will_draw_callback);
@@ -147,11 +147,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
   // Returns the most recent frame that is eligible to be rendered.
   // You must check whether HasActiveFrame() returns true before calling this
   // method.
-  const cc::CompositorFrame& GetActiveFrame() const;
+  const CompositorFrame& GetActiveFrame() const;
 
   // Returns the currently pending frame. You must check where HasPendingFrame()
   // returns true before calling this method.
-  const cc::CompositorFrame& GetPendingFrame();
+  const CompositorFrame& GetPendingFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   uint64_t GetActiveFrameIndex() const {
@@ -188,7 +188,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
   }
 
   // Returns the set of activation dependencies that have been ignored because
-  // the last cc::CompositorFrame was activated due to a deadline. Late
+  // the last CompositorFrame was activated due to a deadline. Late
   // dependencies activate immediately when they arrive.
   const base::flat_set<SurfaceId>& late_activation_dependencies() const {
     return late_activation_dependencies_;
@@ -205,21 +205,21 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
 
  private:
   struct FrameData {
-    FrameData(cc::CompositorFrame&& frame,
+    FrameData(CompositorFrame&& frame,
               uint64_t frame_index,
               base::OnceClosure draw_callback,
               const WillDrawCallback& will_draw_callback);
     FrameData(FrameData&& other);
     ~FrameData();
     FrameData& operator=(FrameData&& other);
-    cc::CompositorFrame frame;
+    CompositorFrame frame;
     uint64_t frame_index;
     base::OnceClosure draw_callback;
     WillDrawCallback will_draw_callback;
   };
 
   // Rejects CompositorFrames submitted to surfaces referenced from this
-  // cc::CompositorFrame as fallbacks. This saves some CPU cycles to allow
+  // CompositorFrame as fallbacks. This saves some CPU cycles to allow
   // children to catch up to the parent.
   void RejectCompositorFramesToFallbackSurfaces();
 
@@ -230,7 +230,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
   void ActivatePendingFrame();
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data);
-  void UpdateActivationDependencies(const cc::CompositorFrame& current_frame);
+  void UpdateActivationDependencies(const CompositorFrame& current_frame);
   void ComputeChangeInDependencies(
       const base::flat_set<SurfaceId>& existing_dependencies,
       const base::flat_set<SurfaceId>& new_dependencies,
@@ -244,7 +244,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
   void TakeLatencyInfoFromPendingFrame(
       std::vector<ui::LatencyInfo>* latency_info);
   static void TakeLatencyInfoFromFrame(
-      cc::CompositorFrame* frame,
+      CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
 
   const SurfaceInfo surface_info_;

@@ -10,8 +10,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "cc/base/math_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/env.h"
@@ -31,7 +31,7 @@ gfx::Rect GetQuadBoundsInScreen(const viz::DrawQuad* quad) {
       quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
 }
 
-bool FindAnyQuad(const cc::CompositorFrame& frame,
+bool FindAnyQuad(const viz::CompositorFrame& frame,
                  const gfx::Rect& screen_rect) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
   const auto& quad_list = frame.render_pass_list[0]->quad_list;
@@ -42,7 +42,7 @@ bool FindAnyQuad(const cc::CompositorFrame& frame,
   return false;
 }
 
-bool FindColorQuad(const cc::CompositorFrame& frame,
+bool FindColorQuad(const viz::CompositorFrame& frame,
                    const gfx::Rect& screen_rect,
                    SkColor color) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
@@ -60,7 +60,7 @@ bool FindColorQuad(const cc::CompositorFrame& frame,
   return false;
 }
 
-bool FindTiledContentQuad(const cc::CompositorFrame& frame,
+bool FindTiledContentQuad(const viz::CompositorFrame& frame,
                           const gfx::Rect& screen_rect) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
   const auto& quad_list = frame.render_pass_list[0]->quad_list;
@@ -79,7 +79,7 @@ class NonClientFrameControllerTest : public AshTestBase {
   NonClientFrameControllerTest() = default;
   ~NonClientFrameControllerTest() override = default;
 
-  const cc::CompositorFrame& GetLastCompositorFrame() const {
+  const viz::CompositorFrame& GetLastCompositorFrame() const {
     return context_factory_.GetLastCompositorFrame();
   }
 
@@ -138,7 +138,7 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   compositor->ScheduleDraw();
   ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
   {
-    const cc::CompositorFrame& frame = GetLastCompositorFrame();
+    const viz::CompositorFrame& frame = GetLastCompositorFrame();
     ASSERT_EQ(1u, frame.render_pass_list.size());
     EXPECT_TRUE(FindColorQuad(frame, kTileBounds, SK_ColorBLACK));
   }
@@ -152,7 +152,7 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
   {
     // This time, that tile for the wallpaper will not be drawn.
-    const cc::CompositorFrame& frame = GetLastCompositorFrame();
+    const viz::CompositorFrame& frame = GetLastCompositorFrame();
     ASSERT_EQ(1u, frame.render_pass_list.size());
     EXPECT_FALSE(FindColorQuad(frame, kTileBounds, SK_ColorBLACK));
 

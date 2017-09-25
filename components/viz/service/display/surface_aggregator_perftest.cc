@@ -4,12 +4,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/lap_timer.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/resources/display_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/display/surface_aggregator.h"
@@ -62,7 +62,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       auto pass = RenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
 
-      cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
+      CompositorFrame frame = test::MakeEmptyCompositorFrame();
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
@@ -110,7 +110,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     timer_.Reset();
     do {
       auto pass = RenderPass::Create();
-      cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
+      CompositorFrame frame = test::MakeEmptyCompositorFrame();
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -132,7 +132,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       root_support->SubmitCompositorFrame(
           LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame));
 
-      cc::CompositorFrame aggregated = aggregator_->Aggregate(
+      CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
                     LocalSurfaceId(num_surfaces + 1, kArbitraryToken)));
       timer_.NextLap();

@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
@@ -41,7 +41,7 @@ FakeContextFactory::FakeContextFactory() {
 
 FakeContextFactory::~FakeContextFactory() = default;
 
-const cc::CompositorFrame& FakeContextFactory::GetLastCompositorFrame() const {
+const viz::CompositorFrame& FakeContextFactory::GetLastCompositorFrame() const {
   return *frame_sink_->last_sent_frame();
 }
 

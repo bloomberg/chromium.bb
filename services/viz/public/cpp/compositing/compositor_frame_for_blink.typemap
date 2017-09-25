@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//services/viz/public/interfaces/compositing/compositor_frame.mojom"
-public_headers = [ "//cc/output/compositor_frame.h" ]
+public_headers = [ "//components/viz/common/quads/compositor_frame.h" ]
 traits_headers = [
   "//gpu/ipc/common/mailbox_holder_struct_traits.h",
   "//gpu/ipc/common/mailbox_struct_traits.h",
@@ -34,4 +34,4 @@ public_deps = [
   "//ui/gfx/mojo",
   "//ui/latency/mojo:interfaces",
 ]
-type_mappings = [ "viz.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]
+type_mappings = [ "viz.mojom.CompositorFrame=viz::CompositorFrame[move_only]" ]

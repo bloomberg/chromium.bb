@@ -6,8 +6,8 @@
 #define CC_IPC_CC_PARAM_TRAITS_MACROS_H_
 
 #include "cc/base/filter_operation.h"
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -163,7 +163,7 @@ IPC_STRUCT_TRAITS_BEGIN(viz::ReturnedResource)
   IPC_STRUCT_TRAITS_MEMBER(lost)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::Selection<gfx::SelectionBound>)
+IPC_STRUCT_TRAITS_BEGIN(viz::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)
   IPC_STRUCT_TRAITS_MEMBER(end)
 IPC_STRUCT_TRAITS_END()
@@ -180,7 +180,7 @@ IPC_STRUCT_TRAITS_BEGIN(viz::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
+IPC_STRUCT_TRAITS_BEGIN(viz::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)

@@ -23,7 +23,7 @@ SurfaceDependencyTracker::~SurfaceDependencyTracker() = default;
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
-  const cc::CompositorFrame& pending_frame = surface->GetPendingFrame();
+  const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
   if (IsSurfaceLate(surface)) {
     ActivateLateSurfaceSubtree(surface);
@@ -31,7 +31,7 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   }
 
   // Activation dependencies that aren't currently known to the surface manager
-  // or do not have an active cc::CompositorFrame block this frame.
+  // or do not have an active CompositorFrame block this frame.
   for (const SurfaceId& surface_id :
        pending_frame.metadata.activation_dependencies) {
     Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
@@ -80,7 +80,7 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   if (!surface->HasPendingFrame())
     return;
 
-  const cc::CompositorFrame& pending_frame = surface->GetPendingFrame();
+  const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
   DCHECK(!pending_frame.metadata.activation_dependencies.empty());
 
@@ -110,7 +110,7 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
 void SurfaceDependencyTracker::ActivateLateSurfaceSubtree(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
-  const cc::CompositorFrame& pending_frame = surface->GetPendingFrame();
+  const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
   for (const SurfaceId& surface_id :
        pending_frame.metadata.activation_dependencies) {
@@ -125,9 +125,9 @@ void SurfaceDependencyTracker::ActivateLateSurfaceSubtree(Surface* surface) {
 void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
-  const cc::CompositorFrame& pending_frame = surface->GetPendingFrame();
+  const CompositorFrame& pending_frame = surface->GetPendingFrame();
 
-  // Determine an activation deadline for the pending cc::CompositorFrame.
+  // Determine an activation deadline for the pending CompositorFrame.
   bool needs_deadline = pending_frame.metadata.can_activate_before_dependencies;
   if (!needs_deadline)
     return;

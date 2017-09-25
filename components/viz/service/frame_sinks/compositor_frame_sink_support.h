@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/output/compositor_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/referenced_surface_tracker.h"
@@ -82,7 +82,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame,
+                             CompositorFrame frame,
                              mojom::HitTestRegionListPtr hit_test_region_list,
                              uint64_t submit_time) override;
 
@@ -94,7 +94,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // TODO(kylechar): Merge the two SubmitCompositorFrame() methods.
   bool SubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
-      cc::CompositorFrame frame,
+      CompositorFrame frame,
       mojom::HitTestRegionListPtr hit_test_region_list = nullptr);
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
 

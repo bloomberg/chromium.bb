@@ -1875,7 +1875,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   input.end.edge_bottom = gfx::Point(50, 30);
   input.end.layer_id = root->id();
 
-  Selection<gfx::SelectionBound> output;
+  viz::Selection<gfx::SelectionBound> output;
 
   // Empty input bounds should produce empty output bounds.
   host_impl().active_tree()->GetViewportSelection(&output);
@@ -1956,7 +1956,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   host_impl().active_tree()->RegisterSelection(input);
 
   // The left bound should be occluded by the clip layer.
-  Selection<gfx::SelectionBound> output;
+  viz::Selection<gfx::SelectionBound> output;
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type());
   auto expected_output_start_top = gfx::PointF(input.start.edge_top);
@@ -2096,7 +2096,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
 
   // The viewport bounds should be properly scaled by the page scale, but should
   // remain in DIP coordinates.
-  Selection<gfx::SelectionBound> output;
+  viz::Selection<gfx::SelectionBound> output;
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type());
   auto expected_output_start_top = gfx::PointF(input.start.edge_top);
@@ -2163,7 +2163,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForDSFEnabled) {
 
   // The viewport bounds should be properly scaled by the page scale, but should
   // remain in DIP coordinates.
-  Selection<gfx::SelectionBound> output;
+  viz::Selection<gfx::SelectionBound> output;
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type());
   auto expected_output_start_top = gfx::PointF(input.start.edge_top);
@@ -2234,7 +2234,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
 
   host_impl().active_tree()->RegisterSelection(input);
 
-  Selection<gfx::SelectionBound> output;
+  viz::Selection<gfx::SelectionBound> output;
   host_impl().active_tree()->GetViewportSelection(&output);
 
   // edge_bottom and edge_top aren't allowed to have NaNs, so the selection
@@ -2339,7 +2339,7 @@ class PersistentSwapPromise
   ~PersistentSwapPromise() override = default;
 
   void DidActivate() override {}
-  MOCK_METHOD1(WillSwap, void(CompositorFrameMetadata* metadata));
+  MOCK_METHOD1(WillSwap, void(viz::CompositorFrameMetadata* metadata));
   MOCK_METHOD0(DidSwap, void());
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
@@ -2358,7 +2358,7 @@ class NotPersistentSwapPromise
   ~NotPersistentSwapPromise() override = default;
 
   void DidActivate() override {}
-  void WillSwap(CompositorFrameMetadata* metadata) override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
   void DidSwap() override {}
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {

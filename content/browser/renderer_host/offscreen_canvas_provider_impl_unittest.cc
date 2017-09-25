@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/renderer_host/offscreen_canvas_surface_impl.h"
@@ -93,8 +93,8 @@ class StubCompositorFrameSinkClient
 };
 
 // Create a CompositorFrame suitable to send over IPC.
-cc::CompositorFrame MakeCompositorFrame() {
-  cc::CompositorFrame frame;
+viz::CompositorFrame MakeCompositorFrame() {
+  viz::CompositorFrame frame;
   frame.metadata.begin_frame_ack.source_id =
       viz::BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =

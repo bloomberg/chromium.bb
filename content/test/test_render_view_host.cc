@@ -207,7 +207,7 @@ void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink(
 
 void TestRenderWidgetHostView::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    viz::CompositorFrame frame) {
   did_swap_compositor_frame_ = true;
 }
 

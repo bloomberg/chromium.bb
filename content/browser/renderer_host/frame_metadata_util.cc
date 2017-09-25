@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/frame_metadata_util.h"
 
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace {
 
@@ -13,12 +13,12 @@ namespace {
 // V1 saw errors of ~0.065 between computed window and content widths.
 const float kMobileViewportWidthEpsilon = 0.15f;
 
-bool HasFixedPageScale(const cc::CompositorFrameMetadata& frame_metadata) {
+bool HasFixedPageScale(const viz::CompositorFrameMetadata& frame_metadata) {
   return frame_metadata.min_page_scale_factor ==
          frame_metadata.max_page_scale_factor;
 }
 
-bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
+bool HasMobileViewport(const viz::CompositorFrameMetadata& frame_metadata) {
   float window_width_dip =
       frame_metadata.page_scale_factor *
           frame_metadata.scrollable_viewport_size.width();
@@ -30,7 +30,8 @@ bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
 
 namespace content {
 
-bool IsMobileOptimizedFrame(const cc::CompositorFrameMetadata& frame_metadata) {
+bool IsMobileOptimizedFrame(
+    const viz::CompositorFrameMetadata& frame_metadata) {
   bool has_mobile_viewport = HasMobileViewport(frame_metadata);
   bool has_fixed_page_scale = HasFixedPageScale(frame_metadata);
   return has_fixed_page_scale || has_mobile_viewport;

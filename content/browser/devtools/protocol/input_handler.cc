@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/native_input_event_builder.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -302,7 +302,7 @@ void InputHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void InputHandler::OnSwapCompositorFrame(
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const viz::CompositorFrameMetadata& frame_metadata) {
   page_scale_factor_ = frame_metadata.page_scale_factor;
   scrollable_viewport_size_ = frame_metadata.scrollable_viewport_size;
 }

@@ -51,10 +51,12 @@ namespace gfx {
 class ScrollOffset;
 }
 
-namespace cc {
-
-class BrowserControlsOffsetManager;
+namespace viz {
 class CompositorFrameMetadata;
+}
+
+namespace cc {
+class BrowserControlsOffsetManager;
 class LayerTreeFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
@@ -548,7 +550,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
-  CompositorFrameMetadata MakeCompositorFrameMetadata() const;
+  viz::CompositorFrameMetadata MakeCompositorFrameMetadata() const;
 
   // Viewport rectangle and clip in device space.  These rects are used to
   // prioritize raster and determine what is submitted in a CompositorFrame.

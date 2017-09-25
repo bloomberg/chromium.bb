@@ -5,8 +5,8 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 #include "base/macros.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"

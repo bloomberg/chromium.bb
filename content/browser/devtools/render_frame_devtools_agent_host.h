@@ -19,20 +19,17 @@
 #include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
-
-namespace cc {
-class CompositorFrameMetadata;
-}
 
 namespace net {
 class HttpRequestHeaders;
 }
 
-#if defined(OS_ANDROID)
-#include "services/device/public/interfaces/wake_lock.mojom.h"
-#endif
+namespace viz {
+class CompositorFrameMetadata;
+}
 
 namespace content {
 
@@ -71,7 +68,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
-      cc::CompositorFrameMetadata frame_metadata);
+      viz::CompositorFrameMetadata frame_metadata);
 
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
@@ -154,7 +151,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
 
   void SynchronousSwapCompositorFrame(
-      cc::CompositorFrameMetadata frame_metadata);
+      viz::CompositorFrameMetadata frame_metadata);
 
   class FrameHostHolder;
 

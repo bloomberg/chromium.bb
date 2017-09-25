@@ -1754,7 +1754,7 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
   run_loop.Run();
 }
 
-const cc::CompositorFrameMetadata& FrameWatcher::LastMetadata() {
+const viz::CompositorFrameMetadata& FrameWatcher::LastMetadata() {
   return RenderWidgetHostImpl::From(
              web_contents()->GetRenderViewHost()->GetWidget())
       ->last_frame_metadata();

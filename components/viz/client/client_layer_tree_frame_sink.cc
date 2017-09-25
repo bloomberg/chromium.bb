@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace viz {
@@ -105,8 +105,7 @@ void ClientLayerTreeFrameSink::SetLocalSurfaceId(
   local_surface_id_ = local_surface_id;
 }
 
-void ClientLayerTreeFrameSink::SubmitCompositorFrame(
-    cc::CompositorFrame frame) {
+void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,

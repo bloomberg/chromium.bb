@@ -16,14 +16,12 @@
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
-
-class CompositorFrame;
 class SurfaceLayer;
 enum class SurfaceDrawStatus;
-
 }  // namespace cc
 
 namespace viz {
+class CompositorFrame;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 }  // namespace viz
@@ -55,7 +53,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   ~DelegatedFrameHostAndroid() override;
 
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame);
+                             viz::CompositorFrame frame);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   void DestroyDelegatedContent();

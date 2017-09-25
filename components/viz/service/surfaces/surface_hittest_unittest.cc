@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -106,7 +106,7 @@ TEST_F(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
   // Creates a root surface.
   gfx::Rect root_rect(300, 300);
   RenderPass* root_pass = nullptr;
-  cc::CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to a non-existant child surface on the root surface.
   SurfaceId child_surface_id(
@@ -139,7 +139,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
   // Creates a root surface.
   gfx::Rect root_rect(300, 300);
   RenderPass* root_pass = nullptr;
-  cc::CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Submit the root frame.
   LocalSurfaceIdAllocator root_allocator;
@@ -161,7 +161,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
   // Creates a root surface.
   gfx::Rect root_rect(300, 300);
   RenderPass* root_pass = nullptr;
-  cc::CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to the child surface on the root surface.
   LocalSurfaceIdAllocator child_allocator;
@@ -183,8 +183,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
 
   // Creates a child surface.
   RenderPass* child_pass = nullptr;
-  cc::CompositorFrame child_frame =
-      CreateCompositorFrame(child_rect, &child_pass);
+  CompositorFrame child_frame = CreateCompositorFrame(child_rect, &child_pass);
 
   // Add a solid quad in the child surface.
   gfx::Rect child_solid_quad_rect(100, 100);
@@ -254,7 +253,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   // Creates a root surface.
   gfx::Rect root_rect(300, 300);
   RenderPass* root_pass = nullptr;
-  cc::CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Create a RenderPassDrawQuad to a non-existant RenderPass.
   int invalid_render_pass_id = 1337;
@@ -281,8 +280,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 
   // Creates a child surface.
   RenderPass* child_pass = nullptr;
-  cc::CompositorFrame child_frame =
-      CreateCompositorFrame(child_rect, &child_pass);
+  CompositorFrame child_frame = CreateCompositorFrame(child_rect, &child_pass);
 
   // Add a solid quad in the child surface.
   gfx::Rect child_solid_quad_rect(100, 100);
@@ -318,7 +316,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
   // Create a CompositorFrame with two RenderPasses.
   gfx::Rect root_rect(300, 300);
-  cc::CompositorFrame root_frame = test::MakeCompositorFrame();
+  CompositorFrame root_frame = test::MakeCompositorFrame();
   RenderPassList& render_pass_list = root_frame.render_pass_list;
 
   // Create a child RenderPass.
@@ -382,7 +380,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   // Creates a root surface.
   gfx::Rect root_rect(300, 300);
   RenderPass* root_pass = nullptr;
-  cc::CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
+  CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to the child surface on the root surface.
   LocalSurfaceIdAllocator child_allocator;
@@ -404,8 +402,7 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
 
   // Creates a child surface.
   RenderPass* child_pass = nullptr;
-  cc::CompositorFrame child_frame =
-      CreateCompositorFrame(child_rect, &child_pass);
+  CompositorFrame child_frame = CreateCompositorFrame(child_rect, &child_pass);
 
   // Add a solid quad in the child surface.
   gfx::Rect child_solid_quad_rect(190, 190);

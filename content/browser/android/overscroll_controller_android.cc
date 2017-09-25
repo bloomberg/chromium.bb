@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
-#include "cc/output/compositor_frame_metadata.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
@@ -289,7 +289,7 @@ bool OverscrollControllerAndroid::Animate(base::TimeTicks current_time,
 }
 
 void OverscrollControllerAndroid::OnFrameMetadataUpdated(
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const viz::CompositorFrameMetadata& frame_metadata) {
   if (!refresh_effect_ && !glow_effect_)
     return;
 

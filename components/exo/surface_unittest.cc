@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "cc/output/compositor_frame.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -100,13 +100,13 @@ TEST_P(SurfaceTest, Attach) {
   ASSERT_EQ(1, release_buffer_call_count);
 }
 
-const cc::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
+const viz::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
   viz::SurfaceId surface_id = shell_surface->host_window()->GetSurfaceId();
   viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
                                              ->context_factory_private()
                                              ->GetFrameSinkManager()
                                              ->surface_manager();
-  const cc::CompositorFrame& frame =
+  const viz::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
   return frame;
 }
@@ -136,7 +136,8 @@ TEST_P(SurfaceTest, Damage) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
               frame.render_pass_list.back()->damage_rect);
   }
@@ -147,7 +148,8 @@ TEST_P(SurfaceTest, Damage) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     EXPECT_EQ(ToPixel(gfx::Rect(64, 128, 16, 32)),
               frame.render_pass_list.back()->damage_rect);
   }
@@ -186,7 +188,8 @@ TEST_P(SurfaceTest, SetOpaqueRegion) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     EXPECT_FALSE(frame.render_pass_list.back()
@@ -202,7 +205,8 @@ TEST_P(SurfaceTest, SetOpaqueRegion) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     EXPECT_TRUE(frame.render_pass_list.back()
@@ -223,7 +227,8 @@ TEST_P(SurfaceTest, SetOpaqueRegion) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
     EXPECT_FALSE(frame.render_pass_list.back()
@@ -266,7 +271,7 @@ TEST_P(SurfaceTest, SetBufferScale) {
 
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 256, 256)),
             frame.render_pass_list.back()->damage_rect);
@@ -292,7 +297,8 @@ TEST_P(SurfaceTest, SetBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     EXPECT_EQ(
         ToPixel(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width())),
@@ -333,7 +339,8 @@ TEST_P(SurfaceTest, SetBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const auto& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(2u, quad_list.size());
@@ -394,7 +401,7 @@ TEST_P(SurfaceTest, SetViewport) {
 
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
             frame.render_pass_list.back()->damage_rect);
@@ -417,7 +424,7 @@ TEST_P(SurfaceTest, SetCrop) {
 
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 12, 12)),
             frame.render_pass_list.back()->damage_rect);
@@ -450,7 +457,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -470,7 +478,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -490,7 +499,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -510,7 +520,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -531,7 +542,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -551,7 +563,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -571,7 +584,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -591,7 +605,8 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   RunAllPendingInMessageLoop();
 
   {
-    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
     const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
@@ -618,7 +633,7 @@ TEST_P(SurfaceTest, SetBlendMode) {
   surface->Commit();
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
   EXPECT_FALSE(frame.render_pass_list.back()
@@ -638,7 +653,7 @@ TEST_P(SurfaceTest, OverlayCandidate) {
   surface->Commit();
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
   viz::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
@@ -662,7 +677,7 @@ TEST_P(SurfaceTest, SetAlpha) {
   surface->Commit();
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
   EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
             frame.render_pass_list.back()->damage_rect);
@@ -706,7 +721,7 @@ TEST_P(SurfaceTest, SendsBeginFrameAcks) {
   surface->Commit();  // Acknowledges the BeginFrame via CompositorFrame.
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   viz::BeginFrameAck expected_ack(args.source_id, args.sequence_number, true);
   EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
 

@@ -9,11 +9,8 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
-class CompositorFrame;
-}
-
 namespace viz {
+class CompositorFrame;
 
 class LocalSurfaceIdProvider {
  public:
@@ -21,7 +18,7 @@ class LocalSurfaceIdProvider {
   virtual ~LocalSurfaceIdProvider();
 
   virtual const LocalSurfaceId& GetLocalSurfaceIdForFrame(
-      const cc::CompositorFrame& frame) = 0;
+      const CompositorFrame& frame) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalSurfaceIdProvider);
@@ -32,7 +29,7 @@ class DefaultLocalSurfaceIdProvider : public LocalSurfaceIdProvider {
   DefaultLocalSurfaceIdProvider();
 
   const LocalSurfaceId& GetLocalSurfaceIdForFrame(
-      const cc::CompositorFrame& frame) override;
+      const CompositorFrame& frame) override;
 
  private:
   LocalSurfaceId local_surface_id_;

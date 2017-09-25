@@ -95,7 +95,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame) override;
+                             viz::CompositorFrame frame) override;
 #if defined(USE_AURA)
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;

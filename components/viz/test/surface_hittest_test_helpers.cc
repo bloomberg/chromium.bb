@@ -4,7 +4,7 @@
 
 #include "components/viz/test/surface_hittest_test_helpers.h"
 
-#include "cc/output/compositor_frame.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -69,9 +69,9 @@ void CreateRenderPass(int render_pass_id,
   render_pass_list->push_back(std::move(render_pass));
 }
 
-cc::CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
-                                          RenderPass** render_pass) {
-  cc::CompositorFrame root_frame = MakeCompositorFrame();
+CompositorFrame CreateCompositorFrame(const gfx::Rect& root_rect,
+                                      RenderPass** render_pass) {
+  CompositorFrame root_frame = MakeCompositorFrame();
   int root_id = 1;
   CreateRenderPass(root_id, root_rect, gfx::Transform(),
                    &root_frame.render_pass_list);

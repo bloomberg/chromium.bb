@@ -5,10 +5,10 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +25,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink {
                            nullptr,
                            nullptr) {}
 
-  void SubmitCompositorFrame(CompositorFrame frame) override {
+  void SubmitCompositorFrame(viz::CompositorFrame frame) override {
     client_->DidReceiveCompositorFrameAck();
   }
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override {}

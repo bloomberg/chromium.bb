@@ -8,7 +8,7 @@ import "services/viz/public/interfaces/compositing/compositor_frame_metadata.moj
 import "services/viz/public/interfaces/compositing/render_pass.mojom";
 import "services/viz/public/interfaces/compositing/transferable_resource.mojom";
 
-// See src/cc/output/compositor_frame.h.
+// See src/components/viz/common/quads/compositor_frame.h.
 struct CompositorFrame {
   CompositorFrameMetadata metadata;
   array<TransferableResource> resources;

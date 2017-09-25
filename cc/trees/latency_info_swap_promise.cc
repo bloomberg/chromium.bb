@@ -31,9 +31,9 @@ namespace cc {
 LatencyInfoSwapPromise::LatencyInfoSwapPromise(const ui::LatencyInfo& latency)
     : latency_(latency) {}
 
-LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {}
+LatencyInfoSwapPromise::~LatencyInfoSwapPromise() = default;
 
-void LatencyInfoSwapPromise::WillSwap(CompositorFrameMetadata* metadata) {
+void LatencyInfoSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   DCHECK(!latency_.terminated());
   metadata->latency_info.push_back(latency_);
 }

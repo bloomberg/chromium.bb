@@ -119,7 +119,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
-                             cc::CompositorFrame frame) override;
+                             viz::CompositorFrame frame) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
@@ -230,7 +230,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetParentFrameSinkId(const viz::FrameSinkId& parent_frame_sink_id);
 
   void ProcessCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
-                              cc::CompositorFrame frame);
+                              viz::CompositorFrame frame);
 
   void SendSurfaceInfoToEmbedder();
 

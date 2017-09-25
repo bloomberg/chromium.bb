@@ -44,7 +44,7 @@ void QueueMessageSwapPromise::DidActivate() {
   // The OutputSurface will take care of the Drain+Send.
 }
 
-void QueueMessageSwapPromise::WillSwap(cc::CompositorFrameMetadata* metadata) {
+void QueueMessageSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif

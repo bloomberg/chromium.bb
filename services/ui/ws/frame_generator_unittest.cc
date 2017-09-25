@@ -43,7 +43,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
   // viz::mojom::CompositorFrameSink implementation:
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
-      cc::CompositorFrame frame,
+      viz::CompositorFrame frame,
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override {
     ++frames_submitted_;
@@ -86,7 +86,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
     return last_frame_.render_pass_list;
   }
 
-  const cc::CompositorFrameMetadata& last_metadata() const {
+  const viz::CompositorFrameMetadata& last_metadata() const {
     return last_frame_.metadata;
   }
 
@@ -99,7 +99,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
  private:
   viz::mojom::CompositorFrameSinkClient* sink_client_;
   viz::BeginFrameArgs last_begin_frame_args_;
-  cc::CompositorFrame last_frame_;
+  viz::CompositorFrame last_frame_;
   viz::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frames_ = false;
   int frames_submitted_ = 0;
@@ -156,7 +156,7 @@ class FrameGeneratorTest : public testing::Test {
     return binding_->last_begin_frame_ack();
   }
 
-  const cc::CompositorFrameMetadata& LastMetadata() const {
+  const viz::CompositorFrameMetadata& LastMetadata() const {
     return binding_->last_metadata();
   }
 
@@ -193,7 +193,7 @@ TEST_F(FrameGeneratorTest, OnFirstSurfaceActivation) {
 
   // Verify that the CompositorFrame refers to the window manager's surface via
   // referenced_surfaces.
-  const cc::CompositorFrameMetadata& last_metadata = LastMetadata();
+  const viz::CompositorFrameMetadata& last_metadata = LastMetadata();
   const std::vector<viz::SurfaceId>& referenced_surfaces =
       last_metadata.referenced_surfaces;
   EXPECT_EQ(1lu, referenced_surfaces.size());
@@ -217,13 +217,13 @@ TEST_F(FrameGeneratorTest, SetDeviceScaleFactor) {
   frame_generator()->SetDeviceScaleFactor(kDefaultScaleFactor);
   IssueBeginFrame();
   EXPECT_EQ(1, NumberOfFramesReceived());
-  const cc::CompositorFrameMetadata& last_metadata = LastMetadata();
+  const viz::CompositorFrameMetadata& last_metadata = LastMetadata();
   EXPECT_EQ(kDefaultScaleFactor, last_metadata.device_scale_factor);
 
   frame_generator()->SetDeviceScaleFactor(kArbitraryScaleFactor);
   IssueBeginFrame();
   EXPECT_EQ(2, NumberOfFramesReceived());
-  const cc::CompositorFrameMetadata& second_last_metadata = LastMetadata();
+  const viz::CompositorFrameMetadata& second_last_metadata = LastMetadata();
   EXPECT_EQ(kArbitraryScaleFactor, second_last_metadata.device_scale_factor);
 }
 

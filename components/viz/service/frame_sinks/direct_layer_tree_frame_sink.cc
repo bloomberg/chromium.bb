@@ -5,8 +5,8 @@
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 
 #include "base/bind.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -96,8 +96,7 @@ void DirectLayerTreeFrameSink::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-void DirectLayerTreeFrameSink::SubmitCompositorFrame(
-    cc::CompositorFrame frame) {
+void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
