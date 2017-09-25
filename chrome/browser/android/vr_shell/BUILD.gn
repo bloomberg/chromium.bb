@@ -30,8 +30,6 @@ static_library("vr_android") {
     "vr_core_info.h",
     "vr_gl_thread.cc",
     "vr_gl_thread.h",
-    "vr_input_manager.cc",
-    "vr_input_manager.h",
     "vr_metrics_util.cc",
     "vr_metrics_util.h",
     "vr_shell.cc",

@@ -130,6 +130,8 @@ static_library("vr_common") {
     "vr_gl_util.h",
     "vr_shell_renderer.cc",
     "vr_shell_renderer.h",
+    "web_contents_event_forwarder.cc",
+    "web_contents_event_forwarder.h",
   ]
 
   deps = [

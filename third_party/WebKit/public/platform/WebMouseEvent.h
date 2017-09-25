@@ -6,7 +6,7 @@
 #define WebMouseEvent_h
 
 #include "WebInputEvent.h"
-#include "public/platform/WebMenuSourceType.h"
+#include "WebMenuSourceType.h"
 
 namespace blink {
 
