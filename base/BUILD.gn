@@ -2717,7 +2717,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/RetryOnFailure.java",
       "test/android/javatests/src/org/chromium/base/test/util/ScalableTimeout.java",
       "test/android/javatests/src/org/chromium/base/test/util/SkipCheck.java",
-      "test/android/javatests/src/org/chromium/base/test/util/ScreenShooter.java",
       "test/android/javatests/src/org/chromium/base/test/util/TestFileUtil.java",
       "test/android/javatests/src/org/chromium/base/test/util/TestThread.java",
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutScale.java",
