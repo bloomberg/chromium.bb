@@ -280,15 +280,6 @@
                   '|third_party/WebKit/LayoutTests/platform/.*/fast/css-grid-layout/' \
                   '|third_party/WebKit/LayoutTests/platform/.*/ietestcenter/css3/grid/'
     },
-    'blink_css_regions': {
-      'filepath': 'third_party/WebKit/Source/core/rendering/.*(Region|FlowThread)' \
-                  '|third_party/WebKit/Source/core/dom/NodeRendering' \
-                  '|third_party/WebKit/Source/core/dom/.*NamedFlow' \
-                  '|third_party/WebKit/Source/core/css/.*Region' \
-                  '|third_party/WebKit/LayoutTests/compositing/regions/' \
-                  '|third_party/WebKit/LayoutTests/fast/regions/' \
-                  '|third_party/WebKit/LayoutTests/platform/chromium.*/fast/regions/'
-    },
     'blink_custom_elements': {
       'filepath': 'third_party/WebKit/Source/core/html/custom/' \
                   '|third_party/WebKit/Source/bindings/core/v8/.*CustomElement',
@@ -306,14 +297,7 @@
       'filepath': 'third_party/WebKit/Source/core/dom/'
     },
     'blink_dom_events': {
-      'filepath': 'third_party/WebKit/Source/core/events/Event\.' \
-                  '|third_party/WebKit/Source/core/events/EventInit' \
-                  '|third_party/WebKit/Source/core/events/EventPath' \
-                  '|third_party/WebKit/Source/core/events/EventListener' \
-                  '|third_party/WebKit/Source/core/events/EventDispatcher' \
-                  '|third_party/WebKit/Source/core/events/EventDispatchMediator' \
-                  '|third_party/WebKit/Source/core/events/EventTarget' \
-                  '|third_party/WebKit/Source/core/events/.*EventContext'
+      'filepath': 'third_party/WebKit/Source/core/dom/events/'
     },
     'blink_events': {
       'filepath': 'third_party/WebKit/Source/core/page/.*Event' \
@@ -536,9 +520,6 @@
       'filepath': 'third_party/WebKit/LayoutTests/external/' \
                   '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
     },
-    'blink_web': {
-      'filepath': 'third_party/WebKit/Source/web'
-    },
     'blink_webcomponents': {
       'filepath': 'third_party/WebKit/Source/core/dom/.*Shadow' \
                   '|third_party/WebKit/Source/core/dom/.*Slot' \
@@ -563,7 +544,7 @@
                   '|third_party/WebKit/LayoutTests/external/wpt/workers'
     },
     'blink_wtf': {
-      'filepath': 'third_party/WebKit/Source/wtf',
+      'filepath': 'third_party/WebKit/Source/platform/wtf',
     },
     'blink_xml': {
       'filepath': 'third_party/WebKit/Source/core/xml/'
@@ -1734,7 +1715,6 @@
     'blink_css_grid_layout': ['jfernandez@igalia.com',
                               'rego@igalia.com',
                               'svillar@igalia.com'],
-    'blink_css_regions': ['ChromiumBugTracker@adobe.com'],
     'blink_custom_elements': ['dglazkov+blink@chromium.org',
                               'dominicc+watchlist@chromium.org'],
     'blink_device_orientation': ['mlamouri+watch-blink@chromium.org',
@@ -1866,8 +1846,6 @@
     'blink_vibration': ['mlamouri+watch-blink@chromium.org'],
     'blink_viewport_interaction': ['kenneth.christiansen@gmail.com'],
     'blink_w3ctests': ['blink-reviews-w3ctests@chromium.org'],
-    'blink_web': ['kinuko+watch@chromium.org',
-                  'platform-architecture-syd+reviews-web@chromium.org'],
     'blink_webcomponents': ['dglazkov+blink@chromium.org'],
     'blink_webp': ['jzern@chromium.org',
                    'skal@google.com',
