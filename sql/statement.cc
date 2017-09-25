@@ -351,7 +351,7 @@ bool Statement::CheckOk(int err) const {
   // TODO(gbillock,shess): make this invalidate the statement so it
   // can't wreak havoc.
   if (err == SQLITE_RANGE)
-    DLOG(FATAL) << "Bind value out of range";
+    DLOG(DCHECK) << "Bind value out of range";
   return err == SQLITE_OK;
 }
 

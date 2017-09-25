@@ -97,7 +97,7 @@ int BackupDatabase(sqlite3* src, sqlite3* dst, const char* db_name) {
   if (!backup) {
     // Since this call only sets things up, this indicates a gross
     // error in SQLite.
-    DLOG(FATAL) << "Unable to start sqlite3_backup(): " << sqlite3_errmsg(dst);
+    DLOG(DCHECK) << "Unable to start sqlite3_backup(): " << sqlite3_errmsg(dst);
     return sqlite3_errcode(dst);
   }
 
@@ -466,7 +466,7 @@ void Connection::CloseInternal(bool forced) {
     int rc = sqlite3_close(db_);
     if (rc != SQLITE_OK) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.CloseFailure", rc);
-      DLOG(FATAL) << "sqlite3_close failed: " << GetErrorMessage();
+      DLOG(DCHECK) << "sqlite3_close failed: " << GetErrorMessage();
     }
   }
   db_ = NULL;
@@ -488,7 +488,7 @@ void Connection::Preload() {
   AssertIOAllowed();
 
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Cannot preload null db";
+    DCHECK(poisoned_) << "Cannot preload null db";
     return;
   }
 
@@ -565,7 +565,7 @@ void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
   // The database could have been closed during a transaction as part of error
   // recovery.
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return;
   }
 
@@ -1054,18 +1054,18 @@ bool Connection::Raze() {
   AssertIOAllowed();
 
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
+    DCHECK(poisoned_) << "Cannot raze null db";
     return false;
   }
 
   if (transaction_nesting_ > 0) {
-    DLOG(FATAL) << "Cannot raze within a transaction";
+    DLOG(DCHECK) << "Cannot raze within a transaction";
     return false;
   }
 
   sql::Connection null_db;
   if (!null_db.OpenInMemory()) {
-    DLOG(FATAL) << "Unable to open in-memory database.";
+    DLOG(DCHECK) << "Unable to open in-memory database.";
     return false;
   }
 
@@ -1141,38 +1141,33 @@ bool Connection::Raze() {
     sqlite3_file* file = NULL;
     rc = GetSqlite3File(db_, &file);
     if (rc != SQLITE_OK) {
-      DLOG(FATAL) << "Failure getting file handle.";
+      DLOG(DCHECK) << "Failure getting file handle.";
       return false;
     }
 
     rc = file->pMethods->xTruncate(file, 0);
     if (rc != SQLITE_OK) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabaseTruncate",rc);
-      DLOG(FATAL) << "Failed to truncate file.";
+      DLOG(DCHECK) << "Failed to truncate file.";
       return false;
     }
 
     rc = BackupDatabase(null_db.db_, db_, kMain);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RazeDatabase2",rc);
 
-    if (rc != SQLITE_DONE) {
-      DLOG(FATAL) << "Failed retrying Raze().";
-    }
+    DCHECK_EQ(rc, SQLITE_DONE) << "Failed retrying Raze().";
   }
+
+  // TODO(shess): Figure out which other cases can happen.
+  DCHECK_EQ(rc, SQLITE_DONE) << "Unable to copy entire null database.";
 
   // The entire database should have been backed up.
-  if (rc != SQLITE_DONE) {
-    // TODO(shess): Figure out which other cases can happen.
-    DLOG(FATAL) << "Unable to copy entire null database.";
-    return false;
-  }
-
-  return true;
+  return rc == SQLITE_DONE;
 }
 
 bool Connection::RazeAndClose() {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
+    DCHECK(poisoned_) << "Cannot raze null db";
     return false;
   }
 
@@ -1193,7 +1188,7 @@ bool Connection::RazeAndClose() {
 
 void Connection::Poison() {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Cannot poison null db";
+    DCHECK(poisoned_) << "Cannot poison null db";
     return;
   }
 
@@ -1284,7 +1279,7 @@ bool Connection::BeginTransaction() {
 
 void Connection::RollbackTransaction() {
   if (!transaction_nesting_) {
-    DLOG_IF(FATAL, !poisoned_) << "Rolling back a nonexistent transaction";
+    DCHECK(poisoned_) << "Rolling back a nonexistent transaction";
     return;
   }
 
@@ -1301,7 +1296,7 @@ void Connection::RollbackTransaction() {
 
 bool Connection::CommitTransaction() {
   if (!transaction_nesting_) {
-    DLOG_IF(FATAL, !poisoned_) << "Committing a nonexistent transaction";
+    DCHECK(poisoned_) << "Committing a nonexistent transaction";
     return false;
   }
   transaction_nesting_--;
@@ -1368,7 +1363,7 @@ bool Connection::DetachDatabase(const char* attachment_point) {
 int Connection::ExecuteAndReturnErrorCode(const char* sql) {
   AssertIOAllowed();
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return SQLITE_ERROR;
   }
   DCHECK(sql);
@@ -1431,7 +1426,7 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
 
 bool Connection::Execute(const char* sql) {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return false;
   }
 
@@ -1443,14 +1438,14 @@ bool Connection::Execute(const char* sql) {
   // that there's a malformed SQL statement. This can arise in development if
   // a change alters the schema but not all queries adjust.  This can happen
   // in production if the schema is corrupted.
-  if (error == SQLITE_ERROR)
-    DLOG(FATAL) << "SQL Error in " << sql << ", " << GetErrorMessage();
+  DCHECK_NE(error, SQLITE_ERROR)
+      << "SQL Error in " << sql << ", " << GetErrorMessage();
   return error == SQLITE_OK;
 }
 
 bool Connection::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return false;
   }
 
@@ -1502,8 +1497,7 @@ scoped_refptr<Connection::StatementRef> Connection::GetStatementImpl(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    if (rc == SQLITE_ERROR)
-      DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
+    DCHECK_NE(rc, SQLITE_ERROR) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL, sql);
@@ -1543,7 +1537,7 @@ std::string Connection::GetSchema() const {
 bool Connection::IsSQLValid(const char* sql) {
   AssertIOAllowed();
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return false;
   }
 
@@ -1607,7 +1601,7 @@ bool Connection::DoesColumnExist(const char* table_name,
 
 int64_t Connection::GetLastInsertRowId() const {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return 0;
   }
   return sqlite3_last_insert_rowid(db_);
@@ -1615,7 +1609,7 @@ int64_t Connection::GetLastInsertRowId() const {
 
 int Connection::GetLastChangeCount() const {
   if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
+    DCHECK(poisoned_) << "Illegal use of connection without a db";
     return 0;
   }
   return sqlite3_changes(db_);
@@ -1649,7 +1643,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   AssertIOAllowed();
 
   if (db_) {
-    DLOG(FATAL) << "sql::Connection is already open.";
+    DLOG(DCHECK) << "sql::Connection is already open.";
     return false;
   }
 
@@ -1688,7 +1682,7 @@ bool Connection::OpenInternal(const std::string& file_name,
   // only considers the sqlite3 handle's state.
   // TODO(shess): Revise is_open() to consider poisoned_, and review
   // to see if any non-testing code even depends on it.
-  DLOG_IF(FATAL, poisoned_) << "sql::Connection is already open.";
+  DCHECK(!poisoned_) << "sql::Connection is already open.";
   poisoned_ = false;
 
   // Custom memory-mapping VFS which reads pages using regular I/O on first hit.
@@ -1908,7 +1902,7 @@ void Connection::StatementRefCreated(StatementRef* ref) {
 void Connection::StatementRefDeleted(StatementRef* ref) {
   StatementRefSet::iterator i = open_statements_.find(ref);
   if (i == open_statements_.end())
-    DLOG(FATAL) << "Could not find statement";
+    DLOG(DCHECK) << "Could not find statement";
   else
     open_statements_.erase(i);
 }
@@ -1965,7 +1959,7 @@ int Connection::OnSqliteError(
 
   // The default handling is to assert on debug and to ignore on release.
   if (!IsExpectedSqliteError(err))
-    DLOG(FATAL) << GetErrorMessage();
+    DLOG(DCHECK) << GetErrorMessage();
   return err;
 }
 

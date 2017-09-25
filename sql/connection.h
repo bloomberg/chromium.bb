@@ -497,7 +497,7 @@ class SQL_EXPORT Connection {
   // Returns |true| if there is an error expecter (see SetErrorExpecter), and
   // that expecter returns |true| when passed |error|.  Clients which provide an
   // |error_callback| should use IsExpectedSqliteError() to check for unexpected
-  // errors; if one is detected, DLOG(FATAL) is generally appropriate (see
+  // errors; if one is detected, DLOG(DCHECK) is generally appropriate (see
   // OnSqliteError implementation).
   static bool IsExpectedSqliteError(int error);
 
