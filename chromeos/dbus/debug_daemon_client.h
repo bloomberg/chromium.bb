@@ -20,6 +20,7 @@
 #include "base/trace_event/tracing_agent.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -196,13 +197,9 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // Trigger uploading of crashes.
   virtual void UploadCrashes() = 0;
 
-  // A callback for WaitForServiceToBeAvailable().
-  typedef base::Callback<void(bool service_is_ready)>
-      WaitForServiceToBeAvailableCallback;
-
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) = 0;
+      WaitForServiceToBeAvailableCallback callback) = 0;
 
   // A callback for SetOomScoreAdj().
   typedef base::Callback<void(bool success, const std::string& output)>

@@ -79,12 +79,13 @@ void FakeCryptohomeClient::SetDircryptoMigrationProgressHandler(
 }
 
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
-    const WaitForServiceToBeAvailableCallback& callback) {
+    WaitForServiceToBeAvailableCallback callback) {
   if (service_is_available_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, true));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
   } else {
-    pending_wait_for_service_to_be_available_callbacks_.push_back(callback);
+    pending_wait_for_service_to_be_available_callbacks_.push_back(
+        std::move(callback));
   }
 }
 
@@ -702,12 +703,13 @@ void FakeCryptohomeClient::NeedsDircryptoMigration(
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
-  if (is_available) {
-    std::vector<WaitForServiceToBeAvailableCallback> callbacks;
-    callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
-    for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i].Run(is_available);
-  }
+  if (!is_available)
+    return;
+
+  std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+  callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
+  for (auto& callback : callbacks)
+    std::move(callback).Run(true);
 }
 
 void FakeCryptohomeClient::SetTpmAttestationUserCertificate(

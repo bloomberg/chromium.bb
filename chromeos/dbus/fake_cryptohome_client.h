@@ -34,7 +34,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void ResetAsyncCallStatusHandlers() override;
   void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) override;
   void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) override;
+      WaitForServiceToBeAvailableCallback callback) override;
   void IsMounted(DBusMethodCallback<bool> callback) override;
   void Unmount(DBusMethodCallback<bool> callback) override;
   void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,

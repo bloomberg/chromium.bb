@@ -68,9 +68,6 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       GetSystemSaltCallback;
   // A callback to handle LowDiskSpace signals.
   typedef base::Callback<void(uint64_t disk_free_bytes)> LowDiskSpaceHandler;
-  // A callback for WaitForServiceToBeAvailable().
-  typedef base::Callback<void(bool service_is_ready)>
-      WaitForServiceToBeAvailableCallback;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.  The result
   // of the D-Bus call is in |call_status|.  On success, |label| holds the
   // PKCS #11 token label.  This is not useful in practice to identify a token
@@ -145,7 +142,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) = 0;
+      WaitForServiceToBeAvailableCallback callback) = 0;
 
   // Calls IsMounted method and returns true when the call succeeds.
   virtual void IsMounted(DBusMethodCallback<bool> callback) = 0;

@@ -194,12 +194,13 @@ void FakeDebugDaemonClient::RemoveRootfsVerification(
 }
 
 void FakeDebugDaemonClient::WaitForServiceToBeAvailable(
-    const WaitForServiceToBeAvailableCallback& callback) {
+    WaitForServiceToBeAvailableCallback callback) {
   if (service_is_available_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, true));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
   } else {
-    pending_wait_for_service_to_be_available_callbacks_.push_back(callback);
+    pending_wait_for_service_to_be_available_callbacks_.push_back(
+        std::move(callback));
   }
 }
 
@@ -221,8 +222,8 @@ void FakeDebugDaemonClient::SetServiceIsAvailable(bool is_available) {
 
   std::vector<WaitForServiceToBeAvailableCallback> callbacks;
   callbacks.swap(pending_wait_for_service_to_be_available_callbacks_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run(is_available);
+  for (auto& callback : callbacks)
+    std::move(callback).Run(true);
 }
 
 void FakeDebugDaemonClient::CupsAddManuallyConfiguredPrinter(

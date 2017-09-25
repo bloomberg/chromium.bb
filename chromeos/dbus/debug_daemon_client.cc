@@ -419,8 +419,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) override {
-    debugdaemon_proxy_->WaitForServiceToBeAvailable(callback);
+      WaitForServiceToBeAvailableCallback callback) override {
+    debugdaemon_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
   void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,

@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 #define CHROMEOS_DBUS_DBUS_METHOD_CALL_STATUS_H_
 
+// TODO(hidehiko): Rename this file to dbus_callback.h, when we fully
+// get rid of DBusMethodCallStatus enum defined below.
+
 #include <string>
 
 #include "base/callback.h"
@@ -40,6 +43,10 @@ using VoidDBusMethodCallback =
 // A callback to handle responses of methods returning a ObjectPath value that
 // doesn't get call status.
 typedef base::Callback<void(const dbus::ObjectPath& result)> ObjectPathCallback;
+
+// Called when service becomes available.
+using WaitForServiceToBeAvailableCallback =
+    base::OnceCallback<void(bool service_is_available)>;
 
 // Returns an empty callback that does nothing.
 CHROMEOS_EXPORT VoidDBusMethodCallback EmptyVoidDBusMethodCallback();
