@@ -129,15 +129,6 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   if (frames_.size() < num_frames)
     frames_.Grow(num_frames);
 
-  // Invalidate the uniqueID if the alpha type changes. Skia
-  // expects all generators with the same ID to have a constant
-  // alpha type.
-  if (generator->GetSkImageInfo().alphaType() != frames_[index].alpha_type_) {
-    frames_[index].sk_image_unique_id_ =
-        SkiaPaintImageGenerator::kNeedNewImageUniqueID;
-  }
-  frames_[index].alpha_type_ = generator->GetSkImageInfo().alphaType();
-
   frames_[index].orientation_ = decoder_->OrientationAtIndex(index);
   frames_[index].have_metadata_ = true;
   frames_[index].is_complete_ = decoder_->FrameIsReceivedAtIndex(index);
@@ -158,37 +149,17 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
           repetition_count_, animation_policy_))
       .set_completion_state(completion_state);
 
-  // The caching of the decoded image data by the external users of this image
-  // is keyed based on the uniqueID of the underlying SkImage for this
-  // PaintImage. For this reason once the decoded output of an image becomes
-  // constant, we want use the same uniqueID for repeated calls to create a
-  // PaintImage.
-  // The decoded bitmap for a PaintImage can be considered constant in the
-  // following cases:
-  // 1) Once all data for this image has been received, each frame of the image
-  //    is constant.
-  // 2) For multi-frame images, each frame represents a unique constant bitmap
-  //    once all data for that frame has been received.
-  //
-  // TODO(khushalsagar): This reliance on SkImage ids should be removed once cc
-  // is responsible for decoding all images and can rely on inputs provided in
-  // PaintImage/PaintImageGenerator. See crbug.com/753639.
-  const bool frame_complete = all_data_received_ || frames_[index].is_complete_;
-  DCHECK(frames_[index].sk_image_unique_id_ ==
-             SkiaPaintImageGenerator::kNeedNewImageUniqueID ||
-         frame_complete);
-  builder.set_sk_image_id(frames_[index].sk_image_unique_id_);
-
   // We are caching frame snapshots.  This is OK even for partially decoded
   // frames, as they are cleared by dataChanged() when new data arrives.
   cached_frame_ = builder.TakePaintImage();
   cached_frame_index_ = index;
 
-  // It's important to create the SkImage here to ensure that subsequent calls
-  // for a PaintImage get the same SkImage id.
-  uint32_t sk_image_id = cached_frame_.GetSkImage()->uniqueID();
-  if (frame_complete)
-    frames_[index].sk_image_unique_id_ = sk_image_id;
+  // Create the SkImage backing for this PaintImage here to ensure that copies
+  // of the PaintImage share the same SkImage. Skia's caching of the decoded
+  // output of this image is tied to the lifetime of the SkImage. So we create
+  // the SkImage here and cache the PaintImage to keep the decode alive in
+  // skia's cache.
+  cached_frame_.GetSkImage();
 
   NotifyMemoryChanged();
   return cached_frame_;

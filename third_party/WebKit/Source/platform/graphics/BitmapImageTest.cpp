@@ -308,13 +308,13 @@ TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
             image3.GetKeyForFrame(image3.frame_index()));
   EXPECT_EQ(complete_image.frame_index(), 0u);
 
-  // Destroy the decoded data and re-create the PaintImage. The SkImage id used
-  // should remain consistent, even if a new image is created.
+  // Destroy the decoded data and re-create the PaintImage. The frame key
+  // remains constant but the SkImage id will change since we don't cache skia
+  // uniqueIDs.
   DestroyDecodedData();
   auto new_complete_image = image_->PaintImageForCurrentFrame();
   auto new_complete_sk_image = new_complete_image.GetSkImage();
   EXPECT_NE(new_complete_sk_image, complete_sk_image);
-  EXPECT_EQ(new_complete_sk_image->uniqueID(), complete_sk_image->uniqueID());
   EXPECT_EQ(new_complete_image.GetKeyForFrame(new_complete_image.frame_index()),
             complete_image.GetKeyForFrame(complete_image.frame_index()));
   EXPECT_EQ(new_complete_image.frame_index(), 0u);

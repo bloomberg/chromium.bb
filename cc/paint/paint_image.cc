@@ -38,8 +38,7 @@ bool PaintImage::operator==(const PaintImage& other) const {
          completion_state_ == other.completion_state_ &&
          subset_rect_ == other.subset_rect_ &&
          frame_index_ == other.frame_index_ &&
-         is_multipart_ == other.is_multipart_ &&
-         sk_image_id_ == other.sk_image_id_;
+         is_multipart_ == other.is_multipart_;
 }
 
 PaintImage::Id PaintImage::GetNextId() {
@@ -64,7 +63,7 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
   } else if (paint_image_generator_) {
     cached_sk_image_ =
         SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
-            paint_image_generator_, frame_index_, sk_image_id_));
+            paint_image_generator_, frame_index_));
   }
 
   if (!subset_rect_.IsEmpty() && cached_sk_image_) {
@@ -260,8 +259,7 @@ std::string PaintImage::ToString() const {
       << " completion_state_: " << static_cast<int>(completion_state_)
       << " subset_rect_: " << subset_rect_.ToString()
       << " frame_index_: " << frame_index_
-      << " is_multipart_: " << is_multipart_
-      << " sk_image_id_: " << sk_image_id_;
+      << " is_multipart_: " << is_multipart_;
   return str.str();
 }
 

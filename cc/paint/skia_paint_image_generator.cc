@@ -10,9 +10,8 @@ namespace cc {
 
 SkiaPaintImageGenerator::SkiaPaintImageGenerator(
     sk_sp<PaintImageGenerator> paint_image_generator,
-    size_t frame_index,
-    uint32_t unique_id)
-    : SkImageGenerator(paint_image_generator->GetSkImageInfo(), unique_id),
+    size_t frame_index)
+    : SkImageGenerator(paint_image_generator->GetSkImageInfo()),
       paint_image_generator_(std::move(paint_image_generator)),
       frame_index_(frame_index) {}
 
