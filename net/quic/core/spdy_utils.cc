@@ -23,16 +23,6 @@ using std::string;
 namespace net {
 
 // static
-string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  size_t length = SpdyFramer::GetUncompressedSerializedLength(headers);
-  SpdyFrameBuilder builder(length);
-  SpdyFramer framer(SpdyFramer::DISABLE_COMPRESSION);
-  framer.SerializeHeaderBlockWithoutCompression(&builder, headers);
-  SpdySerializedFrame block(builder.take());
-  return string(block.data(), length);
-}
-
-// static
 bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
                                                 SpdyHeaderBlock* headers) {
   auto it = headers->find("content-length");

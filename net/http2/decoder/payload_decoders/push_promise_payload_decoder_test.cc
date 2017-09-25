@@ -35,12 +35,6 @@ class PushPromisePayloadDecoderPeer {
   static constexpr uint8_t FlagsAffectingPayloadDecoding() {
     return Http2FrameFlag::PADDED;
   }
-
-  static void Randomize(PushPromisePayloadDecoder* p, RandomBase* rng) {
-    VLOG(1) << "PushPromisePayloadDecoderPeer::Randomize";
-    CorruptEnum(&p->payload_state_, rng);
-    test::Randomize(&p->push_promise_fields_, rng);
-  }
 };
 
 namespace {

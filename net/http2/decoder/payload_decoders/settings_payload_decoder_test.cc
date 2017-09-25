@@ -35,11 +35,6 @@ class SettingsPayloadDecoderPeer {
   static constexpr uint8_t FlagsAffectingPayloadDecoding() {
     return Http2FrameFlag::ACK;
   }
-
-  static void Randomize(SettingsPayloadDecoder* p, RandomBase* rng) {
-    VLOG(1) << "SettingsPayloadDecoderPeer::Randomize";
-    test::Randomize(&p->setting_fields_, rng);
-  }
 };
 
 namespace {

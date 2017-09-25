@@ -525,7 +525,7 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
   }
 
   size_t length = buffer->GetRemainingSize();
-  DCHECK_LE(length, session_->GetDataFrameMaximumPayload());
+  DCHECK_LE(length, kHttp2DefaultFramePayloadLimit);
   base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
   // May close the stream.
   DecreaseRecvWindowSize(static_cast<int32_t>(length));
@@ -614,7 +614,7 @@ int SpdyStream::OnDataSent(size_t frame_size) {
   size_t frame_payload_size = frame_size - kDataFrameMinimumSize;
 
   CHECK_GE(frame_size, kDataFrameMinimumSize);
-  CHECK_LE(frame_payload_size, session_->GetDataFrameMaximumPayload());
+  CHECK_LE(frame_payload_size, kHttp2DefaultFramePayloadLimit);
 
   send_bytes_ += frame_payload_size;
 
@@ -851,7 +851,7 @@ void SpdyStream::QueueNextDataFrame() {
 
   DCHECK_GE(data_buffer->GetRemainingSize(), kDataFrameMinimumSize);
   size_t payload_size = data_buffer->GetRemainingSize() - kDataFrameMinimumSize;
-  DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
+  DCHECK_LE(payload_size, kHttp2DefaultFramePayloadLimit);
 
   // Send window size is based on payload size, so nothing to do if this is
   // just a FIN with no payload.

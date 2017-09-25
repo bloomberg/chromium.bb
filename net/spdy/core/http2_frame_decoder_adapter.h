@@ -278,7 +278,7 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
 
   // The limit on the size of received HTTP/2 payloads as specified in the
   // SETTINGS_MAX_FRAME_SIZE advertised to peer.
-  size_t recv_frame_size_limit_ = kSpdyInitialFrameSizeLimit;
+  size_t recv_frame_size_limit_ = kHttp2DefaultFramePayloadLimit;
 
   // Has OnFrameHeader been called?
   bool decoded_frame_header_ = false;

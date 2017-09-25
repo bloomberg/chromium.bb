@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "net/spdy/core/spdy_bug_tracker.h"
-#include "net/spdy/core/spdy_framer.h"
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/zero_copy_output_buffer.h"
 
@@ -62,8 +61,7 @@ bool SpdyFrameBuilder::Seek(size_t length) {
   return true;
 }
 
-bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
-                                     SpdyFrameType type,
+bool SpdyFrameBuilder::BeginNewFrame(SpdyFrameType type,
                                      uint8_t flags,
                                      SpdyStreamId stream_id) {
   uint8_t raw_frame_type = SerializeFrameType(type);
@@ -85,32 +83,26 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
   return success;
 }
 
-bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
-                                     SpdyFrameType type,
+bool SpdyFrameBuilder::BeginNewFrame(SpdyFrameType type,
                                      uint8_t flags,
                                      SpdyStreamId stream_id,
                                      size_t length) {
   uint8_t raw_frame_type = SerializeFrameType(type);
   DCHECK(IsDefinedFrameType(raw_frame_type));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  SPDY_BUG_IF(framer.GetFrameMaximumSize() < length_)
-      << "Frame length  " << length_
-      << " is longer than the maximum allowed length.";
-  return BeginNewFrameInternal(framer, raw_frame_type, flags, stream_id,
-                               length);
+  SPDY_BUG_IF(length > kHttp2DefaultFramePayloadLimit)
+      << "Frame length  " << length_ << " is longer than frame size limit.";
+  return BeginNewFrameInternal(raw_frame_type, flags, stream_id, length);
 }
 
-bool SpdyFrameBuilder::BeginNewUncheckedFrame(const SpdyFramer& framer,
-                                              uint8_t raw_frame_type,
+bool SpdyFrameBuilder::BeginNewUncheckedFrame(uint8_t raw_frame_type,
                                               uint8_t flags,
                                               SpdyStreamId stream_id,
                                               size_t length) {
-  return BeginNewFrameInternal(framer, raw_frame_type, flags, stream_id,
-                               length);
+  return BeginNewFrameInternal(raw_frame_type, flags, stream_id, length);
 }
 
-bool SpdyFrameBuilder::BeginNewFrameInternal(const SpdyFramer& framer,
-                                             uint8_t raw_frame_type,
+bool SpdyFrameBuilder::BeginNewFrameInternal(uint8_t raw_frame_type,
                                              uint8_t flags,
                                              SpdyStreamId stream_id,
                                              size_t length) {

@@ -35,12 +35,6 @@ class UnknownPayloadDecoderPeer {
   // Returns the mask of flags that affect the decoding of the payload (i.e.
   // flags that that indicate the presence of certain fields or padding).
   static constexpr uint8_t FlagsAffectingPayloadDecoding() { return 0; }
-
-  static void Randomize(UnknownPayloadDecoder* p, RandomBase* rng) {
-    // UnknownPayloadDecoder has no fields, so there is nothing to randomize.
-    static_assert(std::is_empty<UnknownPayloadDecoder>::value,
-                  "Need to randomize fields of UnknownPayloadDecoder");
-  }
 };
 
 namespace {

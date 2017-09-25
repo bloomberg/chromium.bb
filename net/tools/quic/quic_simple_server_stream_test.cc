@@ -227,7 +227,6 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<QuicVersion> {
   QuicHttpResponseCache response_cache_;
   StrictMock<MockQuicSimpleServerSession> session_;
   QuicSimpleServerStreamPeer* stream_;  // Owned by session_.
-  string headers_string_;
   string body_;
   QuicHeaderList header_list_;
 };
@@ -525,8 +524,6 @@ TEST_P(QuicSimpleServerStreamTest, InvalidMultipleContentLength) {
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("11\00012", 5));
 
-  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
-
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -545,8 +542,6 @@ TEST_P(QuicSimpleServerStreamTest, InvalidLeadingNullContentLength) {
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("\00012", 3));
 
-  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
-
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -562,8 +557,6 @@ TEST_P(QuicSimpleServerStreamTest, ValidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
   // \000 is a way to write the null byte when followed by a literal digit.
   header_list_.OnHeader("content-length", QuicStringPiece("11\00011", 5));
-
-  headers_string_ = SpdyUtils::SerializeUncompressedHeaders(request_headers);
 
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
 

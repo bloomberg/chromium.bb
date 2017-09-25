@@ -31,13 +31,6 @@ class AltSvcPayloadDecoderPeer {
   // Returns the mask of flags that affect the decoding of the payload (i.e.
   // flags that that indicate the presence of certain fields or padding).
   static constexpr uint8_t FlagsAffectingPayloadDecoding() { return 0; }
-
-  static void Randomize(AltSvcPayloadDecoder* p, RandomBase* rng) {
-    CorruptEnum(&p->payload_state_, rng);
-    test::Randomize(&p->altsvc_fields_, rng);
-    VLOG(1) << "AltSvcPayloadDecoderPeer::Randomize altsvc_fields_="
-            << p->altsvc_fields_;
-  }
 };
 
 namespace {

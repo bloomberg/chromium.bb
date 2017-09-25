@@ -410,7 +410,6 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
                          stream_->flow_controller()));
 
   // Try to send more data than the flow control limit allows.
-  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
   const uint64_t kOverflow = 15;
   string body(kWindow + kOverflow, 'a');
 

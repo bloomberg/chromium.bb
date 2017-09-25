@@ -20,8 +20,6 @@
 
 namespace net {
 
-class SpdyFramer;
-
 // This class provides facilities for basic binary value packing
 // into Spdy frames.
 //
@@ -48,23 +46,18 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
 
   // Populates this frame with a HTTP2 frame prefix using length information
   // from |capacity_|. The given type must be a control frame type.
-  bool BeginNewFrame(const SpdyFramer& framer,
-                     SpdyFrameType type,
-                     uint8_t flags,
-                     SpdyStreamId stream_id);
+  bool BeginNewFrame(SpdyFrameType type, uint8_t flags, SpdyStreamId stream_id);
 
   // Populates this frame with a HTTP2 frame prefix with type and length
   // information.  |type| must be a defined frame type.
-  bool BeginNewFrame(const SpdyFramer& framer,
-                     SpdyFrameType type,
+  bool BeginNewFrame(SpdyFrameType type,
                      uint8_t flags,
                      SpdyStreamId stream_id,
                      size_t length);
 
   // Populates this frame with a HTTP2 frame prefix with type and length
   // information.  |raw_frame_type| may be a defined or undefined frame type.
-  bool BeginNewUncheckedFrame(const SpdyFramer& framer,
-                              uint8_t raw_frame_type,
+  bool BeginNewUncheckedFrame(uint8_t raw_frame_type,
                               uint8_t flags,
                               SpdyStreamId stream_id,
                               size_t length);
@@ -116,8 +109,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
 
   // Populates this frame with a HTTP2 frame prefix with type and length
   // information.
-  bool BeginNewFrameInternal(const SpdyFramer& framer,
-                             uint8_t raw_frame_type,
+  bool BeginNewFrameInternal(uint8_t raw_frame_type,
                              uint8_t flags,
                              SpdyStreamId stream_id,
                              size_t length);

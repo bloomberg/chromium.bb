@@ -19,9 +19,6 @@ namespace net {
 
 class QUIC_EXPORT_PRIVATE SpdyUtils {
  public:
-  static std::string SerializeUncompressedHeaders(
-      const SpdyHeaderBlock& headers);
-
   // Populate |content length| with the value of the content-length header.
   // Returns true on success, false if parsing fails or content-length header is
   // missing.

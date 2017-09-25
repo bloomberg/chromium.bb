@@ -50,7 +50,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                  bool fin,
                  SpdyHeaderBlock headers) override {
     header_stream_id_ = stream_id;
-    EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     headers_frame_count_++;
     headers_ = std::move(headers);
   }
@@ -111,10 +110,8 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                      SpdyStreamId promised_stream_id,
                      SpdyHeaderBlock headers) override {
     header_stream_id_ = stream_id;
-    EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
     push_promise_frame_count_++;
     promised_stream_id_ = promised_stream_id;
-    EXPECT_NE(promised_stream_id_, SpdyFramer::kInvalidStream);
     headers_ = std::move(headers);
   }
 

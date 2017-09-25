@@ -28,11 +28,6 @@ class PingPayloadDecoderPeer {
   // Returns the mask of flags that affect the decoding of the payload (i.e.
   // flags that that indicate the presence of certain fields or padding).
   static constexpr uint8_t FlagsAffectingPayloadDecoding() { return 0; }
-
-  static void Randomize(PingPayloadDecoder* p, RandomBase* rng) {
-    VLOG(1) << "PingPayloadDecoderPeer::Randomize";
-    test::Randomize(&p->ping_fields_, rng);
-  }
 };
 
 namespace {

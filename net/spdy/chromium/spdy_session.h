@@ -537,14 +537,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return pooled_aliases_;
   }
 
-  size_t GetFrameMaximumSize() const {
-    return buffered_spdy_framer_->GetFrameMaximumSize();
-  }
-
-  size_t GetDataFrameMaximumPayload() const {
-    return buffered_spdy_framer_->GetDataFrameMaximumPayload();
-  }
-
   // https://http2.github.io/http2-spec/#TLSUsage mandates minimum security
   // standards for TLS.
   bool HasAcceptableTransportSecurity() const;
