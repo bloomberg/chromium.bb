@@ -41,8 +41,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -321,6 +322,7 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 // i.e. if only 127.0.0.1 and ::1 are routable.
 // Also returns false if it cannot determine this.
 bool HaveOnlyLoopbackAddresses() {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 #if defined(OS_ANDROID)
   return android::HaveOnlyLoopbackAddresses();
 #elif defined(OS_NACL)
@@ -656,8 +658,7 @@ class HostResolverImpl::RequestImpl : public HostResolver::Request {
 
 //------------------------------------------------------------------------------
 
-// Calls HostResolverProc using a worker task runner. Performs retries if
-// necessary.
+// Calls HostResolverProc in TaskScheduler. Performs retries if necessary.
 //
 // Whenever we try to resolve the host, we post a delayed task to check if host
 // resolution (OnLookupComplete) is completed or not. If the original attempt
@@ -676,12 +677,10 @@ class HostResolverImpl::ProcTask
   ProcTask(const Key& key,
            const ProcTaskParams& params,
            const Callback& callback,
-           scoped_refptr<base::TaskRunner> worker_task_runner,
            const NetLogWithSource& job_net_log)
       : key_(key),
         params_(params),
         callback_(callback),
-        worker_task_runner_(std::move(worker_task_runner)),
         network_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         attempt_number_(0),
         completed_attempt_number_(0),
@@ -738,20 +737,10 @@ class HostResolverImpl::ProcTask
     base::TimeTicks start_time = base::TimeTicks::Now();
     ++attempt_number_;
     // Dispatch the lookup attempt to a worker thread.
-    if (!worker_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&ProcTask::DoLookup, this, start_time,
-                                  attempt_number_))) {
-      NOTREACHED();
-
-      // Since this method may have been called from Resolve(), can't just call
-      // OnLookupComplete().  Instead, must wait until Resolve() has returned
-      // (IO_PENDING).
-      network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ProcTask::OnLookupComplete, this, AddressList(),
-                     start_time, attempt_number_, ERR_UNEXPECTED, 0));
-      return;
-    }
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::Bind(&ProcTask::DoLookup, this, start_time, attempt_number_));
 
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_ATTEMPT_STARTED,
                       NetLog::IntCallback("attempt_number", attempt_number_));
@@ -766,16 +755,16 @@ class HostResolverImpl::ProcTask
     }
   }
 
-  // WARNING: In production, this code runs on a worker pool. The shutdown code
-  // cannot wait for it to finish, so this code must be very careful about using
-  // other objects (like MessageLoops, Singletons, etc). During shutdown these
-  // objects may no longer exist. Multiple DoLookups() could be running in
-  // parallel, so any state inside of |this| must not mutate .
+  // WARNING: This code runs in TaskScheduler with CONTINUE_ON_SHUTDOWN. The
+  // shutdown code cannot wait for it to finish, so this code must be very
+  // careful about using other objects (like MessageLoops, Singletons, etc).
+  // During shutdown these objects may no longer exist. Multiple DoLookups()
+  // could be running in parallel, so any state inside of |this| must not
+  // mutate.
   void DoLookup(const base::TimeTicks& start_time,
                 const uint32_t attempt_number) {
     AddressList results;
     int os_error = 0;
-    // Running on a worker task runner.
     int error = params_.resolver_proc->Resolve(key_.hostname,
                                                key_.address_family,
                                                key_.host_resolver_flags,
@@ -997,9 +986,6 @@ class HostResolverImpl::ProcTask
   // The listener to the results of this ProcTask.
   Callback callback_;
 
-  // Task runner for the call to the HostResolverProc.
-  scoped_refptr<base::TaskRunner> worker_task_runner_;
-
   // Used to post events onto the network thread.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -1029,46 +1015,6 @@ class HostResolverImpl::ProcTask
   NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcTask);
-};
-
-//-----------------------------------------------------------------------------
-
-// Wraps a call to HaveOnlyLoopbackAddresses to be executed on a
-// |worker_task_runner|, as it takes 40-100ms and should not block
-// initialization.
-class HostResolverImpl::LoopbackProbeJob {
- public:
-  LoopbackProbeJob(const base::WeakPtr<HostResolverImpl>& resolver,
-                   base::TaskRunner* worker_task_runner)
-      : resolver_(resolver), result_(false) {
-    DCHECK(resolver.get());
-
-    worker_task_runner->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&LoopbackProbeJob::DoProbe, base::Unretained(this)),
-        base::Bind(&LoopbackProbeJob::OnProbeComplete, base::Owned(this)));
-  }
-
-  virtual ~LoopbackProbeJob() {}
-
- private:
-  // Runs on worker thread.
-  void DoProbe() {
-    result_ = HaveOnlyLoopbackAddresses();
-  }
-
-  void OnProbeComplete() {
-    if (!resolver_.get())
-      return;
-    resolver_->SetHaveOnlyLoopbackAddresses(result_);
-  }
-
-  // Used/set only on task runner thread.
-  base::WeakPtr<HostResolverImpl> resolver_;
-
-  bool result_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoopbackProbeJob);
 };
 
 //-----------------------------------------------------------------------------
@@ -1308,12 +1254,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   Job(const base::WeakPtr<HostResolverImpl>& resolver,
       const Key& key,
       RequestPriority priority,
-      scoped_refptr<base::TaskRunner> worker_task_runner,
       const NetLogWithSource& source_net_log)
       : resolver_(resolver),
         key_(key),
         priority_tracker_(priority),
-        worker_task_runner_(std::move(worker_task_runner)),
         had_non_speculative_request_(false),
         had_dns_config_(false),
         num_occupied_job_slots_(0),
@@ -1603,16 +1547,16 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   // TODO(szym): Since DnsTransaction does not consume threads, we can increase
-  // the limits on |dispatcher_|. But in order to keep the number of WorkerPool
-  // threads low, we will need to use an "inner" PrioritizedDispatcher with
-  // tighter limits.
+  // the limits on |dispatcher_|. But in order to keep the number of
+  // TaskScheduler threads low, we will need to use an "inner"
+  // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
     DCHECK(!is_dns_running());
     proc_task_ =
         new ProcTask(key_, resolver_->proc_params_,
                      base::Bind(&Job::OnProcTaskComplete,
                                 base::Unretained(this), base::TimeTicks::Now()),
-                     worker_task_runner_, net_log_);
+                     net_log_);
 
     if (had_non_speculative_request_)
       proc_task_->set_had_non_speculative_request();
@@ -1860,9 +1804,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // Tracks the highest priority across |requests_|.
   PriorityTracker priority_tracker_;
 
-  // Task runner where the HostResolverProc is invoked.
-  scoped_refptr<base::TaskRunner> worker_task_runner_;
-
   bool had_non_speculative_request_;
 
   // Distinguishes measurements taken while DnsClient was fully configured.
@@ -1913,12 +1854,6 @@ HostResolverImpl::ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) =
 
 HostResolverImpl::ProcTaskParams::~ProcTaskParams() {}
 
-HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
-    : HostResolverImpl(
-          options,
-          net_log,
-          base::WorkerPool::GetTaskRunner(true /* task_is_slow */)) {}
-
 HostResolverImpl::~HostResolverImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Prevent the dispatcher from starting new jobs.
@@ -1965,8 +1900,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   auto jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
-    job = new Job(weak_ptr_factory_.GetWeakPtr(), key, priority,
-                  worker_task_runner_, source_net_log);
+    job =
+        new Job(weak_ptr_factory_.GetWeakPtr(), key, priority, source_net_log);
     job->Schedule(false);
 
     // Check for queue overflow.
@@ -1995,10 +1930,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   return ERR_IO_PENDING;
 }
 
-HostResolverImpl::HostResolverImpl(
-    const Options& options,
-    NetLog* net_log,
-    scoped_refptr<base::TaskRunner> worker_task_runner)
+HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(NULL, options.max_retry_attempts),
       net_log_(net_log),
@@ -2009,7 +1941,6 @@ HostResolverImpl::HostResolverImpl(
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
       fallback_to_proctask_(true),
-      worker_task_runner_(std::move(worker_task_runner)),
       persist_initialized_(false),
       weak_ptr_factory_(this),
       probe_weak_ptr_factory_(this) {
@@ -2427,8 +2358,14 @@ bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
 }
 
 void HostResolverImpl::RunLoopbackProbeJob() {
-  new LoopbackProbeJob(weak_ptr_factory_.GetWeakPtr(),
-                       worker_task_runner_.get());
+  // Run this asynchronously as it can take 40-100ms and should not block
+  // initialization.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&HaveOnlyLoopbackAddresses),
+      base::BindOnce(&HostResolverImpl::SetHaveOnlyLoopbackAddresses,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostResolverImpl::AbortAllInProgressJobs() {

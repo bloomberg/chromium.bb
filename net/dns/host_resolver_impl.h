@@ -33,10 +33,10 @@ class NetLogWithSource;
 
 // For each hostname that is requested, HostResolver creates a
 // HostResolverImpl::Job. When this job gets dispatched it creates a ProcTask
-// which runs the given HostResolverProc on a worker thread (a WorkerPool
-// thread, in production code.) If requests for that same host are made during
-// the job's lifetime, they are attached to the existing job rather than
-// creating a new one. This avoids doing parallel resolves for the same host.
+// which runs the given HostResolverProc in TaskScheduler. If requests for that
+// same host are made during the job's lifetime, they are attached to the
+// existing job rather than creating a new one. This avoids doing parallel
+// resolves for the same host.
 //
 // The way these classes fit together is illustrated by:
 //
@@ -103,8 +103,8 @@ class NET_EXPORT HostResolverImpl
     uint32_t retry_factor;
   };
 
-  // Creates a HostResolver as specified by |options|. Blocking tasks are run on
-  // the WorkerPool.
+  // Creates a HostResolver as specified by |options|. Blocking tasks are run in
+  // TaskScheduler.
   //
   // If Options.enable_caching is true, a cache is created using
   // HostCache::CreateDefaultCache(). Otherwise no cache is used.
@@ -170,12 +170,6 @@ class NET_EXPORT HostResolverImpl
   }
 
  protected:
-  // Just like the public constructor, but allows the task runner used for
-  // blocking tasks to be specified. Intended for testing only.
-  HostResolverImpl(const Options& options,
-                   NetLog* net_log,
-                   scoped_refptr<base::TaskRunner> worker_task_runner);
-
   // Callback from HaveOnlyLoopbackAddresses probe.
   void SetHaveOnlyLoopbackAddresses(bool result);
 
@@ -370,11 +364,6 @@ class NET_EXPORT HostResolverImpl
 
   // Allow fallback to ProcTask if DnsTask fails.
   bool fallback_to_proctask_;
-
-  // Task runner used for DNS lookups using the platform resolver, and other
-  // blocking operations. Usually just the WorkerPool's task runner for slow
-  // tasks, but can be overridden for tests.
-  scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   bool persist_initialized_;
   PersistCallback persist_callback_;
