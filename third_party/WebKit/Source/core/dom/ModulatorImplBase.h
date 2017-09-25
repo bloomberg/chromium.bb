@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class DynamicModuleResolver;
 class ExecutionContext;
 class ModuleMap;
 class ModuleScriptLoaderRegistry;
@@ -82,6 +83,7 @@ class ModulatorImplBase : public Modulator {
   Member<ModuleScriptLoaderRegistry> loader_registry_;
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ScriptModuleResolver> script_module_resolver_;
+  Member<DynamicModuleResolver> dynamic_module_resolver_;
 };
 
 }  // namespace blink
