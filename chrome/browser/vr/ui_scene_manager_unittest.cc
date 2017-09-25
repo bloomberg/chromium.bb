@@ -55,6 +55,9 @@ std::set<UiElementName> kHitTestableElements = {
     kLoadingIndicator,
     kCloseButton,
 };
+std::set<UiElementName> kElementsVisibleWithExitWarning = {
+    kScreenDimmer, kExitWarning,
+};
 
 static constexpr float kTolerance = 1e-5;
 static constexpr float kTransienceDelayMs = 6000;
@@ -620,6 +623,13 @@ TEST_F(UiSceneManagerTest, RendererUsesCorrectOpacity) {
   TexturedElement::SetInitializedForTesting();
 
   CheckRendererOpacityRecursive(&scene_->root_element());
+}
+
+TEST_F(UiSceneManagerTest, ExitWarning) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  manager_->SetIsExiting();
+  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(VerifyVisibility(kElementsVisibleWithExitWarning, true));
 }
 
 // This test ensures that we maintain a specific view hierarchy so that our UI

@@ -287,6 +287,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   // Create transient exit warning.
   element = base::MakeUnique<ExitWarning>(1024);
   element->set_name(kExitWarning);
+  element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kExitWarningWidth, kExitWarningHeight);
   element->SetTranslate(0, 0, -kExitWarningDistance);
   element->SetScale(kExitWarningDistance, kExitWarningDistance, 1);
