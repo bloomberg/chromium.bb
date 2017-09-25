@@ -29,7 +29,6 @@ void KeyboardLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
   DCHECK(child == contents_window_);
-
   TRACE_EVENT0("vk", "KeyboardLayoutSetChildBounds");
 
   // Request to change the bounds of the contents window
@@ -39,6 +38,11 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
 
   const aura::Window* root_window =
       controller_->GetContainerWindow()->GetRootWindow();
+
+  // If the keyboard has been deactivated, this reference will be null.
+  if (!root_window)
+    return;
+
   gfx::Rect new_bounds = requested_bounds;
 
   // Honors only the height of the request bounds
