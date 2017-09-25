@@ -39,6 +39,7 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
+#include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -182,9 +183,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kDragAndDrop)}
+     FEATURE_VALUE_TYPE(kDragAndDrop)},
 #endif
-};
+    {"tab_switcher_presents_bvc",
+     flag_descriptions::kTabSwitcherPresentsBVCName,
+     flag_descriptions::kTabSwitcherPresentsBVCDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabSwitcherPresentsBVC)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

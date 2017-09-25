@@ -62,6 +62,11 @@ extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
+// Title and description for the flag to enable the TabSwitcher to present the
+// BVC.
+extern const char kTabSwitcherPresentsBVCName[];
+extern const char kTabSwitcherPresentsBVCDescription[];
+
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
