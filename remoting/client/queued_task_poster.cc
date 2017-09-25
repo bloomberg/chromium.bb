@@ -32,7 +32,7 @@ void QueuedTaskPoster::AddTask(const base::Closure& closure) {
   }
 }
 
-static void ConsumeTaskQueue(std::queue<base::Closure>* queue) {
+static void ConsumeTaskQueue(base::queue<base::Closure>* queue) {
   while (!queue->empty()) {
     queue->front().Run();
     queue->pop();
@@ -42,8 +42,8 @@ static void ConsumeTaskQueue(std::queue<base::Closure>* queue) {
 void QueuedTaskPoster::TransferTaskQueue() {
   DCHECK(transfer_task_scheduled_);
   transfer_task_scheduled_ = false;
-  std::queue<base::Closure>* queue_to_transfer =
-      new std::queue<base::Closure>();
+  base::queue<base::Closure>* queue_to_transfer =
+      new base::queue<base::Closure>();
   queue_to_transfer->swap(task_queue_);
   target_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ConsumeTaskQueue, base::Owned(queue_to_transfer)));

@@ -9,17 +9,16 @@
 #include <string.h>
 
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/preview_mode_client.h"
-
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/dev/printing_dev.h"
@@ -370,7 +369,7 @@ class OutOfProcessInstance : public pp::Instance,
   // ExtractPrintPreviewPageIndex(). This page number is always greater than 0.
   // The page index is always in the range of [0, print_preview_page_count_).
   using PreviewPageInfo = std::pair<std::string, int>;
-  std::queue<PreviewPageInfo> preview_pages_info_;
+  base::queue<PreviewPageInfo> preview_pages_info_;
 
   // Used to signal the browser about focus changes to trigger the OSK.
   // TODO(abodenha@chromium.org) Implement full IME support in the plugin.

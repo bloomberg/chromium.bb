@@ -6,9 +6,9 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/drag_source.h"
@@ -134,7 +134,7 @@ class DragTestWindow : public DragTargetConnection {
   std::unordered_map<std::string, std::vector<uint8_t>> mime_data_;
   uint32_t times_received_drag_drop_start_ = 0;
 
-  std::queue<DragEvent> queued_callbacks_;
+  base::queue<DragEvent> queued_callbacks_;
 };
 
 class DragControllerTest : public testing::Test,

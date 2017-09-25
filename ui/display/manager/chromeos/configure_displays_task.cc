@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "ui/display/manager/chromeos/display_util.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -97,7 +98,7 @@ void ConfigureDisplaysTask::Run() {
 void ConfigureDisplaysTask::OnConfigurationChanged() {}
 
 void ConfigureDisplaysTask::OnDisplaySnapshotsInvalidated() {
-  std::queue<size_t> empty_queue;
+  base::queue<size_t> empty_queue;
   pending_request_indexes_.swap(empty_queue);
   // From now on, don't access |requests_[index]->display|; they're invalid.
   task_status_ = ERROR;

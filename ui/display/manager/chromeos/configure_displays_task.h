@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/manager/display_manager_export.h"
@@ -75,7 +76,7 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
   ResponseCallback callback_;
 
   // Stores the indexes of pending requests in |requests_|.
-  std::queue<size_t> pending_request_indexes_;
+  base::queue<size_t> pending_request_indexes_;
 
   // Used to keep make sure that synchronous executions do not recurse during
   // the configuration.

@@ -8,9 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_udp_socket.h"
@@ -81,7 +80,7 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase : public PluginResource {
 
   PP_NetAddress_Private bound_addr_;
 
-  std::queue<scoped_refptr<TrackedCallback>> sendto_callbacks_;
+  base::queue<scoped_refptr<TrackedCallback>> sendto_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketResourceBase);
 };

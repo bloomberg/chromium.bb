@@ -9,13 +9,13 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -687,7 +687,7 @@ class WindowTree : public mojom::WindowTree,
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;
 
-  std::queue<std::unique_ptr<TargetedEvent>> event_queue_;
+  base::queue<std::unique_ptr<TargetedEvent>> event_queue_;
 
   // TODO(sky): move all window manager specific state into struct to make it
   // clear what applies only to the window manager.

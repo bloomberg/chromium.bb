@@ -6,9 +6,9 @@
 #define REMOTING_CLIENT_QUEUED_TASK_POSTER_H_
 
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -36,7 +36,7 @@ class QueuedTaskPoster {
   scoped_refptr<base::SingleThreadTaskRunner> source_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> target_task_runner_;
 
-  std::queue<base::Closure> task_queue_;
+  base::queue<base::Closure> task_queue_;
 
   bool transfer_task_scheduled_ = false;
 

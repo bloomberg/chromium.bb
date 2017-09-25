@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 
@@ -32,7 +33,7 @@ class IMEDriverBridge : public mojom::IMEDriver {
   mojo::BindingSet<mojom::IMEDriver> bindings_;
   mojom::IMEDriverPtr driver_;
 
-  std::queue<mojom::StartSessionDetailsPtr> pending_requests_;
+  base::queue<mojom::StartSessionDetailsPtr> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDriverBridge);
 };

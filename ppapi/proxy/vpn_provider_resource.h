@@ -6,8 +6,8 @@
 #define PPAPI_PROXY_VPN_PROVIDER_RESOURCE_H_
 
 #include <memory>
-#include <queue>
 
+#include "base/containers/queue.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/var.h"
@@ -78,8 +78,8 @@ class PPAPI_PROXY_EXPORT VpnProviderResource
   std::unique_ptr<ppapi::VpnProviderSharedBuffer> send_packet_buffer_;
   std::unique_ptr<ppapi::VpnProviderSharedBuffer> recv_packet_buffer_;
 
-  std::queue<PP_Var> send_packets_;
-  std::queue<scoped_refptr<Var>> received_packets_;
+  base::queue<PP_Var> send_packets_;
+  base::queue<scoped_refptr<Var>> received_packets_;
 
   // Connection bound state
   bool bound_;

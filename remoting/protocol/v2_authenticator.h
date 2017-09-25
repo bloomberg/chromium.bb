@@ -6,10 +6,10 @@
 #define REMOTING_PROTOCOL_V2_AUTHENTICATOR_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -73,7 +73,7 @@ class V2Authenticator : public Authenticator {
   State state_;
   bool started_;
   RejectionReason rejection_reason_;
-  std::queue<std::string> pending_messages_;
+  base::queue<std::string> pending_messages_;
   std::string auth_key_;
 
   DISALLOW_COPY_AND_ASSIGN(V2Authenticator);

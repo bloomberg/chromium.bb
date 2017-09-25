@@ -5,11 +5,11 @@
 #ifndef MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_NODE_CHANNEL_H_
 
-#include <queue>
 #include <unordered_map>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
@@ -165,9 +165,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
  private:
   friend class base::RefCountedThreadSafe<NodeChannel>;
 
-  using PendingMessageQueue = std::queue<Channel::MessagePtr>;
+  using PendingMessageQueue = base::queue<Channel::MessagePtr>;
   using PendingRelayMessageQueue =
-      std::queue<std::pair<ports::NodeName, Channel::MessagePtr>>;
+      base::queue<std::pair<ports::NodeName, Channel::MessagePtr>>;
 
   NodeChannel(Delegate* delegate,
               ConnectionParams connection_params,

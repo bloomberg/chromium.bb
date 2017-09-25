@@ -6,10 +6,10 @@
 
 #include <cstring>
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
@@ -120,7 +120,7 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
 
   // WriteChunk() state - for writing only
   int64_t next_write_file_offset_ = 0;
-  std::queue<std::unique_ptr<FileChunk>> file_chunks_;
+  base::queue<std::unique_ptr<FileChunk>> file_chunks_;
   // active_file_chunk_ is the chunk currently being written to disk. It is
   // empty if nothing is being written to disk right now.
   std::unique_ptr<FileChunk> active_file_chunk_;

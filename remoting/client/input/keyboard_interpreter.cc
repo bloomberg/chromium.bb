@@ -23,7 +23,7 @@ void KeyboardInterpreter::HandleTextEvent(const std::string& text,
 }
 
 void KeyboardInterpreter::HandleDeleteEvent(uint8_t modifiers) {
-  std::queue<KeyEvent> keys;
+  base::queue<KeyEvent> keys;
   // TODO(nicholss): Handle modifers.
   // Key press.
   keys.push({static_cast<uint32_t>(ui::DomCode::BACKSPACE), true});
@@ -35,7 +35,7 @@ void KeyboardInterpreter::HandleDeleteEvent(uint8_t modifiers) {
 }
 
 void KeyboardInterpreter::HandleCtrlAltDeleteEvent() {
-  std::queue<KeyEvent> keys;
+  base::queue<KeyEvent> keys;
 
   // Key press.
   keys.push({static_cast<uint32_t>(ui::DomCode::CONTROL_LEFT), true});
@@ -51,7 +51,7 @@ void KeyboardInterpreter::HandleCtrlAltDeleteEvent() {
 }
 
 void KeyboardInterpreter::HandlePrintScreenEvent() {
-  std::queue<KeyEvent> keys;
+  base::queue<KeyEvent> keys;
 
   // Key press.
   keys.push({static_cast<uint32_t>(ui::DomCode::PRINT_SCREEN), true});

@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <map>
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -319,7 +319,7 @@ class CopyOrMoveOperationTestHelper {
               &test_cases[i];
     }
 
-    std::queue<FileSystemURL> directories;
+    base::queue<FileSystemURL> directories;
     FileEntryList entries;
     directories.push(root);
     while (!directories.empty()) {

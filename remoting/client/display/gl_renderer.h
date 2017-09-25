@@ -5,10 +5,10 @@
 #ifndef REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
 #define REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
 
-#include <queue>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -120,7 +120,7 @@ class GlRenderer {
 
   // Done callbacks from OnFrameReceived. Will all be called once rendering
   // takes place.
-  std::queue<base::Closure> pending_done_callbacks_;
+  base::queue<base::Closure> pending_done_callbacks_;
 
   bool render_scheduled_ = false;
 

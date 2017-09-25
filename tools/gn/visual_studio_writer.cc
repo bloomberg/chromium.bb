@@ -8,10 +8,10 @@
 #include <iterator>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -205,7 +205,7 @@ bool FilterTargets(const BuildSettings* build_settings,
     return true;
 
   std::set<Label> labels;
-  std::queue<const Target*> to_process;
+  base::queue<const Target*> to_process;
   for (const Target* target : *targets) {
     labels.insert(target->label());
     to_process.push(target);

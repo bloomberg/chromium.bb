@@ -7,8 +7,7 @@
 
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "ui/gfx/vsync_provider.h"
 
@@ -49,7 +48,7 @@ class SyncControlVSyncProvider : public gfx::VSyncProvider {
   // We use this to filter out the noise in the computation resulting
   // from configuration change (monitor reconfiguration, moving windows
   // between monitors, suspend and resume, etc.).
-  std::queue<base::TimeDelta> last_computed_intervals_;
+  base::queue<base::TimeDelta> last_computed_intervals_;
 #endif  // defined(OS_LINUX)
 
   DISALLOW_COPY_AND_ASSIGN(SyncControlVSyncProvider);

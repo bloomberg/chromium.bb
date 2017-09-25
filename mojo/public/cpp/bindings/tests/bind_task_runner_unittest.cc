@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -112,7 +113,7 @@ class TestTaskRunner : public base::SingleThreadTaskRunner {
 
   // Protect |tasks_|.
   base::Lock lock_;
-  std::queue<base::OnceClosure> tasks_;
+  base::queue<base::OnceClosure> tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTaskRunner);
 };

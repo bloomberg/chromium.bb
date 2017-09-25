@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <map>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_file_info.h"
@@ -93,7 +93,7 @@ class PPAPI_PROXY_EXPORT FileSystemResource : public PluginResource,
   int32_t callback_result_;
 
   std::set<PP_Resource> files_;
-  std::queue<QuotaRequest> pending_quota_requests_;
+  base::queue<QuotaRequest> pending_quota_requests_;
   int64_t reserved_quota_;
   bool reserving_quota_;
 

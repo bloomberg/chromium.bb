@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -66,7 +67,7 @@ void RecursiveOperationDelegate::DidTryProcessFile(
     return;
   }
 
-  pending_directory_stack_.push(std::queue<FileSystemURL>());
+  pending_directory_stack_.push(base::queue<FileSystemURL>());
   pending_directory_stack_.top().push(root);
   ProcessNextDirectory();
 }
@@ -96,7 +97,7 @@ void RecursiveOperationDelegate::DidProcessDirectory(
   }
 
   const FileSystemURL& parent = pending_directory_stack_.top().front();
-  pending_directory_stack_.push(std::queue<FileSystemURL>());
+  pending_directory_stack_.push(base::queue<FileSystemURL>());
   operation_runner()->ReadDirectory(
       parent, base::BindRepeating(&RecursiveOperationDelegate::DidReadDirectory,
                                   AsWeakPtr(), parent));

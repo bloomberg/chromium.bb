@@ -6,10 +6,10 @@
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
@@ -224,7 +224,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
   std::unique_ptr<Delegate> delegate_;
 
-  std::queue<base::Closure> pending_requests_;
+  base::queue<base::Closure> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonController);
 };

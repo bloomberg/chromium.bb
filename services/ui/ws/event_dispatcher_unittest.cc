@@ -7,9 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -211,7 +210,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
   AcceleratorPhase last_accelerator_phase_ = AcceleratorPhase::POST;
-  std::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
+  base::queue<std::unique_ptr<DispatchedEventDetails>> dispatched_event_queue_;
   ServerWindow* root_ = nullptr;
   std::unique_ptr<ui::Event> last_event_target_not_found_;
   base::Optional<bool> last_cursor_visibility_;

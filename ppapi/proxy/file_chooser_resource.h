@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -75,7 +75,7 @@ class PPAPI_PROXY_EXPORT FileChooserResource
   // show callback that haven't yet been given to the plugin. The plugin will
   // repeatedly call us to get the next file, and we'll vend those out of this
   // queue, removing them when ownership has transferred to the plugin.
-  std::queue<PP_Resource> file_queue_;
+  base::queue<PP_Resource> file_queue_;
 
   scoped_refptr<TrackedCallback> callback_;
 

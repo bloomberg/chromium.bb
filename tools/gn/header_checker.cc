@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -480,7 +481,7 @@ bool HeaderChecker::IsDependencyOf(const Target* search_for,
   // search_for.
 
   std::map<const Target*, ChainLink> breadcrumbs;
-  std::queue<ChainLink> work_queue;
+  base::queue<ChainLink> work_queue;
   work_queue.push(ChainLink(search_from, true));
 
   bool first_time = true;

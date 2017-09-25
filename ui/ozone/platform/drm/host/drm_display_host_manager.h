@@ -9,8 +9,8 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 
+#include "base/containers/queue.h"
 #include "base/file_descriptor_posix.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -129,7 +129,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // opening/closing DRM devices cannot be done on the UI thread and are handled
   // on a worker thread. Thus, we need to queue events in order to process them
   // in the correct order.
-  std::queue<DisplayEvent> event_queue_;
+  base::queue<DisplayEvent> event_queue_;
 
   // True if a display event is currently being processed on a worker thread.
   bool task_pending_ = false;

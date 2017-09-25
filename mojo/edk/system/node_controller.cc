@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -928,7 +929,7 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
   DCHECK(parent_name == from_node);
   DCHECK(parent);
 
-  std::queue<ports::NodeName> pending_broker_clients;
+  base::queue<ports::NodeName> pending_broker_clients;
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_relay_messages;
   {

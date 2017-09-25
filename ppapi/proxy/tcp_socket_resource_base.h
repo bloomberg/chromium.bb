@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_tcp_socket.h"
@@ -107,7 +107,7 @@ class PPAPI_PROXY_EXPORT TCPSocketResourceBase : public PluginResource {
   scoped_refptr<TrackedCallback> write_callback_;
   scoped_refptr<TrackedCallback> listen_callback_;
   scoped_refptr<TrackedCallback> accept_callback_;
-  std::queue<scoped_refptr<TrackedCallback> > set_option_callbacks_;
+  base::queue<scoped_refptr<TrackedCallback>> set_option_callbacks_;
 
   TCPSocketState state_;
   char* read_buffer_;

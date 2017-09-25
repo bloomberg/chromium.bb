@@ -7,8 +7,7 @@
 
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "remoting/base/leaky_bucket.h"
@@ -56,7 +55,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
    private:
     void UpdateTargetBitrate();
 
-    std::queue<std::pair<base::TimeTicks, int>> bandwidth_samples_;
+    base::queue<std::pair<base::TimeTicks, int>> bandwidth_samples_;
     int bandwidth_samples_sum_ = 0;
 
     int minimum_bitrate_ = 0;
