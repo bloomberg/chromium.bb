@@ -5,6 +5,8 @@
 #include "core/paint/TextPainterBase.h"
 
 #include "core/dom/Document.h"
+#include "core/layout/TextDecorationOffsetBase.h"
+#include "core/layout/line/LineVerticalPositionType.h"
 #include "core/paint/AppliedDecorationPainter.h"
 #include "core/paint/BoxPainterBase.h"
 #include "core/paint/PaintInfo.h"
@@ -181,6 +183,60 @@ void TextPainterBase::DecorationsStripeIntercepts(
     // clipping rectangle, not when computing the glyph intersects.
     clip_rect.InflateY(1.0);
     graphics_context_.ClipOut(clip_rect);
+  }
+}
+
+void TextPainterBase::PaintDecorationsExceptLineThrough(
+    const TextDecorationOffsetBase& decoration_offset,
+    const DecorationInfo& decoration_info,
+    const PaintInfo& paint_info,
+    const Vector<AppliedTextDecoration>& decorations,
+    bool* has_line_through_decoration) {
+  GraphicsContext& context = paint_info.context;
+  GraphicsContextStateSaver state_saver(context);
+  context.SetStrokeThickness(decoration_info.thickness);
+
+  // text-underline-position may flip underline and overline.
+  ResolvedUnderlinePosition underline_position =
+      decoration_info.underline_position;
+  bool flip_underline_and_overline = false;
+  if (underline_position == ResolvedUnderlinePosition::kOver) {
+    flip_underline_and_overline = true;
+    underline_position = ResolvedUnderlinePosition::kUnder;
+  }
+
+  for (const AppliedTextDecoration& decoration : decorations) {
+    TextDecoration lines = decoration.Lines();
+    bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
+    bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
+    if (flip_underline_and_overline)
+      std::swap(has_underline, has_overline);
+
+    if (has_underline && decoration_info.font_data) {
+      const int underline_offset = decoration_offset.ComputeUnderlineOffset(
+          underline_position, decoration_info.font_data->GetFontMetrics(),
+          decoration_info.thickness);
+      PaintDecorationUnderOrOverLine(context, decoration_info, decoration,
+                                     underline_offset,
+                                     decoration_info.double_offset);
+    }
+
+    if (has_overline) {
+      LineVerticalPositionType position =
+          flip_underline_and_overline ? LineVerticalPositionType::TopOfEmHeight
+                                      : LineVerticalPositionType::TextTop;
+      const int overline_offset =
+          decoration_offset.ComputeUnderlineOffsetForUnder(
+              decoration_info.thickness, position);
+      PaintDecorationUnderOrOverLine(context, decoration_info, decoration,
+                                     overline_offset,
+                                     -decoration_info.double_offset);
+    }
+
+    // We could instead build a vector of the TextDecoration instances needing
+    // line-through but this is a rare case so better to avoid vector overhead.
+    *has_line_through_decoration |=
+        EnumHasFlags(lines, TextDecoration::kLineThrough);
   }
 }
 

@@ -23,15 +23,16 @@ class CORE_EXPORT TextDecorationOffsetBase {
   TextDecorationOffsetBase(const ComputedStyle& style) : style_(style) {}
   ~TextDecorationOffsetBase() {}
 
-  virtual int ComputeUnderlineOffsetForUnder(float text_decoration_thickness,
-                                             LineVerticalPositionType) = 0;
+  virtual int ComputeUnderlineOffsetForUnder(
+      float text_decoration_thickness,
+      LineVerticalPositionType) const = 0;
 
   int ComputeUnderlineOffsetForRoman(const FontMetrics&,
-                                     float text_decoration_thickness);
+                                     float text_decoration_thickness) const;
 
   int ComputeUnderlineOffset(ResolvedUnderlinePosition,
                              const FontMetrics&,
-                             float text_decoration_thickness);
+                             float text_decoration_thickness) const;
 
  protected:
   const ComputedStyle& style_;

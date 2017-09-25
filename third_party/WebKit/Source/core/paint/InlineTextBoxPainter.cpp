@@ -132,61 +132,6 @@ static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
   }
 }
 
-static void PaintDecorationsExceptLineThrough(
-    TextPainter& text_painter,
-    bool& has_line_through_decoration,
-    const InlineTextBox& box,
-    const DecorationInfo& decoration_info,
-    const LineLayoutItem& decorating_box,
-    const PaintInfo& paint_info,
-    const Vector<AppliedTextDecoration>& decorations) {
-  GraphicsContext& context = paint_info.context;
-  GraphicsContextStateSaver state_saver(context);
-  context.SetStrokeThickness(decoration_info.thickness);
-
-  // text-underline-position may flip underline and overline.
-  ResolvedUnderlinePosition underline_position =
-      decoration_info.underline_position;
-  bool flip_underline_and_overline = false;
-  if (underline_position == ResolvedUnderlinePosition::kOver) {
-    flip_underline_and_overline = true;
-    underline_position = ResolvedUnderlinePosition::kUnder;
-  }
-
-  TextDecorationOffset decoration_offset(*decoration_info.style, &box,
-                                         decorating_box);
-  for (const AppliedTextDecoration& decoration : decorations) {
-    TextDecoration lines = decoration.Lines();
-    bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
-    bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
-    if (flip_underline_and_overline)
-      std::swap(has_underline, has_overline);
-    if (has_underline && decoration_info.font_data) {
-      const int underline_offset = decoration_offset.ComputeUnderlineOffset(
-          underline_position, decoration_info.font_data->GetFontMetrics(),
-          decoration_info.thickness);
-      text_painter.PaintDecorationUnderOrOverLine(
-          context, decoration_info, decoration, underline_offset,
-          decoration_info.double_offset);
-    }
-    if (has_overline) {
-      const int overline_offset =
-          decoration_offset.ComputeUnderlineOffsetForUnder(
-              decoration_info.thickness,
-              flip_underline_and_overline
-                  ? LineVerticalPositionType::TopOfEmHeight
-                  : LineVerticalPositionType::TextTop);
-      text_painter.PaintDecorationUnderOrOverLine(
-          context, decoration_info, decoration, overline_offset,
-          -decoration_info.double_offset);
-    }
-    // We could instead build a vector of the TextDecoration instances needing
-    // line-through but this is a rare case so better to avoid vector overhead.
-    has_line_through_decoration |=
-        EnumHasFlags(lines, TextDecoration::kLineThrough);
-  }
-}
-
 void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
   if (!ShouldPaintTextBox(paint_info))
@@ -430,10 +375,12 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       PrepareContextForDecoration(context, state_saver,
                                   inline_text_box_.IsHorizontal(), text_style,
                                   combined_text, box_rect);
-      PaintDecorationsExceptLineThrough(
-          text_painter, has_line_through_decoration, inline_text_box_,
-          decoration_info, decorating_box, paint_info,
-          style_to_use.AppliedTextDecorations());
+
+      TextDecorationOffset decoration_offset(*decoration_info.style,
+                                             &inline_text_box_, decorating_box);
+      text_painter.PaintDecorationsExceptLineThrough(
+          decoration_offset, decoration_info, paint_info,
+          style_to_use.AppliedTextDecorations(), &has_line_through_decoration);
       RestoreContextFromDecoration(context, combined_text, box_rect);
     }
 

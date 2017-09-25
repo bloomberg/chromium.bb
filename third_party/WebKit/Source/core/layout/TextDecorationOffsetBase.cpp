@@ -11,7 +11,7 @@ namespace blink {
 
 int TextDecorationOffsetBase::ComputeUnderlineOffsetForRoman(
     const FontMetrics& font_metrics,
-    float text_decoration_thickness) {
+    float text_decoration_thickness) const {
   // Compute the gap between the font and the underline. Use at least one
   // pixel gap, if underline is thick then use a bigger gap.
   int gap = 0;
@@ -34,7 +34,7 @@ int TextDecorationOffsetBase::ComputeUnderlineOffsetForRoman(
 int TextDecorationOffsetBase::ComputeUnderlineOffset(
     ResolvedUnderlinePosition underline_position,
     const FontMetrics& font_metrics,
-    float text_decoration_thickness) {
+    float text_decoration_thickness) const {
   switch (underline_position) {
     default:
       NOTREACHED();
