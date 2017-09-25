@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
@@ -38,7 +39,6 @@ class SharkConnectionListener;
 
 namespace chromeos {
 
-class AutoEnrollmentController;
 class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;

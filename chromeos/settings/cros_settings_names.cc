@@ -275,4 +275,9 @@ const char kDevicePrintersBlacklist[] = "cros.device.printers_blacklist";
 // A list of strings representing the list of device printer ids which are
 // accessible.
 const char kDevicePrintersWhitelist[] = "cros.device.printers_whitelist";
+
+// A dictionary containing parameters controlling the TPM firmware update
+// functionality.
+const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
+
 }  // namespace chromeos

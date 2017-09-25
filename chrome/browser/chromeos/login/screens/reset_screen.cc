@@ -5,9 +5,6 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
@@ -18,7 +15,7 @@
 #include "chrome/browser/chromeos/login/screens/reset_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -52,9 +49,6 @@ constexpr const char kContextKeyIsTPMFirmwareUpdateEditable[] =
 constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
 constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
 constexpr const char kContextKeyScreenState[] = "screen-state";
-
-constexpr const base::FilePath::CharType kTPMFirmwareUpdateAvailableFlagFile[] =
-    FILE_PATH_LITERAL("/run/tpm_firmware_update_available");
 
 }  // namespace
 
@@ -122,14 +116,9 @@ void ResetScreen::Show() {
   }
 
   // Set availability of TPM firmware update.
-  if (base::FeatureList::IsEnabled(features::kTPMFirmwareUpdate)) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::Bind(&base::PathExists,
-                   base::FilePath(kTPMFirmwareUpdateAvailableFlagFile)),
-        base::Bind(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+      base::Bind(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   if (dialog_type < reset::DIALOG_VIEW_TYPE_SIZE) {
     UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown",

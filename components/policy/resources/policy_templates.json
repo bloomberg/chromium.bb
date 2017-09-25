@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 389
+#   For your editing convenience: highest ID currently used: 390
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9728,6 +9728,38 @@
       in this policy are available to the user. The ids must coorespond to
       the entries in the file specified in DeviceNativePrinters.''',
     },
+    {
+      'name': 'TPMFirmwareUpdateSettings',
+      'supported_on': ['chrome_os:63-'],
+      'device_only': True,
+      'id': 390,
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'allow-user-initiated-powerwash': {
+            'type': 'boolean',
+          },
+        },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        'allow-user-initiated-powerwash': True
+      },
+      'caption': '''Configure TPM firmware update behavior''',
+      'tags': [],
+      'desc': '''Configures availability and behavior of TPM firmware update functionality.
+
+      Individual settings can be specified in JSON properties:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a TPM firmware update.
+
+      If the policy is not set, TPM firmware update functionality will not be available.''',
+    },
+
     {
       'name': 'QuickUnlock',
       'type': 'group',

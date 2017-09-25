@@ -11431,6 +11431,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="387" label="DeviceNativePrintersAccessMode"/>
   <int value="388" label="DeviceNativePrintersBlacklist"/>
   <int value="389" label="DeviceNativePrintersWhitelist"/>
+  <int value="390" label="DeviceTPMFirmwareUpdateSettings"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

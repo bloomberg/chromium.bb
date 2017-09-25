@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
@@ -144,17 +143,9 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   }
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
-
-  // Devices with forced re-enrollment enabled shouldn't be able to powerwash.
-  const AutoEnrollmentController::FRERequirement requirement =
-      AutoEnrollmentController::GetFRERequirement();
-  if (requirement == AutoEnrollmentController::NOT_REQUIRED ||
-      requirement == AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED) {
-    accel_map_[ui::Accelerator(ui::VKEY_R,
-                               ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
-                                   ui::EF_SHIFT_DOWN)] = kAccelNameReset;
-  }
-
+  accel_map_[ui::Accelerator(
+      ui::VKEY_R, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
+      kAccelNameReset;
   accel_map_[ui::Accelerator(ui::VKEY_X,
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameEnableDebugging;

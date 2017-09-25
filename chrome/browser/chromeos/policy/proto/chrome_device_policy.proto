@@ -894,6 +894,12 @@ message DeviceNativePrintersWhitelistProto {
   repeated string whitelist = 1;
 }
 
+// Settings to control the behavior of the TPM firmware update functionality.
+message TPMFirmwareUpdateSettingsProto {
+  // Whether the user can invoke the update via powerwash.
+  optional bool allow_user_initiated_powerwash = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -965,4 +971,5 @@ message ChromeDeviceSettingsProto {
       57;
   optional DeviceNativePrintersWhitelistProto native_device_printers_whitelist =
       58;
+  optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
 }

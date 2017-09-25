@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -106,6 +107,7 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenLocales,
     kDeviceLoginScreenInputMethods,
     kDeviceOffHours,
+    kTPMFirmwareUpdateSettings,
 };
 
 void DecodeLoginPolicies(
@@ -488,8 +490,8 @@ void DecodeGenericPolicies(
   new_values_cache->SetBoolean(
       kReleaseChannelDelegated,
       policy.has_release_channel() &&
-      policy.release_channel().has_release_channel_delegated() &&
-      policy.release_channel().release_channel_delegated());
+          policy.release_channel().has_release_channel_delegated() &&
+          policy.release_channel().release_channel_delegated());
 
   if (policy.has_system_timezone()) {
     if (policy.system_timezone().has_timezone()) {
@@ -577,6 +579,12 @@ void DecodeGenericPolicies(
         policy::ConvertOffHoursProtoToValue(policy.device_off_hours());
     if (off_hours_policy)
       new_values_cache->SetValue(kDeviceOffHours, std::move(off_hours_policy));
+  }
+
+  if (policy.has_tpm_firmware_update_settings()) {
+    new_values_cache->SetValue(kTPMFirmwareUpdateSettings,
+                               tpm_firmware_update::DecodeSettingsProto(
+                                   policy.tpm_firmware_update_settings()));
   }
 }
 
