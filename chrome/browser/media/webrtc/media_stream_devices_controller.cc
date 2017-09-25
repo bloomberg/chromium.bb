@@ -437,8 +437,10 @@ void MediaStreamDevicesController::UpdateTabSpecificContentSettings(
   }
 
   content_settings_->OnMediaStreamPermissionSet(
-      request_.security_origin, microphone_camera_state, selected_audio_device,
-      selected_video_device, requested_audio_device, requested_video_device);
+      PermissionManager::Get(profile_)->GetCanonicalOrigin(
+          request_.security_origin),
+      microphone_camera_state, selected_audio_device, selected_video_device,
+      requested_audio_device, requested_video_device);
 }
 
 ContentSetting MediaStreamDevicesController::GetContentSetting(
