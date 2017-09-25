@@ -18,7 +18,6 @@ import android.util.Log;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -129,26 +128,9 @@ public class MainActivity extends Activity {
 
     /** Deletes the internal storage. */
     private void deleteInternalStorage() {
-        deletePath(getCacheDir());
-        deletePath(getFilesDir());
-        deletePath(getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
-    }
-
-    private void deletePath(File file) {
-        if (file == null) return;
-
-        if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    deletePath(child);
-                }
-            }
-        }
-
-        if (!file.delete()) {
-            Log.e(TAG, "Failed to delete : " + file.getAbsolutePath());
-        }
+        WebApkUtils.deletePath(getCacheDir());
+        WebApkUtils.deletePath(getFilesDir());
+        WebApkUtils.deletePath(getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 
     private void launchInHostBrowser(String runtimeHost) {

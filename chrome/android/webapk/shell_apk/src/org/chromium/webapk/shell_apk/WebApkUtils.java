@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -34,6 +36,8 @@ import java.util.Set;
  */
 public class WebApkUtils {
     public static final String SHARED_PREF_RUNTIME_HOST = "runtime_host";
+
+    private static final String TAG = "cr_WebApkUtils";
 
     /**
      * The package names of the channels of Chrome that support WebAPKs. The most preferred one
@@ -324,6 +328,24 @@ public class WebApkUtils {
             return res.getColor(id, null);
         } else {
             return res.getColor(id);
+        }
+    }
+
+    /** Delete the given File and (if it's a directory) everything within it. */
+    public static void deletePath(File file) {
+        if (file == null) return;
+
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deletePath(child);
+                }
+            }
+        }
+
+        if (!file.delete()) {
+            Log.e(TAG, "Failed to delete : " + file.getAbsolutePath());
         }
     }
 }
