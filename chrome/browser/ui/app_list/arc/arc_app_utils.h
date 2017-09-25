@@ -21,6 +21,10 @@ class BrowserContext;
 namespace arc {
 
 extern const char kPlayStoreAppId[];
+extern const char kPlayBooksAppId[];
+extern const char kPlayGamesAppId[];
+extern const char kPlayMoviesAppId[];
+extern const char kPlayMusicAppId[];
 // This represents legacy Play Store item in the app launcher that was used
 // before unifying app id in the app launcher and shelf.
 // TODO(khmel): Remove this after few release http://crbug.com/722675.

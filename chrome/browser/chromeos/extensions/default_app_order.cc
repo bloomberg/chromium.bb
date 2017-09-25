@@ -39,26 +39,31 @@ const char kImportDefaultOrderAttr[] = "import_default_order";
 const char* const kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
     arc::kPlayStoreAppId,
-    extensions::kWebStoreAppId,
-    "nplnnjkbeijcggmpdcecpabgbjgeiedc",  // Play Games
-    genius_app::kGeniusAppId,
-    extension_misc::kYoutubeAppId,
+    extension_misc::kFilesManagerAppId,
     extension_misc::kGmailAppId,
-    "ejjicmeblgpmajnghnpcppodonldlgfn",  // Calendar
-    "lneaknkopdijkpnocmklfnjbeapigfbh",  // Google Maps
-    "apdfllckaahabafndbhieahigkjlhalf",  // Drive
+    extension_misc::kCalendarAppId,
     extension_misc::kGoogleDocAppId,
-    extension_misc::kGoogleSheetsAppId,
     extension_misc::kGoogleSlidesAppId,
-    "dlppkpafhbajpcmmoheippocdidnckmm",  // Google+
-    "hcglmfcclpfgljeaiahehebeoaiicbko",  // Google Photos
-    "hhaomjibdihmijegdhdafkllkbggdgoj",  // Files
-    extension_misc::kGooglePlayMusicAppId,
-    extension_misc::kGooglePlayBooksAppId,   // Play Books
-    extension_misc::kGooglePlayMoviesAppId,  // Play Movies & TV
-    "joodangkbfjnajiiifokapkpmhfnpleo",      // Calculator
-    "hfhhnacclhffhdffklopdkcgdhifgngh",      // Camera
-    "gbchcmhmhahfdphkhkmpfmihenigjmpp",      // Chrome Remote Desktop
+    extension_misc::kGoogleSheetsAppId,
+    extension_misc::kGoogleKeepAppId,
+    extension_misc::kGooglePhotosAppId,
+    extension_misc::kYoutubeAppId,
+    arc::kPlayMoviesAppId,                   // Play Movies & TV ARC app
+    extension_misc::kGooglePlayMoviesAppId,  // Play Movies & TV Chrome app
+    arc::kPlayMusicAppId,                    // Play Music ARC app
+    extension_misc::kGooglePlayMusicAppId,   // Play Music Chrome app
+    arc::kPlayGamesAppId,
+    arc::kPlayBooksAppId,                   // Play Books ARC app
+    extension_misc::kGooglePlayBooksAppId,  // Play Books Chrome app
+    extension_misc::kGoogleMapsAppId,
+    extension_misc::kDriveHostedAppId,
+    extension_misc::kCameraAppId,
+    extension_misc::kCalculatorAppId,
+    extension_misc::kTextEditorAppId,
+    extension_misc::kGooglePlusAppId,
+    extension_misc::kChromeRemoteDesktopAppId,
+    extensions::kWebStoreAppId,
+    genius_app::kGeniusAppId,
 };
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL
