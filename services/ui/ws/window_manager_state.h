@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
@@ -311,7 +311,7 @@ class WindowManagerState : public EventDispatcherDelegate,
 
   // Events can go into this queue if there's a hit-test in flight in
   // EventDispatcher or if we are actively dispatching an event.
-  std::queue<std::unique_ptr<QueuedEvent>> event_queue_;
+  base::queue<std::unique_ptr<QueuedEvent>> event_queue_;
 
   std::vector<DebugAccelerator> debug_accelerators_;
 

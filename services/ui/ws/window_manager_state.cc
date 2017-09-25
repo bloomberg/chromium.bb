@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -350,7 +351,7 @@ void WindowManagerState::Deactivate() {
   event_dispatcher_.Reset();
   // The tree is no longer active, so no point in dispatching any further
   // events.
-  std::queue<std::unique_ptr<QueuedEvent>> event_queue;
+  base::queue<std::unique_ptr<QueuedEvent>> event_queue;
   event_queue.swap(event_queue_);
 }
 

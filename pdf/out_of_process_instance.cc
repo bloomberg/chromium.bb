@@ -623,7 +623,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     print_preview_page_count_ = print_preview_page_count;
     print_preview_loaded_page_count_ = 0;
     url_ = url;
-    preview_pages_info_ = std::queue<PreviewPageInfo>();
+    preview_pages_info_ = base::queue<PreviewPageInfo>();
     preview_document_load_state_ = LOAD_STATE_COMPLETE;
     document_load_state_ = LOAD_STATE_LOADING;
     LoadUrl(url_, /*is_print_preview=*/false);

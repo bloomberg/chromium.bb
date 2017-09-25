@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
@@ -86,7 +87,7 @@ class PersistentPrefStoreClient
 
   std::unique_ptr<ReadErrorDelegate> error_delegate_;
 
-  std::queue<std::vector<InFlightWrite>> in_flight_writes_queue_;
+  base::queue<std::vector<InFlightWrite>> in_flight_writes_queue_;
   std::map<std::string, InFlightWriteTrie> in_flight_writes_tries_;
 
   base::WeakPtrFactory<PersistentPrefStoreClient> weak_factory_;

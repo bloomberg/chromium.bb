@@ -5,10 +5,10 @@
 #ifndef STORAGE_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_
 
-#include <queue>
 #include <stack>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -146,8 +146,8 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   FileSystemContext* file_system_context_;
   StatusCallback callback_;
   std::stack<FileSystemURL> pending_directories_;
-  std::stack<std::queue<FileSystemURL> > pending_directory_stack_;
-  std::queue<FileSystemURL> pending_files_;
+  std::stack<base::queue<FileSystemURL>> pending_directory_stack_;
+  base::queue<FileSystemURL> pending_files_;
   bool canceled_;
   ErrorBehavior error_behavior_;
   bool failed_some_operations_;

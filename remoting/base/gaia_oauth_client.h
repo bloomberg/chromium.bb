@@ -5,8 +5,7 @@
 #ifndef REMOTING_BASE_GAIA_OAUTH_CLIENT_H_
 #define REMOTING_BASE_GAIA_OAUTH_CLIENT_H_
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -67,7 +66,7 @@ class GaiaOAuthClient : public OAuthClient,
   void SendResponse(const std::string& user_email,
                     const std::string& refresh_token);
 
-  std::queue<Request> pending_requests_;
+  base::queue<Request> pending_requests_;
   gaia::GaiaOAuthClient gaia_oauth_client_;
   std::string refresh_token_;
   bool need_user_email_;

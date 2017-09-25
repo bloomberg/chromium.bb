@@ -8,12 +8,12 @@
 #include <string.h>
 
 #include <map>
-#include <queue>
 #include <sstream>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
@@ -292,8 +292,8 @@ class TestNode : public NodeDelegate {
   bool blocked_ = false;
   bool block_on_event_ = false;
   Event::Type blocked_event_type_;
-  std::queue<ScopedEvent> incoming_events_;
-  std::queue<ScopedMessage> saved_messages_;
+  base::queue<ScopedEvent> incoming_events_;
+  base::queue<ScopedMessage> saved_messages_;
 };
 
 class PortsTest : public testing::Test, public MessageRouter {

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -151,8 +152,8 @@ void OAuthTokenGetterImpl::NotifyTokenCallbacks(
     const std::string& user_email,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::queue<TokenCallback> callbacks(pending_callbacks_);
-  pending_callbacks_ = std::queue<TokenCallback>();
+  base::queue<TokenCallback> callbacks(pending_callbacks_);
+  pending_callbacks_ = base::queue<TokenCallback>();
 
   while (!callbacks.empty()) {
     callbacks.front().Run(status, user_email, access_token);

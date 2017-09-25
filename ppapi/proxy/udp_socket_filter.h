@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <unordered_map>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -104,7 +104,7 @@ class PPAPI_PROXY_EXPORT UDPSocketFilter : public ResourceMessageFilter {
       std::string data;
       PP_NetAddress_Private addr;
     };
-    std::queue<RecvBuffer> recv_buffers_;
+    base::queue<RecvBuffer> recv_buffers_;
 
     PP_Instance pp_instance_;
     scoped_refptr<ppapi::TrackedCallback> recvfrom_callback_;

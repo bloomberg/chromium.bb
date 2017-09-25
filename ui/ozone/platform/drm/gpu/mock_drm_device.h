@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <map>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -143,7 +143,7 @@ class MockDrmDevice : public DrmDevice {
 
   std::map<uint32_t, uint32_t> crtc_cursor_map_;
 
-  std::queue<PageFlipCallback> callbacks_;
+  base::queue<PageFlipCallback> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };

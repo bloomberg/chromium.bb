@@ -7,8 +7,7 @@
 
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -51,7 +50,7 @@ class X11CharacterInjector {
                                   std::vector<KeyInfo>::iterator position);
 
   std::unique_ptr<X11Keyboard> keyboard_;
-  std::queue<uint32_t> characters_queue_;
+  base::queue<uint32_t> characters_queue_;
   base::OneShotTimer injection_timer_;
 
   // Sorted by ascending expiration time.

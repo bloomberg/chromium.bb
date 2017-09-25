@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <tuple>
 
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -200,7 +200,7 @@ class ObfuscatedFileEnumerator final
   FileSystemURL root_url_;
   bool recursive_;
 
-  std::queue<FileRecord> recurse_queue_;
+  base::queue<FileRecord> recurse_queue_;
   std::vector<FileId> display_stack_;
   base::FilePath current_parent_virtual_path_;
 

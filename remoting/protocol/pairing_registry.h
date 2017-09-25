@@ -7,11 +7,11 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -192,7 +192,7 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry> {
 
   std::unique_ptr<Delegate> delegate_;
 
-  std::queue<base::Closure> pending_requests_;
+  base::queue<base::Closure> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistry);
 };

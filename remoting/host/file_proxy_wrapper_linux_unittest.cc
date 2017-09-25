@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -63,7 +64,7 @@ class FileProxyWrapperLinuxTest : public testing::Test {
   FileProxyWrapper::State final_state_;
   bool done_callback_succeeded_;
 
-  std::queue<std::vector<char>> read_chunks_;
+  base::queue<std::vector<char>> read_chunks_;
   int64_t read_filesize_;
 };
 
@@ -193,7 +194,7 @@ TEST_F(FileProxyWrapperLinuxTest, ReadThreeChunks) {
   file_proxy_wrapper_->Close();
   scoped_task_environment_.RunUntilIdle();
 
-  std::queue<std::vector<char>> expected_read_chunks;
+  base::queue<std::vector<char>> expected_read_chunks;
   expected_read_chunks.push(
       std::vector<char>(kTestDataOne.begin(), kTestDataOne.end()));
   expected_read_chunks.push(
@@ -201,7 +202,13 @@ TEST_F(FileProxyWrapperLinuxTest, ReadThreeChunks) {
   expected_read_chunks.push(
       std::vector<char>(kTestDataThree.begin(), kTestDataThree.end()));
   ASSERT_FALSE(error_);
-  ASSERT_EQ(expected_read_chunks, read_chunks_);
+
+  ASSERT_EQ(expected_read_chunks.size(), read_chunks_.size());
+  while (!expected_read_chunks.empty()) {
+    ASSERT_EQ(expected_read_chunks.front(), read_chunks_.front());
+    expected_read_chunks.pop();
+    read_chunks_.pop();
+  }
 }
 
 // Verifies that FileProxyWrapper fails to open a file for reading if the file

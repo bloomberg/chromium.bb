@@ -6,11 +6,11 @@
 #define UI_DISPLAY_MANAGER_FAKE_DISPLAY_DELEGATE_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -121,7 +121,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
 
   // Add delay before finishing Configure() and running callback.
   base::OneShotTimer configure_timer_;
-  std::queue<base::Closure> configure_callbacks_;
+  base::queue<base::Closure> configure_callbacks_;
 
   // If Initialize() has been called.
   bool initialized_ = false;
