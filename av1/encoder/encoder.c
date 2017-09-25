@@ -425,6 +425,7 @@ static void enc_free_mi(AV1_COMMON *cm) {
   cm->mi_grid_base = NULL;
   aom_free(cm->prev_mi_grid_base);
   cm->prev_mi_grid_base = NULL;
+  cm->mi_alloc_size = 0;
 }
 
 static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
@@ -465,11 +466,26 @@ void av1_initialize_enc(void) {
   }
 }
 
+static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
+  if (cpi->mbmi_ext_base) {
+    aom_free(cpi->mbmi_ext_base);
+    cpi->mbmi_ext_base = NULL;
+  }
+}
+
+static void alloc_context_buffers_ext(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  int mi_size = cm->mi_cols * cm->mi_rows;
+
+  dealloc_context_buffers_ext(cpi);
+  CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
+                  aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
+}
+
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
-  aom_free(cpi->mbmi_ext_base);
-  cpi->mbmi_ext_base = NULL;
+  dealloc_context_buffers_ext(cpi);
 
 #if CONFIG_PVQ
   if (cpi->oxcf.pass != 1) {
@@ -821,14 +837,6 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                        "Failed to allocate scaled last source buffer");
 }
 
-static void alloc_context_buffers_ext(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
-  int mi_size = cm->mi_cols * cm->mi_rows;
-
-  CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
-                  aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
-}
-
 static void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
 
@@ -1038,7 +1046,6 @@ static void update_frame_size(AV1_COMP *cpi) {
                        NULL);
   memset(cpi->mbmi_ext_base, 0,
          cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
-
   set_tile_info(cpi);
 }
 
@@ -1096,6 +1103,10 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 
   cpi->static_mb_pct = 0;
   cpi->ref_frame_flags = 0;
+
+  // Reset resize pending flags
+  cpi->resize_pending_width = 0;
+  cpi->resize_pending_height = 0;
 
   init_buffer_indices(cpi);
 }
@@ -2421,6 +2432,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (cpi->initial_width) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height) {
       av1_free_context_buffers(cm);
+      av1_free_pc_tree(&cpi->td);
       alloc_compressor_data(cpi);
       realloc_segmentation_maps(cpi);
       cpi->initial_width = cpi->initial_height = 0;
@@ -3326,6 +3338,7 @@ static int recode_loop_test_global_motion(AV1_COMP *cpi) {
         rdc->global_motion_used[i] * GM_RECODE_LOOP_NUM4X4_FACTOR <
             cpi->gmparams_cost[i]) {
       set_default_warp_params(&cm->global_motion[i]);
+      assert(cm->global_motion[i].wmtype == IDENTITY);
       cpi->gmparams_cost[i] = 0;
       recode = 1;
       recode |= (rdc->global_motion_used[i] > 0);
@@ -4124,20 +4137,16 @@ static int set_size_literal(AV1_COMP *cpi, int width, int height) {
   if (width <= 0 || height <= 0) return 1;
 
   cm->width = width;
-  if (cm->width > cpi->initial_width) {
-    cm->width = cpi->initial_width;
-    printf("Warning: Desired width too large, changed to %d\n", cm->width);
-  }
-
   cm->height = height;
-  if (cm->height > cpi->initial_height) {
-    cm->height = cpi->initial_height;
-    printf("Warning: Desired height too large, changed to %d\n", cm->height);
+
+  if (cpi->initial_width && cpi->initial_height &&
+      (cm->width > cpi->initial_width || cm->height > cpi->initial_height)) {
+    av1_free_context_buffers(cm);
+    av1_free_pc_tree(&cpi->td);
+    alloc_compressor_data(cpi);
+    realloc_segmentation_maps(cpi);
+    cpi->initial_width = cpi->initial_height = 0;
   }
-
-  assert(cm->width <= cpi->initial_width);
-  assert(cm->height <= cpi->initial_height);
-
   update_frame_size(cpi);
 
   return 0;
@@ -4303,56 +4312,98 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
 }
 
 static int validate_size_scales(RESIZE_MODE resize_mode,
-                                SUPERRES_MODE superres_mode,
-                                size_params_type *rsz) {
-  if (rsz->resize_num * rsz->superres_num * 2 >
-      SCALE_DENOMINATOR * SCALE_DENOMINATOR)
+                                SUPERRES_MODE superres_mode, int owidth,
+                                int oheight, size_params_type *rsz) {
+  if (rsz->resize_width * rsz->superres_num >= SCALE_DENOMINATOR * owidth / 2 &&
+      rsz->resize_height * rsz->superres_num >= SCALE_DENOMINATOR * oheight / 2)
     return 1;
+  int resize_num = AOMMIN(((rsz->resize_width * 16 + owidth / 2) / owidth),
+                          ((rsz->resize_height * 16 + oheight / 2) / oheight));
   if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
     rsz->superres_num =
-        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * rsz->resize_num - 1) /
-        (2 * rsz->resize_num);
+        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * resize_num - 1) /
+        (2 * resize_num);
+    if (rsz->resize_width * rsz->superres_num <
+            SCALE_DENOMINATOR * owidth / 2 ||
+        rsz->resize_height * rsz->superres_num <
+            SCALE_DENOMINATOR * oheight / 2) {
+      if (rsz->superres_num < SCALE_DENOMINATOR) rsz->superres_num++;
+    }
   } else if (resize_mode == RESIZE_RANDOM && superres_mode != SUPERRES_RANDOM) {
-    rsz->resize_num =
+    resize_num =
         (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * rsz->superres_num - 1) /
         (2 * rsz->superres_num);
+    rsz->resize_width = owidth;
+    rsz->resize_height = oheight;
+    av1_calculate_scaled_size(&rsz->resize_width, &rsz->resize_height,
+                              resize_num);
+    if (rsz->resize_width * rsz->superres_num <
+            SCALE_DENOMINATOR * owidth / 2 ||
+        rsz->resize_height * rsz->superres_num <
+            SCALE_DENOMINATOR * oheight / 2) {
+      if (resize_num < SCALE_DENOMINATOR) resize_num++;
+    }
   } else if (resize_mode == RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
     do {
-      if (rsz->resize_num < rsz->superres_num)
-        ++rsz->resize_num;
+      if (resize_num < rsz->superres_num)
+        ++resize_num;
       else
         ++rsz->superres_num;
-    } while (rsz->resize_num * rsz->superres_num * 2 <=
-             SCALE_DENOMINATOR * SCALE_DENOMINATOR);
+      rsz->resize_width = owidth;
+      rsz->resize_height = oheight;
+      av1_calculate_scaled_size(&rsz->resize_width, &rsz->resize_height,
+                                resize_num);
+    } while ((rsz->resize_width * rsz->superres_num <
+                  SCALE_DENOMINATOR * owidth / 2 ||
+              rsz->resize_height * rsz->superres_num <
+                  SCALE_DENOMINATOR * oheight / 2) &&
+             (resize_num < SCALE_DENOMINATOR ||
+              rsz->superres_num < SCALE_DENOMINATOR));
   } else {
     return 0;
   }
-  return 1;
+  if (rsz->resize_width * rsz->superres_num >= SCALE_DENOMINATOR * owidth / 2 &&
+      rsz->resize_height * rsz->superres_num >= SCALE_DENOMINATOR * oheight / 2)
+    return 1;
+  return 0;
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
+// Calculates resize and superres params for next frame
 size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   size_params_type rsz = {
-    SCALE_DENOMINATOR,
+    oxcf->width,
+    oxcf->height,
 #if CONFIG_FRAME_SUPERRES
     SCALE_DENOMINATOR
 #endif  // CONFIG_FRAME_SUPERRES
   };
+  int resize_num;
   if (oxcf->pass == 1) return rsz;
-  rsz.resize_num = calculate_next_resize_scale(cpi);
+  if (cpi->resize_pending_width && cpi->resize_pending_height) {
+    rsz.resize_width = cpi->resize_pending_width;
+    rsz.resize_height = cpi->resize_pending_height;
+    cpi->resize_pending_width = cpi->resize_pending_height = 0;
+  } else {
+    resize_num = calculate_next_resize_scale(cpi);
+    rsz.resize_width = cpi->oxcf.width;
+    rsz.resize_height = cpi->oxcf.height;
+    av1_calculate_scaled_size(&rsz.resize_width, &rsz.resize_height,
+                              resize_num);
+  }
 #if CONFIG_FRAME_SUPERRES
   rsz.superres_num = calculate_next_superres_scale(cpi);
-  if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, &rsz))
+  if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, oxcf->width,
+                            oxcf->height, &rsz))
     assert(0 && "Invalid scale parameters");
 #endif  // CONFIG_FRAME_SUPERRES
   return rsz;
 }
 
 static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
-  int encode_width = cpi->oxcf.width;
-  int encode_height = cpi->oxcf.height;
-  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->resize_num);
+  int encode_width = rsz->resize_width;
+  int encode_height = rsz->resize_height;
 
 #if CONFIG_FRAME_SUPERRES
   AV1_COMMON *cm = &cpi->common;
@@ -4365,8 +4416,7 @@ static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
 }
 
 static void setup_frame_size(AV1_COMP *cpi) {
-  size_params_type rsz;
-  rsz = av1_calculate_next_size_params(cpi);
+  size_params_type rsz = av1_calculate_next_size_params(cpi);
   setup_frame_size_from_params(cpi, &rsz);
 }
 
@@ -4622,12 +4672,15 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
                                        &frame_over_shoot_limit);
     }
 
-    cpi->source =
-        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
 #if CONFIG_GLOBAL_MOTION
     // if frame was scaled calculate global_motion_search again if already done
-    if (cpi->source != cpi->unscaled_source) cpi->global_motion_search_done = 0;
+    if (loop_count > 0 && cpi->source && cpi->global_motion_search_done)
+      if (cpi->source->y_crop_width != cm->width ||
+          cpi->source->y_crop_height != cm->height)
+        cpi->global_motion_search_done = 0;
 #endif  // CONFIG_GLOBAL_MOTION
+    cpi->source =
+        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
     if (cpi->unscaled_last_source != NULL)
       cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                                &cpi->scaled_last_source);
@@ -6561,7 +6614,6 @@ int av1_get_last_show_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *frame) {
 
 int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
                           AOM_SCALING vert_mode) {
-  AV1_COMMON *cm = &cpi->common;
   int hr = 0, hs = 0, vr = 0, vs = 0;
 
   if (horiz_mode > ONETWO || vert_mode > ONETWO) return -1;
@@ -6570,12 +6622,8 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
   Scale2Ratio(vert_mode, &vr, &vs);
 
   // always go to the next whole number
-  cm->width = (hs - 1 + cpi->oxcf.width * hr) / hs;
-  cm->height = (vs - 1 + cpi->oxcf.height * vr) / vs;
-  assert(cm->width <= cpi->initial_width);
-  assert(cm->height <= cpi->initial_height);
-
-  update_frame_size(cpi);
+  cpi->resize_pending_width = (hs - 1 + cpi->oxcf.width * hr) / hs;
+  cpi->resize_pending_height = (vs - 1 + cpi->oxcf.height * vr) / vs;
 
   return 0;
 }

@@ -351,11 +351,11 @@ class ResizeInternalTest : public ResizeTest {
         encoder->Config(&cfg_);
       }
     } else {
-      if (video->frame() == kStepDownFrame) {
+      if (video->frame() >= kStepDownFrame && video->frame() < kStepUpFrame) {
         struct aom_scaling_mode mode = { AOME_FOURFIVE, AOME_THREEFIVE };
         encoder->Control(AOME_SET_SCALEMODE, &mode);
       }
-      if (video->frame() == kStepUpFrame) {
+      if (video->frame() >= kStepUpFrame) {
         struct aom_scaling_mode mode = { AOME_NORMAL, AOME_NORMAL };
         encoder->Control(AOME_SET_SCALEMODE, &mode);
       }
@@ -388,7 +388,7 @@ class ResizeInternalTest : public ResizeTest {
 #endif
 };
 
-TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeWorks) {
+TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   init_flags_ = AOM_CODEC_USE_PSNR;
@@ -406,6 +406,9 @@ TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeWorks) {
 
   for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
        info != frame_info_list_.end(); ++info) {
+  }
+  for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
+       info != frame_info_list_.end(); ++info) {
     const aom_codec_pts_t pts = info->pts;
     if (pts >= kStepDownFrame && pts < kStepUpFrame) {
       ASSERT_EQ(282U, info->w) << "Frame " << pts << " had unexpected width";
@@ -417,7 +420,7 @@ TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeWorks) {
   }
 }
 
-TEST_P(ResizeInternalTest, DISABLED_TestInternalResizeChangeConfig) {
+TEST_P(ResizeInternalTest, TestInternalResizeChangeConfig) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   cfg_.g_w = 352;
@@ -493,7 +496,7 @@ class ResizeRealtimeTest
   int mismatch_nframes_;
 };
 
-TEST_P(ResizeRealtimeTest, DISABLED_TestExternalResizeWorks) {
+TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
   ResizingVideoSource video;
   video.flag_codec_ = 1;
   DefaultConfig();
@@ -693,15 +696,6 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
   }
 };
 
-#ifdef DISABLE_TRELLISQ_SEARCH
-TEST_P(ResizeCspTest, DISABLED_TestResizeCspWorks) {
-  ResizingCspVideoSource video;
-  init_flags_ = AOM_CODEC_USE_PSNR;
-  cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = 48;
-  cfg_.g_lag_in_frames = 0;
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-}
-#else
 TEST_P(ResizeCspTest, TestResizeCspWorks) {
   ResizingCspVideoSource video;
   init_flags_ = AOM_CODEC_USE_PSNR;
@@ -709,7 +703,6 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   cfg_.g_lag_in_frames = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
-#endif
 
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,
                           ::testing::Values(::libaom_test::kRealTime));

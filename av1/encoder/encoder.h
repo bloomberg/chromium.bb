@@ -571,6 +571,13 @@ typedef struct AV1_COMP {
                     // number of MBs in the current frame when the frame is
                     // scaled.
 
+  // When resize is triggered through external control, the desired width/height
+  // are stored here until use in the next frame coded. They are effective only
+  // for
+  // one frame and are reset after use.
+  int resize_pending_width;
+  int resize_pending_height;
+
   int frame_flags;
 
   search_site_config ss_cfg;

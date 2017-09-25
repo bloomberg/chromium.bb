@@ -91,6 +91,7 @@ static void free_seg_map(AV1_COMMON *cm) {
   if (!cm->frame_parallel_decode) {
     cm->last_frame_seg_map = NULL;
   }
+  cm->seg_map_alloc_size = 0;
 }
 
 void av1_free_ref_frame_buffers(BufferPool *pool) {
@@ -155,6 +156,7 @@ void av1_free_context_buffers(AV1_COMMON *cm) {
   }
   aom_free(cm->above_seg_context);
   cm->above_seg_context = NULL;
+  cm->above_context_alloc_cols = 0;
 #if CONFIG_VAR_TX
   aom_free(cm->above_txfm_context);
   cm->above_txfm_context = NULL;

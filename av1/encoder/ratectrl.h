@@ -50,7 +50,8 @@ typedef enum {
 #endif  // CONFIG_EXT_REFS
 
 typedef struct {
-  uint8_t resize_num;
+  int resize_width;
+  int resize_height;
 #if CONFIG_FRAME_SUPERRES
   uint8_t superres_num;
 #endif  // CONFIG_FRAME_SUPERRES
