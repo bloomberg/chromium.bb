@@ -2952,6 +2952,9 @@ group("telemetry_perf_unittests") {
 
     # For smoke testing run_telemetry_benchmark_as_googletest
     "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+
+    # For smoke testing run_multiple_telemetry_benchmarks_as_googletest
+    "//testing/scripts/run_multiple_telemetry_benchmarks_as_googletest.py",
   ]
 
   if (enable_package_mash_services) {
@@ -2980,6 +2983,16 @@ group("telemetry_perf_tests") {
 # script before the build, to remove the system webview. See
 # //testing/buildbot/gn_isolate_map.pyl
 group("telemetry_perf_webview_tests") {
+  testonly = true
+  deps = [
+    "//chrome/test:telemetry_perf_tests",
+  ]
+}
+
+# New target for new script we're using to execute perf tests. Will replace the
+# current version, once testing has been done. See
+# //testing/buildbot/gn_isolate_map.pyl for differences.
+group("telemetry_perf_tests_new") {
   testonly = true
   deps = [
     "//chrome/test:telemetry_perf_tests",

@@ -14,4 +14,6 @@ per-file run_gpu*=nednguyen@google.com
 per-file run_telemetry*=kbr@chromium.org
 per-file run_telemetry*=nednguyen@google.com
 per-file run_telemetry*=eyaich@chromium.org
+per-file run_multiple_telemetry*=martiniss@chromium.org
+per-file run_multiple_telemetry*=eyaich@chromium.org
 per-file run_gtest*=eyaich@chromium.org

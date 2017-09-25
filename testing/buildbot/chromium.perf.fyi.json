@@ -55,6 +55,34 @@
       }
     ]
   },
+  "One Buildbot Step Test Builder": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--bot",
+          "build13-b1--device2",
+          "--builder",
+          "Android Nexus5 Perf",
+          "-v",
+          "--output-format=histograms",
+          "--output-format=json-test-results",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests_new",
+        "name": "benchmarks for bot 1",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      }
+    ]
+  },
   "Win 10 4 Core Low-End Perf Tests": {
     "isolated_scripts": [
       {
