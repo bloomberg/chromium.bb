@@ -68,6 +68,7 @@ ClientPolicyController::ClientPolicyController() {
           .SetIsDisabledWhenPrefetchDisabled(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
           .SetIsSupportedByDownload(IsOfflinePagesPrefetchingUIEnabled())
+          .SetIsSuggested(true)
           .Build()));
   policies_.insert(std::make_pair(
       kBrowserActionsNamespace,
