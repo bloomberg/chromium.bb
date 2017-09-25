@@ -569,10 +569,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsWithText) {
 
 // Verifies that the margin strut of a child with a different writing mode does
 // not get used in the collapsing margins calculation.
-//
-// TODO(glebl): Disabled for now. Follow-up with kojii@ on
-// https://software.hixie.ch/utilities/js/live-dom-viewer/?saved=4844
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_CollapsingMarginsCase6) {
+TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase6) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #div1 {
