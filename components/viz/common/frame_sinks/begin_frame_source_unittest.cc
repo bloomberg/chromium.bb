@@ -47,7 +47,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     now_src_.reset(new base::SimpleTestTickClock());
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
-        make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
+        base::MakeRefCounted<OrderedSimpleTaskRunner>(now_src_.get(), false);
     std::unique_ptr<FakeDelayBasedTimeSource> time_source(
         new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     delay_based_time_source_ = time_source.get();
@@ -344,7 +344,7 @@ class DelayBasedBeginFrameSourceTest : public ::testing::Test {
     now_src_.reset(new base::SimpleTestTickClock());
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
-        make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
+        base::MakeRefCounted<OrderedSimpleTaskRunner>(now_src_.get(), false);
     std::unique_ptr<DelayBasedTimeSource> time_source(
         new FakeDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
     time_source->SetTimebaseAndInterval(

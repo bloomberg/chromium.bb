@@ -224,7 +224,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   void CreateTasks(int num_tasks, PerfTaskImpl::Vector* tasks) {
     for (int i = 0; i < num_tasks; ++i)
-      tasks->push_back(make_scoped_refptr(new PerfTaskImpl));
+      tasks->push_back(base::MakeRefCounted<PerfTaskImpl>());
   }
 
   void CancelTasks(const PerfTaskImpl::Vector& tasks) {

@@ -14,7 +14,7 @@ namespace base {
 namespace ios {
 
 ScopedCriticalAction::ScopedCriticalAction()
-    : core_(base::MakeRefCounted<ScopedCriticalAction::Core>()) {
+    : core_(MakeRefCounted<ScopedCriticalAction::Core>()) {
   ScopedCriticalAction::Core::StartBackgroundTask(core_);
 }
 

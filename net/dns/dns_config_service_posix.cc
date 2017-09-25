@@ -449,7 +449,7 @@ void DnsConfigServicePosix::SetDnsConfigForTesting(
   dns_config_for_testing_ = dns_config;
   // Reset ConfigReader to bind new DnsConfig for testing.
   config_reader_->Cancel();
-  config_reader_ = make_scoped_refptr(new ConfigReader(this));
+  config_reader_ = base::MakeRefCounted<ConfigReader>(this);
 }
 
 void DnsConfigServicePosix::SetHostsFilePathForTesting(
@@ -458,7 +458,7 @@ void DnsConfigServicePosix::SetHostsFilePathForTesting(
   file_path_hosts_ = file_path;
   // Reset HostsReader to bind new hosts file path.
   hosts_reader_->Cancel();
-  hosts_reader_ = make_scoped_refptr(new HostsReader(this));
+  hosts_reader_ = base::MakeRefCounted<HostsReader>(this);
   // If watching, reset to bind new hosts file path and resume watching.
   if (watcher_) {
     watcher_.reset(new Watcher(this));

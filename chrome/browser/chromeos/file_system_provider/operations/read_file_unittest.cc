@@ -83,7 +83,7 @@ class FileSystemProviderOperationsReadFileTest : public testing::Test {
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
         base::FilePath(), false /* configurable */, true /* watchable */,
         extensions::SOURCE_FILE);
-    io_buffer_ = make_scoped_refptr(new net::IOBuffer(kOffset + kLength));
+    io_buffer_ = base::MakeRefCounted<net::IOBuffer>(kOffset + kLength);
   }
 
   ProvidedFileSystemInfo file_system_info_;

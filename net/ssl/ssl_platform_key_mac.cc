@@ -369,10 +369,10 @@ scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(
     return nullptr;
   }
 
-  return make_scoped_refptr(new ThreadedSSLPrivateKey(
+  return base::MakeRefCounted<ThreadedSSLPrivateKey>(
       std::make_unique<SSLPlatformKeyCSSM>(key_type, max_length, private_key,
                                            cssm_key),
-      GetSSLPlatformKeyTaskRunner()));
+      GetSSLPlatformKeyTaskRunner());
 }
 
 }  // namespace

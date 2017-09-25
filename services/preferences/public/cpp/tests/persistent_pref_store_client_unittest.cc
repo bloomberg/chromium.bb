@@ -45,7 +45,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
                 base::MakeUnique<base::DictionaryValue>(), true),
             std::move(store_proxy), ::PersistentPrefStore::PREF_READ_ERROR_NONE,
             false)));
-    auto pref_registry = make_scoped_refptr(new PrefRegistrySimple());
+    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     pref_registry->RegisterDictionaryPref(kDictionaryKey);
     pref_registry->RegisterDictionaryPref(kUninitializedDictionaryKey);
     PrefNotifierImpl* pref_notifier = new PrefNotifierImpl;

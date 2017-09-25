@@ -47,7 +47,7 @@ class FileSystemProviderOperationsWriteFileTest : public testing::Test {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, mount_options, base::FilePath(), false /* configurable */,
         true /* watchable */, extensions::SOURCE_FILE);
-    io_buffer_ = make_scoped_refptr(new net::StringIOBuffer(kWriteData));
+    io_buffer_ = base::MakeRefCounted<net::StringIOBuffer>(kWriteData);
   }
 
   ProvidedFileSystemInfo file_system_info_;

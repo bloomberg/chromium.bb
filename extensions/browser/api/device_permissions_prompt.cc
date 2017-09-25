@@ -390,18 +390,18 @@ void DevicePermissionsPrompt::AskForHidDevices(
 scoped_refptr<DevicePermissionsPrompt::Prompt>
 DevicePermissionsPrompt::CreateHidPromptForTest(const Extension* extension,
                                                 bool multiple) {
-  return make_scoped_refptr(new HidDevicePermissionsPrompt(
+  return base::MakeRefCounted<HidDevicePermissionsPrompt>(
       extension, nullptr, multiple, std::vector<HidDeviceFilter>(),
-      base::Bind(&NoopHidCallback)));
+      base::Bind(&NoopHidCallback));
 }
 
 // static
 scoped_refptr<DevicePermissionsPrompt::Prompt>
 DevicePermissionsPrompt::CreateUsbPromptForTest(const Extension* extension,
                                                 bool multiple) {
-  return make_scoped_refptr(new UsbDevicePermissionsPrompt(
+  return base::MakeRefCounted<UsbDevicePermissionsPrompt>(
       extension, nullptr, multiple, std::vector<UsbDeviceFilterPtr>(),
-      base::Bind(&NoopUsbCallback)));
+      base::Bind(&NoopUsbCallback));
 }
 
 }  // namespace extensions

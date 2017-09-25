@@ -410,7 +410,7 @@ bool DataPipeProducerDispatcher::InitializeNoLock() {
 
   base::AutoUnlock unlock(lock_);
   node_controller_->SetPortObserver(
-      control_port_, make_scoped_refptr(new PortObserverThunk(this)));
+      control_port_, base::MakeRefCounted<PortObserverThunk>(this));
 
   return true;
 }

@@ -40,7 +40,7 @@ class TestCloudPolicyStore : public MockCloudPolicyStore {
 class PolicyHeaderServiceTest : public testing::Test {
  public:
   PolicyHeaderServiceTest() {
-    task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner());
+    task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   }
   ~PolicyHeaderServiceTest() override {}
 

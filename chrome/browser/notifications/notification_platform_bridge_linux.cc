@@ -409,7 +409,7 @@ class NotificationPlatformBridgeLinuxImpl
       bus_options.bus_type = dbus::Bus::SESSION;
       bus_options.connection_type = dbus::Bus::PRIVATE;
       bus_options.dbus_task_runner = task_runner_;
-      bus_ = make_scoped_refptr(new dbus::Bus(bus_options));
+      bus_ = base::MakeRefCounted<dbus::Bus>(bus_options);
     }
 
     notification_proxy_ =

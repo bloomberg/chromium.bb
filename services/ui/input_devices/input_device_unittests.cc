@@ -54,8 +54,8 @@ class InputDeviceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    task_runner_ = make_scoped_refptr(new base::TestMockTimeTaskRunner(
-        base::Time::Now(), base::TimeTicks::Now()));
+    task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
     message_loop_.SetTaskRunner(task_runner_);
 
     DeviceDataManager::CreateInstance();

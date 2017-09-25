@@ -35,8 +35,8 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
                     const base::FilePath& pref_filename,
                     base::SequencedTaskRunner* pref_io_task_runner) {
-  factory->set_user_prefs(make_scoped_refptr(new JsonPrefStore(
-      pref_filename, pref_io_task_runner, std::unique_ptr<PrefFilter>())));
+  factory->set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
+      pref_filename, pref_io_task_runner, std::unique_ptr<PrefFilter>()));
 
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   factory->SetPrefModelAssociatorClient(

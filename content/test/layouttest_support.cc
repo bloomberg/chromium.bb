@@ -402,14 +402,14 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     const bool support_locking = false;
 
     auto context_provider =
-        make_scoped_refptr(new ui::ContextProviderCommandBuffer(
+        base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
             gpu_channel_, kGpuStreamIdDefault, kGpuStreamPriorityDefault,
             gpu::kNullSurfaceHandle,
             GURL("chrome://gpu/"
                  "LayoutTestDependenciesImpl::CreateOutputSurface"),
             automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
             attributes, nullptr,
-            ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
+            ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
     context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;

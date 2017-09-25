@@ -75,7 +75,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // mimic texture transport from the renderer process to the Display
     // compositor.
     auto display_context_provider =
-        make_scoped_refptr(new TestInProcessContextProvider(nullptr));
+        base::MakeRefCounted<TestInProcessContextProvider>(nullptr);
     display_context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;

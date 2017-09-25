@@ -70,7 +70,7 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
       base::MakeUnique<base::ListValue>());
 
   pref_service_factory_.set_user_prefs(
-      make_scoped_refptr(new InMemoryPrefStore()));
+      base::MakeRefCounted<InMemoryPrefStore>());
   return pref_service_factory_.Create(pref_registry.get());
 }
 

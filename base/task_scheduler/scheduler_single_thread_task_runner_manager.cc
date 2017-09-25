@@ -514,9 +514,9 @@ SchedulerSingleThreadTaskRunnerManager::CreateAndRegisterSchedulerWorker(
     ThreadPriority priority_hint) {
   lock_.AssertAcquired();
   int id = next_worker_id_++;
-  workers_.emplace_back(make_scoped_refptr(new SchedulerWorker(
+  workers_.emplace_back(MakeRefCounted<SchedulerWorker>(
       priority_hint, CreateSchedulerWorkerDelegate<DelegateType>(name, id),
-      task_tracker_)));
+      task_tracker_));
   return workers_.back().get();
 }
 

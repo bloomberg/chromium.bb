@@ -758,7 +758,7 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
   DCHECK(stream);
 #if BUILDFLAG(ENABLE_WEBRTC)
   return AddAudioTrackToMediaStream(
-      make_scoped_refptr(new MockAudioCapturerSource()),
+      base::MakeRefCounted<MockAudioCapturerSource>(),
       48000,  // sample rate
       media::CHANNEL_LAYOUT_STEREO,
       480,    // sample frames per buffer

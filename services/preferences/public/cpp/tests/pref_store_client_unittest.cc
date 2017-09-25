@@ -171,8 +171,8 @@ TEST_F(PrefStoreClientTest, Initialized) {
   auto prefs = base::MakeUnique<base::DictionaryValue>();
   prefs->Set(key, pref.CreateDeepCopy());
   auto store =
-      make_scoped_refptr(new PrefStoreClient(mojom::PrefStoreConnection::New(
-          mojo::MakeRequest(&observer_ptr), std::move(prefs), true)));
+      base::MakeRefCounted<PrefStoreClient>(mojom::PrefStoreConnection::New(
+          mojo::MakeRequest(&observer_ptr), std::move(prefs), true));
   store->AddObserver(&observer);
 
   const base::Value* value = nullptr;

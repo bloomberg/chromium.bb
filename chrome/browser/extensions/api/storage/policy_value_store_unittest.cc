@@ -50,7 +50,7 @@ class MutablePolicyValueStore : public PolicyValueStore {
   explicit MutablePolicyValueStore(const base::FilePath& path)
       : PolicyValueStore(
             kTestExtensionId,
-            make_scoped_refptr(new SettingsObserverList()),
+            base::MakeRefCounted<SettingsObserverList>(),
             base::MakeUnique<LeveldbValueStore>(kDatabaseUMAClientName, path)) {
   }
   ~MutablePolicyValueStore() override {}

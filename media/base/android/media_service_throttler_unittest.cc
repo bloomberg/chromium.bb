@@ -23,7 +23,7 @@ class MediaServiceThrottlerTest : public testing::Test {
     clock_->SetNowTicks(base::TimeTicks());
     throttler_->SetTickClockForTesting(clock_);
     test_task_runner_ =
-        make_scoped_refptr(new FakeSingleThreadTaskRunner(clock_));
+        base::MakeRefCounted<FakeSingleThreadTaskRunner>(clock_);
     throttler_->ResetInternalStateForTesting();
     throttler_->SetCrashListenerTaskRunnerForTesting(test_task_runner_);
     base_delay_ = throttler_->GetBaseThrottlingRateForTesting();

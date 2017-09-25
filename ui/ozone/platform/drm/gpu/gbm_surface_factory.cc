@@ -156,7 +156,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (!buffer.get())
     return nullptr;
 
-  return make_scoped_refptr(new GbmPixmap(this, buffer));
+  return base::MakeRefCounted<GbmPixmap>(this, buffer);
 }
 
 scoped_refptr<gfx::NativePixmap>
@@ -185,7 +185,7 @@ GbmSurfaceFactory::CreateNativePixmapFromHandle(
       widget, size, format, std::move(scoped_fds), planes);
   if (!buffer)
     return nullptr;
-  return make_scoped_refptr(new GbmPixmap(this, buffer));
+  return base::MakeRefCounted<GbmPixmap>(this, buffer);
 }
 
 }  // namespace ui

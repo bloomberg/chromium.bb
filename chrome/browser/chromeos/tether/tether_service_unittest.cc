@@ -213,7 +213,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         mock_cryptauth_device_manager_.get());
 
     mock_adapter_ =
-        make_scoped_refptr(new NiceMock<MockExtendedBluetoothAdapter>());
+        base::MakeRefCounted<NiceMock<MockExtendedBluetoothAdapter>>();
     SetIsBluetoothPowered(true);
     is_adapter_present_ = true;
     ON_CALL(*mock_adapter_, IsPresent())

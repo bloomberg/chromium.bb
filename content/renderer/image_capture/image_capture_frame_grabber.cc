@@ -139,12 +139,13 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
-      *track, base::Bind(&SingleShotFrameHandler::OnVideoFrameOnIOThread,
-                         make_scoped_refptr(new SingleShotFrameHandler),
-                         media::BindToCurrentLoop(
-                             base::Bind(&ImageCaptureFrameGrabber::OnSkImage,
-                                        weak_factory_.GetWeakPtr(),
-                                        base::Passed(&scoped_callbacks)))),
+      *track,
+      base::Bind(
+          &SingleShotFrameHandler::OnVideoFrameOnIOThread,
+          base::MakeRefCounted<SingleShotFrameHandler>(),
+          media::BindToCurrentLoop(base::Bind(
+              &ImageCaptureFrameGrabber::OnSkImage, weak_factory_.GetWeakPtr(),
+              base::Passed(&scoped_callbacks)))),
       false);
 }
 

@@ -198,7 +198,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get(),
         base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        make_scoped_refptr(new MockSpecialStoragePolicy()).get(), nullptr,
+        base::MakeRefCounted<MockSpecialStoragePolicy>().get(), nullptr,
         std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
         std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
         CreateAllowFileAccessOptions());

@@ -2337,7 +2337,7 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
       const LayerTreeSettings& settings,
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner) override {
-    task_runner_ = make_scoped_refptr(new SynchronousSimpleTaskRunner);
+    task_runner_ = base::MakeRefCounted<SynchronousSimpleTaskRunner>();
     return std::make_unique<FakeLayerTreeHostImpl>(
         settings, task_runner_provider, task_graph_runner, task_runner_);
   }

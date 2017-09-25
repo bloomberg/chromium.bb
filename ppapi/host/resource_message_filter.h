@@ -71,7 +71,7 @@ struct PPAPI_HOST_EXPORT ResourceMessageFilterDeleteTraits {
 // }
 //
 // The filter should then be added in the resource host using:
-// AddFilter(make_scoped_refptr(new MyMessageFilter));
+// AddFilter(base::MakeRefCounted<MyMessageFilter>());
 class PPAPI_HOST_EXPORT ResourceMessageFilter
     : public ResourceMessageHandler,
       public base::RefCountedThreadSafe<

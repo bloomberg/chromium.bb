@@ -1968,7 +1968,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
       "AtSAc03z4qvid34W4MHMxyRFUJKlubZ+P5cs5yg6EiBWcagVbnm5uBgJMJN34pag7D5RywGV"
       "ol2RFf+4Sdm1hQ4AAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
       "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMyIsICJleHBpcnkiOiAxMDAwMDAwMDAwfQ==");
-  http_info.headers = make_scoped_refptr(new net::HttpResponseHeaders(""));
+  http_info.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
   http_info.headers->AddHeader(kOriginTrial + kFeature1Token);
   http_info.headers->AddHeader(kOriginTrial + kFeature2Token1);
   http_info.headers->AddHeader(kOriginTrial + kFeature2Token2);

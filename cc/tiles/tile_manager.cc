@@ -1192,11 +1192,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
                            std::move(image_id_to_current_frame_index));
   }
 
-  return make_scoped_refptr(new RasterTaskImpl(
+  return base::MakeRefCounted<RasterTaskImpl>(
       this, tile, resource, prioritized_tile.raster_source(), playback_settings,
       prioritized_tile.priority().resolution, invalidated_rect,
       prepare_tiles_count_, std::move(raster_buffer), &decode_tasks,
-      use_gpu_rasterization_, std::move(image_provider)));
+      use_gpu_rasterization_, std::move(image_provider));
 }
 
 void TileManager::ResetSignalsForTesting() {
@@ -1596,9 +1596,9 @@ void TileManager::CheckPendingGpuWorkTiles(bool issue_signals, bool flush) {
 // posts |callback| to |task_runner| when run.
 scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
     void (TileManager::*callback)()) {
-  return make_scoped_refptr(new TaskSetFinishedTaskImpl(
+  return base::MakeRefCounted<TaskSetFinishedTaskImpl>(
       task_runner_,
-      base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

@@ -231,7 +231,7 @@ void WiFiDisplayAudioEncoder::CreateLPCM(
     const wds::AudioCodec& audio_codec,
     const AudioEncoderCallback& encoder_callback) {
   encoder_callback.Run(
-      make_scoped_refptr(new WiFiDisplayAudioEncoderLPCM(audio_codec)));
+      base::MakeRefCounted<WiFiDisplayAudioEncoderLPCM>(audio_codec));
 }
 
 }  // namespace extensions

@@ -147,13 +147,13 @@ class SSLClientSocketPoolTest : public testing::Test {
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy,
                                            bool expect_spdy) {
-    return make_scoped_refptr(new SSLSocketParams(
+    return base::MakeRefCounted<SSLSocketParams>(
         proxy == ProxyServer::SCHEME_DIRECT ? direct_transport_socket_params_
                                             : NULL,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : NULL,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : NULL,
         HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED, 0,
-        expect_spdy));
+        expect_spdy);
   }
 
   void AddAuthToCache() {

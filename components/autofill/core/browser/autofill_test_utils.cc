@@ -79,7 +79,7 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
   registry->RegisterInt64Pref(AccountFetcherService::kLastUpdatePref, 0);
 
   PrefServiceFactory factory;
-  factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
+  factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());
   return factory.Create(registry);
 }
 

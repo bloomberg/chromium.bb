@@ -280,9 +280,9 @@ TEST_F(IPCChannelProxyTest, MessageClassFilters) {
   // Construct a filter per message class.
   std::vector<scoped_refptr<MessageCountFilter>> class_filters;
   class_filters.push_back(
-      make_scoped_refptr(new MessageCountFilter(TestMsgStart)));
+      base::MakeRefCounted<MessageCountFilter>(TestMsgStart));
   class_filters.push_back(
-      make_scoped_refptr(new MessageCountFilter(AutomationMsgStart)));
+      base::MakeRefCounted<MessageCountFilter>(AutomationMsgStart));
   for (size_t i = 0; i < class_filters.size(); ++i)
     channel_proxy()->AddFilter(class_filters[i].get());
 

@@ -125,7 +125,7 @@ class BleAdvertiserTest : public testing::Test {
 
   void SetUp() override {
     mock_adapter_ =
-        make_scoped_refptr(new StrictMock<device::MockBluetoothAdapter>());
+        base::MakeRefCounted<StrictMock<device::MockBluetoothAdapter>>();
 
     std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
         base::MakeUnique<cryptauth::MockForegroundEidGenerator>();

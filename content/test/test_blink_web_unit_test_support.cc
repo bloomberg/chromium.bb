@@ -116,7 +116,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     // of message loops, and their types are not known upfront. Some tests also
     // create their own thread bundles or message loops, and doing the same in
     // TestBlinkWebUnitTestSupport would introduce a conflict.
-    dummy_task_runner = make_scoped_refptr(new DummyTaskRunner());
+    dummy_task_runner = base::MakeRefCounted<DummyTaskRunner>();
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
   }

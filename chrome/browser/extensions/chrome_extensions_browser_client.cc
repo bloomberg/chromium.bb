@@ -410,7 +410,7 @@ scoped_refptr<update_client::UpdateClient>
 ChromeExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {
   return update_client::UpdateClientFactory(
-      make_scoped_refptr(new ChromeUpdateClientConfig(context)));
+      base::MakeRefCounted<ChromeUpdateClientConfig>(context));
 }
 
 std::unique_ptr<ExtensionApiFrameIdMapHelper>

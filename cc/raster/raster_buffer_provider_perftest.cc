@@ -221,8 +221,8 @@ class RasterBufferProviderPerfTestBase {
 
   RasterBufferProviderPerfTestBase()
       : compositor_context_provider_(
-            make_scoped_refptr(new PerfContextProvider)),
-        worker_context_provider_(make_scoped_refptr(new PerfContextProvider)),
+            base::MakeRefCounted<PerfContextProvider>()),
+        worker_context_provider_(base::MakeRefCounted<PerfContextProvider>()),
         task_runner_(new base::TestSimpleTaskRunner),
         task_graph_runner_(new SynchronousTaskGraphRunner),
         timer_(kWarmupRuns,

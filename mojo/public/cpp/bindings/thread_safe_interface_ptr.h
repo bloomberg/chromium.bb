@@ -133,7 +133,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     // If the InterfacePtr is bound on another sequence, post the call.
     // TODO(yzshen, watk): We block both this sequence and the InterfacePtr
     // sequence. Ideally only this sequence would block.
-    auto response = make_scoped_refptr(new SyncResponseInfo());
+    auto response = base::MakeRefCounted<SyncResponseInfo>();
     auto response_signaler = std::make_unique<SyncResponseSignaler>(response);
     task_runner_->PostTask(
         FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),

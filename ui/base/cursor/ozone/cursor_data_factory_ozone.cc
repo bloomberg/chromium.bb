@@ -97,7 +97,7 @@ scoped_refptr<CursorDataOzone> CursorDataFactoryOzone::GetDefaultCursorInternal(
     // We hold a ref forever because clients do not do refcounting for default
     // cursors.
     scoped_refptr<CursorDataOzone> cursor =
-        make_scoped_refptr(new CursorDataOzone(ui::CursorData(type)));
+        base::MakeRefCounted<CursorDataOzone>(ui::CursorData(type));
     default_cursors_[type] = std::move(cursor);
   }
 

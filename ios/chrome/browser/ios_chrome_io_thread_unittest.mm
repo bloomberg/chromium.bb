@@ -60,8 +60,7 @@ class IOSChromeIOThreadTest : public PlatformTest {
 
 TEST_F(IOSChromeIOThreadTest, AssertNoUrlRequests) {
   PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(
-      make_scoped_refptr(new TestingPrefStore()));
+  pref_service_factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());
 
   scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
   PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());

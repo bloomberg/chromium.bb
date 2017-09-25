@@ -715,12 +715,12 @@ TEST_F(TouchTransformControllerTest, LetterboxingUserTouchCalibration) {
 
   ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
 
-  internal_modes.push_back(make_scoped_refptr(new ManagedDisplayMode(
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
       gfx::Size(kNativeDisplaySize.width(), kNativeDisplaySize.height()), 60,
-      false, true)));
-  internal_modes.push_back(make_scoped_refptr(new ManagedDisplayMode(
+      false, true));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
       gfx::Size(kDisplaySize.width(), kDisplaySize.height()), 60, false,
-      false)));
+      false));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
   ui::TouchscreenDevice internal_touchscreen =
@@ -788,12 +788,12 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
 
   ManagedDisplayInfo::ManagedDisplayModeList internal_modes;
 
-  internal_modes.push_back(make_scoped_refptr(new ManagedDisplayMode(
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
       gfx::Size(kNativeDisplaySize.width(), kNativeDisplaySize.height()), 60,
-      false, true)));
-  internal_modes.push_back(make_scoped_refptr(new ManagedDisplayMode(
+      false, true));
+  internal_modes.push_back(base::MakeRefCounted<ManagedDisplayMode>(
       gfx::Size(kDisplaySize.width(), kDisplaySize.height()), 60, false,
-      false)));
+      false));
   internal_display_info.SetManagedDisplayModes(internal_modes);
 
   ui::TouchscreenDevice internal_touchscreen =

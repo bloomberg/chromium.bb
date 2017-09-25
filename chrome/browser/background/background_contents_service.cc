@@ -205,7 +205,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       extension, resource, gfx::Size(size, size),
       base::Bind(
           &NotificationImageReady, extension->name(), extension->id(), message,
-          make_scoped_refptr(new CrashNotificationDelegate(profile, extension)),
+          base::MakeRefCounted<CrashNotificationDelegate>(profile, extension),
           profile));
 }
 

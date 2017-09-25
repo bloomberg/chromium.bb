@@ -97,7 +97,7 @@ MessagePipeDispatcher::MessagePipeDispatcher(NodeController* node_controller,
            << " [pipe_id=" << pipe_id << "; endpoint=" << endpoint << "]";
 
   node_controller_->SetPortObserver(
-      port_, make_scoped_refptr(new PortObserverThunk(this)));
+      port_, base::MakeRefCounted<PortObserverThunk>(this));
 }
 
 bool MessagePipeDispatcher::Fuse(MessagePipeDispatcher* other) {

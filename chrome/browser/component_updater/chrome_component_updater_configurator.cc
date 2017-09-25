@@ -161,7 +161,7 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {
 
 scoped_refptr<update_client::OutOfProcessPatcher>
 ChromeConfigurator::CreateOutOfProcessPatcher() const {
-  return make_scoped_refptr(new ChromeOutOfProcessPatcher);
+  return base::MakeRefCounted<ChromeOutOfProcessPatcher>();
 }
 
 bool ChromeConfigurator::EnabledDeltas() const {

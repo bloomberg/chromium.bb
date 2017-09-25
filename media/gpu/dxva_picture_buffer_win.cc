@@ -216,7 +216,7 @@ bool PbufferPictureBuffer::Initialize(const DXVAVideoDecodeAccelerator& decoder,
       egl_display, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE, texture_share_handle_,
       egl_config, attrib_list);
   RETURN_ON_FAILURE(decoding_surface_, "Failed to create surface", false);
-  gl_image_ = make_scoped_refptr(new GLImagePbuffer(size(), decoding_surface_));
+  gl_image_ = base::MakeRefCounted<GLImagePbuffer>(size(), decoding_surface_);
   if (decoder.d3d11_device_ && decoder.use_keyed_mutex_) {
     void* keyed_mutex = nullptr;
     EGLBoolean ret =
@@ -448,7 +448,7 @@ bool EGLStreamPictureBuffer::Initialize() {
   };
   stream_ = eglCreateStreamKHR(egl_display, stream_attributes);
   RETURN_ON_FAILURE(!!stream_, "Could not create stream", false);
-  gl_image_ = make_scoped_refptr(new gl::GLImageDXGI(size(), stream_));
+  gl_image_ = base::MakeRefCounted<gl::GLImageDXGI>(size(), stream_);
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(
       GL_TEXTURE_EXTERNAL_OES, picture_buffer_.service_texture_ids()[0]);
@@ -600,9 +600,9 @@ bool EGLStreamDelayedCopyPictureBuffer::Initialize(
                                                       producer_attributes);
   RETURN_ON_FAILURE(result, "Could not create stream producer", false);
   scoped_refptr<gl::CopyingGLImageDXGI> copying_image_ =
-      make_scoped_refptr(new gl::CopyingGLImageDXGI(
+      base::MakeRefCounted<gl::CopyingGLImageDXGI>(
           base::win::ScopedComPtr<ID3D11Device>(decoder.D3D11Device()), size(),
-          stream_));
+          stream_);
   gl_image_ = copying_image_;
   return copying_image_->Initialize();
 }
@@ -688,7 +688,7 @@ bool EGLStreamCopyPictureBuffer::Initialize(
   };
   stream_ = eglCreateStreamKHR(egl_display, stream_attributes);
   RETURN_ON_FAILURE(!!stream_, "Could not create stream", false);
-  gl_image_ = make_scoped_refptr(new gl::GLImageDXGI(size(), stream_));
+  gl_image_ = base::MakeRefCounted<gl::GLImageDXGI>(size(), stream_);
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(
       GL_TEXTURE_EXTERNAL_OES, picture_buffer_.service_texture_ids()[0]);

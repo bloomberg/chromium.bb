@@ -89,7 +89,7 @@ scoped_refptr<ServiceDiscoverySharedClient>
 #if defined(OS_MACOSX)
   return ServiceDiscoveryClientMacFactory::CreateInstance();
 #else
-  return make_scoped_refptr(new ServiceDiscoveryClientMdns());
+  return base::MakeRefCounted<ServiceDiscoveryClientMdns>();
 #endif  // defined(OS_MACOSX)
 #else
   NOTIMPLEMENTED();

@@ -332,7 +332,7 @@ class RedirectToFileResourceHandlerTest
   // and wait for it to resume the request if running an async test.
   MockResourceLoader::Status OnResponseStartedAndWaitForResult()
       WARN_UNUSED_RESULT {
-    mock_loader_->OnResponseStarted(make_scoped_refptr(new ResourceResponse()));
+    mock_loader_->OnResponseStarted(base::MakeRefCounted<ResourceResponse>());
     if (GetParam() == CompletionMode::ASYNC) {
       EXPECT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
                 mock_loader_->status());
@@ -417,7 +417,7 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadDelayedFileOnResponse) {
     mock_loader_->WaitUntilIdleOrCanceled();
   }
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
-  mock_loader_->OnResponseStarted(make_scoped_refptr(new ResourceResponse()));
+  mock_loader_->OnResponseStarted(base::MakeRefCounted<ResourceResponse>());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
 
@@ -451,7 +451,7 @@ TEST_P(RedirectToFileResourceHandlerTest, SingleBodyReadDelayedFileError) {
     mock_loader_->WaitUntilIdleOrCanceled();
   }
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
-  mock_loader_->OnResponseStarted(make_scoped_refptr(new ResourceResponse()));
+  mock_loader_->OnResponseStarted(base::MakeRefCounted<ResourceResponse>());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
 

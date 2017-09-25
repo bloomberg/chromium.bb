@@ -101,7 +101,7 @@ class AppListServiceUnitTest : public testing::Test {
     profiles::RegisterPrefs(pref_registry);
 
     PrefServiceFactory factory;
-    factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
+    factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());
     local_state_ = factory.Create(pref_registry);
 
     profile_store_ = new FakeProfileStore(user_data_dir_, local_state_.get());

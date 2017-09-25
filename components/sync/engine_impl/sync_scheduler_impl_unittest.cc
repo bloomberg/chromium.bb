@@ -122,9 +122,9 @@ class SyncSchedulerImplTest : public testing::Test {
     extensions_activity_ = new ExtensionsActivity();
 
     workers_.clear();
-    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
-    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
-    workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
+    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
+    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_DB));
+    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
     connection_ = std::make_unique<MockConnectionManager>(directory(),
                                                           &cancelation_signal_);

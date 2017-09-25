@@ -567,8 +567,8 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   // Once the notification is removed, the specified resolution will be stored
   // by SetDisplayMode.
   ash::Shell::Get()->display_manager()->SetDisplayMode(
-      id, make_scoped_refptr(new display::ManagedDisplayMode(
-              gfx::Size(300, 200), 60.0f, false, true)));
+      id, base::MakeRefCounted<display::ManagedDisplayMode>(
+              gfx::Size(300, 200), 60.0f, false, true));
   UpdateDisplay("300x200#500x400|400x300|300x200");
 
   property = nullptr;

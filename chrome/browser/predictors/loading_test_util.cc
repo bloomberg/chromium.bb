@@ -215,8 +215,8 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
 
 scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
     const char* headers) {
-  return make_scoped_refptr(new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers, strlen(headers))));
+  return base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(headers, strlen(headers)));
 }
 
 MockURLRequestJob::MockURLRequestJob(

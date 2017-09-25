@@ -56,7 +56,7 @@ class AffiliationFetcherTest : public testing::Test {
  public:
   AffiliationFetcherTest()
       : request_context_getter_(new net::TestURLRequestContextGetter(
-            make_scoped_refptr(new base::NullTaskRunner))) {}
+            base::MakeRefCounted<base::NullTaskRunner>())) {}
 
   ~AffiliationFetcherTest() override {}
 
