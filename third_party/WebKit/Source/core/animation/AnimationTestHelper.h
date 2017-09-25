@@ -27,7 +27,7 @@ class SampleTestInterpolation : public LegacyStyleInterpolation {
   static RefPtr<LegacyStyleInterpolation> Create(
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end) {
-    return AdoptRef(
+    return WTF::AdoptRef(
         new SampleTestInterpolation(std::move(start), std::move(end)));
   }
 

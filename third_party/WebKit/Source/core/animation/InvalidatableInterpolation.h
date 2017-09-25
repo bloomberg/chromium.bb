@@ -35,7 +35,7 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
       const PropertyHandle& property,
       RefPtr<PropertySpecificKeyframe> start_keyframe,
       RefPtr<PropertySpecificKeyframe> end_keyframe) {
-    return AdoptRef(new InvalidatableInterpolation(
+    return WTF::AdoptRef(new InvalidatableInterpolation(
         property, std::move(start_keyframe), std::move(end_keyframe)));
   }
 

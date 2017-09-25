@@ -61,11 +61,11 @@ class NonInterpolableList : public NonInterpolableValue {
   ~NonInterpolableList() final {}
 
   static RefPtr<NonInterpolableList> Create() {
-    return AdoptRef(new NonInterpolableList());
+    return WTF::AdoptRef(new NonInterpolableList());
   }
   static RefPtr<NonInterpolableList> Create(
       Vector<RefPtr<NonInterpolableValue>>&& list) {
-    return AdoptRef(new NonInterpolableList(std::move(list)));
+    return WTF::AdoptRef(new NonInterpolableList(std::move(list)));
   }
 
   size_t length() const { return list_.size(); }

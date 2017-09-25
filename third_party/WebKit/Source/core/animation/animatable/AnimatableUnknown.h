@@ -42,10 +42,11 @@ class AnimatableUnknown final : public AnimatableValue {
   ~AnimatableUnknown() override {}
 
   static RefPtr<AnimatableUnknown> Create(const CSSValue* value) {
-    return AdoptRef(new AnimatableUnknown(value));
+    return WTF::AdoptRef(new AnimatableUnknown(value));
   }
   static RefPtr<AnimatableUnknown> Create(CSSValueID value) {
-    return AdoptRef(new AnimatableUnknown(CSSIdentifierValue::Create(value)));
+    return WTF::AdoptRef(
+        new AnimatableUnknown(CSSIdentifierValue::Create(value)));
   }
 
   const CSSValue* ToCSSValue() const { return value_; }

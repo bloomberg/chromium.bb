@@ -54,14 +54,14 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
  public:
   static RefPtr<CSSRotateNonInterpolableValue> Create(
       const OptionalRotation& rotation) {
-    return AdoptRef(new CSSRotateNonInterpolableValue(
+    return WTF::AdoptRef(new CSSRotateNonInterpolableValue(
         true, rotation, OptionalRotation(), false, false));
   }
 
   static RefPtr<CSSRotateNonInterpolableValue> Create(
       const CSSRotateNonInterpolableValue& start,
       const CSSRotateNonInterpolableValue& end) {
-    return AdoptRef(new CSSRotateNonInterpolableValue(
+    return WTF::AdoptRef(new CSSRotateNonInterpolableValue(
         false, start.GetOptionalRotation(), end.GetOptionalRotation(),
         start.IsAdditive(), end.IsAdditive()));
   }

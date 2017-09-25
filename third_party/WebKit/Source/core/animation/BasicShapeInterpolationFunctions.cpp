@@ -15,11 +15,11 @@ namespace blink {
 class BasicShapeNonInterpolableValue : public NonInterpolableValue {
  public:
   static RefPtr<NonInterpolableValue> Create(BasicShape::ShapeType type) {
-    return AdoptRef(new BasicShapeNonInterpolableValue(type));
+    return WTF::AdoptRef(new BasicShapeNonInterpolableValue(type));
   }
   static RefPtr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
                                                     size_t size) {
-    return AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
+    return WTF::AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
   }
 
   BasicShape::ShapeType GetShapeType() const { return type_; }

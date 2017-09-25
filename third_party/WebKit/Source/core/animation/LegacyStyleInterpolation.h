@@ -32,7 +32,7 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
   static RefPtr<LegacyStyleInterpolation> Create(RefPtr<AnimatableValue> start,
                                                  RefPtr<AnimatableValue> end,
                                                  CSSPropertyID id) {
-    return AdoptRef(new LegacyStyleInterpolation(
+    return WTF::AdoptRef(new LegacyStyleInterpolation(
         InterpolableAnimatableValue::Create(std::move(start)),
         InterpolableAnimatableValue::Create(std::move(end)), id));
   }

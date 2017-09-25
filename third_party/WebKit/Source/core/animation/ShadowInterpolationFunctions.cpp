@@ -31,7 +31,7 @@ class ShadowNonInterpolableValue : public NonInterpolableValue {
   ~ShadowNonInterpolableValue() final {}
 
   static RefPtr<ShadowNonInterpolableValue> Create(ShadowStyle shadow_style) {
-    return AdoptRef(new ShadowNonInterpolableValue(shadow_style));
+    return WTF::AdoptRef(new ShadowNonInterpolableValue(shadow_style));
   }
 
   ShadowStyle Style() const { return style_; }

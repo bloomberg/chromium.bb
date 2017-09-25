@@ -40,7 +40,7 @@ class AnimatableFilterOperations final : public AnimatableValue {
  public:
   static RefPtr<AnimatableFilterOperations> Create(
       const FilterOperations& operations) {
-    return AdoptRef(new AnimatableFilterOperations(operations));
+    return WTF::AdoptRef(new AnimatableFilterOperations(operations));
   }
 
   ~AnimatableFilterOperations() override {}
