@@ -52,10 +52,12 @@ class FileType(object):
     MOJOM = 5
     TYPEMAP = 6
     BLINK_BUILD_PY = 7
+    LAYOUT_TESTS_WITH_MOJOM = 8
 
     @staticmethod
     def detect(path):
-        _, basename = os.path.split(path)
+        slash_dir, basename = os.path.split(path)
+        slash_dir = slash_dir.replace(os.path.sep, '/')
         if basename == 'DEPS':
             return FileType.DEPS
         if basename == 'OWNERS':
@@ -64,15 +66,18 @@ class FileType(object):
             return FileType.MOJOM
         if basename.endswith('.typemap'):
             return FileType.TYPEMAP
-        if basename.endswith('.py') and 'third_party/WebKit/Source/build' in path.replace('\\', '/'):
+        if basename.endswith('.py') and 'third_party/WebKit/Source/build' in slash_dir:
             return FileType.BLINK_BUILD_PY
         if basename.endswith(('.gn', '.gni')):
-            path = path.replace('\\', '/')
-            if 'third_party/WebKit' in path or 'third_party/blink' in path:
+            if 'third_party/WebKit' in path or 'third_party/blink' in slash_dir:
                 return FileType.BLINK_BUILD
-            if 'third_party' in path:
+            if 'third_party' in slash_dir:
                 return FileType.NONE
             return FileType.BUILD
+        if basename.endswith('.html') and re.search(
+                r'third_party/WebKit/LayoutTests/(geolocation-api|installedapp|' +
+                r'media/mediasession|payments|presentation|webshare)', slash_dir):
+            return FileType.LAYOUT_TESTS_WITH_MOJOM
         return FileType.NONE
 
 
@@ -269,6 +274,9 @@ class MoveBlinkSource(object):
         # enough.
         return self._update_basename(content)
 
+    def _update_layout_tests(self, content):
+        return content.replace('file:///gen/third_party/WebKit/', 'file:///gen/third_party/blink/renderer/')
+
     def _update_basename(self, content):
         return self._basename_re.sub(lambda match: self._basename_map[match.group(1)], content)
 
@@ -309,6 +317,8 @@ class MoveBlinkSource(object):
                 content = self._update_typemap(content)
             elif file_type == FileType.BLINK_BUILD_PY:
                 content = self._update_blink_build_py(content)
+            elif file_type == FileType.LAYOUT_TESTS_WITH_MOJOM:
+                content = self._update_layout_tests(content)
 
             if original_content == content:
                 continue
