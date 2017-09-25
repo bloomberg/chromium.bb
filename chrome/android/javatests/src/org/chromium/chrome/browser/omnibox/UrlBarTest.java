@@ -49,6 +49,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -398,6 +399,94 @@ public class UrlBarTest {
             Assert.assertEquals(
                     "Text w/ Autocomplete", "testing is fun", state.textWithAutocomplete);
         }
+    }
+
+    /**
+     * Ensure that we send cursor position with autocomplete requests.
+     *
+     * When reading this test, it helps to remember that autocomplete requests are not sent
+     * with the user simply moves the cursor.  They're only sent on text modifications.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @RetryOnFailure
+    public void testSendCursorPosition() throws InterruptedException, TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+
+        final CallbackHelper autocompleteHelper = new CallbackHelper();
+        final AtomicInteger cursorPositionUsed = new AtomicInteger();
+        final StubAutocompleteController controller = new StubAutocompleteController() {
+            @Override
+            public void start(Profile profile, String url, String text, int cursorPosition,
+                    boolean preventInlineAutocomplete, boolean focusedFromFakebox) {
+                cursorPositionUsed.set(cursorPosition);
+                autocompleteHelper.notifyCalled();
+            }
+        };
+        setAutocompleteController(controller);
+
+        final UrlBar urlBar = getUrlBar();
+        toggleFocusAndIgnoreImeOperations(urlBar, true);
+
+        // Add "a" to the omnibox and leave the cursor at the end of the new
+        // text.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().commitText("a", 1);
+                });
+        autocompleteHelper.waitForCallback(0);
+        // omnmibox text: a|
+        Assert.assertEquals(1, cursorPositionUsed.get());
+
+        // Append "cd" to the omnibox and leave the cursor at the end of the new
+        // text.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().commitText("cd", 1);
+                });
+        autocompleteHelper.waitForCallback(1);
+        // omnmibox text: acd|
+        Assert.assertEquals(3, cursorPositionUsed.get());
+
+        // Move the cursor.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().setSelection(1, 1);
+                });
+        // omnmibox text: a|cd
+        // Moving the cursor shouldn't have caused a new call.
+        Assert.assertEquals(2, autocompleteHelper.getCallCount());
+        // The cursor position used on the last call should be the old position.
+        Assert.assertEquals(3, cursorPositionUsed.get());
+
+        // Insert "b" at the current cursor position and leave the cursor at
+        // the end of the new text.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().commitText("b", 1);
+                });
+        autocompleteHelper.waitForCallback(2);
+        // omnmibox text: ab|cd
+        Assert.assertEquals(2, cursorPositionUsed.get());
+
+        // Delete the character before the cursor.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().deleteSurroundingText(1, 0);
+                });
+        autocompleteHelper.waitForCallback(3);
+        // omnmibox text: a|cd
+        Assert.assertEquals(1, cursorPositionUsed.get());
+
+        // Delete the character before the cursor (again).
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    urlBar.getInputConnection().deleteSurroundingText(1, 0);
+                });
+        autocompleteHelper.waitForCallback(4);
+        // omnmibox text: |cd
+        Assert.assertEquals(0, cursorPositionUsed.get());
     }
 
     /**
