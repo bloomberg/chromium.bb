@@ -64,7 +64,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
  private:
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
-  // A black background layer that may be visible depending on a
+  // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
   // A black foreground layer which is shown while transitioning between users.
@@ -86,6 +86,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   opaque_background_.SetBounds(GetLocalBounds());
   opaque_foreground_.SetBounds(GetLocalBounds());
   opaque_foreground_.SetOpacity(0.0f);
+  opaque_foreground_.SetColor(SK_ColorBLACK);
 }
 
 ShelfWidget::DelegateView::~DelegateView() {}
