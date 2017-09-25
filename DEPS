@@ -455,7 +455,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',
 
     # DevTools node modules. Used on Linux buildbots only.
-    'src/third_party/WebKit/Source/devtools/devtools-node-modules':
+    'src/third_party/devtools-node-modules':
       Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
 
     # Minizip library. Used on Chrome OS.
