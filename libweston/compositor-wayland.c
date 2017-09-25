@@ -779,12 +779,6 @@ wayland_output_resize_surface(struct wayland_output *output)
 		wl_surface_set_input_region(output->parent.surface, region);
 		wl_region_destroy(region);
 
-		frame_opaque_rect(output->frame, &ix, &iy, &iwidth, &iheight);
-		region = wl_compositor_create_region(b->parent.compositor);
-		wl_region_add(region, ix, iy, iwidth, iheight);
-		wl_surface_set_opaque_region(output->parent.surface, region);
-		wl_region_destroy(region);
-
 		if (output->parent.xdg_surface) {
 			zxdg_surface_v6_set_window_geometry(output->parent.xdg_surface,
 							    ix,
@@ -792,6 +786,12 @@ wayland_output_resize_surface(struct wayland_output *output)
 							    iwidth,
 							    iheight);
 		}
+
+		frame_opaque_rect(output->frame, &ix, &iy, &iwidth, &iheight);
+		region = wl_compositor_create_region(b->parent.compositor);
+		wl_region_add(region, ix, iy, iwidth, iheight);
+		wl_surface_set_opaque_region(output->parent.surface, region);
+		wl_region_destroy(region);
 
 		width = frame_width(output->frame);
 		height = frame_height(output->frame);
