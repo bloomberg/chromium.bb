@@ -65,6 +65,20 @@ constexpr base::TimeDelta kDisusedProfileTimeDelta =
     base::TimeDelta::FromDays(180);
 constexpr base::TimeDelta kDisusedCreditCardTimeDelta =
     base::TimeDelta::FromDays(180);
+constexpr base::TimeDelta kDisusedCreditCardDeletionTimeDelta =
+    base::TimeDelta::FromDays(395);
+
+// Time delta to create test data.
+base::TimeDelta DeletableUseDateDelta() {
+  static base::TimeDelta delta =
+      kDisusedCreditCardDeletionTimeDelta + base::TimeDelta::FromDays(5);
+  return delta;
+}
+base::TimeDelta DeletableExpiryDateDelta() {
+  static base::TimeDelta delta =
+      kDisusedCreditCardDeletionTimeDelta + base::TimeDelta::FromDays(45);
+  return delta;
+}
 
 template <typename T>
 class FormGroupMatchesByGUIDFunctor {
@@ -339,6 +353,23 @@ CreditCard CreateDisusedTestCreditCard(const std::string& locale) {
   return credit_card;
 }
 
+CreditCard CreateDisusedDeletableTestCreditCard(const std::string& locale) {
+  const base::Time now = AutofillClock::Now();
+  const base::Time use_date = now - DeletableUseDateDelta();
+  base::Time::Exploded expiry_date;
+  (now - DeletableExpiryDateDelta()).LocalExplode(&expiry_date);
+
+  CreditCard credit_card;
+  credit_card.SetInfo(CREDIT_CARD_NAME_FULL,
+                      base::UTF8ToUTF16("Charlie Deletable"), locale);
+  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("378282246310005"),
+                      locale);
+  credit_card.SetExpirationMonth(expiry_date.month);
+  credit_card.SetExpirationYear(expiry_date.year);
+  credit_card.set_use_date(use_date);
+  return credit_card;
+}
+
 }  // namespace
 
 const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
@@ -418,7 +449,8 @@ void PersonalDataManager::OnSyncServiceInitialized(
   // then run credit card address cleanup/startup code here. Otherwise, defer
   // until after sync has started.
   if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_WALLET_DATA)) {
-    CreateTestCreditCards();  // Once per user profile startup.
+    DeleteDisusedCreditCards();  // Once per major version, otherwise NOP.
+    CreateTestCreditCards();     // Once per user profile startup.
   }
 }
 
@@ -498,7 +530,8 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
   // Run deferred credit card startup code.
   // See: OnSyncServiceInitialized
   if (model_type == syncer::AUTOFILL_WALLET_DATA) {
-    CreateTestCreditCards();  // Once per user profile startup.
+    DeleteDisusedCreditCards();  // Once per major version, otherwise NOP.
+    CreateTestCreditCards();     // Once per user profile startup.
   }
 }
 
@@ -2257,6 +2290,62 @@ void PersonalDataManager::CreateTestCreditCards() {
 
   AddCreditCard(CreateBasicTestCreditCard(app_locale_));
   AddCreditCard(CreateDisusedTestCreditCard(app_locale_));
+  AddCreditCard(CreateDisusedDeletableTestCreditCard(app_locale_));
+}
+
+bool PersonalDataManager::DeleteDisusedCreditCards() {
+  if (!base::FeatureList::IsEnabled(kAutofillDeleteDisusedCreditCards)) {
+    return false;
+  }
+
+  // Check if credit cards deletion has already been performed this major
+  // version.
+  int current_major_version = atoi(version_info::GetVersionNumber().c_str());
+  if (pref_service_->GetInteger(
+          prefs::kAutofillLastVersionDisusedCreditCardsDeleted) >=
+      current_major_version) {
+    DVLOG(1)
+        << "Autofill credit cards deletion already performed for this version";
+    return false;
+  }
+
+  // Set the pref to the current major version.
+  pref_service_->SetInteger(
+      prefs::kAutofillLastVersionDisusedCreditCardsDeleted,
+      current_major_version);
+
+  // Only delete local cards, as server cards are managed by Payments.
+  auto cards = GetLocalCreditCards();
+
+  // Early exit when there is no local cards.
+  if (cards.empty()) {
+    return true;
+  }
+
+  const base::Time deletion_threshold =
+      AutofillClock::Now() - kDisusedCreditCardDeletionTimeDelta;
+
+  std::vector<std::string> guid_to_delete;
+  for (CreditCard* card : cards) {
+    if (card->use_date() < deletion_threshold &&
+        card->IsExpired(deletion_threshold)) {
+      guid_to_delete.push_back(card->guid());
+    }
+  }
+
+  size_t num_deleted_cards = guid_to_delete.size();
+
+  for (auto const guid : guid_to_delete) {
+    database_->RemoveCreditCard(guid);
+  }
+
+  if (num_deleted_cards > 0) {
+    Refresh();
+  }
+
+  AutofillMetrics::LogNumberOfCreditCardsDeletedForDisuse(num_deleted_cards);
+
+  return true;
 }
 
 }  // namespace autofill

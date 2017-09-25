@@ -250,6 +250,10 @@ class PersonalDataManager : public KeyedService,
       const AutofillType& type,
       const base::string16& field_contents);
 
+  // Tries to delete disused credit cards once per major version if the
+  // feature is enabled.
+  bool DeleteDisusedCreditCards();
+
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same
   // in-memory model as existed prior to the call.  If any change occurred to
@@ -357,6 +361,14 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(
       PersonalDataManagerTest,
       ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);  // NOLINT
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           DeleteDisusedCreditCards_OncePerVersion);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           DeleteDisusedCreditCards_DoNothingWhenDisabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      PersonalDataManagerTest,
+      DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards);
+
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;

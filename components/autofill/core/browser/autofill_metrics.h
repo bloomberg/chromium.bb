@@ -766,6 +766,10 @@ class AutofillMetrics {
   // used.
   static void LogNumberOfCreditCardsSuppressedForDisuse(size_t num_cards);
 
+  // Log the number of autofill credit card deleted during major version upgrade
+  // because they have not been used for a long time and are expired.
+  static void LogNumberOfCreditCardsDeletedForDisuse(size_t num_cards);
+
   // Log the number of profiles available when an autofillable form is
   // submitted.
   static void LogNumberOfProfilesAtAutofillableFormSubmission(

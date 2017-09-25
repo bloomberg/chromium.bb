@@ -908,6 +908,11 @@ void AutofillMetrics::LogNumberOfCreditCardsSuppressedForDisuse(
 }
 
 // static
+void AutofillMetrics::LogNumberOfCreditCardsDeletedForDisuse(size_t num_cards) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.CreditCardsDeletedForDisuse", num_cards);
+}
+
+// static
 void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
     size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS(

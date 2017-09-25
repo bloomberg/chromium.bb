@@ -242,6 +242,23 @@ class PersonalDataManagerTestBase {
     ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   }
 
+  // Helper method to create a local card that was expired 400 days ago,
+  // and has not been used in last 400 days. This card is supposed to be
+  // deleted during a major version upgrade.
+  void CreateDeletableExpiredAndDisusedCreditCard() {
+    CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
+    test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
+                            "378282246310005" /* American Express */, "04",
+                            "1999", "1");
+    credit_card1.set_use_date(AutofillClock::Now() -
+                              base::TimeDelta::FromDays(400));
+
+    personal_data_->AddCreditCard(credit_card1);
+
+    WaitForOnPersonalDataChanged();
+    EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+  }
+
   // Helper methods that simply forward the call to the private member (to avoid
   // having to friend every test that needs to access the private
   // PersonalDataManager::ImportAddressProfile or ImportCreditCard).
@@ -6266,6 +6283,142 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_OncePerVersion) {
   EXPECT_EQ(2U, personal_data_->GetProfiles().size());
 }
 
+// Tests that DeleteDisusedCreditCards is not run if the feature is disabled.
+TEST_F(PersonalDataManagerTest,
+       DeleteDisusedCreditCards_DoNothingWhenDisabled) {
+  // Make sure feature is disabled by default.
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kAutofillDeleteDisusedCreditCards));
+
+  CreateDeletableExpiredAndDisusedCreditCard();
+
+  // DeleteDisusedCreditCards should return false to indicate it was not run.
+  EXPECT_FALSE(personal_data_->DeleteDisusedCreditCards());
+
+  personal_data_->Refresh();
+
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+}
+
+// Tests that DeleteDisusedCreditCards is not run a second time on the same
+// major version.
+TEST_F(PersonalDataManagerTest, DeleteDisusedCreditCards_OncePerVersion) {
+  // Enable the feature.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedCreditCards);
+
+  CreateDeletableExpiredAndDisusedCreditCard();
+
+  // The deletion should be run a first time.
+  EXPECT_TRUE(personal_data_->DeleteDisusedCreditCards());
+  WaitForOnPersonalDataChanged();
+
+  // The profiles should have been deleted.
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Add the card back.
+  CreateDeletableExpiredAndDisusedCreditCard();
+
+  // The cleanup should not be run.
+  EXPECT_FALSE(personal_data_->DeleteDisusedCreditCards());
+
+  // The card should still be present.
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+}
+
+// Tests that DeleteDisusedCreditCards deletes desired credit cards only.
+TEST_F(PersonalDataManagerTest,
+       DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
+  // Enable the feature.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedCreditCards);
+
+  const char kHistogramName[] = "Autofill.CreditCardsDeletedForDisuse";
+  auto now = AutofillClock::Now();
+
+  // Create a recently used local card, it is expected to remain.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card1, "Alice",
+                          "378282246310005" /* American Express */, "04",
+                          "2999", "1");
+  credit_card1.set_use_date(now - base::TimeDelta::FromDays(4));
+
+  // Create a local card that was expired 400 days ago, but recently used.
+  // It is expected to remain.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card2, "Bob",
+                          "378282246310006" /* American Express */, "04",
+                          "1999", "1");
+  credit_card2.set_use_date(now - base::TimeDelta::FromDays(4));
+
+  // Create a local card expired recently, and last used 400 days ago.
+  // It is expected to remain.
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card3, "Clyde", "4111111111111111" /* Visa */,
+                          "04", "2017", "1");
+  credit_card3.set_use_date(now - base::TimeDelta::FromDays(400));
+
+  // Create a local card expired 400 days ago, and last used 400 days ago.
+  // It is expected to be deleted.
+  CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card4, "David",
+                          "5105105105105100" /* Mastercard */, "04", "1999",
+                          "1");
+  credit_card4.set_use_date(now - base::TimeDelta::FromDays(400));
+  personal_data_->AddCreditCard(credit_card1);
+  personal_data_->AddCreditCard(credit_card2);
+  personal_data_->AddCreditCard(credit_card3);
+  personal_data_->AddCreditCard(credit_card4);
+
+  // Create a unmasked server card expired 400 days ago, and last used 400
+  // days ago.
+  // It is expected to remain because we do not delete server cards.
+  CreditCard credit_card5(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&credit_card5, "Emma", "4234567890123456" /* Visa */,
+                          "04", "1999", "1");
+  credit_card5.set_use_date(now - base::TimeDelta::FromDays(400));
+
+  // Create masked server card expired 400 days ago, and last used 400 days ago.
+  // It is expected to remain because we do not delete server cards.
+  CreditCard credit_card6(CreditCard::MASKED_SERVER_CARD, "c987");
+  test::SetCreditCardInfo(&credit_card6, "Frank", "6543", "01", "1998", "1");
+  credit_card6.set_use_date(now - base::TimeDelta::FromDays(400));
+  credit_card6.SetNetworkForMaskedCard(kVisaCard);
+
+  // Save the server cards and set used_date to desired dates.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(credit_card5);
+  server_cards.push_back(credit_card6);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->UpdateServerCardMetadata(credit_card5);
+  personal_data_->UpdateServerCardMetadata(credit_card6);
+
+  WaitForOnPersonalDataChanged();
+  EXPECT_EQ(6U, personal_data_->GetCreditCards().size());
+
+  // Setup histograms capturing.
+  base::HistogramTester histogram_tester;
+
+  // DeleteDisusedCreditCards should return true to indicate it was run.
+  EXPECT_TRUE(personal_data_->DeleteDisusedCreditCards());
+
+  // Wait for the data to be refreshed.
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
+  std::unordered_set<base::string16> expectedToRemain = {
+      base::UTF8ToUTF16("Alice"), base::UTF8ToUTF16("Bob"),
+      base::UTF8ToUTF16("Clyde"), base::UTF8ToUTF16("Emma"),
+      base::UTF8ToUTF16("Frank")};
+  for (auto* card : personal_data_->GetCreditCards()) {
+    EXPECT_NE(expectedToRemain.end(),
+              expectedToRemain.find(card->GetRawInfo(CREDIT_CARD_NAME_FULL)));
+  }
+
+  // Verify histograms are logged.
+  histogram_tester.ExpectTotalCount(kHistogramName, 1);
+  histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
+}
+
 // Tests that a new local profile is created if no existing one is a duplicate
 // of the server address. Also tests that the billing address relationship was
 // transferred to the converted address.
@@ -7279,10 +7432,13 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
   const std::vector<CreditCard*> credit_cards =
       personal_data_->GetCreditCards();
   ASSERT_EQ(2U, addresses.size());
-  ASSERT_EQ(2U, credit_cards.size());
+  ASSERT_EQ(3U, credit_cards.size());
 
   const base::Time disused_threshold =
       AutofillClock::Now() - base::TimeDelta::FromDays(180);
+  const base::Time deletion_threshold =
+      AutofillClock::Now() - base::TimeDelta::FromDays(395);
+
   // Verify that there was a valid address created.
   {
     auto it = std::find_if(
@@ -7327,6 +7483,19 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
         });
     ASSERT_TRUE(it != credit_cards.end());
     EXPECT_LT((*it)->use_date(), disused_threshold);
+  }
+
+  // Verify that there was a disused deletable credit card created.
+  {
+    auto it = std::find_if(
+        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
+          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
+                             this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("Charlie Deletable");
+        });
+    ASSERT_TRUE(it != credit_cards.end());
+    EXPECT_LT((*it)->use_date(), deletion_threshold);
+    EXPECT_TRUE((*it)->IsExpired(deletion_threshold));
   }
 }
 

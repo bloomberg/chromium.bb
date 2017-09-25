@@ -39,6 +39,8 @@ const base::Feature kAutofillCreditCardPopupLayout{
     "AutofillCreditCardPopupLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardLastUsedDateDisplay{
     "AutofillCreditCardLastUsedDateDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillDeleteDisusedCreditCards{
+    "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered{
     "AutofillOfferLocalSaveIfServerCardManuallyEntered",
     base::FEATURE_DISABLED_BY_DEFAULT};
