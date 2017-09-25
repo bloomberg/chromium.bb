@@ -959,8 +959,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def WriteGNArgsFile(self):
     lines = ['# Generated from %r' % self.deps_file]
+    variables = self.get_vars()
     for arg in self._gn_args:
-      lines.append('%s = %s' % (arg, ToGNString(self.get_vars()[arg])))
+      value = gclient_eval.EvaluateCondition(variables[arg], variables)
+      lines.append('%s = %s' % (arg, ToGNString(value)))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
       f.write('\n'.join(lines))
 
