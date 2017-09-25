@@ -892,6 +892,64 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       WaitingForServiceWorkerRecordsNonPwa) {
+  base::RunLoop tester_run_loop, sw_run_loop;
+  base::HistogramTester histograms;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(tester_run_loop.QuitClosure()));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
+      web_contents, sw_run_loop.QuitClosure());
+
+  manager->RecordMenuOpenHistogram();
+  manager->RecordMenuItemAddToHomescreenHistogram();
+
+  {
+    // Load a URL with no service worker.
+    GURL test_url = embedded_test_server()->GetURL(
+        "/banners/manifest_no_service_worker.html");
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    // Kick off fetching the data. This should block on waiting for a worker.
+    manager->GetData(GetWebAppParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    sw_run_loop.Run();
+  }
+
+  manager->RecordMenuOpenHistogram();
+  manager->RecordMenuOpenHistogram();
+  manager->RecordMenuItemAddToHomescreenHistogram();
+
+  // Navigate to force metrics recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // Expect to record that we completed the check and found a non-PWA since we
+  // waited until navigation and didn't get a service worker.
+  histograms.ExpectBucketCount(
+      "Webapp.InstallabilityCheckStatus.MenuOpen",
+      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
+  histograms.ExpectBucketCount(
+      "Webapp.InstallabilityCheckStatus.MenuOpen",
+      static_cast<int>(
+          InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP),
+      2);
+  histograms.ExpectTotalCount("Webapp.InstallabilityCheckStatus.MenuOpen", 3);
+  histograms.ExpectBucketCount(
+      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
+      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
+  histograms.ExpectBucketCount(
+      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
+      static_cast<int>(
+          InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP),
+      1);
+  histograms.ExpectTotalCount(
+      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen", 2);
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckServiceWorkerErrorIsNotCached) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -968,60 +1026,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
   EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
-}
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
-                       WaitingForServiceWorkerRecordsNonPwa) {
-  base::RunLoop tester_run_loop, sw_run_loop;
-  base::HistogramTester histograms;
-  std::unique_ptr<CallbackTester> tester(
-      new CallbackTester(tester_run_loop.QuitClosure()));
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
-      web_contents, sw_run_loop.QuitClosure());
-
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-
-  {
-    // Load a URL with no service worker.
-    GURL test_url = embedded_test_server()->GetURL(
-        "/banners/manifest_no_service_worker.html");
-    ui_test_utils::NavigateToURL(browser(), test_url);
-
-    // Kick off fetching the data. This should block on waiting for a worker.
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
-    sw_run_loop.Run();
-  }
-
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-
-  // Navigate to force metrics recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-  // Expect to record that we didn't finish the check since we waited until
-  // navigation and didn't get a service worker.
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(InstallabilityCheckStatus::IN_PROGRESS_UNKNOWN), 1);
-  histograms.ExpectTotalCount("Webapp.InstallabilityCheckStatus.MenuOpen", 2);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(InstallabilityCheckStatus::IN_PROGRESS_UNKNOWN), 2);
-  histograms.ExpectTotalCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen", 3);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
