@@ -101,6 +101,8 @@ void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
       value->Remove("logged", nullptr);
     }
   }
+  // TODO(urusant): convert the policy values so that the types are consistent
+  // with actual policy types.
   CallJavascriptFunction("policy.Page.setPolicyValues", *value);
 }
 
