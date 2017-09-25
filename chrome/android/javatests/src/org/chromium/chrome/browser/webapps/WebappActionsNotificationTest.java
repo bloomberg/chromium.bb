@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -84,10 +85,13 @@ public class WebappActionsNotificationTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
+    /*
+      @SmallTest
+      @Feature({"Webapps"})
+      @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
+      @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
+    */
+    @DisabledTest(message = "crbug.com/768557")
     public void testNotificationNotEnabled() throws Exception {
         // Note ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION is not enabled.
         Assert.assertNull(getWebappNotification());
