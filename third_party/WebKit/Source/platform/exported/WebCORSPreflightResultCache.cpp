@@ -185,6 +185,9 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
 bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
     const WebHTTPHeaderMap& request_headers,
     WebString& error_description) const {
+  if (!credentials_ && headers_.find("*") != headers_.end())
+    return true;
+
   for (const auto& header : request_headers.GetHTTPHeaderMap()) {
     if (headers_.find(header.key.Ascii().data()) == headers_.end() &&
         !FetchUtils::IsCORSSafelistedHeader(header.key, header.value) &&
