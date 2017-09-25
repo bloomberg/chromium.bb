@@ -38,6 +38,7 @@ class WindowAndroid;
 namespace vr {
 class BrowserUiInterface;
 class ToolbarHelper;
+class WebContentsEventForwarder;
 }  // namespace vr
 
 namespace vr_shell {
@@ -45,7 +46,6 @@ namespace vr_shell {
 class AndroidUiGestureTarget;
 class VrCompositor;
 class VrGLThread;
-class VrInputManager;
 class VrMetricsHelper;
 class VrShellDelegate;
 class VrWebContentsObserver;
@@ -233,7 +233,7 @@ class VrShell : device::GvrGamepadDataProvider,
   VrShellDelegate* delegate_provider_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
-  std::unique_ptr<VrInputManager> input_manager_;
+  std::unique_ptr<vr::WebContentsEventForwarder> web_contents_event_forwarder_;
   std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
 

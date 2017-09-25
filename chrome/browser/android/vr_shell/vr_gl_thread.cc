@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
