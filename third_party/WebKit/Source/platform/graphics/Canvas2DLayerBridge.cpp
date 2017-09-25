@@ -258,15 +258,16 @@ void Canvas2DLayerBridge::ResetSurface() {
 
 bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
   bool accelerate;
-  if (software_rendering_while_hidden_)
+  if (software_rendering_while_hidden_) {
     accelerate = false;
-  else if (acceleration_mode_ == kForceAccelerationForTesting)
+  } else if (acceleration_mode_ == kForceAccelerationForTesting) {
     accelerate = true;
-  else if (acceleration_mode_ == kDisableAcceleration)
+  } else if (acceleration_mode_ == kDisableAcceleration) {
     accelerate = false;
-  else
+  } else {
     accelerate = hint == kPreferAcceleration ||
                  hint == kPreferAccelerationAfterVisibilityChange;
+  }
 
   if (accelerate && (!context_provider_wrapper_ ||
                      context_provider_wrapper_->ContextProvider()
@@ -634,11 +635,12 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
     if (surface_is_accelerated) {
       logger_->ReportHibernationEvent(kHibernationEndedNormally);
     } else {
-      if (IsHidden())
+      if (IsHidden()) {
         logger_->ReportHibernationEvent(
             kHibernationEndedWithSwitchToBackgroundRendering);
-      else
+      } else {
         logger_->ReportHibernationEvent(kHibernationEndedWithFallbackToSW);
+      }
     }
 
     SkPaint copy_paint;
@@ -1037,9 +1039,9 @@ void Canvas2DLayerBridge::ReleaseFrameResources(
   }
 
   if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-    RefPtr<ImageInfo> info = released_mailbox_info->image_info_;
-    if (info && !lost_resource) {
-      if (context_or_layer_bridge_lost) {
+    RefPtr<ImageInfo>& info = released_mailbox_info->image_info_;
+    if (info) {
+      if (lost_resource || context_or_layer_bridge_lost) {
         DeleteCHROMIUMImage(context_provider_wrapper,
                             std::move(info->gpu_memory_buffer_),
                             info->image_id_, info->texture_id_);
