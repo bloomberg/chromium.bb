@@ -40,7 +40,8 @@
       "fetch",
       "origin",
       "master",
-      "--recurse-submodules"
+      "--recurse-submodules",
+      "--progress"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

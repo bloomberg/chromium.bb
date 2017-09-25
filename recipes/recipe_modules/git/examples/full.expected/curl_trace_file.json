@@ -18,7 +18,8 @@
       "fetch",
       "origin",
       "refs/foo/bar",
-      "--recurse-submodules"
+      "--recurse-submodules",
+      "--progress"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

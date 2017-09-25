@@ -114,7 +114,7 @@ class GitApi(recipe_api.RecipeApi):
                set_got_revision=False, remote_name=None,
                display_fetch_size=None, file_name=None,
                submodule_update_recursive=True,
-               use_git_cache=False):
+               use_git_cache=False, progress=True):
     """Performs a full git checkout and returns sha1 of checked out revision.
 
     Args:
@@ -146,6 +146,7 @@ class GitApi(recipe_api.RecipeApi):
              to a local path, may cause problem with scripts that do
              "git fetch origin" or "git push origin".
            * arbitrary refs such refs/whatever/not-fetched-by-default-to-cache
+       progress (bool): wether to show progress for fetch or not
 
     Returns: If the checkout was successful, this returns the commit hash of
       the checked-out-repo. Otherwise this returns None.
@@ -237,6 +238,9 @@ class GitApi(recipe_api.RecipeApi):
       fetch_args = [x for x in (fetch_remote, fetch_ref) if x]
       if recursive:
         fetch_args.append('--recurse-submodules')
+
+      if progress:
+        fetch_args.append('--progress')
 
       fetch_env = {'PATH': path}
       fetch_stderr = None
