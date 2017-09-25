@@ -28,13 +28,12 @@ namespace media {
 class TestInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   TestInputCallback() : callback_count_(0), had_error_(0) {}
-  void OnData(AudioInputStream* stream,
-              const AudioBus* source,
+  void OnData(const AudioBus* source,
               base::TimeTicks capture_time,
               double volume) override {
     ++callback_count_;
   }
-  void OnError(AudioInputStream* stream) override { ++had_error_; }
+  void OnError() override { ++had_error_; }
   // Returns how many times OnData() has been called.
   int callback_count() const {
     return callback_count_;

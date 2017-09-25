@@ -182,7 +182,7 @@ bool PCMQueueInAudioInputStream::GetAutomaticGainControl() {
 
 void PCMQueueInAudioInputStream::HandleError(OSStatus err) {
   if (callback_)
-    callback_->OnError(this);
+    callback_->OnError();
   // This point should never be reached.
   OSSTATUS_DCHECK(0, err);
 }
@@ -274,7 +274,7 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
     uint8_t* audio_data = reinterpret_cast<uint8_t*>(audio_buffer->mAudioData);
     audio_bus_->FromInterleaved(audio_data, audio_bus_->frames(),
                                 format_.mBitsPerChannel / 8);
-    callback_->OnData(this, audio_bus_.get(), capture_time, 0.0);
+    callback_->OnData(audio_bus_.get(), capture_time, 0.0);
 
     last_fill_ = base::TimeTicks::Now();
   }

@@ -48,12 +48,11 @@ ACTION_P4(CheckCountAndPostQuitTask, count, limit, task_runner, quit_closure) {
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MOCK_METHOD4(OnData,
-               void(AudioInputStream* stream,
-                    const AudioBus* src,
+  MOCK_METHOD3(OnData,
+               void(const AudioBus* src,
                     base::TimeTicks capture_time,
                     double volume));
-  MOCK_METHOD1(OnError, void(AudioInputStream* stream));
+  MOCK_METHOD0(OnError, void());
 };
 
 class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
@@ -70,8 +69,7 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
   // Waits until OnData() is called on another thread.
   void WaitForData() { data_event_.Wait(); }
 
-  void OnData(AudioInputStream* stream,
-              const AudioBus* src,
+  void OnData(const AudioBus* src,
               base::TimeTicks capture_time,
               double volume) override {
     EXPECT_GE(capture_time, base::TimeTicks());
@@ -79,7 +77,7 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
     data_event_.Signal();
   }
 
-  void OnError(AudioInputStream* stream) override { error_ = true; }
+  void OnError() override { error_ = true; }
 
  private:
   int num_received_audio_frames_;
@@ -129,8 +127,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   }
 
   // AudioInputStream::AudioInputCallback implementation.
-  void OnData(AudioInputStream* stream,
-              const AudioBus* src,
+  void OnData(const AudioBus* src,
               base::TimeTicks capture_time,
               double volume) override {
     EXPECT_EQ(bits_per_sample_, 16);
@@ -148,7 +145,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  void OnError(AudioInputStream* stream) override {}
+  void OnError() override {}
 
  private:
   int bits_per_sample_;
@@ -384,7 +381,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
     // All should contain valid packets of the same size and a valid delay
     // estimate.
     base::RunLoop run_loop;
-    EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
+    EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(
             CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),
@@ -409,7 +406,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
+    EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(
             CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),
@@ -430,7 +427,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
+    EXPECT_CALL(sink, OnData(NotNull(), _, _))
         .Times(AtLeast(10))
         .WillRepeatedly(
             CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),

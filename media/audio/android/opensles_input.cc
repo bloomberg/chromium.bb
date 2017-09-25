@@ -308,8 +308,8 @@ void OpenSLESInputStream::ReadBufferQueue() {
 
   // TODO(henrika): Investigate if it is possible to get an accurate
   // delay estimation.
-  callback_->OnData(this, audio_bus_.get(),
-                    base::TimeTicks::Now() - hardware_delay_, 0.0);
+  callback_->OnData(audio_bus_.get(), base::TimeTicks::Now() - hardware_delay_,
+                    0.0);
 
   // Done with this buffer. Send it to device for recording.
   SLresult err =
@@ -343,7 +343,7 @@ void OpenSLESInputStream::ReleaseAudioBuffer() {
 void OpenSLESInputStream::HandleError(SLresult error) {
   DLOG(ERROR) << "OpenSLES Input error " << error;
   if (callback_)
-    callback_->OnError(this);
+    callback_->OnError();
 }
 
 }  // namespace media

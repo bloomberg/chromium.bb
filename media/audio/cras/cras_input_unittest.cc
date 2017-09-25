@@ -38,10 +38,8 @@ namespace media {
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MOCK_METHOD4(
-      OnData,
-      void(AudioInputStream*, const AudioBus*, base::TimeTicks, double));
-  MOCK_METHOD1(OnError, void(AudioInputStream*));
+  MOCK_METHOD3(OnData, void(const AudioBus*, base::TimeTicks, double));
+  MOCK_METHOD0(OnError, void());
 };
 
 class MockAudioManagerCrasInput : public AudioManagerCras {
@@ -111,7 +109,7 @@ class CrasInputStreamTest : public testing::Test {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    EXPECT_CALL(mock_callback, OnData(test_stream, _, _, _))
+    EXPECT_CALL(mock_callback, OnData(_, _, _))
         .WillOnce(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal));
 
     test_stream->Start(&mock_callback);
