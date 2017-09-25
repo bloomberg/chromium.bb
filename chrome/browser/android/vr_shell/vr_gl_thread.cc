@@ -12,8 +12,7 @@
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/toolbar_state.h"
-#include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
+#include "chrome/browser/vr/ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr_shell {
@@ -46,28 +45,23 @@ base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
 }
 
 void VrGLThread::Init() {
-  scene_ = base::MakeUnique<vr::UiScene>();
-  vr_shell_gl_ = base::MakeUnique<VrShellGl>(this, gvr_api_, initially_web_vr_,
-                                             reprojected_rendering_,
-                                             daydream_support_, scene_.get());
-  scene_manager_ = base::MakeUnique<vr::UiSceneManager>(
-      this, scene_.get(), vr_shell_gl_.get(), in_cct_, initially_web_vr_,
-      web_vr_autopresentation_expected_);
-  // TODO(cjgrant): Alleviate this circular initialization dependency by moving
-  // ownership of all UI components into a single UI object that can manage its
-  // own initialization.
-  vr_shell_gl_->set_ui(scene_manager_.get());
+  vr::UiInitialState ui_initial_state;
+  ui_initial_state.in_cct = in_cct_;
+  ui_initial_state.in_web_vr = initially_web_vr_;
+  ui_initial_state.web_vr_autopresentation_expected =
+      web_vr_autopresentation_expected_;
 
-  weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
-  browser_ui_ = scene_manager_->GetWeakPtr();
+  vr_shell_gl_ =
+      base::MakeUnique<VrShellGl>(this, this, ui_initial_state, gvr_api_,
+                                  reprojected_rendering_, daydream_support_);
+
+  browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 
   vr_shell_gl_->Initialize();
 }
 
 void VrGLThread::CleanUp() {
-  scene_manager_.reset();
   vr_shell_gl_.reset();
-  scene_.reset();
 }
 
 void VrGLThread::ContentSurfaceChanged(jobject surface) {

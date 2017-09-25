@@ -30,6 +30,7 @@
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
 #include "chrome/browser/vr/target_property.h"
+#include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/vr_gl_util.h"
@@ -169,15 +170,15 @@ static constexpr float kScreenDimmerOpacity = 0.9f;
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
                                ContentInputDelegate* content_input_delegate,
-                               bool in_cct,
-                               bool in_web_vr,
-                               bool web_vr_autopresentation_expected)
+                               const UiInitialState& ui_initial_state)
     : browser_(browser),
       scene_(scene),
-      in_cct_(in_cct),
-      web_vr_mode_(in_web_vr),
-      started_for_autopresentation_(web_vr_autopresentation_expected),
-      showing_web_vr_splash_screen_(web_vr_autopresentation_expected),
+      in_cct_(ui_initial_state.in_cct),
+      web_vr_mode_(ui_initial_state.in_web_vr),
+      started_for_autopresentation_(
+          ui_initial_state.web_vr_autopresentation_expected),
+      showing_web_vr_splash_screen_(
+          ui_initial_state.web_vr_autopresentation_expected),
       weak_ptr_factory_(this) {
   Create2dBrowsingSubtreeRoots();
   CreateWebVrRoot();
@@ -866,6 +867,14 @@ void UiSceneManager::SetIncognito(bool incognito) {
     return;
   incognito_ = incognito;
   ConfigureScene();
+}
+
+UiScene* UiSceneManager::scene() {
+  return scene_;
+}
+
+bool UiSceneManager::ShouldRenderWebVr() {
+  return scene_->web_vr_rendering_enabled();
 }
 
 void UiSceneManager::OnGlInitialized(unsigned int content_texture_id) {
