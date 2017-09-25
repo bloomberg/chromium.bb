@@ -152,16 +152,6 @@ public class SignInPreference
             mSigninPromoController = new SigninPromoController(SigninAccessPoint.SETTINGS);
         }
 
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
-
-        DisplayableProfileData profileData = null;
-        if (defaultAccountName != null) {
-            mProfileDataCache.update(Collections.singletonList(defaultAccountName));
-            profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
-        }
-        mSigninPromoController.setProfileData(profileData);
-
         mWasGenericSigninPromoDisplayed = false;
         notifyChanged();
     }
@@ -214,11 +204,21 @@ public class SignInPreference
     protected void onBindView(final View view) {
         super.onBindView(view);
         ViewUtils.setEnabledRecursive(view, mViewEnabled);
-        if (mSigninPromoController != null) {
-            PersonalizedSigninPromoView signinPromoView =
-                    view.findViewById(R.id.signin_promo_view_container);
-            mSigninPromoController.setupPromoView(getContext(), signinPromoView, null);
+
+        if (mSigninPromoController == null) {
+            return;
         }
+
+        DisplayableProfileData profileData = null;
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        if (accounts.length > 0) {
+            String defaultAccountName = accounts[0].name;
+            mProfileDataCache.update(Collections.singletonList(defaultAccountName));
+            profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
+        }
+        PersonalizedSigninPromoView signinPromoView =
+                view.findViewById(R.id.signin_promo_view_container);
+        mSigninPromoController.setupPromoView(getContext(), signinPromoView, profileData, null);
     }
 
     // ProfileSyncServiceListener implementation.
