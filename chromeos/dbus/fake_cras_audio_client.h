@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void SetGlobalOutputChannelRemix(int32_t channels,
                                    const std::vector<double>& mixer) override;
   void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) override;
+      WaitForServiceToBeAvailableCallback callback) override;
 
   // Modifies an AudioNode from |node_list_| based on |audio_node.id|.
   // if the |audio_node.id| cannot be found in list, Add an

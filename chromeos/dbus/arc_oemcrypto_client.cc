@@ -48,8 +48,8 @@ class ArcOemCryptoClientImpl : public ArcOemCryptoClient {
         arc_oemcrypto::kArcOemCryptoServiceName,
         dbus::ObjectPath(arc_oemcrypto::kArcOemCryptoServicePath));
     proxy_->WaitForServiceToBeAvailable(
-        base::Bind(&ArcOemCryptoClientImpl::OnServiceAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ArcOemCryptoClientImpl::OnServiceAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

@@ -207,8 +207,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) override {
-    cras_proxy_->WaitForServiceToBeAvailable(callback);
+      WaitForServiceToBeAvailableCallback callback) override {
+    cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
  protected:

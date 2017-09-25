@@ -71,7 +71,7 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
   void RemoveRootfsVerification(
       const EnableDebuggingCallback& callback) override;
   void WaitForServiceToBeAvailable(
-      const WaitForServiceToBeAvailableCallback& callback) override;
+      WaitForServiceToBeAvailableCallback callback) override;
   void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
                       const SetOomScoreAdjCallback& callback) override;
   void CupsAddManuallyConfiguredPrinter(
