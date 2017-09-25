@@ -12,6 +12,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/layout/TextDecorationOffset.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -72,76 +73,6 @@ static LineLayoutItem EnclosingUnderlineObject(
       if (isHTMLAnchorElement(node) || node->HasTagName(HTMLNames::fontTag))
         return current;
     }
-  }
-}
-
-static int ComputeUnderlineOffsetForUnder(
-    const ComputedStyle& style,
-    const InlineTextBox* inline_text_box,
-    LineLayoutItem decorating_box,
-    float text_decoration_thickness,
-    LineVerticalPositionType position_type) {
-  const RootInlineBox& root = inline_text_box->Root();
-  FontBaseline baseline_type = root.BaselineType();
-  LayoutUnit offset = inline_text_box->OffsetTo(position_type, baseline_type);
-
-  // Compute offset to the farthest position of the decorating box.
-  LayoutUnit logical_top = inline_text_box->LogicalTop();
-  LayoutUnit position = logical_top + offset;
-  LayoutUnit farthest = root.FarthestPositionForUnderline(
-      decorating_box, position_type, baseline_type, position);
-  // Round() looks more logical but Floor() produces better results in
-  // positive/negative offsets, in horizontal/vertical flows, on Win/Mac/Linux.
-  int offset_int = (farthest - logical_top).Floor();
-
-  // Gaps are not needed for TextTop because it generally has internal
-  // leadings.
-  if (position_type == LineVerticalPositionType::TextTop)
-    return offset_int;
-  return !IsLineOverSide(position_type) ? offset_int + 1 : offset_int - 1;
-}
-
-static int ComputeUnderlineOffsetForRoman(
-    const FontMetrics& font_metrics,
-    const float text_decoration_thickness) {
-  // Compute the gap between the font and the underline. Use at least one
-  // pixel gap, if underline is thick then use a bigger gap.
-  int gap = 0;
-
-  // Underline position of zero means draw underline on Baseline Position,
-  // in Blink we need at least 1-pixel gap to adding following check.
-  // Positive underline Position means underline should be drawn above baseline
-  // and negative value means drawing below baseline, negating the value as in
-  // Blink downward Y-increases.
-
-  if (font_metrics.UnderlinePosition())
-    gap = -font_metrics.UnderlinePosition();
-  else
-    gap = std::max<int>(1, ceilf(text_decoration_thickness / 2.f));
-
-  // Position underline near the alphabetic baseline.
-  return font_metrics.Ascent() + gap;
-}
-
-static int ComputeUnderlineOffset(ResolvedUnderlinePosition underline_position,
-                                  const ComputedStyle& style,
-                                  const FontMetrics& font_metrics,
-                                  const InlineTextBox* inline_text_box,
-                                  LineLayoutItem decorating_box,
-                                  const float text_decoration_thickness) {
-  switch (underline_position) {
-    default:
-      NOTREACHED();
-    // Fall through.
-    case ResolvedUnderlinePosition::kRoman:
-      return ComputeUnderlineOffsetForRoman(font_metrics,
-                                            text_decoration_thickness);
-    case ResolvedUnderlinePosition::kUnder:
-      // Position underline at the under edge of the lowest element's
-      // content box.
-      return ComputeUnderlineOffsetForUnder(
-          style, inline_text_box, decorating_box, text_decoration_thickness,
-          LineVerticalPositionType::BottomOfEmHeight);
   }
 }
 
@@ -222,28 +153,29 @@ static void PaintDecorationsExceptLineThrough(
     underline_position = ResolvedUnderlinePosition::kUnder;
   }
 
+  TextDecorationOffset decoration_offset(*decoration_info.style, &box,
+                                         decorating_box);
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.Lines();
     bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
     bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
-    if (flip_underline_and_overline) {
+    if (flip_underline_and_overline)
       std::swap(has_underline, has_overline);
-    }
     if (has_underline && decoration_info.font_data) {
-      const int underline_offset = ComputeUnderlineOffset(
-          underline_position, *decoration_info.style,
-          decoration_info.font_data->GetFontMetrics(), &box, decorating_box,
+      const int underline_offset = decoration_offset.ComputeUnderlineOffset(
+          underline_position, decoration_info.font_data->GetFontMetrics(),
           decoration_info.thickness);
       text_painter.PaintDecorationUnderOrOverLine(
           context, decoration_info, decoration, underline_offset,
           decoration_info.double_offset);
     }
     if (has_overline) {
-      const int overline_offset = ComputeUnderlineOffsetForUnder(
-          *decoration_info.style, &box, decorating_box,
-          decoration_info.thickness,
-          flip_underline_and_overline ? LineVerticalPositionType::TopOfEmHeight
-                                      : LineVerticalPositionType::TextTop);
+      const int overline_offset =
+          decoration_offset.ComputeUnderlineOffsetForUnder(
+              decoration_info.thickness,
+              flip_underline_and_overline
+                  ? LineVerticalPositionType::TopOfEmHeight
+                  : LineVerticalPositionType::TextTop);
       text_painter.PaintDecorationUnderOrOverLine(
           context, decoration_info, decoration, overline_offset,
           -decoration_info.double_offset);
