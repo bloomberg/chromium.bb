@@ -4,7 +4,10 @@
 
 #include "content/browser/service_worker/service_worker_script_url_loader.h"
 
+#include <map>
+#include <utility>
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -25,12 +28,48 @@ namespace content {
 
 namespace {
 
-// TODO(nhiroki): Introduce a generic mechanism to inject dummy responses like
-// MockHTTPServer.
-const char kDummyHeaders[] = "HTTP/1.1 200 OK\n\n";
-const char kDummyBody[] = "this body came from the network";
+const char kNormalScriptURL[] = "https://example.com/normal.js";
+const char kEmptyScriptURL[] = "https://example.com/empty.js";
+const char kNonExistentScriptURL[] = "https://example.com/nonexistent.js";
 
-// A URLLoaderFactory that returns kDummyHeaders with kDummyBody to any request.
+// MockHTTPServer is a utility to provide mocked responses for
+// ServiceWorkerScriptURLLoader.
+class MockHTTPServer {
+ public:
+  void AddResponse(const GURL& url,
+                   const std::string& headers,
+                   const std::string& body) {
+    auto result =
+        responses_.emplace(std::make_pair(url, MockResponse(headers, body)));
+    ASSERT_TRUE(result.second);
+  }
+
+  const std::string& GetHeaders(const GURL& url) {
+    auto found = responses_.find(url);
+    if (found == responses_.end())
+      return base::EmptyString();
+    return found->second.headers;
+  }
+
+  const std::string& GetBody(const GURL& url) {
+    auto found = responses_.find(url);
+    if (found == responses_.end())
+      return base::EmptyString();
+    return found->second.body;
+  }
+
+ private:
+  struct MockResponse {
+    MockResponse(const std::string& headers, const std::string& body)
+        : headers(headers), body(body) {}
+    std::string headers;
+    std::string body;
+  };
+
+  std::map<GURL, MockResponse> responses_;
+};
+
+// A URLLoaderFactory that returns a mocked response provided by MockHTTPServer.
 //
 // TODO(nhiroki): We copied this from service_worker_url_loader_job_unittest.cc
 // instead of making it a common test helper because we might want to customize
@@ -38,7 +77,8 @@ const char kDummyBody[] = "this body came from the network";
 // convinced it's better.
 class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
  public:
-  MockNetworkURLLoaderFactory() = default;
+  explicit MockNetworkURLLoaderFactory(MockHTTPServer* mock_server)
+      : mock_server_(mock_server) {}
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -49,11 +89,10 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
-    std::string headers(kDummyHeaders, arraysize(kDummyHeaders));
+    const std::string& headers = mock_server_->GetHeaders(url_request.url);
     net::HttpResponseInfo info;
-    info.headers =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            kDummyHeaders, arraysize(kDummyHeaders)));
+    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
     ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
@@ -61,7 +100,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
 
     // TODO(nhiroki): Add test cases where the body size is bigger than the
     // buffer size used in ServiceWorkerScriptURLLoader.
-    std::string body(kDummyBody, arraysize(kDummyBody));
+    const std::string& body = mock_server_->GetBody(url_request.url);
     uint32_t bytes_written = body.size();
     mojo::DataPipe data_pipe;
     data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
@@ -76,6 +115,9 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
   void Clone(mojom::URLLoaderFactoryRequest factory) override { NOTREACHED(); }
 
  private:
+  // This is owned by ServiceWorkerScriptURLLoaderTest.
+  MockHTTPServer* mock_server_;
+
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
 
@@ -86,7 +128,8 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
 class ServiceWorkerScriptURLLoaderTest : public testing::Test {
  public:
   ServiceWorkerScriptURLLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        mock_server_(std::make_unique<MockHTTPServer>()) {}
   ~ServiceWorkerScriptURLLoaderTest() override = default;
 
   void SetUp() override {
@@ -95,23 +138,23 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     InitializeStorage();
 
+    mock_server_->AddResponse(GURL(kNormalScriptURL),
+                              std::string("HTTP/1.1 200 OK\n\n"),
+                              std::string("this body came from the network"));
+    mock_server_->AddResponse(GURL(kEmptyScriptURL),
+                              std::string("HTTP/1.1 200 OK\n\n"),
+                              std::string());
+    mock_server_->AddResponse(GURL(kNonExistentScriptURL),
+                              std::string("HTTP/1.1 404 Not Found\n\n"),
+                              std::string());
+
     // Initialize URLLoaderFactory.
     mojom::URLLoaderFactoryPtr test_loader_factory;
-    mojo::MakeStrongBinding(std::make_unique<MockNetworkURLLoaderFactory>(),
-                            MakeRequest(&test_loader_factory));
+    mojo::MakeStrongBinding(
+        std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get()),
+        MakeRequest(&test_loader_factory));
     helper_->url_loader_factory_getter()->SetNetworkFactoryForTesting(
         std::move(test_loader_factory));
-
-    // Set up ServiceWorkerRegistration and ServiceWorkerVersion that is
-    // now starting up.
-    GURL scope("https://www.example.com/");
-    GURL script_url("https://example.com/sw.js");
-    registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
-        helper_->context()->AsWeakPtr());
-    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());
-    version_->SetStatus(ServiceWorkerVersion::NEW);
   }
 
   void InitializeStorage() {
@@ -121,7 +164,22 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     run_loop.Run();
   }
 
-  void DoRequest() {
+  // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
+  // called before DoRequest().
+  void SetUpRegistration(const GURL& script_url) {
+    GURL scope = script_url;
+    registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
+        blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
+        helper_->context()->AsWeakPtr());
+    version_ = base::MakeRefCounted<ServiceWorkerVersion>(
+        registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());
+    version_->SetStatus(ServiceWorkerVersion::NEW);
+  }
+
+  void DoRequest(const GURL& request_url) {
+    DCHECK(registration_);
+    DCHECK(version_);
+
     // Dummy values.
     int routing_id = 0;
     int request_id = 10;
@@ -130,6 +188,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     ResourceRequest request;
     request.url = version_->script_url();
     request.method = "GET";
+    // TODO(nhiroki): Test importScripts() cases.
     request.resource_type = RESOURCE_TYPE_SERVICE_WORKER;
 
     DCHECK(!loader_);
@@ -139,9 +198,12 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
-  // Returns false if the entry doesn't exist for |cache_resource_id| in the
-  // storage.
-  bool VerifyStoredResponse(int64_t cache_resource_id) {
+  // Returns false if the entry for |url| doesn't exist in the storage.
+  bool VerifyStoredResponse(const GURL& url) {
+    int64_t cache_resource_id = LookupResourceId(url);
+    if (cache_resource_id == kInvalidServiceWorkerResourceId)
+      return false;
+
     // Verify the response status.
     {
       std::unique_ptr<ServiceWorkerResponseReader> reader =
@@ -159,7 +221,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     // Verify the response body.
     {
-      const std::string kExpectedBody(kDummyBody, arraysize(kDummyBody));
+      const std::string& expected_body = mock_server_->GetBody(url);
       std::unique_ptr<ServiceWorkerResponseReader> reader =
           helper_->context()->storage()->CreateResponseReader(
               cache_resource_id);
@@ -169,10 +231,10 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
       int rv = cb.WaitForResult();
       if (rv < 0)
         return false;
-      EXPECT_EQ(static_cast<int>(kExpectedBody.size()), rv);
+      EXPECT_EQ(static_cast<int>(expected_body.size()), rv);
 
       std::string received_body(buffer->data(), rv);
-      EXPECT_EQ(kExpectedBody, received_body);
+      EXPECT_EQ(expected_body, received_body);
     }
     return true;
   }
@@ -188,29 +250,67 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   std::unique_ptr<ServiceWorkerScriptURLLoader> loader_;
+  std::unique_ptr<MockHTTPServer> mock_server_;
 
   TestURLLoaderClient client_;
 };
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
-  DoRequest();
+  GURL script_url(kNormalScriptURL);
+  SetUpRegistration(script_url);
+  DoRequest(script_url);
   client_.RunUntilComplete();
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
 
-  // The response should be responded with to the client.
+  // The client should have received the response.
   EXPECT_TRUE(client_.has_received_response());
   EXPECT_TRUE(client_.response_body().is_valid());
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
-  EXPECT_EQ(std::string(kDummyBody, arraysize(kDummyBody)), response);
+  EXPECT_EQ(mock_server_->GetBody(script_url), response);
 
   // The response should also be stored in the storage.
-  EXPECT_TRUE(VerifyStoredResponse(LookupResourceId(version_->script_url())));
+  EXPECT_TRUE(VerifyStoredResponse(script_url));
 }
 
-TEST_F(ServiceWorkerScriptURLLoaderTest, RedundantWorker) {
-  DoRequest();
+TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
+  GURL script_url(kEmptyScriptURL);
+  SetUpRegistration(script_url);
+  DoRequest(script_url);
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+
+  // The client should have received the response.
+  EXPECT_TRUE(client_.has_received_response());
+  EXPECT_TRUE(client_.response_body().is_valid());
+  std::string response;
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client_.response_body_release(), &response));
+  EXPECT_TRUE(response.empty());
+
+  // The response should also be stored in the storage.
+  EXPECT_TRUE(VerifyStoredResponse(script_url));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
+  GURL script_url(kNonExistentScriptURL);
+  SetUpRegistration(script_url);
+  DoRequest(script_url);
+  client_.RunUntilComplete();
+
+  // The request should be failed because of 404 response.
+  EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(script_url));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
+  GURL script_url(kNormalScriptURL);
+  SetUpRegistration(script_url);
+  DoRequest(script_url);
 
   // Make the service worker redundant.
   version_->Doom();
@@ -223,9 +323,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, RedundantWorker) {
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(LookupResourceId(version_->script_url())));
+  EXPECT_FALSE(VerifyStoredResponse(script_url));
 }
-
-// TODO(nhiroki): Add a test to verify an empty response body.
 
 }  // namespace content
