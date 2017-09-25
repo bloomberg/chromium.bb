@@ -159,6 +159,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPad");
   }
 
+// TODO(crbug.com/768339): This test is faling on devices with iOS > 9 because
+// grey_swipeFastInDirectionWithStartPoint does not work.
+#if !TARGET_IPHONE_SIMULATOR
+  if (@available(iOS 10.0, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 10+ devices.");
+  }
+#endif
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -170,7 +178,16 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Mobile Bookmarks")]
       assertWithMatcher:grey_nil()];
 
-  // Back using swipe left gesture.
+  // Open the first folder, to be able to go back twice on the bookmarks.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Back twice using swipe left gesture.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+      performAction:grey_swipeFastInDirectionWithStartPoint(kGREYDirectionRight,
+                                                            0.01, 0.5)];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
       performAction:grey_swipeFastInDirectionWithStartPoint(kGREYDirectionRight,
