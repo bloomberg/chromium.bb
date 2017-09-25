@@ -20,7 +20,7 @@ ConstantSourceHandler::ConstantSourceHandler(AudioNode& node,
                                              float sample_rate,
                                              AudioParamHandler& offset)
     : AudioScheduledSourceHandler(kNodeTypeConstantSource, node, sample_rate),
-      offset_(offset),
+      offset_(&offset),
       sample_accurate_values_(AudioUtilities::kRenderQuantumFrames) {
   // A ConstantSource is always mono.
   AddOutput(1);

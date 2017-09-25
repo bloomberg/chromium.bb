@@ -13,7 +13,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(
     const AtomicString& type,
     const PromiseRejectionEventInit& initializer)
     : Event(type, initializer),
-      world_(state->World()),
+      world_(&state->World()),
       promise_(this),
       reason_(this) {
   DCHECK(initializer.hasPromise());

@@ -37,7 +37,7 @@ GainHandler::GainHandler(AudioNode& node,
                          AudioParamHandler& gain)
     : AudioHandler(kNodeTypeGain, node, sample_rate),
       last_gain_(1.0),
-      gain_(gain),
+      gain_(&gain),
       sample_accurate_gain_values_(
           AudioUtilities::kRenderQuantumFrames)  // FIXME: can probably
                                                  // share temp buffer
