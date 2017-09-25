@@ -43,7 +43,7 @@ static INLINE int allow_warp(const MODE_INFO *const mi,
 #endif  // CONFIG_MOTION_VAR
                              WarpedMotionParams *final_warp_params) {
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  set_default_warp_params(final_warp_params);
+  *final_warp_params = default_warp_params;
 
 // Only global motion configured
 #if CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION && !CONFIG_MOTION_VAR

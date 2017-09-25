@@ -4396,8 +4396,8 @@ static void write_compound_tools(const AV1_COMMON *cm,
 }
 
 #if CONFIG_GLOBAL_MOTION
-static void write_global_motion_params(WarpedMotionParams *params,
-                                       WarpedMotionParams *ref_params,
+static void write_global_motion_params(const WarpedMotionParams *params,
+                                       const WarpedMotionParams *ref_params,
                                        struct aom_write_bit_buffer *wb,
                                        int allow_hp) {
   TransformationType type = params->wmtype;
@@ -4480,10 +4480,10 @@ static void write_global_motion(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    if (cm->error_resilient_mode)
-      set_default_warp_params(&cm->prev_frame->global_motion[frame]);
-    write_global_motion_params(&cm->global_motion[frame],
-                               &cm->prev_frame->global_motion[frame], wb,
+    const WarpedMotionParams *ref_params =
+        cm->error_resilient_mode ? &default_warp_params
+                                 : &cm->prev_frame->global_motion[frame];
+    write_global_motion_params(&cm->global_motion[frame], ref_params, wb,
                                cm->allow_high_precision_mv);
     // TODO(sarahparker, debargha): The logic in the commented out code below
     // does not work currently and causes mismatches when resize is on.

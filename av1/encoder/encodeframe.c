@@ -5081,8 +5081,8 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 
 #if CONFIG_GLOBAL_MOTION
 #define GLOBAL_TRANS_TYPES_ENC 3  // highest motion model to search
-static int gm_get_params_cost(WarpedMotionParams *gm,
-                              WarpedMotionParams *ref_gm, int allow_hp) {
+static int gm_get_params_cost(const WarpedMotionParams *gm,
+                              const WarpedMotionParams *ref_gm, int allow_hp) {
   assert(gm->wmtype < GLOBAL_TRANS_TYPES);
   int params_cost = 0;
   int trans_bits, trans_prec_diff;
@@ -5329,9 +5329,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
       int pframe;
-      set_default_warp_params(&cm->global_motion[frame]);
-      if (cm->error_resilient_mode)
-        set_default_warp_params(&cm->prev_frame->global_motion[frame]);
+      cm->global_motion[frame] = default_warp_params;
+      const WarpedMotionParams *ref_params =
+          cm->error_resilient_mode ? &default_warp_params
+                                   : &cm->prev_frame->global_motion[frame];
       // check for duplicate buffer
       for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;
@@ -5398,7 +5399,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           }
           if (cm->global_motion[frame].wmtype <= AFFINE)
             if (!get_shear_params(&cm->global_motion[frame]))
-              set_default_warp_params(&cm->global_motion[frame]);
+              cm->global_motion[frame] = default_warp_params;
 
           if (cm->global_motion[frame].wmtype == TRANSLATION) {
             cm->global_motion[frame].wmmat[0] =
@@ -5415,10 +5416,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           // this motion type, revert to IDENTITY.
           if (!is_enough_erroradvantage(
                   (double)best_warp_error / ref_frame_error,
-                  gm_get_params_cost(&cm->global_motion[frame],
-                                     &cm->prev_frame->global_motion[frame],
+                  gm_get_params_cost(&cm->global_motion[frame], ref_params,
                                      cm->allow_high_precision_mv))) {
-            set_default_warp_params(&cm->global_motion[frame]);
+            cm->global_motion[frame] = default_warp_params;
           }
           if (cm->global_motion[frame].wmtype != IDENTITY) break;
         }
@@ -5426,8 +5426,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       }
       if (cm->global_motion[frame].wmtype != IDENTITY) num_refs_using_gm++;
       cpi->gmparams_cost[frame] =
-          gm_get_params_cost(&cm->global_motion[frame],
-                             &cm->prev_frame->global_motion[frame],
+          gm_get_params_cost(&cm->global_motion[frame], ref_params,
                              cm->allow_high_precision_mv) +
           cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
           cpi->gmtype_cost[IDENTITY];

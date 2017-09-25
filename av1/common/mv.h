@@ -120,14 +120,14 @@ typedef struct {
   int16_t alpha, beta, gamma, delta;
 } WarpedMotionParams;
 
-static INLINE void set_default_warp_params(WarpedMotionParams *wm) {
-  static const int32_t default_wm_mat[8] = {
-    0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0
-  };
-  memset(wm, 0, sizeof(*wm));
-  memcpy(wm->wmmat, default_wm_mat, sizeof(wm->wmmat));
-  wm->wmtype = IDENTITY;
-}
+/* clang-format off */
+static const WarpedMotionParams default_warp_params = {
+  IDENTITY,
+  { 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0,
+    0 },
+  0, 0, 0, 0
+};
+/* clang-format on */
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
 #if CONFIG_GLOBAL_MOTION

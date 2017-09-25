@@ -4480,7 +4480,7 @@ static void check_valid_ref_frames(AV1_COMMON *cm) {
 
 #if CONFIG_GLOBAL_MOTION
 static int read_global_motion_params(WarpedMotionParams *params,
-                                     WarpedMotionParams *ref_params,
+                                     const WarpedMotionParams *ref_params,
                                      struct aom_read_bit_buffer *rb,
                                      int allow_hp) {
   TransformationType type = aom_rb_read_bit(rb);
@@ -4498,7 +4498,7 @@ static int read_global_motion_params(WarpedMotionParams *params,
   int trans_bits;
   int trans_dec_factor;
   int trans_prec_diff;
-  set_default_warp_params(params);
+  *params = default_warp_params;
   params->wmtype = type;
   switch (type) {
     case HOMOGRAPHY:
@@ -4577,11 +4577,11 @@ static int read_global_motion_params(WarpedMotionParams *params,
 static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    if (cm->error_resilient_mode)
-      set_default_warp_params(&cm->prev_frame->global_motion[frame]);
+    const WarpedMotionParams *ref_params =
+        cm->error_resilient_mode ? &default_warp_params
+                                 : &cm->prev_frame->global_motion[frame];
     int good_params = read_global_motion_params(
-        &cm->global_motion[frame], &cm->prev_frame->global_motion[frame], rb,
-        cm->allow_high_precision_mv);
+        &cm->global_motion[frame], ref_params, rb, cm->allow_high_precision_mv);
     if (!good_params)
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid shear parameters for global motion.");
@@ -4597,7 +4597,7 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
                                 &cm->prev_frame->global_motion[frame], rb,
                                 cm->allow_high_precision_mv);
     } else {
-      set_default_warp_params(&cm->global_motion[frame]);
+      cm->global_motion[frame] = default_warp_params;
     }
     */
     /*
@@ -5456,8 +5456,8 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_GLOBAL_MOTION
   int i;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    set_default_warp_params(&cm->global_motion[i]);
-    set_default_warp_params(&cm->cur_frame->global_motion[i]);
+    cm->global_motion[i] = default_warp_params;
+    cm->cur_frame->global_motion[i] = default_warp_params;
   }
   xd->global_motion = cm->global_motion;
 #endif  // CONFIG_GLOBAL_MOTION
