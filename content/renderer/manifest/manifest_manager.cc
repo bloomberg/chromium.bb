@@ -89,8 +89,10 @@ void ManifestManager::DidChangeManifest() {
   // During document load, coalescing is disabled to maintain relative ordering
   // of this notification and the favicon URL reporting.
   if (!render_frame()->GetWebFrame()->IsLoading()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ManifestManager::ReportManifestChange,
+    render_frame()
+        ->GetTaskRunner(blink::TaskType::kUnspecedLoading)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&ManifestManager::ReportManifestChange,
                                   weak_factory_.GetWeakPtr()));
     return;
   }
