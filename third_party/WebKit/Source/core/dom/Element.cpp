@@ -2417,6 +2417,7 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state) {
 ShadowRoot* Element::attachShadow(const ScriptState* script_state,
                                   const ShadowRootInit& shadow_root_init_dict,
                                   ExceptionState& exception_state) {
+  DCHECK(shadow_root_init_dict.hasMode());
   HostsUsingFeatures::CountMainWorldOnly(
       script_state, GetDocument(),
       HostsUsingFeatures::Feature::kElementAttachShadow);
@@ -2427,31 +2428,22 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
     return nullptr;
   }
 
-  if (shadow_root_init_dict.hasMode() && GetShadowRoot()) {
+  if (GetShadowRoot()) {
     exception_state.ThrowDOMException(kInvalidStateError,
                                       "Shadow root cannot be created on a host "
                                       "which already hosts a shadow tree.");
     return nullptr;
   }
 
-  ShadowRootType type = ShadowRootType::V0;
-  if (shadow_root_init_dict.hasMode())
-    type = shadow_root_init_dict.mode() == "open" ? ShadowRootType::kOpen
-                                                  : ShadowRootType::kClosed;
+  ShadowRootType type = shadow_root_init_dict.mode() == "open"
+                            ? ShadowRootType::kOpen
+                            : ShadowRootType::kClosed;
 
-  if (type == ShadowRootType::kClosed)
-    UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowClosed);
-  else if (type == ShadowRootType::kOpen)
+  if (type == ShadowRootType::kOpen)
     UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowOpen);
+  else
+    UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowClosed);
 
-  if (!AreAuthorShadowsAllowed()) {
-    exception_state.ThrowDOMException(
-        kHierarchyRequestError,
-        "Author-created shadow roots are disabled for this element.");
-    return nullptr;
-  }
-
-  DCHECK(!shadow_root_init_dict.hasMode() || !GetShadowRoot());
   bool delegateFocus = shadow_root_init_dict.hasDelegatesFocus() &&
                        shadow_root_init_dict.delegatesFocus();
   return &AttachShadowRootInternal(type, delegateFocus);
