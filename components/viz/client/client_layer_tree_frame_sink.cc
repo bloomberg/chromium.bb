@@ -15,49 +15,44 @@
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 
 namespace viz {
+ClientLayerTreeFrameSink::InitParams::InitParams() {}
+
+ClientLayerTreeFrameSink::InitParams::~InitParams() {}
 
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    SharedBitmapManager* shared_bitmap_manager,
-    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    mojom::CompositorFrameSinkClientRequest client_request,
-    std::unique_ptr<HitTestDataProvider> hit_test_data_provider,
-    std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
-    bool enable_surface_synchronization)
+    InitParams* params)
     : cc::LayerTreeFrameSink(std::move(context_provider),
                              std::move(worker_context_provider),
-                             gpu_memory_buffer_manager,
-                             shared_bitmap_manager),
-      hit_test_data_provider_(std::move(hit_test_data_provider)),
-      local_surface_id_provider_(std::move(local_surface_id_provider)),
-      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
-      compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
-      client_request_(std::move(client_request)),
+                             params->gpu_memory_buffer_manager,
+                             params->shared_bitmap_manager),
+      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
+      local_surface_id_provider_(std::move(params->local_surface_id_provider)),
+      synthetic_begin_frame_source_(
+          std::move(params->synthetic_begin_frame_source)),
+      compositor_frame_sink_info_(
+          std::move(params->compositor_frame_sink_info)),
+      client_request_(std::move(params->client_request)),
       client_binding_(this),
-      enable_surface_synchronization_(enable_surface_synchronization),
+      enable_surface_synchronization_(params->enable_surface_synchronization),
       weak_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
 ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
     scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-    mojom::CompositorFrameSinkClientRequest client_request,
-    std::unique_ptr<HitTestDataProvider> hit_test_data_provider,
-    std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
-    bool enable_surface_synchronization)
+    InitParams* params)
     : cc::LayerTreeFrameSink(std::move(vulkan_context_provider)),
-      hit_test_data_provider_(std::move(hit_test_data_provider)),
-      local_surface_id_provider_(std::move(local_surface_id_provider)),
-      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
-      compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
-      client_request_(std::move(client_request)),
+      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
+      local_surface_id_provider_(std::move(params->local_surface_id_provider)),
+      synthetic_begin_frame_source_(
+          std::move(params->synthetic_begin_frame_source)),
+      compositor_frame_sink_info_(
+          std::move(params->compositor_frame_sink_info)),
+      client_request_(std::move(params->client_request)),
       client_binding_(this),
-      enable_surface_synchronization_(enable_surface_synchronization),
+      enable_surface_synchronization_(params->enable_surface_synchronization),
       weak_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
 }

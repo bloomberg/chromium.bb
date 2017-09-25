@@ -1937,18 +1937,20 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
 
-  bool enable_surface_synchronization =
+  viz::ClientLayerTreeFrameSink::InitParams params;
+  params.enable_surface_synchronization =
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  params.local_surface_id_provider =
+      base::MakeUnique<RendererLocalSurfaceIdProvider>();
 
   // In disable gpu vsync mode, also let the renderer tick as fast as it
   // can. The top level begin frame source will also be running as a back
   // to back begin frame source, but using a synthetic begin frame source
   // here reduces latency when in this mode (at least for frames
   // starting--it potentially increases it for input on the other hand.)
-  std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   if (command_line.HasSwitch(switches::kDisableGpuVsync) &&
       command_line.GetSwitchValueASCII(switches::kDisableGpuVsync) != "gpu") {
-    synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
+    params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
   }
 
 #if defined(USE_AURA)
@@ -1972,12 +1974,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 #endif
 
-  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
   viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
+      mojo::MakeRequest(&params.compositor_frame_sink_info);
   viz::mojom::CompositorFrameSinkClientPtr client;
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
+  params.client_request = mojo::MakeRequest(&client);
 
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
     scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
@@ -1987,11 +1987,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                             std::move(client));
       callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
-          std::move(vulkan_context_provider),
-          std::move(synthetic_begin_frame_source), std::move(sink_info),
-          std::move(client_request), nullptr /* hit_test_data_provider */,
-          base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-          enable_surface_synchronization));
+          std::move(vulkan_context_provider), &params));
       return;
     }
   }
@@ -2016,12 +2012,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     DCHECK(!layout_test_mode());
     frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                           std::move(client));
+    params.shared_bitmap_manager = shared_bitmap_manager();
     callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
-        nullptr, nullptr, nullptr, shared_bitmap_manager(),
-        std::move(synthetic_begin_frame_source), std::move(sink_info),
-        std::move(client_request), nullptr /* hit_test_data_provider */,
-        base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-        enable_surface_synchronization));
+        nullptr, nullptr, &params));
     return;
   }
 
@@ -2076,8 +2069,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #if defined(OS_ANDROID)
   if (sync_compositor_message_filter_) {
     std::unique_ptr<viz::BeginFrameSource> begin_frame_source =
-        synthetic_begin_frame_source
-            ? std::move(synthetic_begin_frame_source)
+        params.synthetic_begin_frame_source
+            ? std::move(params.synthetic_begin_frame_source)
             : CreateExternalBeginFrameSource(routing_id);
     callback.Run(base::MakeUnique<SynchronousLayerTreeFrameSink>(
         std::move(context_provider), std::move(worker_context_provider),
@@ -2090,13 +2083,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #endif
   frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),
                                         std::move(client));
+  params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),
-      GetGpuMemoryBufferManager(), nullptr,
-      std::move(synthetic_begin_frame_source), std::move(sink_info),
-      std::move(client_request), nullptr /* hit_test_data_provider */,
-      base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-      enable_surface_synchronization));
+      &params));
 }
 
 AssociatedInterfaceRegistry*
