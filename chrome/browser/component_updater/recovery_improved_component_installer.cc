@@ -22,29 +22,29 @@ constexpr uint8_t kPublicKeySHA256[32] = {
     0x97, 0xd7, 0x32, 0x75, 0xcc, 0xd5, 0x7f, 0xec, 0x09, 0x60, 0x6d,
     0x20, 0xc3, 0x81, 0xd7, 0xce, 0x7b, 0x10, 0x15, 0x44, 0xd1};
 
-RecoveryImprovedInstallerTraits::RecoveryImprovedInstallerTraits(
+RecoveryImprovedInstallerPolicy::RecoveryImprovedInstallerPolicy(
     PrefService* prefs)
     : prefs_(prefs) {}
 
-RecoveryImprovedInstallerTraits::~RecoveryImprovedInstallerTraits() {}
+RecoveryImprovedInstallerPolicy::~RecoveryImprovedInstallerPolicy() {}
 
-bool RecoveryImprovedInstallerTraits::
+bool RecoveryImprovedInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return true;
 }
 
-bool RecoveryImprovedInstallerTraits::RequiresNetworkEncryption() const {
+bool RecoveryImprovedInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-RecoveryImprovedInstallerTraits::OnCustomInstall(
+RecoveryImprovedInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
 
-void RecoveryImprovedInstallerTraits::ComponentReady(
+void RecoveryImprovedInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -52,31 +52,31 @@ void RecoveryImprovedInstallerTraits::ComponentReady(
 }
 
 // Called during startup and installation before ComponentReady().
-bool RecoveryImprovedInstallerTraits::VerifyInstallation(
+bool RecoveryImprovedInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   return true;
 }
 
-base::FilePath RecoveryImprovedInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath RecoveryImprovedInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(FILE_PATH_LITERAL("RecoveryImproved"));
 }
 
-void RecoveryImprovedInstallerTraits::GetHash(
+void RecoveryImprovedInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
 }
 
-std::string RecoveryImprovedInstallerTraits::GetName() const {
+std::string RecoveryImprovedInstallerPolicy::GetName() const {
   return "Chrome Improved Recovery";
 }
 
 update_client::InstallerAttributes
-RecoveryImprovedInstallerTraits::GetInstallerAttributes() const {
+RecoveryImprovedInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
-std::vector<std::string> RecoveryImprovedInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> RecoveryImprovedInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
@@ -92,11 +92,10 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
 
   DVLOG(1) << "Registering RecoveryImproved component.";
 
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new RecoveryImprovedInstallerTraits(prefs));
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new RecoveryImprovedInstallerPolicy(prefs));
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 #endif
 #endif

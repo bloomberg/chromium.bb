@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 namespace base {
 class FilePath;
@@ -24,14 +24,14 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
-class FileTypePoliciesComponentInstallerTraits
-    : public ComponentInstallerTraits {
+class FileTypePoliciesComponentInstallerPolicy
+    : public ComponentInstallerPolicy {
  public:
-  FileTypePoliciesComponentInstallerTraits() {}
-  ~FileTypePoliciesComponentInstallerTraits() override {}
+  FileTypePoliciesComponentInstallerPolicy() {}
+  ~FileTypePoliciesComponentInstallerPolicy() override {}
 
  private:
-  // The following methods override ComponentInstallerTraits.
+  // The following methods override ComponentInstallerPolicy.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -50,7 +50,7 @@ class FileTypePoliciesComponentInstallerTraits
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 
-  DISALLOW_COPY_AND_ASSIGN(FileTypePoliciesComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(FileTypePoliciesComponentInstallerPolicy);
 };
 
 // Call once during startup to make the component update service aware of

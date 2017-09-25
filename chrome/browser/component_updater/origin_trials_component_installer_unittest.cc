@@ -67,7 +67,7 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    traits_.reset(new OriginTrialsComponentInstallerTraits());
+    policy_.reset(new OriginTrialsComponentInstallerPolicy());
   }
 
   void LoadUpdates(std::unique_ptr<base::DictionaryValue> manifest) {
@@ -75,9 +75,9 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
       manifest = base::MakeUnique<base::DictionaryValue>();
       manifest->Set(kManifestOriginTrialsKey, base::MakeUnique<base::Value>());
     }
-    ASSERT_TRUE(traits_->VerifyInstallation(*manifest, temp_dir_.GetPath()));
+    ASSERT_TRUE(policy_->VerifyInstallation(*manifest, temp_dir_.GetPath()));
     const base::Version expected_version(kTestUpdateVersion);
-    traits_->ComponentReady(expected_version, temp_dir_.GetPath(),
+    policy_->ComponentReady(expected_version, temp_dir_.GetPath(),
                             std::move(manifest));
   }
 
@@ -147,7 +147,7 @@ class OriginTrialsComponentInstallerTest : public PlatformTest {
  protected:
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState testing_local_state_;
-  std::unique_ptr<ComponentInstallerTraits> traits_;
+  std::unique_ptr<ComponentInstallerPolicy> policy_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OriginTrialsComponentInstallerTest);

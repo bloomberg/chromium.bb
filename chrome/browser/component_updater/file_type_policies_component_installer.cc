@@ -56,29 +56,29 @@ void LoadFileTypesFromDisk(const base::FilePath& pb_path) {
 
 namespace component_updater {
 
-bool FileTypePoliciesComponentInstallerTraits::
+bool FileTypePoliciesComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
 }
 
-bool FileTypePoliciesComponentInstallerTraits::RequiresNetworkEncryption()
+bool FileTypePoliciesComponentInstallerPolicy::RequiresNetworkEncryption()
     const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-FileTypePoliciesComponentInstallerTraits::OnCustomInstall(
+FileTypePoliciesComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
-base::FilePath FileTypePoliciesComponentInstallerTraits::GetInstalledPath(
+base::FilePath FileTypePoliciesComponentInstallerPolicy::GetInstalledPath(
     const base::FilePath& base) {
   return base.Append(kFileTypePoliciesBinaryPbFileName);
 }
 
-void FileTypePoliciesComponentInstallerTraits::ComponentReady(
+void FileTypePoliciesComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -91,7 +91,7 @@ void FileTypePoliciesComponentInstallerTraits::ComponentReady(
 }
 
 // Called during startup and installation before ComponentReady().
-bool FileTypePoliciesComponentInstallerTraits::VerifyInstallation(
+bool FileTypePoliciesComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   // No need to actually validate the proto here, since we'll do the checking
@@ -99,28 +99,28 @@ bool FileTypePoliciesComponentInstallerTraits::VerifyInstallation(
   return base::PathExists(GetInstalledPath(install_dir));
 }
 
-base::FilePath FileTypePoliciesComponentInstallerTraits::GetRelativeInstallDir()
+base::FilePath FileTypePoliciesComponentInstallerPolicy::GetRelativeInstallDir()
     const {
   return base::FilePath(FILE_PATH_LITERAL("FileTypePolicies"));
 }
 
-void FileTypePoliciesComponentInstallerTraits::GetHash(
+void FileTypePoliciesComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kPublicKeySHA256,
                kPublicKeySHA256 + arraysize(kPublicKeySHA256));
 }
 
-std::string FileTypePoliciesComponentInstallerTraits::GetName() const {
+std::string FileTypePoliciesComponentInstallerPolicy::GetName() const {
   return kFileTypePoliciesManifestName;
 }
 
 update_client::InstallerAttributes
-FileTypePoliciesComponentInstallerTraits::GetInstallerAttributes() const {
+FileTypePoliciesComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
 std::vector<std::string>
-FileTypePoliciesComponentInstallerTraits::GetMimeTypes() const {
+FileTypePoliciesComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
@@ -128,11 +128,10 @@ void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus,
                                        const base::FilePath& user_data_dir) {
   VLOG(1) << "Registering File Type Policies component.";
 
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new FileTypePoliciesComponentInstallerTraits());
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new FileTypePoliciesComponentInstallerPolicy());
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 }
 

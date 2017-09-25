@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 namespace base {
 class FilePath;
@@ -30,19 +30,19 @@ class ComponentUpdateService;
 //
 // Notifications of a new version of the module list are sent to the
 // ModuleListManager.
-class ThirdPartyModuleListComponentInstallerTraits
-    : public ComponentInstallerTraits {
+class ThirdPartyModuleListComponentInstallerPolicy
+    : public ComponentInstallerPolicy {
  public:
   // The |manager| will be notified each time a new module list is available,
   // including once every startup when a component is already installed.
-  explicit ThirdPartyModuleListComponentInstallerTraits(
+  explicit ThirdPartyModuleListComponentInstallerPolicy(
       ModuleListManager* manager);
-  ~ThirdPartyModuleListComponentInstallerTraits() override;
+  ~ThirdPartyModuleListComponentInstallerPolicy() override;
 
  private:
-  friend class ThirdPartyModuleListComponentInstallerTraitsTest;
+  friend class ThirdPartyModuleListComponentInstallerPolicyTest;
 
-  // ComponentInstallerTraits implementation.
+  // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -67,7 +67,7 @@ class ThirdPartyModuleListComponentInstallerTraits
   // the manager provided will be a global singleton.
   ModuleListManager* manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyModuleListComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(ThirdPartyModuleListComponentInstallerPolicy);
 };
 
 void RegisterThirdPartyModuleListComponent(ComponentUpdateService* cus);

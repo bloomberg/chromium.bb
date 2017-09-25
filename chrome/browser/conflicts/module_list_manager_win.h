@@ -12,7 +12,7 @@
 #include "base/version.h"
 
 namespace component_updater {
-class ThirdPartyModuleListComponentInstallerTraits;
+class ThirdPartyModuleListComponentInstallerPolicy;
 }  // namespace component_updater
 
 // Declares a class that is responsible for knowing the location of the most
@@ -84,7 +84,7 @@ class ModuleListManager {
   static std::wstring GetRegistryPath();
 
  protected:
-  friend class component_updater::ThirdPartyModuleListComponentInstallerTraits;
+  friend class component_updater::ThirdPartyModuleListComponentInstallerPolicy;
 
   // Called post-startup with information about the most recently available
   // module list installation. Can potentially be called again much later when

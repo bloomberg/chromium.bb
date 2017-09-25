@@ -50,69 +50,69 @@ const uint8_t kPublicKeySHA256[32] = {
 
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
-STHSetComponentInstallerTraits::STHSetComponentInstallerTraits(
+STHSetComponentInstallerPolicy::STHSetComponentInstallerPolicy(
     net::ct::STHObserver* sth_observer)
     : sth_observer_(sth_observer), weak_ptr_factory_(this) {}
 
-STHSetComponentInstallerTraits::~STHSetComponentInstallerTraits() {}
+STHSetComponentInstallerPolicy::~STHSetComponentInstallerPolicy() {}
 
-bool STHSetComponentInstallerTraits::
+bool STHSetComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
 }
 
 // Public data is delivered via this component, no need for encryption.
-bool STHSetComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool STHSetComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-STHSetComponentInstallerTraits::OnCustomInstall(
+STHSetComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
-void STHSetComponentInstallerTraits::ComponentReady(
+void STHSetComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-      base::BindOnce(&STHSetComponentInstallerTraits::LoadSTHsFromDisk,
+      base::BindOnce(&STHSetComponentInstallerPolicy::LoadSTHsFromDisk,
                      weak_ptr_factory_.GetWeakPtr(),
                      GetInstalledPath(install_dir), version));
 }
 
 // Called during startup and installation before ComponentReady().
-bool STHSetComponentInstallerTraits::VerifyInstallation(
+bool STHSetComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   return base::PathExists(GetInstalledPath(install_dir));
 }
 
-base::FilePath STHSetComponentInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath STHSetComponentInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(FILE_PATH_LITERAL("CertificateTransparency"));
 }
 
-void STHSetComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+void STHSetComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
   hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
 }
 
-std::string STHSetComponentInstallerTraits::GetName() const {
+std::string STHSetComponentInstallerPolicy::GetName() const {
   return kSTHSetFetcherManifestName;
 }
 
 update_client::InstallerAttributes
-STHSetComponentInstallerTraits::GetInstallerAttributes() const {
+STHSetComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
-std::vector<std::string> STHSetComponentInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> STHSetComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
-void STHSetComponentInstallerTraits::LoadSTHsFromDisk(
+void STHSetComponentInstallerPolicy::LoadSTHsFromDisk(
     const base::FilePath& sths_path,
     const base::Version& version) {
   if (sths_path.empty())
@@ -165,7 +165,7 @@ void STHSetComponentInstallerTraits::LoadSTHsFromDisk(
   }
 }
 
-void STHSetComponentInstallerTraits::OnJsonParseSuccess(
+void STHSetComponentInstallerPolicy::OnJsonParseSuccess(
     const std::string& log_id,
     std::unique_ptr<base::Value> parsed_json) {
   net::ct::SignedTreeHead signed_tree_head;
@@ -185,7 +185,7 @@ void STHSetComponentInstallerTraits::OnJsonParseSuccess(
                          base::Unretained(sth_observer_), signed_tree_head));
 }
 
-void STHSetComponentInstallerTraits::OnJsonParseError(
+void STHSetComponentInstallerPolicy::OnJsonParseError(
     const std::string& log_id,
     const std::string& error) {
   DVLOG(1) << "STH loading failed: " << error
@@ -201,11 +201,10 @@ void RegisterSTHSetComponent(ComponentUpdateService* cus,
   // The global STHDistributor should have been created by this point.
   DCHECK(distributor);
 
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new STHSetComponentInstallerTraits(distributor));
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new STHSetComponentInstallerPolicy(distributor));
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 }
 

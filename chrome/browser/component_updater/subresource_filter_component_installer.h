@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 namespace base {
 class FilePath;
@@ -21,14 +21,14 @@ namespace component_updater {
 class ComponentUpdateService;
 
 // Component for receiving Safe Browsing Subresource filtering rules.
-class SubresourceFilterComponentInstallerTraits
-    : public ComponentInstallerTraits {
+class SubresourceFilterComponentInstallerPolicy
+    : public ComponentInstallerPolicy {
  public:
   static const char kManifestRulesetFormatKey[];
   static const int kCurrentRulesetFormat;
 
-  SubresourceFilterComponentInstallerTraits();
-  ~SubresourceFilterComponentInstallerTraits() override;
+  SubresourceFilterComponentInstallerPolicy();
+  ~SubresourceFilterComponentInstallerPolicy() override;
 
  private:
   friend class SubresourceFilterComponentInstallerTest;
@@ -37,7 +37,7 @@ class SubresourceFilterComponentInstallerTraits
 
   static std::string GetInstallerTag();
 
-  // ComponentInstallerTraits implementation.
+  // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -54,7 +54,7 @@ class SubresourceFilterComponentInstallerTraits
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterComponentInstallerPolicy);
 };
 
 void RegisterSubresourceFilterComponent(ComponentUpdateService* cus);

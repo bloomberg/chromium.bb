@@ -20,10 +20,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
-#include "components/component_updater/default_component_installer.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/test_configurator.h"
@@ -91,10 +91,10 @@ class MockUpdateClient : public UpdateClient {
   ~MockUpdateClient() override {}
 };
 
-class FakeInstallerTraits : public ComponentInstallerTraits {
+class FakeInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  FakeInstallerTraits() {}
-  ~FakeInstallerTraits() override {}
+  FakeInstallerPolicy() {}
+  ~FakeInstallerPolicy() override {}
 
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& dir) const override {
@@ -143,10 +143,10 @@ class FakeInstallerTraits : public ComponentInstallerTraits {
   }
 };
 
-class DefaultComponentInstallerTest : public testing::Test {
+class ComponentInstallerTest : public testing::Test {
  public:
-  DefaultComponentInstallerTest();
-  ~DefaultComponentInstallerTest() override;
+  ComponentInstallerTest();
+  ~ComponentInstallerTest() override;
 
   MockUpdateClient& update_client() { return *update_client_; }
   ComponentUpdateService* component_updater() {
@@ -177,31 +177,31 @@ class DefaultComponentInstallerTest : public testing::Test {
   ComponentUnpacker::Result result_;
 };
 
-DefaultComponentInstallerTest::DefaultComponentInstallerTest() {
+ComponentInstallerTest::ComponentInstallerTest() {
   EXPECT_CALL(update_client(), AddObserver(_)).Times(1);
   component_updater_ =
       base::MakeUnique<CrxUpdateService>(config_, update_client_);
 }
 
-DefaultComponentInstallerTest::~DefaultComponentInstallerTest() {
+ComponentInstallerTest::~ComponentInstallerTest() {
   EXPECT_CALL(update_client(), RemoveObserver(_)).Times(1);
   component_updater_.reset();
 }
 
-void DefaultComponentInstallerTest::RunThreads() {
+void ComponentInstallerTest::RunThreads() {
   runloop_.Run();
 }
 
-void DefaultComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
+void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
       crx_path, nullptr, nullptr);
-  component_unpacker->Unpack(base::Bind(
-      &DefaultComponentInstallerTest::UnpackComplete, base::Unretained(this)));
+  component_unpacker->Unpack(base::Bind(&ComponentInstallerTest::UnpackComplete,
+                                        base::Unretained(this)));
   RunThreads();
 }
 
-void DefaultComponentInstallerTest::UnpackComplete(
+void ComponentInstallerTest::UnpackComplete(
     const ComponentUnpacker::Result& result) {
   result_ = result;
 
@@ -213,10 +213,10 @@ void DefaultComponentInstallerTest::UnpackComplete(
 
 }  // namespace
 
-// Tests that the component metadata is propagated from the default
-// component installer and its component traits, through the instance of the
-// CrxComponent, to the component updater service.
-TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
+// Tests that the component metadata is propagated from the component installer
+// and its component policy, through the instance of the CrxComponent, to the
+// component updater service.
+TEST_F(ComponentInstallerTest, RegisterComponent) {
   class LoopHandler {
    public:
     LoopHandler(int max_cnt, const base::Closure& quit_closure)
@@ -249,8 +249,8 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
   EXPECT_CALL(update_client(), GetCrxUpdateState(id, _)).Times(1);
   EXPECT_CALL(update_client(), Stop()).Times(1);
 
-  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
-      base::MakeUnique<FakeInstallerTraits>());
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      base::MakeUnique<FakeInstallerPolicy>());
   installer->Register(component_updater(), base::Closure());
 
   RunThreads();
@@ -275,9 +275,9 @@ TEST_F(DefaultComponentInstallerTest, RegisterComponent) {
 }
 
 // Tests that the unpack path is removed when the install succeeded.
-TEST_F(DefaultComponentInstallerTest, UnpackPathInstallSuccess) {
-  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
-      base::MakeUnique<FakeInstallerTraits>());
+TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      base::MakeUnique<FakeInstallerPolicy>());
 
   Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 
@@ -299,9 +299,9 @@ TEST_F(DefaultComponentInstallerTest, UnpackPathInstallSuccess) {
 }
 
 // Tests that the unpack path is removed when the install failed.
-TEST_F(DefaultComponentInstallerTest, UnpackPathInstallError) {
-  auto installer = base::MakeRefCounted<DefaultComponentInstaller>(
-      base::MakeUnique<FakeInstallerTraits>());
+TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      base::MakeUnique<FakeInstallerPolicy>());
 
   Unpack(test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
 

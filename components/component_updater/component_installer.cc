@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 #include <utility>
 
@@ -43,54 +43,51 @@ using InstallError = update_client::InstallError;
 
 }  // namespace
 
-ComponentInstallerTraits::~ComponentInstallerTraits() {}
+ComponentInstallerPolicy::~ComponentInstallerPolicy() {}
 
-DefaultComponentInstaller::RegistrationInfo::RegistrationInfo()
+ComponentInstaller::RegistrationInfo::RegistrationInfo()
     : version(kNullVersion) {}
 
-DefaultComponentInstaller::RegistrationInfo::~RegistrationInfo() = default;
+ComponentInstaller::RegistrationInfo::~RegistrationInfo() = default;
 
-DefaultComponentInstaller::DefaultComponentInstaller(
-    std::unique_ptr<ComponentInstallerTraits> installer_traits)
+ComponentInstaller::ComponentInstaller(
+    std::unique_ptr<ComponentInstallerPolicy> installer_policy)
     : current_version_(kNullVersion),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  installer_traits_ = std::move(installer_traits);
+  installer_policy_ = std::move(installer_policy);
 }
 
-DefaultComponentInstaller::~DefaultComponentInstaller() {
-}
+ComponentInstaller::~ComponentInstaller() {}
 
-void DefaultComponentInstaller::Register(
-    ComponentUpdateService* cus,
-    const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void ComponentInstaller::Register(ComponentUpdateService* cus,
+                                  const base::Closure& callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
-  if (!installer_traits_) {
-    LOG(ERROR) << "A DefaultComponentInstaller has been created but "
-               << "has no installer traits.";
+  if (!installer_policy_) {
+    LOG(ERROR) << "A ComponentInstaller has been created but "
+               << "has no installer policy.";
     return;
   }
 
   auto registration_info = base::MakeRefCounted<RegistrationInfo>();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DefaultComponentInstaller::StartRegistration, this,
+      base::Bind(&ComponentInstaller::StartRegistration, this,
                  registration_info, cus),
-      base::Bind(&DefaultComponentInstaller::FinishRegistration, this,
+      base::Bind(&ComponentInstaller::FinishRegistration, this,
                  registration_info, cus, callback));
 }
 
-void DefaultComponentInstaller::OnUpdateError(int error) {
+void ComponentInstaller::OnUpdateError(int error) {
   LOG(ERROR) << "Component update error: " << error;
 }
 
-Result DefaultComponentInstaller::InstallHelper(
-    const base::DictionaryValue& manifest,
-    const base::FilePath& unpack_path,
-    const base::FilePath& install_path) {
+Result ComponentInstaller::InstallHelper(const base::DictionaryValue& manifest,
+                                         const base::FilePath& unpack_path,
+                                         const base::FilePath& install_path) {
   VLOG(1) << "InstallHelper: unpack_path=" << unpack_path.AsUTF8Unsafe()
           << " install_path=" << install_path.AsUTF8Unsafe();
 
@@ -107,19 +104,19 @@ Result DefaultComponentInstaller::InstallHelper(
 #endif  // defined(OS_CHROMEOS)
 
   const auto result =
-      installer_traits_->OnCustomInstall(manifest, install_path);
+      installer_policy_->OnCustomInstall(manifest, install_path);
   if (result.error) {
     PLOG(ERROR) << "CustomInstall failed.";
     return result;
   }
-  if (!installer_traits_->VerifyInstallation(manifest, install_path)) {
+  if (!installer_policy_->VerifyInstallation(manifest, install_path)) {
     return Result(InstallError::INSTALL_VERIFICATION_FAILED);
   }
 
   return Result(InstallError::NONE);
 }
 
-Result DefaultComponentInstaller::Install(
+Result ComponentInstaller::Install(
     std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path) {
   std::string manifest_version;
@@ -141,7 +138,7 @@ Result DefaultComponentInstaller::Install(
   base::FilePath install_path;
   if (!PathService::Get(DIR_COMPONENT_USER, &install_path))
     return Result(InstallError::NO_DIR_COMPONENT_USER);
-  install_path = install_path.Append(installer_traits_->GetRelativeInstallDir())
+  install_path = install_path.Append(installer_policy_->GetRelativeInstallDir())
                      .AppendASCII(version.GetString());
   if (base::PathExists(install_path)) {
     if (!base::DeleteFile(install_path, true))
@@ -160,33 +157,31 @@ Result DefaultComponentInstaller::Install(
   current_install_dir_ = install_path;
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DefaultComponentInstaller::ComponentReady, this,
+      FROM_HERE, base::Bind(&ComponentInstaller::ComponentReady, this,
                             base::Passed(std::move(manifest))));
 
   return result;
 }
 
-bool DefaultComponentInstaller::GetInstalledFile(
-    const std::string& file,
-    base::FilePath* installed_file) {
+bool ComponentInstaller::GetInstalledFile(const std::string& file,
+                                          base::FilePath* installed_file) {
   if (current_version_ == base::Version(kNullVersion))
     return false;  // No component has been installed yet.
   *installed_file = current_install_dir_.AppendASCII(file);
   return true;
 }
 
-bool DefaultComponentInstaller::Uninstall() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+bool ComponentInstaller::Uninstall() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DefaultComponentInstaller::UninstallOnTaskRunner, this));
+      FROM_HERE, base::Bind(&ComponentInstaller::UninstallOnTaskRunner, this));
   return true;
 }
 
-bool DefaultComponentInstaller::FindPreinstallation(
+bool ComponentInstaller::FindPreinstallation(
     const base::FilePath& root,
     const scoped_refptr<RegistrationInfo>& registration_info) {
-  base::FilePath path = root.Append(installer_traits_->GetRelativeInstallDir());
+  base::FilePath path = root.Append(installer_policy_->GetRelativeInstallDir());
   if (!base::PathExists(path)) {
     DVLOG(1) << "Relative install dir does not exist: " << path.MaybeAsASCII();
     return false;
@@ -199,7 +194,7 @@ bool DefaultComponentInstaller::FindPreinstallation(
     return false;
   }
 
-  if (!installer_traits_->VerifyInstallation(*manifest, path)) {
+  if (!installer_policy_->VerifyInstallation(*manifest, path)) {
     DVLOG(1) << "Installation verification failed: " << path.MaybeAsASCII();
     return false;
   }
@@ -216,7 +211,7 @@ bool DefaultComponentInstaller::FindPreinstallation(
     return false;
   }
 
-  VLOG(1) << "Preinstalled component found for " << installer_traits_->GetName()
+  VLOG(1) << "Preinstalled component found for " << installer_policy_->GetName()
           << " at " << path.MaybeAsASCII() << " with version " << version
           << ".";
 
@@ -227,10 +222,10 @@ bool DefaultComponentInstaller::FindPreinstallation(
   return true;
 }
 
-void DefaultComponentInstaller::StartRegistration(
+void ComponentInstaller::StartRegistration(
     const scoped_refptr<RegistrationInfo>& registration_info,
     ComponentUpdateService* cus) {
-  VLOG(1) << __func__ << " for " << installer_traits_->GetName();
+  VLOG(1) << __func__ << " for " << installer_policy_->GetName();
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -258,10 +253,10 @@ void DefaultComponentInstaller::StartRegistration(
   base::FilePath base_dir;
   if (!PathService::Get(DIR_COMPONENT_USER, &base_dir))
     return;
-  base_dir = base_dir.Append(installer_traits_->GetRelativeInstallDir());
+  base_dir = base_dir.Append(installer_policy_->GetRelativeInstallDir());
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
     PLOG(ERROR) << "Could not create the base directory for "
-                << installer_traits_->GetName() << " ("
+                << installer_policy_->GetName() << " ("
                 << base_dir.MaybeAsASCII() << ").";
     return;
   }
@@ -274,10 +269,9 @@ void DefaultComponentInstaller::StartRegistration(
 #endif  // defined(OS_CHROMEOS)
 
   std::vector<base::FilePath> older_paths;
-  base::FileEnumerator file_enumerator(
-      base_dir, false, base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath path = file_enumerator.Next();
-       !path.value().empty();
+  base::FileEnumerator file_enumerator(base_dir, false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     base::Version version(path.BaseName().MaybeAsASCII());
 
@@ -295,9 +289,9 @@ void DefaultComponentInstaller::StartRegistration(
 
     std::unique_ptr<base::DictionaryValue> manifest =
         update_client::ReadManifest(path);
-    if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path)) {
+    if (!manifest || !installer_policy_->VerifyInstallation(*manifest, path)) {
       PLOG(ERROR) << "Failed to read manifest or verify installation for "
-                  << installer_traits_->GetName() << " (" << path.MaybeAsASCII()
+                  << installer_policy_->GetName() << " (" << path.MaybeAsASCII()
                   << ").";
       older_paths.push_back(path);
       continue;
@@ -327,7 +321,7 @@ void DefaultComponentInstaller::StartRegistration(
     base::DeleteFile(older_path, true);
 }
 
-void DefaultComponentInstaller::UninstallOnTaskRunner() {
+void ComponentInstaller::UninstallOnTaskRunner() {
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -361,33 +355,33 @@ void DefaultComponentInstaller::UninstallOnTaskRunner() {
   }
 }
 
-void DefaultComponentInstaller::FinishRegistration(
+void ComponentInstaller::FinishRegistration(
     const scoped_refptr<RegistrationInfo>& registration_info,
     ComponentUpdateService* cus,
     const base::Closure& callback) {
-  VLOG(1) << __func__ << " for " << installer_traits_->GetName();
-  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << __func__ << " for " << installer_policy_->GetName();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   current_install_dir_ = registration_info->install_dir;
   current_version_ = registration_info->version;
   current_fingerprint_ = registration_info->fingerprint;
 
   update_client::CrxComponent crx;
-  installer_traits_->GetHash(&crx.pk_hash);
+  installer_policy_->GetHash(&crx.pk_hash);
   crx.installer = this;
   crx.version = current_version_;
   crx.fingerprint = current_fingerprint_;
-  crx.name = installer_traits_->GetName();
-  crx.installer_attributes = installer_traits_->GetInstallerAttributes();
+  crx.name = installer_policy_->GetName();
+  crx.installer_attributes = installer_policy_->GetInstallerAttributes();
   crx.requires_network_encryption =
-      installer_traits_->RequiresNetworkEncryption();
-  crx.handled_mime_types = installer_traits_->GetMimeTypes();
+      installer_policy_->RequiresNetworkEncryption();
+  crx.handled_mime_types = installer_policy_->GetMimeTypes();
   crx.supports_group_policy_enable_component_updates =
-      installer_traits_->SupportsGroupPolicyEnabledComponentUpdates();
+      installer_policy_->SupportsGroupPolicyEnabledComponentUpdates();
 
   if (!cus->RegisterComponent(crx)) {
     LOG(ERROR) << "Component registration failed for "
-               << installer_traits_->GetName();
+               << installer_policy_->GetName();
     return;
   }
 
@@ -395,18 +389,18 @@ void DefaultComponentInstaller::FinishRegistration(
     callback.Run();
 
   if (!registration_info->manifest) {
-    DVLOG(1) << "No component found for " << installer_traits_->GetName();
+    DVLOG(1) << "No component found for " << installer_policy_->GetName();
     return;
   }
 
   ComponentReady(std::move(registration_info->manifest));
 }
 
-void DefaultComponentInstaller::ComponentReady(
+void ComponentInstaller::ComponentReady(
     std::unique_ptr<base::DictionaryValue> manifest) {
   VLOG(1) << "Component ready, version " << current_version_.GetString()
           << " in " << current_install_dir_.value();
-  installer_traits_->ComponentReady(current_version_, current_install_dir_,
+  installer_policy_->ComponentReady(current_version_, current_install_dir_,
                                     std::move(manifest));
 }
 

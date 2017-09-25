@@ -4,6 +4,8 @@
 
 static_library("component_updater") {
   sources = [
+    "component_installer.cc",
+    "component_installer.h",
     "component_updater_paths.cc",
     "component_updater_paths.h",
     "component_updater_service.cc",
@@ -15,8 +17,6 @@ static_library("component_updater") {
     "component_updater_url_constants.h",
     "configurator_impl.cc",
     "configurator_impl.h",
-    "default_component_installer.cc",
-    "default_component_installer.h",
     "pref_names.cc",
     "pref_names.h",
     "timer.cc",
@@ -49,9 +49,9 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "component_installer_unittest.cc",
     "component_updater_service_unittest.cc",
     "configurator_impl_unittest.cc",
-    "default_component_installer_unittest.cc",
     "timer_unittest.cc",
   ]
 
