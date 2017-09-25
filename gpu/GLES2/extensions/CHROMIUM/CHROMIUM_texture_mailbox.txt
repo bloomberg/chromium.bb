@@ -20,7 +20,7 @@ Overview
     objects in different contexts where the contexts would not normally share
     texture resources. Five new functions are exported. glGenMailboxCHROMIUM
     generates a name that can be used to identify texture image data outside
-    the scope of a context group. glProduceMailboxCHROMIUM and 
+    the scope of a context group. glProduceTextureCHROMIUM and
     glProduceTextureDirectCHROMIUM associate a texture object with a global
     mailbox name. glConsumeMailboxCHROMIUM and glCreateAndConsumeTextureCHROMIUM
     associate the texture object referenced by a mailbox name to a texture name.
