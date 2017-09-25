@@ -10,7 +10,7 @@
 
 namespace media_router {
 
-constexpr char kPresentationUrl[] = "http://www.example.com/presentation.html";
+constexpr char kPresentationUrl[] = "https://www.example.com/presentation.html";
 
 TEST(MediaSourcesTest, IsMirroringMediaSource) {
   EXPECT_TRUE(IsTabMirroringMediaSource(MediaSourceForTab(123)));
@@ -33,8 +33,6 @@ TEST(MediaSourcesTest, CreateMediaSource) {
 TEST(MediaSourcesTest, IsValidMediaSource) {
   EXPECT_TRUE(IsValidMediaSource(MediaSourceForTab(123)));
   EXPECT_TRUE(IsValidMediaSource(MediaSourceForDesktop()));
-  EXPECT_TRUE(IsValidMediaSource(
-      MediaSourceForPresentationUrl(GURL(kPresentationUrl))));
   EXPECT_TRUE(IsValidMediaSource(
       MediaSourceForPresentationUrl(GURL(kPresentationUrl))));
 

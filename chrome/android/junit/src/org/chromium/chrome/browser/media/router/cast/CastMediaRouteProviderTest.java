@@ -30,8 +30,9 @@ import java.util.ArrayList;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastMediaRouteProviderTest {
-    private static final String SUPPORTED_SOURCE =
-            "https://google.com/cast/#__castAppId__=DEADBEEF";
+    private static final String SUPPORTED_SOURCE = "cast:DEADBEEF";
+
+    // TODO(crbug.com/672704): Android does not currently support 1-UA mode.
     private static final String UNSUPPORTED_SOURCE = "https://example.com";
 
     @Test
