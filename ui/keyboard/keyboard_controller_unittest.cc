@@ -690,6 +690,27 @@ TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(1.0, layer->opacity());
 }
 
+TEST_P(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+
+  // Ensure keyboard ui is populated
+  ui::Layer* layer = keyboard_container()->layer();
+  ShowKeyboard();
+  RunAnimationForLayer(layer);
+
+  ASSERT_TRUE(controller()->ui());
+
+  aura::Window* container_window = controller()->GetContainerWindow();
+
+  // Simulate removal of keyboard controller from root window as done by
+  // RootWindowController::DeactivateKeyboard()
+  container_window->parent()->RemoveChild(container_window);
+
+  // lingering handle to the contents window is adjusted.
+  // container_window's LayoutManager should abort silently and not crash.
+  controller()->ui()->GetContentsWindow()->SetBounds(gfx::Rect());
+}
+
 TEST_P(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
