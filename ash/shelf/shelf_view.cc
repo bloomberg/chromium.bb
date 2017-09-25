@@ -69,13 +69,10 @@ const float kReservedNonPanelIconProportion = 0.67f;
 const int kRipOffDistance = 48;
 
 // The rip off drag and drop proxy image should get scaled by this factor.
-const float kDragAndDropProxyScale = 1.5f;
+const float kDragAndDropProxyScale = 1.2f;
 
 // The opacity represents that this partially disappeared item will get removed.
 const float kDraggedImageOpacity = 0.5f;
-
-// The time threshold before an item may be dragged by touch events.
-const int kTouchDragTimeThresholdMs = 300;
 
 namespace {
 
@@ -565,6 +562,10 @@ void ShelfView::UpdateDragIconProxyByLocation(
     drag_image_->SetScreenPosition(origin_in_screen_coordinates);
 }
 
+bool ShelfView::IsDraggedView(const ShelfButton* view) const {
+  return drag_view_ == view;
+}
+
 void ShelfView::DestroyDragIconProxy() {
   drag_image_.reset();
   drag_image_offset_ = gfx::Vector2d(0, 0);
@@ -702,9 +703,6 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   // the call in ShelfView::ButtonPressed(...).
   is_repost_event_on_same_item_ =
       IsRepostEvent(event) && (last_pressed_index_ == index);
-
-  if (pointer == TOUCH)
-    touch_press_time_ = base::TimeTicks::Now();
 
   CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
   drag_view_ = static_cast<ShelfButton*>(view);
@@ -1963,14 +1961,6 @@ bool ShelfView::CanPrepareForDrag(Pointer pointer,
   // Dragging only begins once the pointer has travelled a minimum distance.
   if ((std::abs(event.x() - drag_origin_.x()) < kMinimumDragDistance) &&
       (std::abs(event.y() - drag_origin_.y()) < kMinimumDragDistance)) {
-    return false;
-  }
-
-  // Touch dragging only begins after a delay from the press event. This
-  // prevents accidental dragging on swipe or scroll gestures.
-  if (pointer == TOUCH &&
-      (base::TimeTicks::Now() - touch_press_time_) <
-          base::TimeDelta::FromMilliseconds(kTouchDragTimeThresholdMs)) {
     return false;
   }
 

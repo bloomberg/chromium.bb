@@ -175,6 +175,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Updates the background for the shelf items.
   void UpdateShelfItemBackground(SkColor color);
 
+  // True if the current |drag_view_| is the given |drag_view|.
+  bool IsDraggedView(const ShelfButton* drag_view) const;
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -455,9 +458,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
-
-  // The timestamp of the last shelf item touch press event.
-  base::TimeTicks touch_press_time_;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.
