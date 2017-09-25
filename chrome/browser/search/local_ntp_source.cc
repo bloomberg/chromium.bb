@@ -604,7 +604,7 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kLocalNtpReload)) {
     // While live-editing the local NTP files, turn off CSP.
-    return "script-src *;";
+    return "script-src * 'unsafe-inline';";
   }
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 

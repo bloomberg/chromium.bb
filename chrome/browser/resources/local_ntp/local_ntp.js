@@ -54,11 +54,12 @@ var NTP_DESIGN = {
  * @const
  */
 var CLASSES = {
-  ALTERNATE_LOGO: 'alternate-logo', // Shows white logo if required by theme
+  ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
+  FADE: 'fade',  // Enables opacity transition on logo and doodle.
+  FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
@@ -574,28 +575,26 @@ function init() {
       injectOneGoogleBar(og);
     };
 
-    // Initialize opacity and install transitionend handlers. It's necessary to
-    // explicitly initialize opacity here because isFadedOut() below uses the
-    // difference between .style and getComputedStyle() to detect fades in
-    // progress.
-    var logoDefault = $(IDS.LOGO_DEFAULT);
-    var logoDoodle = $(IDS.LOGO_DOODLE);
-    logoDefault.style.opacity = 1;
-    logoDoodle.style.opacity = 0;
-    logoDefault.addEventListener('transitionend', onDoodleTransitionEnd);
-    logoDoodle.addEventListener('transitionend', onDoodleTransitionEnd);
-
     // Load the Doodle. After the first request completes (getting cached
     // data), issue a second request for fresh Doodle data.
-    loadDoodle(null, function(ddl) {
-      if (ddl.usable) {
-        injectDoodle(ddl.image, ddl.metadata);
+    loadDoodle(/*v=*/null, function(ddl) {
+      if (ddl === null) {
+        // Got no ddl object at all, the feature is probably disabled. Just show
+        // the logo.
+        showLogoOrDoodle(null, null);
+        return;
       }
-      loadDoodle(ddl.v, function(ddl) {
-        if (ddl.usable) {
-          injectDoodle(ddl.image, ddl.metadata);
-        }
-      });
+
+      // Got a (possibly empty) ddl object. Show logo or doodle.
+      showLogoOrDoodle(ddl.image, ddl.metadata);
+      // If we got a valid ddl object (from cache), load a fresh one.
+      if (ddl.v !== null) {
+        loadDoodle(ddl.v, function(ddl) {
+          if (ddl.usable) {
+            fadeToLogoOrDoodle(ddl.image, ddl.metadata);
+          }
+        });
+      }
     });
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
@@ -679,12 +678,13 @@ function injectOneGoogleBar(ogb) {
 }
 
 
-/** Loads the Doodle. The loaded script declares a global variable ddl, which
- * onload() receives as its single argument. If v is null, then the call
- * requests a cached logo. If non-null, it must be the ddl.v of a previous
- * request for a cached logo, and the corresponding fresh logo is returned.
+/** Loads the Doodle. On success, the loaded script declares a global variable
+ * ddl, which onload() receives as its single argument. On failure, onload() is
+ * called with null as the argument. If v is null, then the call requests a
+ * cached logo. If non-null, it must be the ddl.v of a previous request for a
+ * cached logo, and the corresponding fresh logo is returned.
  * @param {?number} v
- * @param {function({v, image, metadata})} onload
+ * @param {function(?{v, usable, image, metadata})} onload
  */
 var loadDoodle = function(v, onload) {
   var ddlScript = document.createElement('script');
@@ -694,6 +694,10 @@ var loadDoodle = function(v, onload) {
   ddlScript.onload = function() {
     onload(ddl);
   };
+  ddlScript.onerror = function() {
+    onload(null);
+  };
+  // TODO(treib,sfiera): Add a timeout in case something goes wrong?
   document.body.appendChild(ddlScript);
 };
 
@@ -708,31 +712,42 @@ var isFadedOut = function(element) {
 };
 
 
-/** Returns true if |doodle| is currently visible. If doodle.image is null,
- * returns true when the default logo is visible; if non-null, checks that it
- * matches the doodle that is currently visible. Here, "visible" means
- * fully-visible or fading in.
+/** Returns true if the doodle given by |image| and |metadata| is currently
+ * visible. If |image| is null, returns true when the default logo is visible;
+ * if non-null, checks that it matches the doodle that is currently visible.
+ * Here, "visible" means fully-visible or fading in.
  *
- * @param {{image, metadata}} doodle
+ * @param {?Object} image
+ * @param {?Object} metadata
  * @returns {boolean}
  */
-var isDoodleCurrentlyVisible = function(doodle) {
+var isDoodleCurrentlyVisible = function(image, metadata) {
   var haveDoodle = ($(IDS.LOGO_DOODLE).style.opacity != 0);
-  var wantDoodle = (doodle.image !== null);
+  var wantDoodle = (image !== null) && (metadata !== null);
   if (!haveDoodle || !wantDoodle)
     return haveDoodle === wantDoodle;
 
   // Have a visible doodle and a query doodle. Test that they match.
   var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-  return (logoDoodleImage.src === doodle.image) ||
-      (logoDoodleImage.src === doodle.metadata.animatedUrl);
+  return (logoDoodleImage.src === image) ||
+      (logoDoodleImage.src === metadata.animatedUrl);
+};
+
+
+var showLogoOrDoodle = function(image, metadata) {
+  if (metadata !== null) {
+    applyDoodleMetadata(metadata);
+    $(IDS.LOGO_DOODLE_IMAGE).src = image;
+    $(IDS.LOGO_DOODLE).style.opacity = 1;
+  } else {
+    $(IDS.LOGO_DEFAULT).style.opacity = 1;
+  }
 };
 
 
 /** The image and metadata that should be shown, according to the latest fetch.
  * After a logo fades out, onDoodleTransitionEnd fades in a logo according to
- * targetDoodle. After a logo fades in, onDoodleTransitionEnd fades out again if
- * targetDoodle has change since the fade-in started.
+ * targetDoodle.
  */
 var targetDoodle = {
   image: null,
@@ -741,58 +756,59 @@ var targetDoodle = {
 
 
 /**
- * Injects the Doodle into the page. Called asynchronously, so that it doesn't
- * block the main page load.
+ * Starts fading out the given element, which should be either the default logo
+ * or the doodle.
+ *
+ * @param {HTMLElement} element
  */
-var injectDoodle = function(image, metadata) {
-  var logoDoodle = $(IDS.LOGO_DOODLE);
-  var logoDoodleLink = $(IDS.LOGO_DOODLE_LINK);
-  var logoDefault = $(IDS.LOGO_DEFAULT);
+var startFadeOut = function(element) {
+  element.classList.add(CLASSES.FADE);
+  element.addEventListener('transitionend', onDoodleTransitionEnd);
+  element.style.opacity = 0;
+};
 
-  // If the image is already visible, or a transition to it is in progress,
-  // there's no need to start a fade-out. However, metadata may have changed, so
-  // update the doodle's alt text and href, if applicable.
-  if (image === targetDoodle.image) {
+
+/**
+ * Integrates a fresh doodle into the page as appropriate. If the correct logo
+ * or doodle is already shown, just updates the metadata. Otherwise, initiates
+ * a fade from the currently-shown logo/doodle to the new one.
+ *
+ * @param {?Object} image
+ * @param {?Object} metadata
+ */
+var fadeToLogoOrDoodle = function(image, metadata) {
+  // If the image is already visible, there's no need to start a fade-out.
+  // However, metadata may have changed, so update the doodle's alt text and
+  // href, if applicable.
+  if (isDoodleCurrentlyVisible(image, metadata)) {
     if (metadata !== null) {
       applyDoodleMetadata(metadata);
-      targetDoodle.metadata = metadata;
     }
     return;
   }
 
+  // Set the target to use once the current logo/doodle has finished fading out.
   targetDoodle.image = image;
   targetDoodle.metadata = metadata;
 
-  // If either element is visible, start fading it out. onDoodleTransitionEnd
-  // will apply the change when the fade-out finishes.
-  logoDoodle.style.opacity = 0;
-  logoDefault.style.opacity = 0;
+  // Start fading out the current logo or doodle. onDoodleTransitionEnd will
+  // apply the change when the fade-out finishes.
+  startFadeOut($(IDS.LOGO_DEFAULT));
+  startFadeOut($(IDS.LOGO_DOODLE));
 };
 
 
 var onDoodleTransitionEnd = function(e) {
   var logoDoodle = $(IDS.LOGO_DOODLE);
-  var logoDoodleLink = $(IDS.LOGO_DOODLE_LINK);
   var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
   var logoDefault = $(IDS.LOGO_DEFAULT);
 
   if (isFadedOut(logoDoodle) && isFadedOut(logoDefault)) {
     // Fade-out finished. Start fading in the appropriate logo.
-    if (targetDoodle.image === null) {
-      logoDefault.style.opacity = 1;
-    } else {
-      applyDoodleMetadata(targetDoodle.metadata);
-      logoDoodleImage.src = targetDoodle.image;
-      logoDoodle.style.opacity = 1;
-    }
-    return;
-  }
+    showLogoOrDoodle(targetDoodle.image, targetDoodle.metadata);
 
-  // Fade-in finished. It's possible that the wrong image is now faded in, if
-  // the logo updated during a fade-in. In this case, restart the fade-out.
-  if (!isDoodleCurrentlyVisible(targetDoodle)) {
-    logoDoodle.style.opacity = 0;
-    logoDefault.style.opacity = 0;
+    logoDefault.removeEventListener('transitionend', onDoodleTransitionEnd);
+    logoDoodle.removeEventListener('transitionend', onDoodleTransitionEnd);
   }
 };
 
