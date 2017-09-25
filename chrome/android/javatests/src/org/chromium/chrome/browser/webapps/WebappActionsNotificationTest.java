@@ -87,6 +87,7 @@ public class WebappActionsNotificationTest {
     @SmallTest
     @Feature({"Webapps"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
+    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
     public void testNotificationNotEnabled() throws Exception {
         // Note ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION is not enabled.
         Assert.assertNull(getWebappNotification());
