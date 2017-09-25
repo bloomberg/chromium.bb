@@ -1858,11 +1858,6 @@ crbug.com/626703 external/wpt/webrtc/RTCDtlsTransport-getRemoteCertificates.html
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_arcto_001.htm [ Failure ]
 crbug.com/626703 external/wpt/2dcontext/building-paths/canvas_complexshapes_beziercurveto_001.htm [ Failure ]
-crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_canvas_11.html [ Failure ]
-crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_canvas_12.html [ Failure ]
-crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_11.html [ Failure ]
-crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_12.html [ Failure ]
-crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_13.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
 crbug.com/626703 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Timeout ]
@@ -2208,16 +2203,6 @@ crbug.com/626703 virtual/service-worker-script-streaming/external/wpt/service-wo
 
 # These external tests fail after turning on color correct rendering for canvas
 # since they use a non-SRGB source image.
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_1.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_2.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_3.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_4.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_5.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_6.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_7.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_8.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_10.html [ Failure ]
-crbug.com/763933 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_svg_image_1.html [ Failure ]
 crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure ]
 crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/image-object-in-canvas.html [ Failure ]
 
