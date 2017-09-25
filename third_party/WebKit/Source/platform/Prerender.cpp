@@ -51,7 +51,7 @@ DEFINE_TRACE(Prerender) {
 
 void Prerender::Dispose() {
   client_ = nullptr;
-  extra_data_.Clear();
+  extra_data_ = nullptr;
 }
 
 void Prerender::Add() {

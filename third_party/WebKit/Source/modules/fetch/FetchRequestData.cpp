@@ -112,7 +112,7 @@ void FetchRequestData::SetCredentials(
     WebURLRequest::FetchCredentialsMode credentials) {
   credentials_ = credentials;
   if (credentials_ != WebURLRequest::kFetchCredentialsModePassword)
-    attached_credential_.Clear();
+    attached_credential_ = nullptr;
 }
 
 DEFINE_TRACE(FetchRequestData) {

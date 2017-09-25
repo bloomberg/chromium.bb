@@ -52,7 +52,7 @@ class ScheduledNavigation
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(origin_document_); }
 
  protected:
-  void ClearUserGesture() { user_gesture_token_.Clear(); }
+  void ClearUserGesture() { user_gesture_token_ = nullptr; }
 
  private:
   Reason reason_;

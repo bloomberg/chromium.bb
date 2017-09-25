@@ -284,7 +284,7 @@ v8::Local<v8::Context> V8PerIsolateData::EnsureScriptRegexpContext() {
 void V8PerIsolateData::ClearScriptRegexpContext() {
   if (script_regexp_script_state_)
     script_regexp_script_state_->DisposePerContextData();
-  script_regexp_script_state_.Clear();
+  script_regexp_script_state_ = nullptr;
 }
 
 bool V8PerIsolateData::HasInstance(

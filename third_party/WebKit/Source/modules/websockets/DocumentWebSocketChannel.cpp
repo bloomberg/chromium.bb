@@ -606,7 +606,7 @@ void DocumentWebSocketChannel::DidFinishOpeningHandshake(
     probe::didReceiveWebSocketHandshakeResponse(
         GetDocument(), identifier_, handshake_request_.Get(), response);
   }
-  handshake_request_.Clear();
+  handshake_request_ = nullptr;
 }
 
 void DocumentWebSocketChannel::DidFail(WebSocketHandle* handle,

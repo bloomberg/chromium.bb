@@ -4943,7 +4943,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
       PairWithWeakHandling(living_int, living_int),
       dupe_int);  // This one is identical to the previous and doesn't add
                   // anything.
-  dupe_int.Clear();
+  dupe_int = nullptr;
 
   EXPECT_EQ(0, OffHeapInt::destructor_calls_);
   EXPECT_EQ(4u, map1->size());
@@ -5025,7 +5025,7 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
   map1->insert(dupe_int, PairWithWeakHandling(living_int, living_int));
   // This one is identical to the previous and doesn't add anything.
   map1->insert(dupe_int, PairWithWeakHandling(living_int, living_int));
-  dupe_int.Clear();
+  dupe_int = nullptr;
 
   EXPECT_EQ(0, OffHeapInt::destructor_calls_);
   EXPECT_EQ(4u, map1->size());

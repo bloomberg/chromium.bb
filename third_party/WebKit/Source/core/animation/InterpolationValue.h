@@ -45,7 +45,7 @@ struct InterpolationValue {
 
   void Clear() {
     interpolable_value.reset();
-    non_interpolable_value.Clear();
+    non_interpolable_value = nullptr;
   }
 
   std::unique_ptr<InterpolableValue> interpolable_value;

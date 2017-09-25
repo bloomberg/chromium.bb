@@ -1303,7 +1303,7 @@ void WebGLRenderingContextBase::DestroyContext() {
 
   DCHECK(GetDrawingBuffer());
   drawing_buffer_->BeginDestruction();
-  drawing_buffer_.Clear();
+  drawing_buffer_ = nullptr;
 }
 
 void WebGLRenderingContextBase::MarkContextChanged(
@@ -7490,7 +7490,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   // enough.
   if (GetDrawingBuffer()) {
     drawing_buffer_->BeginDestruction();
-    drawing_buffer_.Clear();
+    drawing_buffer_ = nullptr;
   }
 
   auto execution_context = host()->GetTopExecutionContext();

@@ -600,7 +600,7 @@ void ResourceResponse::SetDownloadedFilePath(
     const String& downloaded_file_path) {
   downloaded_file_path_ = downloaded_file_path;
   if (downloaded_file_path_.IsEmpty()) {
-    downloaded_file_handle_.Clear();
+    downloaded_file_handle_ = nullptr;
     return;
   }
   // TODO(dmurph): Investigate whether we need the mimeType on this blob.

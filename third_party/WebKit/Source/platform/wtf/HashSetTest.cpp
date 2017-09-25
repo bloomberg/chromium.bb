@@ -194,7 +194,7 @@ TEST(HashSetTest, HashSetRefPtr) {
   EXPECT_TRUE(set.Contains(ptr));
   EXPECT_NE(set.end(), set.find(ptr));
 
-  ptr.Clear();
+  ptr = nullptr;
   EXPECT_FALSE(is_deleted);
 
   set.erase(raw_ptr);

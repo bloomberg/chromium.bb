@@ -418,7 +418,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   EXPECT_TRUE(set.Contains(raw_ptr));
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  ptr.Clear();
+  ptr = nullptr;
   EXPECT_FALSE(is_deleted);
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
@@ -451,11 +451,11 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
   set.InsertBefore(it, ptr);
   EXPECT_EQ(1u, set.size());
   set.insert(ptr2);
-  ptr2.Clear();
+  ptr2 = nullptr;
   set.erase(ptr);
 
   EXPECT_FALSE(is_deleted);
-  ptr.Clear();
+  ptr = nullptr;
   EXPECT_TRUE(is_deleted);
 
   EXPECT_FALSE(is_deleted2);

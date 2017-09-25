@@ -364,7 +364,7 @@ void IDBCursor::PostSuccessHandlerCallback() {
 }
 
 void IDBCursor::Close() {
-  value_.Clear();
+  value_ = nullptr;
   request_.Clear();
   backend_.reset();
 }

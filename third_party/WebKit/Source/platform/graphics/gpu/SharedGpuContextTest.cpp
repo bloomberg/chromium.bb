@@ -199,7 +199,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // Destroy image and surface to return texture to recleable resource pool
-  image.Clear();
+  image = nullptr;
   surface = nullptr;
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);

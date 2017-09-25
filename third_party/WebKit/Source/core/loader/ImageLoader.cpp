@@ -127,7 +127,7 @@ class ImageLoader::Task {
 
   void ClearLoader() {
     loader_ = nullptr;
-    script_state_.Clear();
+    script_state_ = nullptr;
   }
 
   WeakPtr<Task> CreateWeakPtr() { return weak_factory_.CreateWeakPtr(); }

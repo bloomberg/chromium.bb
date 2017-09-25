@@ -260,7 +260,7 @@ bool IDBValueUnwrapper::ReadVarint(unsigned& value) {
 
 bool IDBValueUnwrapper::Reset() {
 #if DCHECK_IS_ON()
-  blob_handle_.Clear();
+  blob_handle_ = nullptr;
   current_ = nullptr;
   end_ = nullptr;
 #endif  // DCHECK_IS_ON()

@@ -164,7 +164,7 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   }
   if (main_script_loader_) {
     main_script_loader_->Cancel();
-    main_script_loader_.Clear();
+    main_script_loader_ = nullptr;
     // This deletes 'this'.
     worker_context_client_->WorkerContextFailedToStart();
     return;
@@ -399,7 +399,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_clients, main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options));
-    main_script_loader_.Clear();
+    main_script_loader_ = nullptr;
   } else {
     // ContentSecurityPolicy and ReferrerPolicy are applied to |document| at
     // SetContentSecurityPolicyAndReferrerPolicy() before evaluating the main

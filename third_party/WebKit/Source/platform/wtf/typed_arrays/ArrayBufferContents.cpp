@@ -90,7 +90,7 @@ ArrayBufferContents::ArrayBufferContents(DataHandle data,
 ArrayBufferContents::~ArrayBufferContents() {}
 
 void ArrayBufferContents::Neuter() {
-  holder_.Clear();
+  holder_ = nullptr;
 }
 
 void ArrayBufferContents::Transfer(ArrayBufferContents& other) {

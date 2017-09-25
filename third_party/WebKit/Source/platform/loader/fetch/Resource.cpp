@@ -166,7 +166,7 @@ void Resource::CachedMetadataHandlerImpl::SetCachedMetadata(
 
 void Resource::CachedMetadataHandlerImpl::ClearCachedMetadata(
     CachedMetadataHandler::CacheType cache_type) {
-  cached_metadata_.Clear();
+  cached_metadata_ = nullptr;
   if (cache_type == CachedMetadataHandler::kSendToPlatform)
     SendToPlatform();
 }
@@ -405,7 +405,7 @@ void Resource::SetResourceBuffer(RefPtr<SharedBuffer> resource_buffer) {
 }
 
 void Resource::ClearData() {
-  data_.Clear();
+  data_ = nullptr;
   encoded_size_memory_usage_ = 0;
 }
 

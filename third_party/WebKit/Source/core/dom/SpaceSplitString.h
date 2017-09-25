@@ -41,7 +41,7 @@ class CORE_EXPORT SpaceSplitString {
   }
 
   void Set(const AtomicString&);
-  void Clear() { data_.Clear(); }
+  void Clear() { data_ = nullptr; }
 
   bool Contains(const AtomicString& string) const {
     return data_ && data_->Contains(string);

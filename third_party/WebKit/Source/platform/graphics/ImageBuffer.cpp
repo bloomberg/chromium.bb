@@ -516,7 +516,7 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
         image->PaintImageForCurrentFrame().GetSkImage();
     // Must tear down AcceleratedStaticBitmapImage before calling
     // makeNonTextureImage()
-    image.Clear();
+    image = nullptr;
     image = StaticBitmapImage::Create(texture_image->makeNonTextureImage());
   }
   surface->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
