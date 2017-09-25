@@ -4803,6 +4803,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       setup_frame_size(cm, rb);
+      setup_sb_size(cm, rb);
       if (pbi->need_resync) {
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
         pbi->need_resync = 0;
