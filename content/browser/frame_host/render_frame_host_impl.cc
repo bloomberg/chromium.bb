@@ -1261,8 +1261,20 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
     }
   }
 
-  if (created && render_widget_host_)
+  if (created && render_widget_host_) {
+    mojom::WidgetPtr widget;
+    GetRemoteInterfaces()->GetInterface(&widget);
+    render_widget_host_->SetWidget(std::move(widget));
+
+    if (frame_input_handler_) {
+      mojom::WidgetInputHandlerAssociatedPtr widget_handler;
+      frame_input_handler_->GetWidgetInputHandler(
+          mojo::MakeRequest(&widget_handler));
+      render_widget_host_->SetWidgetInputHandler(std::move(widget_handler));
+    }
+
     render_widget_host_->InitForFrame();
+  }
 
   if (enabled_bindings_ && created) {
     if (!frame_bindings_control_)
