@@ -509,6 +509,7 @@ const GoogleConfigParams kGoogleConfigs[] = {
     // Origins without subdomains and with same-origin collectors.
     {"accounts.google.com", false, true, false},
     {"apis.google.com", false, true, false},
+    {"app.google.stackdriver.com", false, true, false},
     {"b.mail.google.com", false, true, false},
     {"chatenabled.mail.google.com", false, true, false},
     {"ddm.google.com", false, true, false},
