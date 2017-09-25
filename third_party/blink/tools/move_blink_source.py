@@ -115,6 +115,9 @@ class MoveBlinkSource(object):
         #  Command: a callable object, or
         #           a tuple of (<original string>, <new string>).
         file_replacement_list = [
+            ('DEPS',
+             [('src/third_party/WebKit/Source/devtools',
+               'src/third_party/blink/renderer/devtools')]),
             ('third_party/WebKit/Source/BUILD.gn',
              [('$root_gen_dir/third_party/WebKit',
                '$root_gen_dir/third_party/blink/renderer')]),
@@ -296,6 +299,9 @@ class MoveBlinkSource(object):
             elif file_type == FileType.OWNERS:
                 content = self._update_owners(content)
             elif file_type == FileType.DEPS:
+                if self._fs.dirname(file_path) == self._repo_root:
+                    _log.info("Skip //DEPS")
+                    continue
                 content = self._update_deps(content)
             elif file_type == FileType.MOJOM:
                 content = self._update_mojom(content)
@@ -309,9 +315,7 @@ class MoveBlinkSource(object):
             if self._options.run:
                 self._fs.write_text_file(file_path, content)
             if file_type == FileType.DEPS:
-                deps_dir = self._fs.dirname(file_path)
-                if deps_dir != self._repo_root:
-                    self._append_unless_upper_dir_exists(updated_deps_dirs, deps_dir)
+                self._append_unless_upper_dir_exists(updated_deps_dirs, self._fs.dirname(file_path))
             _log.info('Updated %s', self._shorten_path(file_path))
         return updated_deps_dirs
 
