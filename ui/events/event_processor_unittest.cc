@@ -23,6 +23,40 @@ typedef std::vector<std::string> HandlerSequenceRecorder;
 namespace ui {
 namespace test {
 
+class SelfDestroyingEventProcessor : public TestEventProcessor {
+ public:
+  SelfDestroyingEventProcessor() {}
+
+ protected:
+  EventDispatchDetails PostDispatchEvent(EventTarget* target,
+                                         const Event& event) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelfDestroyingEventProcessor);
+};
+
+class SelfDestroyingTestEventTarget : public TestEventTarget {
+ public:
+  SelfDestroyingTestEventTarget()
+      : processor_(new SelfDestroyingEventProcessor()) {}
+
+  TestEventProcessor* processor() { return processor_.get(); }
+
+  void DestroyProcessor() { processor_.reset(); }
+
+ private:
+  std::unique_ptr<SelfDestroyingEventProcessor> processor_;
+
+  DISALLOW_COPY_AND_ASSIGN(SelfDestroyingTestEventTarget);
+};
+
+EventDispatchDetails SelfDestroyingEventProcessor::PostDispatchEvent(
+    EventTarget* target,
+    const Event& event) {
+  static_cast<SelfDestroyingTestEventTarget*>(target)->DestroyProcessor();
+  return EventDispatchDetails();
+}
+
 class EventProcessorTest : public testing::Test {
  public:
   EventProcessorTest() {}
@@ -371,6 +405,20 @@ TEST_F(EventProcessorTest, HandlerSequence) {
       "PostR", "PreR", "PreC", "C", "PostC", "PostR", "PreR", "R", "PostR" };
   EXPECT_EQ(std::vector<std::string>(
       expected, expected + arraysize(expected)), recorder);
+}
+
+TEST(EventProcessorCrashTest, Basic) {
+  std::unique_ptr<TestEventTarget> root(new TestEventTarget());
+  std::unique_ptr<SelfDestroyingTestEventTarget> target(
+      new SelfDestroyingTestEventTarget());
+  root->SetEventTargeter(
+      base::MakeUnique<TestEventTargeter>(target.get(), false));
+  TestEventProcessor* processor = target->processor();
+  processor->SetRoot(std::move(root));
+
+  MouseEvent mouse(ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10),
+                   EventTimeForNow(), EF_NONE, EF_NONE);
+  EXPECT_TRUE(processor->OnEventFromSource(&mouse).dispatcher_destroyed);
 }
 
 }  // namespace test
