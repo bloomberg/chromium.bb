@@ -177,8 +177,7 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
 // static
 void SurfaceAggregator::UnrefResources(
     base::WeakPtr<SurfaceClient> surface_client,
-    const std::vector<ReturnedResource>& resources,
-    cc::BlockingTaskRunner* main_thread_task_runner) {
+    const std::vector<ReturnedResource>& resources) {
   if (surface_client)
     surface_client->UnrefResources(resources);
 }

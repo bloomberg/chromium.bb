@@ -25,12 +25,12 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
-#include "cc/resources/release_callback_impl.h"
 #include "cc/resources/return_callback.h"
-#include "cc/resources/single_release_callback_impl.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/release_callback.h"
 #include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -58,7 +58,6 @@ class SharedBitmapManager;
 }  // namespace viz
 
 namespace cc {
-class BlockingTaskRunner;
 class TextureIdAllocator;
 
 // This class is not thread-safe and can only be called from the thread it was
@@ -90,7 +89,6 @@ class CC_EXPORT ResourceProvider
   ResourceProvider(viz::ContextProvider* compositor_context_provider,
                    viz::SharedBitmapManager* shared_bitmap_manager,
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   BlockingTaskRunner* blocking_main_thread_task_runner,
                    bool delegated_sync_points_required,
                    bool enable_color_correct_rasterization,
                    const viz::ResourceSettings& resource_settings);
@@ -160,16 +158,16 @@ class CC_EXPORT ResourceProvider
   // Wraps an external texture mailbox into a GL resource.
   viz::ResourceId CreateResourceFromTextureMailbox(
       const viz::TextureMailbox& mailbox,
-      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl);
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   viz::ResourceId CreateResourceFromTextureMailbox(
       const viz::TextureMailbox& mailbox,
-      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       bool read_lock_fences_enabled);
 
   viz::ResourceId CreateResourceFromTextureMailbox(
       const viz::TextureMailbox& mailbox,
-      std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
       bool read_lock_fences_enabled,
       gfx::BufferFormat buffer_format);
 
@@ -465,7 +463,7 @@ class CC_EXPORT ResourceProvider
     int child_id;
     viz::ResourceId id_in_child;
     GLuint gl_id;
-    ReleaseCallbackImpl release_callback_impl;
+    viz::ReleaseCallback release_callback;
     uint8_t* pixels;
     int lock_for_read_count;
     int imported_count;
@@ -598,7 +596,6 @@ class CC_EXPORT ResourceProvider
   viz::ContextProvider* compositor_context_provider_;
   viz::SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  BlockingTaskRunner* blocking_main_thread_task_runner_;
   viz::ResourceId next_id_;
   int next_child_;
 

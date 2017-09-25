@@ -23,7 +23,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class BlockingTaskRunner;
 
 // Class responsible for controlling access to the main and impl task runners.
 // Useful for assertion checks.
@@ -53,10 +52,6 @@ class CC_EXPORT TaskRunnerProvider {
 
   virtual ~TaskRunnerProvider();
 
-  BlockingTaskRunner* blocking_main_thread_task_runner() const {
-    return blocking_main_thread_task_runner_.get();
-  }
-
  protected:
   TaskRunnerProvider(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -69,7 +64,6 @@ class CC_EXPORT TaskRunnerProvider {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
-  std::unique_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
 
 #if DCHECK_IS_ON()
   const base::PlatformThreadId main_thread_id_;

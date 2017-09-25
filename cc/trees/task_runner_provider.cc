@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/single_thread_task_runner.h"
-#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/task_runner_provider.h"
 
 namespace cc {
@@ -71,15 +70,10 @@ TaskRunnerProvider::TaskRunnerProvider(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
 #if !DCHECK_IS_ON()
-    : main_task_runner_(main_task_runner),
-      impl_task_runner_(impl_task_runner),
-      blocking_main_thread_task_runner_(
-          BlockingTaskRunner::Create(main_task_runner)) {
+    : main_task_runner_(main_task_runner), impl_task_runner_(impl_task_runner) {
 #else
     : main_task_runner_(main_task_runner),
       impl_task_runner_(impl_task_runner),
-      blocking_main_thread_task_runner_(
-          BlockingTaskRunner::Create(main_task_runner)),
       main_thread_id_(base::PlatformThread::CurrentId()),
       impl_thread_is_overridden_(false),
       is_main_thread_blocked_(false) {

@@ -17,7 +17,6 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
-#include "cc/trees/blocking_task_runner.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/copy_output_request.h"
@@ -37,10 +36,9 @@ namespace cc {
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
       disable_picture_quad_image_filtering_(false),
-      output_surface_client_(new FakeOutputSurfaceClient),
-      main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())) {}
-PixelTest::~PixelTest() {}
+      output_surface_client_(new FakeOutputSurfaceClient) {}
+
+PixelTest::~PixelTest() = default;
 
 bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
                              const base::FilePath& ref_file,
@@ -173,8 +171,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   constexpr bool delegated_sync_points_required = false;
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
-      delegated_sync_points_required,
+      gpu_memory_buffer_manager_.get(), delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
@@ -202,7 +199,7 @@ void PixelTest::SetUpSoftwareRenderer() {
       false;  // Meaningless for software.
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-      main_thread_task_runner_.get(), delegated_sync_points_required,
+      delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
   auto renderer = std::make_unique<viz::SoftwareRenderer>(

@@ -65,7 +65,6 @@ class PixelTest : public testing::Test {
   std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<viz::TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<viz::DirectRenderer> renderer_;

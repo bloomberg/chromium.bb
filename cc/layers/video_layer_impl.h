@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/resources/release_callback_impl.h"
 #include "cc/resources/video_resource_updater.h"
+#include "components/viz/common/quads/release_callback.h"
 #include "media/base/video_rotation.h"
 
 namespace media {
@@ -85,7 +85,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   // ExternalResource (aka TextureMailbox) classes.
   std::vector<unsigned> software_resources_;
   // Called once for each software resource.
-  ReleaseCallbackImpl software_release_callback_;
+  viz::ReleaseCallback software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };

@@ -65,9 +65,10 @@ const gfx::Transform kBothMirrorTransform =
 const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
 
-void MailboxReleased(const gpu::SyncToken& sync_token,
-                     bool lost_resource,
-                     cc::BlockingTaskRunner* main_thread_task_runner) {}
+void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
+
+void CollectResources(std::vector<ReturnedResource>* array,
+                      const std::vector<ReturnedResource>& returned) {}
 
 class FullscreenOverlayValidator : public OverlayCandidateValidator {
  public:
@@ -259,10 +260,6 @@ std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
   return pass;
 }
 
-static void CollectResources(std::vector<ReturnedResource>* array,
-                             const std::vector<ReturnedResource>& returned,
-                             cc::BlockingTaskRunner* main_thread_task_runner) {}
-
 ResourceId CreateResource(
     cc::DisplayResourceProvider* parent_resource_provider,
     cc::LayerTreeResourceProvider* child_resource_provider,
@@ -271,7 +268,7 @@ ResourceId CreateResource(
   TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
                          GL_TEXTURE_2D, size, is_overlay_candidate, false);
   auto release_callback =
-      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
 
   ResourceId resource_id =
       child_resource_provider->CreateResourceFromTextureMailbox(

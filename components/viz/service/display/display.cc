@@ -184,7 +184,7 @@ void Display::InitializeRenderer() {
   constexpr bool delegated_sync_points_required = false;
   resource_provider_ = base::MakeUnique<cc::DisplayResourceProvider>(
       output_surface_->context_provider(), bitmap_manager_,
-      gpu_memory_buffer_manager_, nullptr, delegated_sync_points_required,
+      gpu_memory_buffer_manager_, delegated_sync_points_required,
       settings_.enable_color_correct_rendering, settings_.resource_settings);
 
   if (output_surface_->context_provider()) {

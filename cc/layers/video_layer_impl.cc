@@ -11,10 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -129,7 +129,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   for (size_t i = 0; i < external_resources.mailboxes.size(); ++i) {
     unsigned resource_id = resource_provider->CreateResourceFromTextureMailbox(
         external_resources.mailboxes[i],
-        SingleReleaseCallbackImpl::Create(
+        viz::SingleReleaseCallback::Create(
             external_resources.release_callbacks[i]),
         external_resources.read_lock_fences_enabled,
         external_resources.buffer_format);
@@ -337,10 +337,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   if (frame_resource_type_ ==
       VideoFrameExternalResources::SOFTWARE_RESOURCE) {
     for (size_t i = 0; i < software_resources_.size(); ++i) {
-      software_release_callback_.Run(gpu::SyncToken(), false,
-                                     layer_tree_impl()
-                                         ->task_runner_provider()
-                                         ->blocking_main_thread_task_runner());
+      software_release_callback_.Run(gpu::SyncToken(), false);
     }
 
     software_resources_.clear();

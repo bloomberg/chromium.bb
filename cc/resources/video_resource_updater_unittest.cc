@@ -15,7 +15,6 @@
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "cc/trees/blocking_task_runner.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -402,8 +401,8 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
 
   // Simulate the ResourceProvider releasing the resources back to the video
   // updater.
-  for (ReleaseCallbackImpl& release_callback : resources.release_callbacks)
-    release_callback.Run(gpu::SyncToken(), false, nullptr);
+  for (auto& release_callback : resources.release_callbacks)
+    release_callback.Run(gpu::SyncToken(), false);
 
   // Allocate resources for the same frame.
   context3d_->ResetUploadCount();
@@ -475,7 +474,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
 
   // Simulate the ResourceProvider releasing the resource back to the video
   // updater.
-  resources.software_release_callback.Run(gpu::SyncToken(), false, nullptr);
+  resources.software_release_callback.Run(gpu::SyncToken(), false);
 
   // Allocate resources for the same frame.
   shared_bitmap_manager_->ResetAllocationCount();
@@ -633,7 +632,7 @@ TEST_F(VideoResourceUpdaterTest, PassReleaseSyncToken) {
         updater.CreateExternalResourcesFromVideoFrame(video_frame);
 
     ASSERT_EQ(resources.release_callbacks.size(), 1u);
-    resources.release_callbacks[0].Run(sync_token, false, nullptr);
+    resources.release_callbacks[0].Run(sync_token, false);
   }
 
   EXPECT_EQ(release_sync_token_, sync_token);
@@ -661,8 +660,8 @@ TEST_F(VideoResourceUpdaterTest, GenerateReleaseSyncToken) {
         updater.CreateExternalResourcesFromVideoFrame(video_frame);
 
     ASSERT_EQ(resources.release_callbacks.size(), 1u);
-    resources.release_callbacks[0].Run(sync_token1, false, nullptr);
-    resources.release_callbacks[0].Run(sync_token2, false, nullptr);
+    resources.release_callbacks[0].Run(sync_token1, false);
+    resources.release_callbacks[0].Run(sync_token2, false);
   }
 
   EXPECT_TRUE(release_sync_token_.HasData());

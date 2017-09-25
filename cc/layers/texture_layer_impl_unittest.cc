@@ -18,9 +18,7 @@
 namespace cc {
 namespace {
 
-void IgnoreCallback(const gpu::SyncToken& sync_token,
-                    bool lost,
-                    BlockingTaskRunner* main_thread_task_runner) {}
+void IgnoreCallback(const gpu::SyncToken& sync_token, bool lost) {}
 
 TEST(TextureLayerImplTest, VisibleOpaqueRegion) {
   const gfx::Size layer_bounds(100, 100);
@@ -71,7 +69,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTextureMailbox(
       texture_mailbox,
-      SingleReleaseCallbackImpl::Create(base::Bind(&IgnoreCallback)));
+      viz::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -131,7 +129,7 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTextureMailbox(
       texture_mailbox,
-      SingleReleaseCallbackImpl::Create(base::Bind(&IgnoreCallback)));
+      viz::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -173,11 +171,10 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTextureMailbox(
-      texture_mailbox,
-      SingleReleaseCallbackImpl::Create(base::Bind(
-          [](bool* released, const gpu::SyncToken& sync_token, bool lost,
-             BlockingTaskRunner* main_thread_task_runner) { *released = true; },
-          base::Unretained(&released))));
+      texture_mailbox, viz::SingleReleaseCallback::Create(base::Bind(
+                           [](bool* released, const gpu::SyncToken& sync_token,
+                              bool lost) { *released = true; },
+                           base::Unretained(&released))));
 
   impl.CalcDrawProps(viewport_size);
 
