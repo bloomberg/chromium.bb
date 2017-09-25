@@ -103,7 +103,7 @@ TaskHandle::TaskHandle(TaskHandle&&) = default;
 
 TaskHandle& TaskHandle::operator=(TaskHandle&& other) {
   TaskHandle tmp(std::move(other));
-  runner_.Swap(tmp.runner_);
+  runner_.swap(tmp.runner_);
   return *this;
 }
 

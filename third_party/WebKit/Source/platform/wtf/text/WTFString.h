@@ -99,7 +99,7 @@ class WTF_EXPORT String {
   String(StringImpl* impl) : impl_(impl) {}
   String(RefPtr<StringImpl> impl) : impl_(std::move(impl)) {}
 
-  void swap(String& o) { impl_.Swap(o.impl_); }
+  void swap(String& o) { impl_.swap(o.impl_); }
 
   template <typename CharType>
   static String Adopt(StringBuffer<CharType>& buffer) {
