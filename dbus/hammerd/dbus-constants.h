@@ -16,6 +16,7 @@ const char kBaseFirmwareUpdateSucceededSignal[] = "BaseFirmwareUpdateSucceeded";
 const char kBaseFirmwareUpdateFailedSignal[] = "BaseFirmwareUpdateFailed";
 const char kPairChallengeSucceededSignal[] = "PairChallengeSucceeded";
 const char kPairChallengeFailedSignal[] = "PairChallengeFailed";
+const char kInvalidBaseConnectedSignal[] = "InvalidBaseConnected";
 
 }  // namespace hammerd
 
