@@ -20,6 +20,27 @@ namespace {
 // bucket.
 const int64_t kMaxFileSizeKB = 4 * 1024 * 1024; /* 4GB */
 
+// Enum used by UMA metrics to track various reasons of pausing a download.
+enum class PauseReason {
+  // The download was paused. The reason can be anything.
+  ANY = 0,
+
+  // The download was paused due to unsatisfied device criteria.
+  UNMET_DEVICE_CRITERIA = 1,
+
+  // The download was paused by client.
+  PAUSE_BY_CLIENT = 2,
+
+  // The download was paused due to external download.
+  EXTERNAL_DOWNLOAD = 3,
+
+  // The download was paused due to navigation.
+  EXTERNAL_NAVIGATION = 4,
+
+  // The count of entries for the enum.
+  COUNT = 5,
+};
+
 // Converts DownloadTaskType to histogram suffix.
 // Should maps to suffix string in histograms.xml.
 std::string TaskTypeToHistogramSuffix(DownloadTaskType task_type) {
@@ -135,6 +156,12 @@ void LogDatabaseRecords(Entry::State state, uint32_t record_count) {
   base::UmaHistogramCustomCounts(name, record_count, 1, 500, 50);
 }
 
+// Helper method to log the pause reason for a particular download.
+void LogDownloadPauseReason(PauseReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Service.PauseReason", reason,
+                            PauseReason::COUNT);
+}
+
 }  // namespace
 
 void LogControllerStartupStatus(bool in_recovery, const StartupStatus& status) {
@@ -223,6 +250,25 @@ void LogDownloadCompletion(CompletionType type,
 
   name.append(".").append(CompletionTypeToHistogramSuffix(type));
   base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
+}
+
+void LogDownloadPauseReason(bool unmet_device_criteria,
+                            bool pause_by_client,
+                            bool external_navigation,
+                            bool external_download) {
+  LogDownloadPauseReason(PauseReason::ANY);
+
+  if (unmet_device_criteria)
+    LogDownloadPauseReason(PauseReason::UNMET_DEVICE_CRITERIA);
+
+  if (pause_by_client)
+    LogDownloadPauseReason(PauseReason::PAUSE_BY_CLIENT);
+
+  if (external_navigation)
+    LogDownloadPauseReason(PauseReason::EXTERNAL_NAVIGATION);
+
+  if (external_download)
+    LogDownloadPauseReason(PauseReason::EXTERNAL_DOWNLOAD);
 }
 
 void LogModelOperationResult(ModelAction action, bool success) {

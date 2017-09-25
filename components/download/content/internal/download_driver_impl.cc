@@ -15,6 +15,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 
 namespace download {
 
@@ -83,7 +84,13 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
           : item->GetFullPath();
   entry.completion_time = item->GetEndTime();
   entry.response_headers = item->GetResponseHeaders();
-  entry.url_chain = item->GetUrlChain();
+  if (entry.response_headers.get()) {
+    entry.can_resume =
+        entry.response_headers->HasHeaderValue("Accept-Ranges", "bytes") ||
+        (entry.response_headers->HasHeader("Content-Range") &&
+         entry.response_headers->response_code() == net::HTTP_PARTIAL_CONTENT);
+    entry.can_resume &= entry.response_headers->HasStrongValidators();
+  }
   return entry;
 }
 

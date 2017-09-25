@@ -22,6 +22,7 @@
 #include "components/download/internal/stats.h"
 #include "components/download/public/client.h"
 #include "components/download/public/download_params.h"
+#include "components/download/public/navigation_monitor.h"
 #include "components/download/public/task_scheduler.h"
 
 namespace download {
@@ -42,7 +43,8 @@ struct SchedulingParams;
 class ControllerImpl : public Controller,
                        public DownloadDriver::Client,
                        public Model::Client,
-                       public DeviceStatusListener::Observer {
+                       public DeviceStatusListener::Observer,
+                       public NavigationMonitor::Observer {
  public:
   // |config| is externally owned and must be guaranteed to outlive this class.
   ControllerImpl(Configuration* config,
@@ -103,6 +105,9 @@ class ControllerImpl : public Controller,
 
   // DeviceStatusListener::Observer implementation.
   void OnDeviceStatusChanged(const DeviceStatus& device_status) override;
+
+  // NavigationMonitor::Observer implementation.
+  void OnNavigationEvent() override;
 
   // Checks if initialization is complete and successful.  If so, completes the
   // internal state initialization.
@@ -172,6 +177,10 @@ class ControllerImpl : public Controller,
   // reached maximum.
   void ActivateMoreDownloads();
 
+  // Whether the download should be paused or postponed in case of an active
+  // navigation is in progress.
+  bool ShouldBlockDownloadOnNavigation(Entry* entry);
+
   void RemoveCleanupEligibleDownloads();
 
   void HandleExternalDownload(const std::string& guid, bool active);
@@ -213,6 +222,7 @@ class ControllerImpl : public Controller,
   std::unique_ptr<DownloadDriver> driver_;
   std::unique_ptr<Model> model_;
   std::unique_ptr<DeviceStatusListener> device_status_listener_;
+  NavigationMonitor* navigation_monitor_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TaskScheduler> task_scheduler_;
   std::unique_ptr<FileMonitor> file_monitor_;

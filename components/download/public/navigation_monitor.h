@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_NAVIGATION_MONITOR_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_NAVIGATION_MONITOR_H_
 
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace download {
@@ -38,6 +39,18 @@ class NavigationMonitor : public KeyedService {
 
   // Called when navigation events happen.
   virtual void OnNavigationEvent(NavigationEvent event) = 0;
+
+  // Returns whether the system is idle or busy with navigations.
+  virtual bool IsNavigationInProgress() const = 0;
+
+  // Called to configure various delays used before notifying the observers.
+  // |navigation_completion_delay| is the amount of delay during which if there
+  // is no navigation activity, the system is considered to be idle.
+  // |navigation_timeout_delay| is the maximum timeout starting from the
+  // beginning of a navigation after which the navigation is considered to be
+  // lost so that download service can resume.
+  virtual void Configure(base::TimeDelta navigation_completion_delay,
+                         base::TimeDelta navigation_timeout_delay) = 0;
 
  protected:
   ~NavigationMonitor() override{};

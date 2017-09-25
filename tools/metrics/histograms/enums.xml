@@ -8683,6 +8683,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="UNMETERED"/>
 </enum>
 
+<enum name="Download.Service.PauseReason">
+  <int value="0" label="ANY"/>
+  <int value="1" label="UNMET_DEVICE_CRITERIA"/>
+  <int value="2" label="PAUSE_BY_CLIENT"/>
+  <int value="3" label="EXTERNAL_DOWNLOAD"/>
+  <int value="4" label="EXTERNAL_NAVIGATION"/>
+</enum>
+
 <enum name="Download.Service.Priority">
   <int value="0" label="LOW"/>
   <int value="1" label="NORMAL"/>

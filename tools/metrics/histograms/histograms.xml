@@ -16373,6 +16373,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The completion type for downloads in download service.</summary>
 </histogram>
 
+<histogram name="Download.Service.PauseReason"
+    enum="Download.Service.PauseReason">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    The reason for pausing an in-progress download. Every pause will result in
+    two entries in the histogram: ANY and a more specific reason.
+  </summary>
+</histogram>
+
 <histogram name="Download.Service.Recovery" enum="Download.Service.EntryStates">
   <owner>xingliu@chromium.org</owner>
   <summary>

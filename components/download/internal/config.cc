@@ -53,6 +53,14 @@ const base::TimeDelta kDefaultWindowEndTime = base::TimeDelta::FromHours(8);
 const base::TimeDelta kDefaultNetworkChangeDelay =
     base::TimeDelta::FromSeconds(5);
 
+// The default delay to notify the observer after a navigation completes.
+const base::TimeDelta kDefaultNavigationCompletionDelay =
+    base::TimeDelta::FromSeconds(30);
+
+// The default timeout for a navigation.
+const base::TimeDelta kDefaultNavigationTimeoutDelay =
+    base::TimeDelta::FromSeconds(300);
+
 // The default value of download retry delay when the download is failed.
 const base::TimeDelta kDefaultDownloadRetryDelay =
     base::TimeDelta::FromSeconds(20);
@@ -102,6 +110,14 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
           GetFinchConfigUInt(kNetworkChangeDelayMsConfig,
                              kDefaultNetworkChangeDelay.InMilliseconds())));
+  config->navigation_completion_delay =
+      base::TimeDelta::FromSeconds(base::saturated_cast<int>(
+          GetFinchConfigUInt(kNavigationCompletionDelaySecondsConfig,
+                             kDefaultNavigationCompletionDelay.InSeconds())));
+  config->navigation_timeout_delay =
+      base::TimeDelta::FromSeconds(base::saturated_cast<int>(
+          GetFinchConfigUInt(kNavigationTimeoutDelaySecondsConfig,
+                             kDefaultNavigationTimeoutDelay.InSeconds())));
   config->download_retry_delay =
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
           GetFinchConfigUInt(kDownloadRetryDelayMsConfig,
@@ -120,6 +136,8 @@ Configuration::Configuration()
       window_start_time(kDefaultWindowStartTime),
       window_end_time(kDefaultWindowEndTime),
       network_change_delay(kDefaultNetworkChangeDelay),
+      navigation_completion_delay(kDefaultNavigationCompletionDelay),
+      navigation_timeout_delay(kDefaultNavigationTimeoutDelay),
       download_retry_delay(kDefaultDownloadRetryDelay) {}
 
 }  // namespace download
