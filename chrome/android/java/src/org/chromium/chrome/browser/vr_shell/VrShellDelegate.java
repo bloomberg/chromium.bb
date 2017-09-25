@@ -987,7 +987,7 @@ public class VrShellDelegate
         maybeUpdateVrSupportLevel();
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (!canEnterVr(mActivity.getActivityTab(), false)) return ENTER_VR_CANCELLED;
-        if (mVrSupportLevel == VR_DAYDREAM) {
+        if (mVrSupportLevel == VR_DAYDREAM && isDaydreamCurrentViewer()) {
             // TODO(mthiesse): This is a workaround for b/66486878 (see also crbug.com/767594).
             // We have to trigger the DON flow before setting VR mode enabled to prevent the DON
             // flow from failing on the S8/S8+.
