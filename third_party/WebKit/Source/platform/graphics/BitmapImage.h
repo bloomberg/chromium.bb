@@ -78,9 +78,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void ResetAnimation() override;
   bool MaybeAnimated() override;
 
-  void SetAnimationPolicy(ImageAnimationPolicy policy) override {
-    animation_policy_ = policy;
-  }
+  void SetAnimationPolicy(ImageAnimationPolicy) override;
   ImageAnimationPolicy AnimationPolicy() override { return animation_policy_; }
   void AdvanceTime(double delta_time_in_seconds) override;
 
