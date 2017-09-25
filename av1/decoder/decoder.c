@@ -52,8 +52,6 @@ static void initialize_dec(void) {
     av1_init_wedge_masks();
 #endif  // CONFIG_EXT_INTER
     init_done = 1;
-    av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
-                          av1_switchable_interp_tree);
 #if CONFIG_EXT_TX
     for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {
       av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],

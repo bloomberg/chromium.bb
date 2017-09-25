@@ -94,8 +94,6 @@ typedef struct frame_contexts {
 #endif
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
-  aom_prob switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
-                                 [SWITCHABLE_FILTERS - 1];
 #if CONFIG_ADAPT_SCAN
 // TODO(angiebird): try aom_prob
 #if CONFIG_CHROMA_2X2
@@ -567,8 +565,6 @@ extern const aom_tree_index
     av1_ext_partition_tree[TREE_SIZE(EXT_PARTITION_TYPES)];
 #endif
 extern const aom_tree_index
-    av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
-extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
 extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
@@ -597,8 +593,6 @@ extern const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)];
 extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION
-extern int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
-extern int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
 
 #if CONFIG_EXT_PARTITION_TYPES
 extern int av1_num_partition_types[PARTITION_BLOCK_SIZES];

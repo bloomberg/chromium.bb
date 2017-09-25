@@ -148,12 +148,6 @@ void av1_encode_token_init(void) {
   av1_tokens_from_tree(switchable_restore_encodings,
                        av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
-
-  /* This hack is necessary when CONFIG_DUAL_FILTER is enabled because the five
-      SWITCHABLE_FILTERS are not consecutive, e.g., 0, 1, 2, 3, 4, when doing
-      an in-order traversal of the av1_switchable_interp_tree structure. */
-  av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
-                        av1_switchable_interp_tree);
 }
 
 static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
@@ -1329,7 +1323,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
           (mbmi->ref_frame[1] > INTRA_FRAME &&
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
         const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-        aom_write_symbol(w, av1_switchable_interp_ind[mbmi->interp_filter[dir]],
+        aom_write_symbol(w, mbmi->interp_filter[dir],
                          ec_ctx->switchable_interp_cdf[ctx],
                          SWITCHABLE_FILTERS);
         ++cpi->interp_filter_selected[0][mbmi->interp_filter[dir]];
@@ -1340,7 +1334,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
 #else
     {
       const int ctx = av1_get_pred_context_switchable_interp(xd);
-      aom_write_symbol(w, av1_switchable_interp_ind[mbmi->interp_filter],
+      aom_write_symbol(w, mbmi->interp_filter,
                        ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
       ++cpi->interp_filter_selected[0][mbmi->interp_filter];
     }

@@ -1732,9 +1732,8 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
           (mbmi->ref_frame[1] > INTRA_FRAME &&
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
         mbmi->interp_filter[dir] =
-            (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
-                r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
-                ACCT_STR)];
+            (InterpFilter)aom_read_symbol(r, ec_ctx->switchable_interp_cdf[ctx],
+                                          SWITCHABLE_FILTERS, ACCT_STR);
         if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
       }
     }
@@ -1749,10 +1748,8 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
     mbmi->interp_filter = cm->interp_filter;
   } else {
     const int ctx = av1_get_pred_context_switchable_interp(xd);
-    mbmi->interp_filter =
-        (InterpFilter)av1_switchable_interp_inv[aom_read_symbol(
-            r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS,
-            ACCT_STR)];
+    mbmi->interp_filter = (InterpFilter)aom_read_symbol(
+        r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS, ACCT_STR);
     if (counts) ++counts->switchable_interp[ctx][mbmi->interp_filter];
   }
 #endif  // CONFIG_DUAL_FILTER

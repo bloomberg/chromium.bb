@@ -395,12 +395,6 @@ int main(int argc, const char **argv) {
   /* Interpolation filter */
   cts_each_dim[0] = SWITCHABLE_FILTER_CONTEXTS;
   cts_each_dim[1] = SWITCHABLE_FILTERS;
-  optimize_entropy_table(
-      &fc.switchable_interp[0][0], probsfile, 2, cts_each_dim,
-      av1_switchable_interp_tree, 0,
-      "static const aom_prob \n"
-      "default_switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]"
-      "[SWITCHABLE_FILTERS - 1]");
   optimize_cdf_table(&fc.switchable_interp[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob\n"
                      "default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]"

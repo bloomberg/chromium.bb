@@ -479,8 +479,7 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
       ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
       update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx],
-                 av1_switchable_interp_ind[mbmi->interp_filter[dir]],
-                 SWITCHABLE_FILTERS);
+                 mbmi->interp_filter[dir], SWITCHABLE_FILTERS);
     }
   }
 }
