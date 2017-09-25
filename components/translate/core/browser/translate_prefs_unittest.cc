@@ -18,6 +18,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::test::ScopedFeatureList;
+
 namespace {
 
 const char kTestLanguage[] = "en";
@@ -60,6 +62,20 @@ class TranslatePrefTest : public testing::Test {
   base::Time GetLastDeniedTime(const std::string& language) {
     DenialTimeUpdate update(prefs_.get(), language, 2);
     return update.GetOldestDenialTime();
+  }
+
+  void ExpectLanguagePrefs(const std::string& expected_str) {
+    if (expected_str.empty()) {
+      EXPECT_TRUE(prefs_->GetString(kAcceptLanguagesPref).empty());
+#if defined(OS_CHROMEOS)
+      EXPECT_TRUE(prefs_->GetString(kPreferredLanguagesPref).empty());
+#endif
+    } else {
+      EXPECT_EQ(expected_str, prefs_->GetString(kAcceptLanguagesPref));
+#if defined(OS_CHROMEOS)
+      EXPECT_EQ(expected_str, prefs_->GetString(kPreferredLanguagesPref));
+#endif
+    }
   }
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
@@ -220,21 +236,73 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_SlidingWindow) {
             now_ - base::TimeDelta::FromMinutes(2));
 }
 
+// The logic of UpdateLanguageList() changes based on the value of feature
+// kImprovedLanguageSettings, which is a boolean.
+// We write two separate test cases for true and false.
 TEST_F(TranslatePrefTest, UpdateLanguageList) {
-  // Test with basic set of languages (no country codes).
-  std::vector<std::string> languages{"en", "ja"};
-  translate_prefs_->UpdateLanguageList(languages);
-  EXPECT_EQ("en,ja", prefs_->GetString(kAcceptLanguagesPref));
+  ScopedFeatureList disable_feature;
+  disable_feature.InitAndDisableFeature(translate::kImprovedLanguageSettings);
 
-  // Test with languages that have country codes. Expect accepted languages both
-  // with and without a country code. (See documentation for
-  // ExpandLanguageCodes.)
-  languages = {"en-US", "ja", "en-CA"};
+  // Empty update.
+  std::vector<std::string> languages;
   translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("");
+
+  // One language.
+  languages = {"en"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en");
+
+  // More than one language.
+  languages = {"en", "ja", "it"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en,ja,it");
+
+  // Locale-specific codes.
+  // The list is exanded by adding the base languagese.
+  languages = {"en-US", "ja", "en-CA", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  EXPECT_EQ("en-US,en,ja,en-CA,fr-CA,fr",
+            prefs_->GetString(kAcceptLanguagesPref));
 #if defined(OS_CHROMEOS)
-  EXPECT_EQ("en-US,ja,en-CA", prefs_->GetString(kPreferredLanguagesPref));
+  EXPECT_EQ("en-US,ja,en-CA,fr-CA", prefs_->GetString(kPreferredLanguagesPref));
 #endif
-  EXPECT_EQ("en-US,en,ja,en-CA", prefs_->GetString(kAcceptLanguagesPref));
+
+  // List already expanded.
+  languages = {"en-US", "en", "fr", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en-US,en,fr,fr-CA");
+}
+
+TEST_F(TranslatePrefTest, UpdateLanguageListFeatureEnabled) {
+  ScopedFeatureList enable_feature;
+  enable_feature.InitAndEnableFeature(translate::kImprovedLanguageSettings);
+
+  // Empty update.
+  std::vector<std::string> languages;
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("");
+
+  // One language.
+  languages = {"en"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en");
+
+  // More than one language.
+  languages = {"en", "ja", "it"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en,ja,it");
+
+  // Locale-specific codes.
+  // The list is exanded by adding the base languagese.
+  languages = {"en-US", "ja", "en-CA", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en-US,ja,en-CA,fr-CA");
+
+  // List already expanded.
+  languages = {"en-US", "en", "fr", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en-US,en,fr,fr-CA");
 }
 
 TEST_F(TranslatePrefTest, ULPPrefs) {

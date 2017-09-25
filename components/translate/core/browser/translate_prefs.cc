@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -103,6 +104,9 @@ void ExpandLanguageCodes(const std::vector<std::string>& languages,
 
 const base::Feature kTranslateUI2016Q2{"TranslateUI2016Q2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kImprovedLanguageSettings{
+    "ImprovedLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
@@ -469,18 +473,21 @@ void TranslatePrefs::GetLanguageList(
 
 void TranslatePrefs::UpdateLanguageList(
     const std::vector<std::string>& languages) {
-#if defined(OS_CHROMEOS)
   std::string languages_str = base::JoinString(languages, ",");
-  prefs_->SetString(preferred_languages_pref_.c_str(), languages_str);
+
+#if defined(OS_CHROMEOS)
+  prefs_->SetString(preferred_languages_pref_, languages_str);
 #endif
 
   // Save the same language list as accept languages preference as well, but we
   // need to expand the language list, to make it more acceptable. For instance,
   // some web sites don't understand 'en-US' but 'en'. See crosbug.com/9884.
-  std::vector<base::StringPiece> accept_languages;
-  ExpandLanguageCodes(languages, &accept_languages);
-  std::string accept_languages_str = base::JoinString(accept_languages, ",");
-  prefs_->SetString(accept_languages_pref_, accept_languages_str);
+  if (!base::FeatureList::IsEnabled(kImprovedLanguageSettings)) {
+    std::vector<base::StringPiece> accept_languages;
+    ExpandLanguageCodes(languages, &accept_languages);
+    languages_str = base::JoinString(accept_languages, ",");
+  }
+  prefs_->SetString(accept_languages_pref_, languages_str);
 }
 
 bool TranslatePrefs::CanTranslateLanguage(
