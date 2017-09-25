@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_block.h"
-#import "breakpad/src/client/ios/BreakpadController.h"
 #include "components/metrics/metrics_service.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
@@ -20,6 +19,7 @@
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/platform_test.h"
+#import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 

@@ -20,5 +20,5 @@ fun:unpack_RGBA8888
 fun:unpack_RGB888
 
 # False positives due to use of linux_syscall_support. http://crbug.com/394028
-src:*/breakpad/src/*
+src:*/third_party/breakpad/breakpad/src/*
 src:*/components/crash/content/app/breakpad_linux.cc

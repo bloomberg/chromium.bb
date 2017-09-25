@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
-#import "breakpad/src/client/mac/Framework/Breakpad.h"
+#import "third_party/breakpad/breakpad/src/client/mac/Framework/Breakpad.h"
 
 namespace remoting {
 

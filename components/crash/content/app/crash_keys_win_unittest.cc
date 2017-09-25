@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/breakpad/breakpad/src/client/windows/common/ipc_protocol.h"
 
 namespace breakpad {
 

@@ -32,13 +32,13 @@ source_set("crash") {
 
   deps = [
     "//base",
-    "//breakpad:client",
     "//chromecast/base",
     "//chromecast/base:cast_version",
     "//components/crash/core/common",
     "//components/metrics",
     "//components/prefs",
     "//gpu/config:crash_keys",
+    "//third_party/breakpad:client",
   ]
 
   if (chromecast_branding == "public") {
@@ -97,13 +97,13 @@ if (is_linux) {
       "//base",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
-      "//breakpad:client",
       "//chromecast/base:cast_sys_info",
       "//chromecast/base:test_support",
       "//components/metrics",
       "//components/prefs:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/breakpad:client",
     ]
   }
 }

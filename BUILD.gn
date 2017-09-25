@@ -364,10 +364,10 @@ group("gn_all") {
 
   if (is_linux || is_android) {
     deps += [
-      "//breakpad:breakpad_unittests",
-      "//breakpad:core-2-minidump",
-      "//breakpad:generate_test_dump",
-      "//breakpad:minidump-2-core",
+      "//third_party/breakpad:breakpad_unittests",
+      "//third_party/breakpad:core-2-minidump",
+      "//third_party/breakpad:generate_test_dump",
+      "//third_party/breakpad:minidump-2-core",
     ]
   }
 
@@ -508,16 +508,16 @@ group("gn_all") {
 
   if (is_android || (is_linux && !is_chromeos)) {
     deps += [
-      "//breakpad:dump_syms($host_toolchain)",
-      "//breakpad:microdump_stackwalk($host_toolchain)",
-      "//breakpad:minidump_dump($host_toolchain)",
-      "//breakpad:minidump_stackwalk($host_toolchain)",
       "//components/network_hints/browser",
       "//content/public/app:browser",
       "//content/public/app:child",
       "//mojo/edk/test:mojo_public_system_perftests",
       "//services/service_manager/public/cpp",
       "//testing/gmock:gmock_main",
+      "//third_party/breakpad:dump_syms($host_toolchain)",
+      "//third_party/breakpad:microdump_stackwalk($host_toolchain)",
+      "//third_party/breakpad:minidump_dump($host_toolchain)",
+      "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
     ]
 
     if (!is_android) {
@@ -547,9 +547,9 @@ group("gn_all") {
 
   if (is_mac) {
     deps += [
-      "//breakpad:crash_inspector",
-      "//breakpad:dump_syms",
       "//third_party/apple_sample_code",
+      "//third_party/breakpad:crash_inspector",
+      "//third_party/breakpad:dump_syms",
       "//third_party/molokocacao",
     ]
     deps -= [
@@ -585,7 +585,7 @@ group("gn_all") {
           [ "//chrome/installer/mini_installer:next_version_mini_installer" ]
     }
   } else if (!is_android && !is_ios && !is_fuchsia) {
-    deps += [ "//breakpad:symupload($host_toolchain)" ]
+    deps += [ "//third_party/breakpad:symupload($host_toolchain)" ]
   }
 
   if (is_chromecast) {
@@ -813,13 +813,13 @@ if (is_chromeos) {
   group("chromiumos_preflight") {
     testonly = true
     deps = [
-      "//breakpad:minidump_stackwalk($host_toolchain)",
       "//chrome",
       "//chrome/test/chromedriver",
       "//media:media_unittests",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
+      "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
 
       # Blocked on https://github.com/catapult-project/catapult/issues/2297
       #"//third_party/catapult/telemetry:bitmaptools",
@@ -913,12 +913,12 @@ if (!is_ios && !is_fuchsia) {
 
     if (is_android) {
       data_deps += [
-        "//breakpad:breakpad_unittests",
-        "//breakpad:dump_syms",
-        "//breakpad:microdump_stackwalk",
-        "//breakpad:minidump_dump",
-        "//breakpad:minidump_stackwalk",
-        "//breakpad:symupload",
+        "//third_party/breakpad:breakpad_unittests",
+        "//third_party/breakpad:dump_syms",
+        "//third_party/breakpad:microdump_stackwalk",
+        "//third_party/breakpad:minidump_dump",
+        "//third_party/breakpad:minidump_stackwalk",
+        "//third_party/breakpad:symupload",
         "//tools/android/forwarder2",
       ]
     }
@@ -928,15 +928,16 @@ if (!is_ios && !is_fuchsia) {
     }
 
     if (!is_win && !is_android) {
-      data_deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
+      data_deps +=
+          [ "//third_party/breakpad:minidump_stackwalk($host_toolchain)" ]
     }
 
     if (is_mac) {
-      data_deps += [ "//breakpad:dump_syms($host_toolchain)" ]
+      data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
     }
 
     if (is_linux) {
-      data_deps += [ "//breakpad:dump_syms($host_toolchain)" ]
+      data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
     }
 
     data = [
@@ -1054,7 +1055,8 @@ group("chromium_builder_perf") {
         "//chrome/test:angle_perftests",
       ]
     } else {
-      data_deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
+      data_deps +=
+          [ "//third_party/breakpad:minidump_stackwalk($host_toolchain)" ]
     }
   }
 }

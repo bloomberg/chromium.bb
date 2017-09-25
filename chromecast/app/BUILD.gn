@@ -50,9 +50,9 @@ source_set("cast_crash_client") {
 
   if (is_android) {
     deps += [
-      "//breakpad:client",
       "//chromecast/base:cast_version",
       "//chromecast/browser:jni_headers",
+      "//third_party/breakpad:client",
     ]
   }
 }
