@@ -1046,7 +1046,13 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
 #endif
   } else {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
+    web_frame->DispatchBeforePrintEvent();
+    if (!weak_this)
+      return;
     Print(web_frame, blink::WebNode(), true /* is_scripted? */);
+    if (weak_this)
+      web_frame->DispatchAfterPrintEvent();
 #endif
   }
   // WARNING: |this| may be gone at this point. Do not do any more work here and
@@ -1076,6 +1082,8 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
+    IPC_MESSAGE_HANDLER(PrintMsg_ClosePrintPreviewDialog,
+                        OnClosePrintPreviewDialog)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_SetPrintingEnabled, OnSetPrintingEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1100,12 +1108,18 @@ void PrintRenderFrameHelper::OnPrintPages() {
   if (ipc_nesting_level_ > 1)
     return;
 
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  frame->DispatchBeforePrintEvent();
+  if (!weak_this)
+    return;
 
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
   Print(frame, plugin, false /* is_scripted? */);
+  if (weak_this)
+    frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
 }
@@ -1118,7 +1132,10 @@ void PrintRenderFrameHelper::OnPrintForSystemDialog() {
     NOTREACHED();
     return;
   }
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
   Print(frame, print_preview_context_.source_node(), false);
+  if (weak_this)
+    frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
 }
@@ -1493,6 +1510,10 @@ void PrintRenderFrameHelper::OnInitiatePrintPreview(bool has_selection) {
   RequestPrintPreview(has_selection
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
+}
+
+void PrintRenderFrameHelper::OnClosePrintPreviewDialog() {
+  print_preview_context_.source_frame()->DispatchAfterPrintEvent();
 }
 #endif
 
@@ -2032,6 +2053,10 @@ void PrintRenderFrameHelper::ShowScriptedPrintPreview() {
 }
 
 void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  print_preview_context_.source_frame()->DispatchBeforePrintEvent();
+  if (!weak_this)
+    return;
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool has_selection = print_preview_context_.HasSelection();
   PrintHostMsg_RequestPrintPreview_Params params;

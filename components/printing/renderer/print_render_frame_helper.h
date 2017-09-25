@@ -199,6 +199,7 @@ class PrintRenderFrameHelper
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnInitiatePrintPreview(bool has_selection);
   void OnPrintPreview(const base::DictionaryValue& settings);
+  void OnClosePrintPreviewDialog();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintingDone(bool success);
 
