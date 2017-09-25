@@ -31,7 +31,6 @@ from py_utils import contextlib_ext
 
 
 LOGCAT_FILTERS = [
-  '*:e',
   'chromium:v',
   'cr_*:v',
   'DEBUG:I',
