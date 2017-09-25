@@ -26,8 +26,6 @@ class UIThreadSearchTermsData : public SearchTermsData {
   std::string GetSearchClient() const override;
   std::string GetSuggestClient() const override;
   std::string GetSuggestRequestIdentifier() const override;
-  std::string InstantExtendedEnabledParam() const override;
-  std::string ForceInstantResultsParam(bool for_prerender) const override;
   std::string GoogleImageSearchSource() const override;
 
  private:

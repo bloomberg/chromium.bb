@@ -128,15 +128,6 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   return "chrome-ext-ansg";
 }
 
-std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
-  return search::InstantExtendedEnabledParam();
-}
-
-std::string UIThreadSearchTermsData::ForceInstantResultsParam(
-    bool for_prerender) const {
-  return search::ForceInstantResultsParam(for_prerender);
-}
-
 // It's acutally OK to call this method on any thread, but it's currently placed
 // in UIThreadSearchTermsData since SearchTermsData cannot depend on src/chrome
 // as it is shared with iOS.

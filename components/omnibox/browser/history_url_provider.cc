@@ -279,8 +279,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string GetApplicationLocale() const override;
   base::string16 GetRlzParameterValue(bool from_app_list) const override;
   std::string GetSearchClient() const override;
-  std::string InstantExtendedEnabledParam() const override;
-  std::string ForceInstantResultsParam(bool for_prerender) const override;
   std::string GoogleImageSearchSource() const override;
 
  private:
@@ -288,9 +286,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string application_locale_;
   base::string16 rlz_parameter_value_;
   std::string search_client_;
-  std::string instant_extended_enabled_param_;
-  std::string force_instant_results_param_;
-  std::string force_instant_results_param_for_prerender_;
   std::string google_image_search_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataSnapshot);
@@ -302,12 +297,6 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       application_locale_(search_terms_data.GetApplicationLocale()),
       rlz_parameter_value_(search_terms_data.GetRlzParameterValue(false)),
       search_client_(search_terms_data.GetSearchClient()),
-      instant_extended_enabled_param_(
-          search_terms_data.InstantExtendedEnabledParam()),
-      force_instant_results_param_(
-          search_terms_data.ForceInstantResultsParam(false)),
-      force_instant_results_param_for_prerender_(
-          search_terms_data.ForceInstantResultsParam(true)),
       google_image_search_source_(search_terms_data.GoogleImageSearchSource()) {
 }
 
@@ -329,16 +318,6 @@ base::string16 SearchTermsDataSnapshot::GetRlzParameterValue(
 
 std::string SearchTermsDataSnapshot::GetSearchClient() const {
   return search_client_;
-}
-
-std::string SearchTermsDataSnapshot::InstantExtendedEnabledParam() const {
-  return instant_extended_enabled_param_;
-}
-
-std::string SearchTermsDataSnapshot::ForceInstantResultsParam(
-    bool for_prerender) const {
-  return for_prerender ? force_instant_results_param_ :
-      force_instant_results_param_for_prerender_;
 }
 
 std::string SearchTermsDataSnapshot::GoogleImageSearchSource() const {
