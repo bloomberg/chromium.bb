@@ -1171,8 +1171,15 @@ public class LocationBarLayout extends FrameLayout
                     String url = mToolbarDataProvider.hasTab()
                             ? mToolbarDataProvider.getCurrentUrl()
                             : UrlConstants.NTP_URL;
-                    mAutocomplete.start(profile, url, textWithoutAutocomplete, preventAutocomplete,
-                            mUrlFocusedFromFakebox);
+                    int cursorPosition = -1;
+                    if (mUrlBar.getSelectionStart() == mUrlBar.getSelectionEnd()) {
+                        // Conveniently, if there is no selection, those two functions return -1,
+                        // exactly the same value needed to pass to start() to indicate no cursor
+                        // position.  Hence, there's no need to check for -1 here explicitly.
+                        cursorPosition = mUrlBar.getSelectionStart();
+                    }
+                    mAutocomplete.start(profile, url, textWithoutAutocomplete, cursorPosition,
+                            preventAutocomplete, mUrlFocusedFromFakebox);
                 }
             };
             if (mNativeInitialized) {
@@ -1903,10 +1910,10 @@ public class LocationBarLayout extends FrameLayout
         stopAutocomplete(false);
         if (mToolbarDataProvider.hasTab()) {
             mAutocomplete.start(mToolbarDataProvider.getProfile(),
-                    mToolbarDataProvider.getCurrentUrl(), query, false, false);
+                    mToolbarDataProvider.getCurrentUrl(), query, -1, false, false);
         } else if (mBottomSheet != null) {
-            mAutocomplete.start(
-                    mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, false, false);
+            mAutocomplete.start(mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, -1,
+                    false, false);
         }
         post(new Runnable() {
             @Override
