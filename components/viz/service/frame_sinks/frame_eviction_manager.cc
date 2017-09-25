@@ -15,7 +15,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 
 namespace viz {
 namespace {
@@ -126,21 +125,11 @@ FrameEvictionManager::FrameEvictionManager()
 #else
       std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
 #endif
-  max_handles_ = base::SharedMemory::GetHandleLimit() / 8.0f;
 }
 
 FrameEvictionManager::~FrameEvictionManager() {}
 
 void FrameEvictionManager::CullUnlockedFrames(size_t saved_frame_limit) {
-  if (unlocked_frames_.size() + locked_frames_.size() > 0) {
-    float handles_per_frame =
-        ServerSharedBitmapManager::current()->AllocatedBitmapCount() * 1.0f /
-        (unlocked_frames_.size() + locked_frames_.size());
-
-    saved_frame_limit = std::max(
-        1, static_cast<int>(std::min(static_cast<float>(saved_frame_limit),
-                                     max_handles_ / handles_per_frame)));
-  }
   while (!unlocked_frames_.empty() &&
          unlocked_frames_.size() + locked_frames_.size() > saved_frame_limit) {
     size_t old_size = unlocked_frames_.size();
