@@ -93,6 +93,9 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
     if (element->IsVisible() != visible) {
       return false;
     }
+    if (!element || (visible && element->draw_phase() == kPhaseNone)) {
+      return false;
+    }
   }
   return true;
 }
