@@ -11,7 +11,7 @@ namespace blink {
 
 int TextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
-    LineVerticalPositionType position_type) {
+    LineVerticalPositionType position_type) const {
   const RootInlineBox& root = inline_text_box_->Root();
   FontBaseline baseline_type = root.BaselineType();
   LayoutUnit offset = inline_text_box_->OffsetTo(position_type, baseline_type);

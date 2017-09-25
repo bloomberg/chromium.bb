@@ -22,6 +22,7 @@ class ComputedStyle;
 class Document;
 class GraphicsContext;
 class GraphicsContextStateSaver;
+class TextDecorationOffsetBase;
 struct PaintInfo;
 
 // Base class for text painting. Has no dependencies on the layout tree and thus
@@ -50,6 +51,11 @@ class CORE_EXPORT TextPainterBase {
                                     bool horizontal,
                                     GraphicsContextStateSaver&);
 
+  void PaintDecorationsExceptLineThrough(const TextDecorationOffsetBase&,
+                                         const DecorationInfo&,
+                                         const PaintInfo&,
+                                         const Vector<AppliedTextDecoration>&,
+                                         bool* has_line_through_decoration);
   void PaintDecorationsOnlyLineThrough(const DecorationInfo&,
                                        const PaintInfo&,
                                        const Vector<AppliedTextDecoration>&);
