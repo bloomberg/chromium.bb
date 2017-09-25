@@ -37,6 +37,7 @@ import ConfigParser
 import json
 import os
 import subprocess
+import webbrowser
 
 BUILD_DIRECTORY = 'out/Coverage-iphonesimulator'
 DEFAULT_GOMA_JOBS = 50
@@ -209,6 +210,30 @@ class _DirectoryLineCoverageReport(object):
     """
     assert path in self._coverage, '{} is not in the report.'.format(path)
     return self._coverage[path]['total'], self._coverage[path]['executed']
+
+
+def _GenerateLineByLineFileCoverageInHtml(
+    target, profdata_path, file_line_coverage_report, output_dir):
+  """Generate per file line-by-line coverage in html using 'llvm-cov show'.
+
+  For a file with absolute path /a/b/x.cc, a html report is generated as:
+  output_dir/a/b/x.cc.html. An index html file is also generated as:
+  output_dir/index.html.
+
+  Args:
+    target: A string representing the name of the target to be tested.
+    profdata_path: A string representing the path to the profdata file.
+    file_line_coverage_report: A FileLineCoverageReport object.
+    output_dir: output directory for generated html files.
+  """
+  application_path = _GetApplicationBundlePath(target)
+  binary_path = os.path.join(application_path, target)
+  cmd = ['xcrun', 'llvm-cov', 'show', '-instr-profile', profdata_path,
+         '-arch=x86_64', binary_path, '-format=html', '-show-expansions']
+  cmd.append('-output-dir=' + output_dir)
+  cmd.extend(file_line_coverage_report.GetListOfFiles())
+
+  subprocess.check_call(cmd)
 
 
 def _CreateCoverageProfileDataForTarget(target, jobs_count=None,
@@ -716,6 +741,9 @@ def _ParseCommandArguments():
                           help='Skip building test target and running tests '
                                'and re-use the specified profile data file.')
 
+  arg_parser.add_argument('-o', '--output-dir', type=str, required=True,
+                          help='Output directory for html report.')
+
   arg_parser.add_argument('--gtest_filter', type=str,
                           help='Only run unit tests whose full name matches '
                                'the filter.')
@@ -794,6 +822,13 @@ def Main():
   total, executed = dir_line_coverage_report.GetCoverageForDirectory(
       top_level_dir)
   _PrintLineCoverageStats(total, executed)
+
+  _GenerateLineByLineFileCoverageInHtml(
+      target, profdata_path, file_line_coverage_report, args.output_dir)
+
+  html_index_file_path = 'file://' + os.path.abspath(
+      os.path.join(args.output_dir, 'index.html'))
+  webbrowser.open(html_index_file_path)
 
 
 if __name__ == '__main__':
