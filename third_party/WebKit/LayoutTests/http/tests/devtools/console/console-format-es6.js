@@ -20,6 +20,9 @@
         var p = Promise.reject(-0);
         p.catch(function() {});
 
+        var p2 = Promise.resolve(1);
+        var p3 = new Promise(() => {});
+
         var smb1 = Symbol();
         var smb2 = Symbol("a");
         var obj = {
@@ -63,7 +66,7 @@
         var generator = genFunction();
 
         globals = [
-            p, smb1, smb2, obj, map, weakMap, set, weakSet,
+            p, p2, p3, smb1, smb2, obj, map, weakMap, set, weakSet,
             mapMap0, mapMap, setSet0, setSet, bigmap, generator
         ];
 

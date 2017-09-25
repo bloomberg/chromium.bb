@@ -102,6 +102,10 @@ CONSOLE MESSAGE: line 12: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 CONSOLE MESSAGE: line 13: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 CONSOLE MESSAGE: line 12: test
 CONSOLE MESSAGE: line 13: test
+CONSOLE MESSAGE: line 12: 42.0000
+CONSOLE MESSAGE: line 13: 42.0000
+CONSOLE MESSAGE: line 12: abc
+CONSOLE MESSAGE: line 13: abc
 Tests that console logging dumps proper messages.
 
  console-format.html:22 Array(10)
@@ -259,14 +263,14 @@ console-format.html:8 [ƒ]
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:7 Number {[[PrimitiveValue]]: 42}
+console-format.html:7 Number {42}
 console-format.html:8 [Number]
 globals[32]
-Number {[[PrimitiveValue]]: 42}
-console-format.html:7 String {[[PrimitiveValue]]: "abc"}
+Number {42}
+console-format.html:7 String {"abc"}
 console-format.html:8 [String]
 globals[33]
-String {[[PrimitiveValue]]: "abc"}
+String {"abc"}
 console-format.html:7 Uint16Array(3) [1, 2, 3]
 console-format.html:8 [Uint16Array(3)]
 globals[34]
@@ -303,6 +307,14 @@ console-format.html:7 ["test"]
 console-format.html:8 [Array(1)]
 globals[42]
 ["test"]
+console-format.html:7 Number {42, 1: "foo", a: "bar"}
+console-format.html:8 [Number]
+globals[43]
+Number {42, 1: "foo", a: "bar"}
+console-format.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+console-format.html:8 [String]
+globals[44]
+String {"abc", 3: "foo", 01: "foo", a: "bar"}
 Expanded all messages
 console-format.html:22 Array(10)
     0: "test"
@@ -650,18 +662,18 @@ console-format.html:8 [ƒ]
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format.html:7 Number {[[PrimitiveValue]]: 42}
+console-format.html:7 Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
 console-format.html:8 [Number]
-    0: Number {[[PrimitiveValue]]: 42}
+    0: Number {42}
     length: 1
     __proto__: Array(0)
 globals[32]
-Number {[[PrimitiveValue]]: 42}
+Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {[[PrimitiveValue]]: "abc"}
+console-format.html:7 String {"abc"}
     0: "a"
     1: "b"
     2: "c"
@@ -669,11 +681,11 @@ console-format.html:7 String {[[PrimitiveValue]]: "abc"}
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format.html:8 [String]
-    0: String {[[PrimitiveValue]]: "abc"}
+    0: String {"abc"}
     length: 1
     __proto__: Array(0)
 globals[33]
-String {[[PrimitiveValue]]: "abc"}
+String {"abc"}
     0: "a"
     1: "b"
     2: "c"
@@ -813,4 +825,44 @@ globals[42]
     0: "test"
     length: 1
     __proto__: Array(0)
+console-format.html:7 Number {42, 1: "foo", a: "bar"}
+    1: "foo"
+    a: "bar"
+    __proto__: Number
+    [[PrimitiveValue]]: 42
+console-format.html:8 [Number]
+    0: Number {42, 1: "foo", a: "bar"}
+    length: 1
+    __proto__: Array(0)
+globals[43]
+Number {42, 1: "foo", a: "bar"}
+    1: "foo"
+    a: "bar"
+    __proto__: Number
+    [[PrimitiveValue]]: 42
+console-format.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+    0: "a"
+    01: "foo"
+    1: "b"
+    2: "c"
+    3: "foo"
+    a: "bar"
+    length: 3
+    __proto__: String
+    [[PrimitiveValue]]: "abc"
+console-format.html:8 [String]
+    0: String {"abc", 3: "foo", 01: "foo", a: "bar"}
+    length: 1
+    __proto__: Array(0)
+globals[44]
+String {"abc", 3: "foo", 01: "foo", a: "bar"}
+    0: "a"
+    01: "foo"
+    1: "b"
+    2: "c"
+    3: "foo"
+    a: "bar"
+    length: 3
+    __proto__: String
+    [[PrimitiveValue]]: "abc"
 

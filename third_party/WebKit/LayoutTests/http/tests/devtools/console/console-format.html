@@ -81,13 +81,22 @@ function onload()
     var bigArray = [];
     bigArray.length = 200;
     bigArray.fill(1);
+    var boxedNumberWithProps = new Number(42);
+    boxedNumberWithProps[1] = "foo";
+    boxedNumberWithProps["a"] = "bar";
+    var boxedStringWithProps = new String("abc");
+    boxedStringWithProps["01"] = "foo";
+    boxedStringWithProps[3] = "foo";
+    boxedStringWithProps["a"] = "bar";
+
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, errorWithMultilineMessage, node, func, multilinefunc, 
         num, linkify, null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
         new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException(),
-        tinyTypedArray, smallTypedArray, bigTypedArray, instanceWithLongClassName, bigArray, singleArray
+        tinyTypedArray, smallTypedArray, bigTypedArray, instanceWithLongClassName, bigArray, singleArray,
+        boxedNumberWithProps, boxedStringWithProps
     ];
 
     runTest();
