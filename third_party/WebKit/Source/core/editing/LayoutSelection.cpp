@@ -185,6 +185,23 @@ struct PaintInvalidationSet {
   DISALLOW_COPY_AND_ASSIGN(PaintInvalidationSet);
 };
 
+#ifndef NDEBUG
+void PrintPaintInvalidationSet(const PaintInvalidationSet& invalidation_set) {
+  std::stringstream stream;
+  stream << std::endl << "layout_objects:" << std::endl;
+  for (LayoutObject* layout_object : invalidation_set.layout_objects) {
+    PrintLayoutObjectForSelection(stream, layout_object);
+    stream << std::endl;
+  }
+  stream << "layout_blocks:" << std::endl;
+  for (LayoutBlock* layout_object : invalidation_set.layout_blocks) {
+    PrintLayoutObjectForSelection(stream, layout_object);
+    stream << std::endl;
+  }
+  LOG(INFO) << stream.str();
+}
+#endif
+
 static void InsertLayoutObjectAndAncestorBlocks(
     PaintInvalidationSet* invalidation_set,
     LayoutObject* layout_object) {
@@ -724,7 +741,7 @@ void PrintLayoutObjectForSelection(std::ostream& ostream,
     ostream << "<null>";
     return;
   }
-  ostream << layout_object->GetNode()
+  ostream << (void*)layout_object << ' ' << layout_object->GetNode()
           << ", state:" << layout_object->GetSelectionState()
           << (layout_object->ShouldInvalidateSelection() ? ", ShouldInvalidate"
                                                          : ", NotInvalidate");
