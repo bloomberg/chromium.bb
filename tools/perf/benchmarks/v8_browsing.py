@@ -203,6 +203,10 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
             'browse:tech:discourse_infinite_scroll',
             [story.expectations.ANDROID_ONE],
             'crbug.com/767970')
+        self.DisableStory(
+            'browse:shopping:lazada',
+            [story.expectations.ANDROID_ONE],
+            'crbug.com/768472')
     return StoryExpectations()
 
   @classmethod
