@@ -17,6 +17,8 @@
 
 namespace net {
 
+class OptRecordRdata;
+
 namespace dns_protocol {
 struct Header;
 }
@@ -24,12 +26,16 @@ struct Header;
 class IOBufferWithSize;
 
 // Represents on-the-wire DNS query message as an object.
-// TODO(szym): add support for the OPT pseudo-RR (EDNS0/DNSSEC).
 class NET_EXPORT_PRIVATE DnsQuery {
  public:
   // Constructs a query message from |qname| which *MUST* be in a valid
   // DNS name format, and |qtype|. The qclass is set to IN.
-  DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype);
+  // If opt_rdata is not null, an OPT record will be added to the "Additional"
+  // section of the query.
+  DnsQuery(uint16_t id,
+           const base::StringPiece& qname,
+           uint16_t qtype,
+           const OptRecordRdata* opt_rdata = nullptr);
   ~DnsQuery();
 
   // Clones |this| verbatim, with ID field of the header set to |id|.
