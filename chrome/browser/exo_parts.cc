@@ -21,7 +21,6 @@
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_ash.h"
-#include "components/exo/wm_helper_mus.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
@@ -137,6 +136,9 @@ class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
 
 // static
 std::unique_ptr<ExoParts> ExoParts::CreateIfNecessary() {
+  // For mash, exosphere will not run in the browser process.
+  if (ash_util::IsRunningInMash())
+    return nullptr;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWaylandServer)) {
     return nullptr;
@@ -155,10 +157,8 @@ ExoParts::~ExoParts() {
 ExoParts::ExoParts() {
   arc_notification_surface_manager_ =
       base::MakeUnique<arc::ArcNotificationSurfaceManagerImpl>();
-  if (ash_util::IsRunningInMash())
-    wm_helper_ = base::MakeUnique<exo::WMHelperMus>();
-  else
-    wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
+  DCHECK(!ash_util::IsRunningInMash());
+  wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ =
       base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get(),
