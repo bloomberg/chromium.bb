@@ -94,6 +94,9 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   using OfflineGraphAutoLocker = DeferredTaskHandler::OfflineGraphAutoLocker;
 
+  // Document notification
+  bool HasPendingActivity() const final;
+
  private:
   OfflineAudioContext(Document*,
                       unsigned number_of_channels,
@@ -121,9 +124,10 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   Member<ScriptPromiseResolver> complete_resolver_;
 
-  // This flag is necessary to indicate the rendering has actually started.
-  // Note that initial state of context is 'Suspended', which is the same
-  // state when the context is suspended.
+  // This flag is necessary to indicate the rendering has actually started or
+  // running. Note that initial state of context is 'Suspended', which is the
+  // same state when the context is suspended, so we cannot utilize it for this
+  // purpose.
   bool is_rendering_started_;
 
   // Total render sample length.
