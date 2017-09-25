@@ -347,7 +347,6 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
 
   SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(
       EphemeralRangeTemplate<Strategy>(start, end));
-  int remaining_length = 0;
   unsigned next = 0;
   bool need_more_context = false;
   while (!it.AtEnd()) {
@@ -362,10 +361,8 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
                                string.Size() - suffix_length,
                                kMayHaveMoreContext, need_more_context);
       } while (!next && run_offset < it.length());
-      if (next) {
-        remaining_length = it.length() - run_offset;
+      if (next)
         break;
-      }
     } else {
       // Treat bullets used in the text security mode as regular
       // characters when looking for boundaries
@@ -386,13 +383,6 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
 
   if (!next)
     return it.AtEnd() ? it.StartPosition() : pos;
-
-  Node* node = it.StartContainer();
-  int boundary_offset = remaining_length + next;
-  if (node->IsTextNode() && boundary_offset <= node->MaxCharacterOffset()) {
-    // The next variable contains a usable index into a text node
-    return PositionTemplate<Strategy>(node, boundary_offset);
-  }
 
   // Use the character iterator to translate the next value into a DOM
   // position.
