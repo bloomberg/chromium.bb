@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -61,7 +61,8 @@ void PrefetchItemTest::CheckAllFieldsWereTested() {
 
 // Computes the number of columns the SQL table has.
 std::size_t PrefetchItemTest::GetTableColumnsCount() {
-  std::string tableCreationSql(PrefetchStore::GetTableCreationSqlForTesting());
+  std::string tableCreationSql =
+      PrefetchStoreSchema::GetItemTableCreationSqlForTesting();
   std::vector<std::string> create_statement_split = base::SplitString(
       tableCreationSql, "()", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   EXPECT_EQ(3U, create_statement_split.size());
