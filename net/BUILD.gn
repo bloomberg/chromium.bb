@@ -3514,7 +3514,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/ocsp_unittest/has_extension.pem",
     "data/ocsp_unittest/has_single_extension.pem",
     "data/ocsp_unittest/has_version.pem",
-    "data/ocsp_unittest/malformed_status.pem",
+    "data/ocsp_unittest/malformed_request.pem",
     "data/ocsp_unittest/missing_response.pem",
     "data/ocsp_unittest/multiple_response.pem",
     "data/ocsp_unittest/no_response.pem",
