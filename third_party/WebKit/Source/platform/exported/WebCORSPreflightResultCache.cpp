@@ -167,7 +167,11 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
     const WebString& method,
     WebString& error_description) const {
   if (methods_.find(method.Ascii().data()) != methods_.end() ||
-      FetchUtils::IsCORSSafelistedMethod(method))
+      FetchUtils::IsCORSSafelistedMethod(method)) {
+    return true;
+  }
+
+  if (!credentials_ && methods_.find("*") != methods_.end())
     return true;
 
   error_description.Assign(WebString::FromASCII("Method " + method.Ascii() +
