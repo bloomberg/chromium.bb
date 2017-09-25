@@ -33,13 +33,6 @@ class ContinuationPayloadDecoderPeer {
   // Returns the mask of flags that affect the decoding of the payload (i.e.
   // flags that that indicate the presence of certain fields or padding).
   static constexpr uint8_t FlagsAffectingPayloadDecoding() { return 0; }
-
-  static void Randomize(ContinuationPayloadDecoder* p, RandomBase* rng) {
-    // ContinuationPayloadDecoder has no fields,
-    // so there is nothing to randomize.
-    static_assert(std::is_empty<ContinuationPayloadDecoder>::value,
-                  "Need to randomize fields of ContinuationPayloadDecoder");
-  }
 };
 
 namespace {

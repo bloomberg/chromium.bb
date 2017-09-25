@@ -33,13 +33,6 @@ class HeadersPayloadDecoderPeer {
   static constexpr uint8_t FlagsAffectingPayloadDecoding() {
     return Http2FrameFlag::PADDED | Http2FrameFlag::PRIORITY;
   }
-
-  static void Randomize(HeadersPayloadDecoder* p, RandomBase* rng) {
-    CorruptEnum(&p->payload_state_, rng);
-    test::Randomize(&p->priority_fields_, rng);
-    VLOG(1) << "HeadersPayloadDecoderPeer::Randomize priority_fields_: "
-            << p->priority_fields_;
-  }
 };
 
 namespace {

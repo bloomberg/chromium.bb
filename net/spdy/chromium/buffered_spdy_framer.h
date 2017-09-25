@@ -216,16 +216,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     return spdy_framer_.SerializeFrame(frame);
   }
 
-  SpdyPriority GetHighestPriority() const;
-
-  size_t GetFrameMaximumSize() const {
-    return spdy_framer_.GetFrameMaximumSize();
-  }
-
-  size_t GetDataFrameMaximumPayload() const {
-    return spdy_framer_.GetDataFrameMaximumPayload();
-  }
-
   int frames_received() const { return frames_received_; }
 
   // Returns the estimate of dynamically allocated memory in bytes.

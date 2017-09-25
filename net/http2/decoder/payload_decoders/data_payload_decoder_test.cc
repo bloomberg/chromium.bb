@@ -37,11 +37,6 @@ class DataPayloadDecoderPeer {
   static constexpr uint8_t FlagsAffectingPayloadDecoding() {
     return Http2FrameFlag::PADDED;
   }
-
-  static void Randomize(DataPayloadDecoder* p, RandomBase* rng) {
-    VLOG(1) << "DataPayloadDecoderPeer::Randomize";
-    CorruptEnum(&p->payload_state_, rng);
-  }
 };
 
 namespace {

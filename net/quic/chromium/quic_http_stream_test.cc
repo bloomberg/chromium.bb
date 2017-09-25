@@ -324,9 +324,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     promised_response_["content-type"] = "text/plain";
 
     promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
-
-    serialized_push_promise_ =
-        SpdyUtils::SerializeUncompressedHeaders(push_promise_);
   }
 
   void SetRequest(const string& method,
@@ -566,7 +563,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   SpdyHeaderBlock promised_response_;
   const QuicStreamId promise_id_;
   string promise_url_;
-  string serialized_push_promise_;
   const QuicStreamId stream_id_;
 
   const QuicConnectionId connection_id_;
@@ -1839,8 +1835,6 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginOK) {
 
   push_promise_[":authority"] = "mail.example.org";
   promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
-  serialized_push_promise_ =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
   ReceivePromise(promise_id_);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -1910,8 +1904,6 @@ TEST_P(QuicHttpStreamTest, ServerPushCrossOriginFail) {
   // packet, but does it matter?
   push_promise_[":authority"] = "www.notexample.org";
   promise_url_ = SpdyUtils::GetUrlFromHeaderBlock(push_promise_);
-  serialized_push_promise_ =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
   ReceivePromise(promise_id_);
   // The promise will have been rejected because the cert doesn't
@@ -1932,8 +1924,6 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckOK) {
                                       net_log_.bound(), callback_.callback()));
 
   push_promise_["accept-encoding"] = "gzip";
-  serialized_push_promise_ =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
   // packet, but does it matter?
@@ -2025,8 +2015,6 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
                                       net_log_.bound(), callback_.callback()));
 
   push_promise_["accept-encoding"] = "gzip";
-  serialized_push_promise_ =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
   // TODO(ckrasic) - could do this via constructing a PUSH_PROMISE
   // packet, but does it matter?
