@@ -553,6 +553,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool NeedsSync(const std::string& extension_id) const;
   void SetNeedsSync(const std::string& extension_id, bool needs_sync);
 
+  // When called before the ExtensionService is created, alerts that are
+  // normally suppressed in first run will still trigger.
+  static void SetRunAlertsInFirstRunForTest();
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsComponentExtension;     // Unit test.

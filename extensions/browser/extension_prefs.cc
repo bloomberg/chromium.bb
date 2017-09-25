@@ -251,6 +251,10 @@ void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
   }
 }
 
+// Whether SetAlertSystemFirstRun() should always return true, so that alerts
+// are triggered, even in first run.
+bool g_run_alerts_in_first_run_for_testing = false;
+
 }  // namespace
 
 //
@@ -694,7 +698,7 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
     return true;
   }
   prefs_->SetBoolean(pref_names::kAlertsInitialized, true);
-  return false;
+  return g_run_alerts_in_first_run_for_testing;  // Note: normally false.
 }
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
@@ -1693,6 +1697,11 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
   UpdateExtensionPref(
       extension_id, kPrefNeedsSync,
       needs_sync ? std::make_unique<base::Value>(true) : nullptr);
+}
+
+// static
+void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
+  g_run_alerts_in_first_run_for_testing = true;
 }
 
 ExtensionPrefs::ExtensionPrefs(
