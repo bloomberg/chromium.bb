@@ -73,7 +73,7 @@ class UiSceneManagerTest : public testing::Test {
   // A wrapper to call scene_->OnBeginFrame.
   void OnBeginFrame();
 
-  SkColor GetBackgroundColor() const;
+  void GetBackgroundColor(SkColor* background_color) const;
 
   base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;

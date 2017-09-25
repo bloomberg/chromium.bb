@@ -20,6 +20,7 @@ class FullScreenRect : public Rect {
   void Render(UiElementRenderer* renderer,
               const gfx::Transform& view_proj_matrix) const final;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FullScreenRect);
 };
 

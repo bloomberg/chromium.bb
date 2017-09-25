@@ -219,33 +219,42 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = GetBackgroundColor();
+  SkColor initial_background = SK_ColorBLACK;
+  GetBackgroundColor(&initial_background);
   manager_->SetFullscreen(true);
 
   // Make sure background has changed for fullscreen.
-  EXPECT_NE(initial_background, GetBackgroundColor());
-
-  SkColor fullscreen_background = GetBackgroundColor();
+  SkColor fullscreen_background = SK_ColorBLACK;
+  GetBackgroundColor(&fullscreen_background);
+  EXPECT_NE(initial_background, fullscreen_background);
 
   manager_->SetIncognito(true);
 
   // Make sure background has changed for incognito.
-  EXPECT_NE(fullscreen_background, GetBackgroundColor());
-  EXPECT_NE(initial_background, GetBackgroundColor());
-
-  SkColor incognito_background = GetBackgroundColor();
+  SkColor incognito_background = SK_ColorBLACK;
+  GetBackgroundColor(&incognito_background);
+  EXPECT_NE(fullscreen_background, incognito_background);
+  EXPECT_NE(initial_background, incognito_background);
 
   manager_->SetIncognito(false);
-  EXPECT_EQ(fullscreen_background, GetBackgroundColor());
+  SkColor no_longer_incognito_background = SK_ColorBLACK;
+  GetBackgroundColor(&no_longer_incognito_background);
+  EXPECT_EQ(fullscreen_background, no_longer_incognito_background);
 
   manager_->SetFullscreen(false);
-  EXPECT_EQ(initial_background, GetBackgroundColor());
+  SkColor no_longer_fullscreen_background = SK_ColorBLACK;
+  GetBackgroundColor(&no_longer_fullscreen_background);
+  EXPECT_EQ(initial_background, no_longer_fullscreen_background);
 
   manager_->SetIncognito(true);
-  EXPECT_EQ(incognito_background, GetBackgroundColor());
+  SkColor incognito_again_background = SK_ColorBLACK;
+  GetBackgroundColor(&incognito_again_background);
+  EXPECT_EQ(incognito_background, incognito_again_background);
 
   manager_->SetIncognito(false);
-  EXPECT_EQ(initial_background, GetBackgroundColor());
+  SkColor no_longer_incognito_again_background = SK_ColorBLACK;
+  GetBackgroundColor(&no_longer_incognito_again_background);
+  EXPECT_EQ(initial_background, no_longer_incognito_again_background);
 }
 
 TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
@@ -327,7 +336,8 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Hold onto the background color to make sure it changes.
-  SkColor initial_background = GetBackgroundColor();
+  SkColor initial_background = SK_ColorBLACK;
+  GetBackgroundColor(&initial_background);
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
   UiElement* content_quad = scene_->GetUiElementByName(kContentQuad);
   UiElement* content_group =
@@ -340,7 +350,9 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   manager_->SetFullscreen(true);
   VerifyElementsVisible("In fullscreen", visible_in_fullscreen);
   // Make sure background has changed for fullscreen.
-  EXPECT_NE(initial_background, GetBackgroundColor());
+  SkColor fullscreen_background = SK_ColorBLACK;
+  GetBackgroundColor(&fullscreen_background);
+  EXPECT_NE(initial_background, fullscreen_background);
   // Should have started transition.
   EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));
@@ -354,7 +366,9 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   // Everything should return to original state after leaving fullscreen.
   manager_->SetFullscreen(false);
   VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
-  EXPECT_EQ(initial_background, GetBackgroundColor());
+  SkColor no_longer_fullscreen_background = SK_ColorBLACK;
+  GetBackgroundColor(&no_longer_fullscreen_background);
+  EXPECT_EQ(initial_background, no_longer_fullscreen_background);
   // Should have started transition.
   EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));

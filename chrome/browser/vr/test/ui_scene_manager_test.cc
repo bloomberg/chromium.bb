@@ -76,10 +76,9 @@ void UiSceneManagerTest::VerifyElementsVisible(
   for (auto name : names) {
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
-    EXPECT_NE(nullptr, element);
-    if (element) {
-      EXPECT_TRUE(element->IsVisible() && IsElementFacingCamera(element));
-    }
+    ASSERT_NE(nullptr, element);
+    EXPECT_TRUE(element->IsVisible() && IsElementFacingCamera(element) &&
+                element->draw_phase() != kPhaseNone);
   }
 }
 
@@ -90,7 +89,7 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
     EXPECT_NE(nullptr, element);
-    if (element->IsVisible() != visible) {
+    if (!element || element->IsVisible() != visible) {
       return false;
     }
     if (!element || (visible && element->draw_phase() == kPhaseNone)) {
@@ -108,7 +107,7 @@ bool UiSceneManagerTest::VerifyRequiresLayout(
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
     EXPECT_NE(nullptr, element);
-    if (element->requires_layout() != requires_layout) {
+    if (!element || element->requires_layout() != requires_layout) {
       return false;
     }
   }
@@ -157,13 +156,10 @@ void UiSceneManagerTest::OnBeginFrame() {
   scene_->OnBeginFrame(base::TimeTicks(), gfx::Vector3dF(0.f, 0.f, -1.0f));
 }
 
-SkColor UiSceneManagerTest::GetBackgroundColor() const {
+void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {
   Rect* front =
       static_cast<Rect*>(scene_->GetUiElementByName(kBackgroundFront));
-  EXPECT_NE(nullptr, front);
-  if (!front)
-    return SK_ColorBLACK;
-
+  ASSERT_NE(nullptr, front);
   SkColor color = front->edge_color();
 
   // While returning background color, ensure that all background panel elements
@@ -171,14 +167,12 @@ SkColor UiSceneManagerTest::GetBackgroundColor() const {
   for (auto name : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
                     kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
     const Rect* panel = static_cast<Rect*>(scene_->GetUiElementByName(name));
-    EXPECT_NE(nullptr, panel);
-    if (!panel)
-      return SK_ColorBLACK;
+    ASSERT_NE(nullptr, panel);
     EXPECT_EQ(panel->center_color(), color);
     EXPECT_EQ(panel->edge_color(), color);
   }
 
-  return color;
+  *background_color = color;
 }
 
 }  // namespace vr
