@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_VR_ELEMENTS_EXIT_PROMPT_BACKPLANE_H_
 
 #include "base/callback.h"
-#include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/elements/invisible_hit_target.h"
 
 namespace vr {
 
 // An invisible but hittable plane behind the exit prompt, to keep the reticle
 // roughly planar with the prompt when its near the prompt.
-class ExitPromptBackplane : public UiElement {
+class ExitPromptBackplane : public InvisibleHitTarget {
  public:
   explicit ExitPromptBackplane(const base::Callback<void()>& click_callback);
   ~ExitPromptBackplane() override;
