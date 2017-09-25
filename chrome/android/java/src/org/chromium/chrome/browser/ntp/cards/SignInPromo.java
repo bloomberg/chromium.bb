@@ -358,18 +358,15 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         private void updatePersonalizedSigninPromo() {
-            Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-            String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
-
             DisplayableProfileData profileData = null;
-            if (defaultAccountName != null) {
+            Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+            if (accounts.length > 0) {
+                String defaultAccountName = accounts[0].name;
                 mProfileDataCache.update(Collections.singletonList(defaultAccountName));
                 profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
             }
-            mSigninPromoController.setProfileData(profileData);
-
             PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) itemView;
-            mSigninPromoController.setupPromoView(view.getContext(), view, null);
+            mSigninPromoController.setupPromoView(view.getContext(), view, profileData, null);
         }
 
         /**
@@ -380,9 +377,8 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         @VisibleForTesting
         public void bindAndConfigureViewForTests(@Nullable DisplayableProfileData profileData) {
             super.onBindViewHolder();
-            mSigninPromoController.setProfileData(profileData);
             PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) itemView;
-            mSigninPromoController.setupPromoView(view.getContext(), view, null);
+            mSigninPromoController.setupPromoView(view.getContext(), view, profileData, null);
         }
     }
 

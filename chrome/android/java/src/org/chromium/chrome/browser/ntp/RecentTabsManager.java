@@ -399,16 +399,14 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param view The view to be configured.
      */
     void setupPersonalizedSigninPromo(PersonalizedSigninPromoView view) {
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        String defaultAccountName = accounts.length == 0 ? null : accounts[0].name;
-
         DisplayableProfileData profileData = null;
-        if (defaultAccountName != null) {
+        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        if (accounts.length > 0) {
+            String defaultAccountName = accounts[0].name;
             mProfileDataCache.update(Collections.singletonList(defaultAccountName));
             profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
         }
-        mSigninPromoController.setProfileData(profileData);
-        mSigninPromoController.setupPromoView(mContext, view, null);
+        mSigninPromoController.setupPromoView(mContext, view, profileData, null);
     }
 
     // SignInStateObserver implementation.

@@ -48,7 +48,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
 
     private final ImpressionTracker mImpressionTracker = new ImpressionTracker(this);
     private @Nullable DisplayableProfileData mProfileData;
-    private final @AccountSigninActivity.AccessPoint int mAccessPoint;
+    private final @AccessPoint int mAccessPoint;
     private final @Nullable String mImpressionCountName;
     private final String mImpressionUserActionName;
     private final String mImpressionWithAccountUserActionName;
@@ -95,7 +95,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
      * Creates a new SigninPromoController.
      * @param accessPoint Specifies the AccessPoint from which the promo is to be shown.
      */
-    public SigninPromoController(@AccountSigninActivity.AccessPoint int accessPoint) {
+    public SigninPromoController(@AccessPoint int accessPoint) {
         mAccessPoint = accessPoint;
 
         switch (mAccessPoint) {
@@ -168,12 +168,17 @@ public class SigninPromoController implements ImpressionTracker.Listener {
     /**
      * Configures the signin promo view and resets the impression tracker.
      * @param view The view in which the promo will be added.
+     * @param profileData If not null, the promo will be configured to be in the hot state, using
+     *         the account image, email and full name of the user to set the picture and the text of
+     *         the promo appropriately. Otherwise, the promo will be in the cold state.
      * @param onDismissListener Listener which handles the action of dismissing the promo. A null
      *         onDismissListener marks that the promo is not dismissible and as a result the close
      *         button is hidden.
      */
     public void setupPromoView(Context context, PersonalizedSigninPromoView view,
+            final @Nullable DisplayableProfileData profileData,
             final @Nullable OnDismissListener onDismissListener) {
+        mProfileData = profileData;
         mWasDisplayed = true;
         mImpressionTracker.reset(mImpressionTracker.wasTriggered() ? null : view);
 
@@ -198,16 +203,6 @@ public class SigninPromoController implements ImpressionTracker.Listener {
         } else {
             view.getDismissButton().setVisibility(View.GONE);
         }
-    }
-
-    /**
-     * Sets the profile data which will be used to configure the promo.
-     * @param profileData If not null, the promo will be configured to be in the hot state, using
-     *         the account image, email and full name of the user to set the picture and the text of
-     *         the promo appropriately. Otherwise, the promo will be in the cold state.
-     */
-    public void setProfileData(@Nullable DisplayableProfileData profileData) {
-        mProfileData = profileData;
     }
 
     /** @return the resource used for the text displayed as promo description. */
