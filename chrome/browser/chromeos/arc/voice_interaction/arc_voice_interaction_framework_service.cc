@@ -228,9 +228,9 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
   if (is_request_pending_) {
     is_request_pending_ = false;
     if (is_pending_request_toggle_) {
-      framework_instance->ToggleVoiceInteractionSession();
+      framework_instance->ToggleVoiceInteractionSession(IsHomescreenActive());
     } else {
-      framework_instance->StartVoiceInteractionSession();
+      framework_instance->StartVoiceInteractionSession(IsHomescreenActive());
     }
   }
 }
@@ -405,7 +405,7 @@ void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSetupWizard() {
 
   if (should_start_runtime_flow_) {
     VLOG(1) << "Starting runtime setup flow.";
-    framework_instance->StartVoiceInteractionSession();
+    framework_instance->StartVoiceInteractionSession(IsHomescreenActive());
     return;
   }
 
@@ -490,7 +490,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
             arc_bridge_service_->voice_interaction_framework(),
             StartVoiceInteractionSession);
     DCHECK(framework_instance);
-    framework_instance->StartVoiceInteractionSession();
+    framework_instance->StartVoiceInteractionSession(IsHomescreenActive());
   } else {
     mojom::VoiceInteractionFrameworkInstance* framework_instance =
         ARC_GET_INSTANCE_FOR_METHOD(
@@ -513,7 +513,7 @@ void ArcVoiceInteractionFrameworkService::ToggleSessionFromUserInteraction() {
           arc_bridge_service_->voice_interaction_framework(),
           ToggleVoiceInteractionSession);
   DCHECK(framework_instance);
-  framework_instance->ToggleVoiceInteractionSession();
+  framework_instance->ToggleVoiceInteractionSession(IsHomescreenActive());
 }
 
 bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
@@ -598,6 +598,11 @@ void ArcVoiceInteractionFrameworkService::
   prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, completed);
 
   ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted(completed);
+}
+
+bool ArcVoiceInteractionFrameworkService::IsHomescreenActive() {
+  // Homescreen is considered to be active if there are no active windows.
+  return !ash::Shell::Get()->activation_client()->GetActiveWindow();
 }
 
 }  // namespace arc

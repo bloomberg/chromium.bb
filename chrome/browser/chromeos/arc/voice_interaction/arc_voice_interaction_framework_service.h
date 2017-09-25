@@ -129,6 +129,8 @@ class ArcVoiceInteractionFrameworkService
 
   void SetVoiceInteractionSetupCompletedInternal(bool completed);
 
+  bool IsHomescreenActive();
+
   content::BrowserContext* context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager
   mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;

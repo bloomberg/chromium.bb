@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -58,10 +58,12 @@ interface VoiceInteractionFrameworkInstance {
   Init@0(VoiceInteractionFrameworkHost host_ptr);
 
   // Starts the voice interaction session in container.
-  StartVoiceInteractionSession@1();
+  // |homescreen_is_active| is true if the session was invoked when homescreen is active.
+  StartVoiceInteractionSession@1([MinVersion=11] bool homescreen_is_active);
 
   // Starts or stops voice interaction session based on current state.
-  [MinVersion=9] ToggleVoiceInteractionSession@8();
+  // |homescreen_is_active| is true if the session was invoked when homescreen is active.
+  [MinVersion=9] ToggleVoiceInteractionSession@8([MinVersion=11] bool homescreen_is_active);
 
   // Starts the voice interaction session in container, with a screen region
   // selected.
