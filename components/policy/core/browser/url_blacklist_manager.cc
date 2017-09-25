@@ -447,7 +447,8 @@ URLBlacklistManager::URLBlacklistManager(
 
   // Start enforcing the policies without a delay when they are present at
   // startup.
-  if (pref_service_->HasPrefPath(policy_prefs::kUrlBlacklist))
+  if (pref_service_->HasPrefPath(policy_prefs::kUrlBlacklist) ||
+      pref_service_->HasPrefPath(policy_prefs::kUrlWhitelist))
     Update();
 }
 
