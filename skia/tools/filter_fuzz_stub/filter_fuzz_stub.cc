@@ -4,6 +4,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/process/memory.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -73,6 +74,7 @@ bool ReadAndRunTestCase(const char* filename, SkBitmap& bitmap,
 int main(int argc, char** argv) {
   int ret = 0;
 
+  base::EnableTerminationOnOutOfMemory();
   base::TestDiscardableMemoryAllocator discardable_memory_allocator;
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator);
 
