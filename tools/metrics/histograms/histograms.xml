@@ -30854,6 +30854,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Measures the time taken for AudioOutputController::</summary>
 </histogram>
 
+<histogram name="Media.AudioOutputController.CallbackError" enum="BooleanError">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    A boolean that reflects whether or not an error was reported during audio
+    rendering, reported after a stream has stopped, if it was started.
+  </summary>
+</histogram>
+
+<histogram name="Media.AudioOutputController.ProxyStreamCreationResult"
+    enum="AudioOutputStreamCreationResult">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    Whether an AudioOutputController succeeded in creating and opening an output
+    stream proxy. Only logged for the initial creation, subsequent re-creations
+    due to device change events are logged in the
+    Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange
+    histogram.
+  </summary>
+</histogram>
+
+<histogram
+    name="Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange"
+    enum="AudioOutputStreamCreationResult">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    Whether an AudioOutputController succeeded in creating and opening an output
+    stream proxy after receiving a default device change event.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioOutputControllerDataNotReady" units="ms">
   <owner>dalecurtis@chromium.org</owner>
   <summary>

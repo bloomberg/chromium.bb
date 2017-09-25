@@ -23,9 +23,46 @@ using base::TimeDelta;
 
 namespace media {
 namespace {
+
 // Time in seconds between two successive measurements of audio power levels.
 constexpr int kPowerMonitorLogIntervalSeconds = 15;
+
+// Used to log the result of rendering startup.
+// Elements in this enum should not be deleted or rearranged; the only
+// permitted operation is to add new elements before
+// STREAM_CREATION_RESULT_MAX and update STREAM_CREATION_RESULT_MAX.
+enum StreamCreationResult {
+  STREAM_CREATION_OK = 0,
+  STREAM_CREATION_CREATE_FAILED = 1,
+  STREAM_CREATION_OPEN_FAILED = 2,
+  STREAM_CREATION_RESULT_MAX = STREAM_CREATION_OPEN_FAILED,
+};
+
+void LogStreamCreationResult(bool for_device_change,
+                             StreamCreationResult result) {
+  if (for_device_change) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.AudioOutputController.ProxyStreamCreationResultForDeviceChange",
+        result, STREAM_CREATION_RESULT_MAX + 1);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.AudioOutputController.ProxyStreamCreationResult", result,
+        STREAM_CREATION_RESULT_MAX + 1);
+  }
+}
+
 }  // namespace
+
+AudioOutputController::ErrorStatisticsTracker::ErrorStatisticsTracker() {}
+
+AudioOutputController::ErrorStatisticsTracker::~ErrorStatisticsTracker() {
+  UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputController.CallbackError",
+                        error_during_callback_);
+}
+
+void AudioOutputController::ErrorStatisticsTracker::RegisterError() {
+  error_during_callback_ = true;
+}
 
 AudioOutputController::AudioOutputController(
     AudioManager* audio_manager,
@@ -128,16 +165,21 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
       audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_);
   if (!stream_) {
     state_ = kError;
+    LogStreamCreationResult(is_for_device_change,
+                            STREAM_CREATION_CREATE_FAILED);
     handler_->OnControllerError();
     return;
   }
 
   if (!stream_->Open()) {
     DoStopCloseAndClearStream();
+    LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OPEN_FAILED);
     state_ = kError;
     handler_->OnControllerError();
     return;
   }
+
+  LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OK);
 
   // Everything started okay, so re-register for state change callbacks if
   // stream_ was created via AudioManager.
@@ -175,6 +217,8 @@ void AudioOutputController::DoPlay() {
   }
 
   stream_->Start(this);
+
+  stats_tracker_.emplace();
 
   // For UMA tracking purposes, start the wedge detection timer.  This allows us
   // to record statistics about the number of wedged playbacks in the field.
@@ -243,6 +287,8 @@ void AudioOutputController::DoClose() {
     DoStopCloseAndClearStream();
     sync_reader_->Close();
     state_ = kClosed;
+
+    stats_tracker_.reset();
   }
 }
 
@@ -266,8 +312,13 @@ void AudioOutputController::DoSetVolume(double volume) {
 
 void AudioOutputController::DoReportError() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (state_ != kClosed)
+  TRACE_EVENT0("audio", "AudioOutputController::DoReportError");
+  DLOG(ERROR) << "AudioOutputController::DoReportError";
+  if (state_ != kClosed) {
+    DCHECK(stats_tracker_);
+    stats_tracker_->RegisterError();
     handler_->OnControllerError();
+  }
 }
 
 int AudioOutputController::OnMoreData(base::TimeDelta delay,
@@ -400,7 +451,7 @@ void AudioOutputController::OnDeviceChange() {
         return "closed";
       case AudioOutputController::kError:
         return "error";
-    };
+    }
     return "unknown";
   };
 
