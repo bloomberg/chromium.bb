@@ -42,7 +42,7 @@ if exit_code != 0:
 requires = set([] if stdout == '' else stdout.rstrip('\n').split('\n'))
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-provides_file = open(os.path.join(script_dir, 'dist-package-provides.json'))
+provides_file = open(os.path.join(script_dir, 'dist_package_provides.json'))
 distro_package_provides = json.load(provides_file)
 
 remove_requires = set()

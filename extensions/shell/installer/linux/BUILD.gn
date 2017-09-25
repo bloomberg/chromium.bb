@@ -38,7 +38,7 @@ action("strip_app_shell_binary") {
   deps = [
     "//extensions/shell:app_shell",
   ]
-  script = "//chrome/installer/linux/strip-chrome-binary.py"
+  script = "//chrome/installer/linux/strip_chrome_binary.py"
   sources = [
     prog_name,
   ]

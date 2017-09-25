@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Downloads package lists and records package versions into
-dist-package-versions.json.
+dist_package_versions.json.
 """
 
 import binascii
@@ -148,7 +148,7 @@ for distro in deb_sources:
             package_versions[package] = version
   distro_package_versions[distro] = package_versions
 
-with open(os.path.join(SCRIPT_DIR, 'dist-package-versions.json'), 'w') as f:
+with open(os.path.join(SCRIPT_DIR, 'dist_package_versions.json'), 'w') as f:
   f.write(json.dumps(distro_package_versions, sort_keys=True, indent=4,
                      separators=(',', ': ')))
   f.write('\n')

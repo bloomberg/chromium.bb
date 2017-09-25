@@ -63,7 +63,7 @@ if deps_str != '':
     interval_sets.append(package_version_interval.parse_interval_set(dep))
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-deps_file = os.path.join(script_dir, 'dist-package-versions.json')
+deps_file = os.path.join(script_dir, 'dist_package_versions.json')
 distro_package_versions = json.load(open(deps_file))
 
 ret_code = 0

@@ -128,7 +128,7 @@ for distro in rpm_sources:
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(script_dir, 'dist-package-provides.json'), 'w') as f:
+with open(os.path.join(script_dir, 'dist_package_provides.json'), 'w') as f:
   f.write(json.dumps(provides, sort_keys=True, indent=4,
                      separators=(',', ': ')))
   f.write('\n')
