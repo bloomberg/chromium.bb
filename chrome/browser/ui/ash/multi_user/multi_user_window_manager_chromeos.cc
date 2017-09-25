@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/media_controller.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -389,9 +389,13 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
   animation_.reset(new UserSwitchAnimatorChromeOS(
       this, current_account_id_,
       GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
-  // Call notifier here instead of observing ActiveUserChanged because
-  // this must happen after MultiUserWindowManagerChromeOS is notified.
-  ash::Shell::Get()->media_controller()->RequestCaptureState();
+
+  // Call RequestCaptureState here instead of having MediaClient observe
+  // ActiveUserChanged because it must happen after
+  // MultiUserWindowManagerChromeOS is notified. The MediaClient may be null in
+  // tests.
+  if (MediaClient::Get())
+    MediaClient::Get()->RequestCaptureState();
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {

@@ -35,6 +35,8 @@ using ash::mojom::MediaCaptureState;
 
 namespace {
 
+MediaClient* g_media_client_ = nullptr;
+
 MediaCaptureState& operator|=(MediaCaptureState& lhs, MediaCaptureState rhs) {
   lhs = static_cast<MediaCaptureState>(static_cast<int>(lhs) |
                                        static_cast<int>(rhs));
@@ -141,10 +143,19 @@ MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
   ash::mojom::MediaClientAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   media_controller_->SetClient(std::move(ptr_info));
+
+  DCHECK(!g_media_client_);
+  g_media_client_ = this;
 }
 
 MediaClient::~MediaClient() {
+  g_media_client_ = nullptr;
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
+}
+
+// static
+MediaClient* MediaClient::Get() {
+  return g_media_client_;
 }
 
 void MediaClient::HandleMediaNextTrack() {
