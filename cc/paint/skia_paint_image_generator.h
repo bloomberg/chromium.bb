@@ -14,14 +14,8 @@ class PaintImageGenerator;
 
 class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
  public:
-  // This is required only by the DecodingImageGenerator in Blink for caching
-  // of animated image frames.
-  // TODO(khushalsagar): Remove the use of this uniqueID. See crbug.com/753639.
-  enum { kNeedNewImageUniqueID = SkImageGenerator::kNeedNewImageUniqueID };
-
   SkiaPaintImageGenerator(sk_sp<PaintImageGenerator> paint_image_generator,
-                          size_t frame_index,
-                          uint32_t unique_id = kNeedNewImageUniqueID);
+                          size_t frame_index);
   ~SkiaPaintImageGenerator() override;
 
   SkData* onRefEncodedData() override;

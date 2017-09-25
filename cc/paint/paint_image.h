@@ -186,10 +186,6 @@ class CC_PAINT_EXPORT PaintImage {
   // Whether the data fetched for this image is a part of a multpart response.
   bool is_multipart_ = false;
 
-  // |sk_image_id_| is the id used when constructing an SkImage representation
-  // for a generator backed image.
-  // TODO(khushalsagar): Remove the use of this uniqueID. See crbug.com/753639.
-  uint32_t sk_image_id_ = SkiaPaintImageGenerator::kNeedNewImageUniqueID;
   mutable sk_sp<SkImage> cached_sk_image_;
 };
 

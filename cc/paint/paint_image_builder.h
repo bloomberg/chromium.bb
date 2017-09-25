@@ -74,11 +74,6 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     return *this;
   }
 
-  PaintImageBuilder& set_sk_image_id(uint32_t sk_image_id) {
-    paint_image_.sk_image_id_ = sk_image_id;
-    return *this;
-  }
-
   PaintImage TakePaintImage() const;
 
  private:
