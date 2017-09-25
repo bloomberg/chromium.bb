@@ -47,6 +47,10 @@
         color: var(--paper-grey-600);
       }
 
+      #clearBrowsingDataDialog [slot=body] {
+        padding-top: 8px;
+      }
+
       #importantSitesDialog {
         --cr-dialog-body-container: {
           height: var(--body-container-height);
@@ -78,14 +82,25 @@
       }
 
       paper-tabs {
+        --paper-tabs-selection-bar-color: var(--google-blue-500);
         --paper-tabs: {
           font-size: 100%;
           height: 40px;
         }
       }
 
+      paper-tab {
+        --paper-tab-content: {
+          color: var(--google-blue-700);
+        };
+        --paper-tab-content-unselected: {
+          opacity: 1;
+          color: var(--paper-grey-600);
+        };
+      }
+
       .time-range-row {
-        margin-bottom: 4px;
+        margin-bottom: 12px;
       }
 
       .time-range-select {
@@ -241,7 +256,7 @@
         <paper-button id="clearBrowsingDataConfirm"
             class="action-button" disabled="[[clearingInProgress_]]"
             on-tap="onClearBrowsingDataTap_">
-            $i18n{clearBrowsingData}
+            $i18n{clearData}
         </paper-button>
       </div>
     </dialog>
