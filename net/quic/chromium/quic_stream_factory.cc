@@ -442,7 +442,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
 QuicStreamFactory::Job::~Job() {
   net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB);
   CHECK(!in_loop_);
-  CHECK(callback_.is_null());
+  // If |this| is destroyed in QuicStreamFactory's destructor, |callback_| is
+  // non-null.
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
