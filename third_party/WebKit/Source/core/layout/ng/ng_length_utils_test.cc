@@ -497,6 +497,9 @@ TEST_F(NGLengthUtilsTest, testColumnWidthAndCount) {
   EXPECT_EQ(5, GetUsedColumnCount(6, 100, 10, 540));
   EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 10, 540));
   EXPECT_EQ(5, GetUsedColumnCount(0, 100, 10, 540));
+
+  EXPECT_EQ(0, GetUsedColumnWidth(3, 0, 10, 10));
+  EXPECT_EQ(3, GetUsedColumnCount(3, 0, 10, 10));
 }
 
 }  // namespace
