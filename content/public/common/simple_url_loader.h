@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_H_
 #define CONTENT_PUBLIC_COMMON_SIMPLE_URL_LOADER_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 

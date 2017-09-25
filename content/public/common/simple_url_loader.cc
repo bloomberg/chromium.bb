@@ -10,8 +10,12 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
@@ -28,9 +32,137 @@ namespace {
 
 class SimpleURLLoaderImpl;
 
+// BodyHandler is an abstract class from which classes for a specific use case
+// (e.g. read response to a string, write it to a file) will derive. Those
+// clases may use BodyReader to handle reading data from the body pipe.
+
+// Utility class to drive the pipe reading a response body. Can be created on
+// one thread and then used to read data on another.
+class BodyReader {
+ public:
+  class Delegate {
+   public:
+    Delegate() {}
+
+    // The specified amount of data was read from the pipe. The BodyReader must
+    // not be deleted during this callback. The Delegate should return net::OK
+    // to continue reading, or a value indicating an error if the pipe should be
+    // closed.
+    virtual net::Error OnDataRead(uint32_t length, const char* data) = 0;
+
+    // Called when the pipe is closed by the remote size, the size limit is
+    // reached, or OnDataRead returned an error. |error| is net::OK if the
+    // pipe was closed, or an error value otherwise. It is safe to delete the
+    // BodyReader during this callback.
+    virtual void OnDone(net::Error error, int64_t total_bytes) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
+  BodyReader(Delegate* delegate, int64_t max_body_size)
+      : handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+        delegate_(delegate),
+        max_body_size_(max_body_size) {
+    DCHECK_GE(max_body_size_, 0);
+  }
+
+  // Makes the reader start reading from |body_data_pipe|. May only be called
+  // once. The reader will continuously to try to read from the pipe (without
+  // blocking the thread), calling OnDataRead as data is read, until one of the
+  // following happens:
+  // * The size limit is reached.
+  // * OnDataRead returns an error.
+  // * The BodyReader is deleted.
+  void Start(mojo::ScopedDataPipeConsumerHandle body_data_pipe) {
+    DCHECK(!body_data_pipe_.is_valid());
+    body_data_pipe_ = std::move(body_data_pipe);
+    handle_watcher_.Watch(
+        body_data_pipe_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_WATCH_CONDITION_SATISFIED,
+        base::BindRepeating(&BodyReader::MojoReadyCallback,
+                            base::Unretained(this)));
+    ReadData();
+  }
+
+ private:
+  void MojoReadyCallback(MojoResult result,
+                         const mojo::HandleSignalsState& state) {
+    ReadData();
+  }
+
+  // Reads as much data as possible from |body_data_pipe_|, copying it to
+  // |body_|. Arms |handle_watcher_| when data is not currently available.
+  void ReadData() {
+    while (true) {
+      const void* body_data;
+      uint32_t read_size;
+      MojoResult result = body_data_pipe_->BeginReadData(
+          &body_data, &read_size, MOJO_READ_DATA_FLAG_NONE);
+      if (result == MOJO_RESULT_SHOULD_WAIT) {
+        handle_watcher_.ArmOrNotify();
+        return;
+      }
+
+      // If the pipe was closed, unclear if it was an error or success. Notify
+      // the consumer of how much data was received.
+      if (result != MOJO_RESULT_OK) {
+        // The only error other than MOJO_RESULT_SHOULD_WAIT this should fail
+        // with is MOJO_RESULT_FAILED_PRECONDITION, in the case the pipe was
+        // closed.
+        DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+        ClosePipe();
+        delegate_->OnDone(net::OK, total_bytes_read_);
+        return;
+      }
+
+      // Check size against the limit.
+      uint32_t copy_size = read_size;
+      if (static_cast<int64_t>(copy_size) > max_body_size_ - total_bytes_read_)
+        copy_size = max_body_size_ - total_bytes_read_;
+
+      total_bytes_read_ += copy_size;
+      net::Error error =
+          delegate_->OnDataRead(copy_size, static_cast<const char*>(body_data));
+      body_data_pipe_->EndReadData(read_size);
+      // Handling reads asynchronously is currently not supported.
+      DCHECK_NE(error, net::ERR_IO_PENDING);
+      if (error == net::OK && copy_size < read_size)
+        error = net::ERR_INSUFFICIENT_RESOURCES;
+
+      if (error) {
+        ClosePipe();
+        delegate_->OnDone(error, total_bytes_read_);
+        return;
+      }
+    }
+  }
+
+  // Frees Mojo resources and prevents any more Mojo messages from arriving.
+  void ClosePipe() {
+    handle_watcher_.Cancel();
+    body_data_pipe_.reset();
+  }
+
+  mojo::ScopedDataPipeConsumerHandle body_data_pipe_;
+  mojo::SimpleWatcher handle_watcher_;
+
+  Delegate* const delegate_;
+
+  const int64_t max_body_size_;
+  int64_t total_bytes_read_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(BodyReader);
+};
+
 // Class to drive the pipe for reading the body, handle the results of the body
 // read as appropriate, and invoke the consumer's callback to notify it of
-// request completion.
+// request completion. Implementations typically use a BodyReader to to manage
+// reads from the body data pipe.
 class BodyHandler {
  public:
   // A raw pointer is safe, since |simple_url_loader| owns the BodyHandler.
@@ -38,21 +170,22 @@ class BodyHandler {
       : simple_url_loader_(simple_url_loader) {}
   virtual ~BodyHandler() {}
 
-  // Called with the data pipe received from the URLLoader. The BodyHandler is
-  // responsible for reading from it and monitoring it for closure. Should call
-  // either SimpleURLLoaderImpl::OnBodyPipeClosed() when the body pipe is
-  // closed, or SimpleURLLoaderImpl::FinishWithResult() with an error code if
-  // some sort of unexpected error occurs, like a write to a file fails. Must
-  // not call both.
+  // Called by SimpleURLLoader with the data pipe received from the URLLoader.
+  // The BodyHandler is responsible for reading from it and monitoring it for
+  // closure. Should call SimpleURLLoaderImpl::OnBodyHandlerDone(), once either
+  // when the body pipe is closed or when an error occurs, like a write to a
+  // file fails.
   virtual void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body_data_pipe) = 0;
 
-  // Notifies the consumer that the request has completed, either successfully
-  // or with an error. May be invoked before OnStartLoadingResponseBody(), or
-  // before the BodyHandler has notified SimplerURLloader of completion or an
-  // error. Once this is called, must not invoke any of SimpleURLLoaderImpl's
-  // callbacks.
-  virtual void NotifyConsumerOfCompletion() = 0;
+  // Called by SimpleURLLoader. Notifies the SimpleURLLoader's consumer that the
+  // request has completed, either successfully or with an error. May be invoked
+  // before OnStartLoadingResponseBody(), or before the BodyHandler has notified
+  // SimplerURLLoader of completion or an error. Once this is called, the
+  // BodyHandler must not invoke any of SimpleURLLoaderImpl's callbacks. If
+  // |destroy_results| is true, any received data should be destroyed instead of
+  // being sent to the consumer.
+  virtual void NotifyConsumerOfCompletion(bool destroy_results) = 0;
 
  protected:
   SimpleURLLoaderImpl* simple_url_loader() { return simple_url_loader_; }
@@ -64,43 +197,33 @@ class BodyHandler {
 };
 
 // BodyHandler implementation for consuming the response as a string.
-class SaveToStringBodyHandler : public BodyHandler {
+class SaveToStringBodyHandler : public BodyHandler,
+                                public BodyReader::Delegate {
  public:
   SaveToStringBodyHandler(
       SimpleURLLoaderImpl* simple_url_loader,
       SimpleURLLoader::BodyAsStringCallback body_as_string_callback,
-      size_t max_body_size)
+      int64_t max_body_size)
       : BodyHandler(simple_url_loader),
-        max_body_size_(max_body_size),
         body_as_string_callback_(std::move(body_as_string_callback)),
-        handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {}
+        body_reader_(std::make_unique<BodyReader>(this, max_body_size)) {}
 
   ~SaveToStringBodyHandler() override {}
 
   // BodyHandler implementation:
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body_data_pipe) override;
-  void NotifyConsumerOfCompletion() override;
+  void NotifyConsumerOfCompletion(bool destroy_results) override;
 
  private:
-  void MojoReadyCallback(MojoResult result,
-                         const mojo::HandleSignalsState& state);
-
-  // Reads as much data as possible from |body_data_pipe_|, copying it to
-  // |body_|. Arms |handle_watcher_| when data is not currently available.
-  void ReadData();
-
-  // Frees Mojo resources and prevents any more Mojo messages from arriving.
-  void ClosePipe();
-
-  const size_t max_body_size_;
-
-  SimpleURLLoader::BodyAsStringCallback body_as_string_callback_;
+  // BodyReader::Delegate implementation.
+  net::Error OnDataRead(uint32_t length, const char* data) override;
+  void OnDone(net::Error error, int64_t total_bytes) override;
 
   std::unique_ptr<std::string> body_;
+  SimpleURLLoader::BodyAsStringCallback body_as_string_callback_;
 
-  mojo::ScopedDataPipeConsumerHandle body_data_pipe_;
-  mojo::SimpleWatcher handle_watcher_;
+  std::unique_ptr<BodyReader> body_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveToStringBodyHandler);
 };
@@ -127,14 +250,14 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   int NetError() const override;
   const ResourceResponseHead* ResponseInfo() const override;
 
-  bool allow_partial_results() const { return allow_partial_results_; }
-
-  // Called by BodyHandler when the body pipe was closed. This could indicate an
-  // error, concellation, or completion. To determine which case this is, the
-  // size will also be compared to the size reported in
-  // ResourceRequestCompletionStatus(), if ResourceRequestCompletionStatus
-  // indicates a success.
-  void OnBodyPipeClosed(int64_t received_body_size);
+  // Called by BodyHandler when the BodyHandler body handler is done. If |error|
+  // is not net::OK, some error occurred reading or consuming the body. If it is
+  // net::OK, the pipe was closed and all data received was successfully
+  // handled. This could indicate an error, concellation, or completion. To
+  // determine which case this is, the size will also be compared to the size
+  // reported in ResourceRequestCompletionStatus(), if
+  // ResourceRequestCompletionStatus indicates a success.
+  void OnBodyHandlerDone(net::Error error, int64_t received_body_size);
 
   // Finished the request with the provided error code, after freeing Mojo
   // resources. Closes any open pipes, so no URLLoader or BodyHandlers callbacks
@@ -197,84 +320,42 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   std::unique_ptr<ResourceResponseHead> response_info_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(SimpleURLLoaderImpl);
 };
 
 void SaveToStringBodyHandler::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body_data_pipe) {
-  body_data_pipe_ = std::move(body_data_pipe);
+  DCHECK(!body_);
+
   body_ = base::MakeUnique<std::string>();
-  handle_watcher_.Watch(
-      body_data_pipe_.get(),
-      MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      MOJO_WATCH_CONDITION_SATISFIED,
-      base::BindRepeating(&SaveToStringBodyHandler::MojoReadyCallback,
-                          base::Unretained(this)));
-  ReadData();
+  body_reader_->Start(std::move(body_data_pipe));
 }
 
-void SaveToStringBodyHandler::NotifyConsumerOfCompletion() {
-  ClosePipe();
+net::Error SaveToStringBodyHandler::OnDataRead(uint32_t length,
+                                               const char* data) {
+  body_->append(data, length);
+  return net::OK;
+}
 
-  if (simple_url_loader()->NetError() != net::OK &&
-      !simple_url_loader()->allow_partial_results()) {
-    // If it's a partial download or an error was received, erase the body.
+void SaveToStringBodyHandler::OnDone(net::Error error, int64_t total_bytes) {
+  DCHECK_EQ(body_->size(), static_cast<size_t>(total_bytes));
+  simple_url_loader()->OnBodyHandlerDone(error, total_bytes);
+}
+
+void SaveToStringBodyHandler::NotifyConsumerOfCompletion(bool destroy_results) {
+  body_reader_.reset();
+  if (destroy_results)
     body_.reset();
-  }
 
   std::move(body_as_string_callback_).Run(std::move(body_));
 }
 
-void SaveToStringBodyHandler::MojoReadyCallback(
-    MojoResult result,
-    const mojo::HandleSignalsState& state) {
-  ReadData();
+SimpleURLLoaderImpl::SimpleURLLoaderImpl() : client_binding_(this) {
+  // Allow creation and use on different threads.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
-
-void SaveToStringBodyHandler::ReadData() {
-  while (true) {
-    const void* body_data;
-    uint32_t read_size;
-    MojoResult result = body_data_pipe_->BeginReadData(
-        &body_data, &read_size, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
-      handle_watcher_.ArmOrNotify();
-      return;
-    }
-
-    // If the pipe was closed, unclear if it was an error or success. Notify
-    // the SimpleURLLoaderImpl of how much data was received.
-    if (result != MOJO_RESULT_OK) {
-      // The only error other than MOJO_RESULT_SHOULD_WAIT this should fail
-      // with is MOJO_RESULT_FAILED_PRECONDITION, in the case the pipe was
-      // closed.
-      DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-      ClosePipe();
-      simple_url_loader()->OnBodyPipeClosed(body_->size());
-      return;
-    }
-
-    // Check size against the limit.
-    size_t copy_size = std::min(max_body_size_ - body_->size(),
-                                static_cast<size_t>(read_size));
-    body_->append(static_cast<const char*>(body_data), copy_size);
-    body_data_pipe_->EndReadData(copy_size);
-
-    // Fail the request if the size limit was exceeded.
-    if (copy_size < read_size) {
-      ClosePipe();
-      simple_url_loader()->FinishWithResult(net::ERR_INSUFFICIENT_RESOURCES);
-      return;
-    }
-  }
-}
-
-void SaveToStringBodyHandler::ClosePipe() {
-  handle_watcher_.Cancel();
-  body_data_pipe_.reset();
-}
-
-SimpleURLLoaderImpl::SimpleURLLoaderImpl() : client_binding_(this) {}
 
 SimpleURLLoaderImpl::~SimpleURLLoaderImpl() {}
 
@@ -329,16 +410,27 @@ const ResourceResponseHead* SimpleURLLoaderImpl::ResponseInfo() const {
   return response_info_.get();
 }
 
-void SimpleURLLoaderImpl::OnBodyPipeClosed(int64_t received_body_size) {
+void SimpleURLLoaderImpl::OnBodyHandlerDone(net::Error error,
+                                            int64_t received_body_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(body_started_);
   DCHECK(!body_completed_);
 
+  // If there's an error, fail request and report it immediately.
+  if (error != net::OK) {
+    FinishWithResult(error);
+    return;
+  }
+
+  // Otherwise, need to wait until the URLRequestClient pipe receives a complete
+  // message or is closed, to determine if the entire body was received.
   body_completed_ = true;
   received_body_size_ = received_body_size;
   MaybeComplete();
 }
 
 void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!finished_);
 
   client_binding_.Close();
@@ -346,13 +438,16 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
 
   finished_ = true;
   net_error_ = net_error;
-  body_handler_->NotifyConsumerOfCompletion();
+  // If it's a partial download or an error was received, erase the body.
+  bool destroy_results = net_error_ != net::OK && !allow_partial_results_;
+  body_handler_->NotifyConsumerOfCompletion(destroy_results);
 }
 
 void SimpleURLLoaderImpl::StartInternal(
     const ResourceRequest& resource_request,
     mojom::URLLoaderFactory* url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // It's illegal to use a single SimpleURLLoaderImpl to make multiple requests.
   DCHECK(!finished_);
   DCHECK(!url_loader_);
@@ -372,6 +467,7 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (response_info_) {
     // The final headers have already been received, so the URLLoader is
     // violating the API contract.
@@ -389,6 +485,7 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
 void SimpleURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (response_info_) {
     // If the headers have already been received, the URLLoader is violating the
     // API contract.
@@ -417,6 +514,7 @@ void SimpleURLLoaderImpl::OnUploadProgress(
 
 void SimpleURLLoaderImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (body_started_ || !response_info_) {
     // If this was already called, or the headers have not yet been received,
     // the URLLoader is violating the API contract.
@@ -429,6 +527,7 @@ void SimpleURLLoaderImpl::OnStartLoadingResponseBody(
 
 void SimpleURLLoaderImpl::OnComplete(
     const ResourceRequestCompletionStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Request should not have been completed yet.
   DCHECK(!finished_);
   DCHECK(!request_completed_);
@@ -449,6 +548,7 @@ void SimpleURLLoaderImpl::OnComplete(
 }
 
 void SimpleURLLoaderImpl::OnConnectionError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |this| closes the pipe to the URLLoader in OnComplete(), so this method
   // being called indicates the pipe was closed before completion, most likely
   // due to peer death, or peer not calling OnComplete() on cancellation.
@@ -466,6 +566,7 @@ void SimpleURLLoaderImpl::OnConnectionError() {
 }
 
 void SimpleURLLoaderImpl::MaybeComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Request should not have completed yet.
   DCHECK(!finished_);
 
