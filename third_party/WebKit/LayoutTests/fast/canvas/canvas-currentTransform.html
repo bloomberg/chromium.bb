@@ -184,17 +184,23 @@ test(function(t) {
     assert_equals(matrix.e, 1);
     assert_equals(matrix.f, 2);
     setCurrentTransform(ctx, 1, 0, 0, 1, 0, 0);
-    
+
     // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
-    assert_throws(null, function() {ctx.currentTransform = ctx;});
+    assert_throws(new TypeError(), function() {
+      ctx.currentTransform = ctx;
+    });
     // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
-    assert_throws(null, function() {ctx.currentTransform = undefined;});
+    assert_throws(new TypeError(), function() {
+      ctx.currentTransform = undefined;
+    });
     // throws: TypeError: Failed to set the \'currentTransform\' property on \'CanvasRenderingContext2D\': The provided value is not of type \'SVGMatrix\'.
-    assert_throws(null, function() {ctx.currentTransform = null;});
-    
+    assert_throws(new TypeError(), function() {
+      ctx.currentTransform = null;
+    });
+
     ctx.fillStyle = 'red';
     ctx.fillRect(0, 0, 100, 100);
-    
+
     function setCurrentTransformToNonfinite(parameters)
     {
         ctx = parameters[0];
@@ -219,7 +225,7 @@ test(function(t) {
         assert_equals(matrix.e, 100);
         assert_equals(matrix.f, 10);
     }
-    
+
     ctx.translate(100, 10);
     matrix = ctx.currentTransform;
     assert_equals(matrix.a, 1);
@@ -307,7 +313,7 @@ test(function(t) {
         ['Case 75' , [ctx, 0, 0, 0, 0, Infinity, Infinity]]
     ]
     generate_tests(setCurrentTransformToNonfinite, testScenarios);
-    
+
     matrix = ctx.currentTransform;
     assert_equals(matrix.a, 1);
     assert_equals(matrix.b, 0);
@@ -315,10 +321,10 @@ test(function(t) {
     assert_equals(matrix.d, 1);
     assert_equals(matrix.e, 100);
     assert_equals(matrix.f, 10);
-    
+
     ctx.fillStyle = 'green';
     ctx.fillRect(-100, -10, 100, 100);
-    
+
     imageData = ctx.getImageData(1, 1, 98, 98);
     imgdata = imageData.data;
     assert_equals(imgdata[4], 0);

@@ -57,19 +57,45 @@ test(function(t) {
     }
 
     // Test exception cases.
-    assert_throws(null, function() {ctx.clip(null);});
-    assert_throws(null, function() {ctx.clip(null, null);});
-    assert_throws(null, function() {ctx.clip(null, 'nonzero');});
-    assert_throws(null, function() {ctx.clip(path, null);});
-    assert_throws(null, function() {ctx.clip([], 'nonzero');});
-    assert_throws(null, function() {ctx.clip({}, 'nonzero');});
-    assert_throws(null, function() {ctx.clip(null, 'evenodd');});
-    assert_throws(null, function() {ctx.clip([], 'evenodd');});
-    assert_throws(null, function() {ctx.clip({}, 'evenodd');});
-    assert_throws(null, function() {ctx.clip('gazonk');});
-    assert_throws(null, function() {ctx.clip(path, 'gazonk');});
-    assert_throws(null, function() {ctx.clip(undefined, undefined);});
-    assert_throws(null, function() {ctx.clip(undefined, 'nonzero');});
+    assert_throws(new TypeError(), function() {
+      ctx.clip(null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(null, null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(null, 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(path, null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip([], 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip({}, 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(null, 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip([], 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip({}, 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip('gazonk');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(path, 'gazonk');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(undefined, undefined);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.clip(undefined, 'nonzero');
+    });
 }, 'Series of tests to ensure clip() works with path and winding rule parameters.');
 </script>
 </body>
