@@ -1645,7 +1645,7 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
 }
 
 // To prevent invalid SQL from accidentally shipping to production, prepared
-// statements which fail to compile with SQLITE_ERROR call DLOG(FATAL).  This
+// statements which fail to compile with SQLITE_ERROR call DLOG(DCHECK).  This
 // case cannot be suppressed with an error callback.
 TEST_F(SQLConnectionTest, CompileError) {
   // DEATH tests not supported on Android, iOS, or Fuchsia.
