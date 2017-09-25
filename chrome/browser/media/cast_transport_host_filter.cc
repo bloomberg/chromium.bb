@@ -8,13 +8,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/cast_messages.h"
 #include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/cast/net/cast_transport.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/url_request/url_request_context.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -118,8 +119,9 @@ void BindConnectorRequest(
 
 namespace cast {
 
-CastTransportHostFilter::CastTransportHostFilter()
+CastTransportHostFilter::CastTransportHostFilter(Profile* profile)
     : BrowserMessageFilter(CastMsgStart),
+      url_request_context_getter_(profile->GetRequestContext()),
       weak_factory_(this) {}
 
 CastTransportHostFilter::~CastTransportHostFilter() {}
@@ -174,8 +176,9 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
 
   std::unique_ptr<media::cast::UdpTransport> udp_transport(
       new media::cast::UdpTransport(
-          g_browser_process->net_log(), base::ThreadTaskRunnerHandle::Get(),
-          local_end_point, remote_end_point,
+          url_request_context_getter_->GetURLRequestContext()->net_log(),
+          base::ThreadTaskRunnerHandle::Get(), local_end_point,
+          remote_end_point,
           base::Bind(&CastTransportHostFilter::OnStatusChanged,
                      weak_factory_.GetWeakPtr(), channel_id)));
   udp_transport->SetUdpOptions(options);

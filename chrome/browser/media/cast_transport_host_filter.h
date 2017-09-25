@@ -11,6 +11,7 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/cast_remoting_sender.h"
@@ -19,13 +20,16 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
+
+class Profile;
 
 namespace cast {
 
 class CastTransportHostFilter : public content::BrowserMessageFilter {
  public:
-  CastTransportHostFilter();
+  explicit CastTransportHostFilter(Profile* profile);
 
   // Used by unit test only.
   void InitializeNoOpWakeLockForTesting();
@@ -113,6 +117,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   // This map stores all active remoting streams for each channel. It uses the
   // channel ID as the key.
   std::multimap<int32_t, int32_t> stream_id_map_;
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
 
