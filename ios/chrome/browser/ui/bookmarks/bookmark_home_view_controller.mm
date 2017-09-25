@@ -171,6 +171,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     if (self.isReconstructingFromCache) {
       [self setupUIStackCacheIfApplicable];
     }
+    // Set the delegate here to make sure it is working when navigating in the
+    // ViewController hierarchy (as each view controller is setting itself as
+    // delegate).
+    self.navigationController.interactivePopGestureRecognizer.delegate = self;
   }
 }
 
@@ -1040,8 +1044,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Set up navigation bar for the new UI.
 - (void)setupNavigationBar {
   self.navigationController.navigationBarHidden = YES;
-
-  self.navigationController.interactivePopGestureRecognizer.delegate = self;
 
   self.appBar = [[MDCAppBar alloc] init];
   [self addChildViewController:_appBar.headerViewController];
