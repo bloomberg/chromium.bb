@@ -113,4 +113,17 @@ Polymer({
     this.screen.onTPMFirmwareUpdateChanged_(
         this.$.tpmFirmwareUpdateCheckbox.checked);
   },
+
+  /**
+   * On-tap event handler for the TPM firmware update learn more link.
+   *
+   * @param {!Event} event
+   * @private
+   */
+  onTPMFirmwareUpdateLearnMore_: function(event) {
+    chrome.send(
+        'login.ResetScreen.userActed', ['tpm-firmware-update-learn-more-link']);
+    event.stopPropagation();
+  },
+
 });

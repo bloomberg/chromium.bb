@@ -37,6 +37,8 @@ constexpr const char kUserActionResetShowConfirmationPressed[] =
     "show-confirmation";
 constexpr const char kUserActionResetResetConfirmationDismissed[] =
     "reset-confirm-dismissed";
+constexpr const char kUserActionTPMFirmwareUpdateLearnMore[] =
+    "tpm-firmware-update-learn-more-link";
 
 constexpr const char kContextKeyIsRollbackAvailable[] = "rollback-available";
 constexpr const char kContextKeyIsRollbackChecked[] = "rollback-checked";
@@ -159,13 +161,15 @@ void ResetScreen::OnUserAction(const std::string& action_id) {
   else if (action_id == kUserActionResetPowerwashPressed)
     OnPowerwash();
   else if (action_id == kUserActionResetLearnMorePressed)
-    OnLearnMore();
+    ShowHelpArticle(HelpAppLauncher::HELP_POWERWASH);
   else if (action_id == kUserActionResetRollbackToggled)
     OnToggleRollback();
   else if (action_id == kUserActionResetShowConfirmationPressed)
     OnShowConfirm();
   else if (action_id == kUserActionResetResetConfirmationDismissed)
     OnConfirmationDismissed();
+  else if (action_id == kUserActionTPMFirmwareUpdateLearnMore)
+    ShowHelpArticle(HelpAppLauncher::HELP_TPM_FIRMWARE_UPDATE);
   else
     BaseScreen::OnUserAction(action_id);
 }
@@ -257,19 +261,19 @@ void ResetScreen::OnShowConfirm() {
   GetContextEditor().SetBoolean(kContextKeyIsConfirmational, true);
 }
 
-void ResetScreen::OnLearnMore() {
+void ResetScreen::OnConfirmationDismissed() {
+  GetContextEditor().SetBoolean(kContextKeyIsConfirmational, false);
+}
+
+void ResetScreen::ShowHelpArticle(HelpAppLauncher::HelpTopic topic) {
 #if defined(OFFICIAL_BUILD)
-  VLOG(1) << "Trying to view the help article about reset options.";
+  VLOG(1) << "Trying to view help article " << topic;
   if (!help_app_.get()) {
     help_app_ = new HelpAppLauncher(
         LoginDisplayHost::default_host()->GetNativeWindow());
   }
-  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_POWERWASH);
+  help_app_->ShowHelpTopic(topic);
 #endif
-}
-
-void ResetScreen::OnConfirmationDismissed() {
-  GetContextEditor().SetBoolean(kContextKeyIsConfirmational, false);
 }
 
 void ResetScreen::UpdateStatusChanged(

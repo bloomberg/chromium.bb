@@ -59,8 +59,9 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   void OnRestart();
   void OnToggleRollback();
   void OnShowConfirm();
-  void OnLearnMore();
   void OnConfirmationDismissed();
+
+  void ShowHelpArticle(HelpAppLauncher::HelpTopic topic);
 
   // Returns an instance of the error screen.
   ErrorScreen* GetErrorScreen();

@@ -74,6 +74,9 @@
               on-change="onTPMFirmwareUpdateChanged_">
             <div id="tpmFirmwareUpdateContainer">
               <span i18n-content="resetTPMFirmwareUpdate"></span>
+              <a href="#" hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
+                  on-tap="onTPMFirmwareUpdateLearnMore_"
+                  i18n-content="learnMore"></a>
             </div>
           </paper-checkbox>
         </div>
