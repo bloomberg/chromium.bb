@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_web_contents.h"
 
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -158,6 +160,8 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
 
 AnswerCardWebContents::~AnswerCardWebContents() {
   DetachFromHost();
+  web_contents_->SetDelegate(nullptr);
+  Observe(nullptr);
 }
 
 void AnswerCardWebContents::LoadURL(const GURL& url) {
