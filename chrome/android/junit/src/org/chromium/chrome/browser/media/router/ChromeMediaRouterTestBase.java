@@ -11,36 +11,27 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import org.chromium.base.CommandLine;
 import org.junit.Before;
 import org.robolectric.shadows.ShadowLog;
+
+import org.chromium.base.CommandLine;
 
 /**
  * Robolectric test base class for ChromeMediaRouter.
  */
 public class ChromeMediaRouterTestBase {
-    protected static final String SOURCE_ID1 = new StringBuilder()
-            .append("https://google.com/cast#")
-            .append("__castAppId__=CCCCCCCC/")
-            .append("__castClientId__=11111111111111111/")
-            .append("__castAutoJoinPolicy__=origin_scoped/")
-            .append("__castLaunchTimeout__=10000")
-            .toString();
-    protected static final String SOURCE_ID2 = new StringBuilder()
-            .append("https://google.com/cast#")
-            .append("__castAppId__=CCCCCCCC/")
-            .append("__castClientId__=222222222222222222/")
-            .append("__castAutoJoinPolicy__=origin_scoped/")
-            .append("__castLaunchTimeout__=10000")
-            .toString();
-    protected static final String SINK_ID1 = new StringBuilder()
-            .append("com.google.android.gms/")
-            .append(".cast.media.MediaRouteProviderService:cccccccccccccccccccccccccccccccc")
-            .toString();
-    protected static final String SINK_ID2 = new StringBuilder()
-            .append("com.google.android.gms/")
-            .append(".cast.media.MediaRouteProviderService:dddddddddddddddddddddddddddddddd")
-            .toString();
+    protected static final String SOURCE_ID1 = "cast:CCCCCCCC?"
+            + "clientId=11111111111111111&"
+            + "autoJoinPolicy=origin_scoped&"
+            + "launchTimeout=10000";
+    protected static final String SOURCE_ID2 = "cast:CCCCCCCC?"
+            + "clientId=222222222222222222&"
+            + "autoJoinPolicy=origin_scoped&"
+            + "castLaunchTimeout=10000";
+    protected static final String SINK_ID1 = "com.google.android.gms/"
+            + ".cast.media.MediaRouteProviderService:cccccccccccccccccccccccccccccccc";
+    protected static final String SINK_ID2 = "com.google.android.gms/"
+            + ".cast.media.MediaRouteProviderService:dddddddddddddddddddddddddddddddd";
     protected static final String SINK_NAME1 = "sink name 1";
     protected static final String SINK_NAME2 = "sink name 2";
     protected static final String PRESENTATION_ID1 = "mr_CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC";

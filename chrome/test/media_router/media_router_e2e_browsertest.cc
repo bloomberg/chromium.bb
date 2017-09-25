@@ -30,15 +30,12 @@
 //   --enable-pixel-output-in-tests --run-manual
 //   --gtest_filter=MediaRouterE2EBrowserTest.<test case name>
 //   --enable-logging=stderr
-//   --whitelisted-extension-id=enhhojjnijigcajfphajepfemndkmdlo
 //   --ui-test-action-timeout=200000
-//   --media-router=1
 
 namespace {
 // URL to launch Castv2Player_Staging app on Chromecast
 const char kCastAppPresentationUrl[] =
-    "https://google.com/cast#__castAppId__=BE6E4473/"
-    "__castClientId__=143692175507258981";
+    "cast:BE6E4473?clientId=143692175507258981";
 const char kVideo[] = "video";
 const char kBearVP9Video[] = "bear-vp9.webm";
 const char kPlayer[] = "player.html";

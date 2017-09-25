@@ -14,9 +14,8 @@ var presentationUrl = null;
 let params = (new URL(window.location.href)).searchParams;
 
 if (params.get('__is_android__') == 'true') {
-  // For android, "google.com/cast" is required in presentation URL.
-  // TODO(zqzhang): this requirement may be removed in the future.
-  presentationUrl = "https://google.com/cast#__castAppId__=CCCCCCCC/";
+  // Android only accepts Cast Presentation URLs for the time being.
+  presentationUrl = "cast:CCCCCCCC";
 } else if (params.get('__oneUA__') == 'true') {
   presentationUrl = "presentation_receiver.html";
 } else if (params.get('__oneUANoReceiver__') == 'true') {
