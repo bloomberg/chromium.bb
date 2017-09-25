@@ -63,7 +63,7 @@ void ExpectNotCalledOnValidThreadWithSequenceTokenAndThreadTaskRunnerHandle(
     ThreadCheckerImpl* thread_checker,
     SequenceToken sequence_token) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+      MakeRefCounted<TestSimpleTaskRunner>());
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(sequence_token);
   ExpectNotCalledOnValidThread(thread_checker);
@@ -79,7 +79,7 @@ TEST(ThreadCheckerTest, AllowedSameThreadNoSequenceToken) {
 TEST(ThreadCheckerTest,
      AllowedSameThreadAndSequenceDifferentTasksWithThreadTaskRunnerHandle) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+      MakeRefCounted<TestSimpleTaskRunner>());
 
   std::unique_ptr<ThreadCheckerImpl> thread_checker;
   const SequenceToken sequence_token = SequenceToken::Create();
@@ -130,7 +130,7 @@ TEST(ThreadCheckerTest, DisallowedDifferentThreadsNoSequenceToken) {
 
 TEST(ThreadCheckerTest, DisallowedDifferentThreadsSameSequence) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+      MakeRefCounted<TestSimpleTaskRunner>());
   const SequenceToken sequence_token(SequenceToken::Create());
 
   ScopedSetSequenceTokenForCurrentThread
@@ -147,7 +147,7 @@ TEST(ThreadCheckerTest, DisallowedSameThreadDifferentSequence) {
   std::unique_ptr<ThreadCheckerImpl> thread_checker;
 
   ThreadTaskRunnerHandle thread_task_runner_handle(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+      MakeRefCounted<TestSimpleTaskRunner>());
 
   {
     ScopedSetSequenceTokenForCurrentThread
@@ -180,7 +180,7 @@ TEST(ThreadCheckerTest, DetachFromThread) {
 
 TEST(ThreadCheckerTest, DetachFromThreadWithSequenceToken) {
   ThreadTaskRunnerHandle thread_task_runner_handle(
-      make_scoped_refptr(new TestSimpleTaskRunner));
+      MakeRefCounted<TestSimpleTaskRunner>());
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
   ThreadCheckerImpl thread_checker;

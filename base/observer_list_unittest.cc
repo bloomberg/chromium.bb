@@ -532,7 +532,7 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
   auto task_runner_1 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
   auto task_runner_2 = CreateSequencedTaskRunnerWithTraits(TaskTraits());
 
-  auto observer_list = make_scoped_refptr(new ObserverListThreadSafe<Foo>());
+  auto observer_list = MakeRefCounted<ObserverListThreadSafe<Foo>>();
 
   SequenceVerificationObserver observer_1(task_runner_1);
   SequenceVerificationObserver observer_2(task_runner_2);
@@ -558,7 +558,7 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
 // from a notification, it is itself notified.
 TEST(ObserverListThreadSafeTest, AddObserverFromNotificationNotifyAll) {
   test::ScopedTaskEnvironment scoped_task_environment;
-  auto observer_list = make_scoped_refptr(new ObserverListThreadSafe<Foo>());
+  auto observer_list = MakeRefCounted<ObserverListThreadSafe<Foo>>();
 
   Adder observer_added_from_notification(1);
 
@@ -605,7 +605,7 @@ class RemoveWhileNotificationIsRunningObserver : public Foo {
 // Verify that there is no crash when an observer is removed while it is being
 // notified.
 TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
-  auto observer_list = make_scoped_refptr(new ObserverListThreadSafe<Foo>());
+  auto observer_list = MakeRefCounted<ObserverListThreadSafe<Foo>>();
   RemoveWhileNotificationIsRunningObserver observer;
 
   WaitableEvent task_running(WaitableEvent::ResetPolicy::AUTOMATIC,

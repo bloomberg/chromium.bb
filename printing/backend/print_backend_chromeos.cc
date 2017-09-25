@@ -110,7 +110,7 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
   return make_scoped_refptr(
       new PrintBackendCupsIpp(CreateConnection(print_backend_settings)));
 #else
-  return make_scoped_refptr(new PrintBackendChromeOS());
+  return base::MakeRefCounted<PrintBackendChromeOS>();
 #endif  // defined(USE_CUPS)
 }
 

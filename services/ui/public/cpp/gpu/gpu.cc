@@ -83,11 +83,11 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   ui::ContextProviderCommandBuffer* shared_context_provider = nullptr;
-  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
+  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel), stream_id, stream_priority,
       gpu::kNullSurfaceHandle, GURL("chrome://gpu/MusContextFactory"),
       automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
-      shared_context_provider, ui::command_buffer_metrics::MUS_CLIENT_CONTEXT));
+      shared_context_provider, ui::command_buffer_metrics::MUS_CLIENT_CONTEXT);
 }
 
 void Gpu::CreateJpegDecodeAccelerator(

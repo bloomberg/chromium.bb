@@ -214,8 +214,7 @@ void BattOrConnectionImpl::BeginReadBytesForMessage(size_t max_bytes_to_read) {
   LogSerial(StringPrintf("(message) Starting read of up to %zu bytes.",
                          max_bytes_to_read));
 
-  pending_read_buffer_ =
-      make_scoped_refptr(new net::IOBuffer(max_bytes_to_read));
+  pending_read_buffer_ = base::MakeRefCounted<net::IOBuffer>(max_bytes_to_read);
 
   io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(max_bytes_to_read),
@@ -318,8 +317,7 @@ void BattOrConnectionImpl::BeginReadBytesForFlush() {
       StringPrintf("(flush) Starting read (quiet period has lasted %f ms).",
                    quiet_period_duration.InMillisecondsF()));
 
-  pending_read_buffer_ =
-      make_scoped_refptr(new net::IOBuffer(kFlushBufferSize));
+  pending_read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kFlushBufferSize);
 
   io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
       pending_read_buffer_, static_cast<uint32_t>(kFlushBufferSize),

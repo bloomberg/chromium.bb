@@ -128,9 +128,9 @@ std::unique_ptr<device::BluetoothAdvertisement::Data> GenerateAdvertisementData(
 class BleAdvertisementSynchronizerTest : public testing::Test {
  protected:
   BleAdvertisementSynchronizerTest()
-      : fake_advertisement_(make_scoped_refptr(new FakeBluetoothAdvertisement(
+      : fake_advertisement_(base::MakeRefCounted<FakeBluetoothAdvertisement>(
             base::Bind(&BleAdvertisementSynchronizerTest::OnUnregisterCalled,
-                       base::Unretained(this))))) {}
+                       base::Unretained(this)))) {}
 
   void SetUp() override {
     num_register_success_ = 0;

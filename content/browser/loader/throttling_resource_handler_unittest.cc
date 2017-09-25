@@ -259,7 +259,7 @@ TEST_F(ThrottlingResourceHandlerTest, Sync) {
   redirect_info.new_url = GURL(kRedirectUrl);
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_redirect_request_called());
   EXPECT_EQ(0, throttle1_->will_process_response_called());
 
@@ -270,7 +270,7 @@ TEST_F(ThrottlingResourceHandlerTest, Sync) {
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_process_response_called());
   EXPECT_EQ(1, throttle2_->will_process_response_called());
 
@@ -311,7 +311,7 @@ TEST_F(ThrottlingResourceHandlerTest, Async) {
   redirect_info.new_url = GURL(kRedirectUrl);
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_redirect_request_called());
   EXPECT_EQ(0, throttle2_->will_redirect_request_called());
 
@@ -328,7 +328,7 @@ TEST_F(ThrottlingResourceHandlerTest, Async) {
   EXPECT_EQ(0, throttle1_->will_process_response_called());
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_process_response_called());
   EXPECT_EQ(0, throttle2_->will_process_response_called());
 
@@ -482,7 +482,7 @@ TEST_F(ThrottlingResourceHandlerTest,
   redirect_info.new_url = GURL(kRedirectUrl);
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_redirect_request_called());
   EXPECT_EQ(0, throttle2_->will_redirect_request_called());
   EXPECT_EQ(0, test_handler_->on_request_redirected_called());
@@ -519,7 +519,7 @@ TEST_F(ThrottlingResourceHandlerTest,
   redirect_info.new_url = GURL(kRedirectUrl);
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
 
   throttle1_->CancelWithError(net::ERR_UNEXPECTED);
   EXPECT_EQ(1, throttle1_->will_redirect_request_called());
@@ -564,7 +564,7 @@ TEST_F(ThrottlingResourceHandlerTest,
   redirect_info.new_url = GURL(kRedirectUrl);
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
 
   throttle1_->Resume();
   EXPECT_EQ(1, throttle1_->will_redirect_request_called());
@@ -601,7 +601,7 @@ TEST_F(ThrottlingResourceHandlerTest,
 
   ASSERT_EQ(MockResourceLoader::Status::CANCELED,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_process_response_called());
   EXPECT_EQ(0, throttle2_->will_process_response_called());
   EXPECT_EQ(0, test_handler_->on_response_started_called());
@@ -635,7 +635,7 @@ TEST_F(ThrottlingResourceHandlerTest,
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_process_response_called());
   EXPECT_EQ(0, throttle2_->will_process_response_called());
   EXPECT_EQ(0, test_handler_->on_response_started_called());
@@ -680,7 +680,7 @@ TEST_F(ThrottlingResourceHandlerTest,
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
   EXPECT_EQ(1, throttle1_->will_process_response_called());
   EXPECT_EQ(0, throttle2_->will_process_response_called());
   EXPECT_EQ(0, test_handler_->on_response_started_called());
@@ -770,7 +770,7 @@ TEST_F(ThrottlingResourceHandlerTest, OutOfBandCancelAfterRequestRedirected) {
   redirect_info.new_url = GURL(kRedirectUrl);
   EXPECT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnRequestRedirected(
-                redirect_info, make_scoped_refptr(new ResourceResponse())));
+                redirect_info, base::MakeRefCounted<ResourceResponse>()));
 
   throttle1_->CancelWithError(net::ERR_UNEXPECTED);
   EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());
@@ -806,7 +806,7 @@ TEST_F(ThrottlingResourceHandlerTest, OutOfBandCancelAfterResponseStarted) {
       mock_loader_->OnRequestRedirected(redirect_info, new ResourceResponse()));
   EXPECT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnResponseStarted(
-                make_scoped_refptr(new ResourceResponse())));
+                base::MakeRefCounted<ResourceResponse>()));
 
   throttle1_->CancelWithError(net::ERR_UNEXPECTED);
   EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader_->status());

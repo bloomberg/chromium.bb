@@ -240,7 +240,7 @@ class ImageControllerTest : public testing::Test {
   ~ImageControllerTest() override = default;
 
   void SetUp() override {
-    worker_task_runner_ = make_scoped_refptr(new WorkerTaskRunner);
+    worker_task_runner_ = base::MakeRefCounted<WorkerTaskRunner>();
     controller_.reset(
         new ImageController(task_runner_.get(), worker_task_runner_));
     cache_ = TestableCache();

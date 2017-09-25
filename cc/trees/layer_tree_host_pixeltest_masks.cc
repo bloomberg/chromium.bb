@@ -40,7 +40,7 @@ class MaskContentLayerClient : public ContentLayerClient {
 
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    auto display_list = make_scoped_refptr(new DisplayItemList);
+    auto display_list = base::MakeRefCounted<DisplayItemList>();
     display_list->StartPaint();
 
     display_list->push<SaveOp>();
@@ -186,7 +186,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    auto display_list = make_scoped_refptr(new DisplayItemList);
+    auto display_list = base::MakeRefCounted<DisplayItemList>();
     display_list->StartPaint();
 
     display_list->push<SaveOp>();
@@ -235,7 +235,7 @@ class CircleContentLayerClient : public ContentLayerClient {
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
-    auto display_list = make_scoped_refptr(new DisplayItemList);
+    auto display_list = base::MakeRefCounted<DisplayItemList>();
     display_list->StartPaint();
 
     display_list->push<SaveOp>();

@@ -247,13 +247,13 @@ void AwBrowserContext::InitUserPrefService() {
   safe_browsing::RegisterProfilePrefs(pref_registry);
 
   PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(make_scoped_refptr(
-      new InMemoryPrefStore()));
+  pref_service_factory.set_user_prefs(
+      base::MakeRefCounted<InMemoryPrefStore>());
   pref_service_factory.set_managed_prefs(
-      make_scoped_refptr(new policy::ConfigurationPolicyPrefStore(
+      base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
           browser_policy_connector_->GetPolicyService(),
           browser_policy_connector_->GetHandlerList(),
-          policy::POLICY_LEVEL_MANDATORY)));
+          policy::POLICY_LEVEL_MANDATORY));
   pref_service_factory.set_read_error_callback(base::Bind(&HandleReadError));
   user_pref_service_ = pref_service_factory.Create(pref_registry);
   pref_change_registrar_.Init(user_pref_service_.get());

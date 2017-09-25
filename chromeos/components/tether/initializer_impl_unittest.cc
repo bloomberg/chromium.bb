@@ -202,7 +202,7 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
       base::MakeUnique<TestNetworkConnectionHandler>();
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter =
-      make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
+      base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
 
   // Call an instance method of the test instead of initializing and destroying
   // here because the friend relationship between Initializer and

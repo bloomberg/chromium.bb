@@ -32,7 +32,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
     histogram_tester_.reset(new base::HistogramTester());
     clock_ = base::MakeUnique<base::SimpleTestTickClock>();
     mock_task_runner_ =
-        make_scoped_refptr(new cc::OrderedSimpleTaskRunner(clock_.get(), true));
+        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
     delegate_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     scheduler_ = base::MakeUnique<RendererSchedulerImpl>(delegate_);

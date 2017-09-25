@@ -976,7 +976,7 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
   gfx::Rect invalidation(
       gfx::IntersectRects(paint_region_.bounds(), local_bounds));
   paint_region_.Clear();
-  auto display_list = make_scoped_refptr(new cc::DisplayItemList);
+  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
   if (delegate_) {
     delegate_->OnPaintLayer(PaintContext(display_list.get(),
                                          device_scale_factor_, invalidation,

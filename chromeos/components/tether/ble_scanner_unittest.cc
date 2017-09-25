@@ -85,23 +85,23 @@ class MockBluetoothDeviceWithServiceData : public device::MockBluetoothDevice {
 
 const size_t kMinNumBytesInServiceData = 4;
 
-const std::string kDefaultBluetoothAddress = "11:22:33:44:55:66";
+const char kDefaultBluetoothAddress[] = "11:22:33:44:55:66";
 
-const std::string fake_local_public_key = "fakeLocalPublicKey";
+const char fake_local_public_key[] = "fakeLocalPublicKey";
 
-const std::string current_eid_data = "currentEidData";
+const char current_eid_data[] = "currentEidData";
 const int64_t current_eid_start_ms = 1000L;
 const int64_t current_eid_end_ms = 2000L;
 
-const std::string adjacent_eid_data = "adjacentEidData";
+const char adjacent_eid_data[] = "adjacentEidData";
 const int64_t adjacent_eid_start_ms = 2000L;
 const int64_t adjacent_eid_end_ms = 3000L;
 
-const std::string fake_beacon_seed1_data = "fakeBeaconSeed1Data";
+const char fake_beacon_seed1_data[] = "fakeBeaconSeed1Data";
 const int64_t fake_beacon_seed1_start_ms = current_eid_start_ms;
 const int64_t fake_beacon_seed1_end_ms = current_eid_end_ms;
 
-const std::string fake_beacon_seed2_data = "fakeBeaconSeed2Data";
+const char fake_beacon_seed2_data[] = "fakeBeaconSeed2Data";
 const int64_t fake_beacon_seed2_start_ms = adjacent_eid_start_ms;
 const int64_t fake_beacon_seed2_end_ms = adjacent_eid_end_ms;
 
@@ -178,7 +178,7 @@ class BleScannerTest : public testing::Test {
     last_discovery_error_callback_.Reset();
 
     mock_adapter_ =
-        make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
+        base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
     ON_CALL(*mock_adapter_, StartDiscoverySession(_, _))
         .WillByDefault(
             Invoke(this, &BleScannerTest::SaveStartDiscoverySessionArgs));

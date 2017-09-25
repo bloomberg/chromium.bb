@@ -61,7 +61,7 @@ class TaskSchedulerDelayedTaskManagerTest : public testing::Test {
 
   testing::StrictMock<MockTaskTarget> task_target_;
   const scoped_refptr<TestMockTimeTaskRunner> service_thread_task_runner_ =
-      make_scoped_refptr(new TestMockTimeTaskRunner);
+      MakeRefCounted<TestMockTimeTaskRunner>();
   DelayedTaskManager delayed_task_manager_;
   std::unique_ptr<Task> task_ = CreateTask(kLongDelay);
   Task* const task_raw_ = task_.get();

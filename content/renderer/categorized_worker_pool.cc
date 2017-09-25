@@ -75,7 +75,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 
     tasks_.erase(tasks_.begin(), tasks_.begin() + completed_tasks_.size());
 
-    tasks_.push_back(make_scoped_refptr(new ClosureTask(std::move(task))));
+    tasks_.push_back(base::MakeRefCounted<ClosureTask>(std::move(task)));
     graph_.Reset();
     for (const auto& graph_task : tasks_) {
       int dependencies = 0;
@@ -204,7 +204,7 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
       });
   tasks_.erase(end, tasks_.end());
 
-  tasks_.push_back(make_scoped_refptr(new ClosureTask(std::move(task))));
+  tasks_.push_back(base::MakeRefCounted<ClosureTask>(std::move(task)));
   graph_.Reset();
   for (const auto& graph_task : tasks_) {
     // Delayed tasks are assigned FOREGROUND category, ensuring that they run as

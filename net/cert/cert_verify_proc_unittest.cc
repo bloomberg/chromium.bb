@@ -1433,7 +1433,7 @@ TEST(CertVerifyProcTest, IntranetHostsRejected) {
   // However, if the CA is not well known, these should not be flagged:
   dummy_result.Reset();
   dummy_result.is_issued_by_known_root = false;
-  verify_proc = make_scoped_refptr(new MockCertVerifyProc(dummy_result));
+  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
   error = verify_proc->Verify(cert.get(), "webmail", std::string(), 0, nullptr,
                               CertificateList(), &verify_result);
   EXPECT_THAT(error, IsOk());
@@ -1480,7 +1480,7 @@ TEST(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecationLegacyMode) {
   dummy_result.is_issued_by_known_root = true;
   dummy_result.has_sha1 = true;
   dummy_result.has_sha1_leaf = true;
-  verify_proc = make_scoped_refptr(new MockCertVerifyProc(dummy_result));
+  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
   cert = CreateCertificateChainFromFile(GetTestCertsDirectory(),
                                         "sha1_jan_2016.pem",
                                         X509Certificate::FORMAT_AUTO);
@@ -1497,7 +1497,7 @@ TEST(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecationLegacyMode) {
   dummy_result.is_issued_by_known_root = false;
   dummy_result.has_sha1 = true;
   dummy_result.has_sha1_leaf = true;
-  verify_proc = make_scoped_refptr(new MockCertVerifyProc(dummy_result));
+  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
   cert = CreateCertificateChainFromFile(GetTestCertsDirectory(),
                                         "sha1_jan_2016.pem",
                                         X509Certificate::FORMAT_AUTO);
@@ -1514,7 +1514,7 @@ TEST(CertVerifyProcTest, VerifyRejectsSHA1AfterDeprecationLegacyMode) {
   dummy_result.is_issued_by_known_root = true;
   dummy_result.has_sha1 = true;
   dummy_result.has_sha1_leaf = false;
-  verify_proc = make_scoped_refptr(new MockCertVerifyProc(dummy_result));
+  verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
   cert = CreateCertificateChainFromFile(GetTestCertsDirectory(),
                                         "sha1_jan_2016.pem",
                                         X509Certificate::FORMAT_AUTO);

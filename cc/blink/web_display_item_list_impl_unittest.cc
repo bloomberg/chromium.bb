@@ -36,7 +36,7 @@ TEST(WebDisplayItemListImpl, ClipWhenCompositing) {
         clip_bounds.x, clip_bounds.y, clip_bounds.width, clip_bounds.height);
     SkIRect clip_irect = sk_clip_bounds.roundOut();
 
-    auto cc_list = make_scoped_refptr(new cc::DisplayItemList);
+    auto cc_list = base::MakeRefCounted<cc::DisplayItemList>();
     cc_blink::WebDisplayItemListImpl web_list(cc_list.get());
 
     // drawColor(background color)

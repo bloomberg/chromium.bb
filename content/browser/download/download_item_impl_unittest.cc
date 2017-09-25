@@ -281,8 +281,8 @@ class DownloadItemTest : public testing::Test {
   // Creates a new net::HttpResponseHeaders object for the |response_code|.
   scoped_refptr<const net::HttpResponseHeaders> CreateResponseHeaders(
       int response_code) {
-    return make_scoped_refptr(new net::HttpResponseHeaders(
-        "HTTP/1.1 " + std::to_string(response_code)));
+    return base::MakeRefCounted<net::HttpResponseHeaders>(
+        "HTTP/1.1 " + std::to_string(response_code));
   }
 
   // This class keeps ownership of the created download item; it will

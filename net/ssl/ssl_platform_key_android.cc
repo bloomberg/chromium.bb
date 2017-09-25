@@ -205,9 +205,9 @@ scoped_refptr<SSLPrivateKey> WrapJavaPrivateKey(
     }
   }
 
-  return make_scoped_refptr(new ThreadedSSLPrivateKey(
+  return base::MakeRefCounted<ThreadedSSLPrivateKey>(
       std::make_unique<SSLPlatformKeyAndroid>(type, key, max_length, sys_rsa),
-      GetSSLPlatformKeyTaskRunner()));
+      GetSSLPlatformKeyTaskRunner());
 }
 
 }  // namespace net

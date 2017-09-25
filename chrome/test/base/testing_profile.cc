@@ -789,7 +789,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   SupervisedUserSettingsService* supervised_user_settings =
       SupervisedUserSettingsServiceFactory::GetForProfile(this);
   scoped_refptr<PrefStore> supervised_user_prefs =
-      make_scoped_refptr(new SupervisedUserPrefStore(supervised_user_settings));
+      base::MakeRefCounted<SupervisedUserPrefStore>(supervised_user_settings);
 
   factory.set_supervised_user_prefs(supervised_user_prefs);
 

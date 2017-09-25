@@ -86,8 +86,8 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     test_clock_.Advance(base::TimeDelta::FromSeconds(1234));
 
     gles2_.reset(new TestGLES2Interface);
-    media_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
-    copy_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
+    media_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+    copy_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     media_task_runner_handle_.reset(
         new base::ThreadTaskRunnerHandle(media_task_runner_));
     mock_gpu_factories_.reset(

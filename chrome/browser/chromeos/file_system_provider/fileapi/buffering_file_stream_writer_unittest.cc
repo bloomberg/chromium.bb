@@ -102,9 +102,9 @@ class FileSystemProviderBufferingFileStreamWriterTest : public testing::Test {
 
   void SetUp() override {
     short_text_buffer_ =
-        make_scoped_refptr(new net::StringIOBuffer(kShortTextToWrite));
+        base::MakeRefCounted<net::StringIOBuffer>(kShortTextToWrite);
     long_text_buffer_ =
-        make_scoped_refptr(new net::StringIOBuffer(kLongTextToWrite));
+        base::MakeRefCounted<net::StringIOBuffer>(kLongTextToWrite);
     ASSERT_LT(short_text_buffer_->size(), long_text_buffer_->size());
   }
 

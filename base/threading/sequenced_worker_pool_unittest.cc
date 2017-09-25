@@ -393,7 +393,7 @@ TEST_P(SequencedWorkerPoolTest, DelayedTaskDuringShutdown) {
   EXPECT_TRUE(pool()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ShouldNotRun,
-                     make_scoped_refptr(new DeletionHelper(deleted_flag))),
+                     MakeRefCounted<DeletionHelper>(deleted_flag)),
       TestTimeouts::action_timeout()));
 
   std::vector<int> completion_sequence = tracker()->WaitUntilTasksComplete(1);

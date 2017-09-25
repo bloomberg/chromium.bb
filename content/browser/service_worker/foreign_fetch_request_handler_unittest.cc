@@ -145,7 +145,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
     http_info->ssl_info.security_bits = 0x100;
     // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
     http_info->ssl_info.connection_status = 0x300039;
-    http_info->headers = make_scoped_refptr(new net::HttpResponseHeaders(""));
+    http_info->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
     return http_info;
   }
 

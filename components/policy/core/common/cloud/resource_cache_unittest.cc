@@ -36,7 +36,7 @@ TEST(ResourceCacheTest, StoreAndLoad) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ResourceCache cache(temp_dir.GetPath(),
-                      make_scoped_refptr(new base::TestSimpleTaskRunner));
+                      base::MakeRefCounted<base::TestSimpleTaskRunner>());
 
   // No data initially.
   std::string data;
@@ -118,7 +118,7 @@ TEST(ResourceCacheTest, FilterSubkeys) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ResourceCache cache(temp_dir.GetPath(),
-                      make_scoped_refptr(new base::TestSimpleTaskRunner));
+                      base::MakeRefCounted<base::TestSimpleTaskRunner>());
 
   // Store some data.
   EXPECT_TRUE(cache.Store(kKey1, kSubA, kData0));

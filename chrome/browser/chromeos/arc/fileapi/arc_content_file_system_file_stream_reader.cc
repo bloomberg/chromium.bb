@@ -153,7 +153,7 @@ void ArcContentFileSystemFileStreamReader::OnSeekFile(
       // Pipe is not seekable. Just consume the contents.
       const size_t kTemporaryBufferSize = 1024 * 1024;
       auto temporary_buffer =
-          make_scoped_refptr(new net::IOBufferWithSize(kTemporaryBufferSize));
+          base::MakeRefCounted<net::IOBufferWithSize>(kTemporaryBufferSize);
       ConsumeFileContents(buf, buffer_length, callback, temporary_buffer,
                           offset_);
       break;

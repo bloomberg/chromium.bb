@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
-  auto message_loop_runner = make_scoped_refptr(new content::MessageLoopRunner);
+  auto message_loop_runner = base::MakeRefCounted<content::MessageLoopRunner>();
   InterstitialPageObserver interstitial_observer(
       web_contents, message_loop_runner->QuitClosure());
   supervised_user_settings_service->SetLocalSetting(

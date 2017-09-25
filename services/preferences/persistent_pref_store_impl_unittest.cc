@@ -85,8 +85,8 @@ class PersistentPrefStoreImplTest : public testing::Test {
           PersistentPrefStoreImpl::ObservedPrefs()) {
     if (observed_prefs.empty())
       observed_prefs.insert({kKey, kOtherKey});
-    return make_scoped_refptr(new PersistentPrefStoreClient(
-        impl_->CreateConnection(std::move(observed_prefs))));
+    return base::MakeRefCounted<PersistentPrefStoreClient>(
+        impl_->CreateConnection(std::move(observed_prefs)));
   }
 
   PersistentPrefStore* pref_store() { return pref_store_.get(); }
@@ -105,7 +105,7 @@ TEST_F(PersistentPrefStoreImplTest, InitialValue) {
   constexpr char kUnregisteredKey[] = "path.to.unregistered_key";
   constexpr char kUnregisteredTopLevelKey[] = "unregistered_key";
   constexpr char kUnregisteredPrefixKey[] = "p";
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   const base::Value value("value");
   backing_pref_store->SetValue(kKey, value.CreateDeepCopy(), 0);
   backing_pref_store->SetValue(kUnregisteredKey, value.CreateDeepCopy(), 0);
@@ -125,7 +125,7 @@ TEST_F(PersistentPrefStoreImplTest, InitialValue) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   base::DictionaryValue dict;
   dict.SetKey(kKey, base::Value("value"));
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
@@ -137,7 +137,7 @@ TEST_F(PersistentPrefStoreImplTest, InitialValueWithoutPathExpansion) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
@@ -154,7 +154,7 @@ TEST_F(PersistentPrefStoreImplTest, WriteObservedByOtherClient) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, UnregisteredPrefNotObservedByOtherClient) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
@@ -173,7 +173,7 @@ TEST_F(PersistentPrefStoreImplTest, UnregisteredPrefNotObservedByOtherClient) {
 
 TEST_F(PersistentPrefStoreImplTest,
        WriteWithoutPathExpansionObservedByOtherClient) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   CreateImpl(backing_pref_store);
   EXPECT_TRUE(pref_store()->IsInitializationComplete());
 
@@ -191,7 +191,7 @@ TEST_F(PersistentPrefStoreImplTest,
 }
 
 TEST_F(PersistentPrefStoreImplTest, RemoveObservedByOtherClient) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   const base::Value value("value");
   backing_pref_store->SetValue(kKey, value.CreateDeepCopy(), 0);
   CreateImpl(backing_pref_store);
@@ -215,7 +215,7 @@ TEST_F(PersistentPrefStoreImplTest, RemoveObservedByOtherClient) {
 
 TEST_F(PersistentPrefStoreImplTest,
        RemoveWithoutPathExpansionObservedByOtherClient) {
-  auto backing_pref_store = make_scoped_refptr(new InMemoryPrefStore());
+  auto backing_pref_store = base::MakeRefCounted<InMemoryPrefStore>();
   base::DictionaryValue dict;
   dict.SetKey(kKey, base::Value("value"));
   backing_pref_store->SetValue(kKey, dict.CreateDeepCopy(), 0);
@@ -245,7 +245,7 @@ TEST_F(PersistentPrefStoreImplTest,
 }
 
 TEST_F(PersistentPrefStoreImplTest, CommitPendingWrite) {
-  auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
+  auto backing_store = base::MakeRefCounted<PersistentPrefStoreMock>();
   CreateImpl(backing_store);
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, CommitPendingWriteMock()).Times(2);
@@ -254,7 +254,7 @@ TEST_F(PersistentPrefStoreImplTest, CommitPendingWrite) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
-  auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
+  auto backing_store = base::MakeRefCounted<PersistentPrefStoreMock>();
   CreateImpl(backing_store);
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, SchedulePendingLossyWrites())
@@ -265,7 +265,7 @@ TEST_F(PersistentPrefStoreImplTest, SchedulePendingLossyWrites) {
 }
 
 TEST_F(PersistentPrefStoreImplTest, ClearMutableValues) {
-  auto backing_store = make_scoped_refptr(new PersistentPrefStoreMock);
+  auto backing_store = base::MakeRefCounted<PersistentPrefStoreMock>();
   CreateImpl(backing_store);
   base::RunLoop run_loop;
   EXPECT_CALL(*backing_store, ClearMutableValues())

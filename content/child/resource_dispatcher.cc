@@ -219,8 +219,8 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
   request_info->received_data_factory =
-      make_scoped_refptr(new SharedMemoryReceivedDataFactory(
-          message_sender_, request_id, request_info->buffer));
+      base::MakeRefCounted<SharedMemoryReceivedDataFactory>(
+          message_sender_, request_id, request_info->buffer);
 
   bool ok = request_info->buffer->Map(shm_size);
   if (!ok) {

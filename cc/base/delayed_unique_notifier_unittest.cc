@@ -37,7 +37,7 @@ class DelayedUniqueNotifierTest : public testing::Test {
 
   void SetUp() override {
     notification_count_ = 0;
-    task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
+    task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   }
 
   void Notify() { ++notification_count_; }

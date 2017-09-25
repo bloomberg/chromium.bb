@@ -37,8 +37,8 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
           typename std::map<std::string, std::string>::value_type>
           response_headers) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info =
-        make_scoped_refptr(new BackgroundFetchRequestInfo(
-            0 /* request_info */, ServiceWorkerFetchRequest()));
+        base::MakeRefCounted<BackgroundFetchRequestInfo>(
+            0 /* request_info */, ServiceWorkerFetchRequest());
 
     request_info->response_headers_ = response_headers;
     request_info->url_chain_ = {GURL(response_url)};

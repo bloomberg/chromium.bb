@@ -360,7 +360,7 @@ TEST_F(ChannelIDServiceTest, DestructionWithPendingRequest) {
 // tasks gracefully fails. This is a regression test for http://crbug.com/236387
 TEST_F(ChannelIDServiceTest, RequestAfterPoolShutdown) {
   service_->set_task_runner_for_testing(
-      make_scoped_refptr(new base::NullTaskRunner()));
+      base::MakeRefCounted<base::NullTaskRunner>());
 
   // Make a request that will force synchronous completion.
   std::string host("encrypted.google.com");

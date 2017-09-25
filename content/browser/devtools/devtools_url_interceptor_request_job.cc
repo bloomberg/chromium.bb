@@ -631,7 +631,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
         modifications->modified_url.fromMaybe(redirect_->new_url.spec()));
     raw_headers.append(2, '\0');
     mock_response_details_.reset(new MockResponseDetails(
-        make_scoped_refptr(new net::HttpResponseHeaders(raw_headers)), "", 0,
+        base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers), "", 0,
         base::TimeTicks::Now()));
     redirect_.reset();
 

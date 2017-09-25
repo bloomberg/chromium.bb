@@ -44,7 +44,7 @@ constexpr char kMimeType[] = "application/octet-stream";
 bool ReadData(ArcContentFileSystemFileStreamReader* reader,
               net::IOBufferWithSize* buffer) {
   auto drainable_buffer =
-      make_scoped_refptr(new net::DrainableIOBuffer(buffer, buffer->size()));
+      base::MakeRefCounted<net::DrainableIOBuffer>(buffer, buffer->size());
   while (drainable_buffer->BytesRemaining()) {
     net::TestCompletionCallback callback;
     int result = callback.GetResult(
@@ -102,7 +102,7 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
 
 TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadRegularFile) {
   ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlFile), 0);
-  auto buffer = make_scoped_refptr(new net::IOBufferWithSize(strlen(kData)));
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(strlen(kData));
   EXPECT_TRUE(ReadData(&reader, buffer.get()));
   EXPECT_EQ(base::StringPiece(kData, strlen(kData)),
             base::StringPiece(buffer->data(), buffer->size()));
@@ -112,7 +112,7 @@ TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadRegularFileWithOffset) {
   constexpr size_t kOffset = 10;
   ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlFile), kOffset);
   auto buffer =
-      make_scoped_refptr(new net::IOBufferWithSize(strlen(kData) - kOffset));
+      base::MakeRefCounted<net::IOBufferWithSize>(strlen(kData) - kOffset);
   EXPECT_TRUE(ReadData(&reader, buffer.get()));
   EXPECT_EQ(base::StringPiece(kData + kOffset, strlen(kData) - kOffset),
             base::StringPiece(buffer->data(), buffer->size()));
@@ -120,7 +120,7 @@ TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadRegularFileWithOffset) {
 
 TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadPipe) {
   ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlPipe), 0);
-  auto buffer = make_scoped_refptr(new net::IOBufferWithSize(strlen(kData)));
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(strlen(kData));
   EXPECT_TRUE(ReadData(&reader, buffer.get()));
   EXPECT_EQ(base::StringPiece(kData, strlen(kData)),
             base::StringPiece(buffer->data(), buffer->size()));
@@ -130,7 +130,7 @@ TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadPipeWithOffset) {
   constexpr size_t kOffset = 10;
   ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlPipe), kOffset);
   auto buffer =
-      make_scoped_refptr(new net::IOBufferWithSize(strlen(kData) - kOffset));
+      base::MakeRefCounted<net::IOBufferWithSize>(strlen(kData) - kOffset);
   EXPECT_TRUE(ReadData(&reader, buffer.get()));
   EXPECT_EQ(base::StringPiece(kData + kOffset, strlen(kData) - kOffset),
             base::StringPiece(buffer->data(), buffer->size()));

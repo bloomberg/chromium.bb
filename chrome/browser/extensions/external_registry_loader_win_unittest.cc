@@ -86,7 +86,7 @@ class ExternalRegistryLoaderUnittest : public testing::Test {
 // Regression test for https://crbug.com/653045.
 TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotCrash) {
   scoped_refptr<TestExternalRegistryLoader> test_loader =
-      make_scoped_refptr(new TestExternalRegistryLoader());
+      base::MakeRefCounted<TestExternalRegistryLoader>();
 
   test_loader->StartLoading();
   test_loader->StartLoading();
@@ -103,7 +103,7 @@ TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotCrash) {
 // could overwrite the first one's prefs.
 TEST_F(ExternalRegistryLoaderUnittest, TwoStartLoadingDoesNotOverwritePrefs) {
   scoped_refptr<TestExternalRegistryLoader> test_loader =
-      make_scoped_refptr(new TestExternalRegistryLoader());
+      base::MakeRefCounted<TestExternalRegistryLoader>();
 
   test_loader->StartLoading();
   test_loader->StartLoading();

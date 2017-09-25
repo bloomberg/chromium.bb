@@ -72,7 +72,7 @@ TEST(DisplayItemListTest, SingleUnpairedRange) {
   PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   gfx::Point offset(8, 9);
 
@@ -108,7 +108,7 @@ TEST(DisplayItemListTest, SingleUnpairedRange) {
 
 TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
   gfx::Rect layer_rect(100, 100);
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   {
     list->StartPaint();
@@ -134,7 +134,7 @@ TEST(DisplayItemListTest, ClipPairedRange) {
   PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   gfx::Point first_offset(8, 9);
   gfx::Rect first_recording_rect(first_offset, layer_rect.size());
@@ -208,7 +208,7 @@ TEST(DisplayItemListTest, TransformPairedRange) {
   PaintFlags red_paint;
   red_paint.setColor(SK_ColorRED);
   unsigned char pixels[4 * 100 * 100] = {0};
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   gfx::Point first_offset(8, 9);
   gfx::Rect first_recording_rect(first_offset, layer_rect.size());
@@ -277,7 +277,7 @@ TEST(DisplayItemListTest, FilterPairedRange) {
   gfx::Rect layer_rect(100, 100);
   FilterOperations filters;
   unsigned char pixels[4 * 100 * 100] = {0};
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   sk_sp<SkSurface> source_surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* source_canvas = source_surface->getCanvas();
@@ -359,7 +359,7 @@ TEST(DisplayItemListTest, BytesUsed) {
   const int kNumPaintOps = 1000;
   size_t memory_usage;
 
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
@@ -378,7 +378,7 @@ TEST(DisplayItemListTest, BytesUsed) {
 }
 
 TEST(DisplayItemListTest, AsValueWithNoOps) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
   list->Finalize();
 
   // Pass |true| to ask for PaintOps even though there are none.
@@ -439,7 +439,7 @@ TEST(DisplayItemListTest, AsValueWithNoOps) {
 
 TEST(DisplayItemListTest, AsValueWithOps) {
   gfx::Rect layer_rect = gfx::Rect(1, 2, 8, 9);
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Transform transform;
   transform.Translate(6.f, 7.f);
 
@@ -540,12 +540,12 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 }
 
 TEST(DisplayItemListTest, SizeEmpty) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
   EXPECT_EQ(0u, list->op_count());
 }
 
 TEST(DisplayItemListTest, SizeOne) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Rect drawing_bounds(5, 6, 1, 1);
   {
     list->StartPaint();
@@ -556,7 +556,7 @@ TEST(DisplayItemListTest, SizeOne) {
 }
 
 TEST(DisplayItemListTest, SizeMultiple) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
   gfx::Rect clip_bounds(5, 6, 7, 8);
   {
     list->StartPaint();
@@ -574,7 +574,7 @@ TEST(DisplayItemListTest, SizeMultiple) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectSimple) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One drawing: D.
 
@@ -590,7 +590,7 @@ TEST(DisplayItemListTest, AppendVisualRectSimple) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block: B1, E1.
 
@@ -615,7 +615,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Two nested blocks: B1, B2, E2, E1.
 
@@ -654,7 +654,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block with one drawing: B1, Da, E1.
 
@@ -688,7 +688,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One block with one drawing: B1, Da (escapes), E1.
 
@@ -723,7 +723,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
 
 TEST(DisplayItemListTest,
      AppendVisualRectDrawingFollowedByBlockContainingEscapedDrawing) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // One drawing followed by one block with one drawing: Da, B1, Db (escapes),
   // E1.
@@ -766,7 +766,7 @@ TEST(DisplayItemListTest,
 }
 
 TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db, E2, E1.
 
@@ -828,7 +828,7 @@ TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsInnerDrawingEscaped) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da, B2, Db (escapes), E2,
   // E1.
@@ -891,7 +891,7 @@ TEST(DisplayItemListTest,
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsOuterDrawingEscaped) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst: B1, Da (escapes), B2, Db, E2,
   // E1.
@@ -954,7 +954,7 @@ TEST(DisplayItemListTest,
 
 TEST(DisplayItemListTest,
      AppendVisualRectTwoBlocksTwoDrawingsBothDrawingsEscaped) {
-  auto list = make_scoped_refptr(new DisplayItemList);
+  auto list = base::MakeRefCounted<DisplayItemList>();
 
   // Multiple nested blocks with drawings amidst:
   // B1, Da (escapes to the right), B2, Db (escapes to the left), E2, E1.

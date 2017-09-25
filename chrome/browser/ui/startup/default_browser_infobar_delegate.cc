@@ -115,8 +115,8 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   // The worker pointer is reference counted. While it is running, the
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
-  make_scoped_refptr(new shell_integration::DefaultBrowserWorker(
-                         shell_integration::DefaultWebClientWorkerCallback()))
+  base::MakeRefCounted<shell_integration::DefaultBrowserWorker>(
+      shell_integration::DefaultWebClientWorkerCallback())
       ->StartSetAsDefault();
   return true;
 }

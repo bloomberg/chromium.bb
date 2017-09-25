@@ -508,9 +508,9 @@ TEST_F(MemoryDumpManagerTest, PostTaskForSequencedTaskRunner) {
   InitializeMemoryDumpManagerForInProcessTesting(false /* is_coordinator */);
   std::vector<MockMemoryDumpProvider> mdps(3);
   scoped_refptr<TestSequencedTaskRunner> task_runner1(
-      make_scoped_refptr(new TestSequencedTaskRunner()));
+      MakeRefCounted<TestSequencedTaskRunner>());
   scoped_refptr<TestSequencedTaskRunner> task_runner2(
-      make_scoped_refptr(new TestSequencedTaskRunner()));
+      MakeRefCounted<TestSequencedTaskRunner>());
   RegisterDumpProviderWithSequencedTaskRunner(&mdps[0], task_runner1,
                                               kDefaultOptions);
   RegisterDumpProviderWithSequencedTaskRunner(&mdps[1], task_runner2,
