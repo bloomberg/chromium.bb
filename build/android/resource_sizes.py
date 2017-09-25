@@ -422,6 +422,7 @@ def PrintApkAnalysis(apk_filename, tool_prefix, out_dir, chartjson=None):
   for group in file_groups:
     actual_size = group.ComputeZippedSize()
     install_size = group.ComputeInstallSize()
+    uncompressed_size = group.ComputeUncompressedSize()
 
     total_install_size += group.ComputeExtractedSize()
     zip_overhead -= actual_size
@@ -432,10 +433,14 @@ def PrintApkAnalysis(apk_filename, tool_prefix, out_dir, chartjson=None):
     perf_tests_results_helper.ReportPerfResult(chartjson,
                      apk_basename + '_InstallBreakdown',
                      group.name + ' size', install_size, 'bytes')
-    perf_tests_results_helper.ReportPerfResult(chartjson,
-                     apk_basename + '_Uncompressed',
-                     group.name + ' size', group.ComputeUncompressedSize(),
-                     'bytes')
+    # Only a few metrics are compressed in the first place.
+    # To avoid over-reporting, track uncompressed size only for compressed
+    # entries.
+    if uncompressed_size != actual_size:
+      perf_tests_results_helper.ReportPerfResult(chartjson,
+                       apk_basename + '_Uncompressed',
+                       group.name + ' size', uncompressed_size,
+                       'bytes')
 
   # Per-file zip overhead is caused by:
   # * 30 byte entry header + len(file name)
