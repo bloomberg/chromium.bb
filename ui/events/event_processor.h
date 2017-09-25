@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_EVENT_PROCESSOR_H_
 #define UI_EVENTS_EVENT_PROCESSOR_H_
 
+#include "base/memory/weak_ptr.h"
 #include "ui/events/event_dispatcher.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_source.h"
@@ -18,7 +19,8 @@ class EventTargeter;
 class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate,
                                      public EventSink {
  public:
-  ~EventProcessor() override {}
+  EventProcessor();
+  ~EventProcessor() override;
 
   // EventSink overrides:
   EventDispatchDetails OnEventFromSource(Event* event) override;
@@ -50,6 +52,10 @@ class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate,
   // that the last target to which |event| was dispatched may have been
   // destroyed.
   virtual void OnEventProcessingFinished(Event* event);
+
+ private:
+  base::WeakPtrFactory<EventProcessor> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(EventProcessor);
 };
 
 }  // namespace ui
