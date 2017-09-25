@@ -2,9 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("minizip_warnings") {
+config("minizip_compiler_flags") {
   if (is_clang) {
     cflags = [ "-Wno-unused-function" ]
+
+    if (!is_nacl) {
+      cflags += [
+        "-maes",
+        "-msse3",
+        "-msse4.1",
+      ]
+    }
   }
 }
 
@@ -14,28 +22,27 @@ config("minizip_include_dirs") {
 
 static_library("minizip") {
   sources = [
-    # TODO(yawano): AES part cannot be compiled in pnacl.
-    # "src/aes/aes.h",
-    # "src/aes/aescrypt.c",
-    # "src/aes/aeskey.c",
-    # "src/aes/aesopt.h",
-    # "src/aes/aestab.c",
-    # "src/aes/aestab.h",
-    # "src/aes/aes_ni.c",
-    # "src/aes/aes_ni.h",
-    # "src/aes/aes_via_ace.h",
-    # "src/aes/brg_endian.h",
-    # "src/aes/brg_types.h",
-    # "src/aes/fileenc.c",
-    # "src/aes/fileenc.h",
-    # "src/aes/hmac.c",
-    # "src/aes/hmac.h",
-    # "src/aes/prng.c",
-    # "src/aes/prng.h",
-    # "src/aes/pwd2key.c",
-    # "src/aes/pwd2key.h",
-    # "src/aes/sha1.c",
-    # "src/aes/sha1.h",
+    "src/aes/aes.h",
+    "src/aes/aes_ni.c",
+    "src/aes/aes_ni.h",
+    "src/aes/aes_via_ace.h",
+    "src/aes/aescrypt.c",
+    "src/aes/aeskey.c",
+    "src/aes/aesopt.h",
+    "src/aes/aestab.c",
+    "src/aes/aestab.h",
+    "src/aes/brg_endian.h",
+    "src/aes/brg_types.h",
+    "src/aes/fileenc.c",
+    "src/aes/fileenc.h",
+    "src/aes/hmac.c",
+    "src/aes/hmac.h",
+    "src/aes/prng.c",
+    "src/aes/prng.h",
+    "src/aes/pwd2key.c",
+    "src/aes/pwd2key.h",
+    "src/aes/sha1.c",
+    "src/aes/sha1.h",
     "src/crypt.c",
     "src/crypt.h",
     "src/ioapi.c",
@@ -50,15 +57,13 @@ static_library("minizip") {
     "src/zip.h",
   ]
 
-  defines = [
-    # "HAVE_AES"
-  ]
+  defines = [ "HAVE_AES" ]
 
   if (is_nacl) {
     defines += [ "USE_FILE32API" ]
   }
 
-  configs += [ ":minizip_warnings" ]
+  configs += [ ":minizip_compiler_flags" ]
 
   public_configs = [ ":minizip_include_dirs" ]
 

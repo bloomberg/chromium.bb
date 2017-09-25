@@ -450,7 +450,7 @@ deps_os = {
 
     # Minizip library. Used on Chrome OS.
     'src/third_party/minizip/src':
-      Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'dc3ad01e3d5928e9105f770b7e896a8e9fe0d3b4',
+      Var('chromium_git') + '/external/github.com/nmoinvaz/minizip' + '@' + 'e07e141475220196b55294c8172b274cc32d642d',
 
     # Android Explicit Synchronization.
     'src/third_party/libsync/src':
