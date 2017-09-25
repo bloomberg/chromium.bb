@@ -15,16 +15,16 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 namespace component_updater {
 
 class ComponentUpdateService;
 
-class OriginTrialsComponentInstallerTraits : public ComponentInstallerTraits {
+class OriginTrialsComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  OriginTrialsComponentInstallerTraits() = default;
-  ~OriginTrialsComponentInstallerTraits() override = default;
+  OriginTrialsComponentInstallerPolicy() = default;
+  ~OriginTrialsComponentInstallerPolicy() override = default;
 
  private:
   bool VerifyInstallation(const base::DictionaryValue& manifest,
@@ -43,7 +43,7 @@ class OriginTrialsComponentInstallerTraits : public ComponentInstallerTraits {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(OriginTrialsComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(OriginTrialsComponentInstallerPolicy);
 };
 
 // Call once during startup to make the component update service aware of

@@ -29,8 +29,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/default_component_installer.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/update_client/update_query_params.h"
 #include "components/update_client/utils.h"
@@ -160,13 +160,13 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
   return true;
 }
 
-class PnaclComponentInstallerTraits : public ComponentInstallerTraits {
+class PnaclComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  PnaclComponentInstallerTraits();
-  ~PnaclComponentInstallerTraits() override;
+  PnaclComponentInstallerPolicy();
+  ~PnaclComponentInstallerPolicy() override;
 
  private:
-  // ComponentInstallerTraits implementation.
+  // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -183,29 +183,29 @@ class PnaclComponentInstallerTraits : public ComponentInstallerTraits {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstallerPolicy);
 };
 
-PnaclComponentInstallerTraits::PnaclComponentInstallerTraits() {}
-PnaclComponentInstallerTraits::~PnaclComponentInstallerTraits() {}
+PnaclComponentInstallerPolicy::PnaclComponentInstallerPolicy() {}
+PnaclComponentInstallerPolicy::~PnaclComponentInstallerPolicy() {}
 
-bool PnaclComponentInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
+bool PnaclComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
   return true;
 }
 
-bool PnaclComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool PnaclComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-PnaclComponentInstallerTraits::OnCustomInstall(
+PnaclComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
-bool PnaclComponentInstallerTraits::VerifyInstallation(
+bool PnaclComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   std::unique_ptr<base::DictionaryValue> pnacl_manifest(
@@ -217,7 +217,7 @@ bool PnaclComponentInstallerTraits::VerifyInstallation(
   return CheckPnaclComponentManifest(manifest, *pnacl_manifest);
 }
 
-void PnaclComponentInstallerTraits::ComponentReady(
+void PnaclComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -227,23 +227,23 @@ void PnaclComponentInstallerTraits::ComponentReady(
       base::BindOnce(&OverrideDirPnaclComponent, install_dir));
 }
 
-base::FilePath PnaclComponentInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath PnaclComponentInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(FILE_PATH_LITERAL("pnacl"));
 }
-void PnaclComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+void PnaclComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
   hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
 }
 
-std::string PnaclComponentInstallerTraits::GetName() const {
+std::string PnaclComponentInstallerPolicy::GetName() const {
   return "pnacl";
 }
 
 update_client::InstallerAttributes
-PnaclComponentInstallerTraits::GetInstallerAttributes() const {
+PnaclComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
-std::vector<std::string> PnaclComponentInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> PnaclComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
@@ -251,8 +251,8 @@ std::vector<std::string> PnaclComponentInstallerTraits::GetMimeTypes() const {
 
 void RegisterPnaclComponent(ComponentUpdateService* cus) {
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer = new DefaultComponentInstaller(
-      base::MakeUnique<PnaclComponentInstallerTraits>());
+  ComponentInstaller* installer =
+      new ComponentInstaller(base::MakeUnique<PnaclComponentInstallerPolicy>());
   installer->Register(cus, base::Closure());
 }
 

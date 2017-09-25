@@ -35,8 +35,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/ppapi_utils.h"
+#include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/default_component_installer.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
@@ -238,13 +238,13 @@ void UpdatePathService(const base::FilePath& path) {
 #endif  // !defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 
 #if defined(GOOGLE_CHROME_BUILD)
-class FlashComponentInstallerTraits : public ComponentInstallerTraits {
+class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  FlashComponentInstallerTraits();
-  ~FlashComponentInstallerTraits() override {}
+  FlashComponentInstallerPolicy();
+  ~FlashComponentInstallerPolicy() override {}
 
  private:
-  // The following methods override ComponentInstallerTraits.
+  // The following methods override ComponentInstallerPolicy.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -261,22 +261,22 @@ class FlashComponentInstallerTraits : public ComponentInstallerTraits {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
-  DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(FlashComponentInstallerPolicy);
 };
 
-FlashComponentInstallerTraits::FlashComponentInstallerTraits() {}
+FlashComponentInstallerPolicy::FlashComponentInstallerPolicy() {}
 
-bool FlashComponentInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
+bool FlashComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
   return true;
 }
 
-bool FlashComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool FlashComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-FlashComponentInstallerTraits::OnCustomInstall(
+FlashComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   std::string version;
@@ -301,7 +301,7 @@ FlashComponentInstallerTraits::OnCustomInstall(
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
-void FlashComponentInstallerTraits::ComponentReady(
+void FlashComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -317,7 +317,7 @@ void FlashComponentInstallerTraits::ComponentReady(
 #endif  // !defined(OS_LINUX)
 }
 
-bool FlashComponentInstallerTraits::VerifyInstallation(
+bool FlashComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   base::Version unused;
@@ -326,20 +326,20 @@ bool FlashComponentInstallerTraits::VerifyInstallation(
 
 // The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.
-base::FilePath FlashComponentInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath FlashComponentInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(FILE_PATH_LITERAL("PepperFlash"));
 }
 
-void FlashComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+void FlashComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
   hash->assign(kSha2Hash, kSha2Hash + arraysize(kSha2Hash));
 }
 
-std::string FlashComponentInstallerTraits::GetName() const {
+std::string FlashComponentInstallerPolicy::GetName() const {
   return "Adobe Flash Player";
 }
 
 update_client::InstallerAttributes
-FlashComponentInstallerTraits::GetInstallerAttributes() const {
+FlashComponentInstallerPolicy::GetInstallerAttributes() const {
   // For Chrome OS, send the built-in flash player version to the server,
   // otherwise it will serve component updates of outdated flash players.
   update_client::InstallerAttributes attrs;
@@ -352,7 +352,7 @@ FlashComponentInstallerTraits::GetInstallerAttributes() const {
   return attrs;
 }
 
-std::vector<std::string> FlashComponentInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> FlashComponentInstallerPolicy::GetMimeTypes() const {
   std::vector<std::string> mime_types;
   mime_types.push_back("application/x-shockwave-flash");
   mime_types.push_back("application/futuresplash");
@@ -375,11 +375,10 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
     return;
 #endif  // defined(OS_CHROMEOS)
 
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new FlashComponentInstallerTraits);
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new FlashComponentInstallerPolicy);
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }

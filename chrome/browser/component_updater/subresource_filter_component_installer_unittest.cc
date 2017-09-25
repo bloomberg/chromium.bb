@@ -117,7 +117,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(
         std::move(content_service));
-    traits_ = base::MakeUnique<SubresourceFilterComponentInstallerTraits>();
+    policy_ = base::MakeUnique<SubresourceFilterComponentInstallerPolicy>();
   }
 
   void TearDown() override {
@@ -156,18 +156,18 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   void LoadSubresourceFilterRuleset(int ruleset_format) {
     std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
     manifest->SetInteger(
-        SubresourceFilterComponentInstallerTraits::kManifestRulesetFormatKey,
+        SubresourceFilterComponentInstallerPolicy::kManifestRulesetFormatKey,
         ruleset_format);
     ASSERT_TRUE(
-        traits_->VerifyInstallation(*manifest, component_install_dir()));
+        policy_->VerifyInstallation(*manifest, component_install_dir()));
     const base::Version expected_version(kTestRulesetVersion);
-    traits_->ComponentReady(expected_version, component_install_dir(),
+    policy_->ComponentReady(expected_version, component_install_dir(),
                             std::move(manifest));
     base::RunLoop().RunUntilIdle();
   }
 
   update_client::InstallerAttributes GetInstallerAttributes() {
-    return traits_->GetInstallerAttributes();
+    return policy_->GetInstallerAttributes();
   }
 
  protected:
@@ -182,7 +182,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
   base::ScopedTempDir component_install_dir_;
   base::ScopedTempDir ruleset_service_dir_;
 
-  std::unique_ptr<SubresourceFilterComponentInstallerTraits> traits_;
+  std::unique_ptr<SubresourceFilterComponentInstallerPolicy> policy_;
   TestingPrefServiceSimple pref_service_;
 
   TestRulesetService* test_ruleset_service_ = nullptr;
@@ -219,7 +219,7 @@ TEST_F(SubresourceFilterComponentInstallerTest, LoadEmptyRuleset) {
   ASSERT_NO_FATAL_FAILURE(
       CreateTestSubresourceFilterRuleset(std::string(), nullptr));
   ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
-      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat));
+      SubresourceFilterComponentInstallerPolicy::kCurrentRulesetFormat));
   EXPECT_EQ(kTestRulesetVersion, service()->content_version());
   std::string actual_ruleset_contents;
   ASSERT_TRUE(base::ReadFileToString(service()->ruleset_path(),
@@ -234,7 +234,7 @@ TEST_F(SubresourceFilterComponentInstallerTest, FutureVersionIgnored) {
   ASSERT_NO_FATAL_FAILURE(
       CreateTestSubresourceFilterRuleset(expected_ruleset_contents, nullptr));
   ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
-      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat + 1));
+      SubresourceFilterComponentInstallerPolicy::kCurrentRulesetFormat + 1));
   EXPECT_EQ(std::string(), service()->content_version());
   EXPECT_TRUE(service()->ruleset_path().empty());
   EXPECT_TRUE(service()->license_path().empty());
@@ -247,7 +247,7 @@ TEST_F(SubresourceFilterComponentInstallerTest, LoadFileWithData) {
   ASSERT_NO_FATAL_FAILURE(CreateTestSubresourceFilterRuleset(
       expected_ruleset_contents, &expected_license_contents));
   ASSERT_NO_FATAL_FAILURE(LoadSubresourceFilterRuleset(
-      SubresourceFilterComponentInstallerTraits::kCurrentRulesetFormat));
+      SubresourceFilterComponentInstallerPolicy::kCurrentRulesetFormat));
   EXPECT_EQ(kTestRulesetVersion, service()->content_version());
   std::string actual_ruleset_contents;
   std::string actual_license_contents;
@@ -293,7 +293,7 @@ TEST_F(SubresourceFilterComponentInstallerTest, InstallerTag) {
         scoped_configuration(std::move(configs));
 
     EXPECT_EQ(test_case.expected_installer_tag_selected,
-              SubresourceFilterComponentInstallerTraits::GetInstallerTag());
+              SubresourceFilterComponentInstallerPolicy::GetInstallerTag());
   }
 }
 

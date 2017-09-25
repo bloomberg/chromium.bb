@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
-#define COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_COMPONENT_INSTALLER_H_
+#define COMPONENTS_COMPONENT_UPDATER_COMPONENT_INSTALLER_H_
 
 #include <stdint.h>
 
@@ -29,13 +29,13 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
-// Components should use a DefaultComponentInstaller by defining a class that
-// implements the members of ComponentInstallerTraits, and then registering a
-// DefaultComponentInstaller that has been constructed with an instance of that
+// Components should use a ComponentInstaller by defining a class that
+// implements the members of ComponentInstallerPolicy, and then registering a
+// ComponentInstaller that has been constructed with an instance of that
 // class.
-class ComponentInstallerTraits {
+class ComponentInstallerPolicy {
  public:
-  virtual ~ComponentInstallerTraits();
+  virtual ~ComponentInstallerPolicy();
 
   // Verifies that a working installation resides within the directory specified
   // by |install_dir|. |install_dir| is of the form <base directory>/<version>.
@@ -101,13 +101,13 @@ class ComponentInstallerTraits {
   virtual update_client::InstallerAttributes GetInstallerAttributes() const = 0;
 };
 
-// A DefaultComponentInstaller is intended to be final, and not derived from.
-// Customization must be provided by passing a ComponentInstallerTraits object
+// A ComponentInstaller is intended to be final, and not derived from.
+// Customization must be provided by passing a ComponentInstallerPolicy object
 // to the constructor.
-class DefaultComponentInstaller : public update_client::CrxInstaller {
+class ComponentInstaller : public update_client::CrxInstaller {
  public:
-  DefaultComponentInstaller(
-      std::unique_ptr<ComponentInstallerTraits> installer_traits);
+  ComponentInstaller(
+      std::unique_ptr<ComponentInstallerPolicy> installer_policy);
 
   // Registers the component for update checks and installs.
   // The passed |callback| will be called once the initial check for installed
@@ -141,7 +141,7 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
     DISALLOW_COPY_AND_ASSIGN(RegistrationInfo);
   };
 
-  ~DefaultComponentInstaller() override;
+  ~ComponentInstaller() override;
 
   // If there is a installation of the component set up alongside Chrome's
   // files (as opposed to in the user data directory), sets current_* to the
@@ -168,17 +168,17 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   base::Version current_version_;
   std::string current_fingerprint_;
 
-  std::unique_ptr<ComponentInstallerTraits> installer_traits_;
+  std::unique_ptr<ComponentInstallerPolicy> installer_policy_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Posts responses back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultComponentInstaller);
+  DISALLOW_COPY_AND_ASSIGN(ComponentInstaller);
 };
 
 }  // namespace component_updater
 
-#endif  // COMPONENTS_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_COMPONENT_INSTALLER_H_

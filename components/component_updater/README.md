@@ -55,10 +55,10 @@ as well as the CRX ID, which consists of the first half (128 bits) of that hash,
 rendered as hexadecimal using the characters `a-p` (rather than `0-9a-f`).
 
 New components should use
-[`default_component_installer`](default_component_installer.h)
+[`component_installer`](component_installer.h)
 if possible, as this provides you with transparent differential updates, version
-management, and more. You must provide a `ComponentInstallerTraits` object to
-a new `DefaultComponentInstaller`.
+management, and more. You must provide a `ComponentInstallerPolicy` object to
+a new `ComponentInstaller`.
 [file\_type\_policies\_component\_installer.cc](../../chrome/browser/component_updater/file_type_policies_component_installer.cc)
 is a good example to work from.
 
@@ -68,7 +68,7 @@ Components need to be registered with the component updater. This is done in
 ### Bundle with the Chrome Installer (Optional)
 If you need the guarantee that some implementation of your component is always
 available, you must bundle a component implementation with the browser itself.
-If you are using `DefaultComponentInstaller`, you simply need to make sure that
+If you are using `ComponentInstaller`, you simply need to make sure that
 your component implementation (and a corresponding manifest.json file) are
 written to DIR\_COMPONENTS as part of the build. The manifest.json file must
 state the version of this component implementation, and the files must be

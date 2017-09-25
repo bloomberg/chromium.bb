@@ -72,7 +72,7 @@ ComponentConfig::ComponentConfig(const std::string& name,
     : name(name), env_version(env_version), sha2hashstr(sha2hashstr) {}
 ComponentConfig::~ComponentConfig() {}
 
-CrOSComponentInstallerTraits::CrOSComponentInstallerTraits(
+CrOSComponentInstallerPolicy::CrOSComponentInstallerPolicy(
     const ComponentConfig& config)
     : name(config.name), env_version(config.env_version) {
   if (config.sha2hashstr.length() != 64)
@@ -84,17 +84,17 @@ CrOSComponentInstallerTraits::CrOSComponentInstallerTraits(
   }
 }
 
-bool CrOSComponentInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
+bool CrOSComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
   return true;
 }
 
-bool CrOSComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool CrOSComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return true;
 }
 
 update_client::CrxInstaller::Result
-CrOSComponentInstallerTraits::OnCustomInstall(
+CrOSComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   std::string version;
@@ -107,7 +107,7 @@ CrOSComponentInstallerTraits::OnCustomInstall(
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
-void CrOSComponentInstallerTraits::ComponentReady(
+void CrOSComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -119,37 +119,37 @@ void CrOSComponentInstallerTraits::ComponentReady(
   }
 }
 
-bool CrOSComponentInstallerTraits::VerifyInstallation(
+bool CrOSComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   return true;
 }
 
-base::FilePath CrOSComponentInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath CrOSComponentInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(name);
 }
 
-void CrOSComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+void CrOSComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
   hash->assign(kSha2Hash_, kSha2Hash_ + arraysize(kSha2Hash_));
 }
 
-std::string CrOSComponentInstallerTraits::GetName() const {
+std::string CrOSComponentInstallerPolicy::GetName() const {
   return name;
 }
 
 update_client::InstallerAttributes
-CrOSComponentInstallerTraits::GetInstallerAttributes() const {
+CrOSComponentInstallerPolicy::GetInstallerAttributes() const {
   update_client::InstallerAttributes attrs;
   attrs["_env_version"] = env_version;
   return attrs;
 }
 
-std::vector<std::string> CrOSComponentInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> CrOSComponentInstallerPolicy::GetMimeTypes() const {
   std::vector<std::string> mime_types;
   return mime_types;
 }
 
-bool CrOSComponentInstallerTraits::IsCompatible(
+bool CrOSComponentInstallerPolicy::IsCompatible(
     const std::string& env_version_str,
     const std::string& min_env_version_str) {
   base::Version env_version(env_version_str);
@@ -205,12 +205,11 @@ static void RegisterComponent(ComponentUpdateService* cus,
                               const ComponentConfig& config,
                               const base::Closure& register_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new CrOSComponentInstallerTraits(config));
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new CrOSComponentInstallerPolicy(config));
   // |cus| will take ownership of |installer| during
   // installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, register_callback);
 }
 

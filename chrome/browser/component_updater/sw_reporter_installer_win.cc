@@ -123,7 +123,7 @@ void ReportExperimentError(SwReporterExperimentError error) {
 
 // Once the Software Reporter is downloaded, schedules it to run sometime after
 // the current browser startup is complete. (This is the default
-// |reporter_runner| function passed to the |SwReporterInstallerTraits|
+// |reporter_runner| function passed to the |SwReporterInstallerPolicy|
 // constructor in |RegisterSwReporterComponent| below.)
 void RunSwReportersAfterStartup(
     const safe_browsing::SwReporterQueue& invocations,
@@ -285,36 +285,36 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
 
 }  // namespace
 
-SwReporterInstallerTraits::SwReporterInstallerTraits(
+SwReporterInstallerPolicy::SwReporterInstallerPolicy(
     const SwReporterRunner& reporter_runner,
     bool is_experimental_engine_supported)
     : reporter_runner_(reporter_runner),
       is_experimental_engine_supported_(is_experimental_engine_supported) {}
 
-SwReporterInstallerTraits::~SwReporterInstallerTraits() {}
+SwReporterInstallerPolicy::~SwReporterInstallerPolicy() {}
 
-bool SwReporterInstallerTraits::VerifyInstallation(
+bool SwReporterInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& dir) const {
   return base::PathExists(dir.Append(kSwReporterExeName));
 }
 
-bool SwReporterInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
+bool SwReporterInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
   return true;
 }
 
-bool SwReporterInstallerTraits::RequiresNetworkEncryption() const {
+bool SwReporterInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
-update_client::CrxInstaller::Result SwReporterInstallerTraits::OnCustomInstall(
+update_client::CrxInstaller::Result SwReporterInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
 
-void SwReporterInstallerTraits::ComponentReady(
+void SwReporterInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -339,21 +339,21 @@ void SwReporterInstallerTraits::ComponentReady(
   }
 }
 
-base::FilePath SwReporterInstallerTraits::GetRelativeInstallDir() const {
+base::FilePath SwReporterInstallerPolicy::GetRelativeInstallDir() const {
   return base::FilePath(FILE_PATH_LITERAL("SwReporter"));
 }
 
-void SwReporterInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+void SwReporterInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
   DCHECK(hash);
   hash->assign(kSha256Hash, kSha256Hash + sizeof(kSha256Hash));
 }
 
-std::string SwReporterInstallerTraits::GetName() const {
+std::string SwReporterInstallerPolicy::GetName() const {
   return "Software Reporter Tool";
 }
 
 update_client::InstallerAttributes
-SwReporterInstallerTraits::GetInstallerAttributes() const {
+SwReporterInstallerPolicy::GetInstallerAttributes() const {
   update_client::InstallerAttributes attributes;
   if (IsExperimentalEngineEnabled()) {
     // Pass the "tag" parameter to the installer; it will be used to choose
@@ -363,7 +363,7 @@ SwReporterInstallerTraits::GetInstallerAttributes() const {
         kExperimentalEngineFeature, kTagParam);
 
     // If the tag is not a valid attribute (see the regexp in
-    // ComponentInstallerTraits::InstallerAttributes), set it to a valid but
+    // ComponentInstallerPolicy::InstallerAttributes), set it to a valid but
     // unrecognized value so that nothing will be downloaded.
     constexpr size_t kMaxAttributeLength = 256;
     constexpr char kExtraAttributeChars[] = "-.,;+_=";
@@ -378,11 +378,11 @@ SwReporterInstallerTraits::GetInstallerAttributes() const {
   return attributes;
 }
 
-std::vector<std::string> SwReporterInstallerTraits::GetMimeTypes() const {
+std::vector<std::string> SwReporterInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
-bool SwReporterInstallerTraits::IsExperimentalEngineEnabled() const {
+bool SwReporterInstallerPolicy::IsExperimentalEngineEnabled() const {
   return is_experimental_engine_supported_ &&
          base::FeatureList::IsEnabled(kExperimentalEngineFeature);
 }
@@ -475,12 +475,11 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       is_x86_architecture;
 
   // Install the component.
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new SwReporterInstallerTraits(base::Bind(&RunSwReportersAfterStartup),
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new SwReporterInstallerPolicy(base::Bind(&RunSwReportersAfterStartup),
                                     is_experimental_engine_supported));
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 }
 

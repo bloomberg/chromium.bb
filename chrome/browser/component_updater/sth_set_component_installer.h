@@ -13,7 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "components/component_updater/default_component_installer.h"
+#include "components/component_updater/component_installer.h"
 
 namespace base {
 class FilePath;
@@ -38,16 +38,16 @@ class ComponentUpdateService;
 //
 // Notifications of each of the new STHs are sent to the net::ct::STHObserver,
 // so that it can take appropriate steps, including possible persistence.
-class STHSetComponentInstallerTraits : public ComponentInstallerTraits {
+class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   // The |sth_distributor| will be notified each time a new STH is observed.
-  explicit STHSetComponentInstallerTraits(net::ct::STHObserver* sth_observer);
-  ~STHSetComponentInstallerTraits() override;
+  explicit STHSetComponentInstallerPolicy(net::ct::STHObserver* sth_observer);
+  ~STHSetComponentInstallerPolicy() override;
 
  private:
   friend class STHSetComponentInstallerTest;
 
-  // ComponentInstallerTraits implementation.
+  // ComponentInstallerPolicy implementation.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -80,9 +80,9 @@ class STHSetComponentInstallerTraits : public ComponentInstallerTraits {
   // this class does. Typically the observer provided will be a global.
   net::ct::STHObserver* sth_observer_;
 
-  base::WeakPtrFactory<STHSetComponentInstallerTraits> weak_ptr_factory_;
+  base::WeakPtrFactory<STHSetComponentInstallerPolicy> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(STHSetComponentInstallerTraits);
+  DISALLOW_COPY_AND_ASSIGN(STHSetComponentInstallerPolicy);
 };
 
 void RegisterSTHSetComponent(ComponentUpdateService* cus,

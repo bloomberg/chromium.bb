@@ -43,26 +43,26 @@ const uint8_t kPublicKeySHA256[32] = {
 // The name of the component. This is used in the chrome://components page.
 const char kThirdPartyModuleListName[] = "Third Party Module List";
 
-ThirdPartyModuleListComponentInstallerTraits::
-    ThirdPartyModuleListComponentInstallerTraits(ModuleListManager* manager)
+ThirdPartyModuleListComponentInstallerPolicy::
+    ThirdPartyModuleListComponentInstallerPolicy(ModuleListManager* manager)
     : manager_(manager) {}
 
-ThirdPartyModuleListComponentInstallerTraits::
-    ~ThirdPartyModuleListComponentInstallerTraits() {}
+ThirdPartyModuleListComponentInstallerPolicy::
+    ~ThirdPartyModuleListComponentInstallerPolicy() {}
 
-bool ThirdPartyModuleListComponentInstallerTraits::
+bool ThirdPartyModuleListComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
 }
 
-bool ThirdPartyModuleListComponentInstallerTraits::RequiresNetworkEncryption()
+bool ThirdPartyModuleListComponentInstallerPolicy::RequiresNetworkEncryption()
     const {
   // Public data is delivered via this component, no need for encryption.
   return false;
 }
 
 update_client::CrxInstaller::Result
-ThirdPartyModuleListComponentInstallerTraits::OnCustomInstall(
+ThirdPartyModuleListComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
@@ -71,7 +71,7 @@ ThirdPartyModuleListComponentInstallerTraits::OnCustomInstall(
 // NOTE: This is always called on the main UI thread. It is called once every
 // startup to notify of an already installed component, and may be called
 // repeatedly after that every time a new component is ready.
-void ThirdPartyModuleListComponentInstallerTraits::ComponentReady(
+void ThirdPartyModuleListComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -81,7 +81,7 @@ void ThirdPartyModuleListComponentInstallerTraits::ComponentReady(
   manager_->LoadModuleList(version, GetModuleListPath(install_dir));
 }
 
-bool ThirdPartyModuleListComponentInstallerTraits::VerifyInstallation(
+bool ThirdPartyModuleListComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   // This is called during startup and installation before ComponentReady().
@@ -91,33 +91,33 @@ bool ThirdPartyModuleListComponentInstallerTraits::VerifyInstallation(
 }
 
 base::FilePath
-ThirdPartyModuleListComponentInstallerTraits::GetRelativeInstallDir() const {
+ThirdPartyModuleListComponentInstallerPolicy::GetRelativeInstallDir() const {
   // The same path is used for installation and for the registry key to keep
   // things consistent.
   return base::FilePath(ModuleListManager::kModuleListRegistryKeyPath);
 }
 
-void ThirdPartyModuleListComponentInstallerTraits::GetHash(
+void ThirdPartyModuleListComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
 }
 
-std::string ThirdPartyModuleListComponentInstallerTraits::GetName() const {
+std::string ThirdPartyModuleListComponentInstallerPolicy::GetName() const {
   return kThirdPartyModuleListName;
 }
 
 std::vector<std::string>
-ThirdPartyModuleListComponentInstallerTraits::GetMimeTypes() const {
+ThirdPartyModuleListComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
 update_client::InstallerAttributes
-ThirdPartyModuleListComponentInstallerTraits::GetInstallerAttributes() const {
+ThirdPartyModuleListComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
 // static
-base::FilePath ThirdPartyModuleListComponentInstallerTraits::GetModuleListPath(
+base::FilePath ThirdPartyModuleListComponentInstallerPolicy::GetModuleListPath(
     const base::FilePath& install_dir) {
   return install_dir.Append(kRelativeModuleListPath);
 }
@@ -132,12 +132,11 @@ void RegisterThirdPartyModuleListComponent(ComponentUpdateService* cus) {
     return;
   ModuleListManager* manager = &database->module_list_manager();
 
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new ThirdPartyModuleListComponentInstallerTraits(manager));
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new ThirdPartyModuleListComponentInstallerPolicy(manager));
 
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 }
 

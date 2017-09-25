@@ -143,7 +143,7 @@ class ComponentUpdateService {
                                    CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
-  FRIEND_TEST_ALL_PREFIXES(DefaultComponentInstallerTest, RegisterComponent);
+  FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
 };
 
 using ServiceObserver = ComponentUpdateService::Observer;

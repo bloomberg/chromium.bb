@@ -55,30 +55,30 @@ const uint8_t kSha256Hash[] = {0xbb, 0xa6, 0x95, 0x52, 0x3f, 0x55, 0xc7, 0x80,
 
 }  // namespace
 
-bool OriginTrialsComponentInstallerTraits::VerifyInstallation(
+bool OriginTrialsComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   // Test if the "origin-trials" key is present in the manifest.
   return manifest.HasKey(kManifestOriginTrialsKey);
 }
 
-bool OriginTrialsComponentInstallerTraits::
+bool OriginTrialsComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
   return false;
 }
 
-bool OriginTrialsComponentInstallerTraits::RequiresNetworkEncryption() const {
+bool OriginTrialsComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return false;
 }
 
 update_client::CrxInstaller::Result
-OriginTrialsComponentInstallerTraits::OnCustomInstall(
+OriginTrialsComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
 
-void OriginTrialsComponentInstallerTraits::ComponentReady(
+void OriginTrialsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
@@ -115,39 +115,38 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
   }
 }
 
-base::FilePath OriginTrialsComponentInstallerTraits::GetRelativeInstallDir()
+base::FilePath OriginTrialsComponentInstallerPolicy::GetRelativeInstallDir()
     const {
   return base::FilePath(FILE_PATH_LITERAL("OriginTrials"));
 }
 
-void OriginTrialsComponentInstallerTraits::GetHash(
+void OriginTrialsComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   if (!hash)
     return;
   hash->assign(kSha256Hash, kSha256Hash + arraysize(kSha256Hash));
 }
 
-std::string OriginTrialsComponentInstallerTraits::GetName() const {
+std::string OriginTrialsComponentInstallerPolicy::GetName() const {
   return "Origin Trials";
 }
 
 update_client::InstallerAttributes
-OriginTrialsComponentInstallerTraits::GetInstallerAttributes() const {
+OriginTrialsComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
-std::vector<std::string> OriginTrialsComponentInstallerTraits::GetMimeTypes()
+std::vector<std::string> OriginTrialsComponentInstallerPolicy::GetMimeTypes()
     const {
   return std::vector<std::string>();
 }
 
 void RegisterOriginTrialsComponent(ComponentUpdateService* cus,
                                    const base::FilePath& user_data_dir) {
-  std::unique_ptr<ComponentInstallerTraits> traits(
-      new OriginTrialsComponentInstallerTraits());
+  std::unique_ptr<ComponentInstallerPolicy> policy(
+      new OriginTrialsComponentInstallerPolicy());
   // |cus| will take ownership of |installer| during installer->Register(cus).
-  DefaultComponentInstaller* installer =
-      new DefaultComponentInstaller(std::move(traits));
+  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
   installer->Register(cus, base::Closure());
 }
 
