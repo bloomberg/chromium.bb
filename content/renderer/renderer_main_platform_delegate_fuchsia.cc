@@ -16,10 +16,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {}
 void RendererMainPlatformDelegate::PlatformUninitialize() {}
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  // TODO(fuchsia): Implement this for Fuchsia.
-  NOTREACHED() << "Sandbox support is currently unavailable. Run with "
-                  "--no-sandbox for now.";
-  return false;
+  return true;
 }
 
 }  // namespace content

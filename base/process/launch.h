@@ -28,6 +28,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <launchpad/launchpad.h>
 #include <zircon/types.h>
 #endif
 
@@ -198,6 +199,15 @@ struct BASE_EXPORT LaunchOptions {
   // Each entry is an <id,handle> pair, with an |id| created using the PA_HND()
   // macro. The child retrieves the handle |zx_get_startup_handle(id)|.
   HandlesToTransferVector handles_to_transfer;
+
+  // If set, specifies which capabilities should be granted (cloned) to the
+  // child process.
+  // A zero value indicates that the child process will receive
+  // no capabilities.
+  // By default the child will inherit the same capabilities, job, and CWD
+  // from the parent process.
+  uint32_t clone_flags = LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB |
+                         LP_CLONE_FDIO_CWD | LP_CLONE_FDIO_STDIO;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)
