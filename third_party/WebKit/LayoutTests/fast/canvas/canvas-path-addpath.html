@@ -5,7 +5,7 @@
 test(function(t) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     var p1 = new Path2D();
@@ -17,7 +17,7 @@ test(function(t) {
     ctx.fillStyle = 'yellow';
     ctx.fill(p1);
     assert_array_equals(ctx.getImageData(1, 100, 1, 1).data, [255, 255, 0, 255]);
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     var p3 = new Path2D();
@@ -31,7 +31,7 @@ test(function(t) {
     ctx.fillStyle = 'yellow';
     ctx.fill(p3);
     assert_array_equals(ctx.getImageData(101, 0, 1, 1).data, [255, 255, 0, 255]);
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     var p5 = new Path2D();
@@ -45,7 +45,7 @@ test(function(t) {
     ctx.fillStyle = 'yellow';
     ctx.fill(p5);
     assert_array_equals(ctx.getImageData(101, 100, 1, 1).data, [0, 0, 0, 0]);
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     var p7 = new Path2D();
@@ -53,12 +53,16 @@ test(function(t) {
     var p8 = new Path2D();
     p8.rect(100,100,100,100);
     p7.addPath(p8, null);
-    assert_throws(null, function() {p7.addPath(p8, []);});
-    assert_throws(null, function() {p7.addPath(p8, {});});
+    assert_throws(new TypeError(), function() {
+      p7.addPath(p8, []);
+    });
+    assert_throws(new TypeError(), function() {
+      p7.addPath(p8, {});
+    });
     ctx.fillStyle = 'red';
     ctx.fill(p7);
     assert_array_equals(ctx.getImageData(101, 100, 1, 1).data, [255, 0, 0, 255]);
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     var p9 = new Path2D();
@@ -68,13 +72,18 @@ test(function(t) {
     ctx.fillStyle = 'red';
     ctx.fill(p10);
     assert_array_equals(ctx.getImageData(1, 1, 1, 1).data, [255, 0, 0, 255]);
-    
+
     var p9 = new Path2D();
     p9.rect(0,0,100,100);
-    assert_throws(null, function() {p7.addPath(null, m);});
-    assert_throws(null, function() {p7.addPath([], m);});
-    assert_throws(null, function() {p7.addPath({}, m);});
-    
+    assert_throws(new TypeError(), function() {
+      p7.addPath(null, m);
+    });
+    assert_throws(new TypeError(), function() {
+      p7.addPath([], m);
+    });
+    assert_throws(new TypeError(), function() {
+      p7.addPath({}, m);
+    });
 }, "Test addPath() method.");
 </script>
 </body>

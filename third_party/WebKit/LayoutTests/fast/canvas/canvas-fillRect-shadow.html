@@ -40,7 +40,7 @@ ctx.fillRect(50, 350, 100, 100);
 ctx.shadowColor = 'rgba(255, 0, 0, 0.3)';
 ctx.fillRect(50, 500, 100, 100);
 
-testSolidShadow = 
+testSolidShadow =
     [
         ['testSolidShadow 1', ctx.getImageData(250, 50, 1, 1).data, [255, 0, 0, 255]],
         ['testSolidShadow 2', ctx.getImageData(250, 149, 1, 1).data, [255, 0, 0, 255]],
@@ -69,10 +69,10 @@ testBlurryShadow =
 // alpha < 10
 testBlurryAlphaShadow = 
     [
-        ['testBlurryShadow 1', ctx.getImageData(248, 498, 1, 1).data, [255, 0, 0, 0]],
-        ['testBlurryShadow 2', ctx.getImageData(248, 601, 1, 1).data, [255, 0, 0, 0]],
-        ['testBlurryShadow 3', ctx.getImageData(351, 498, 1, 1).data, [255, 0, 0, 0]],
-        ['testBlurryShadow 4', ctx.getImageData(351, 601, 1, 1).data, [255, 0, 0, 0]],
+        ['testBlurryShadow 5', ctx.getImageData(248, 498, 1, 1).data, [255, 0, 0, 0]],
+        ['testBlurryShadow 6', ctx.getImageData(248, 601, 1, 1).data, [255, 0, 0, 0]],
+        ['testBlurryShadow 7', ctx.getImageData(351, 498, 1, 1).data, [255, 0, 0, 0]],
+        ['testBlurryShadow 8', ctx.getImageData(351, 601, 1, 1).data, [255, 0, 0, 0]],
     ];
 
 generate_tests(testPixelShadow, testSolidShadow);

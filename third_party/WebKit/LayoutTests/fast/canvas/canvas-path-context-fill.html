@@ -55,19 +55,45 @@ test(function(t) {
     }
 
     // Test exception cases.
-    assert_throws(null, function() {ctx.fill(null);});
-    assert_throws(null, function() {ctx.fill(null, null);});
-    assert_throws(null, function() {ctx.fill(null, 'nonzero');});
-    assert_throws(null, function() {ctx.fill(path, null);});
-    assert_throws(null, function() {ctx.fill([], 'nonzero');});
-    assert_throws(null, function() {ctx.fill({}, 'nonzero');});
-    assert_throws(null, function() {ctx.fill(null, 'evenodd');});
-    assert_throws(null, function() {ctx.fill([], 'evenodd');});
-    assert_throws(null, function() {ctx.fill({}, 'evenodd');});
-    assert_throws(null, function() {ctx.fill('gazonk');});
-    assert_throws(null, function() {ctx.fill(path, 'gazonk');});
-    assert_throws(null, function() {ctx.fill(undefined, undefined);});
-    assert_throws(null, function() {ctx.fill(undefined, path);});
+    assert_throws(new TypeError(), function() {
+      ctx.fill(null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(null, null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(null, 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(path, null);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill([], 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill({}, 'nonzero');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(null, 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill([], 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill({}, 'evenodd');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill('gazonk');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(path, 'gazonk');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(undefined, undefined);
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.fill(undefined, path);
+    });
 }, "Series of tests to ensure fill() works with path and winding rule parameters.");
 </script>
 </body>
