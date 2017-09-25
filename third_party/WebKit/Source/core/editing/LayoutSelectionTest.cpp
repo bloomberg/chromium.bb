@@ -74,6 +74,7 @@ USING_LAYOUTOBJECT_FUNC(IsLayoutInline);
 USING_LAYOUTOBJECT_FUNC(IsBR);
 USING_LAYOUTOBJECT_FUNC(IsListItem);
 USING_LAYOUTOBJECT_FUNC(IsListMarker);
+USING_LAYOUTOBJECT_FUNC(IsLayoutImage);
 
 static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
   return WTF::Bind(
@@ -102,14 +103,18 @@ static bool TestLayoutObject(LayoutObject* object,
                              const String& text,
                              SelectionState state,
                              InvalidateOption invalidate) {
-  if (!TestLayoutObjectState(object, state, invalidate))
-    return false;
-
-  if (!object->IsText())
-    return false;
-  if (text != ToLayoutText(object)->GetText())
-    return false;
-  return true;
+  return TestLayoutObject(
+      object,
+      WTF::Bind(
+          [](const String& text, const LayoutObject& object) {
+            if (!object.IsText())
+              return false;
+            if (text != ToLayoutText(object).GetText())
+              return false;
+            return true;
+          },
+          text),
+      state, invalidate);
 }
 
 #define TEST_NEXT(predicate, state, invalidate)                             \
@@ -393,5 +398,15 @@ TEST_F(LayoutSelectionTest, CommitAppearanceIfNeededNotCrash) {
                                .SetBaseAndExtent({baz, 1}, {span, 0})
                                .Build());
   Selection().CommitAppearanceIfNeeded();
+}
+
+TEST_F(LayoutSelectionTest, SelectImage) {
+  const SelectionInDOMTree& selection =
+      SetSelectionTextToBody("^<img style=\"width:100px; height:100px\"/>|");
+  Selection().SetSelection(selection);
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutImage, kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 }  // namespace blink
