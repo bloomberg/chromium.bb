@@ -22,6 +22,8 @@ namespace test {
 class ScrollViewTestApi;
 }
 
+class Separator;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // ScrollView class
@@ -183,6 +185,13 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void UpdateBackground();
   SkColor GetBackgroundColor() const;
 
+  // Positions each overflow indicator against their respective content edge.
+  void PositionOverflowIndicators();
+
+  // Shows/hides the overflow indicators depending on the position of the
+  // scrolling content within the viewport.
+  void UpdateOverflowIndicatorVisibility(const gfx::ScrollOffset& offset);
+
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   View* contents_;
@@ -201,6 +210,12 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Corner view.
   View* corner_view_;
+
+  // Hidden content indicators
+  std::unique_ptr<Separator> more_content_left_;
+  std::unique_ptr<Separator> more_content_top_;
+  std::unique_ptr<Separator> more_content_right_;
+  std::unique_ptr<Separator> more_content_bottom_;
 
   // The min and max height for the bounded scroll view. These are negative
   // values if the view is not bounded.
