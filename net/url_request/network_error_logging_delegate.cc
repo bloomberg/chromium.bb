@@ -16,7 +16,6 @@ NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails(
       protocol(other.protocol),
       status_code(other.status_code),
       elapsed_time(other.elapsed_time),
-      time(other.time),
       type(other.type) {}
 
 NetworkErrorLoggingDelegate::ErrorDetails::~ErrorDetails() {}

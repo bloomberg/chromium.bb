@@ -29,6 +29,8 @@ source_set("unit_tests") {
     ":network_error_logging",
     "//base",
     "//base/test:test_support",
+    "//net",
     "//testing/gtest",
+    "//url",
   ]
 }
