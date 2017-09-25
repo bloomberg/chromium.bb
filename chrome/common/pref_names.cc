@@ -1600,10 +1600,6 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
 
-// Boolean that specifies whether to enable the Google Now Launcher extension.
-// Note: This is not the notifications component gated by ENABLE_GOOGLE_NOW.
-const char kGoogleNowLauncherEnabled[] = "google_now_launcher.enabled";
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 

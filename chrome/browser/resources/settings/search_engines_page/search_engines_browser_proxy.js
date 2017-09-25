@@ -85,9 +85,6 @@ cr.define('settings', function() {
 
     /** @param {boolean} enabled */
     setHotwordSearchEnabled(enabled) {}
-
-    /** @return {!Promise<boolean>} */
-    getGoogleNowAvailability() {}
   }
 
   /**
@@ -142,11 +139,6 @@ cr.define('settings', function() {
     /** @override */
     setHotwordSearchEnabled(enabled) {
       chrome.send('setHotwordSearchEnabled', [enabled]);
-    }
-
-    /** @override */
-    getGoogleNowAvailability() {
-      return cr.sendWithPromise('getGoogleNowAvailability');
     }
   }
 

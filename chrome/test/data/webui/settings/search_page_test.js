@@ -172,28 +172,5 @@ cr.define('settings_search_page', function() {
         assertTrue(browserProxy.hotwordSearchEnabled);
       });
     });
-
-    test('UpdateGoogleNowOnPrefChange', function() {
-      return browserProxy.whenCalled('getGoogleNowAvailability').then(
-          function() {
-        Polymer.dom.flush();
-        assertTrue(page.googleNowAvailable_);
-
-        var control = page.$$('#googleNowEnable');
-        assertTrue(!!control);
-        assertFalse(control.disabled);
-        assertFalse(control.checked);
-
-        page.set('prefs.google_now_launcher', {
-          enabled: {
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: true,
-          },
-        });
-        Polymer.dom.flush();
-        assertFalse(control.disabled);
-        assertTrue(control.checked);
-      });
-    });
   });
 });
