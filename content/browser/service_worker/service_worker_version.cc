@@ -1489,7 +1489,11 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
   }
 
   // Keep the live registration while starting the worker.
-  start_callbacks_.push_back(std::move(callback));
+  start_callbacks_.push_back(base::BindOnce(
+      [](StatusCallback callback,
+         scoped_refptr<ServiceWorkerRegistration> protect,
+         ServiceWorkerStatusCode status) { std::move(callback).Run(status); },
+      std::move(callback), protect));
 
   if (running_status() == EmbeddedWorkerStatus::STOPPED)
     StartWorkerInternal();
