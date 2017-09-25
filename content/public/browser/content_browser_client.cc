@@ -270,6 +270,10 @@ net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
   return nullptr;
 }
 
+std::string ContentBrowserClient::GetGeolocationApiKey() {
+  return std::string();
+}
+
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {

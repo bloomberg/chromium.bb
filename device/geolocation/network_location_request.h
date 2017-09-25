@@ -39,10 +39,9 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
                               const WifiData& /* wifi_data */)>
       LocationResponseCallback;
 
-  // |url| is the server address to which the request wil be sent.
   NetworkLocationRequest(
       const scoped_refptr<net::URLRequestContextGetter>& context,
-      const GURL& url,
+      const std::string& api_key,
       LocationResponseCallback callback);
   ~NetworkLocationRequest() override;
 
@@ -51,15 +50,14 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   bool MakeRequest(const WifiData& wifi_data, const base::Time& wifi_timestamp);
 
   bool is_request_pending() const { return url_fetcher_ != NULL; }
-  const GURL& url() const { return url_; }
 
  private:
   // net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   const scoped_refptr<net::URLRequestContextGetter> url_context_;
+  const std::string api_key_;
   const LocationResponseCallback location_response_callback_;
-  const GURL url_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // Keep a copy of the data sent in the request, so we can refer back to it

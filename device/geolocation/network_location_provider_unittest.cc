@@ -30,9 +30,6 @@
 
 namespace device {
 
-// Constants used in multiple tests.
-const char kTestServerUrl[] = "https://www.geolocation.test/service";
-
 // Stops the specified (nested) message loop when the listener is called back.
 class MessageLoopQuitListener {
  public:
@@ -116,10 +113,11 @@ class GeolocationNetworkProviderTest : public testing::Test {
     WifiDataProviderManager::ResetFactoryForTesting();
   }
 
-  LocationProvider* CreateProvider(bool set_permission_granted) {
-    LocationProvider* provider = NewNetworkLocationProvider(
-        nullptr,  // No URLContextGetter needed, using test urlfecther factory.
-        test_server_url_);
+  LocationProvider* CreateProvider(bool set_permission_granted,
+                                   const std::string& api_key = std::string()) {
+    // No URLContextGetter needed: The request within the provider is tested
+    // directly using TestURLFetcherFactory.
+    LocationProvider* provider = new NetworkLocationProvider(nullptr, api_key);
     if (set_permission_granted)
       provider->OnPermissionGranted();
     return provider;
@@ -127,8 +125,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
  protected:
   GeolocationNetworkProviderTest()
-      : test_server_url_(kTestServerUrl),
-        wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
+      : wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     WifiDataProviderManager::SetFactoryForTesting(
@@ -228,20 +225,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
     return testing::AssertionSuccess();
   }
 
-  static GURL UrlWithoutQuery(const GURL& url) {
-    url::Replacements<char> replacements;
-    replacements.ClearQuery();
-    return url.ReplaceComponents(replacements);
-  }
-
-  testing::AssertionResult IsTestServerUrl(const GURL& request_url) {
-    const GURL a(UrlWithoutQuery(test_server_url_));
-    const GURL b(UrlWithoutQuery(request_url));
-    if (a == b)
-      return testing::AssertionSuccess();
-    return testing::AssertionFailure() << a << " != " << b;
-  }
-
   // Checks that |request| contains valid JSON upload data. The Wifi access
   // points specified in the JSON are validated against the first
   // |expected_wifi_aps| access points, starting from position
@@ -249,17 +232,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   void CheckRequestIsValid(const net::TestURLFetcher& request,
                            int expected_wifi_aps,
                            int wifi_start_index) {
-    const GURL& request_url = request.GetOriginalURL();
-
-    EXPECT_TRUE(IsTestServerUrl(request_url));
-
-    // Check to see that the api key is being appended for the default
-    // network provider url.
-    bool is_default_url =
-        UrlWithoutQuery(request_url) ==
-        UrlWithoutQuery(LocationArbitrator::DefaultNetworkProviderURL());
-    EXPECT_EQ(is_default_url, !request_url.query().empty());
-
     const std::string& upload_data = request.upload_data();
     ASSERT_FALSE(upload_data.empty());
     std::string json_parse_error_msg;
@@ -297,10 +269,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
     } else {
       ASSERT_FALSE(request_json->HasKey("wifiAccessPoints"));
     }
-    EXPECT_TRUE(request_url.is_valid());
   }
 
-  GURL test_server_url_;
   const base::MessageLoop main_message_loop_;
   const net::TestURLFetcherFactory url_fetcher_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
@@ -315,20 +285,32 @@ TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
   SUCCEED();
 }
 
-// Tests that, after StartProvider(), a TestURLFetcher can be extracted,
-// representing a valid request.
-TEST_F(GeolocationNetworkProviderTest, StartProvider) {
-  std::unique_ptr<LocationProvider> provider(CreateProvider(true));
+// Tests that, with an empty api_key, no query string parameter is included in
+// the request.
+TEST_F(GeolocationNetworkProviderTest, EmptyApiKey) {
+  const std::string api_key = "";
+  std::unique_ptr<LocationProvider> provider(CreateProvider(true, api_key));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
-  CheckRequestIsValid(*fetcher, 0, 0);
+  EXPECT_FALSE(fetcher->GetOriginalURL().has_query());
 }
 
-// Tests StartProvider() in the special case that the endpoint URL is the
-// DefaultNetworkProviderURL.
-TEST_F(GeolocationNetworkProviderTest, StartProviderDefaultUrl) {
-  test_server_url_ = LocationArbitrator::DefaultNetworkProviderURL();
+// Tests that, with non-empty api_key, a "key" query string parameter is
+// included in the request.
+TEST_F(GeolocationNetworkProviderTest, NonEmptyApiKey) {
+  const std::string api_key = "something";
+  std::unique_ptr<LocationProvider> provider(CreateProvider(true, api_key));
+  EXPECT_TRUE(provider->StartProvider(false));
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher);
+  EXPECT_TRUE(fetcher->GetOriginalURL().has_query());
+  EXPECT_TRUE(fetcher->GetOriginalURL().query_piece().starts_with("key="));
+}
+
+// Tests that, after StartProvider(), a TestURLFetcher can be extracted,
+// representing a valid request.
+TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
@@ -371,14 +353,12 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
-  EXPECT_TRUE(IsTestServerUrl(fetcher->GetOriginalURL()));
 
   // 1. Complete the network request with bad position fix.
   const char* kNoFixNetworkResponse =
       "{"
       "  \"status\": \"ZERO_RESULTS\""
       "}";
-  fetcher->set_url(test_server_url_);
   fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(200);  // OK
   fetcher->SetResponseString(kNoFixNetworkResponse);
@@ -405,7 +385,6 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       "    \"lng\": -0.1"
       "  }"
       "}";
-  fetcher->set_url(test_server_url_);
   fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(200);  // OK
   fetcher->SetResponseString(kReferenceNetworkResponse);
@@ -440,7 +419,6 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   CheckRequestIsValid(*fetcher, kThirdScanAps, 0);
 
   // 6. ...reply with a network error.
-  fetcher->set_url(test_server_url_);
   fetcher->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
   fetcher->set_response_code(200);  // should be ignored
   fetcher->SetResponseString(std::string());
@@ -511,8 +489,6 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
 
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
-
-  EXPECT_TRUE(IsTestServerUrl(fetcher->GetOriginalURL()));
 }
 
 // Tests that, even if new Wifi data arrives, the provider doesn't initiate its

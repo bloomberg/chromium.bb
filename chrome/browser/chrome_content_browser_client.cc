@@ -211,6 +211,7 @@
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/features/features.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/google_api_keys.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
@@ -2103,6 +2104,10 @@ ChromeContentBrowserClient::OverrideRequestContextForURL(
 #endif
 
   return NULL;
+}
+
+std::string ChromeContentBrowserClient::GetGeolocationApiKey() {
+  return google_apis::GetAPIKey();
 }
 
 QuotaPermissionContext*

@@ -40,7 +40,8 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   // (regardles of relative accuracy). Public for tests.
   static const int64_t kFixStaleTimeoutMilliseconds;
 
-  explicit LocationArbitrator(std::unique_ptr<GeolocationDelegate> delegate);
+  LocationArbitrator(std::unique_ptr<GeolocationDelegate> delegate,
+                     const std::string& api_key);
   ~LocationArbitrator() override;
 
   static GURL DefaultNetworkProviderURL();
@@ -59,10 +60,8 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   // testing classes.
   virtual scoped_refptr<AccessTokenStore> NewAccessTokenStore();
   virtual std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
-      const scoped_refptr<AccessTokenStore>& access_token_store,
       const scoped_refptr<net::URLRequestContextGetter>& context,
-      const GURL& url,
-      const base::string16& access_token);
+      const std::string& api_key);
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 
@@ -92,7 +91,8 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
                            const Geoposition& new_position,
                            bool from_same_provider) const;
 
-  std::unique_ptr<GeolocationDelegate> delegate_;
+  const std::unique_ptr<GeolocationDelegate> delegate_;
+  const std::string api_key_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
   LocationProvider::LocationProviderUpdateCallback arbitrator_update_callback_;

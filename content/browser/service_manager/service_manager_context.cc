@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "device/geolocation/geolocation_provider.h"
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -340,6 +341,13 @@ ServiceManagerContext::ServiceManagerContext() {
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
   packaged_services_connection_->AddEmbeddedService(device::mojom::kServiceName,
                                                     device_info);
+
+  // Pipe embedder-supplied API key through to GeolocationProvider.
+  // TODO(amoylan): Once GeolocationProvider hangs off DeviceService
+  // (https://crbug.com/709301), pass this via CreateDeviceService above
+  // instead.
+  device::GeolocationProvider::SetApiKey(
+      GetContentClient()->browser()->GetGeolocationApiKey());
 
   if (base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator)) {
     service_manager::EmbeddedServiceInfo resource_coordinator_info;
