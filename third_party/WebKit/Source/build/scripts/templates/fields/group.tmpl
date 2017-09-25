@@ -8,10 +8,10 @@
 class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
  public:
   static RefPtr<{{group.type_name}}> Create() {
-    return AdoptRef(new {{group.type_name}});
+    return WTF::AdoptRef(new {{group.type_name}});
   }
   RefPtr<{{group.type_name}}> Copy() const {
-    return AdoptRef(new {{group.type_name}}(*this));
+    return WTF::AdoptRef(new {{group.type_name}}(*this));
   }
 
   bool operator==(const {{group.type_name}}& other) const {

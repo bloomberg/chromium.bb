@@ -245,6 +245,5 @@ RefPtr<T> WrapRefPtr(T* ptr) {
 }  // namespace WTF
 
 using WTF::RefPtr;
-using WTF::AdoptRef;
 
 #endif  // WTF_RefPtr_h

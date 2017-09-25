@@ -45,7 +45,8 @@ class RefCountedClass : public RefCounted<RefCountedClass> {};
 TEST(RefPtrTest, ConstObject) {
   // This test is only to ensure we force the compilation of a const RefCounted
   // object to ensure the generated code compiles.
-  RefPtr<const RefCountedClass> ptr_to_const = AdoptRef(new RefCountedClass());
+  RefPtr<const RefCountedClass> ptr_to_const =
+      WTF::AdoptRef(new RefCountedClass());
 }
 
 }  // namespace WTF
