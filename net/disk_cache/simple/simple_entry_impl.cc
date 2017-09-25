@@ -1020,6 +1020,20 @@ void SimpleEntryImpl::ReadSparseDataInternal(
         CreateNetLogSparseOperationCallback(sparse_offset, buf_len));
   }
 
+  if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_READ_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
+    }
+    if (!callback.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, net::ERR_FAILED));
+    }
+    // |this| may be destroyed after return here.
+    return;
+  }
+
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
 
@@ -1050,6 +1064,20 @@ void SimpleEntryImpl::WriteSparseDataInternal(
     net_log_.AddEvent(
         net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_SPARSE_BEGIN,
         CreateNetLogSparseOperationCallback(sparse_offset, buf_len));
+  }
+
+  if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    if (net_log_.IsCapturing()) {
+      net_log_.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END,
+          CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
+    }
+    if (!callback.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, net::ERR_FAILED));
+    }
+    // |this| may be destroyed after return here.
+    return;
   }
 
   DCHECK_EQ(STATE_READY, state_);
@@ -1088,6 +1116,15 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
     const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   ScopedOperationRunner operation_runner(this);
+
+  if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
+    if (!callback.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, net::ERR_FAILED));
+    }
+    // |this| may be destroyed after return here.
+    return;
+  }
 
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;

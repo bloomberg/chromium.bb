@@ -4328,6 +4328,74 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateRecoverFromRmdir) {
   entry->Close();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheSparseErrorHandling) {
+  // If there is corruption in sparse file, we should delete all the files
+  // before returning the failure. Further additional sparse operations in
+  // failure state should fail gracefully.
+  SetSimpleCacheMode();
+  InitCache();
+
+  std::string key("a key");
+
+  uint64_t hash = disk_cache::simple_util::GetEntryHashKey(key);
+  base::FilePath path_0 = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromEntryHashAndFileIndex(hash, 0));
+  base::FilePath path_s = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetSparseFilenameFromEntryHash(hash));
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+
+  const int kSize = 1024;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  EXPECT_EQ(kSize, WriteSparseData(entry, 0, buffer.get(), kSize));
+  entry->Close();
+
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  EXPECT_TRUE(base::PathExists(path_0));
+  EXPECT_TRUE(base::PathExists(path_s));
+
+  // Now corrupt the _s file in a way that makes it look OK on open, but not on
+  // read.
+  base::File file_s(path_s, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                base::File::FLAG_WRITE);
+  ASSERT_TRUE(file_s.IsValid());
+  file_s.SetLength(sizeof(disk_cache::SimpleFileHeader) +
+                   sizeof(disk_cache::SimpleFileSparseRangeHeader) +
+                   key.size());
+  file_s.Close();
+
+  // Re-open, it should still be fine.
+  ASSERT_THAT(OpenEntry(key, &entry), IsOk());
+
+  // Read should fail though.
+  EXPECT_EQ(net::ERR_CACHE_READ_FAILURE,
+            ReadSparseData(entry, 0, buffer.get(), kSize));
+
+  // At the point read returns to us, the files should already been gone.
+  EXPECT_FALSE(base::PathExists(path_0));
+  EXPECT_FALSE(base::PathExists(path_s));
+
+  // Re-trying should still fail. Not DCHECK-fail.
+  EXPECT_EQ(net::ERR_FAILED, ReadSparseData(entry, 0, buffer.get(), kSize));
+
+  // Similarly for other ops.
+  EXPECT_EQ(net::ERR_FAILED, WriteSparseData(entry, 0, buffer.get(), kSize));
+  net::TestCompletionCallback cb;
+  int64_t start;
+  int rv = entry->GetAvailableRange(0, 1024, &start, cb.callback());
+  EXPECT_EQ(net::ERR_FAILED, cb.GetResult(rv));
+
+  entry->Close();
+  disk_cache::FlushCacheThreadForTesting();
+
+  // Closing shouldn't resurrect files, either.
+  EXPECT_FALSE(base::PathExists(path_0));
+  EXPECT_FALSE(base::PathExists(path_s));
+}
+
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
   DiskCacheSimplePrefetchTest()
