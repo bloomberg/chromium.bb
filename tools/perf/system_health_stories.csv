@@ -1,23 +1,15 @@
 Story name,Platform,Description
-background:media:imgur,mobile,"Load http://imgur.com/gallery/hUita, then put the Chrome browser into the background."
-background:news:nytimes,mobile,"Load http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0, then put the Chrome browser into the background."
-background:search:google,mobile,"Load https://www.google.co.uk/#q=tom+cruise+movies, then put the Chrome browser into the background."
-background:social:facebook,mobile,"Load https://www.facebook.com/rihanna, then put the Chrome browser into the background."
+background:media:imgur,mobile,"Load http://imgur.com/gallery/hUita, then put the browser into the background."
+background:news:nytimes,mobile,"Load http://www.nytimes.com/2016/10/04/us/politics/vice-presidential-debate.html?_r=0, then put the browser into the background."
+background:search:google,mobile,"Load https://www.google.co.uk/#q=tom+cruise+movies, then put the browser into the background."
+background:social:facebook,mobile,"Load https://www.facebook.com/rihanna, then put the browser into the background."
 background:tools:gmail,mobile,Load https://mail.google.com/mail/
-blank:about:blank,all,Story that loads the about:blank page.
 browse:chrome:newtab,mobile,"Story that loads new tab page and performs searches.
 
-  For each of the search queries in in the list below, this story does:
+  Given a list of typical search queries, this story does for each of them:
    - enter the search query on the new tab page search box
    - read results
    - navigates back to new tab page
-
-  List of search queries:
-    'does google know everything',
-    'most famous paintings',
-    'current weather',
-    'best movies 2016',
-    'how to tie a tie'
   "
 browse:chrome:omnibox,mobile,"Story that peforms search by using omnibox search provider
 
@@ -27,6 +19,8 @@ browse:chrome:omnibox,mobile,"Story that peforms search by using omnibox search 
 browse:media:facebook_photos,mobile,"Load a photo page from Rihanna's facebook page then navigate a few next
   photos.
   "
+browse:media:flickr_infinite_scroll,desktop,Load https://www.flickr.com/explore then make a very long scroll.
+browse:media:flickr_infinite_scroll,mobile,Load https://www.flickr.com/explore then make a very long scroll.
 browse:media:imgur,desktop,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles.
 browse:media:imgur,mobile,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles.
 browse:media:pinterest,desktop,Load https://pinterest.com and navigate to some items/articles.
@@ -77,9 +71,16 @@ browse:shopping:avito,mobile,Load https://www.avito.ru/rossiya and navigate to s
 browse:shopping:flipkart,mobile,Load https://flipkart.com/search?q=Sunglasses and navigate to some items/articles.
 browse:shopping:lazada,mobile,Load https://www.lazada.co.id/catalog/?q=Wrist+watch and navigate to some items/articles.
 browse:social:facebook,mobile,Load https://www.facebook.com/rihanna and navigate to some items/articles.
+browse:social:facebook_infinite_scroll,desktop,Load https://www.facebook.com/shakira then make a very long scroll.
+browse:social:facebook_infinite_scroll,mobile,Load https://m.facebook.com/shakira then make a very long scroll.
 browse:social:instagram,mobile,Load https://www.instagram.com/badgalriri/ and navigate to some items/articles.
+browse:social:pinterest_infinite_scroll,mobile,Load https://www.pinterest.com/all then make a very long scroll.
+browse:social:tumblr_infinite_scroll,all,Load http://techcrunch.tumblr.com/ then make a very long scroll.
 browse:social:twitter,desktop,Load https://www.twitter.com/nasa and navigate to some items/articles.
 browse:social:twitter,mobile,Load https://www.twitter.com/nasa and navigate to some items/articles.
+browse:social:twitter_infinite_scroll,desktop,Load https://twitter.com/taylorswift13 then make a very long scroll.
+browse:tech:discourse_infinite_scroll,desktop,Load https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482 then make a very long scroll.
+browse:tech:discourse_infinite_scroll,mobile,Load https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482 then make a very long scroll.
 browse:tools:earth,desktop,"
   Google Earth story:
     _ Start at https://www.maps.google.com/maps
@@ -100,6 +101,7 @@ browse:tools:maps,mobile,"Story that browses google maps mobile page
   This story searches for nearby restaurants on google maps website and finds
   directions to a chosen restaurant from search results.
   "
+load:chrome:blank,all,Story that loads the about:blank page.
 load:games:alphabetty,desktop,Load https://king.com/play/alphabetty
 load:games:bubbles,all,"Load ""smarty bubbles"" game on famobi.com"
 load:games:lazors,all,Load http://www8.games.mobi/games/html5/lazors/lazors.html
@@ -108,7 +110,6 @@ load:games:spychase,all,Load http://playstar.mobi/games/spychase/index.php
 load:media:9gag,desktop,Load https://www.9gag.com/
 load:media:dailymotion,all,Load https://www.dailymotion.com/video/x489k7d_street-performer-shows-off-slinky-skills_fun?autoplay=false
 load:media:facebook_photos,mobile,Load a page of rihanna's facebook with a photo.
-load:media:flickr,desktop,Load https://www.flickr.com/photos/tags/farm
 load:media:google_images,all,Load https://www.google.co.uk/search?tbm=isch&q=love
 load:media:imgur,all,Load http://imgur.com/gallery/5UlBN
 load:media:soundcloud,all,Load https://soundcloud.com/lifeofdesiigner/desiigner-panda
@@ -133,11 +134,9 @@ load:search:taobao,desktop,Load https://world.taobao.com/
 load:search:taobao,mobile,Load http://m.intl.taobao.com/?ali_trackid
 load:search:yahoo,all,Load https://search.yahoo.com/search;_ylt=?p=google
 load:search:yandex,all,Load https://yandex.ru/touchsearch?text=science
-load:social:facebook,all,Load https://www.facebook.com/rihanna
 load:social:instagram,desktop,Load https://www.instagram.com/selenagomez/
-load:social:pinterest,all,Load https://uk.pinterest.com/categories/popular/
-load:social:tumblr,all,Load https://50thousand.tumblr.com/
-load:social:twitter,all,Load https://www.twitter.com/nasa
+load:social:pinterest,desktop,Load https://uk.pinterest.com/categories/popular/
+load:social:twitter,mobile,Load https://www.twitter.com/nasa
 load:social:vk,desktop,Load https://vk.com/sbeatles
 load:tools:docs,all,Load a typical google doc page.
 load:tools:drive,all,Load https://drive.google.com/drive/my-drive
@@ -154,10 +153,3 @@ multitab:misc:typical24,desktop,"Load 24 different web sites in 24 tabs, then cy
 play:media:google_play_music,desktop,"Browse the songs list in music.google.com, then play a song."
 play:media:pandora,desktop,"Load pandora.com, then play a song."
 play:media:soundcloud,desktop,"Load soundcloud.com, search for ""Smooth Jazz"", then play a song."
-search:portal:google,all," A typical Google search user story.
-  Issue the search query ""what is science"" in the search box and press Enter.
-  Wait for the search result page to be loaded, then scroll to the Wikipedia
-  result.
-  Navigate to wikipedia page by clicking on the result and wait for it to be
-  fully loaded.
-  "
