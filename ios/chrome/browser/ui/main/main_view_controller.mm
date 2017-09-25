@@ -52,6 +52,9 @@
 - (void)presentViewController:(UIViewController*)viewControllerToPresent
                      animated:(BOOL)flag
                    completion:(void (^)())completion {
+  // If there is no activeViewController then this call will get inadvertently
+  // dropped.
+  DCHECK(self.activeViewController);
   [self.activeViewController presentViewController:viewControllerToPresent
                                           animated:flag
                                         completion:completion];
@@ -59,6 +62,9 @@
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
+  // If there is no activeViewController then this call will get inadvertently
+  // dropped.
+  DCHECK(self.activeViewController);
   [self.activeViewController dismissViewControllerAnimated:flag
                                                 completion:completion];
 }
