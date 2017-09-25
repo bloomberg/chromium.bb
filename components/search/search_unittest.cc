@@ -15,15 +15,6 @@ TEST(SearchTest, InstantExtendedAPIEnabled) {
   EXPECT_TRUE(IsInstantExtendedAPIEnabled());
 }
 
-TEST(SearchTest, ForceInstantResultsParam) {
-  EXPECT_EQ("ion=1&", ForceInstantResultsParam(true));
-  EXPECT_EQ(std::string(), ForceInstantResultsParam(false));
-}
-
-TEST(SearchTest, InstantExtendedEnabledParam) {
-  EXPECT_EQ("espv=2&", InstantExtendedEnabledParam());
-}
-
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 
 }  // namespace search

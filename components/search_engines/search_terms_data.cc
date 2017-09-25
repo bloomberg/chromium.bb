@@ -54,15 +54,6 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
-std::string SearchTermsData::InstantExtendedEnabledParam() const {
-  return std::string();
-}
-
-std::string SearchTermsData::ForceInstantResultsParam(
-    bool for_prerender) const {
-  return std::string();
-}
-
 std::string SearchTermsData::GoogleImageSearchSource() const {
   return std::string();
 }

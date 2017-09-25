@@ -92,17 +92,6 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   return "chrome-ext-ansg";
 }
 
-std::string UIThreadSearchTermsData::InstantExtendedEnabledParam() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return search::InstantExtendedEnabledParam();
-}
-
-std::string UIThreadSearchTermsData::ForceInstantResultsParam(
-    bool for_prerender) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return search::ForceInstantResultsParam(for_prerender);
-}
-
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string version(version_info::GetProductName() + " " +
