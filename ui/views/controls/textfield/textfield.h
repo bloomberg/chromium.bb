@@ -52,9 +52,6 @@ class VIEWS_EXPORT Textfield : public View,
   // The textfield's class name.
   static const char kViewClassName[];
 
-  // The preferred size of the padding to be used around textfield text.
-  static const int kTextPadding;
-
   // Returns the text cursor blink time in milliseconds, or 0 for no blinking.
   static size_t GetCaretBlinkMs();
 
@@ -214,7 +211,6 @@ class VIEWS_EXPORT Textfield : public View,
   void SetAccessibleName(const base::string16& name);
 
   // View overrides:
-  gfx::Insets GetInsets() const override;
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
@@ -383,6 +379,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Update the cursor position in the text field.
   void UpdateCursorViewPosition();
+
+  // Gets the style::TextStyle that should be used.
+  int GetTextStyle() const;
 
   void PaintTextAndCursor(gfx::Canvas* canvas);
 

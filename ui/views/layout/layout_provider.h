@@ -58,8 +58,8 @@ enum DistanceMetric {
   // The distance between a dialog's edge and the close button in the upper
   // trailing corner.
   DISTANCE_CLOSE_BUTTON_MARGIN,
-  // The combined vertical padding applied to text in a control.
-  DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING,
+  // The vertical padding applied to text in a control.
+  DISTANCE_CONTROL_VERTICAL_TEXT_PADDING,
   // The default minimum width of a dialog button.
   DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH,
   // The distance between the bottom of a dialog's content, when the final
@@ -87,6 +87,8 @@ enum DistanceMetric {
   DISTANCE_RELATED_LABEL_HORIZONTAL,
   // Horizontal margin between a table cell and its contents.
   DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN,
+  // Horizontal padding applied to text in a textfield.
+  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING,
   // Vertical spacing between controls that are logically unrelated.
   DISTANCE_UNRELATED_CONTROL_VERTICAL,
 
@@ -107,7 +109,7 @@ class VIEWS_EXPORT LayoutProvider {
   static LayoutProvider* Get();
 
   // Calculates the control height based on the |font|'s reported glyph height,
-  // the default line spacing and DISTANCE_CONTROL_TOTAL_VERTICAL_TEXT_PADDING.
+  // the default line spacing and DISTANCE_CONTROL_VERTICAL_TEXT_PADDING.
   static int GetControlHeightForFont(int context,
                                      int style,
                                      const gfx::FontList& font);
