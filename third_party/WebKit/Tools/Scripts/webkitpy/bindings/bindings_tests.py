@@ -49,6 +49,9 @@ from idl_compiler import (generate_bindings,
                           generate_callback_function_impl)
 from utilities import ComponentInfoProviderCore
 from utilities import ComponentInfoProviderModules
+from utilities import get_file_contents
+from utilities import get_first_interface_name_from_idl
+from utilities import to_snake_case
 
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -63,7 +66,20 @@ NOTRY=true
 TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 """
 
+SOURCE_PATH = path_finder.get_source_dir()
+IS_SNAKE_CASE = path_finder.is_source_in_blink()
 DEPENDENCY_IDL_FILES = frozenset([
+    'test_implements.idl',
+    'test_implements_2.idl',
+    'test_implements_3.idl',
+    'test_interface_partial.idl',
+    'test_interface_partial_2.idl',
+    'test_interface_partial_3.idl',
+    'test_interface_partial_4.idl',
+    'test_interface_partial_secure_context.idl',
+    'test_interface_2_partial.idl',
+    'test_interface_2_partial_2.idl',
+]) if IS_SNAKE_CASE else frozenset([
     'TestImplements.idl',
     'TestImplements2.idl',
     'TestImplements3.idl',
@@ -77,8 +93,6 @@ DEPENDENCY_IDL_FILES = frozenset([
 ])
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
-
-SOURCE_PATH = path_finder.get_source_dir()
 TEST_INPUT_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'idls')
 REFERENCE_DIRECTORY = os.path.join(SOURCE_PATH, 'bindings', 'tests', 'results')
 
@@ -184,11 +198,11 @@ def generate_interface_dependencies():
 
 class IdlCompilerOptions(object):
     def __init__(self, output_directory, cache_directory, impl_output_directory,
-                 target_component, snake_case_generated_files):
+                 target_component):
         self.output_directory = output_directory
         self.cache_directory = cache_directory
         self.impl_output_directory = impl_output_directory
-        self.snake_case_generated_files = snake_case_generated_files
+        self.snake_case_generated_files = IS_SNAKE_CASE
         self.target_component = target_component
 
 
@@ -282,8 +296,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 output_directory=output_dir,
                 impl_output_directory=output_dir,
                 cache_directory=None,
-                target_component=component,
-                snake_case_generated_files=False)
+                target_component=component)
 
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
@@ -294,8 +307,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                     output_directory=partial_interface_output_dir,
                     impl_output_directory=None,
                     cache_directory=None,
-                    target_component='modules',
-                    snake_case_generated_files=False)
+                    target_component='modules')
 
             idl_filenames = []
             dictionary_impl_filenames = []
@@ -310,8 +322,14 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                         os.path.join(input_directory, filename))
                     idl_filenames.append(idl_path)
                     idl_basename = os.path.basename(idl_path)
-                    definition_name, _ = os.path.splitext(idl_basename)
-                    if definition_name in interfaces_info:
+                    name_from_basename, _ = os.path.splitext(idl_basename)
+                    definition_name = get_first_interface_name_from_idl(get_file_contents(idl_path))
+                    is_partial_interface_idl = False
+                    if IS_SNAKE_CASE:
+                        is_partial_interface_idl = to_snake_case(definition_name) != name_from_basename
+                    else:
+                        is_partial_interface_idl = definition_name != name_from_basename
+                    if not is_partial_interface_idl:
                         interface_info = interfaces_info[definition_name]
                         if interface_info['is_dictionary']:
                             dictionary_impl_filenames.append(idl_path)

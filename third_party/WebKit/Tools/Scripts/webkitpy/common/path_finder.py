@@ -75,6 +75,11 @@ def get_source_dir():
     return os.path.join(get_blink_dir(), 'Source')
 
 
+# TODO(tkent): Remove this function after the source move. crbug.com/622551
+def is_source_in_blink():
+    return '/blink/renderer' in get_source_dir().replace(os.path.sep, '/')
+
+
 def get_typ_dir():
     return os.path.join(get_chromium_src_dir(), 'third_party', 'typ')
 
