@@ -304,6 +304,8 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   os = "netbsd";
 #elif defined(OS_AIX)
   os = "aix";
+#elif defined(OS_FUCHSIA)
+  os = "fuchsia";
 #else
   #error Unknown OS type.
 #endif
