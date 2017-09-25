@@ -382,6 +382,7 @@ class AudioOutputDelegateTest : public testing::Test {
         &mirroring_manager_, &media_observer_, kStreamId, kRenderFrameId,
         kRenderProcessId, Params(), kDefaultDeviceId);
 
+    delegate->OnPlayStream();
     delegate->GetControllerForTesting()->OnError();
 
     // Errors are deferred by AudioOutputController, so wait for the error; pass

@@ -7,15 +7,16 @@
 
 #include <stdint.h>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -193,6 +194,21 @@ class MEDIA_EXPORT AudioOutputController
   ~AudioOutputController() override;
 
  private:
+  // Used to store various stats about a stream. The lifetime of this object
+  // should be that of a single stream, from Play to Close. TODO(maxmorin):
+  // Move wedge checking code to this class, see also crbug.com/766677.
+  class ErrorStatisticsTracker {
+   public:
+    ErrorStatisticsTracker();
+    ~ErrorStatisticsTracker();
+
+    // Called to indicate an error callback was fired for the stream.
+    void RegisterError();
+
+   private:
+    bool error_during_callback_ = false;
+  };
+
   AudioOutputController(AudioManager* audio_manager, EventHandler* handler,
                         const AudioParameters& params,
                         const std::string& output_device_id,
@@ -242,7 +258,7 @@ class MEDIA_EXPORT AudioOutputController
   // The targets for audio stream to be copied to. |should_duplicate_| is set to
   // 1 when the OnMoreData() call should proxy the data to
   // BroadcastDataToDuplicationTargets().
-  std::set<AudioPushSink*> duplication_targets_;
+  base::flat_set<AudioPushSink*> duplication_targets_;
   base::AtomicRefCount should_duplicate_;
 
   // The current volume of the audio stream.
@@ -262,6 +278,8 @@ class MEDIA_EXPORT AudioOutputController
 
   // Updated each time a power measurement is logged.
   base::TimeTicks last_audio_level_log_time_;
+
+  base::Optional<ErrorStatisticsTracker> stats_tracker_;
 
   // Flags when we've asked for a stream to start but it never did.
   base::AtomicRefCount on_more_io_data_called_;

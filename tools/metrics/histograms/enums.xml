@@ -1670,6 +1670,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Audio and silence"/>
 </enum>
 
+<enum name="AudioOutputStreamCreationResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Failed to create stream"/>
+  <int value="2" label="Failed to open stream"/>
+</enum>
+
 <enum name="AudioRendererEvents">
   <int value="0" label="Initialized"/>
   <int value="1" label="Runtime error"/>
