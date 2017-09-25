@@ -20,6 +20,7 @@
 #include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/service_worker_modes.h"
 #include "net/base/request_priority.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -137,7 +138,8 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
   int SetUpRequestPeer(std::unique_ptr<ResourceRequest> request,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        std::move(request), 0, nullptr, url::Origin(), false,
+        std::move(request), 0, nullptr, url::Origin(),
+        TRAFFIC_ANNOTATION_FOR_TESTS, false,
         base::MakeUnique<TestRequestPeer>(context, message_loop_.task_runner()),
         blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),

@@ -9,6 +9,7 @@
 #include "content/child/resource_dispatcher.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class WaitableEvent;
@@ -34,6 +35,7 @@ class SyncLoadContext : public RequestPeer {
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
       const url::Origin& frame_origin,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactoryPtrInfo url_loader_factory_pipe,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
