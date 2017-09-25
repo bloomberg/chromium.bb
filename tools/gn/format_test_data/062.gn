@@ -110,3 +110,13 @@ sources += [
   "srtp/crypto/rng/prng.c",
   "srtp/crypto/rng/rand_source.c",
 ]
+
+# Try "public" too. It should be treated the same.
+public = [
+  # Let's sort
+  "this", "into", "word", "salad",
+
+  # But leave
+  "these", "two"
+  # alone!
+]

@@ -115,3 +115,18 @@ sources += [
   "srtp/srtp/ekt.c",
   "srtp/srtp/srtp.c",
 ]
+
+# Try "public" too. It should be treated the same.
+public = [
+  # Let's sort
+  "into",
+  "salad",
+  "this",
+  "word",
+
+  # But leave
+  "these",
+  "two",
+
+  # alone!
+]
