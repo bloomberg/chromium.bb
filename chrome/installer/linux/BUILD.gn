@@ -68,7 +68,7 @@ action_foreach("calculate_deb_dependencies") {
   sources = packaging_files_binaries
   inputs = [
     "debian/deb_version.py",
-    "debian/dist-package-versions.json",
+    "debian/dist_package_versions.json",
     "debian/package_version_interval.py",
   ]
   outputs = [
@@ -114,7 +114,7 @@ action_foreach("calculate_rpm_dependencies") {
   script = "rpm/calculate_package_deps.py"
   sources = packaging_files_binaries
   inputs = [
-    "rpm/dist-package-provides.json",
+    "rpm/dist_package_provides.json",
   ]
   outputs = [
     "$root_out_dir/rpm_{{source_name_part}}.deps",
@@ -156,7 +156,7 @@ action("strip_chrome_binary") {
   deps = [
     "//chrome",
   ]
-  script = "strip-chrome-binary.py"
+  script = "strip_chrome_binary.py"
   sources = [
     prog_name,
   ]

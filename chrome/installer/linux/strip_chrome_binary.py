@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 if len(sys.argv) != 5:
-  print ("Usage: strip-chrome-binary.py /path/to/eu-strip /path/to/chrome"
+  print ("Usage: strip_chrome_binary.py /path/to/eu-strip /path/to/chrome"
          "/path/to/chrome.debug /path/to/chrome.stripped")
   sys.exit(1)
 eu_strip = sys.argv[1]
