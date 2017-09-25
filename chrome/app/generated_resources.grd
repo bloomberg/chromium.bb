@@ -5284,6 +5284,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">
         Search Google or type URL
       </message>
+      <message name="IDS_CLICK_TO_VIEW_DOODLE" desc="Prompts users to click on an icon to view a Google doodle. Normally, today's Google doodle is shown when the user opens a new tab (if there is a doodle today). If there is a doodle, but it cannot be shown, Chrome puts an icon next to the regular Google logo. The icon uses this label for accessibility. If the user clicks the icon, Chrome will show the doodle.">
+        Click to view today’s doodle
+      </message>
       <message name="IDS_OMNIBOX_ACCESSIBLE_ANSWER" desc="Readable text represening a query typed by the user in the omnibox, followed by an indication that an answer to that query will follow, followed by the answer. The commas are significant as they will introduce a pause in the spoken text.">
         <ph name="QUERY">$1<ex>weather in los angeles</ex></ph>, answer, <ph name="ANSWER">$2<ex>sunny and 84 degrees</ex></ph>
       </message>
