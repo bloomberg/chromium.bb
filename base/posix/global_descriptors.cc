@@ -33,7 +33,7 @@ int GlobalDescriptors::Get(Key key) const {
   const int ret = MaybeGet(key);
 
   if (ret == -1)
-    DLOG(FATAL) << "Unknown global descriptor: " << key;
+    DLOG(DCHECK) << "Unknown global descriptor: " << key;
   return ret;
 }
 
@@ -86,7 +86,7 @@ base::MemoryMappedFile::Region GlobalDescriptors::GetRegion(Key key) const {
     if (i.key == key)
       return i.region;
   }
-  DLOG(FATAL) << "Unknown global descriptor: " << key;
+  DLOG(DCHECK) << "Unknown global descriptor: " << key;
   return base::MemoryMappedFile::Region::kWholeFile;
 }
 
