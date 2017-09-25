@@ -90,6 +90,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         performAction:grey_typeText(@"chrome://newtab/#most_visited\n")];
   }
 
+  // Clear the pasteboard in case there is a URL copied, triggering an omnibox
+  // suggestion.
+  UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
+  [pasteboard setValue:@"" forPasteboardType:UIPasteboardNameGeneral];
+
   [self closeAllTabs];
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
