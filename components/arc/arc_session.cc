@@ -514,10 +514,8 @@ void ArcSessionImpl::OnMojoConnected(
   arc_bridge_host_ = base::MakeUnique<ArcBridgeHostImpl>(arc_bridge_service_,
                                                          std::move(instance));
 
-  VLOG(2) << "Mojo is connected. ARC is running.";
+  VLOG(0) << "ARC ready.";
   state_ = State::RUNNING;
-  for (auto& observer : observer_list_)
-    observer.OnSessionReady();
 }
 
 void ArcSessionImpl::Stop() {

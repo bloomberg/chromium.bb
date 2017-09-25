@@ -27,9 +27,6 @@ class ArcSession {
   // Observer to notify events corresponding to one ARC session run.
   class Observer {
    public:
-    // Called when the connection with ARC instance has been established.
-    virtual void OnSessionReady() = 0;
-
     // Called when ARC instance is stopped. This is called exactly once
     // per instance which is Start()ed.
     // |was_running| is true, if the stopped instance was fully set up
@@ -46,17 +43,15 @@ class ArcSession {
   virtual ~ArcSession();
 
   // Starts an instance for login screen. The instance is not a fully functional
-  // one, and Observer::OnSessionReady() will *never* be called.
+  // one.
   virtual void StartForLoginScreen() = 0;
 
   // Returns true if StartForLoginScreen() has been called but Start() hasn't.
   virtual bool IsForLoginScreen() = 0;
 
-  // Starts and bootstraps a connection with the instance. The Observer's
-  // OnSessionReady() will be called if the bootstrapping is successful, or
-  // OnSessionStopped() if it is not. Start() should not be called twice or
-  // more. When StartForLoginScreen() has already been called, Start() turns
-  // the mini instance to a fully functional one.
+  // Starts and bootstraps a connection with the instance. Start() should not
+  // be called twice or more. When StartForLoginScreen() has already been
+  // called, Start() turns the mini instance to a fully functional one.
   virtual void Start() = 0;
 
   // Requests to stop the currently-running instance whether or not it is for
