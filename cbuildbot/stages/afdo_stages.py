@@ -74,7 +74,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
       raise
 
 
-class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
+class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
   """Updates the Chrome ebuild with the names of the AFDO profiles."""
 
   def PerformStage(self):

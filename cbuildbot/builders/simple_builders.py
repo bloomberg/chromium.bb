@@ -367,7 +367,7 @@ class SimpleBuilder(generic_builders.Builder):
 
           if (builder_run.config.afdo_generate_min and
               builder_run.config.afdo_update_ebuild):
-            self._RunStage(afdo_stages.AFDOUpdateEbuildStage,
+            self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage,
                            builder_run=builder_run)
 
         # Kick off our background stages.
@@ -497,15 +497,15 @@ class DistributedBuilder(SimpleBuilder):
     updateEbuild_successful = False
     try:
       # When (afdo_update_ebuild and not afdo_generate_min) is True,
-      # if completion_stage passed, need to run AFDOUpdateEbuildStage to
-      # prepare for pushing commits to masters;
+      # if completion_stage passed, need to run
+      # AFDOUpdateChromeEbuildStage to prepare for pushing commits to masters;
       # if it's a master_chrome_pfq build and compeletion_stage failed,
-      # need to run AFDOUpdateEbuildStage to prepare for pushing commits
+      # need to run AFDOUpdateChromeEbuildStage to prepare for pushing commits
       # to a staging branch.
       if ((completion_successful or is_master_chrome_pfq) and
           self._run.config.afdo_update_ebuild and
           not self._run.config.afdo_generate_min):
-        self._RunStage(afdo_stages.AFDOUpdateEbuildStage)
+        self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage)
         updateEbuild_successful = True
     finally:
       if self._run.config.master:
@@ -522,7 +522,7 @@ class DistributedBuilder(SimpleBuilder):
                          'build_finished=%d', was_build_successful,
                          completion_successful, build_finished)
         # If this build is master chrome pfq, completion_stage failed,
-        # AFDOUpdateEbuildStage passed, and the necessary build stages
+        # AFDOUpdateChromeEbuildStage passed, and the necessary build stages
         # passed, it means publish is False and we need to stage the
         # push to another branch instead of master.
         stage_push = (is_master_chrome_pfq and

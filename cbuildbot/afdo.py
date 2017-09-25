@@ -261,6 +261,44 @@ def PatchChromeEbuildAFDOFile(ebuild_file, arch_profiles):
   os.rename(modified_ebuild, original_ebuild)
 
 
+def UpdateManifest(ebuild_file, ebuild_prog='ebuild'):
+  """Regenerate the Manifest file.
+
+  Args:
+    ebuild_file: path to the ebuild file
+    ebuild_prog: the ebuild command; can be board specific
+  """
+  ebuild_gs_dir = None
+  # If using the GS test location, pass this location to the
+  # chrome ebuild.
+  if _gsurls['base'] == _gsurls['test']:
+    ebuild_gs_dir = {'AFDO_GS_DIRECTORY': _gsurls['test']}
+  gen_manifest_cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
+  cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
+                            extra_env=ebuild_gs_dir, print_cmd=True)
+
+
+def CommitIfChanged(ebuild_dir, message):
+  """If there are changes to ebuild or Manifest, commit them.
+
+  Args:
+    ebuild_dir: the path to the directory of ebuild in the chroot
+    message: commit message
+  """
+  # Check if anything changed compared to the previous version.
+  modifications = git.RunGit(ebuild_dir,
+                             ['status', '--porcelain', '-uno'],
+                             capture_output=True, print_cmd=True).output
+  if not modifications:
+    logging.info('AFDO info for the ebuilds did not change. '
+                 'Nothing to commit')
+    return
+
+  git.RunGit(ebuild_dir,
+             ['commit', '-a', '-m', '"%s"' % message],
+             print_cmd=True)
+
+
 def UpdateChromeEbuildAFDOFile(board, arch_profiles):
   """Update chrome ebuild with the dictionary of {arch: afdo_file} pairs.
 
@@ -297,36 +335,10 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
                              'chromeos-chrome-9999.ebuild')
   PatchChromeEbuildAFDOFile(ebuild_9999, arch_profiles)
 
-  # Regenerate the Manifest file.
-  ebuild_gs_dir = None
-  # If using the GS test location, pass this location to the
-  # chrome ebuild.
-  if _gsurls['base'] == _gsurls['test']:
-    ebuild_gs_dir = {'AFDO_GS_DIRECTORY': _gsurls['test']}
-  gen_manifest_cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
-  cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
-                            extra_env=ebuild_gs_dir, print_cmd=True)
+  UpdateManifest(ebuild_9999, ebuild_prog)
 
   ebuild_dir = path_util.FromChrootPath(os.path.dirname(ebuild_file))
-  git.RunGit(ebuild_dir, ['add', 'Manifest'])
-
-  # Check if anything changed compared to the previous version.
-  mod_files = ['Manifest', os.path.basename(ebuild_file),
-               os.path.basename(ebuild_9999)]
-  modifications = git.RunGit(ebuild_dir,
-                             ['status', '--porcelain', '--'] + mod_files,
-                             capture_output=True, print_cmd=True).output
-  if not modifications:
-    logging.info('AFDO info for the Chrome ebuild did not change. '
-                 'Nothing to commit')
-    return
-
-  # If there are changes to ebuild or Manifest, commit them.
-  commit_msg = ('"Set {arch: afdo_file} pairs %s and updated Manifest"'
-                % arch_profiles)
-  git.RunGit(ebuild_dir,
-             ['commit', '-m', commit_msg, '--'] + mod_files,
-             print_cmd=True)
+  CommitIfChanged(ebuild_dir, "Update profiles and manifests for Chrome.")
 
 
 def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
