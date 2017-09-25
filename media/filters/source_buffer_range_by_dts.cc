@@ -484,10 +484,8 @@ bool SourceBufferRangeByDts::GetBuffersInRange(DecodeTimestamp start,
         buffer->duration() <= base::TimeDelta()) {
       return false;
     }
-    if (buffer->end_of_stream() ||
-        buffer->timestamp() >= end.ToPresentationTime()) {
+    if (buffer->timestamp() >= end.ToPresentationTime())
       break;
-    }
 
     if (buffer->timestamp() + buffer->duration() <= start.ToPresentationTime())
       continue;
