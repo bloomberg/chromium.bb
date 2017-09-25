@@ -94,6 +94,7 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -305,6 +306,42 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
                                                   std::move(callback));
   }
 }
+
+class CloseAfterCommit : public ui::CompositorObserver,
+                         public views::WidgetObserver {
+ public:
+  explicit CloseAfterCommit(views::Widget* widget) : widget_(widget) {
+    widget->GetCompositor()->AddObserver(this);
+    widget_->AddObserver(this);
+  }
+  ~CloseAfterCommit() override {
+    widget_->RemoveObserver(this);
+    widget_->GetCompositor()->RemoveObserver(this);
+  }
+
+  // ui::CompositorObserver:
+  void OnCompositingDidCommit(ui::Compositor* compositor) override {
+    DCHECK_EQ(widget_->GetCompositor(), compositor);
+    widget_->Close();
+  }
+
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override {}
+  void OnCompositingEnded(ui::Compositor* compositor) override {}
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
+
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override {
+    DCHECK_EQ(widget, widget_);
+    delete this;
+  }
+
+ private:
+  views::Widget* const widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseAfterCommit);
+};
 
 }  // namespace
 
@@ -1228,7 +1265,15 @@ void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   }
 
   if (login_window_) {
-    login_window_->Close();
+    if (ash_util::IsRunningInMash()) {
+      login_window_->Close();
+    } else {
+      login_window_->Hide();
+      // This CompositorObserver becomes "owned" by login_window_ after
+      // construction and will delete itself once login_window_ is destroyed.
+      new CloseAfterCommit(login_window_);
+    }
+    login_window_->RemoveRemovalsObserver(this);
     login_window_ = nullptr;
     login_window_delegate_ = nullptr;
   }
