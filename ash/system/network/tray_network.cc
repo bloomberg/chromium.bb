@@ -98,14 +98,8 @@ class NetworkTrayView : public TrayItemView,
       network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
     else
       network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-    // Update accessibility.
-    const NetworkState* connected_network = GetConnectedNetwork();
-    if (connected_network) {
-      UpdateConnectionStatus(base::UTF8ToUTF16(connected_network->name()),
-                             true);
-    } else {
-      UpdateConnectionStatus(base::string16(), false);
-    }
+
+    UpdateConnectionStatus(GetConnectedNetwork());
   }
 
   // views::View:
@@ -119,12 +113,44 @@ class NetworkTrayView : public TrayItemView,
 
  private:
   // Updates connection status and notifies accessibility event when necessary.
-  void UpdateConnectionStatus(const base::string16& network_name,
-                              bool connected) {
+  void UpdateConnectionStatus(const NetworkState* connected_network) {
+    using SignalStrength = network_icon::SignalStrength;
+
     base::string16 new_connection_status_string;
-    if (connected) {
+    if (connected_network) {
       new_connection_status_string = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, network_name);
+          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
+          base::UTF8ToUTF16(connected_network->name()));
+
+      // Retrieve the string describing the signal strength, if it is applicable
+      // to |connected_network|.
+      base::string16 signal_strength_string;
+      switch (network_icon::GetSignalStrengthForNetwork(connected_network)) {
+        case SignalStrength::NOT_WIRELESS:
+          break;
+        case SignalStrength::WEAK:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK);
+          break;
+        case SignalStrength::MEDIUM:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM);
+          break;
+        case SignalStrength::STRONG:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+
+      if (!signal_strength_string.empty()) {
+        new_connection_status_string = l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
+            base::UTF8ToUTF16(connected_network->name()),
+            signal_strength_string);
+      }
     }
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;

@@ -52,6 +52,10 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
         base::MakeUnique<chromeos::NetworkState>("wifiTetherServicePath");
     wifi_tether_network_->set_type(shill::kTypeWifi);
     wifi_tether_network_.get()->set_tether_guid("tetherNetworkGuid");
+
+    ethernet_network_ =
+        base::MakeUnique<chromeos::NetworkState>("ethernetNetworkPath");
+    ethernet_network_->set_type(shill::kTypeEthernet);
   }
 
   void TearDown() override {
@@ -123,6 +127,7 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
   // A network whose type is shill::kTypeWifi, but which is associated with
   // a Tether network via its Tether network ID.
   std::unique_ptr<chromeos::NetworkState> wifi_tether_network_;
+  std::unique_ptr<chromeos::NetworkState> ethernet_network_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkIconTest);
@@ -199,6 +204,35 @@ TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
       handler_->GetScanningByType(chromeos::NetworkTypePattern::Cellular()));
 
   EXPECT_EQ(IDS_ASH_STATUS_TRAY_MOBILE_SCANNING, GetCellularUninitializedMsg());
+}
+
+TEST_F(NetworkIconTest, NetworkSignalStrength) {
+  using ss = SignalStrength;
+
+  // Verify non-wirless network types return SignalStrength::NOT_WIRELESS, and
+  // wireless network types return something other than
+  // SignalStrength::NOT_WIRELESS.
+  EXPECT_EQ(ss::NOT_WIRELESS,
+            GetSignalStrengthForNetwork(ethernet_network_.get()));
+  EXPECT_NE(ss::NOT_WIRELESS, GetSignalStrengthForNetwork(wifi_network_.get()));
+
+  // Signal strength is divided into three categories: weak, medium and strong.
+  // They are meant to match the number of sections in the wifi icon. The wifi
+  // icon currently has four levels; signals [0, 100] are mapped to [1, 4].
+  // There are only three signal strengths so icons that were mapped to 2 are
+  // also considered weak.
+  wifi_network_->set_signal_strength(0);
+  EXPECT_EQ(ss::WEAK, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(49);
+  EXPECT_EQ(ss::WEAK, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(50);
+  EXPECT_EQ(ss::MEDIUM, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(74);
+  EXPECT_EQ(ss::MEDIUM, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(75);
+  EXPECT_EQ(ss::STRONG, GetSignalStrengthForNetwork(wifi_network_.get()));
+  wifi_network_->set_signal_strength(100);
+  EXPECT_EQ(ss::STRONG, GetSignalStrengthForNetwork(wifi_network_.get()));
 }
 
 }  // namespace network_icon

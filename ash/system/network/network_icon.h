@@ -32,6 +32,9 @@ enum IconType {
 // if a new type gets added).
 enum ImageType { ARCS, BARS, NONE };
 
+// Strength of a wireless signal.
+enum class SignalStrength { WEAK, MEDIUM, STRONG, NOT_WIRELESS };
+
 // Depicts a given signal strength using arcs (e.g. for WiFi connections) or
 // bars (e.g. for cell connections).
 class SignalStrengthImageSource : public gfx::CanvasImageSource {
@@ -112,6 +115,12 @@ ASH_EXPORT void GetDefaultNetworkImageAndLabel(IconType icon_type,
 // from the global NetworkStateHandler instance and removes cached entries
 // that are no longer in the list.
 ASH_EXPORT void PurgeNetworkIconCache();
+
+// Called by ChromeVox to give a verbal indication of the network icon. Returns
+// the signal strength of |network|, if it is a network type with a signal
+// strength.
+ASH_EXPORT SignalStrength
+GetSignalStrengthForNetwork(const chromeos::NetworkState* network);
 
 }  // namespace network_icon
 }  // namespace ash

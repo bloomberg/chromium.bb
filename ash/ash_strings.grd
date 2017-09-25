@@ -882,6 +882,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED" desc="Message for the network tray tooltip and network list when connected to a network.">
         Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE" desc="The accessible message for when connected to a network.">
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>, <ph name="STRENGTH">$2<ex>Weak signal.</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Message for the network tray tooltip and network list when connecting to a network.">
         Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
@@ -905,6 +908,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED" desc="Tooltip in network list when no network is prohibited by policy.">
         This network is disabled by your administrator.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK" desc="Accessibility text for the network status tray when the connected network has a weak signal.">
+        Weak signal
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM" desc="Accessibility text for the network status tray when the connected network has a medium signal.">
+        Medium signal
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG" desc="Accessibility text for the network status tray when the connected network has a strong signal.">
+        Strong signal
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
