@@ -320,12 +320,11 @@
         }
         // Escape null characters, otherwise diff will think the file is binary.
         text = text.replace(/\0/g, '\\0');
-        // Escape carriage returns as they break rietveld's difftools.
-        // TODO(qyearsley): Remove this; we are no longer using Rietveld,
-        // so escaping carriage returns should now be unnecessary.
+        // Escape some special characters to improve readability of the output.
         text = text.replace(/\r/g, '\\r');
-        // Replace machine-dependent path with "...".
+        text = text.replace(/\n/g, '\\n');
 
+        // Replace machine-dependent path with "...".
         if (localPathRegExp) {
             text = text.replace(localPathRegExp, '...');
         }
