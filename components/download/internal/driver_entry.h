@@ -48,6 +48,11 @@ struct DriverEntry {
   // If the download is paused.
   bool paused;
 
+  // Whether the download is resumable. Determined by whether "Accept-Ranges" or
+  // "Content-Range" is present in the response headers and if it has strong
+  // validators. If false, the download may not be resumable.
+  bool can_resume;
+
   // The number of bytes downloaded.
   uint64_t bytes_downloaded;
 

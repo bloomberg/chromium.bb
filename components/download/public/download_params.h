@@ -52,11 +52,11 @@ struct SchedulingParams {
 
   enum class Priority {
     // The lowest priority.  Requires that the device is idle or Chrome is
-    // running.
+    // running. Gets paused or postponed during on-going navigation.
     LOW = 0,
 
     // The normal priority.  Requires that the device is idle or Chrome is
-    // running.
+    // running. Gets paused or postponed during on-going navigation.
     NORMAL = 1,
 
     // The highest background priority.  Does not require the device to be idle.

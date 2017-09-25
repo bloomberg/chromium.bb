@@ -11,6 +11,7 @@ namespace download {
 DriverEntry::DriverEntry()
     : state(State::UNKNOWN),
       paused(false),
+      can_resume(true),
       bytes_downloaded(0u),
       expected_total_size(0u) {}
 

@@ -6,7 +6,9 @@
 #define COMPONENTS_DOWNLOAD_INTERNAL_STATS_H_
 
 #include "base/files/file.h"
+#include "base/optional.h"
 #include "components/download/internal/controller.h"
+#include "components/download/internal/driver_entry.h"
 #include "components/download/internal/entry.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/download_params.h"
@@ -148,6 +150,13 @@ void LogRecoveryOperation(Entry::State to_state);
 // Logs download completion event, download time, and the file size.
 void LogDownloadCompletion(CompletionType type,
                            uint64_t file_size_bytes);
+
+// Logs various pause reasons for download. The reasons are not mutually
+// exclusive.
+void LogDownloadPauseReason(bool unmet_device_criteria,
+                            bool pause_by_client,
+                            bool external_navigation,
+                            bool external_download);
 
 // Logs statistics about the result of a model operation.  Used to track failure
 // cases.

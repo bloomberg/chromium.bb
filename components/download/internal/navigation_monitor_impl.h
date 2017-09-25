@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_NAVIGATION_MONITOR_IMPL_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_NAVIGATION_MONITOR_IMPL_H_
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/download/public/navigation_monitor.h"
 
 namespace download {
@@ -18,9 +20,27 @@ class NavigationMonitorImpl : public NavigationMonitor {
   // NavigationMonitor implementation.
   void SetObserver(NavigationMonitor::Observer* observer) override;
   void OnNavigationEvent(NavigationEvent event) override;
+  bool IsNavigationInProgress() const override;
+  void Configure(base::TimeDelta navigation_completion_delay,
+                 base::TimeDelta navigation_timeout_delay) override;
 
  private:
-  NavigationMonitor::Observer* observer_ = nullptr;
+  void NotifyNavigationFinished();
+  void ScheduleBackupTask();
+  void OnNavigationFinished();
+
+  NavigationMonitor::Observer* observer_;
+
+  int current_navigation_count_;
+
+  base::CancelableClosure navigation_finished_callback_;
+
+  base::CancelableClosure backup_navigation_finished_callback_;
+
+  base::TimeDelta navigation_completion_delay_;
+  base::TimeDelta navigation_timeout_delay_;
+
+  base::WeakPtrFactory<NavigationMonitorImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMonitorImpl);
 };
