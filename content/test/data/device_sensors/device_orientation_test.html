@@ -2,13 +2,12 @@
   <head>
     <title>DeviceOrientation test</title>
     <script type="text/javascript">
-      var eventCount = 0;
-
       function checkOrientationEvent(event) {
         // Return true iff the orientation is close enough to (1, 2, 3).
         return Math.abs(event.alpha - 1) < 0.01 &&
                Math.abs(event.beta  - 2) < 0.01 &&
-               Math.abs(event.gamma - 3) < 0.01;
+               Math.abs(event.gamma - 3) < 0.01 &&
+               event.absolute == false;
       }
 
       function onOrientation(event) {
