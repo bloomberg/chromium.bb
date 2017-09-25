@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_COOKIE_MANAGER_TRAITS_H_
-#define CONTENT_COMMON_COOKIE_MANAGER_TRAITS_H_
+#ifndef CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#define CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
 
 #include "content/public/common/cookie_manager.mojom.h"
 #include "ipc/ipc_message_utils.h"
@@ -106,4 +106,4 @@ struct StructTraits<content::mojom::CanonicalCookieDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_COOKIE_MANAGER_TRAITS_H_
+#endif  // CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
