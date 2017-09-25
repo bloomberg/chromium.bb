@@ -28,9 +28,9 @@ namespace policy {
 namespace {
 
 // Subdirectories that contain the mandatory and recommended policies.
-const base::FilePath::CharType kMandatoryConfigDir[] =
+constexpr base::FilePath::CharType kMandatoryConfigDir[] =
     FILE_PATH_LITERAL("managed");
-const base::FilePath::CharType kRecommendedConfigDir[] =
+constexpr base::FilePath::CharType kRecommendedConfigDir[] =
     FILE_PATH_LITERAL("recommended");
 
 PolicyLoadStatus JsonErrorToPolicyLoadStatus(int status) {
@@ -93,9 +93,8 @@ std::unique_ptr<PolicyBundle> ConfigDirPolicyLoader::Load() {
 }
 
 base::Time ConfigDirPolicyLoader::LastModificationTime() {
-  static const base::FilePath::CharType* kConfigDirSuffixes[] = {
-    kMandatoryConfigDir,
-    kRecommendedConfigDir,
+  static constexpr const base::FilePath::CharType* kConfigDirSuffixes[] = {
+      kMandatoryConfigDir, kRecommendedConfigDir,
   };
 
   base::Time last_modification = base::Time();

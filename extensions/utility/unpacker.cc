@@ -48,7 +48,7 @@ namespace keys = manifest_keys;
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
 
-static const base::FilePath::CharType* kAllowedThemeFiletypes[] = {
+constexpr const base::FilePath::CharType* kAllowedThemeFiletypes[] = {
     FILE_PATH_LITERAL(".bmp"),  FILE_PATH_LITERAL(".gif"),
     FILE_PATH_LITERAL(".jpeg"), FILE_PATH_LITERAL(".jpg"),
     FILE_PATH_LITERAL(".json"), FILE_PATH_LITERAL(".png"),

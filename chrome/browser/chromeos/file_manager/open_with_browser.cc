@@ -43,23 +43,15 @@ const base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL(".pdf");
 const base::FilePath::CharType kSwfExtension[] = FILE_PATH_LITERAL(".swf");
 
 // List of file extensions viewable in the browser.
-const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
-  FILE_PATH_LITERAL(".bmp"),
-  FILE_PATH_LITERAL(".ico"),
-  FILE_PATH_LITERAL(".jpg"),
-  FILE_PATH_LITERAL(".jpeg"),
-  FILE_PATH_LITERAL(".png"),
-  FILE_PATH_LITERAL(".webp"),
-  FILE_PATH_LITERAL(".gif"),
-  FILE_PATH_LITERAL(".txt"),
-  FILE_PATH_LITERAL(".html"),
-  FILE_PATH_LITERAL(".htm"),
-  FILE_PATH_LITERAL(".mhtml"),
-  FILE_PATH_LITERAL(".mht"),
-  FILE_PATH_LITERAL(".xhtml"),
-  FILE_PATH_LITERAL(".xht"),
-  FILE_PATH_LITERAL(".shtml"),
-  FILE_PATH_LITERAL(".svg"),
+constexpr const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
+    FILE_PATH_LITERAL(".bmp"),   FILE_PATH_LITERAL(".ico"),
+    FILE_PATH_LITERAL(".jpg"),   FILE_PATH_LITERAL(".jpeg"),
+    FILE_PATH_LITERAL(".png"),   FILE_PATH_LITERAL(".webp"),
+    FILE_PATH_LITERAL(".gif"),   FILE_PATH_LITERAL(".txt"),
+    FILE_PATH_LITERAL(".html"),  FILE_PATH_LITERAL(".htm"),
+    FILE_PATH_LITERAL(".mhtml"), FILE_PATH_LITERAL(".mht"),
+    FILE_PATH_LITERAL(".xhtml"), FILE_PATH_LITERAL(".xht"),
+    FILE_PATH_LITERAL(".shtml"), FILE_PATH_LITERAL(".svg"),
 };
 
 // Returns true if |file_path| is viewable in the browser (ex. HTML file).

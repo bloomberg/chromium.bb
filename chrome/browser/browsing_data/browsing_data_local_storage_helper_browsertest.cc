@@ -35,23 +35,23 @@ using content::BrowserThread;
 using content::DOMStorageContext;
 
 namespace {
-typedef
-    BrowsingDataHelperCallback<BrowsingDataLocalStorageHelper::LocalStorageInfo>
-        TestCompletionCallback;
 
-const base::FilePath::CharType kTestFile0[] =
+using TestCompletionCallback = BrowsingDataHelperCallback<
+    BrowsingDataLocalStorageHelper::LocalStorageInfo>;
+
+constexpr base::FilePath::CharType kTestFile0[] =
     FILE_PATH_LITERAL("http_www.chromium.org_0.localstorage");
 
 const char kOriginOfTestFile0[] = "http://www.chromium.org/";
 
-const base::FilePath::CharType kTestFile1[] =
+constexpr base::FilePath::CharType kTestFile1[] =
     FILE_PATH_LITERAL("http_www.google.com_0.localstorage");
 
-const base::FilePath::CharType kTestFileInvalid[] =
+constexpr base::FilePath::CharType kTestFileInvalid[] =
     FILE_PATH_LITERAL("http_www.google.com_localstorage_0.foo");
 
 // This is only here to test that extension state is not listed by the helper.
-const base::FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
+constexpr base::FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
     "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0.localstorage");
 
 class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
@@ -62,9 +62,8 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
     // stores data in the host file system.
     base::FilePath storage_path = GetLocalStoragePathForTestingProfile();
     base::CreateDirectory(storage_path);
-    const base::FilePath::CharType* kFilesToCreate[] = {
-        kTestFile0, kTestFile1, kTestFileInvalid, kTestFileExtension
-    };
+    static constexpr const base::FilePath::CharType* kFilesToCreate[] = {
+        kTestFile0, kTestFile1, kTestFileInvalid, kTestFileExtension};
     for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
       base::FilePath file_path = storage_path.Append(kFilesToCreate[i]);
       base::WriteFile(file_path, nullptr, 0);
@@ -192,4 +191,5 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(origin, result.begin()->origin_url);
 }
+
 }  // namespace

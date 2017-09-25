@@ -226,8 +226,8 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesOnlyReserved) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  const base::FilePath::CharType* folders[] = {
-      extensions::kLocaleFolder, extensions::kPlatformSpecificFolder};
+  static const base::FilePath::CharType* const folders[] = {
+      kLocaleFolder, kPlatformSpecificFolder};
 
   for (size_t i = 0; i < arraysize(folders); i++) {
     base::FilePath src_path = temp.GetPath().Append(folders[i]);
@@ -242,7 +242,7 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  base::FilePath src_path = temp.GetPath().Append(extensions::kLocaleFolder);
+  base::FilePath src_path = temp.GetPath().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
 
   src_path = temp.GetPath().AppendASCII("_some_dir");
@@ -338,7 +338,7 @@ TEST_F(FileUtilTest, ValidateThemeUTF8) {
       kManifest, temp.GetPath(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
-  std::vector<extensions::InstallWarning> warnings;
+  std::vector<InstallWarning> warnings;
   EXPECT_TRUE(file_util::ValidateExtension(extension.get(), &error, &warnings))
       << error;
   EXPECT_EQ(0U, warnings.size());
@@ -358,7 +358,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   scripts->AppendString("foo.js");
 
   std::string error;
-  std::vector<extensions::InstallWarning> warnings;
+  std::vector<InstallWarning> warnings;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
       *value, temp.GetPath(), Manifest::UNPACKED, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
@@ -470,7 +470,7 @@ TEST_F(FileUtilTest, WarnOnPrivateKey) {
   ASSERT_EQ(1u, extension->install_warnings().size());
   EXPECT_THAT(extension->install_warnings(),
               testing::ElementsAre(testing::Field(
-                  &extensions::InstallWarning::message,
+                  &InstallWarning::message,
                   testing::ContainsRegex(
                       "extension includes the key file.*ext_root.a_key.pem"))));
 
@@ -542,8 +542,7 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
     GURL url(test_cases[i].url);
     base::FilePath expected_path =
         base::FilePath::FromUTF8Unsafe(test_cases[i].expected_relative_path);
-    base::FilePath actual_path =
-        extensions::file_util::ExtensionURLToRelativeFilePath(url);
+    base::FilePath actual_path = file_util::ExtensionURLToRelativeFilePath(url);
     EXPECT_FALSE(actual_path.IsAbsolute()) <<
       " For the path " << actual_path.value();
     EXPECT_EQ(expected_path.value(), actual_path.value()) <<
