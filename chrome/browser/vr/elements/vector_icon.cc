@@ -4,8 +4,9 @@
 
 #include "chrome/browser/vr/elements/vector_icon.h"
 
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
 
@@ -14,11 +15,13 @@ void DrawVectorIcon(gfx::Canvas* canvas,
                     float size_px,
                     const gfx::PointF& corner,
                     SkColor color) {
-  // TODO(cjgrant): Use CreateVectorIcon() when threading issues are resolved.
-  canvas->Save();
+  gfx::ScopedCanvas scoped(canvas);
   canvas->Translate({corner.x(), corner.y()});
-  PaintVectorIcon(canvas, icon, size_px, color);
-  canvas->Restore();
+
+  // Explicitly cut out the 1x version of the icon, as PaintVectorIcon draws the
+  // 1x version if device scale factor isn't set. See crbug.com/749146.
+  gfx::VectorIcon icon_no_1x{icon.path, nullptr};
+  PaintVectorIcon(canvas, icon_no_1x, size_px, color);
 }
 
 }  // namespace vr
