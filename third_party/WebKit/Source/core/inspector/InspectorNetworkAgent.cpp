@@ -197,7 +197,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
  private:
   void Dispose() {
-    raw_data_.Clear();
+    raw_data_ = nullptr;
     delete this;
   }
 

@@ -195,7 +195,7 @@ void LayoutMenuList::UpdateFromElement() {
   HTMLSelectElement* select = SelectElement();
   HTMLOptionElement* option = select->OptionToBeShown();
   String text = g_empty_string;
-  option_style_.Clear();
+  option_style_ = nullptr;
 
   if (select->IsMultiple()) {
     unsigned selected_count = 0;

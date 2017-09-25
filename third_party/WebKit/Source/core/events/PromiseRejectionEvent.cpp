@@ -32,7 +32,7 @@ void PromiseRejectionEvent::Dispose() {
   // (and touch the ScopedPersistents) after Oilpan starts lazy sweeping.
   promise_.Clear();
   reason_.Clear();
-  world_.Clear();
+  world_ = nullptr;
 }
 
 ScriptPromise PromiseRejectionEvent::promise(ScriptState* script_state) const {

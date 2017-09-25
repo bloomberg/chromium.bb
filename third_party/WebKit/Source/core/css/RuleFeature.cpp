@@ -276,8 +276,8 @@ RuleFeatureSet::~RuleFeatureSet() {
   attribute_invalidation_sets_.clear();
   id_invalidation_sets_.clear();
   pseudo_invalidation_sets_.clear();
-  universal_sibling_invalidation_set_.Clear();
-  nth_invalidation_set_.Clear();
+  universal_sibling_invalidation_set_ = nullptr;
+  nth_invalidation_set_ = nullptr;
 
   is_alive_ = false;
 }
@@ -932,8 +932,8 @@ void RuleFeatureSet::Clear() {
   attribute_invalidation_sets_.clear();
   id_invalidation_sets_.clear();
   pseudo_invalidation_sets_.clear();
-  universal_sibling_invalidation_set_.Clear();
-  nth_invalidation_set_.Clear();
+  universal_sibling_invalidation_set_ = nullptr;
+  nth_invalidation_set_ = nullptr;
   viewport_dependent_media_query_results_.clear();
   device_dependent_media_query_results_.clear();
 }

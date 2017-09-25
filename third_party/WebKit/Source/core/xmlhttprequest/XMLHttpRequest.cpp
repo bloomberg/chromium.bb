@@ -315,7 +315,7 @@ XMLHttpRequest::XMLHttpRequest(
       response_array_buffer_failure_(false) {}
 
 XMLHttpRequest::~XMLHttpRequest() {
-  binary_response_builder_.Clear();
+  binary_response_builder_ = nullptr;
   length_downloaded_to_file_ = 0;
   ReportMemoryUsageToV8();
 }
@@ -442,7 +442,7 @@ Blob* XMLHttpRequest::ResponseBlob() {
         size = binary_response_builder_->size();
         blob_data->SetContentType(
             FinalResponseMIMETypeWithFallback().LowerASCII());
-        binary_response_builder_.Clear();
+        binary_response_builder_ = nullptr;
         ReportMemoryUsageToV8();
       }
       response_blob_ =
@@ -472,7 +472,7 @@ DOMArrayBuffer* XMLHttpRequest::ResponseArrayBuffer() {
       // https://xhr.spec.whatwg.org/#arraybuffer-response allows clearing
       // of the 'received bytes' payload when the response buffer allocation
       // fails.
-      binary_response_builder_.Clear();
+      binary_response_builder_ = nullptr;
       ReportMemoryUsageToV8();
       // Mark allocation as failed; subsequent calls to the accessor must
       // continue to report |null|.
@@ -1244,7 +1244,7 @@ void XMLHttpRequest::ClearResponse() {
 
   // These variables may referred by the response accessors. So, we can clear
   // this only when we clear the response holder variables above.
-  binary_response_builder_.Clear();
+  binary_response_builder_ = nullptr;
   response_array_buffer_.Clear();
   response_array_buffer_failure_ = false;
 

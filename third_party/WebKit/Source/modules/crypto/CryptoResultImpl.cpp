@@ -228,7 +228,7 @@ void CryptoResultImpl::CompleteWithKeyPair(const WebCryptoKey& public_key,
 void CryptoResultImpl::Cancel() {
   DCHECK(cancel_);
   cancel_->Cancel();
-  cancel_.Clear();
+  cancel_ = nullptr;
   ClearResolver();
 }
 

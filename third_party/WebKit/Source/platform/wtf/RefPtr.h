@@ -95,7 +95,6 @@ class RefPtr {
 
   ALWAYS_INLINE T* Get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
-  void Clear();
 
   T& operator*() const { return *ptr_; }
   ALWAYS_INLINE T* operator->() const { return ptr_; }
@@ -108,7 +107,9 @@ class RefPtr {
     return *this;
   }
   RefPtr& operator=(std::nullptr_t) {
-    Clear();
+    T* ptr = ptr_;
+    ptr_ = nullptr;
+    DerefIfNotNull(ptr);
     return *this;
   }
   // This is required by HashMap<RefPtr>>.
@@ -133,13 +134,6 @@ inline T* RefPtr<T>::LeakRef() {
   T* ptr = ptr_;
   ptr_ = nullptr;
   return ptr;
-}
-
-template <typename T>
-inline void RefPtr<T>::Clear() {
-  T* ptr = ptr_;
-  ptr_ = nullptr;
-  DerefIfNotNull(ptr);
 }
 
 template <typename T>

@@ -841,7 +841,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
   RefPtr<StaticBitmapImage> image =
       bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
   EXPECT_FALSE(image->IsTextureBacked());
-  image.Clear();
+  image = nullptr;
 
   // Verify that taking a snapshot did not affect the state of bridge
   EXPECT_FALSE(bridge->IsAccelerated());

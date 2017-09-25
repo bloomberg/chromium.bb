@@ -327,7 +327,7 @@ void ImageResourceContent::ClearImage() {
   // If our Image has an observer, it's always us so we need to clear the back
   // pointer before dropping our reference.
   image_->ClearImageObserver();
-  image_.Clear();
+  image_ = nullptr;
   size_available_ = Image::kSizeUnavailable;
 }
 

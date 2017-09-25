@@ -221,7 +221,7 @@ RefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
   RefPtr<OpenTypeVerticalData> vertical_data =
       OpenTypeVerticalData::Create(platform_data);
   if (!vertical_data->IsOpenType())
-    vertical_data.Clear();
+    vertical_data = nullptr;
   font_vertical_data_cache.Set(key, vertical_data);
   return vertical_data;
 }

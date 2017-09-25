@@ -183,7 +183,7 @@ TEST(HashMapTest, RefPtrAsKey) {
   EXPECT_NE(map.end(), map.find(ptr));
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  ptr.Clear();
+  ptr = nullptr;
   EXPECT_FALSE(is_deleted);
 
   map.erase(raw_ptr);
@@ -207,7 +207,7 @@ TEST(HashMaptest, RemoveAdd) {
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
   EXPECT_EQ(ptr, map.at(1));
 
-  ptr.Clear();
+  ptr = nullptr;
   EXPECT_FALSE(is_deleted);
 
   map.erase(1);
@@ -222,7 +222,7 @@ TEST(HashMaptest, RemoveAdd) {
         WTF::AdoptRef(new DummyRefCounted(is_deleted2));
     map.insert(i, ptr2);
     EXPECT_FALSE(is_deleted2);
-    ptr2.Clear();
+    ptr2 = nullptr;
     EXPECT_FALSE(is_deleted2);
     map.erase(i);
     EXPECT_TRUE(is_deleted2);

@@ -114,14 +114,14 @@ class ImageFrameGeneratorTest : public ::testing::Test,
   void SetFrameCount(size_t count) {
     frame_count_ = count;
     if (count > 1) {
-      generator_.Clear();
+      generator_ = nullptr;
       generator_ = ImageFrameGenerator::Create(FullSize(), true,
                                                ColorBehavior::Ignore(), {});
       UseMockImageDecoderFactory();
     }
   }
   void SetSupportedSizes(std::vector<SkISize> sizes) {
-    generator_.Clear();
+    generator_ = nullptr;
     generator_ = ImageFrameGenerator::Create(
         FullSize(), true, ColorBehavior::Ignore(), std::move(sizes));
     UseMockImageDecoderFactory();

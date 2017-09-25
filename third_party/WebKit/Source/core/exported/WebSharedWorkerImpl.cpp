@@ -92,7 +92,7 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   asked_to_terminate_ = true;
   if (main_script_loader_) {
     main_script_loader_->Cancel();
-    main_script_loader_.Clear();
+    main_script_loader_ = nullptr;
     client_->WorkerScriptLoadFailed();
     delete this;
     return;
@@ -330,7 +330,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       name_, ThreadableLoadingContext::Create(*document), *reporting_proxy_);
   probe::scriptImported(document, main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
-  main_script_loader_.Clear();
+  main_script_loader_ = nullptr;
 
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =

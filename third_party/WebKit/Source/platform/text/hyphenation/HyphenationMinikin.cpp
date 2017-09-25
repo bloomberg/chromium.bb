@@ -146,7 +146,7 @@ RefPtr<Hyphenation> Hyphenation::PlatformGetHyphenation(
   RefPtr<HyphenationMinikin> hyphenation(AdoptRef(new HyphenationMinikin));
   if (hyphenation->OpenDictionary(locale.LowerASCII()))
     return hyphenation;
-  hyphenation.Clear();
+  hyphenation = nullptr;
 
   DEFINE_STATIC_LOCAL(LocaleMap, locale_fallback, (CreateLocaleFallbackMap()));
   const auto& it = locale_fallback.find(locale);

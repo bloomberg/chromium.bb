@@ -199,7 +199,7 @@ void FontResource::NotifyClientsLongLimitExceeded() {
 }
 
 void FontResource::AllClientsAndObserversRemoved() {
-  font_data_.Clear();
+  font_data_ = nullptr;
   Resource::AllClientsAndObserversRemoved();
 }
 

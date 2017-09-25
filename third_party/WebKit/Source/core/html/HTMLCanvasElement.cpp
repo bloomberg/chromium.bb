@@ -1223,7 +1223,7 @@ void HTMLCanvasElement::DiscardImageBuffer() {
 
 void HTMLCanvasElement::ClearCopiedImage() {
   if (copied_image_) {
-    copied_image_.Clear();
+    copied_image_ = nullptr;
     UpdateExternallyAllocatedMemory();
   }
 }

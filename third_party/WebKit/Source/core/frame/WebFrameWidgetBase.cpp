@@ -259,7 +259,7 @@ void WebFrameWidgetBase::DidNotAcquirePointerLock() {
 }
 
 void WebFrameWidgetBase::DidLosePointerLock() {
-  pointer_lock_gesture_token_.Clear();
+  pointer_lock_gesture_token_ = nullptr;
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 

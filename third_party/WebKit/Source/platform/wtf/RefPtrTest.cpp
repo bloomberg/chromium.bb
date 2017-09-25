@@ -15,7 +15,7 @@ TEST(RefPtrTest, Basic) {
   EXPECT_TRUE(!string);
   string = StringImpl::Create("test");
   EXPECT_TRUE(!!string);
-  string.Clear();
+  string = nullptr;
   EXPECT_TRUE(!string);
 }
 

@@ -247,7 +247,7 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
   ASSERT_EQ(live, true);
 
   DrawingBufferForTests* raw_pointer = drawing_buffer_.Get();
-  drawing_buffer_.Clear();
+  drawing_buffer_ = nullptr;
   ASSERT_EQ(live, true);
 
   EXPECT_FALSE(raw_pointer->MarkContentsChanged());
@@ -295,7 +295,7 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   EXPECT_EQ(live, true);
 
   DrawingBufferForTests* raw_ptr = drawing_buffer_.Get();
-  drawing_buffer_.Clear();
+  drawing_buffer_ = nullptr;
   EXPECT_EQ(live, true);
 
   EXPECT_FALSE(raw_ptr->MarkContentsChanged());
