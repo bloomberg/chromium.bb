@@ -29,6 +29,7 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 #include "platform/text/TextRun.h"
+#include "platform/text/Truncation.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -36,18 +37,6 @@ namespace blink {
 class DocumentMarker;
 class GraphicsContext;
 class TextMatchMarker;
-
-// The two truncation values below are used as tokens representing truncation
-// state for the text box, are intended to be relative to |m_start|, and are set
-// directly into |m_truncation|. In the case where there is some truncation of
-// the text but it is not full, |m_truncation| is set to the character offset
-// from |m_start| representing the characters that are not truncated.
-//
-// Thus the maximum possible length of the text displayed before an ellipsis in
-// a single InlineTextBox is |USHRT_MAX - 2| to allow for the no-truncation and
-// full-truncation states.
-const unsigned short kCNoTruncation = USHRT_MAX;
-const unsigned short kCFullTruncation = USHRT_MAX - 1;
 
 class CORE_EXPORT InlineTextBox : public InlineBox {
  public:

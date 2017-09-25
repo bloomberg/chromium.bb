@@ -11,6 +11,7 @@
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/text/Truncation.h"
 
 namespace blink {
 
@@ -44,12 +45,6 @@ static void PaintDecorationsExceptLineThrough(
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
-  // TODO(eae): These constants are currently defined in core/layout/line/
-  // InlineTextBox.h, move them to a separate header and have InlineTextBox.h
-  // and this file include it.
-  static unsigned short kCNoTruncation = USHRT_MAX;
-  static unsigned short kCFullTruncation = USHRT_MAX - 1;
-
   const ComputedStyle& style_to_use = fragment_.Style();
 
   NGPhysicalSize size_;
