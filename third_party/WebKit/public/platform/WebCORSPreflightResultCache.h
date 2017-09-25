@@ -51,7 +51,7 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
       const WebHTTPHeaderMap&,
       WebString& error_description);
 
-  bool AllowsCrossOriginMethod(const WebString&,
+  bool AllowsCrossOriginMethod(const WebString& method,
                                WebString& error_description) const;
   bool AllowsCrossOriginHeaders(const WebHTTPHeaderMap&,
                                 WebString& error_description) const;
