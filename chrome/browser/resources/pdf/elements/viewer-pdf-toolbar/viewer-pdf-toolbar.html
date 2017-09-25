@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
@@ -22,8 +21,8 @@
       /* We introduce a wrapper aligner element to help with laying out the main
        * toolbar content without changing the bottom-aligned progress bar. */
       #aligner {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        align-items: center;
+        display: flex;
         padding: 0 8px;
         width: 100%;
       }
@@ -68,11 +67,12 @@
         width: 100%;
       }
 
-      paper-toolbar {
-        --paper-toolbar-background: rgb(50, 54, 57);
-        --paper-toolbar-height: 48px;
+      #toolbar {
         @apply(--shadow-elevation-2dp);
+        background-color: rgb(50, 54, 57);
         color: rgb(241, 241, 241);
+        display: flex;
+        height: 48px;
       }
 
       .invisible {
@@ -103,7 +103,7 @@
         }
       }
     </style>
-    <paper-toolbar>
+    <div id="toolbar">
       <div id="aligner" class="middle">
         <span id="title" title="{{docTitle}}">
           <span>{{docTitle}}</span>
@@ -148,7 +148,7 @@
       <div class="bottom fit">
         <paper-progress id="progress" value="{{loadProgress}}"></paper-progress>
       </div>
-    </paper-toolbar>
+    </div>
   </template>
   <script src="viewer-pdf-toolbar.js"></script>
 </dom-module>
