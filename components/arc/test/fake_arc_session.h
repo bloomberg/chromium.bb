@@ -37,8 +37,7 @@ class FakeArcSession : public ArcSession {
   // will be called when Start() or StartForLoginScreen() is called.
   void EnableBootFailureEmulation(ArcStopReason reason);
 
-  // Emulate Start() is suspended at some phase, before OnSessionReady() is
-  // invoked.
+  // Emulate Start() is suspended at some phase.
   void SuspendBoot();
 
   // Returns FakeArcSession instance. This can be used for a factory

@@ -210,13 +210,6 @@ void ArcSessionRunner::RestartArcSession() {
     observer.OnSessionRestarting();
 }
 
-void ArcSessionRunner::OnSessionReady() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(arc_session_);
-  DCHECK(!restart_timer_.IsRunning());
-  VLOG(0) << "ARC ready";
-}
-
 void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
                                         bool was_running) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

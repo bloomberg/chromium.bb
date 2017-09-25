@@ -34,8 +34,6 @@ void FakeArcSession::Start() {
       observer.OnSessionStopped(boot_failure_reason_, false);
   } else if (!boot_suspended_) {
     running_ = true;
-    for (auto& observer : observer_list_)
-      observer.OnSessionReady();
   }
 }
 

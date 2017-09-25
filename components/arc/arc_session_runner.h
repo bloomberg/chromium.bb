@@ -93,7 +93,6 @@ class ArcSessionRunner : public ArcSession::Observer,
   void RestartArcSession();
 
   // ArcSession::Observer:
-  void OnSessionReady() override;
   void OnSessionStopped(ArcStopReason reason, bool was_running) override;
 
   // chromeos::SessionManagerClient::Observer:
