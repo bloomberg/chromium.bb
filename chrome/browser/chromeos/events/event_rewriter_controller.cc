@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/display/mirror_window_controller.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
@@ -42,9 +44,15 @@ void EventRewriterController::Init() {
   initialized_ = true;
   // Add the rewriters to each existing root window EventSource.
   aura::Window::Windows windows = ash::Shell::GetAllRootWindows();
-  for (auto* window : windows) {
+  for (auto* window : windows)
     AddToEventSource(window->GetHost()->GetEventSource());
-  }
+
+  // In case there are any mirroring displays, their hosts' EventSources won't
+  // be included above.
+  const auto* mirror_window_controller =
+      ash::Shell::Get()->window_tree_host_manager()->mirror_window_controller();
+  for (auto* window : mirror_window_controller->GetAllRootWindows())
+    AddToEventSource(window->GetHost()->GetEventSource());
 }
 
 void EventRewriterController::OnHostInitialized(aura::WindowTreeHost* host) {
