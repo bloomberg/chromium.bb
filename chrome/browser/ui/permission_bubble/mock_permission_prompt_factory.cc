@@ -40,8 +40,10 @@ std::unique_ptr<PermissionPrompt> MockPermissionPromptFactory::Create(
   prompts_.push_back(prompt);
   show_count_++;
   requests_count_ = delegate->Requests().size();
-  for (const PermissionRequest* request : delegate->Requests())
+  for (const PermissionRequest* request : delegate->Requests()) {
     request_types_seen_.push_back(request->GetPermissionRequestType());
+    request_origins_seen_.push_back(request->GetOrigin());
+  }
 
   if (!show_bubble_quit_closure_.is_null())
     show_bubble_quit_closure_.Run();
@@ -60,6 +62,7 @@ void MockPermissionPromptFactory::ResetCounts() {
   show_count_ = 0;
   requests_count_ = 0;
   request_types_seen_.clear();
+  request_origins_seen_.clear();
 }
 
 void MockPermissionPromptFactory::DocumentOnLoadCompletedInMainFrame() {
@@ -76,6 +79,10 @@ int MockPermissionPromptFactory::TotalRequestCount() {
 
 bool MockPermissionPromptFactory::RequestTypeSeen(PermissionRequestType type) {
   return base::ContainsValue(request_types_seen_, type);
+}
+
+bool MockPermissionPromptFactory::RequestOriginSeen(const GURL& origin) {
+  return base::ContainsValue(request_origins_seen_, origin);
 }
 
 void MockPermissionPromptFactory::WaitForPermissionBubble() {
