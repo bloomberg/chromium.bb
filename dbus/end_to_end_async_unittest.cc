@@ -512,32 +512,13 @@ TEST_F(EndToEndAsyncTest, BrokenMethodWithErrorCallback) {
   ASSERT_EQ(DBUS_ERROR_FAILED, error_names_[0]);
 }
 
-TEST_F(EndToEndAsyncTest, InvalidObjectPath) {
-  // Trailing '/' is only allowed for the root path.
-  const ObjectPath invalid_object_path("/org/chromium/TestObject/");
-
-  // Replace object proxy with new one.
-  object_proxy_ = bus_->GetObjectProxy(test_service_->service_name(),
-                                       invalid_object_path);
-
-  MethodCall method_call("org.chromium.TestInterface", "Echo");
-
-  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
-  CallMethodWithErrorCallback(&method_call, timeout_ms);
-  WaitForErrors(1);
-
-  // Should fail because of the invalid path.
-  ASSERT_TRUE(response_strings_.empty());
-  ASSERT_EQ("", error_names_[0]);
-}
-
 TEST_F(EndToEndAsyncTest, InvalidServiceName) {
   // Bus name cannot contain '/'.
   const std::string invalid_service_name = ":1/2";
 
   // Replace object proxy with new one.
-  object_proxy_ = bus_->GetObjectProxy(
-      invalid_service_name, ObjectPath("org.chromium.TestObject"));
+  object_proxy_ = bus_->GetObjectProxy(invalid_service_name,
+                                       ObjectPath("/org/chromium/TestObject"));
 
   MethodCall method_call("org.chromium.TestInterface", "Echo");
 
