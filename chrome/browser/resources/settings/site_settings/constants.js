@@ -30,9 +30,7 @@ settings.ContentSettingsTypes = {
   MIDI_DEVICES: 'midi-sysex',
   USB_DEVICES: 'usb-chooser-data',
   ZOOM_LEVELS: 'zoom-levels',
-  // <if expr="chromeos">
   PROTECTED_CONTENT: 'protectedContent',
-  // </if>
   ADS: 'ads',
 };
 
@@ -58,13 +56,16 @@ settings.ContentSetting = {
  * @enum {string}
  */
 settings.SiteSettingSource = {
+  DEFAULT: 'default',
+  // This source is for the Protected Media Identifier / Protected Content
+  // content setting only, which is only available on ChromeOS.
+  DRM_DISABLED: 'drm-disabled',
   EMBARGO: 'embargo',
   EXTENSION: 'extension',
   INSECURE_ORIGIN: 'insecure-origin',
   KILL_SWITCH: 'kill-switch',
   POLICY: 'policy',
   PREFERENCE: 'preference',
-  DEFAULT: 'default',
 };
 
 /**

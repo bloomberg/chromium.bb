@@ -80,6 +80,7 @@ struct SiteSettingSourceStringMapping {
 
 const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
     {SiteSettingSource::kDefault, "default"},
+    {SiteSettingSource::kDrmDisabled, "drm-disabled"},
     {SiteSettingSource::kEmbargo, "embargo"},
     {SiteSettingSource::kExtension, "extension"},
     {SiteSettingSource::kInsecureOrigin, "insecure-origin"},
@@ -98,14 +99,17 @@ static_assert(arraysize(kSiteSettingSourceStringMapping) ==
 //    2. Insecure origins (some permissions are denied to insecure origins).
 //    3. Enterprise policy.
 //    4. Extensions.
-//    5. User-set per-origin setting.
-//    6. Embargo.
-//    7. User-set patterns.
-//    8. User-set global default for a ContentSettingsType.
-//    9. Chrome's built-in default.
+//    5. DRM disabled (for CrOS's Protected Content ContentSettingsType only).
+//    6. User-set per-origin setting.
+//    7. Embargo.
+//    8. User-set patterns.
+//    9. User-set global default for a ContentSettingsType.
+//   10. Chrome's built-in default.
 SiteSettingSource CalculateSiteSettingSource(
+    Profile* profile,
+    const ContentSettingsType content_type,
     const content_settings::SettingInfo& info,
-    PermissionStatusSource permission_status_source) {
+    const PermissionStatusSource permission_status_source) {
   if (permission_status_source == PermissionStatusSource::KILL_SWITCH)
     return SiteSettingSource::kKillSwitch;  // Source #1.
 
@@ -120,6 +124,12 @@ SiteSettingSource CalculateSiteSettingSource(
   if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
     return SiteSettingSource::kExtension;  // Source #4.
 
+  // Protected Content will be blocked if the |kEnableDRM| pref is off.
+  if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
+      !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
+    return SiteSettingSource::kDrmDisabled;  // Source #5.
+  }
+
   DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
   if (info.source == content_settings::SETTING_SOURCE_USER) {
     if (permission_status_source ==
@@ -127,13 +137,13 @@ SiteSettingSource CalculateSiteSettingSource(
         permission_status_source ==
             PermissionStatusSource::MULTIPLE_DISMISSALS ||
         permission_status_source == PermissionStatusSource::MULTIPLE_IGNORES) {
-      return SiteSettingSource::kEmbargo;  // Source #6.
+      return SiteSettingSource::kEmbargo;  // Source #7.
     }
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      return SiteSettingSource::kDefault;  // Source #8, #9.
+      return SiteSettingSource::kDefault;  // Source #9, #10.
     }
-    // Source #5, #7. When #5 is the source, |permission_status_source| won't
+    // Source #6, #8. When #6 is the source, |permission_status_source| won't
     // be set to any of the source #6 enum values, as PermissionManager is
     // aware of the difference between these two sources internally. The
     // subtlety here should go away when PermissionManager can handle all
@@ -423,8 +433,9 @@ ContentSetting GetContentSettingForOrigin(
 
   // Retrieve the source of the content setting.
   *source_string = SiteSettingSourceToString(
-      CalculateSiteSettingSource(info, result.source));
+      CalculateSiteSettingSource(profile, content_type, info, result.source));
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
+
   return result.content_setting;
 }
 

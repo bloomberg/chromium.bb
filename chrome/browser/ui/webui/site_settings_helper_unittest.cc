@@ -6,11 +6,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,6 +171,18 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
                                  extension_registry, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kPreference), source);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, content_setting);
+
+// ChromeOS - DRM disabled.
+#if defined(OS_CHROMEOS)
+  profile.GetPrefs()->SetBoolean(prefs::kEnableDRM, false);
+  // Note this is not testing |kContentType|, because this setting is only valid
+  // for protected content.
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+      &source, extension_registry, &display_name);
+  EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDrmDisabled), source);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
+#endif
 
   // Extension.
   auto extension_provider = base::MakeUnique<content_settings::MockProvider>();

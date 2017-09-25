@@ -131,6 +131,13 @@
           icon="cr:extension" id="unsandboxedPlugins"
           label="$i18n{siteSettingsUnsandboxedPlugins}">
       </site-details-permission>
+<if expr="chromeos">
+      <site-details-permission
+          category="{{ContentSettingsTypes.PROTECTED_CONTENT}}"
+          icon="settings:security" id="protectedContent"
+          label="$i18n{siteSettingsProtectedContent}">
+      </site-details-permission>
+</if>
     </div>
 
     <div id="clearAndReset" class="settings-box"

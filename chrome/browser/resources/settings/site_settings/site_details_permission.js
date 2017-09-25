@@ -10,7 +10,7 @@
 Polymer({
   is: 'site-details-permission',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior, I18nBehavior],
 
   properties: {
     /**
@@ -49,18 +49,6 @@ Polymer({
       // The default setting is unknown, so consult the C++ backend for it.
       this.updateDefaultPermission_(site);
       this.$.permission.value = site.setting;
-    }
-
-    // Handle non-default sources.
-    if (site.source == settings.SiteSettingSource.DEFAULT ||
-        site.source == settings.SiteSettingSource.PREFERENCE) {
-      this.$.permissionItem.classList.remove('two-line');
-      this.$.permission.disabled = false;
-    } else {
-      this.$.permissionItem.classList.add('two-line');
-      // Users are able to override embargo, so leave enabled in that case.
-      this.$.permission.disabled =
-          site.source != settings.SiteSettingSource.EMBARGO;
     }
 
     if (this.isNonDefaultAsk_(site.setting, site.source)) {
@@ -143,6 +131,28 @@ Polymer({
   },
 
   /**
+   * Checks if there's a permission source string to display, and returns the
+   * class name to apply to permissions if so.
+   * @return {string} CSS class applied when there is an additional description
+   *     string.
+   * @private
+   */
+  permissionSourceStringClass_: function(source) {
+    return this.hasPermissionSourceString_(source) ? 'two-line' : '';
+  },
+
+  /**
+   * Returns true if this permission's source is controlled by the user.
+   * @return {boolean}
+   * @private
+   */
+  isPermissionUserControlled_: function(source) {
+    // Users are able override embargo.
+    return !this.hasPermissionSourceString_(source) ||
+        source == settings.SiteSettingSource.EMBARGO;
+  },
+
+  /**
    * Returns true if the permission is set to a non-default 'ask'. Currently,
    * this only gets called when |this.site| is updated.
    * @param {!settings.ContentSetting} setting The setting of the permission.
@@ -194,7 +204,18 @@ Polymer({
     policyStrings[settings.ContentSetting.BLOCK] = policyBlockString;
     policyStrings[settings.ContentSetting.ASK] = policyAskString;
 
-    if (source == settings.SiteSettingSource.EMBARGO) {
+    if (source == settings.SiteSettingSource.DRM_DISABLED) {
+      assert(
+          settings.ContentSetting.BLOCK == this.site.setting,
+          'If DRM is disabled, Protected Content must be blocked.');
+      assert(
+          settings.ContentSettingsTypes.PROTECTED_CONTENT == this.category,
+          'The DRM disabled source only applies to Protected Content.');
+      return this.i18nAdvanced('siteSettingsSourceDrmDisabled', {
+        substitutions:
+            [settings.routes.SITE_SETTINGS_PROTECTED_CONTENT.getAbsolutePath()]
+      });
+    } else if (source == settings.SiteSettingSource.EMBARGO) {
       assert(
           settings.ContentSetting.BLOCK == this.site.setting,
           'Embargo is only used to block permissions.');

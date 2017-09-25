@@ -12,8 +12,9 @@ var SiteSettingsPref;
 
 /**
  * An example empty pref.
- * TODO(patricialor): Use the values from settings.ContentSettingsTypes (see
- * site_settings/constants.js) as the keys for these instead.
+ * TODO(https://crbug.com/742706): Use the values from
+ * settings.ContentSettingsTypes (see site_settings/constants.js) as the keys
+ * for these instead.
  * @type {SiteSettingsPref}
  */
 var prefsEmpty = {
@@ -31,6 +32,7 @@ var prefsEmpty = {
     plugins: {},
     images: {},
     popups: {},
+    protectedContent: {},
     sound: {},
     unsandboxed_plugins: {},
   },
@@ -48,6 +50,7 @@ var prefsEmpty = {
     plugins: [],
     images: [],
     popups: [],
+    protectedContent: [],
     sound: [],
     unsandboxed_plugins: [],
   },
@@ -247,6 +250,8 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     } else if (
         contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
       pref = this.prefs_.defaults.unsandboxed_plugins;
+    } else if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
+      pref = this.prefs_.defaults.protectedContent;
     } else {
       console.log('getDefault received unknown category: ' + contentType);
     }

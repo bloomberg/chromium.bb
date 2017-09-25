@@ -49,6 +49,9 @@
 #include "ui/base/text/bytes_formatting.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -208,12 +211,24 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
           ->AddZoomLevelChangedCallback(
               base::Bind(&SiteSettingsHandler::OnZoomLevelChanged,
                          base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(
+      prefs::kEnableDRM,
+      base::Bind(&SiteSettingsHandler::OnPrefEnableDrmChanged,
+                 base::Unretained(this)));
+#endif
 }
 
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
   notification_registrar_.RemoveAll();
   host_zoom_map_subscription_.reset();
+#if defined(OS_CHROMEOS)
+  pref_change_registrar_->Remove(prefs::kEnableDRM);
+#endif
 }
 
 void SiteSettingsHandler::OnGetUsageInfo(
@@ -238,6 +253,13 @@ void SiteSettingsHandler::OnUsageInfoCleared(storage::QuotaStatusCode code) {
                            base::Value(clearing_origin_));
   }
 }
+
+#if defined(OS_CHROMEOS)
+void SiteSettingsHandler::OnPrefEnableDrmChanged() {
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::Value("prefEnableDrmChanged"));
+}
+#endif
 
 void SiteSettingsHandler::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,

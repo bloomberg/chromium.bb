@@ -160,6 +160,15 @@ cr.define('settings', function() {
     }
 
     /**
+     * Returns the absolute path string for this Route, assuming this function
+     * has been called from within chrome://settings.
+     * @return {string}
+     */
+    getAbsolutePath() {
+      return window.location.origin + this.path;
+    }
+
+    /**
      * Returns true if this route matches or is an ancestor of the parameter.
      * @param {!settings.Route} route
      * @return {boolean}

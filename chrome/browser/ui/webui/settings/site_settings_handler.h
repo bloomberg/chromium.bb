@@ -20,6 +20,10 @@
 class HostContentSettingsMap;
 class Profile;
 
+#if defined(OS_CHROMEOS)
+class PrefChangeRegistrar;
+#endif
+
 namespace base {
 class ListValue;
 }
@@ -42,6 +46,11 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Usage info.
   void OnGetUsageInfo(const storage::UsageInfoEntries& entries);
   void OnUsageInfoCleared(storage::QuotaStatusCode code);
+
+#if defined(OS_CHROMEOS)
+  // Alert the Javascript that the |kEnableDRM| pref has changed.
+  void OnPrefEnableDrmChanged();
+#endif
 
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -141,6 +150,11 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Change observer for content settings.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+
+#if defined(OS_CHROMEOS)
+  // Change observer for prefs.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };
