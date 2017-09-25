@@ -36,6 +36,7 @@ class SelectionSample final {
   // Note: We don't escape "--" in comment.
   static std::string GetSelectionText(const ContainerNode&,
                                       const SelectionInDOMTree&);
+  static void ConvertTemplatesToShadowRootsForTesring(HTMLElement&);
 };
 
 }  // namespace blink

@@ -39,7 +39,7 @@ namespace blink {
 class DocumentFragment;
 class TemplateContentDocumentFragment;
 
-class HTMLTemplateElement final : public HTMLElement {
+class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
