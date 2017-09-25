@@ -82,15 +82,6 @@
           </template>
         </div>
 
-        <template is="dom-if" if="[[googleNowAvailable_]]">
-          <!-- Google Now cards in the launcher -->
-          <settings-toggle-button id="googleNowEnable"
-              class="continuation indented"
-              pref="{{prefs.google_now_launcher.enabled}}"
-              label="$i18n{searchEnableGoogleNowLabel}">
-          </settings-toggle-button>
-        </template>
-
         <template is="dom-if" if="[[hotwordInfo_.allowed]]">
           <!-- Hotword (OK Google) -->
           <settings-toggle-button id="hotwordSearchEnable"

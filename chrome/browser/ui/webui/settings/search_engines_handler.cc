@@ -72,12 +72,6 @@ bool GetHotwordAlwaysOn(Profile* profile) {
          HotwordServiceFactory::IsAlwaysOnAvailable();
 }
 
-bool IsGoogleNowAvailable(Profile* profile) {
-  std::string group = base::FieldTrialList::FindFullName("GoogleNowExtension");
-  bool has_field_trial = !group.empty() && group != "Disabled";
-  return has_field_trial && IsGoogleDefaultSearch(profile);
-}
-
 }  // namespace
 
 namespace settings {
@@ -128,10 +122,6 @@ void SearchEnginesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setHotwordSearchEnabled",
       base::Bind(&SearchEnginesHandler::HandleSetHotwordSearchEnabled,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getGoogleNowAvailability",
-      base::Bind(&SearchEnginesHandler::HandleGetGoogleNowAvailability,
                  base::Unretained(this)));
 }
 
@@ -196,10 +186,6 @@ SearchEnginesHandler::GetSearchEnginesList() {
 void SearchEnginesHandler::OnModelChanged() {
   AllowJavascript();
   FireWebUIListener("search-engines-changed", *GetSearchEnginesList());
-
-  // Google Now availability may have changed.
-  FireWebUIListener("google-now-availability-changed",
-                    base::Value(IsGoogleNowAvailable(profile_)));
 }
 
 void SearchEnginesHandler::OnItemsChanged(int start, int length) {
@@ -441,16 +427,6 @@ void SearchEnginesHandler::HandleGetHotwordInfo(const base::ListValue* args) {
           base::Bind(&SearchEnginesHandler::OnGetHotwordAudioHistoryEnabled,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback_id),
                      base::Passed(&status)));
-}
-
-void SearchEnginesHandler::HandleGetGoogleNowAvailability(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  AllowJavascript();
-  ResolveJavascriptCallback(*callback_id,
-                            base::Value(IsGoogleNowAvailable(profile_)));
 }
 
 std::unique_ptr<base::DictionaryValue> SearchEnginesHandler::GetHotwordInfo() {

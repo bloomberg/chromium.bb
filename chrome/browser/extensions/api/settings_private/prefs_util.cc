@@ -192,8 +192,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Search page.
   (*s_whitelist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)[::prefs::kGoogleNowLauncherEnabled] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Site Settings prefs.
   (*s_whitelist)[::prefs::kBlockThirdPartyCookies] =

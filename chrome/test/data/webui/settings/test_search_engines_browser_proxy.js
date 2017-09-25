@@ -22,7 +22,6 @@ cr.define('settings_search', function() {
         'validateSearchEngineInput',
         'getHotwordInfo',
         'setHotwordSearchEnabled',
-        'getGoogleNowAvailability',
       ]);
 
       /** @type {boolean} */
@@ -40,9 +39,6 @@ cr.define('settings_search', function() {
         userName: 'user@test.org',
         historyEnabled: false,
       };
-
-      /** @type {boolean} */
-      this.googleNowAvailable = true;
     }
 
     /** @override */
@@ -94,12 +90,6 @@ cr.define('settings_search', function() {
       this.hotwordInfo_.enabled = true;
       this.hotwordInfo_.historyEnabled = this.hotwordInfo_.alwaysOn;
       this.methodCalled('setHotwordSearchEnabled');
-    }
-
-    /** @override */
-    getGoogleNowAvailability() {
-      this.methodCalled('getGoogleNowAvailability');
-      return Promise.resolve(this.googleNowAvailable);
     }
 
     /**

@@ -1615,7 +1615,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
     {"searchOkGoogleDisabled", IDS_SETTINGS_SEARCH_OK_GOOGLE_DISABLED},
 #endif
-    {"searchEnableGoogleNowLabel", IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
