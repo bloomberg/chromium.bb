@@ -22,7 +22,7 @@ namespace {
 std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
     sql::Connection* db) {
   static const char kSql[] =
-      "SELECT offline_id, client_namespace, client_id, requested_url,"
+      "SELECT offline_id, client_namespace, guid, requested_url,"
       "  final_archived_url, title, file_path, file_size"
       " FROM prefetch_items"
       " WHERE state = ?";
@@ -34,6 +34,8 @@ std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
     PrefetchArchiveInfo archive;
     archive.offline_id = statement.ColumnInt64(0);
     archive.client_id.name_space = statement.ColumnString(1);
+    // The client ID is the GUID of the download so that it can be shown
+    // consistently in Downloads Home.
     archive.client_id.id = statement.ColumnString(2);
     archive.url = GURL(statement.ColumnString(3));
     archive.final_archived_url = GURL(statement.ColumnString(4));
