@@ -459,7 +459,7 @@ void MessageWriter::AppendBool(bool value) {
   // dbus_message_iter_append_basic() used in AppendBasic() expects four
   // bytes for DBUS_TYPE_BOOLEAN, so we must pass a dbus_bool_t, instead
   // of a bool, to AppendBasic().
-  dbus_bool_t dbus_value = value;
+  dbus_bool_t dbus_value = value ? 1 : 0;
   AppendBasic(DBUS_TYPE_BOOLEAN, &dbus_value);
 }
 
