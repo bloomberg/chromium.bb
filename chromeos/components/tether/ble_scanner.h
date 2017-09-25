@@ -95,6 +95,12 @@ class BleScanner : public device::BluetoothAdapter::Observer {
 
   bool IsDeviceRegistered(const std::string& device_id);
 
+  // A discovery session should stay active until it has been stopped. However,
+  // due to bugs in Bluetooth code, it is possible for a discovery status to
+  // transition to being off without a Stop() call ever succeeding. This
+  // function corrects the state of Bluetooth if such a bug occurs.
+  void ResetDiscoverySessionIfNotActive();
+
   void UpdateDiscoveryStatus();
 
   void EnsureDiscoverySessionActive();

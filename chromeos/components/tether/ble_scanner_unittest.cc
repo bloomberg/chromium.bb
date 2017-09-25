@@ -156,6 +156,11 @@ class BleScannerTest : public testing::Test {
         test_beacon_seeds_(CreateFakeBeaconSeeds()) {}
 
   void SetUp() override {
+    // Note: This value is only used after the discovery session has been
+    // created (i.e., after a StartDiscoverySession() call completes
+    // successfully).
+    should_discovery_session_be_active_ = true;
+
     test_service_data_provider_ = new TestServiceDataProvider();
 
     std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
@@ -222,7 +227,8 @@ class BleScannerTest : public testing::Test {
 
     if (success) {
       mock_discovery_session_ = new device::MockBluetoothDiscoverySession();
-      ON_CALL(*mock_discovery_session_, IsActive()).WillByDefault(Return(true));
+      ON_CALL(*mock_discovery_session_, IsActive())
+          .WillByDefault(Invoke(this, &BleScannerTest::MockDiscoveryIsActive));
       ON_CALL(*mock_discovery_session_, Stop(_, _))
           .WillByDefault(Invoke(this, &BleScannerTest::MockDiscoveryStop));
 
@@ -249,6 +255,8 @@ class BleScannerTest : public testing::Test {
     last_stop_callback_ = callback;
     last_stop_error_callback_ = error_callback;
   }
+
+  bool MockDiscoveryIsActive() { return should_discovery_session_be_active_; }
 
   void InvokeStopDiscoveryCallback(bool success) {
     EXPECT_FALSE(last_stop_callback_.is_null());
@@ -289,6 +297,8 @@ class BleScannerTest : public testing::Test {
 
   base::Closure last_stop_callback_;
   device::BluetoothDiscoverySession::ErrorCallback last_stop_error_callback_;
+
+  bool should_discovery_session_be_active_;
 
   std::vector<bool> discovery_state_changes_so_far_;
 
@@ -661,6 +671,37 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_RegisterBeforeStopFails) {
 
   // Since there is a device registered again, there should not be another
   // attempt to stop.
+  EXPECT_TRUE(last_stop_callback_.is_null());
+  EXPECT_TRUE(last_stop_error_callback_.is_null());
+}
+
+// Regression test for crbug.com/768521.
+TEST_F(BleScannerTest, TestStopCallback_DiscoverySessionInactiveButNotStopped) {
+  EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_TRUE(ble_scanner_->ShouldDiscoverySessionBeActive());
+  EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
+
+  // Start discovery session.
+  InvokeDiscoveryStartedCallback(true /* success */);
+  EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
+
+  // Unregister device to attempt a stop.
+  EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]));
+  EXPECT_FALSE(ble_scanner_->ShouldDiscoverySessionBeActive());
+  EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
+
+  // For this test, simulate the discovery session transitioning to
+  // IsActive() == false without Stop() ever succeeding.
+  should_discovery_session_be_active_ = false;
+
+  // Fail to stop. Even though stopping failed, IsActive() will still return
+  // false. In this case, the discovery session should no longer be active.
+  InvokeStopDiscoveryCallback(false /* success */);
+  EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
+  VerifyDiscoveryStatusChange(false /* discovery_session_active */);
+
+  // Since the discovery session was not active, there should not have been an
+  // additional call to Stop().
   EXPECT_TRUE(last_stop_callback_.is_null());
   EXPECT_TRUE(last_stop_error_callback_.is_null());
 }
