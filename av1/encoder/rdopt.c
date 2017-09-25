@@ -147,7 +147,7 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 // transform search. Trellis optimization will still be applied
 // in the final encode.
 #ifndef DISABLE_TRELLISQ_SEARCH
-#define DISABLE_TRELLISQ_SEARCH 1
+#define DISABLE_TRELLISQ_SEARCH 0
 #endif
 
 static const double ADST_FLIP_SVM[8] = {
