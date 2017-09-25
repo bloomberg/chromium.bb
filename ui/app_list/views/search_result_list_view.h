@@ -60,6 +60,7 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   views::View* GetSelectedView() const override;
+  views::View* SetFirstResultSelected(bool selected) override;
 
   views::View* results_container_for_test() const { return results_container_; }
 

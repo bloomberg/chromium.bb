@@ -177,6 +177,16 @@ views::View* SearchResultListView::GetSelectedView() const {
              : nullptr;
 }
 
+views::View* SearchResultListView::SetFirstResultSelected(bool selected) {
+  DCHECK(results_container_->has_children());
+  if (num_results() <= 0)
+    return nullptr;
+  SearchResultView* search_result_view =
+      static_cast<SearchResultView*>(results_container_->child_at(0));
+  search_result_view->SetSelected(selected);
+  return search_result_view;
+}
+
 int SearchResultListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(

@@ -72,6 +72,8 @@ class AppListFolderView : public views::View,
 
   AppsGridView* items_grid_view() { return items_grid_view_; }
 
+  FolderHeaderView* folder_header_view() { return folder_header_view_; }
+
  private:
   void CalculateIdealBounds();
 

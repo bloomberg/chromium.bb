@@ -43,6 +43,7 @@ class SuggestionsContainerView : public SearchResultContainerView {
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   views::View* GetSelectedView() const override;
+  views::View* SetFirstResultSelected(bool selected) override;
 
  private:
   void CreateAppsGrid(int apps_num);
