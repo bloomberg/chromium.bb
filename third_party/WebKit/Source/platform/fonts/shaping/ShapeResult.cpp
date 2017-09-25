@@ -319,6 +319,7 @@ void ShapeResult::ApplySpacingImpl(
     int text_start_offset) {
   float offset = 0;
   float total_space = 0;
+  float space = 0;
   for (auto& run : runs_) {
     if (!run)
       continue;
@@ -334,7 +335,7 @@ void ShapeResult::ApplySpacingImpl(
         continue;
       }
 
-      float space = spacing.ComputeSpacing(
+      space = spacing.ComputeSpacing(
           run_start_index + glyph_data.character_index, offset);
       glyph_data.advance += space;
       total_space_for_run += space;
@@ -355,6 +356,20 @@ void ShapeResult::ApplySpacingImpl(
     total_space += total_space_for_run;
   }
   width_ += total_space;
+
+  // The spacing on the right of the last glyph does not affect the glyph
+  // bounding box. Thus, the glyph bounding box becomes smaller than the advance
+  // if the letter spacing is positve, or larger if negative.
+  if (space) {
+    total_space -= space;
+
+    // TODO(kojii): crbug.com/768284: There are cases where
+    // InlineTextBox::LogicalWidth() is round down of ShapeResult::Width() in
+    // LayoutUnit. Ceiling the width did not help. Add 1px to avoid cut-off.
+    if (space < 0)
+      total_space += 1;
+  }
+
   // Glyph bounding box is in logical space.
   glyph_bounding_box_.SetWidth(glyph_bounding_box_.Width() + total_space);
 }
