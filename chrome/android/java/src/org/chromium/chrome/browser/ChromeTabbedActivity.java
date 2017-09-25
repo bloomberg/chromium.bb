@@ -117,6 +117,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -2021,6 +2022,37 @@ public class ChromeTabbedActivity
     @Override
     public boolean isInOverviewMode() {
         return mLayoutManager != null && mLayoutManager.overviewVisible();
+    }
+
+    /**
+     * Update focus and accessibility importance for background view when accessibility tab switcher
+     * is used in Chrome Home.
+     */
+    private void updateAccessibilityVisibility() {
+        if (getBottomSheet() == null || mLayoutManager == null) return;
+
+        CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
+        if (compositorViewHolder != null) {
+            compositorViewHolder.setFocusable(!isViewObscuringAllTabs());
+        }
+
+        OverviewListLayout overviewListLayout =
+                (OverviewListLayout) mLayoutManager.getOverviewListLayout();
+        if (overviewListLayout != null) {
+            overviewListLayout.updateAccessibilityVisibility(!isViewObscuringAllTabs());
+        }
+    }
+
+    @Override
+    public void addViewObscuringAllTabs(View view) {
+        super.addViewObscuringAllTabs(view);
+        updateAccessibilityVisibility();
+    }
+
+    @Override
+    public void removeViewObscuringAllTabs(View view) {
+        super.removeViewObscuringAllTabs(view);
+        updateAccessibilityVisibility();
     }
 
     @Override
