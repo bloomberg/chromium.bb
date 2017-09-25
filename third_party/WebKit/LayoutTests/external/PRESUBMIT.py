@@ -14,7 +14,7 @@ def _LintWPT(input_api, output_api):
     wpt_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'wpt')
     linter_path = input_api.os_path.join(
         input_api.PresubmitLocalPath(), '..', '..', 'Tools', 'Scripts',
-        'webkitpy', 'thirdparty', 'wpt', 'wpt', 'lint')
+        'webkitpy', 'thirdparty', 'wpt', 'wpt', 'wpt')
 
     paths_in_wpt = []
     for f in input_api.AffectedFiles():
@@ -31,6 +31,7 @@ def _LintWPT(input_api, output_api):
     args = [
         input_api.python_executable,
         linter_path,
+        'lint',
         '--repo-root=%s' % wpt_path,
         '--ignore-glob=*-expected.txt',
     ] + paths_in_wpt

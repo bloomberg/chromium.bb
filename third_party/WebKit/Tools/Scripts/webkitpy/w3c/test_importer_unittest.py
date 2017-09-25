@@ -327,7 +327,8 @@ class TestImporterTest(LoggingTestCase):
             [
                 [
                     'python',
-                    blink_path + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/manifest',
+                    blink_path + '/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/wpt',
+                    'manifest',
                     '--work',
                     '--tests-root',
                     blink_path + '/LayoutTests/external/wpt',

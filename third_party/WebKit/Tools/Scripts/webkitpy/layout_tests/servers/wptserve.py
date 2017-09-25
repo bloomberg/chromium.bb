@@ -40,9 +40,9 @@ class WPTServe(server_base.ServerBase):
         path_to_wpt_config = fs.join(path_to_wpt_support, 'wpt.config.json')
         path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.layout_tests_dir(), 'external', 'wpt'))
         path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
-        serve_script = fs.join(path_to_wpt_root, 'serve')
+        wpt_script = fs.join(path_to_wpt_root, 'wpt')
         start_cmd = [self._port_obj.host.executable,
-                     '-u', serve_script,
+                     '-u', wpt_script, 'serve',
                      '--config', path_to_wpt_config,
                      '--doc_root', path_to_wpt_tests]
 
