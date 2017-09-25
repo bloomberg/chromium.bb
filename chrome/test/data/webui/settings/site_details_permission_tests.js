@@ -247,4 +247,20 @@ suite('SiteDetailsPermission', function() {
     assertFalse(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
   });
+
+  test('source string correct for drm disabled source', function() {
+    var origin = 'https://www.example.com';
+    testElement.category = settings.ContentSettingsTypes.PROTECTED_CONTENT;
+    testElement.site = {
+      origin: origin,
+      embeddingOrigin: origin,
+      setting: settings.ContentSetting.BLOCK,
+      source: settings.SiteSettingSource.DRM_DISABLED,
+    };
+    assertEquals(
+        'To change this setting, first turn on device identifiers',
+        testElement.$.permissionItem.innerText.trim());
+    assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
+    assertTrue(testElement.$.permission.disabled);
+  });
 });
