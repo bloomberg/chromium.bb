@@ -17,11 +17,6 @@
 #include "chrome/browser/vr/ui_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
-namespace vr {
-class UiScene;
-class UiSceneManager;
-}  // namespace vr
-
 namespace vr_shell {
 
 class VrShell;
@@ -92,13 +87,10 @@ class VrGLThread : public base::android::JavaHandlerThread,
   bool OnGlThread() const;
 
   // Created on GL thread.
-  std::unique_ptr<vr::UiScene> scene_;
-  std::unique_ptr<vr::UiSceneManager> scene_manager_;
   std::unique_ptr<VrShellGl> vr_shell_gl_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
-  base::WeakPtr<BrowserUiInterface> browser_ui_;
+  base::WeakPtr<vr::BrowserUiInterface> browser_ui_;
 
   // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

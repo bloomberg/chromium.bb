@@ -48,11 +48,13 @@ struct MailboxHolder;
 }  // namespace gpu
 
 namespace vr {
+class BrowserUiInterface;
 class FPSMeter;
 class SlidingAverage;
+class Ui;
+class UiBrowserInterface;
 class UiInterface;
-class UiScene;
-class VrShellRenderer;
+struct UiInitialState;
 }  // namespace vr
 
 namespace vr_shell {
@@ -77,22 +79,22 @@ struct WebVrBounds {
 class VrShellGl : public device::mojom::VRPresentationProvider,
                   public vr::ContentInputDelegate {
  public:
-  VrShellGl(GlBrowserInterface* browser,
+  VrShellGl(GlBrowserInterface* browser_interface,
+            vr::UiBrowserInterface* ui_host_interface,
+            const vr::UiInitialState& ui_initial_state,
             gvr_context* gvr_api,
-            bool initially_web_vr,
             bool reprojected_rendering,
-            bool daydream_support,
-            vr::UiScene* scene);
+            bool daydream_support);
   ~VrShellGl() override;
 
   void Initialize();
   void InitializeGl(gfx::AcceleratedWidget window);
 
-  void set_ui(vr::UiInterface* ui) { ui_ = ui; }
-
   void OnTriggerEvent();
   void OnPause();
   void OnResume();
+
+  base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return task_runner_;
@@ -186,10 +188,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void SendVSync(base::TimeTicks time, GetVSyncCallback callback);
 
-  void closePresentationBindings();
+  void ClosePresentationBindings();
 
-  // samplerExternalOES texture data for main content image.
-  int content_texture_id_ = 0;
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
@@ -220,8 +220,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   gfx::Size render_size_default_;
   gfx::Size render_size_webvr_ui_;
 
-  std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
-
   bool cardboard_ = false;
   gfx::Quaternion controller_quat_;
 
@@ -234,6 +232,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::vector<base::TimeTicks> webvr_time_js_submit_;
   std::vector<bool> webvr_frame_oustanding_;
   std::vector<gfx::Transform> webvr_head_pose_;
+
+  std::unique_ptr<vr::Ui> ui_;
+  vr::UiInterface* ui_scene_manager_;
 
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
@@ -252,10 +253,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
-  vr::UiInterface* ui_;
   GlBrowserInterface* browser_;
-
-  vr::UiScene* scene_ = nullptr;
 
   uint8_t frame_index_ = 0;
   // Larger than frame_index_ so it can be initialized out-of-band.
@@ -273,12 +271,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   gfx::Point3F pointer_start_;
 
-  std::unique_ptr<vr::UiInputManager> input_manager_;
-  std::unique_ptr<vr::UiRenderer> ui_renderer_;
-
   vr::ControllerInfo controller_info_;
   vr::RenderInfo render_info_primary_;
-  vr::RenderInfo render_info_webvr_browser_ui_;
 
   AndroidVSyncHelper vsync_helper_;
 
