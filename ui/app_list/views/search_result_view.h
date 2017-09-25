@@ -67,6 +67,9 @@ class APP_LIST_EXPORT SearchResultView
 
   void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
 
+  void SetSelected(bool selected);
+  bool selected() const { return selected_; }
+
  private:
   friend class app_list::test::SearchResultListViewTest;
 
@@ -110,9 +113,6 @@ class APP_LIST_EXPORT SearchResultView
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
-
-  void SetSelected(bool selected);
-  bool selected() const { return selected_; }
 
   SearchResult* result_ = nullptr;  // Owned by AppListModel::SearchResults.
 

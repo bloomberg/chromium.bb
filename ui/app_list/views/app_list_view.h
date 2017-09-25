@@ -138,6 +138,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void Layout() override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Overridden from ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -343,6 +344,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   const bool is_fullscreen_app_list_enabled_;
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
+  // Whether the app list focus is enabled.
+  const bool is_app_list_focus_enabled_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_ = PEEKING;
   // An observer that notifies AppListView when the display has changed.

@@ -657,6 +657,10 @@ void SearchBoxView::OnMouseEvent(ui::MouseEvent* event) {
   HandleSearchBoxEvent(event);
 }
 
+void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
+  app_list_view_->OnKeyEvent(event);
+}
+
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (back_button_ && sender == back_button_) {
@@ -773,9 +777,10 @@ void SearchBoxView::SetSelected(bool selected) {
           kSearchBoxBorderWidth, kSearchBoxFocusBorderCornerRadius,
           kSearchBoxBorderColor));
     }
-    if (!search_box_->text().empty()) {
+    if (!is_app_list_focus_enabled_ && !search_box_->text().empty()) {
       // If query is not empty (including a string of spaces), we need to select
-      // the entire text range.
+      // the entire text range. When app list focus flag is enabled, query is
+      // automatically selected all when search box is focused.
       search_box_->SelectAll(false);
     }
   } else {
@@ -800,6 +805,10 @@ void SearchBoxView::NotifyQueryChanged() {
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
+  if (is_app_list_focus_enabled_) {
+    // Set search box focused when query changes.
+    search_box_->RequestFocus();
+  }
   UpdateModel();
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
@@ -819,6 +828,18 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (is_app_list_focus_enabled_) {
+    if (key_event.type() == ui::ET_KEY_PRESSED &&
+        key_event.key_code() == ui::VKEY_RETURN &&
+        !IsSearchBoxTrimmedQueryEmpty()) {
+      // Hitting Enter when focus is on search box opens the first result.
+      ui::KeyEvent event(key_event);
+      views::View* first_result_view =
+          static_cast<ContentsView*>(contents_view_)
+              ->search_results_page_view()
+              ->first_result_view();
+      if (first_result_view)
+        first_result_view->OnKeyEvent(&event);
+    }
     // TODO(weidongg/766807) Remove this function when the flag is enabled by
     // default.
     return false;

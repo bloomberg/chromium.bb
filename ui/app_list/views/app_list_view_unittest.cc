@@ -373,7 +373,7 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     for (const auto& data : result_types) {
       // Set the relevance of the results in each group in decreasing order (so
       // the earlier groups have higher relevance, and therefore appear first).
-      relevance -= 1.0;
+      relevance -= 0.5;
       for (int i = 0; i < data.second; ++i) {
         std::unique_ptr<TestSearchResult> result =
             base::MakeUnique<TestSearchResult>();
@@ -385,6 +385,17 @@ class AppListViewFocusTest : public views::ViewsTestBase {
 
     // Adding results will schedule Update().
     RunPendingMessages();
+  }
+
+  int GetOpenFirstSearchResultCount() {
+    std::map<size_t, int>& counts = delegate_->open_search_result_counts();
+    if (counts.size() == 0)
+      return 0;
+    return counts[0];
+  }
+
+  int GetTotalOpenSearchResultCount() {
+    return delegate_->open_search_result_count();
   }
 
   AppListView* app_list_view() { return view_; }
@@ -546,6 +557,100 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   SetAppListState(AppListView::PEEKING);
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::PEEKING);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
+
+// Tests that key event which is not handled by focused view will be redirected
+// to search box.
+TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
+  Show();
+
+  // Set focus to first suggestion app and type a character.
+  suggestions_container_view()->tile_views()[0]->RequestFocus();
+  SimulateKeyPress(ui::VKEY_SPACE, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" "));
+
+  // Set focus to expand arrow and type a character.
+  apps_grid_view()->expand_arrow_view_for_test()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_A, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+
+  // Set focus to close button and type a character.
+  search_box_view()->close_button()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_B, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" ab"));
+
+  // Set focus to close button and hitting backspace.
+  search_box_view()->close_button()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_BACK, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+}
+
+// Tests that the first search result's view is always selected after search
+// results are updated, but the focus is always on search box.
+TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake list results.
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  const int kListResults = 2;
+  SetUpSearchResults(0, kListResults);
+  const views::View* results_container =
+      contents_view()
+          ->search_result_list_view_for_test()
+          ->results_container_for_test();
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(results_container->child_at(0),
+            contents_view()->search_results_page_view()->first_result_view());
+
+  // Populate both fake list results and tile results.
+  const int kTileResults = 3;
+  SetUpSearchResults(kTileResults, kListResults);
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      contents_view()
+          ->search_result_tile_item_list_view_for_test()
+          ->tile_views_for_test();
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(tile_views[0],
+            contents_view()->search_results_page_view()->first_result_view());
+
+  // Clear up all search results.
+  SetUpSearchResults(0, 0);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(nullptr,
+            contents_view()->search_results_page_view()->first_result_view());
+}
+
+// Tests that hitting Enter key when focus is on search box opens the first
+// result when it exists.
+TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake list results. Then hit Enter key.
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  const int kListResults = 2;
+  SetUpSearchResults(0, kListResults);
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_EQ(1, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(1, GetTotalOpenSearchResultCount());
+
+  // Populate both fake list results and tile results. Then hit Enter key.
+  const int kTileResults = 3;
+  SetUpSearchResults(kTileResults, kListResults);
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_EQ(2, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(2, GetTotalOpenSearchResultCount());
+
+  // Clear up all search results. Then hit Enter key.
+  SetUpSearchResults(0, 0);
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_EQ(2, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(2, GetTotalOpenSearchResultCount());
 }
 
 // Tests that opening the app list opens in peeking mode by default.

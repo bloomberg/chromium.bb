@@ -310,28 +310,7 @@ bool SearchResultPageView::IsValidSelectionIndex(int index) {
   return index >= 0 && index < static_cast<int>(result_container_views_.size());
 }
 
-void SearchResultPageView::OnSearchResultContainerResultsChanged() {
-  DCHECK(!result_container_views_.empty());
-  if (is_fullscreen_app_list_enabled_)
-    DCHECK(result_container_views_.size() == separators_.size() + 1);
-
-  // Only sort and layout the containers when they have all updated.
-  for (SearchResultContainerView* view : result_container_views_) {
-    if (view->UpdateScheduled()) {
-      return;
-    }
-  }
-
-  SearchResultContainerView* old_selection =
-      HasSelection() ? result_container_views_[selected_index_] : nullptr;
-
-  // Truncate the currently selected container's selection if necessary. If
-  // there are no results, the selection will be cleared below.
-  if (old_selection && old_selection->num_results() > 0 &&
-      old_selection->selected_index() >= old_selection->num_results()) {
-    old_selection->SetSelectedIndex(old_selection->num_results() - 1);
-  }
-
+void SearchResultPageView::ReorderSearchResultContainers() {
   // Sort the result container views by their score.
   std::sort(result_container_views_.begin(), result_container_views_.end(),
             [](const SearchResultContainerView* a,
@@ -365,6 +344,47 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   }
 
   Layout();
+}
+
+void SearchResultPageView::OnSearchResultContainerResultsChanged() {
+  DCHECK(!result_container_views_.empty());
+  if (is_fullscreen_app_list_enabled_)
+    DCHECK(result_container_views_.size() == separators_.size() + 1);
+
+  // Only sort and layout the containers when they have all updated.
+  for (SearchResultContainerView* view : result_container_views_) {
+    if (view->UpdateScheduled()) {
+      return;
+    }
+  }
+
+  if (is_app_list_focus_enabled_) {
+    if (result_container_views_.empty())
+      return;
+    // Set the first result (if it exists) selected when search results are
+    // updated. Note that the focus is not set on the first result to prevent
+    // frequent focus switch between search box and first result during typing
+    // query.
+    SearchResultContainerView* old_first_container_view =
+        result_container_views_[0];
+    ReorderSearchResultContainers();
+    old_first_container_view->SetFirstResultSelected(false);
+    first_result_view_ =
+        result_container_views_[0]->SetFirstResultSelected(true);
+    return;
+  }
+
+  SearchResultContainerView* old_selection =
+      HasSelection() ? result_container_views_[selected_index_] : nullptr;
+
+  // Truncate the currently selected container's selection if necessary. If
+  // there are no results, the selection will be cleared below.
+  if (old_selection && old_selection->num_results() > 0 &&
+      old_selection->selected_index() >= old_selection->num_results()) {
+    old_selection->SetSelectedIndex(old_selection->num_results() - 1);
+  }
+
+  ReorderSearchResultContainers();
 
   SearchResultContainerView* new_selection = nullptr;
   if (HasSelection() &&

@@ -199,4 +199,9 @@ views::View* SearchResultAnswerCardView::GetSelectedView() const {
              : nullptr;
 }
 
+views::View* SearchResultAnswerCardView::SetFirstResultSelected(bool selected) {
+  search_answer_container_view_->SetSelected(selected);
+  return search_answer_container_view_;
+}
+
 }  // namespace app_list

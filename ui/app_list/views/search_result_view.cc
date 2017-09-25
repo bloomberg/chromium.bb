@@ -182,6 +182,13 @@ base::string16 SearchResultView::ComputeAccessibleName() const {
   return accessible_name;
 }
 
+void SearchResultView::SetSelected(bool selected) {
+  if (selected_ == selected)
+    return;
+  selected_ = selected;
+  SchedulePaint();
+}
+
 void SearchResultView::UpdateAccessibleName() {
   SetAccessibleName(ComputeAccessibleName());
 }
@@ -505,13 +512,6 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
   DCHECK_LT(index, result_->actions().size());
 
   list_view_->SearchResultActionActivated(this, index, event_flags);
-}
-
-void SearchResultView::SetSelected(bool selected) {
-  if (selected_ == selected)
-    return;
-  selected_ = selected;
-  SchedulePaint();
 }
 
 void SearchResultView::ShowContextMenuForView(views::View* source,

@@ -58,6 +58,8 @@ class APP_LIST_EXPORT SearchResultPageView
 
   views::View* contents_view() { return contents_view_; }
 
+  views::View* first_result_view() const { return first_result_view_; }
+
  private:
   // Separator between SearchResultContainerView.
   class HorizontalSeparator;
@@ -66,6 +68,9 @@ class APP_LIST_EXPORT SearchResultPageView
   // controls (eg, arrow keys), as opposed to linear controls (eg, Tab).
   void SetSelectedIndex(int index, bool directional_movement);
   bool IsValidSelectionIndex(int index);
+
+  // Sort the result container views.
+  void ReorderSearchResultContainers();
 
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.
@@ -83,6 +88,9 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // View containing SearchCardView instances. Owned by view hierarchy.
   views::View* const contents_view_;
+
+  // The first search result's view or nullptr if there's no search result.
+  views::View* first_result_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
