@@ -15,7 +15,7 @@ git merge-file third_party/freetype/include/freetype-custom-config/ftconfig.h ${
 rm ${TMPFILE} &&
 git add third_party/freetype/include/freetype-custom-config/ftconfig.h &&
 
-FTVERSION=`git -C third_party/freetype/src/ describe` &&
+FTVERSION=`git -C third_party/freetype/src/ describe --long` &&
 FTCOMMIT=`git -C third_party/freetype/src/ rev-parse HEAD` &&
 sed -i "s/^Version: .*\$/Version: ${FTVERSION%-*}/" third_party/freetype/README.chromium &&
 sed -i "s/^Revision: .*\$/Revision: ${FTCOMMIT}/" third_party/freetype/README.chromium &&
