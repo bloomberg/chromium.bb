@@ -448,9 +448,9 @@ TEST(SimpleColorSpace, MAYBE_SampleShaderSource) {
           ->GetShaderSource();
   std::string expected =
       "float TransferFn1(float v) {\n"
-      "  if (v < 8.12428594e-02)\n"
-      "    return 2.22222224e-01 * v;\n"
-      "  return pow(9.09672439e-01 * v + 9.03275684e-02, 2.22222233e+00);\n"
+      "  if (v < 4.04499359e-02)\n"
+      "    return 7.73993805e-02 * v;\n"
+      "  return pow(9.47867334e-01 * v + 5.21326549e-02, 2.40000010e+00);\n"
       "}\n"
       "float TransferFn3(float v) {\n"
       "  return pow(v, 3.57142866e-01);\n"
