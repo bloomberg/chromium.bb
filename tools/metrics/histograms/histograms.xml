@@ -4552,6 +4552,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.CreditCardsDeletedForDisuse">
+  <owner>wuandy@chromium.org</owner>
+  <summary>
+    The number of credit card deleted during a major version upgrade because
+    they have not been used recently enough and are expired.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.CreditCardsSuppressedForDisuse">
   <owner>wuandy@chromium.org</owner>
   <summary>
