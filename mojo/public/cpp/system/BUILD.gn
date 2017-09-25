@@ -27,6 +27,8 @@ component("system") {
     "buffer.h",
     "core.h",
     "data_pipe.h",
+    "data_pipe_string_writer.cc",
+    "data_pipe_string_writer.h",
     "functions.h",
     "handle.h",
     "handle_signal_tracker.cc",
