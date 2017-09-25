@@ -4006,10 +4006,10 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "vm_tests": [
-            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 86400\n}"
         ],
         "vm_tests_override": [
-            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 86400\n}"
         ]
     },
     "binhost-pre-cq": {
