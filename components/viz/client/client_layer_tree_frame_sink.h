@@ -25,26 +25,28 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
                                  public mojom::CompositorFrameSinkClient,
                                  public ExternalBeginFrameSourceClient {
  public:
+  struct InitParams {
+    InitParams();
+    ~InitParams();
+
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
+    SharedBitmapManager* shared_bitmap_manager = nullptr;
+    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;
+    mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info;
+    mojom::CompositorFrameSinkClientRequest client_request;
+    std::unique_ptr<HitTestDataProvider> hit_test_data_provider;
+    std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider;
+    bool enable_surface_synchronization = false;
+  };
+
   ClientLayerTreeFrameSink(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      SharedBitmapManager* shared_bitmap_manager,
-      std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-      mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      mojom::CompositorFrameSinkClientRequest client_request,
-      std::unique_ptr<HitTestDataProvider> hit_test_data_provider,
-      std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
-      bool enable_surface_synchronization);
+      InitParams* params);
 
   ClientLayerTreeFrameSink(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-      std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-      mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
-      mojom::CompositorFrameSinkClientRequest client_request,
-      std::unique_ptr<HitTestDataProvider> hit_test_data_provider,
-      std::unique_ptr<LocalSurfaceIdProvider> local_surface_id_provider,
-      bool enable_surface_synchronization);
+      InitParams* params);
 
   ~ClientLayerTreeFrameSink() override;
 
