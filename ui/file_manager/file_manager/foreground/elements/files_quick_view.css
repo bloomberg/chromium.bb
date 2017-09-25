@@ -118,9 +118,6 @@ paper-button:focus:not(:active) {
 #toolbar {
   --paper-toolbar-background: rgb(40, 42, 45);
   --paper-toolbar-height: 48px;
-  --paper-toolbar-content: {
-    -webkit-padding-end: 0;
-  };
   color: white;
   font-size: 108%;
   margin: 0;
@@ -141,11 +138,8 @@ paper-button:focus:not(:active) {
 
 #buttons {
   display: flex;
-}
-
-#file-path {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  position: absolute;
+  right: 0px;
 }
 
 :host-context(html[dir='rtl']) #buttons {
