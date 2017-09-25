@@ -18,9 +18,9 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
@@ -472,9 +472,9 @@ public class ClientOnPageFinishedTest {
      * Ensure onPageFinished is called when a provisional load is cancelled.
      */
     @Test
-    @MediumTest
-    @Feature({"AndroidWebView"})
-    @RetryOnFailure
+    //@MediumTest
+    //@Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/683384")
     public void testCalledOnCancelingProvisionalLoad() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         final CountDownLatch testDoneLatch = new CountDownLatch(1);
