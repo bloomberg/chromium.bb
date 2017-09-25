@@ -76,27 +76,7 @@ public class DexLoader {
      * @param localDexDir Cache directory passed to {@link #load()}.
      */
     public void deleteCachedDexes(File localDexDir) {
-        deleteChildren(localDexDir);
-    }
-
-    /**
-     * Deletes all of a directory's children including subdirectories.
-     * @param parentDir Directory whose children should be deleted.
-     */
-    private static void deleteChildren(File parentDir) {
-        if (!parentDir.isDirectory()) {
-            return;
-        }
-
-        File[] files = parentDir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                deleteChildren(file);
-                if (!file.delete()) {
-                    Log.e(TAG, "Could not delete " + file.getPath());
-                }
-            }
-        }
+        WebApkUtils.deletePath(localDexDir);
     }
 
     /**
