@@ -677,6 +677,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3322771899429619102">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Schlüsselgenerierung gestattet ist. Wenn ein URL-Muster in "KeygenBlockedForUrls" angegeben ist, werden diese Ausnahmen dadurch überschrieben.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
+<translation id="332771718998993005">Festlegen des Namens von <ph name="PRODUCT_NAME" />-Zielen.
+
+          Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser String als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen beinhalten.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3417418267404583991">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_OS_NAME" /> möglich. Eine Anmeldung als Gast erfolgt anonym und erfordert keine Passworteingabe.
 
@@ -995,7 +998,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>
 <translation id="4555850956567117258">Remote-Bescheinigung (Remote Attestation) für den Nutzer aktivieren</translation>
 <translation id="4557134566541205630">Standardsuchanbieter-URL für die "Neuer Tab"-Seite</translation>
-<translation id="4558592878156368639">Intervalle für Abwesenheitszeiten bei Abwesenheitszeit des Geräts |ignored_policies| werden veröffentlicht</translation>
+<translation id="4558592878156368639">Intervalle für Abwesenheitszeiten bei OffHours des Geräts |ignored_policies| werden veröffentlicht</translation>
 <translation id="4600786265870346112">Großen Cursor aktivieren</translation>
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
@@ -1156,6 +1159,9 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5318185076587284965">Verwendung von Relayservern durch den Host für den Remote-Zugriff gestatten</translation>
+<translation id="5323128137188992869">Streamen von Inhalten an das Gerät über <ph name="PRODUCT_NAME" /> erlauben.
+
+          Wird diese Richtlinie auf "false" gesetzt, ist es Nutzern nicht möglich, Inhalte auf ihr Gerät zu streamen. Wird diese Richtlinie auf "true" gesetzt, können Nutzer Inhalte streamen. Ist diese Richtlinie nicht definiert, so können Nutzer zwar keine Inhalte an angemeldete Chrome OS-Geräte streamen, aber an andere Geräte.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="5365946944967967336">Startseiten-Schaltfläche auf Symbolleiste anzeigen</translation>
 <translation id="5366977351895725771">Wurde "false" festgelegt, kann dieser Nutzer keine betreuten Nutzer erstellen. Alle vorhandenen betreuten Nutzer sind weiterhin verfügbar.
@@ -1371,6 +1377,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
+<translation id="6139485614509308022">Wenn die "OffHours"-Richtlinie aktiviert ist, werden die spezifizierten Geräterichtlinien in den festgelegten Intervallen ignoriert; stattdessen werden die Standardeinstellungen dieser Richtlinien verwendet. Die Geräterichtlinien werden von Chrome erst dann wieder auf alle Ereignisse angewendet, wenn ein "OffHours"-Zeitraum beginnt oder endet. Der Nutzer wird benachrichtigt und gezwungen, sich abzumelden, wenn die "OffHours"-Zeit zu Ende ist und die Einstellungen der Geräterichtlinien geändert werden, d. h. wenn der Nutzer mit keinem zulässigen Konto angemeldet ist.</translation>
 <translation id="6145799962557135888">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="614662973812186053">Diese Richtlinie steuert zudem die Erfassung von Nutzungs- und Diagnosedaten in Android.</translation>
 <translation id="6155936611791017817">Standardstatus für den großen Cursor auf der Anmeldeseite festlegen</translation>
@@ -1694,7 +1701,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die Funktion "<ph name="TLS_FALSE_START" />" aktiviert. Ist "true" festgelegt, wird die Funktion "<ph name="TLS_FALSE_START" />" deaktiviert.</translation>
 <translation id="7433714841194914373">Google Instant aktivieren</translation>
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
-<translation id="7468416082528382842">Windows-Registrierungspfad:</translation>
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
 <translation id="7474249562477552702">Genehmigung von SHA-1-signierten Zertifikaten, die von lokalen Trust Anchors herausgegeben werden</translation>
 <translation id="7485481791539008776">Regeln zur Auswahl des Standarddruckers</translation>
@@ -2005,7 +2011,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
-<translation id="8555589883248082762">Stellt Konfigurationen für an Geräte gebundene Unternehmensdrucker zur Verfügung.
+<translation id="8555589883248082762">Stellt Konfigurationen für Unternehmensdrucker zur Verfügung.
 
       Mit dieser Richtlinie können Druckerkonfigurationen für
       <ph name="PRODUCT_OS_NAME" />-Geräte zur Verfügung gestellt werden.
@@ -2026,7 +2032,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       gemäß "NativePrintersBulkAccessMode", "NativePrintersBulkWhitelist"
       und "NativePrintersBulkBlacklist" verfügbar.
 
-      Wenn diese Richtlinie konfiguriert ist, können Nutzer Sie weder ändern noch
+      Wenn diese Richtlinie konfiguriert ist, können Nutzer sie weder ändern noch
       überschreiben.
 
       Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten

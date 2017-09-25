@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Comunicar automaticamente<ph name="END_WHITEPAPER_LINK" /> os detalhes de possíveis incidentes de segurança à Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Pagamento não concluído</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1201895884277373915">Mais a partir deste Web site</translation>
 <translation id="1206967143813997005">Assinatura com inicial incorreta</translation>
@@ -616,7 +617,6 @@
 <translation id="5631439013527180824">Token de gestão do dispositivo inválido</translation>
 <translation id="5633066919399395251">Os atacantes atualmente em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem tentar instalar programas perigosos no seu computador que roubem ou eliminem as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Conteúdo fraudulento bloqueado.</translation>
-<translation id="5646376287012673985">Localização</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Obter conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está a funcionar</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Última obtenção:</translation>
 <translation id="8253091569723639551">É necessário um endereço de faturação</translation>
 <translation id="8261506727792406068">Eliminar</translation>
+<translation id="8267698848189296333">A iniciar sessão como <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Se não tiver a certeza do que isto significa, contacte o administrador de rede.</translation>
 <translation id="8293206222192510085">Adicionar marcador</translation>
 <translation id="8294431847097064396">Origem</translation>

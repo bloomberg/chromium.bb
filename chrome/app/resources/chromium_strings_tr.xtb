@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">iPhone'unuzda Chromium'u edinin</translation>
 <translation id="2316129865977710310">Hayır, teşekkürler</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
-<translation id="2372704305038231957">32 bit Chromium artık bu Linux sisteminde desteklenmediği için doğru şekilde çalışmayabilir. Lütfen Chromium'un 64 bit sürümüne geçin.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Şu anda devam eden bir indirme işlemi var. İndirme işlemini iptal etmek ve Chromium'dan çıkmak istiyor musunuz?}other{Şu anda devam eden # indirme işlemi var. İndirme işlemlerini iptal etmek ve Chromium'dan çıkmak istiyor musunuz?}}</translation>
 <translation id="2396765026452590966">"<ph name="EXTENSION_NAME" />" uzantısı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2483889755041906834">Chromium'da</translation>
@@ -138,8 +137,6 @@
 <translation id="5772805321386874569">(Chromium'un <ph name="BEGIN_BUTTON" />yeniden başlatılmasını<ph name="END_BUTTON" /> gerektirir)</translation>
 <translation id="5796460469508169315">Chromium neredeyse hazır.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium en yeni sürüme güncellenemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chromium'u manuel olarak güncellemelisiniz.</translation>
-<translation id="5859963531214966875">Chromium'un gelecek sürümleri artık bu Linux sistemini desteklemeyecek.</translation>
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
@@ -165,8 +162,6 @@
 <translation id="6505742536731484931">Konumunuzu bu siteyle paylaşabilmek için Chromium'un konum bilgilerinize erişmesi gerekiyor.</translation>
 <translation id="6510925080656968729">Chromium'u Kaldır</translation>
 <translation id="6526111688217511984">Dosya indirmek için Chromium'un depolama alanına erişmesi gerekiyor.</translation>
-<translation id="6584627348340620412">32 bit Chromium'un gelecek sürümleri artık bu Linux sistemini desteklemeyecek, lütfen Chromium'un 64 bit sürümüne geçin.</translation>
-<translation id="6593914713218535185">Chromium artık bu Linux sisteminde desteklenmediği için doğru şekilde çalışmayabilir.</translation>
 <translation id="6638567566961868659">Yer işaretlerinizi Chromium menüsünde veya yer işaretleri çubuğunda bulabilirsiniz.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
 <translation id="6717134281241384636">Profiliniz daha yeni bir Chromium sürümünden olduğundan kullanılamıyor.
@@ -180,7 +175,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6893813176749746474">Chromium güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="6944967875980567883">Chromium'a yüklenen modüller</translation>
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
-<translation id="7027298027173928763">Chromium en yeni sürüme güncellenemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chromium'u manuel olarak yeniden yüklemelisiniz.</translation>
 <translation id="705851970750939768">Chromium'u güncelle</translation>
 <translation id="7066436765290594559">Chromium OS, verilerinizi senkronize edemedi. Lütfen Senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="707471633328071618">Google Payments (Chromium'a kopyalandı)</translation>

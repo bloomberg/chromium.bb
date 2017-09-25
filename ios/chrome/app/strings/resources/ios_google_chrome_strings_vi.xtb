@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1326317727527857210">Để có các tab từ các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="1685087038067318291">Khám phá trang web do các đối tượng ở gần bạn gửi. Khi bật Bluetooth, Chrome có thể thu thập các trang web được liên kết với đối tượng xung quanh bạn và gửi chúng một cách ẩn danh tới Google để tìm các trang web hữu ích nhất. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome xác minh <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome không có quyền truy cập ảnh hoặc video của bạn. Hãy cho phép truy cập trong Cài đặt iOS &gt; Bảo mật &gt; Ảnh.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="415767770115540173">Nhận trải nghiệm Google tốt hơn trong Chrome dựa vào vị trí của bạn.</translation>
-<translation id="4248297594476034182">Để truy cập các tab trên tất cả thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4523886039239821078">Một số tiện ích bổ sung khiến Chrome trục trặc. Hãy gỡ cài đặt:</translation>
 <translation id="4615174829807303908">Bạn đang đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong tài khoản Google của bạn.</translation>

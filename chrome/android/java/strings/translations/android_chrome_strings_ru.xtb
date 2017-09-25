@@ -234,7 +234,6 @@
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="3295602654194328831">Скрыть информацию</translation>
 <translation id="3303414029551471755">Скачать?</translation>
-<translation id="3319792846664697699">Панель навигации</translation>
 <translation id="3321222012623826478">Этот сервис должен анонимно отправить данный веб-адрес на серверы Google для проверки.</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3341058695485821946">Узнайте, сколько трафика вы сэкономили</translation>
@@ -291,7 +290,6 @@
 <translation id="3810973564298564668">Настроить</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
-<translation id="3845539888601087042">Показана история со всех устройств, на которых используется этот аккаунт. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
@@ -334,7 +332,6 @@
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
 <translation id="4242533952199664413">Открыть настройки</translation>
-<translation id="4248297594476034182">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4254813446494774748">Перевести на:</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
@@ -457,7 +454,6 @@
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>
 <translation id="5424588387303617268">Доступно: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
-<translation id="5435775191620395718">Показана история только с этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">Перейти к адресной строке</translation>
 <translation id="5447201525962359567">Все данные сайтов, включая файлы cookie и другую информацию, хранящуюся на устройстве</translation>
 <translation id="5447765697759493033">Этот сайт не будет переводиться автоматически</translation>
@@ -484,7 +480,6 @@
 <translation id="5620928963363755975">Чтобы найти скачанные файлы и веб-страницы, нажмите кнопку "Ещё" и выберите соответствующий пункт</translation>
 <translation id="5626134646977739690">Имя:</translation>
 <translation id="5639724618331995626">Разрешить доступ ко всем сайтам</translation>
-<translation id="5646376287012673985">Местоположение</translation>
 <translation id="5648166631817621825">Последние 7 дней</translation>
 <translation id="5655963694829536461">Поиск в загрузках</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
@@ -631,6 +626,7 @@
 <translation id="688738109438487280">Объединить сохраненные данные с данными пользователя <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d открытая вкладка}one{%1$d открытая вкладка}few{%1$d открытые вкладки}many{%1$d открытых вкладок}other{%1$d открытой вкладки}}</translation>
 <translation id="6896758677409633944">Копировать</translation>
+<translation id="6910211073230771657">Удалено</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">OK</translation>

@@ -66,6 +66,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="209018056901015185">Käytä tietokoneversiota</translation>
 <translation id="2103075008456228677">Avaa history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta siirretty</translation>
+<translation id="213900355088104901">Voit selata verkkoa yksityisesti avaamalla incognito-välilehden.</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
@@ -178,6 +179,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="430793432425771671">Synkronoi kaikki</translation>
 <translation id="4342284590510997375">Uusi</translation>
+<translation id="434816576838749873">Valitse sähköpostisovellus</translation>
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
 <translation id="4370827530403103842">Synkronointi ei toimi. Korjaa napauttamalla.</translation>
 <translation id="4375040482473363939">QR-koodihaku</translation>
@@ -309,6 +311,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6785453220513215166">Lähetetään virheraporttia…</translation>
 <translation id="679325081238418596">Käytä kirjanmerkkejäsi, historiaasi, salasanojasi ja muita asetuksiasi kaikilla laitteillasi.</translation>
 <translation id="6797885426782475225">Puhehaku</translation>
+<translation id="6807889908376551050">Näytä kaikki...</translation>
 <translation id="681368974849482173">Kohde luotiin</translation>
 <translation id="6896758677409633944">Kopioi</translation>
 <translation id="6903907808598579934">Ota synkronointi käyttöön</translation>
@@ -416,6 +419,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9148126808321036104">Kirjaudu sisään uudelleen</translation>
 <translation id="914898748153555155">Voit muuttaa tätä asetusta milloin tahansa Chrome-asetuksissa</translation>
+<translation id="91549621916703028">Voit avata useita välilehtiä asioiden hoitamista varten.</translation>
 <translation id="9157836665414082580">Estä valintaikkunat</translation>
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">Tisk...</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automaticky Googlu hlásit<ph name="END_WHITEPAPER_LINK" /> podrobnosti o možných bezpečnostních incidentech. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Platba nebyla dokončena</translation>
 <translation id="1201402288615127009">Další</translation>
 <translation id="1201895884277373915">Více z tohoto webu</translation>
 <translation id="1206967143813997005">Chybný počáteční podpis</translation>
@@ -612,7 +613,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5631439013527180824">Neplatný token správy zařízení</translation>
 <translation id="5633066919399395251">Útočníci, kteří se aktuálně nacházejí na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, se mohou pokusit nainstalovat vám do počítače nebezpečné programy, které mohou ukrást nebo smazat vaše informace (například fotky, hesla, zprávy nebo platební karty). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Byl zablokován klamavý obsah.</translation>
-<translation id="5646376287012673985">Poloha</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Získejte personalizovaný obsah</translation>
 <translation id="5675650730144413517">Tato stránka nefunguje</translation>
@@ -914,6 +914,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8249320324621329438">Naposledy načteno:</translation>
 <translation id="8253091569723639551">Fakturační adresa je povinná</translation>
 <translation id="8261506727792406068">Smazat</translation>
+<translation id="8267698848189296333">Přihlašování pomocí účtu <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Pokud nevíte, co dělat, obraťte se na svého správce sítě.</translation>
 <translation id="8293206222192510085">Přidat záložku</translation>
 <translation id="8294431847097064396">Zdroj</translation>

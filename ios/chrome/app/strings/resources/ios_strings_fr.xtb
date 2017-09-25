@@ -66,6 +66,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="209018056901015185">Voir version ordinateur</translation>
 <translation id="2103075008456228677">Ouvrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
+<translation id="213900355088104901">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
@@ -178,6 +179,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
 <translation id="4342284590510997375">Nouveau</translation>
+<translation id="434816576838749873">Choisir une application de messagerie</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
@@ -309,6 +311,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6785453220513215166">Envoi du rapport d'erreur en cours…</translation>
 <translation id="679325081238418596">Accédez à vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="6797885426782475225">Recherche vocale</translation>
+<translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
@@ -416,6 +419,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="914898748153555155">Vous pouvez modifier cette préférence à tout moment dans les paramètres de Chrome.</translation>
+<translation id="91549621916703028">Créez différents onglets pour toutes vos tâches</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9203116392574189331">Handoff</translation>

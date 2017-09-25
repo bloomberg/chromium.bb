@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Dapatkan bantuan untuk menggunakan Chrome OS</translation>
 <translation id="1795405610103747296">Pasang Chrome pada telefon anda. Kami akan menghantar SMS ke telefon anda: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome sudah usang</translation>
 <translation id="2063848847527508675">OS Chrome perlu dimulakan semula untuk melaksanakan kemas kini.</translation>
@@ -58,7 +57,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2446511512801740068">Chrome sudah usang kerana telah lama tidak dilancarkan. Terdapat kemas kini tersedia dan akan digunakan sebaik sahaja anda melancarkannya semula.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
-<translation id="2582790009689336987">Tidak lama lagi, komputer ini akan berhenti menerima kemas kini Google Chrome kerana sistem Linux ini tidak akan disokong lagi.</translation>
 <translation id="2586406160782125153">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Lesen sumber terbuka Chrome OS</translation>
@@ -84,7 +82,6 @@ Untuk menghalang <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, p
 
 Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
-<translation id="3311976847535831054">Komputer ini tidak akan menerima kemas kini Google Chrome 32 bit lagi. Sila tingkatkan kepada Google Chrome 64 bit.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Dapatkan bantuan berkenaan Chrome OS</translation>
 <translation id="3396977131400919238">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Google Chrome semula.</translation>
@@ -114,7 +111,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="4309555186815777032">(memerlukan Chrome <ph name="BEGIN_BUTTON" />mula semula<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
-<translation id="437002079035561265">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana sistem Linux ini tidak disokong lagi.</translation>
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="4458462641685292929">Terdapat operasi lain sedang dijalankan pada Google Chrome. Sila cuba sebentar lagi.</translation>
@@ -128,7 +124,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
 <translation id="4743926867934016338">Terima &amp; Cari</translation>
 <translation id="4750550185319565338">Mulakan semula Chrome untuk mendayakan <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Komputer ini akan berhenti menerima kemas kini Google Chrome 32 bit tidak lama lagi. Sila tingkatkan kepada Google Chrome 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Fail ini mungkin berbahaya, maka Chrome telah menyekatnya.</translation>
 <translation id="4794050651896644714">Simpan butiran di Chrome</translation>
@@ -205,7 +200,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6989339256997917931">Google Chrome telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon anda.</translation>
 <translation id="7106741999175697885">Pengurus Tugas - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu memasang semula Chrome secara manual.</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
 <translation id="7164397146364144019">Anda boleh membantu menjadikan Chrome lebih selamat dan lebih mudah untuk digunakan dengan melaporkan butiran kemungkinan insiden keselamatan secara automatik kepada Google.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan pada Chrome.</translation>

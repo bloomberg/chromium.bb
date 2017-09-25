@@ -36,7 +36,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
 <translation id="1795405610103747296">Nainstalujte si Chrome do telefonu. Zašleme vám SMS na telefon <ph name="PHONE_NUMBER" />.</translation>
-<translation id="1818142563254268765">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba aktualizovat.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="2063848847527508675">Aktualizace se použije po restartování systému Chrome OS.</translation>
@@ -62,7 +61,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2446511512801740068">Prohlížeč Chrome není aktuální, protože nějakou dobu nebyl restartován. Je k dispozici aktualizace, která bude použita po restartování.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
-<translation id="2582790009689336987">Google Chrome se v tomto počítači již brzy přestane aktualizovat, protože tento systém Linux již nebude podporován.</translation>
 <translation id="2586406160782125153">Ze zařízení budou smazány vaše údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2664962310688259219">Chrome OS – licence open source</translation>
@@ -88,7 +86,6 @@ Abyste uživateli <ph name="NEW_PROFILE_NAME" /> zabránili v přístupu k va�
 
 Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
-<translation id="3311976847535831054">Tento počítač již nebude dostávat aktualizace pro 32bitovou verzi prohlížeče Google Chrome. Nainstalujte prosím 64bitovou verzi Chromu.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Pomoc se systémem Chrome OS</translation>
 <translation id="3396977131400919238">Během instalace došlo k chybě operačního systému. Stáhněte prosím Google Chrome ještě jednou.</translation>
@@ -118,7 +115,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4309555186815777032">(vyžaduje <ph name="BEGIN_BUTTON" />restartování<ph name="END_BUTTON" /> prohlížeče Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Tento počítač již nebude dostávat aktualizace Google Chrome, protože tento systém Linux již není podporován.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4458462641685292929">V prohlížeči Google Chrome právě probíhá jiná operace. Zkuste to znovu později.</translation>
@@ -132,7 +128,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4743926867934016338">Přijmout a vyhledat</translation>
 <translation id="4750550185319565338">Chcete-li aktivovat plugin <ph name="PLUGIN_NAME" />, restartujte Chrome</translation>
-<translation id="4751441238232965030">Tento počítač brzy přestane dostávat aktualizace pro 32bitovou verzi prohlížeče Google Chrome. Nainstalujte prosím 64bitovou verzi Chromu.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento soubor může být nebezpečný, proto jej Chrome zablokoval.</translation>
 <translation id="4794050651896644714">Ukládat údaje do prohlížeče Chrome</translation>
@@ -213,7 +208,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
 <translation id="7106741999175697885">Správce úloh - Google Chrome</translation>
-<translation id="7125719106133729027">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba ručně přeinstalovat.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>
 <translation id="7164397146364144019">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit prohlížeč Chrome a usnadnit jeho používání.</translation>
 <translation id="7185038942300673794">Do prohlížeče Chrome bylo přidáno rozšíření <ph name="EXTENSION_NAME" />.</translation>

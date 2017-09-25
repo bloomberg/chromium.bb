@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Încadrează pe lățime</translation>
 <translation id="1088860948719068836">Adaugă numele de pe card</translation>
 <translation id="1103523840287552314">Tradu întotdeauna din <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Afișează toate parolele salvate...</translation>
 <translation id="1107591249535594099">Dacă este bifată opțiunea, Chrome va stoca o copie a cardului pe dispozitiv pentru a completa formularul mai rapid.</translation>
 <translation id="1111153019813902504">Marcaje accesate recent</translation>
 <translation id="1113869188872983271">&amp;Anulați reordonarea</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Printează...</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Raportează automat<ph name="END_WHITEPAPER_LINK" /> la Google detaliile eventualelor incidente privind securitatea. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Plata nu a fost finalizată</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1201895884277373915">Mai multe de la acest site</translation>
 <translation id="1206967143813997005">Semnătură inițială nevalidă</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
 <translation id="5541546772353173584">Adaugă o adresă de e-mail</translation>
 <translation id="5544037170328430102">O pagină încorporată de pe <ph name="SITE" /> afișează mesajul:</translation>
+<translation id="5545756402275714221">Articole pentru tine</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5560088892362098740">Data expirării</translation>
 <translation id="5565735124758917034">Activ</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
 <translation id="5633066919399395251">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pot încerca să instaleze programe periculoase pe computerul tău, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografii, parole, mesaje sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Conținutul înșelător a fost blocat.</translation>
-<translation id="5646376287012673985">Locație</translation>
 <translation id="5659593005791499971">Adresă de e-mail</translation>
 <translation id="5669703222995421982">Obține conținut personalizat</translation>
 <translation id="5675650730144413517">Pagina nu funcționează</translation>
+<translation id="5689199277474810259">Exportă în format JSON</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5719499550583120431">Se acceptă carduri preplătite.</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Ultima preluare:</translation>
 <translation id="8253091569723639551">Adresa de facturare este obligatorie</translation>
 <translation id="8261506727792406068">Șterge</translation>
+<translation id="8267698848189296333">Te conectezi ca <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Dacă nu știți sigur ce înseamnă aceasta, contactați administratorul de rețea.</translation>
 <translation id="8293206222192510085">Adăugați marcaj</translation>
 <translation id="8294431847097064396">Sursă</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1326317727527857210">Log in bij Chrome om de tabbladen van je andere apparaten te bekijken.</translation>
 <translation id="1685087038067318291">Ontdek webpagina's die worden verzonden door objecten in de buurt. Wanneer Bluetooth is ingeschakeld, kan Chrome webpagina's verzamelen die zijn gekoppeld aan objecten om je heen en ze anoniem verzenden naar Google om de nuttigste pagina's te vinden. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome heeft geen toegang tot je foto's of video's. Schakel toegang in via iOS-instellingen &gt; Privacy &gt; Foto's.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="415767770115540173">Gebruik Google beter in Chrome op basis van je locatie.</translation>
-<translation id="4248297594476034182">Log in bij Chrome om al je tabbladen op al je apparaten te bekijken.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4523886039239821078">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder de volgende add-ons:</translation>
 <translation id="4615174829807303908">Je logt uit van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />. Hierdoor worden je Chrome-gegevens verwijderd van dit apparaat. Je gegevens blijven echter opgeslagen in je Google-account.</translation>

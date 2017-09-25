@@ -611,7 +611,7 @@
       Bez względu na to, czy i jak ta zasada jest skonfigurowana, użytkownicy nie mogą jej zmienić.</translation>
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
-<translation id="3086995894968271156">Skonfiguruj odbiornik Cast (<ph name="PRODUCT_NAME" />).</translation>
+<translation id="3086995894968271156">Konfigurowanie odbiornika Cast (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
 <translation id="3101501961102569744">Wybierz sposób określenia ustawień serwera proxy</translation>
 <translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
@@ -683,7 +683,7 @@
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="332771718998993005">Określ nazwę używaną jako miejsce docelowe <ph name="PRODUCT_NAME" />.
+<translation id="332771718998993005">Pozwala określić nazwę używaną jako miejsce docelowe <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
@@ -1161,7 +1161,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="5307432759655324440">Dostępność trybu incognito</translation>
 <translation id="5318185076587284965">Zezwalaj hostowi zdalnego dostępu na korzystanie z serwerów przekazujących</translation>
-<translation id="5323128137188992869">Zezwól na przesyłanie treści na urządzenie przy użyciu <ph name="PRODUCT_NAME" />.
+<translation id="5323128137188992869">Zezwala na przesyłanie treści na urządzenie przy użyciu: <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą przesyłać treści na urządzenie. Jeśli jest ustawiona na wartość prawda – mogą to robić. Jeśli ta zasada nie jest ustawiona, użytkownicy nie mogą przesyłać treści na zarejestrowane urządzenia z Chrome OS. Mogą przesyłać treści na urządzenia niezarejestrowane.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
@@ -1693,7 +1693,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest nieskonfigurowana lub jest wyłączona, to <ph name="TLS_FALSE_START" /> będzie włączone. Jeśli jest włączona, <ph name="TLS_FALSE_START" /> będzie wyłączone.</translation>
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
-<translation id="7468416082528382842">Lokalizacja w rejestrze systemu Windows:</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
 <translation id="7474249562477552702">Określa, czy są dozwolone certyfikaty z podpisem SHA-1 wydane przez lokalne kotwice zaufania</translation>
 <translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>

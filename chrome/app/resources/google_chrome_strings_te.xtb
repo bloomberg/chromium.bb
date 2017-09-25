@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OSని ఉపయోగించి సహాయాన్ని పొందండి</translation>
 <translation id="1795405610103747296">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromeను నవీకరించాలి.</translation>
 <translation id="1874309113135274312">Google Chrome బీటా (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
 <translation id="2063848847527508675">నవీకరణను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chromeని కొంత కాలంగా పునఃప్రారంభించనందున దాని గడువు తేదీ ముగిసింది. నవీకరణ అందుబాటులో ఉంది, మీరు పునఃప్రారంభించిన తక్షణం వర్తింపజేయబడుతుంది.</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
 <translation id="2580411288591421699">ప్రస్తుతం అమలవుతున్న అదే Google Chrome సంస్కరణను వ్యవస్థాపించలేదు. దయచేసి Google Chromeను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
-<translation id="2582790009689336987">ఈ Linux సిస్టమ్‌కు ఇకపై మద్దతు నిలిపివేయబడుతున్నందున ఈ కంప్యూటర్ త్వరలోనే Google Chrome నవీకరణలను స్వీకరించడం ఆపివేస్తుంది.</translation>
 <translation id="2586406160782125153">ఇది ఈ పరికరం నుండి మీ బ్రౌజింగ్ డేటాను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
 <translation id="2588322182880276190">Chrome లోగో</translation>
 <translation id="2664962310688259219">Chrome OS ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
@@ -84,7 +82,6 @@
 
 దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" />లో మీ ఇమెయిల్‌ను చూడండి.</translation>
 <translation id="3282568296779691940">Chromeకు సైన్ ఇన్ చేయండి</translation>
-<translation id="3311976847535831054">ఈ కంప్యూటర్ ఇకపై 32-బిట్ Google Chrome నవీకరణలను స్వీకరించదు. దయచేసి 64-బిట్ Google Chromeకి అప్‌గ్రేడ్ చేయండి.</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
 <translation id="3395323229510056640">Chrome OSతో సహాయాన్ని పొందండి</translation>
 <translation id="3396977131400919238">ఇన్‌స్టాలేషన్ సమయంలో ఒక ఆపరేటింగ్ సిస్టమ్ లోపం ఏర్పడింది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
@@ -114,7 +111,6 @@
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="4328355335528187361">Google Chrome డెవలపర్ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">ఈ Linux సిస్టమ్‌కు ఇప్పుడు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome నవీకరణలను స్వీకరించదు.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="4458462641685292929">Google Chromeలో మరొక వ్యవస్థాపన జరుగుతోంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
@@ -128,7 +124,6 @@
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="4743926867934016338">ఆమోదిస్తున్నాను, శోధించు</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ని ప్రారంభించడానికి Chromeని పునఃప్రారంభించండి</translation>
-<translation id="4751441238232965030">ఈ కంప్యూటర్ 32-బిట్ Google Chrome నవీకరణలను స్వీకరించడం త్వరలో ఆపివేయబడుతుంది. దయచేసి 64-బిట్ Google Chromeకి అప్‌గ్రేడ్ చేయండి.</translation>
 <translation id="4754614261631455953">Google Chrome కెనరీ (mDNS-In)</translation>
 <translation id="4771048833395599659">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="4794050651896644714">వివరాలను Chromeలో సేవ్ చేయి</translation>
@@ -205,7 +200,6 @@
 <translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
 <translation id="7098166902387133879">Google Chrome మీ మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7106741999175697885">విధి నిర్వాహకుడు - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome దానికదే తాజా సంస్కరణకు నవీకరించబడదు, కనుక మీరు అద్భుతమైన కొత్త లక్షణాలను మరియు భద్రతా పరిష్కారాలను కోల్పోతున్నారు. మీరు Chromeను మాన్యువల్‌గా మళ్లీ ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="7161904924553537242">Google Chromeకు స్వాగతం</translation>
 <translation id="7164397146364144019">సంభావ్య భద్రతాపరమైన దాడులకు సంబంధించిన వివరాలను Googleకి స్వయంచాలకంగా నివేదించడం ద్వారా Chrome‌ని సురక్షితంగా మరియు సులభంగా ఉపయోగించదగినదిగా చేయడంలో మీ సహాయం అందించవచ్చు.</translation>
 <translation id="7185038942300673794">Chromeకు <ph name="EXTENSION_NAME" /> జోడించబడింది.</translation>

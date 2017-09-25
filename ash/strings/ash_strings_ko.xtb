@@ -8,6 +8,7 @@
 <translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1195412055398077112">오버스캔</translation>
+<translation id="119944043368869598">모두 삭제</translation>
 <translation id="1247372569136754018">마이크(내부)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
 <translation id="1267032506238418139">단축키 변경</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">알림</translation>
 <translation id="2501920221385095727">고정키</translation>
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
 <translation id="2532589005999780174">고대비 모드</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
+<translation id="3582792037806681688">이 세션의 사용자에게 멀티 로그인이 허용되지 않습니다.</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="3621202678540785336">입력</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">USB-C 기기(오른쪽 포트)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />(으)로 화면 전송 중</translation>
 <translation id="6521655319214113338">필기 입력</translation>
+<translation id="6528179044667508675">알림 일시중지</translation>
 <translation id="6537270692134705506">화면 캡처</translation>
+<translation id="6580955892089546165">이 기능을 사용하면 로그인한 모든 사용자에게 비밀번호 없이 액세스할 수 있습니다.
+
+이 기능은 신뢰할 수 있는 계정에만 사용하시기 바랍니다.</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">세션 종료</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" />을(를) <ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
+<translation id="7054808953701320293">확인했습니다. 다시 표시하지 않습니다.</translation>
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
+<translation id="7135556860107312402">다음 항목에 알림 허용:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
+<translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>
 <translation id="7649070708921625228">도움말</translation>
+<translation id="7658239707568436148">취소</translation>
 <translation id="7692480393933218409">연결된 USB-C 기기 충전 중</translation>
 <translation id="776344839111254542">업데이트 세부정보를 보려면 클릭하세요.</translation>
 <translation id="7798302898096527229">취소하려면 검색 또는 Shift 키를 누르세요.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
 <translation id="7977927628060636163">모바일 네트워크 검색 중...</translation>
 <translation id="7982789257301363584">네트워크</translation>
+<translation id="7994370417837006925">멀티 로그인</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
+<translation id="8056430285089645882">확인했습니다. 다시 표시하지 않습니다.</translation>
+<translation id="8088137642766812908">주의하세요. 이 기능은 문제를 일으킬 수 있습니다.</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />에 화면 전송 중지</translation>
 <translation id="8132793192354020517"><ph name="NAME" />에 연결됨</translation>
 <translation id="813913629614996137">초기화 중...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8351131234907093545">메모 만들기</translation>
 <translation id="8392234662362215700">키보드 레이아웃을 전환하려면 Control-Shift-Space 키를 누르세요.</translation>
+<translation id="8392688371657486010">알림이 없습니다.</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814715559352963456">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다.
+
+이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="8825534185036233643">3개 이상의 디스플레이 미러링은 지원되지 않습니다.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">마이크가 사용 중입니다.</translation>
 <translation id="9089416786594320554">입력 방법</translation>
 <translation id="9091626656156419976">디스플레이 <ph name="DISPLAY_NAME" /> 제거됨</translation>
+<translation id="9111102763498581341">잠금 해제</translation>
 <translation id="9151726767154816831">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
 <translation id="9194617393863864469">다른 사용자로 로그인...</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE" />% 남았습니다.</translation>

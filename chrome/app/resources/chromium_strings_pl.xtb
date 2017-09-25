@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">pobierz Chromium na iPhone'a</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2347108572062610441">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
-<translation id="2372704305038231957">32-bitowy Chromium może działać nieprawidłowo, bo nie jest już obsługiwany w tym systemie Linux. Uaktualnij Chromium do wersji 64-bitowej.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Trwa pobieranie pliku. Czy chcesz je anulować i wyjść z Chromium?}few{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}many{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}other{Trwa pobieranie # pliku. Czy chcesz je anulować i wyjść z Chromium?}}</translation>
 <translation id="2396765026452590966">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="2483889755041906834">W Chromium</translation>
@@ -138,8 +137,6 @@
 <translation id="5772805321386874569">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium jest prawie gotowy.</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
-<translation id="5823381412099532241">Nie udało się zaktualizować Chromium do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz zaktualizować Chromium.</translation>
-<translation id="5859963531214966875">Przyszłe wersje Chromium nie będą już obsługiwać tego systemu Linux.</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
@@ -165,8 +162,6 @@
 <translation id="6505742536731484931">Chromium musi mieć dostęp do Twojej lokalizacji, by udostępnić ją tej stronie.</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
 <translation id="6526111688217511984">Chromium musi mieć dostęp do pamięci, by pobierać pliki.</translation>
-<translation id="6584627348340620412">Przyszłe wersje 32-bitowego Chromium nie będą już obsługiwać tego systemu Linux. Uaktualnij Chromium do wersji 64-bitowej.</translation>
-<translation id="6593914713218535185">Chromium może działać nieprawidłowo, bo nie jest już obsługiwany na tym systemie Linux.</translation>
 <translation id="6638567566961868659">Zakładki są dostępne w menu Chromium i na pasku zakładek.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
 <translation id="6717134281241384636">Nie można użyć Twojego profilu, ponieważ pochodzi on z nowszej wersji Chromium.
@@ -180,7 +175,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="6893813176749746474">Przeglądarka Chromium została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="6944967875980567883">Moduły załadowane do Chromium</translation>
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
-<translation id="7027298027173928763">Nie udało się zaktualizować Chromium do najnowszej wersji, więc nie masz nowych, przydatnych funkcji ani poprawek zabezpieczeń. Musisz ręcznie zainstalować Chromium ponownie.</translation>
 <translation id="705851970750939768">Zaktualizuj Chromium</translation>
 <translation id="7066436765290594559">System operacyjny Chromium nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="707471633328071618">Google Payments (skopiowana do Chromium)</translation>

@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Λήψη βοήθειας σχετικά με τη χρήση του Chrome OS</translation>
 <translation id="1795405610103747296">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στο τηλέφωνό σας: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Δεν ήταν δυνατή η αυτόματη ενημέρωση του Chrome στην πιο πρόσφατη έκδοση, επομένως δεν θα μπορείτε να επωφεληθείτε από τις νέες δυνατότητες και τις επιδιορθώσεις ασφαλείας. Θα πρέπει να ενημερώσετε το Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
@@ -60,7 +59,6 @@
 <translation id="2446511512801740068">Το Chrome δεν είναι ενημερωμένο επειδή δεν έχει γίνει επανεκκίνησή του για αρκετό χρονικό διάστημα. Υπάρχει διαθέσιμη ενημέρωση και θα γίνει εφαρμογή της μόλις κάνετε επανεκκίνηση.</translation>
 <translation id="2485422356828889247">Κατάργηση Εγκατάστασης</translation>
 <translation id="2580411288591421699">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome και προσπαθήστε ξανά.</translation>
-<translation id="2582790009689336987">Αυτός ο υπολογιστής θα σταματήσει σύντομα να λαμβάνει ενημερώσεις για το Google Chrome, επειδή αυτό το σύστημα Linux δεν θα υποστηρίζεται πλέον.</translation>
 <translation id="2586406160782125153">Με αυτήν την ενέργεια θα διαγραφούν τα δεδομένα περιήγησης από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Λογότυπο Chrome</translation>
 <translation id="2664962310688259219">Άδειες λογισμικού ανοικτού κώδικα του Chrome OS</translation>
@@ -86,7 +84,6 @@
 
 Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
-<translation id="3311976847535831054">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις 32 bit για το Google Chrome. Αναβαθμίστε σε Google Chrome 64 bit.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Λήψη βοήθειας σχετικά με το Chrome OS</translation>
 <translation id="3396977131400919238">Παρουσιάστηκε σφάλμα στο λειτουργικό σύστημα κατά την εγκατάσταση. Κατεβάστε το Google Chrome ξανά.</translation>
@@ -116,7 +113,6 @@
 <translation id="4309555186815777032">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις για το Google Chrome, επειδή αυτό το σύστημα Linux δεν υποστηρίζεται πλέον.</translation>
 <translation id="4407807842708586359">Λειτουργικό σύστημα Google Chrome</translation>
 <translation id="4458285410772214805">Για να εφαρμοστεί αυτή η αλλαγή, αποσυνδεθείτε και συνδεθείτε ξανά.</translation>
 <translation id="4458462641685292929">Μια άλλη λειτουργία βρίσκεται σε εξέλιξη στο Google Chrome. Δοκιμάστε ξανά αργότερα.</translation>
@@ -130,7 +126,6 @@
 <translation id="4728575227883772061">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Αν το Google Chrome εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
 <translation id="4743926867934016338">Αποδοχή και Αναζήτηση</translation>
 <translation id="4750550185319565338">Επανεκκίνηση του Chrome για ενεργοποίηση του <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Αυτός ο υπολογιστής θα σταματήσει σύντομα να λαμβάνει ενημερώσεις 32 bit για το Google Chrome. Αναβαθμίστε σε Google Chrome 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Αυτό το αρχείο ενδέχεται να είναι επικίνδυνο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="4794050651896644714">Αποθήκευση λεπτομερειών στο Chrome</translation>
@@ -209,7 +204,6 @@
 <translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="7098166902387133879">Το Google Chrome χρησιμοποιεί το μικρόφωνό σας.</translation>
 <translation id="7106741999175697885">Διαχείριση Εργασιών - Google Chrome</translation>
-<translation id="7125719106133729027">Δεν ήταν δυνατή η αυτόματη ενημέρωση του Chrome στην πιο πρόσφατη έκδοση, επομένως δεν θα μπορείτε να επωφεληθείτε από τις νέες δυνατότητες και τις επιδιορθώσεις ασφαλείας. Θα πρέπει να εγκαταστήσετε ξανά το Chrome μη αυτόματα.</translation>
 <translation id="7161904924553537242">Καλώς ήρθατε στο Google Chrome</translation>
 <translation id="7164397146364144019">Μπορείτε να βοηθήσετε να κάνουμε το Chromium πιο ασφαλές και εύχρηστο αναφέροντας αυτόματα στην Google λεπτομέρειες σχετικά με πιθανά περιστατικά ασφάλειας.</translation>
 <translation id="7185038942300673794">Το <ph name="EXTENSION_NAME" /> προστέθηκε στο Chrome.</translation>

@@ -66,6 +66,7 @@
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
 <translation id="2103075008456228677">Към history.google.com</translation>
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
+<translation id="213900355088104901">За да сърфирате частно, отворете раздел в режим „инкогнито“</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
@@ -178,6 +179,7 @@
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
 <translation id="4342284590510997375">Ново</translation>
+<translation id="434816576838749873">Избиране на приложение за електронна поща</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4370827530403103842">Синхронизирането не работи. Докоснете, за да отстраните проблема.</translation>
 <translation id="4375040482473363939">Търсене по код за бърза реакция</translation>
@@ -309,6 +311,7 @@
 <translation id="6785453220513215166">Сигналите за сривове се изпращат...</translation>
 <translation id="679325081238418596">Получете отметките, историята, паролите и другите си настройки на всичките си устройства</translation>
 <translation id="6797885426782475225">Гласово търсене</translation>
+<translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
@@ -416,6 +419,7 @@
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9148126808321036104">Влезте отново</translation>
 <translation id="914898748153555155">Можете да промените това предпочитание по всяко време от настройките на Chrome</translation>
+<translation id="91549621916703028">Създайте няколко раздела за всичките си задачи</translation>
 <translation id="9157836665414082580">Диалогови прозорци: Блокиране</translation>
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9203116392574189331">Handoff</translation>

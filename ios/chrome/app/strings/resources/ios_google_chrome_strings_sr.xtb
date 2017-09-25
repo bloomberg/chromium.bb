@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1326317727527857210">Да би вам картице биле доступне на другим уређајима, пријавите се у Chrome.</translation>
 <translation id="1685087038067318291">Откривајте веб-странице које шаљу објекти у околини. Када је Bluetooth укључен, Chrome може да прикупља веб-странице повезане са објектима око вас и да их анонимно шаље Google-у како би пронашао најкорисније. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
 <translation id="4099578267706723511">Побољшајте Chrome слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="415767770115540173">Побољшајте Google доживљај у Chrome-у на основу локације.</translation>
-<translation id="4248297594476034182">Да би вам картице биле доступне на свим уређајима, пријавите се у Chrome.</translation>
 <translation id="424864128008805179">Желите ли да се одјавите из Chrome-а?</translation>
 <translation id="4523886039239821078">Неки програмски додаци изазивају отказивање Chrome-а. Деинсталирајте:</translation>
 <translation id="4615174829807303908">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />. То ће избрисати Chrome податке са овог уређаја, али ће подаци остати на Google налогу.</translation>

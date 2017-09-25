@@ -234,7 +234,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
 <translation id="3295602654194328831">Sembunyikan Info</translation>
 <translation id="3303414029551471755">Lanjutkan untuk mendownload konten?</translation>
-<translation id="3319792846664697699">Panel navigasi</translation>
 <translation id="3321222012623826478">Layanan ini perlu mengirimkan alamat situs ini secara anonim ke server Google untuk verifikasi.</translation>
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3341058695485821946">Lihat berapa banyak data yang dihemat</translation>
@@ -291,7 +290,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3810973564298564668">Kelola</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download dihapus</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
-<translation id="3845539888601087042">Menampilkan riwayat dari perangkat yang Anda gunakan untuk masuk. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Cari maju</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Memaksa pengaktifan zoom</translation>
@@ -334,13 +332,12 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
-<translation id="4248297594476034182">Untuk mendapatkan tab di semua perangkat Anda, masuk ke Chrome.</translation>
 <translation id="424864128008805179">Keluar dari Chrome?</translation>
 <translation id="4254813446494774748">Bahasa Terjemahan:</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Terjadi kesalahan sinkronisasi, ketuk untuk melihat detailnya.</translation>
-<translation id="4269820728363426813">Salin alamat tautan</translation>
+<translation id="4269820728363426813">Salin URL</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
 <translation id="42981349822642051">Luaskan</translation>
@@ -457,7 +454,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5423934151118863508">Halaman yang paling sering dikunjungi akan muncul di sini</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tersedia</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
-<translation id="5435775191620395718">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Beralih ke bilah alamat</translation>
 <translation id="5447201525962359567">Semua penyimpanan situs, termasuk cookie dan data lain yang tersimpan secara lokal</translation>
 <translation id="5447765697759493033">Situs ini tidak diterjemahkan</translation>
@@ -484,7 +480,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5620928963363755975">Temukan file dan halaman di Download dari tombol Opsi Lainnya</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5639724618331995626">Izinkan semua situs</translation>
-<translation id="5646376287012673985">Lokasi</translation>
 <translation id="5648166631817621825">7 hari terakhir</translation>
 <translation id="5655963694829536461">Telusuri file download</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -631,6 +626,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="688738109438487280">Menambahkan data yang sudah ada ke <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab terbuka}other{%1$d tab terbuka}}</translation>
 <translation id="6896758677409633944">Salin</translation>
+<translation id="6910211073230771657">Dihapus</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
 <translation id="6965382102122355670">Oke</translation>

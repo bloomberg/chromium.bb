@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">завантажити Chromium на iPhone</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="2347108572062610441">Це розширення змінило сторінку, яка відкривається під час запуску Chromium.</translation>
-<translation id="2372704305038231957">32-розрядна версія Chromium може працювати неналежним чином, оскільки ця система Linux більше не підтримується. Установіть 64-розрядну версію Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Триває завантаження. Скасувати його та вийти з Chromium?}one{Триває # завантаження. Скасувати їх і вийти з Chromium?}few{Тривають # завантаження. Скасувати їх і вийти з Chromium?}many{Тривають # завантажень. Скасувати їх і вийти з Chromium?}other{Тривають # завантаження. Скасувати їх і вийти з Chromium?}}</translation>
 <translation id="2396765026452590966">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час запуску Chromium.</translation>
 <translation id="2483889755041906834">У Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
-<translation id="5823381412099532241">Не вдалось оновити Chromium до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, потрібно оновити Chromium.</translation>
-<translation id="5859963531214966875">Наступні версії Chromium не підтримуватимуть цю систему Linux.</translation>
 <translation id="5862307444128926510">Вітаємо в Chromium</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6510925080656968729">Видалити Chromium</translation>
 <translation id="6526111688217511984">Щоб завантажувати файли, Chromium потребує доступу до пам’яті.</translation>
-<translation id="6584627348340620412">Наступні 32-розрядні версії Chromium не підтримуватимуть цю систему Linux. Установіть 64-розрядну версію.</translation>
-<translation id="6593914713218535185">Chromium може працювати неналежним чином, оскільки ця система Linux більше не підтримується.</translation>
 <translation id="6638567566961868659">Шукайте свої закладки в меню Chromium або на панелі закладок.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6717134281241384636">Ваш профіль не можна використовувати, оскільки він створений у новішій версії Chromium.
@@ -182,7 +177,6 @@
 <translation id="6893813176749746474">Chromium оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="6944967875980567883">Модулі, завантажені в Chromium</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
-<translation id="7027298027173928763">Не вдалось оновити Chromium до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, потрібно вручну перевстановити Chromium.</translation>
 <translation id="705851970750939768">Оновити Chromium</translation>
 <translation id="7066436765290594559">ОС Chromium не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="707471633328071618">Google Payments (скопійовано в Chromium)</translation>

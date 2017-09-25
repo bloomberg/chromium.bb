@@ -1715,7 +1715,6 @@
       Якщо це правило не налаштовано або має значення "false", функцію <ph name="TLS_FALSE_START" /> буде ввімкнено. Якщо вибрано значення "true", <ph name="TLS_FALSE_START" /> буде вимкнено.</translation>
 <translation id="7433714841194914373">Увімкнути миттєвий пошук</translation>
 <translation id="7443616896860707393">Міждоменні запити базової автентифікації HTTP</translation>
-<translation id="7468416082528382842">Розділ реєстру Windows:</translation>
 <translation id="7469554574977894907">Увімкнути пропозиції пошуку</translation>
 <translation id="7474249562477552702">Чи дозволені підписані сертифікати SHA-1, видані локальними ключами довіри</translation>
 <translation id="7485481791539008776">Правила вибору принтера за умовчанням</translation>

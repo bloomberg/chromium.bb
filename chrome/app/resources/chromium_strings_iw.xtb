@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">‏להורדת Chromium ל-iPhone</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
-<translation id="2372704305038231957">‏ייתכן ש-Chromium ב-32 סיביות לא יפעל כראוי כי אינו נתמך יותר במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏הורדה מתבצעת עכשיו. האם ברצונך לבטל את ההורדה ולצאת מ-Chromium?}two{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}many{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}other{‏# הורדות מתבצעות עכשיו. האם ברצונך לבטל את ההורדות ולצאת מ-Chromium?}}</translation>
 <translation id="2396765026452590966">‏התוסף "<ph name="EXTENSION_NAME" />" שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="2483889755041906834">‏ב-Chromium</translation>
@@ -138,8 +137,6 @@
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON" />אתחול<ph name="END_BUTTON" /> של Chromium)</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
-<translation id="5823381412099532241">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך לעדכן את Chromium.</translation>
-<translation id="5859963531214966875">‏גרסאות עתידיות של Chromium לא יתמכו עוד במערכת Linux זו.</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
@@ -165,8 +162,6 @@
 <translation id="6505742536731484931">‏Chromium זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
 <translation id="6526111688217511984">‏לצורך הורדת קבצים, Chromium זקוק לגישה לאחסון.</translation>
-<translation id="6584627348340620412">‏גרסאות עתידיות של Chromium ב-32 סיביות לא יתמכו יותר במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
-<translation id="6593914713218535185">‏ייתכן ש-Chromium לא יפעל כראוי כי אינו נתמך יותר במערכת Linux זו.</translation>
 <translation id="6638567566961868659">‏מצא את הסימניות שלך בתפריט Chromium או בסרגל הסימניות.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6717134281241384636">‏לא ניתן להשתמש בפרופיל שלך משום שהוא מגיע מגרסה חדשה יותר של Chromium.
@@ -180,7 +175,6 @@
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="6944967875980567883">‏מודולים שנטענו ב-Chromium</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
-<translation id="7027298027173928763">‏העדכון העצמי של Chromium לגרסה העדכנית ביותר נכשל, לכן אתה מחמיץ תכונות חדשות מדליקות ותיקוני אבטחה. עליך להתקין מחדש את Chromium באופן ידני.</translation>
 <translation id="705851970750939768">‏עדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="707471633328071618">‏Google Payments (‏הועתק ל-Chromium)</translation>

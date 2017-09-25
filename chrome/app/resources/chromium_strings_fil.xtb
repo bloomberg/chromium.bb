@@ -37,7 +37,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2265088490657775772">kunin ang Chromium sa iyong iPhone</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2347108572062610441">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chronium.</translation>
-<translation id="2372704305038231957">Maaaring hindi gumana nang maayos ang 32-bit na Chromium dahil hindi na ito sinusuportahan sa Linux system na ito. Mangyaring mag-upgrade sa 64-bit na Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{May nagaganap na pagda-download sa kasalukuyan. Gusto mo bang kanselahin ang pag-download at umalis sa Chromium?}one{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}other{# na pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}}</translation>
 <translation id="2396765026452590966">Binago ng extension na "<ph name="EXTENSION_NAME" />" ang ipinapakitang page kapag sinimulan mo ang Chromium.</translation>
 <translation id="2483889755041906834">Sa Chromium</translation>
@@ -142,8 +141,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5772805321386874569">(kinakailangang <ph name="BEGIN_BUTTON" />i-restart<ph name="END_BUTTON" /> ang Chromium)</translation>
 <translation id="5796460469508169315">Halos handa na ang Chromium.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Hindi ma-update ng Chromium ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chromium.</translation>
-<translation id="5859963531214966875">Hindi na susuportahan ng mga bersyon ng Chromium sa hinaharap ang Linux system na ito.</translation>
 <translation id="5862307444128926510">Maligayang Pagdating sa Chromium</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5895138241574237353">I-restart</translation>
@@ -169,8 +166,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6505742536731484931">Kailangan ng Chromium ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito.</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
 <translation id="6526111688217511984">Kailangan ng Chromium ng access sa storage upang mag-download ng mga file.</translation>
-<translation id="6584627348340620412">Hindi na susuportahan ng mga bersyon sa hinaharap ng 32-bit na Chromium ang Linux system na ito, mangyaring mag-upgrade sa 64-bit na Chromium.</translation>
-<translation id="6593914713218535185">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Linux system na ito.</translation>
 <translation id="6638567566961868659">Hanapin ang iyong mga bookmark sa Chromium menu o sa bookmarks bar.</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>
 <translation id="6717134281241384636">Hindi maaaring gamitin ang iyong profile dahil mula ito sa isang mas bagong bersyon ng Chromium.
@@ -184,7 +179,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="6893813176749746474">Na-update na ang Chromium, ngunit hindi mo pa ito nagagamit sa loob ng hindi bababa sa 30 araw.</translation>
 <translation id="6944967875980567883">Mga module na nai-load sa Chromium</translation>
 <translation id="6970811910055250180">Ina-update ang iyong device...</translation>
-<translation id="7027298027173928763">Hindi ma-update ng Chromium ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chromium nang manu-mano.</translation>
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="7066436765290594559">Hindi ma-sync ng Chromium OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
 <translation id="707471633328071618">Google Payments (kinopya sa Chromium)</translation>

@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Imprimir...</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informar automaticamente<ph name="END_WHITEPAPER_LINK" /> ao Google detalhes de possíveis incidentes de segurança. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Pagamento não concluído</translation>
 <translation id="1201402288615127009">Próxima</translation>
 <translation id="1201895884277373915">Mais deste site</translation>
 <translation id="1206967143813997005">Assinatura inicial inválida</translation>
@@ -616,7 +617,6 @@
 <translation id="5631439013527180824">Token de gerenciamento de dispositivo inválido</translation>
 <translation id="5633066919399395251">Invasores que estão em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> no momento podem tentar instalar programas perigosos no seu computador e roubar ou excluir suas informações (por exemplo, fotos, senhas, mensagens e cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Conteúdo enganoso bloqueado.</translation>
-<translation id="5646376287012673985">Local</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Receber conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está funcionando</translation>
@@ -682,7 +682,7 @@
 <translation id="6264485186158353794">Voltar à segurança</translation>
 <translation id="6276112860590028508">As páginas da sua lista de leitura são exibidas aqui</translation>
 <translation id="6280223929691119688">Não é possível entregar nesse endereço. Selecione um endereço diferente.</translation>
-<translation id="6282194474023008486">Código postal</translation>
+<translation id="6282194474023008486">CEP</translation>
 <translation id="6290238015253830360">Os artigos sugeridos aparecerão aqui</translation>
 <translation id="6305205051461490394">Não é possível acessar <ph name="URL" />.</translation>
 <translation id="6319915415804115995">Usado pela última vez há mais de um ano</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Última busca:</translation>
 <translation id="8253091569723639551">Endereço de faturamento necessário</translation>
 <translation id="8261506727792406068">Excluir</translation>
+<translation id="8267698848189296333">Fazendo login como <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Entre em contato com seu administrador de rede se não souber o que isso significa.</translation>
 <translation id="8293206222192510085">Adicionar favorito</translation>
 <translation id="8294431847097064396">Origem</translation>

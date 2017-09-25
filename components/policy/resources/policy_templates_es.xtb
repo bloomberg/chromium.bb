@@ -714,6 +714,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3322771899429619102">Te permite establecer una lista de patrones de URL para especificar los sitios web que pueden utilizar la generación de claves. Si un patrón de URL está en KeygenBlockedForUrls, se anularán estas excepciones.
 
        Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
+<translation id="332771718998993005">Determina el nombre que se utiliza como destino de <ph name="PRODUCT_NAME" />.
+
+          Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
 
@@ -1232,6 +1235,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           El valor de la política se debe especificar en milisegundos. Los valores deben ser inferiores o iguales al tiempo de espera de inactividad.</translation>
 <translation id="5307432759655324440">Disponibilidad del modo de incógnito</translation>
 <translation id="5318185076587284965">Habilita el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
+<translation id="5323128137188992869">Permite enviar contenido al dispositivo con <ph name="PRODUCT_NAME" />.
+
+          Si se asigna el valor "False" a esta política, los usuarios no podrán enviar contenido a su dispositivo. Si se le asigna el valor "True", los usuarios podrán enviar contenido. Si no se establece esta política, los usuarios no podrán enviar contenido a los dispositivos Chrome OS registrados, pero sí lo podrán hacer a dispositivos no registrados.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido que se indican a continuación</translation>
 <translation id="5365946944967967336">Mostrar botón de página principal en la barra de herramientas</translation>
 <translation id="5366977351895725771">Si se establece el valor "false", el usuario no podrá crear usuarios supervisados, pero seguirán estando disponibles los usuarios supervisados creados anteriormente.
@@ -1461,6 +1467,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6111936128861357925">Permitir el juego del huevo de pascua de dinosaurio</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios web utilicen la generación de claves</translation>
+<translation id="6139485614509308022">Si se establece la política OffHours, se ignoran las políticas de dispositivos especificadas (se utiliza la configuración predeterminada de estas políticas) durante los intervalos de tiempo establecidos. Chrome vuelve a aplicar las políticas de dispositivos en cada evento cuando se inicia o finaliza el periodo de OffHours. El usuario recibirá una notificación y tendrá que cerrar sesión cuando finalice OffHours y se modifique la configuración de la política de dispositivos (es decir, cuando el usuario no haya iniciado sesión con una cuenta permitida).</translation>
 <translation id="6145799962557135888">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultJavaScriptSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -1814,7 +1821,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si esta política no se establece o se le asigna el valor false, se habilitará <ph name="TLS_FALSE_START" />. Si se asigna el valor true a esta política, se inhabilitará <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
-<translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
 <translation id="7474249562477552702">Si se permiten los certificados SHA-1 firmados emitidos por los anclajes de confianza locales</translation>
 <translation id="7485481791539008776">Reglas para la selección de la impresora predeterminada</translation>

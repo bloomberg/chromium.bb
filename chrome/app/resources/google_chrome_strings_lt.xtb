@@ -36,7 +36,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Gauti su „Chrome“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1795405610103747296">Įdiekite „Chrome“ telefone. Išsiųsime SMS pranešimą jūsų telefono numeriu: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia atnaujinti „Chrome“.</translation>
 <translation id="1874309113135274312">„Google Chrome“ beta („mDNS-In“)</translation>
 <translation id="1877026089748256423">„Chrome“ versija yra pasenusi</translation>
 <translation id="2063848847527508675">Kad būtų galima pritaikyti naujinį, „Chrome“ OS reikia paleisti iš naujo.</translation>
@@ -62,7 +61,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2446511512801740068">„Chrome“ yra pasenusi, nes kurį nebuvo paleista iš naujo. Naujinys pasiekiamas ir jis bus pritaikytas, kai paleisite „Chrome“ iš naujo.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
-<translation id="2582790009689336987">Netrukus šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebebus palaikoma ši „Linux“ sistema.</translation>
 <translation id="2586406160782125153">Atlikus šį veiksmą bus ištrinti naršymo duomenys iš šio įrenginio. Jei vėliau norėsite atgauti duomenis, prisijunkite prie „Chrome“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">„Chrome“ logotipas</translation>
 <translation id="2664962310688259219">„Chrome“ OS atvirojo šaltinio licencijos</translation>
@@ -88,7 +86,6 @@ Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai
 
 Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką, kuriame rasite daugiau instrukcijų.</translation>
 <translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
-<translation id="3311976847535831054">Šiame kompiuteryje nebebus gaunami 32 bitų „Google Chrome“ naujiniai. Naujovinkite į 64 bitų „Google Chrome“.</translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>
 <translation id="3395323229510056640">Gaukite pagalbos dėl „Chrome“ OS</translation>
 <translation id="3396977131400919238">Diegimo metu įvyko operacinės sistemos klaida. Atsisiųskite „Google Chrome“ dar kartą.</translation>
@@ -119,7 +116,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4328355335528187361">„Google Chrome Dev“ („mDNS-In“)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">Šiame kompiuteryje nebebus gaunami „Google Chrome“ naujiniai, nes nebepalaikoma „Linux“ sistema.</translation>
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4458462641685292929">Vykdoma kita „Google Chrome“ operacija. Vėliau bandykite dar kartą.</translation>
@@ -133,7 +129,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="4743926867934016338">Sutikti ir ieškoti</translation>
 <translation id="4750550185319565338">Iš naujo paleiskite „Chrome“, kad įgalintumėte „<ph name="PLUGIN_NAME" />“</translation>
-<translation id="4751441238232965030">Šiame kompiuteryje netrukus nebebus gaunami 32 bitų „Google Chrome“ naujiniai. Naujovinkite į 64 bitų „Google Chrome“.</translation>
 <translation id="4754614261631455953">„Canary“ versijos „Google Chrome“ (mDNS-In)</translation>
 <translation id="4771048833395599659">Šis failas gali būti pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="4794050651896644714">Išsaugoti išsamią informaciją „Chrome“</translation>
@@ -214,7 +209,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6989339256997917931">„Google Chrome“ atnaujinta, tačiau jos nenaudojote mažiausiai 30 dienų.</translation>
 <translation id="7098166902387133879">„Google Chrome“ naudoja jūsų mikrofoną.</translation>
 <translation id="7106741999175697885">Užduočių tvarkytuvė – „Google Chrome“</translation>
-<translation id="7125719106133729027">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia neautomatiškai iš naujo įdiegti „Chrome“.</translation>
 <translation id="7161904924553537242">Sveiki! Tai - „Google Chrome“</translation>
 <translation id="7164397146364144019">Galite padėti sustiprinti „Chrome“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
 <translation id="7185038942300673794">„<ph name="EXTENSION_NAME" />“ pridėtas į „Chrome“.</translation>

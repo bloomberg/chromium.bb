@@ -29,7 +29,6 @@
 <translation id="2289052229480071835">Dotaknite se ciljev za dotik na zaslonu.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Razširi obvestilo</translation>
-<translation id="2482878487686419369">Obvestila</translation>
 <translation id="2497284189126895209">Vse datoteke</translation>
 <translation id="2522350507219695259">Umerjanje je končano</translation>
 <translation id="252373100621549798">Neznan prikaz</translation>
@@ -98,7 +97,6 @@
 <translation id="6394627529324717982">Vejica</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}one{Pred # s}two{Pred # s}few{Pred # s}other{Pred # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pred 1 sekundo}one{Pred # sekundo}two{Pred # sekundama}few{Pred # sekundami}other{Pred # sekundami}}</translation>
-<translation id="6528179044667508675">Ne moti</translation>
 <translation id="6612467943526193239">Če želite zapustiti umerjanje, pritisnite tipko Esc.</translation>
 <translation id="6620110761915583480">Shrani datoteko</translation>
 <translation id="6699343763173986273">Naslednja skladba</translation>
@@ -110,23 +108,18 @@
 <translation id="688711909580084195">Spletna stran brez naslova</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Še 1 leto}one{Še # leto}two{Še # leti}few{Še # leta}other{Še # let}}</translation>
-<translation id="6918245111648057970">Za vsakega uporabnika dovoli obvestila naslednjih storitev:</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">NAJVERJETNEJŠE</translation>
-<translation id="7135556860107312402">Omogočanje obvestil teh aplikacij:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}one{Pred # min}two{Pred # min}few{Pred # min}other{Pred # min}}</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
-<translation id="7457942297256758195">Izbriši vse</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7781829728241885113">Včeraj</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
-<translation id="7850320739366109486">Ne moti</translation>
 <translation id="7907591526440419938">Odpri datoteko</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 h}one{Pred # h}two{Pred # urama}few{Pred # urami}other{Pred # urami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
@@ -139,10 +132,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 leto}one{# leto}two{# leti}few{# leta}other{# let}}</translation>
 <translation id="8371695176452482769">Začnite govoriti</translation>
 <translation id="838869780401515933">potrdi</translation>
-<translation id="8392688371657486010">Nimate obvestil</translation>
 <translation id="8394908167088220973">Ustavitev/začasna ustavitev</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8602707065186045623">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8806053966018712535">Mapa <ph name="FOLDER_NAME" /></translation>

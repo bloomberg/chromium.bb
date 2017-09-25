@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
 <translation id="1213216066620407844">ChromeVox - Mang tính năng Thoại lên Chrome</translation>
-<translation id="1226487719524433143">Chúng tôi rất mong nhận được ý kiến của bạn về trải nghiệm mới này. Hãy trực tiếp gửi phản hồi cho chúng tôi bằng cách nhấn Search+a, sau đó nhấn i. Nhấn nút tiếp theo để tiếp tục chuyển đến hướng dẫn nhằm tìm hiểu mọi thứ bạn cần để bắt đầu.</translation>
 <translation id="1229276918471378188">Bước nhảy trước</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Tiêu đề cấp 6 tiếp theo</translation>
 <translation id="1275718070701477396">Đã chọn</translation>
-<translation id="1310230882256010289">Nâng cấp từ bên trong. Chúng tôi đã cải tiến cách ChromeVox hoạt động từ những điều cơ bản nhất. Mong đợi hiệu suất, tính ổn định cũng như khả năng hỗ trợ/tuân thủ web tốt hơn.</translation>
 <translation id="1319608975892113573">Không có khung trích dẫn trước nào.</translation>
 <translation id="1321576897702511272">Ẩn trợ giúp của ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">Tiêu đề cột trống</translation>
 <translation id="316542773973815724">Điều hướng</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{dấu cách}other{# dấu cách}}</translation>
-<translation id="3183233191569362040">Xin chúc mừng! Bạn đã tìm hiểu xong kiến thức cơ bản để sử dụng hiệu quả ChromeVox Next (bản beta). Hãy nhớ rằng bạn có thể mở menu lệnh ChromeVox bất cứ lúc nào bằng cách nhấn phím Tìm kiếm+Dấu chấm. Để tìm hiểu thêm về ChromeVox và Chrome OS, hãy truy cập các bài viết sau.
-Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để điều hướng tới nút Đóng và nhấp vào nút đó.</translation>
 <translation id="320961988183078793">đã vào <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -338,7 +334,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Tiêu đề cấp 6 trước</translation>
 <translation id="3914173277599553213">Bắt buộc</translation>
-<translation id="3951424903203718058">Đây là lần đầu tiên bạn sử dụng tính năng phản hồi bằng giọng nói của ChromeVox Next? Hướng dẫn nhanh này sẽ giải thích các kiến thức cơ bản để bắt đầu với ChromeVox Next.</translation>
 <translation id="3962990492275676168">Bắt đầu đọc từ vị trí hiện tại</translation>
 <translation id="4004802134384979325">đã chọn</translation>
 <translation id="4006140876663370126">img</translation>
@@ -432,7 +427,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4846487886195635104">Cuối chữ bị gạch ngang</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Phần tử tương tự trước.</translation>
-<translation id="485011152882364255">Trong ChromeVox Next, phím Tìm kiếm là phím bổ trợ. Hầu hết các phím tắt của ChromeVox đều bắt đầu bằng phím Tìm kiếm. Bạn cũng sẽ sử dụng các phím mũi tên để điều hướng.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Bật ghi nhật ký TTS</translation>
 <translation id="4877261390094455813">Nhập truy vấn tìm kiếm.</translation>
@@ -501,7 +495,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5444587279251314700">(hiện hoạt)</translation>
 <translation id="5451268436205074266">chấm <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Bổ sung</translation>
-<translation id="5458780372341732962">Sử dụng ChromeVox Next (bản beta)</translation>
 <translation id="5485036206801896268">Không có hình trước nào.</translation>
 <translation id="5486947920110100234">Không có điểm nhảy tiếp theo nào.</translation>
 <translation id="549602578321198708">Từ</translation>
@@ -510,7 +503,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5507663321906818013">Dấu gỡ lỗi</translation>
 <translation id="5518443085409638729">Đặt con trỏ giữa các ký tự khi chỉnh sửa văn bản (như Mac OS X).</translation>
 <translation id="552195134157544755">Nút radio</translation>
-<translation id="5531530875187439488">Âm báo mới. Chúng tôi đã làm mới một nhóm biểu tượng âm thanh bạn nghe để duyệt web nhanh nhạy hơn.</translation>
 <translation id="5534303576632885660">tiêu đề</translation>
 <translation id="5546092960038624944">Không có tiêu đề cấp 5 trước nào.</translation>
 <translation id="556042886152191864">Nút</translation>
@@ -537,7 +529,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5682113568322255809">Mốc</translation>
 <translation id="5683155931978483559">Hộp kiểm trước</translation>
 <translation id="5684277895745049190">Danh sách</translation>
-<translation id="5684905390246898631">Chào mừng bạn đến với ChromeVox Next!</translation>
 <translation id="5695831708991916435">Một số phím tắt tiếp theo không phải là các phím lệnh của ChromeVox nhưng chúng vẫn rất hữu ích để khai thác tối đa lợi ích của Chrome.
 Để chuyển tiếp qua các mục có thể nhấp vào như nút và liên kết, nhấn phím Tab. Để quay lại, nhấn phím Shift+Tab. 
 Để tới hộp địa chỉ của trình duyệt Chrome, còn được gọi là thanh địa chỉ, nhấn phím Control + L. 
@@ -572,7 +563,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5937336320314038555">{COUNT,plural, =1{dấu bằng}other{# dấu bằng}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5948123859135882163">Chuyển đổi diễn giải biểu thức toán học giữa cấu trúc và ngữ nghĩa</translation>
-<translation id="5948485979596965684">Bạn đã cập nhật bản phát hành chính mới của ChromeVox!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Hộp thoại</translation>
 <translation id="5963413905009737549">Phần</translation>
@@ -651,7 +641,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6786800275320335305">Bài viết</translation>
 <translation id="6787839852456839824">Phím tắt</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">Chúng tôi đã nỗ lực nhằm mang lại trải nghiệm ChromeVox mới và được cải thiện; dưới đây là các tính năng mới</translation>
 <translation id="6833103209700200188">Chân trang</translation>
 <translation id="6871161210040114857">Không phân biệt chữ hoa / chữ thường.</translation>
 <translation id="6877435256196695200">Không có hình nào tiếp theo.</translation>
@@ -669,7 +658,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7037042857287298941">Danh sách trước</translation>
 <translation id="7041173719775863268">Kết thúc chọn</translation>
 <translation id="7086377898680121060">Tăng độ sáng</translation>
-<translation id="7094527465295945904">Tổ hợp phím mới. Chúng tôi đã tạo ra phím bổ trợ Tìm kiếm ChromeVox và đơn giản hóa đáng kể các tổ hợp phím.</translation>
 <translation id="7095834689119144465">Chỉnh sửa văn bản chỉ dành cho số</translation>
 <translation id="7096001299300236431">Phương tiện trước</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +761,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8066678206530322333">Biểu ngữ</translation>
 <translation id="8076492880354921740">Tab</translation>
 <translation id="8091452896542422286">Dấu cách</translation>
-<translation id="8104178626892949749">Nhấn ChromeVox o, n để tìm hiểu thêm về ChromeVox Next.</translation>
 <translation id="8110647606445335195">Không có mốc ARIA nào.</translation>
 <translation id="8153880621934657047">Không phải bên trong bảng.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{dấu gạch dưới}other{# dấu gạch dưới}}</translation>
@@ -783,7 +770,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8199231515320852133">Thông báo các tiêu đề của ô hiện tại</translation>
 <translation id="820417203470636242">Ô trống.</translation>
 <translation id="8215202828671303819">Đa chọn</translation>
-<translation id="8224171046658870249">Đã chuyển sang ChromeVox Next</translation>
 <translation id="826991282343985864">h$1c$2</translation>
 <translation id="8276439074553447000">Nhảy tới mục có thể đặt tiêu điểm trước</translation>
 <translation id="8278417001922463147">Không có bài viết trước nào.</translation>
@@ -828,7 +814,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8664519043722036194">giây</translation>
 <translation id="867187640362843212">Tiêu đề 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{dấu sổ thẳng}other{# dấu sổ thẳng}}</translation>
-<translation id="8721861170709424373">Giới thiệu các lệnh dành cho ChromeVox Next</translation>
 <translation id="8735450637152821465">Bắt đầu chọn</translation>
 <translation id="8743786158317878347">vào nội dung có cấu trúc, chẳng hạn như bảng</translation>
 <translation id="8747966237988593539">Danh sách theo thứ tự</translation>
@@ -881,7 +866,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="923331726185079994">Đã cập nhật ChromeVox</translation>
 <translation id="930275611743429116">Lựa chọn bắt đầu hoặc kết thúc.</translation>
 <translation id="948171205378458592">Giảm tốc độ nói</translation>
-<translation id="955917170449423694">Đã chuyển sang Classic ChromeVox</translation>
 <translation id="962913030769097253">Tiêu đề cấp 1 tiếp theo</translation>
 <translation id="973955474346881951">Bật/tắt chế độ cố định</translation>
 <translation id="976849232629612000">Không có mục nào.</translation>

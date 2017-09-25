@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1181037720776840403">Eliminar</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informar automáticamente<ph name="END_WHITEPAPER_LINK" /> los detalles de posibles incidentes de seguridad a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">No se completó el pago</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1201895884277373915">Más sobre este sitio</translation>
 <translation id="1206967143813997005">La firma inicial no es válida</translation>
@@ -617,7 +618,6 @@
 <translation id="5631439013527180824">Token de administración de dispositivos no válido</translation>
 <translation id="5633066919399395251">Es posible que los atacantes que actualmente se encuentran en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten instalar programas peligrosos en tu computadora para robar o borrar información (p. ej., fotos, contraseñas, mensajes y tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Se bloqueó contenido engañoso.</translation>
-<translation id="5646376287012673985">Ubicación</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5669703222995421982">Obtener contenido personalizado</translation>
 <translation id="5675650730144413517">Esta página no funciona</translation>
@@ -920,6 +920,7 @@
 <translation id="8249320324621329438">Se obtuvo por última vez:</translation>
 <translation id="8253091569723639551">Se requiere una dirección de facturación</translation>
 <translation id="8261506727792406068">Borrar</translation>
+<translation id="8267698848189296333">Acceder como <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Comunícate con el administrador de red si no entiendes bien lo que significa.</translation>
 <translation id="8293206222192510085">Agregar Marcador</translation>
 <translation id="8294431847097064396">Fuente</translation>

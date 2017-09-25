@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="1685087038067318291">Find websider, som genstande i nærheden sender. Når Bluetooth er slået til, kan Chrome samle websider, der er tilknyttet genstande omkring dig, og sende dem anonymt til Google for at finde de mest nyttige. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome har ikke adgang til dine billeder eller videoer. Gå til iOS Indstillinger &gt; Privatliv &gt; Billeder for at få adgang.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="415767770115540173">Få en bedre Google-oplevelse i Chrome baseret på din placering.</translation>
-<translation id="4248297594476034182">Log ind på Chrome for at se dine faner på alle dine enheder.</translation>
 <translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4523886039239821078">Nogle tilføjelser får Chrome til at gå ned. Prøv at afinstallere:</translation>
 <translation id="4615174829807303908">Du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />. Denne handling sletter dine Chrome-data fra denne enhed, men dine data forbliver på din Google-konto.</translation>

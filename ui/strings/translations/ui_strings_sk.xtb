@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">Klepnite na dotykové ciele na obrazovke.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Rozbaliť upozornenie</translation>
-<translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2497284189126895209">Všetky súbory</translation>
 <translation id="2522350507219695259">Kalibrácia je dokončená</translation>
 <translation id="252373100621549798">Neznáma obrazovka</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">Čiarka</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}few{Pred # s}many{Pred # s}other{Pred # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{pred sekundou}few{pred # sekundami}many{pred # sekundami}other{pred # sekundami}}</translation>
-<translation id="6528179044667508675">Nerušiť</translation>
 <translation id="6612467943526193239">Kalibráciu ukončíte stlačením klávesa Esc.</translation>
 <translation id="6620110761915583480">Uložiť súbor</translation>
 <translation id="6699343763173986273">Média – ďalšia stopa</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">Nepomenovaná webová stránka</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{zostáva 1 rok}few{zostávajú # roky}many{zostáva # roka}other{zostáva # rokov}}</translation>
-<translation id="6918245111648057970">Povoliť upozornenia na nasledujúce položky pre každého používateľa:</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">S NAJVÄČŠOU PRAVDEPODOBNOSŤOU</translation>
-<translation id="7135556860107312402">Povoliť prijímanie upozornení od:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zostáva 1 min}few{Zostávajú # min}many{Zostáva # min}other{Zostáva # min}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}few{Pred # min}many{Pred # min}other{Pred # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zostáva 1 minúta}few{Zostávajú # minúty}many{Zostáva # minúty}other{Zostáva # minút}}</translation>
-<translation id="7457942297256758195">Vymazať všetky</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">Ak si chcete zobraziť upozornenia, odomknite zariadenie</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7814458197256864873">&amp;Kopírovať</translation>
-<translation id="7850320739366109486">Nerušiť</translation>
 <translation id="7907591526440419938">Otvoriť súbor</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 hodinou}few{Pred # hodinami}many{Pred # hodinou}other{Pred # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zostáva 1 s}few{Zostávajú # s}many{Zostáva # s}other{Zostáva # s}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 rok}few{# roky}many{# roka}other{# rokov}}</translation>
 <translation id="8371695176452482769">Hovorte…</translation>
 <translation id="838869780401515933">označiť</translation>
-<translation id="8392688371657486010">Nemáte žiadne upozornenia</translation>
 <translation id="8394908167088220973">Média – prehrať / pozastaviť</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 r.}few{# r.}many{# r.}other{# r.}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Súbor (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>

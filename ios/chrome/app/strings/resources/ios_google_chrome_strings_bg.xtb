@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1685087038067318291">Откривайте уеб страници, изпращани от обекти в близост. Когато функцията за Bluetooth е включена, Chrome може да събира съответните страници и да ги изпраща анонимно до Google, за да намира най-полезните. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="415767770115540173">Подобрете практическата си работа с Google в Chrome въз основа на местоположението ви.</translation>
-<translation id="4248297594476034182">Влезте в Chrome, за да получите разделите си на всичките си устройства.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
 <translation id="4615174829807303908">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>

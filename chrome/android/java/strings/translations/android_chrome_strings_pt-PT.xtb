@@ -234,7 +234,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
-<translation id="3319792846664697699">Painel de navegação</translation>
 <translation id="3321222012623826478">Este serviço precisa de enviar o endereço deste Website anonimamente para os servidores da Google para validação.</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3341058695485821946">Veja a quantidade de dados que poupou.</translation>
@@ -291,7 +290,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3810973564298564668">Gerir</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> transferências eliminadas</translation>
 <translation id="3822502789641063741">Limpar armazenamento do site?</translation>
-<translation id="3845539888601087042">A mostrar o histórico do seus dispositivos com sessão iniciada. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Procurar para a frente</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
@@ -334,7 +332,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4226663524361240545">As notificações podem fazer com que o dispositivo vibre</translation>
 <translation id="4242533952199664413">Abrir definições</translation>
-<translation id="4248297594476034182">Para obter os seus separadores em todos os dispositivos, inicie sessão no Chrome.</translation>
 <translation id="424864128008805179">Pretende terminar sessão no Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -457,7 +454,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5423934151118863508">As páginas mais visitadas aparecem aqui</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB disponíveis</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
-<translation id="5435775191620395718">A mostrar o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Ir para a barra de endereço</translation>
 <translation id="5447201525962359567">Todo o armazenamento de sites, incluindo cookies e outros dados armazenados localmente</translation>
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
@@ -484,7 +480,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5620928963363755975">Encontre os seus ficheiros e páginas nas Transferências através do botão Mais opções.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
-<translation id="5646376287012673985">Localização</translation>
 <translation id="5648166631817621825">Últimos 7 dias</translation>
 <translation id="5655963694829536461">Pesquisar as suas transferências</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -631,6 +626,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="688738109438487280">Adicionar dados existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d separador aberto}one{%1$d open tabs}other{%1$d separadores abertos}}</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">OK</translation>

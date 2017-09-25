@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Drukuj...</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automatycznie przesyłaj<ph name="END_WHITEPAPER_LINK" /> do Google szczegółowe informacje o możliwych zagrożeniach. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Płatność nie została zrealizowana</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1201895884277373915">Więcej z tej witryny</translation>
 <translation id="1206967143813997005">Nieprawidłowy podpis wstępny</translation>
@@ -430,7 +431,7 @@
 <translation id="413544239732274901">Więcej informacji</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Użyj globalnego ustawienia domyślnego (Wykrywaj)</translation>
-<translation id="4165986682804962316">Ustawienia witryny</translation>
+<translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4169947484918424451">Czy Chromium ma zapisać tę kartę?</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Jeszcze <ph name="ITEM_COUNT" /> element}few{Jeszcze <ph name="ITEM_COUNT" /> elementy}many{Jeszcze <ph name="ITEM_COUNT" /> elementów}other{Jeszcze <ph name="ITEM_COUNT" /> elementu}}</translation>
@@ -616,11 +617,10 @@
 <translation id="5631439013527180824">Nieprawidłowy token zarządzania urządzeniem</translation>
 <translation id="5633066919399395251">Osoby obecnie atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą próbować zainstalować na Twoim komputerze niebezpieczne programy, które wykradają lub usuwają informacje (na przykład zdjęcia, hasła, wiadomości lub dane kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Zablokowano treści wprowadzające w błąd.</translation>
-<translation id="5646376287012673985">Lokalizacja</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Otrzymywanie spersonalizowanych treści</translation>
 <translation id="5675650730144413517">Ta strona nie działa</translation>
-<translation id="5689199277474810259">Eksportuj do JSON</translation>
+<translation id="5689199277474810259">Eksportuj w formacie JSON</translation>
 <translation id="5710435578057952990">Tożsamość witryny nie została zweryfikowana.</translation>
 <translation id="5719499550583120431">Karty przedpłacone są akceptowane.</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Ostatnie pobieranie:</translation>
 <translation id="8253091569723639551">Wymagany jest adres rozliczeniowy</translation>
 <translation id="8261506727792406068">Usuń</translation>
+<translation id="8267698848189296333">Logujesz się jako <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Jeśli nie masz pewności, co to oznacza, skontaktuj się z administratorem sieci.</translation>
 <translation id="8293206222192510085">Dodaj zakładkę</translation>
 <translation id="8294431847097064396">Źródło</translation>

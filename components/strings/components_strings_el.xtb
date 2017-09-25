@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Προσαρμογή στο πλάτος</translation>
 <translation id="1088860948719068836">Προσθήκη ονόματος στην κάρτα</translation>
 <translation id="1103523840287552314">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Εμφάνιση όλων των αποθηκευμένων κωδικών πρόσβασης…</translation>
 <translation id="1107591249535594099">Εάν επιλεγεί, το Chrome θα αποθηκεύει ένα αντίγραφο της κάρτας σας σε αυτήν τη συσκευή για ταχύτερη συμπλήρωση φορμών.</translation>
 <translation id="1111153019813902504">Πρόσφατοι σελιδοδείκτες</translation>
 <translation id="1113869188872983271">&amp;Αναίρεση αναδιάταξης</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Εκτύπωση...</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Αυτόματη αναφορά<ph name="END_WHITEPAPER_LINK" /> στην Google λεπτομερειών σχετικά με πιθανά περιστατικά ασφάλειας.<ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Η πληρωμή δεν ολοκληρώθηκε</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1201895884277373915">Περισσότερα από αυτόν τον ιστότοπο</translation>
 <translation id="1206967143813997005">Εσφαλμένη αρχική υπογραφή</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Δεν ήταν δυνατή η εύρεση του άρθρου που ζητήσατε.</translation>
 <translation id="5541546772353173584">Προσθήκη διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5544037170328430102">Μια ενσωματωμένη σελίδα στον ιστότοπο <ph name="SITE" /> λέει:</translation>
+<translation id="5545756402275714221">Άρθρα για εσάς</translation>
 <translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5560088892362098740">Ημερομηνία λήξης</translation>
 <translation id="5565735124758917034">Ενεργό</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Μη έγκυρο διακριτικό διαχείρισης συσκευής</translation>
 <translation id="5633066919399395251">Οι εισβολείς που βρίσκονται αυτήν τη στιγμή στον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ενδέχεται να επιχειρήσουν να εγκαταστήσουν επικίνδυνα προγράμματα στον υπολογιστή σας, τα οποία μπορούν να υποκλέψουν ή να διαγράψουν τα δεδομένα σας (για παράδειγμα, φωτογραφίες, κωδικούς πρόσβασης, μηνύματα και στοιχεία πιστωτικών καρτών). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Το παραπλανητικό περιεχόμενο αποκλείστηκε.</translation>
-<translation id="5646376287012673985">Τοποθεσία</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5669703222995421982">Λήψη εξατομικευμένου περιεχομένου</translation>
 <translation id="5675650730144413517">Αυτή η σελίδα δεν λειτουργεί</translation>
+<translation id="5689199277474810259">Εξαγωγή σε JSON</translation>
 <translation id="5710435578057952990">Η ταυτότητα αυτού του ιστότοπου δεν έχει επαληθευτεί.</translation>
 <translation id="5719499550583120431">Οι προπληρωμένες κάρτες γίνονται δεκτές.</translation>
 <translation id="5720705177508910913">Τρέχων χρήστης</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Τελευταία ανάκτηση:</translation>
 <translation id="8253091569723639551">Απαιτείται διεύθυνση χρέωσης</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
+<translation id="8267698848189296333">Σύνδεση ως <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Επικοινωνήστε με το διαχειριστή του δικτύου σας εάν δεν είστε βέβαιοι για το τι σημαίνει αυτό.</translation>
 <translation id="8293206222192510085">Προσθήκη σελιδοδείκτη</translation>
 <translation id="8294431847097064396">Πηγή</translation>

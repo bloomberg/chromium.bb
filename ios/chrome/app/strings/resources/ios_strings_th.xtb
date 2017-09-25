@@ -64,6 +64,7 @@
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
+<translation id="213900355088104901">หากต้องการท่องเว็บแบบส่วนตัว ให้เปิดแท็บไม่ระบุตัวตน</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2230173723195178503">หน้าเว็บโหลดแล้ว</translation>
@@ -176,6 +177,7 @@
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="430793432425771671">ซิงค์ทุกอย่าง</translation>
 <translation id="4342284590510997375">ใหม่</translation>
+<translation id="434816576838749873">เลือกแอปอีเมล</translation>
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
 <translation id="4370827530403103842">การซิงค์ไม่ทำงาน แตะเพื่อแก้ไข</translation>
 <translation id="4375040482473363939">ค้นหาโค้ด QR</translation>
@@ -307,6 +309,7 @@
 <translation id="6785453220513215166">กำลังส่งรายงานข้อขัดข้อง...</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="6797885426782475225">ค้นหาด้วยเสียง</translation>
+<translation id="6807889908376551050">แสดงทั้งหมด...</translation>
 <translation id="681368974849482173">สร้างรายการแล้ว</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
 <translation id="6903907808598579934">เปิดการซิงค์</translation>
@@ -414,6 +417,7 @@
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9148126808321036104">ลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="914898748153555155">คุณสามารถเปลี่ยนค่ากำหนดนี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
+<translation id="91549621916703028">สร้างแท็บได้หลายแท็บสำหรับงานทั้งหมดของคุณ</translation>
 <translation id="9157836665414082580">ระงับกล่องโต้ตอบ</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9203116392574189331">แฮนด์ออฟ</translation>

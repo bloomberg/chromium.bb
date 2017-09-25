@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1326317727527857210">Pierakstieties pārlūkā Chrome, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="1685087038067318291">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Ja ir ieslēgts Bluetooth savienojums, Chrome var apkopot tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūtīt tās uz Google serveriem, lai atrastu visnoderīgākās lapas. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome nevar piekļūt jūsu fotoattēliem vai videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="415767770115540173">Uzlabojiet savu Google pakalpojumu izmantošanas pieredzi pārlūkā Chrome, sūtot informāciju par savu atrašanās vietu.</translation>
-<translation id="4248297594476034182">Pierakstieties pārlūkā Chrome, lai cilnes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4523886039239821078">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="4615174829807303908">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />. Izrakstoties Chrome dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>

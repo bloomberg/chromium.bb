@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">An Breite anpassen</translation>
 <translation id="1088860948719068836">Angabe für "Name auf der Karte" hinzufügen</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
+<translation id="1103778128462718200">Alle gespeicherten Passwörter anzeigen...</translation>
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1111153019813902504">Vor Kurzem aufgerufene Lesezeichen</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1184214524891303587">Informationen zu sicherheitsrelevanten Zwischenfällen <ph name="BEGIN_WHITEPAPER_LINK" />automatisch Google melden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Zahlung nicht abgeschlossen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1201895884277373915">Mehr von dieser Website</translation>
 <translation id="1206967143813997005">Erste Signatur ungültig</translation>
@@ -243,7 +245,7 @@
 <translation id="2826760142808435982">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt und authentifiziert und verwendet <ph name="KX" /> als Mechanismus für den Schlüsselaustausch.</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2851634818064021665">Sie benötigen eine Berechtigung, um auf diese Website zuzugreifen</translation>
-<translation id="2856444702002559011">Hacker könnten versuchen, Ihre Daten von <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu stehen, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2856444702002559011">Hacker könnten versuchen, Ihre Daten von <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu stehlen, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2889159643044928134">Nicht neu laden</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
 <translation id="5544037170328430102">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt:</translation>
+<translation id="5545756402275714221">Artikel für Sie</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5560088892362098740">Ablaufdatum</translation>
 <translation id="5565735124758917034">Aktiv</translation>
@@ -613,10 +616,10 @@
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
 <translation id="5633066919399395251">Zurzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> befindliche Hacker könnten versuchen, gefährliche Programme auf Ihrem Computer zu installieren, um Daten wie Fotos, Passwörter, Nachrichten und Kreditkartendaten zu stehlen oder zu löschen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Betrügerische Inhalte blockiert.</translation>
-<translation id="5646376287012673985">Speicherort</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669703222995421982">Personalisierte Inhalte erhalten</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
+<translation id="5689199277474810259">Als JSON exportieren</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5719499550583120431">Prepaidkarten werden akzeptiert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
@@ -915,6 +918,7 @@
 <translation id="8249320324621329438">Letzter Abruf:</translation>
 <translation id="8253091569723639551">Rechnungsadresse ist erforderlich</translation>
 <translation id="8261506727792406068">Löschen</translation>
+<translation id="8267698848189296333">Als <ph name="USERNAME" /> anmelden</translation>
 <translation id="8289355894181816810">Wenn Sie weitere Informationen dazu benötigen, kann Ihnen Ihr Netzwerkadministrator weiterhelfen.</translation>
 <translation id="8293206222192510085">Lesezeichen hinzufügen</translation>
 <translation id="8294431847097064396">Quelle</translation>

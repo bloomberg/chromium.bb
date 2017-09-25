@@ -717,6 +717,9 @@
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="332771718998993005">Nosakiet pārraidīto nosaukumu kā <ph name="PRODUCT_NAME" /> galamērķi.
+
+          Ja šai politikai tiks iestatīta virkne, kas nav tukša, šī virkne tiks izmantota kā <ph name="PRODUCT_NAME" /> galamērķa nosaukums. Pretējā gadījumā kā galamērķa nosaukums tiks izmantots ierīces nosaukums. Ja šī politika netiks iestatīta, kā galamērķa nosaukums tiks izmantots ierīces nosaukums un to varēs mainīt ierīces īpašnieks vai lietotājs no domēna, kurā ierīce tiek pārvaldīta. Nosaukuma garums nedrīkst pārsniegt 24 rakstzīmes.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -1232,6 +1235,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Politikas vērtība ir jānorāda milisekundēs. Vērtības tiek summētas, lai tās būtu mazākas par aizkavi līdz dīkstāvei vai vienādas ar to.</translation>
 <translation id="5307432759655324440">Inkognito režīma pieejamība</translation>
 <translation id="5318185076587284965">Pārraides serveru iespējošana attālās piekļuves saimniekdatoram</translation>
+<translation id="5323128137188992869">Atļaujiet ierīcē apraidīt saturu, izmantojot <ph name="PRODUCT_NAME" />.
+
+          Ja šai politikai tiks iestatīta vērtība “False”, lietotāji nevarēs apraidīt saturu savā ierīcē. Ja šai politikai tiks iestatīta vērtība “True”, lietotājiem būs atļauts apraidīt saturu. Ja šī politika nebūs iestatīta, lietotājiem nebūs atļauts apraidīt saturu reģistrētajās Chrome OS ierīcēs, taču viņi varēs apraidīt saturu nereģistrētajās ierīcēs.</translation>
 <translation id="5330684698007383292">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk norādītos satura veidus</translation>
 <translation id="5365946944967967336">Rīkjoslā parāda pogu Sākums</translation>
 <translation id="5366977351895725771">Iestatot vērtību uz “false”, šim lietotājam tiks atspējota iespēja veidot uzraudzītos lietotāju kontus. Visi esošie uzraudzītie lietotāju konti joprojām būs pieejami.
@@ -1463,6 +1469,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
 <translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>
+<translation id="6139485614509308022">Ja politika OffHours ir iestatīta, noteiktajos laika intervālos konkrētās ierīču politikas tiek ignorētas (tiek izmantoti šo politiku noklusējuma iestatījumi). Ierīču politikas tiek atkārtoti izmantotas pārlūkā Chrome katru reizi, kad sākas vai beidzas OffHours periods. Lietotājam tiks parādīts paziņojums un viņam būs jāizrakstās piespiedu kārtā, kad tiks mainīti OffHours laika un ierīču politikas iestatījumi (t.i., ja lietotājs būs pieteicies, izmantojot neatļautu kontu).</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1814,7 +1821,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta vai tās vērtība ir Nepatiesa, funkcija <ph name="TLS_FALSE_START" /> tiks iespējota. Ja ir iestatīta vērtība Patiesa, funkcija <ph name="TLS_FALSE_START" /> tiks atspējota.</translation>
 <translation id="7433714841194914373">Iespējo dinamisko meklēšanu</translation>
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
-<translation id="7468416082528382842">Windows reģistra atrašanās vieta:</translation>
 <translation id="7469554574977894907">Iespējo meklēšanas ieteikumus</translation>
 <translation id="7474249562477552702">Ar SHA-1 parakstītu sertifikātu, ko izsnieguši lokāli uzticamības enkuri, atļaušana</translation>
 <translation id="7485481791539008776">Noklusējuma printera atlases kārtulas</translation>

@@ -8,6 +8,7 @@
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
+<translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
 <translation id="1267032506238418139">تغيير الاختصار</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">سيؤدي تمكين ميزة بيانات الجوّال إلى تمكين البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">الاشعارات</translation>
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
 <translation id="2532589005999780174">وضع التباين العالي</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
 <translation id="3547954654003013442">إعدادات الخادم الوكيل</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
+<translation id="3582792037806681688">تم منع الدخول المتعدد لمستخدم في هذه الجلسة</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">‏جهاز USB-C (المنفذ الأيمن)</translation>
 <translation id="6501401484702599040">إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">الإدخال بالكتابة اليدوية</translation>
+<translation id="6528179044667508675">عدم الإزعاج</translation>
 <translation id="6537270692134705506">التقاط الشاشة</translation>
+<translation id="6580955892089546165">تسمح لك هذه الميزة بالدخول بسرعة إلى أي مستخدم تم تسجيل دخوله دون طلب كلمة مرور.
+
+لا تستخدم هذه الميزة إلا مع الحسابات التي تثق بها.</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. يُرجى إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">إنهاء الجلسة</translation>
 <translation id="7034339000180558234">إرسال <ph name="TAB_NAME" /> إلى <ph name="RECEIVER_NAME" />.</translation>
 <translation id="7052914147756339792">تعيين خلفية...</translation>
+<translation id="7054808953701320293">أعي ذلك، عدم الإظهار لي مرة أخرى.</translation>
 <translation id="7066646422045619941">تم تعطيل هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
+<translation id="7135556860107312402">السماح بالإشعارات من الجهات التالية:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
 <translation id="7569509451529460200">‏تم تمكين Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
+<translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>
+<translation id="7658239707568436148">إلغاء</translation>
 <translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
 <translation id="7798302898096527229">‏اضغط على مفتاح البحث أو المفتاح Shift للإلغاء.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7977927628060636163">جارٍ البحث عن شبكات الجوّال...</translation>
 <translation id="7982789257301363584">الشبكة</translation>
+<translation id="7994370417837006925">الدخول المتعدد</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
+<translation id="8056430285089645882">أعي ذلك، عدم إظهار هذا لي مرة أخرى.</translation>
+<translation id="8088137642766812908">احذر، فهذه الميزة غير مأمونة النتائج</translation>
 <translation id="8098591350844501178">إيقاف إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8392234662362215700">‏انقر على Control-Shift-Space لتبديل تخطيط لوحة المفاتيح.</translation>
+<translation id="8392688371657486010">ليس لديك أي إشعارات</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433186206711564395">إعدادات الشبكة</translation>
 <translation id="8433977262951327081">تم تغيير اختصار عرض الفقاعة التفسيرية لقائمة خيارات الإدخال في الرف. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270 درجة</translation>
 <translation id="8676770494376880701">تمّ توصيل شاحن منخفض الطاقة</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
+<translation id="8814715559352963456">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع.
+
+ربما يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين أسطح المكتب.</translation>
 <translation id="8825534185036233643">النسخ المطابق بأكثر من عرضين غير مدعوم.</translation>
 <translation id="8828714802988429505">90 درجة</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">الميكروفون قيد الاستخدام</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>
 <translation id="9091626656156419976">تمت إزالة عرض <ph name="DISPLAY_NAME" /></translation>
+<translation id="9111102763498581341">إلغاء التأمين</translation>
 <translation id="9151726767154816831">‏إعادة التشغيل وإجراء Powerwash للتحديث</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية.</translation>

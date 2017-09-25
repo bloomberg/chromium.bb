@@ -1787,7 +1787,6 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimalizace <ph name="TLS_FALSE_START" /> bude aktivována. Je-li nastavena na hodnotu True, optimalizace <ph name="TLS_FALSE_START" /> bude zakázána.</translation>
 <translation id="7433714841194914373">Aktivovat Dynamický režim</translation>
 <translation id="7443616896860707393">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
-<translation id="7468416082528382842">Umístění v registru systému Windows:</translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
 <translation id="7474249562477552702">Udává, zda jsou povoleny certifikáty podepsané algoritmem SHA-1 vydané místními kotvami důvěryhodnosti</translation>
 <translation id="7485481791539008776">Pravidla výběru výchozí tiskárny</translation>

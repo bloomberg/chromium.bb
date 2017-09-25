@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1326317727527857210">Prisijunkite prie „Chrome“, kad pasiektumėte skirtukus iš kitų įrenginių.</translation>
 <translation id="1685087038067318291">Atraskite netoliese esančių objektų siunčiamus tinklalapius. Kai „Bluetooth“ įjungta, „Chrome“ gali rinkti tinklalapius, susijusius su netoli jūsų esančiais objektais, ir anonimiškai siųsti juos „Google“ paslaugai, kad būtų rasti naudingiausi tinklalapiai. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">„Google Chrome“ nepasiekia nuotraukų ar vaizdo įr. Įgal. prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="415767770115540173">Patogiau naudokitės „Google“ funkcijomis naudodami pagal vietovę pritaikytą „Chrome“.</translation>
-<translation id="4248297594476034182">Prisijunkite prie „Chrome“, kad pasiektumėte skirtukus visuose įrengin.</translation>
 <translation id="424864128008805179">Atsijungti nuo „Chrome“?</translation>
 <translation id="4523886039239821078">Dėl tam tikrų priedų „Chrome“ užstringa . Pašalinkite:</translation>
 <translation id="4615174829807303908">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />. „Chrome“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>

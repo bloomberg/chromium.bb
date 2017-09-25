@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ietilpināt pēc platuma</translation>
 <translation id="1088860948719068836">Uz kartes norādītā vārda pievienošana</translation>
 <translation id="1103523840287552314">Vienmēr tulkot <ph name="LANGUAGE" /> valodas saturu</translation>
+<translation id="1103778128462718200">Rādīt visas saglabātās paroles...</translation>
 <translation id="1107591249535594099">Ja šī izvēles rūtiņa ir atzīmēta, pārlūks Chrome saglabās jūsu kartes kopiju šajā ierīcē, lai nodrošinātu ātrāku veidlapu aizpildi.</translation>
 <translation id="1111153019813902504">Nesenas grāmatzīmes</translation>
 <translation id="1113869188872983271">&amp;Atsaukt pārkārtošanu</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">Drukāt...</translation>
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Automātiski nosūtīt<ph name="END_WHITEPAPER_LINK" /> Google serveriem informāciju par iespējamām drošības problēmām. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Maksājums nav pabeigts</translation>
 <translation id="1201402288615127009">Nākamais</translation>
 <translation id="1201895884277373915">Vairāk no šīs vietnes</translation>
 <translation id="1206967143813997005">Sākotnējais paraksts nav derīgs</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Pieprasīto rakstu nevarēja atrast.</translation>
 <translation id="5541546772353173584">E-pasta adreses pievienošana</translation>
 <translation id="5544037170328430102">Vietnē <ph name="SITE" /> iegultā lapā ir rakstīts:</translation>
+<translation id="5545756402275714221">Ieteiktie raksti</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5560088892362098740">Derīguma termiņš</translation>
 <translation id="5565735124758917034">Aktīvs</translation>
@@ -613,10 +616,10 @@
 <translation id="5631439013527180824">Ierīces pārvaldības marķieris nav derīgs.</translation>
 <translation id="5633066919399395251">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var mēģināt jūsu datorā instalēt bīstamas programmas, kas zog vai izdzēš informāciju (piemēram, fotoattēlus, paroles, ziņojumus un kredītkaršu datus). <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="563324245173044180">Bloķēts maldinošs saturs</translation>
-<translation id="5646376287012673985">Atrašanās vieta</translation>
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5669703222995421982">Saņemiet personalizētu saturu</translation>
 <translation id="5675650730144413517">Šī lapa nedarbojas</translation>
+<translation id="5689199277474810259">Eksportēt JSON formātā</translation>
 <translation id="5710435578057952990">Tīmekļa vietnes identitāte nav apstiprināta.</translation>
 <translation id="5719499550583120431">Tiek pieņemtas priekšapmaksas kartes.</translation>
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
@@ -915,6 +918,7 @@
 <translation id="8249320324621329438">Pēdējās pirmsielādes laiks:</translation>
 <translation id="8253091569723639551">Jānorāda norēķinu adrese.</translation>
 <translation id="8261506727792406068">Dzēst</translation>
+<translation id="8267698848189296333">Notiek pierakstīšanās lietotāja <ph name="USERNAME" /> kontā</translation>
 <translation id="8289355894181816810">Sazinieties ar tīkla administratoru, ja neesat pārliecināts, ko tas nozīmē.</translation>
 <translation id="8293206222192510085">Pievienot grāmatzīmi</translation>
 <translation id="8294431847097064396">Avots</translation>

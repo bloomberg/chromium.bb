@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">‏الحصول على Chromium على جهاز iPhone</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
-<translation id="2372704305038231957">‏قد لا يعمل Chromium إصدار 32 بت على نحو صحيح لأنه لم يعد مدعومًا على نظام Linux هذا. يُرجى الترقية إلى Chromium إصدار 64 بت.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{‏هناك تنزيل قيد التقدم حاليًا. هل تريد إلغاء التنزيل والخروج من Chromium؟}zero{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}two{‏هناك تنزيلان (#) قيد التقدم حاليًا. هل تريد إلغاء التنزيلين والخروج من Chromium؟}few{‏هناك # تنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}many{‏هناك # تنزيلاً قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}other{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Chromium؟}}</translation>
 <translation id="2396765026452590966">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2483889755041906834">‏في Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">‏(<ph name="BEGIN_BUTTON" />إعادة تشغيل<ph name="END_BUTTON" /> Chromium مطلوبة)</translation>
 <translation id="5796460469508169315">‏Chromium جاهز تقريبًا.</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
-<translation id="5823381412099532241">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chromium.</translation>
-<translation id="5859963531214966875">‏لن تدعم الإصدارات المستقبلية من Chromium نظام Linux هذا.</translation>
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">‏يحتاج Chromium إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6526111688217511984">‏يحتاج Chromium الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
-<translation id="6584627348340620412">‏لن تدعم الإصدارات المستقبلية من Chromium إصدار32 بت نظام Linux هذا بعد الآن، يُرجى الترقية إلى Chromium إصدار 64 بت.</translation>
-<translation id="6593914713218535185">‏قد لا يعمل Chromium بشكل صحيح لأنه لم يعد معتمدًا على نظام Linux هذا.</translation>
 <translation id="6638567566961868659">‏ابحث عن الإشارات المرجعية في قائمة Chromium أو على شريط الإشارات المرجعية.</translation>
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
 <translation id="6717134281241384636">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Chromium.
@@ -182,7 +177,6 @@
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="6944967875980567883">‏الوحدات المحملة في Chromium</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
-<translation id="7027298027173928763">‏تعذر تحديث Chromium إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك إعادة تثبيت Chromium يدويًا.</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7066436765290594559">‏تعذر على نظام التشغيل Chromium مزامنة البيانات. يُرجى تحديث عبارة مرور المزامنة.</translation>
 <translation id="707471633328071618">‏Google Payments (تم النسخ إلى Chromium)</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1326317727527857210">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="1685087038067318291">Descobreix les pàgines web enviades pels objectes propers. Quan el Bluetooth està activat, Chrome pot recopilar les pàgines web associades als objectes que t'envolten i enviar-les de manera anònima a Google per trobar les més útils. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome no té accés als vostres vídeos o fotos. Permeteu-li l'accés a iOS, a Configuració &gt; Privadesa &gt; Fotos.</translation>
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="415767770115540173">Si compartiu la ubicació, millorareu la vostra experiència a Chrome.</translation>
-<translation id="4248297594476034182">Inicieu la sessió a Chrome per accedir a les vostres pestanyes des de tots els dispositius.</translation>
 <translation id="424864128008805179">Voleu tancar la sessió de Chrome?</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome es bloquegi. Desinstal·leu-los.</translation>
 <translation id="4615174829807303908">Esteu tancant la sessió d'un compte gestionat per <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se suprimiran les vostres dades de Chrome d'aquest dispositiu, però continuaran al vostre compte de Google.</translation>

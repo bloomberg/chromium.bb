@@ -234,7 +234,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="3295602654194328831">Ficha Maelezo</translation>
 <translation id="3303414029551471755">Ungependa kuendelea kupakua maudhui?</translation>
-<translation id="3319792846664697699">Kidirisha cha kusogeza</translation>
 <translation id="3321222012623826478">Huduma hii inahitaji kutuma anwani ya tovuti hii kwenye seva za Google bila maelezo yanayoweza kukutambulisha kwa ajili ya uthibitishaji.</translation>
 <translation id="3328801116991980348">Maelezo ya tovuti</translation>
 <translation id="3341058695485821946">Ona kiasi cha data ulichookoa</translation>
@@ -291,7 +290,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="3810973564298564668">Dhibiti</translation>
 <translation id="3819178904835489326">Vipakuliwa <ph name="NUMBER_OF_DOWNLOADS" /> vimefutwa</translation>
 <translation id="3822502789641063741">Ungependa kufuta hifadhi ya tovuti?</translation>
-<translation id="3845539888601087042">Inaonyesha historia kutoka vifaa vyako ulivyotumia kuingia katika akaunti. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Peleka mbele</translation>
 <translation id="3894427358181296146">Ongeza folda</translation>
 <translation id="3895926599014793903">Lazimisha kuwasha ukuzaji</translation>
@@ -334,7 +332,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="4226663524361240545">Arifa huenda zitatetemesha kifaa</translation>
 <translation id="4242533952199664413">Fungua mipangilio</translation>
-<translation id="4248297594476034182">Ingia katika Chrome ili upate vichupo vyako kwenye vifaa vyako vyote.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
 <translation id="4254813446494774748">Lugha ya Tafsiri:</translation>
 <translation id="4256782883801055595">Leseni za programu huria</translation>
@@ -457,7 +454,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="5423934151118863508">Kurasa zako zilizotembelewa sana zitaonekana hapa</translation>
 <translation id="5424588387303617268">GB <ph name="GIGABYTES" /> zinapatikana</translation>
 <translation id="5433691172869980887">Jina la mtumiaji limenakiliwa</translation>
-<translation id="5435775191620395718">Inaonyesha historia kutoka kifaa hiki. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Rudi kwenye sehemu ya anwani</translation>
 <translation id="5447201525962359567">Hifadhi yote ya tovuti, ikiwa ni pamoja na vidakuzi na data nyingine iliyohifadhiwa ndani</translation>
 <translation id="5447765697759493033">Tovuti hii haitatafsiriwa</translation>
@@ -484,7 +480,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="5620928963363755975">Tafuta faili na kurasa zako katika Vipakuliwa kwenye kitufe cha Chaguo Nyingine</translation>
 <translation id="5626134646977739690">Jina:</translation>
 <translation id="5639724618331995626">Ruhusu tovuti zote</translation>
-<translation id="5646376287012673985">Mahali</translation>
 <translation id="5648166631817621825">Siku 7 zilizopita</translation>
 <translation id="5655963694829536461">Tafuta vipakuliwa vyako</translation>
 <translation id="5659593005791499971">Barua pepe</translation>
@@ -631,6 +626,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="688738109438487280">Ongeza data iliyopo kwenye <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{Kichupo %1$d kilicho wazi}other{Vichupo %1$d vilivyo wazi}}</translation>
 <translation id="6896758677409633944">Nakili</translation>
+<translation id="6910211073230771657">Imeondolewa</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6963766334940102469">Futa alamisho</translation>
 <translation id="6965382102122355670">Sawa</translation>

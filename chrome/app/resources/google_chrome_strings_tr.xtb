@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS'u kullanma konusunda yardım alın</translation>
 <translation id="1795405610103747296">Chrome'u telefonunuza yükleyin. Telefonunuza SMS göndereceğiz: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u güncellemeniz gerekiyor.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome sürümü eski</translation>
 <translation id="2063848847527508675">Güncellemenin uygulanması için Chrome OS yeniden başlatılmalıdır.</translation>
@@ -58,7 +57,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="2446511512801740068">Bir süredir çalıştırılmadığından Chrome güncel değil. Kullanılabilir bir güncelleme var ve yeniden başlattığınızda hemen uygulanacak.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
 <translation id="2580411288591421699">Şu anda çalışmakta olan Google Chrome ile aynı sürüm yüklenemez. Lütfen Google Chrome'u kapatın ve tekrar deneyin.</translation>
-<translation id="2582790009689336987">Bu Linux sistemi artık desteklenmeyeceğinden, bu bilgisayar yakında Google Chrome güncellemeleri almayı durduracaktır.</translation>
 <translation id="2586406160782125153">Bu işlem, tarama verilerinizi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chrome'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2588322182880276190">Chrome logosu</translation>
 <translation id="2664962310688259219">Chrome OS açık kaynak lisansları</translation>
@@ -85,7 +83,6 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 
 Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontrol edin.</translation>
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
-<translation id="3311976847535831054">Bu bilgisayar artık 32 bit Google Chrome güncellemelerini almayacak. Lütfen Google Chrome'un 64 bit sürümüne geçin.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Chrome OS ile ilgili yardım alın</translation>
 <translation id="3396977131400919238">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Google Chrome'u yeniden indirin.</translation>
@@ -115,7 +112,6 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 <translation id="4309555186815777032">(Chrome'un <ph name="BEGIN_BUTTON" />yeniden başlatılmasını<ph name="END_BUTTON" /> gerektirir)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Bu Linux sistemi artık desteklenmediğinden, Google Chrome güncellemelerini artık almayacak.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Bu değişikliğin geçerli olabilmesi için lütfen çıkış yapıp tekrar oturum açın.</translation>
 <translation id="4458462641685292929">Google Chrome'da başka bir işlem devam ediyor. Lütfen daha sonra yeniden deneyin.</translation>
@@ -129,7 +125,6 @@ Daha fazla talimat için lütfen e-postanızı <ph name="ACCOUNT_EMAIL" /> kontr
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
 <translation id="4743926867934016338">Kabul Et ve Ara</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için Chrome'u yeniden başlatın</translation>
-<translation id="4751441238232965030">Bu bilgisayar yakında 32 bit Google Chrome güncellemelerini almayı durduracak. Lütfen Google Chrome'un 64 bit sürümüne geçin.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Bu dosya tehlikeli olabileceği için Chrome tarafından engellendi.</translation>
 <translation id="4794050651896644714">Ayrıntıları Chrome'a kaydet</translation>
@@ -208,7 +203,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome kendini en yeni sürüme güncelleyemedi, bundan dolayı yeni ve harika özelliklerin yanı sıra güvenlik düzeltmelerinden mahrum kalıyorsunuz. Chrome'u manuel olarak yeniden yüklemeniz gerekiyor.</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
 <translation id="7164397146364144019">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chrome'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> Chrome'a eklendi.</translation>

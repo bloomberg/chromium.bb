@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1685087038067318291">‏صفحه‌های وبی را که توسط اشیای اطراف ارسال می‌شوند کشف کنید. وقتی بلوتوث روشن است، Chrome می‌تواند صفحه‌های وب مرتبط با اشیای اطراف شما را جمع‌آوری کند و برای پیدا کردن مفیدترین آن‌ها، آن صفحه‌ها را به‌صورت ناشناس به Google ارسال کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">‏Chrome تأیید می‌کند که <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">‏Google Chrome به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
 <translation id="4099578267706723511">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهتر شدن Chrome کمک کنید.</translation>
 <translation id="415767770115540173">‏با Chrome تجربه بهتری از Google براساس موقعیت مکانی‌تان داشته باشید.</translation>
-<translation id="4248297594476034182">‏برای اینکه برگه‌هایتان را در همه دستگاه‌هایتان دریافت کنید، ورودتان را در Chrome ثبت کنید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4523886039239821078">‏برخی از افزونه‌ها باعث می‌شوند Chrome از کار بیفتد. لطفاً آنها را حذف نصب کنید:</translation>
 <translation id="4615174829807303908">‏هم‌اکنون از حسابی که توسط <ph name="SIGNOUT_MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>

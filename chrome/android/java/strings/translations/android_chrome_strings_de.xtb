@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="1006017844123154345">Online öffnen</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> wird hinzugefügt...</translation>
+<translation id="1041308826830691739">Von Websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
@@ -233,7 +234,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3295602654194328831">Informationen ausblenden</translation>
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
-<translation id="3319792846664697699">Navigationsfeld</translation>
 <translation id="3321222012623826478">Dieser Dienst muss die Adresse dieser Website zur Überprüfung anonym an Google-Server senden.</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3341058695485821946">Sie können sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
@@ -268,6 +268,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 
 Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entsprechenden Begriff. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, einschließlich der Liste besuchter Websites.</translation>
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3649663272864015643">Tab "Startseite" ausgewählt</translation>
@@ -276,6 +277,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3706423975342040244">Unterhaltung</translation>
+<translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3734660163659757482">Nach oben ziehen, um Lesezeichen und weitere Inhalte anzuzeigen</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
@@ -288,7 +290,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
-<translation id="3845539888601087042">Der Verlauf für alle Geräte, auf denen Sie angemeldet sind, wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
@@ -299,6 +300,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="393697183122708255">Keine aktivierte Sprachsuche verfügbar</translation>
 <translation id="3946611741043634542">Sobald Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und den <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="3950820424414687140">Anmelden</translation>
+<translation id="395206256282351086">Vorschläge für Suchbegriffe und Websites deaktiviert</translation>
 <translation id="395922942268463099">Regelmäßig aktualisierte Seiten</translation>
 <translation id="3967822245660637423">Download abgeschlossen</translation>
 <translation id="397583555483684758">Die Synchronisierung funktioniert nicht mehr</translation>
@@ -330,7 +332,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
-<translation id="4248297594476034182">Melden Sie sich in Chrome an, um Ihre Tabs auf allen Ihren Geräten zu haben.</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4254813446494774748">Zielsprache:</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
@@ -454,7 +455,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5423934151118863508">Hier werden Ihre am meisten aufgerufenen Seiten angezeigt.</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB verfügbar</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
-<translation id="5435775191620395718">Der Verlauf für dieses Gerät wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">Zur Adressleiste wechseln</translation>
 <translation id="5447201525962359567">Gesamter Websitespeicher einschließlich Cookies und anderer lokal gespeicherter Daten</translation>
 <translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
@@ -481,7 +481,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Alle Websites zulassen</translation>
-<translation id="5646376287012673985">Speicherort</translation>
 <translation id="5648166631817621825">Letzte 7 Tage</translation>
 <translation id="5655963694829536461">Downloads durchsuchen</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
@@ -551,6 +550,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
 Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Werbeanzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
+<translation id="6255999984061454636">Inhaltsvorschläge</translation>
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
@@ -627,6 +627,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
 <translation id="6896758677409633944">Kopieren</translation>
+<translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -665,7 +666,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7253272406652746122">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
 <translation id="7307288900373049735">Google wird kontaktiert. Das kann einen Moment dauern.</translation>
-<translation id="7318797029885648322">Tippen Sie auf "Mehr", damit Artikel angezeigt werden</translation>
+<translation id="7318797029885648322">Tippen Sie auf "Mehr", damit weitere Artikel angezeigt werden</translation>
 <translation id="7333031090786104871">Vorherige Website wird noch hinzugefügt</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>
@@ -677,6 +678,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
+<translation id="7453467225369441013">Sie werden von den meisten Websites, nicht aber von Ihrem Google-Konto abgemeldet.</translation>
 <translation id="7455923816558154057">Zum Ansehen tippen</translation>
 <translation id="7464701184726199289">Dadurch werden synchronisierte Daten von allen Geräten gelöscht. Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nein danke</translation>
@@ -743,6 +745,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
+<translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
 <translation id="8058746566562539958">In neuem Chrome-Tab öffnen</translation>
 <translation id="8063895661287329888">Fehler beim Hinzufügen des Lesezeichens.</translation>

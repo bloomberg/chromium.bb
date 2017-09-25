@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1326317727527857210">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, Chrome এ প্রবেশ করুন।</translation>
 <translation id="1685087038067318291">আশেপাশের ডিভাইসগুলি দ্বারা পাঠানো ওয়েব পৃষ্ঠাগুলি খুঁজুন। ব্লুটুথ চালু থাকলে, Chrome আপনার চারপাশের বস্তুর সঙ্গে যুক্ত ওয়েব পেজগুলি জড়ো করে এবং সবচেয়ে দরকারী পৃষ্টাগুলি খুঁজে সেগুগলি বেনামে Google কে পাঠায়। <ph name="BEGIN_LINK" /> আরও জানুন <ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chrome তা যাচাই করেছে।</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">আপনার ছবি বা ভিডিওতে Google Chrome এর অ্যাক্সেস নেই। iOS সেটিংস &gt; গোপনীয়তা &gt; ফটোগুলিতে অ্যাক্সেস সক্ষম করুন।</translation>
 <translation id="4099578267706723511">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি পাঠিয়ে Chrome কে আরও ভাল করে তুলতে সহায়তা করুন৷</translation>
 <translation id="415767770115540173">আপনার অবস্থানের উপর ভিত্তি করে Chrome এ আরও ভাল Google অভিজ্ঞতা পান।</translation>
-<translation id="4248297594476034182">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chrome এ প্রবেশ করুন।</translation>
 <translation id="424864128008805179">Chrome থেকে প্রস্থান করবেন?</translation>
 <translation id="4523886039239821078">কিছু অ্যাড-অনের কারণে Chrome ক্র্যাশ করতে পারে৷ দয়া করে আনইনস্টল করুন:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি প্রস্থান করুন করছেন৷ এটি এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>

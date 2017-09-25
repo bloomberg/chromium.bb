@@ -234,7 +234,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3295602654194328831">Hide info</translation>
 <translation id="3303414029551471755">Proceed to download the content?</translation>
-<translation id="3319792846664697699">Navigation panel</translation>
 <translation id="3321222012623826478">This service needs to anonymously send this website address to Google servers for verification.</translation>
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3341058695485821946">See how much data that you've saved</translation>
@@ -291,7 +290,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3810973564298564668">Manage</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads deleted</translation>
 <translation id="3822502789641063741">Clear site storage?</translation>
-<translation id="3845539888601087042">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Seek forward</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
@@ -334,7 +332,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="4242533952199664413">Open settings</translation>
-<translation id="4248297594476034182">To get your tabs on all your devices, sign in to Chrome.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4254813446494774748">Translation language:</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
@@ -457,7 +454,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5423934151118863508">Your most visited pages will appear here</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB available</translation>
 <translation id="5433691172869980887">Username copied</translation>
-<translation id="5435775191620395718">Showing history from this device. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Jump to the address bar</translation>
 <translation id="5447201525962359567">All site storage, including cookies and other locally stored data</translation>
 <translation id="5447765697759493033">This site will not be translated</translation>
@@ -484,7 +480,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>
-<translation id="5646376287012673985">Location</translation>
 <translation id="5648166631817621825">Last 7 days</translation>
 <translation id="5655963694829536461">Search your downloads</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -631,6 +626,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
+<translation id="6910211073230771657">Deleted</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>

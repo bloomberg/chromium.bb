@@ -234,7 +234,6 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3295602654194328831">Сховати інформацію</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
-<translation id="3319792846664697699">Панель навігації</translation>
 <translation id="3321222012623826478">Цій службі потрібно анонімно надіслати адресу цього веб-сайту на сервери Google для перевірки.</translation>
 <translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="3341058695485821946">Перевірте обсяг збережених даних</translation>
@@ -291,7 +290,6 @@
 <translation id="3810973564298564668">Змінити</translation>
 <translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
-<translation id="3845539888601087042">Показано історію з пристроїв, на яких ви ввійшли в обліковий запис. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Далі</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
@@ -334,7 +332,6 @@
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
-<translation id="4248297594476034182">Щоб мати доступ до вкладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
 <translation id="4254813446494774748">Мова перекладу:</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
@@ -457,7 +454,6 @@
 <translation id="5423934151118863508">Тут відображатимуться найчастіше відвідувані сторінки</translation>
 <translation id="5424588387303617268">Доступно <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="5433691172869980887">Ім’я користувача скопійовано</translation>
-<translation id="5435775191620395718">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Перейти до адресного рядка</translation>
 <translation id="5447201525962359567">Усі дані сайтів, зокрема файли cookie й інші локально збережені дані</translation>
 <translation id="5447765697759493033">Цей сайт не буде перекладено</translation>
@@ -484,7 +480,6 @@
 <translation id="5620928963363755975">Знаходьте свої файли та сторінки в розділі "Завантаження", натиснувши кнопку "Більше опцій"</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5639724618331995626">Дозволити всі сайти</translation>
-<translation id="5646376287012673985">Місцезнаходження</translation>
 <translation id="5648166631817621825">Останні 7 днів</translation>
 <translation id="5655963694829536461">Пошук у завантаженнях</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
@@ -631,6 +626,7 @@
 <translation id="688738109438487280">Додати наявні дані в обліковий запис <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
 <translation id="6896758677409633944">Копіювати</translation>
+<translation id="6910211073230771657">Видалено</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6965382102122355670">ТАК</translation>

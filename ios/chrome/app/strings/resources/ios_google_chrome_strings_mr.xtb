@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="1326317727527857210">आपल्या इतर डिव्हाइसेसवरील आपले टॅब प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="1685087038067318291">जवळपासच्‍या ऑब्जेक्टने पाठविलेली वेब पृष्‍ठे शोधा. Bluetooth चालू केलेले असते तेव्हा, Chrome आपल्या आसपास असलेल्या ऑब्जेक्टशी संबद्ध असलेली वेब पृष्‍ठे गोळा करू शकते आणि सर्वाधिक उपयुक्त शोधण्‍यासाठी ती अनामितपणे Google कडे पाठवू शकते. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414"><ph name="ISSUER" /> ने या वेबसाइटचे प्रमाणपत्र जारी केले हे Chrome ने सत्यापित केले.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome ला आपल्या फोटो आणि व्हिडिओंमध्ये प्रवेश नाही. iOS सेटिंग्ज &gt; गोपनीयता &gt; फोटो मध्ये प्रवेश सक्षम करा.</translation>
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="415767770115540173">आपल्या स्थानावर आधारित Chrome मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
-<translation id="4248297594476034182">आपल्या सर्व डिव्हाइसेसवर आपले टॅब प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून आपण साइन आउट करीत आहात. हे आपला Chrome डेटा या डिव्हाइस वरून हटवेल परंतु आपला डेटा आपल्या Google खात्यामध्ये असेल.</translation>

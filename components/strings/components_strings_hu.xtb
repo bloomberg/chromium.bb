@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Nyomtatás...</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1184214524891303587">A lehetséges biztonsági események adatainak <ph name="BEGIN_WHITEPAPER_LINK" />automatikus jelentése<ph name="END_WHITEPAPER_LINK" /> a Google-nak. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">A fizetés nem fejeződött be</translation>
 <translation id="1201402288615127009">Következő</translation>
 <translation id="1201895884277373915">Továbbiak erről a webhelyről</translation>
 <translation id="1206967143813997005">Hibás alapértelmezett aláírás</translation>
@@ -614,7 +615,6 @@
 <translation id="5631439013527180824">Érvénytelen eszközkezelési token</translation>
 <translation id="5633066919399395251">Előfordulhat, hogy a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhely támadói veszélyes programokat kísérelnek meg telepíteni számítógépére, amelyek ellopják vagy törlik az Ön adatait (például fotóit, jelszavait, üzeneteit és hitelkártyaadatait). <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="563324245173044180">Megtévesztő tartalom letiltva.</translation>
-<translation id="5646376287012673985">Tartózkodási hely</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Személyre szabott tartalmak fogadása</translation>
 <translation id="5675650730144413517">Az oldal nem működik</translation>
@@ -917,6 +917,7 @@
 <translation id="8249320324621329438">Utolsó lekérés:</translation>
 <translation id="8253091569723639551">A számlázási cím megadása kötelező</translation>
 <translation id="8261506727792406068">Törlés</translation>
+<translation id="8267698848189296333">Bejelentkezés mint <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Forduljon a hálózati rendszergazdához, ha nem tudja, hogy ez mit jelent.</translation>
 <translation id="8293206222192510085">Könyvjelző hozzáadása</translation>
 <translation id="8294431847097064396">Forrás</translation>

@@ -645,6 +645,9 @@
 <translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
+<translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
+
+          如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
@@ -1117,6 +1120,9 @@
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
+<translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
+
+          如果此政策设为 False，用户将无法向其设备投射内容。如果此政策设为 True，用户将能够投射内容。如果此政策未设置，用户将被禁止向已注册的 Chrome 操作系统设备投射内容，但可将内容投射到未注册的设备。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME" />处理以下内容类型</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="5366977351895725771">如果此政策的值设置为 False，此用户将无法创建受监管用户。不过，所有目前受监管的用户帐号仍然可供访问。
@@ -1330,6 +1336,7 @@
 <translation id="6111936128861357925">允许用户玩恐龙复活节彩蛋游戏</translation>
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="6133088669883929098">允许所有网站使用密钥生成功能</translation>
+<translation id="6139485614509308022">如果“OffHours”政策已设置，那么在定义的时间间隔内，指定的设备政策会被忽略（使用这些政策的默认设置）。当“OffHours”时段开始或结束时，Chrome 会对每个事件重新应用设备政策。当“OffHours”时段结束且设备政策设置改变时（即当用户使用不被允许的帐号处于已登录状态时），系统会通知用户并强制用户退出。</translation>
 <translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="614662973812186053">此政策亦用于控制对 Android 使用情况和诊断数据的收集。</translation>
 <translation id="6155936611791017817">设置登录屏幕上大号光标的默认状态</translation>
@@ -1652,7 +1659,6 @@
       如果此政策未设置或设为 false，系统将启用 <ph name="TLS_FALSE_START" />。如果此政策设为 true，系统将停用 <ph name="TLS_FALSE_START" />。</translation>
 <translation id="7433714841194914373">启用“即搜即得”</translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
-<translation id="7468416082528382842">Windows 注册表位置：</translation>
 <translation id="7469554574977894907">启用搜索建议</translation>
 <translation id="7474249562477552702">是否允许使用本地信任锚颁发的 SHA-1 签名证书</translation>
 <translation id="7485481791539008776">默认打印机选择规则</translation>

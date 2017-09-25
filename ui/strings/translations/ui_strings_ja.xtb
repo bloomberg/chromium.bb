@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">画面に表示されるタップ ターゲットをタップします。</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
 <translation id="24452542372838207">通知を展開</translation>
-<translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="2522350507219695259">キャリブレーションが完了しました</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">カンマ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
-<translation id="6528179044667508675">通知を一時的にミュート</translation>
 <translation id="6612467943526193239">キャリブレーションを終了するには Esc キーを押します。</translation>
 <translation id="6620110761915583480">ファイルを保存</translation>
 <translation id="6699343763173986273">メディアの次のトラック</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">無題のウェブページ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/秒</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{残り 1 年}other{残り # 年}}</translation>
-<translation id="6918245111648057970">ユーザーごとに次の通知を許可:</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">これですか？</translation>
-<translation id="7135556860107312402">次の通知を許可:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
-<translation id="7457942297256758195">すべて消去</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="7814458197256864873">コピー(&amp;C)</translation>
-<translation id="7850320739366109486">通知を一時的にミュート</translation>
 <translation id="7907591526440419938">ファイルを開く</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8371695176452482769">お話しください</translation>
 <translation id="838869780401515933">チェックを付ける</translation>
-<translation id="8392688371657486010">通知はありません</translation>
 <translation id="8394908167088220973">メディアの再生/一時停止</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">設定</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1年}other{#年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>

@@ -33,7 +33,6 @@
 <translation id="2289052229480071835">I-tap ang mga target sa pagpindot sa iyong screen.</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> (na) TB/s</translation>
 <translation id="24452542372838207">Palawakin ang notification</translation>
-<translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="2522350507219695259">Nakumpleto na ang pag-calibrate</translation>
 <translation id="252373100621549798">Hindi Kilalang Display</translation>
@@ -104,7 +103,6 @@
 <translation id="6394627529324717982">Kuwit</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
-<translation id="6528179044667508675">Huwag istorbohin</translation>
 <translation id="6612467943526193239">Upang lumabas sa pag-calibrate pindutin ang Esc.</translation>
 <translation id="6620110761915583480">I-save ang File</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
@@ -116,24 +114,19 @@
 <translation id="688711909580084195">Walang Pamagat na Webpage</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> (na) PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 taon ang natitira}one{# taon ang natitira}other{# na taon ang natitira}}</translation>
-<translation id="6918245111648057970">Payagan ang mga notification mula sa sumusunod para sa bawat user:</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">PINAKAMALAMANG</translation>
-<translation id="7135556860107312402">Payagan ang mga notification mula sa sumusunod:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuto na lang ang natitira}one{# minuto na lang ang natitira}other{# na minuto na lang ang natitira}}</translation>
-<translation id="7457942297256758195">I-clear Lahat</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> (na) TB</translation>
-<translation id="7647488630410863958">I-unlock ang device upang tingnan ang iyong mga notification</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7781829728241885113">Kahapon</translation>
 <translation id="7814458197256864873">&amp;Kopyahin</translation>
-<translation id="7850320739366109486">Huwag Istorbohin</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 oras ang nakalipas}one{# oras ang nakalipas}other{# na oras ang nakalipas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
@@ -146,10 +139,8 @@
 <translation id="8352146631962686268">{YEARS,plural, =1{1 taon}one{# taon}other{# na taon}}</translation>
 <translation id="8371695176452482769">Magsalita ngayon</translation>
 <translation id="838869780401515933">I-tsek</translation>
-<translation id="8392688371657486010">Wala kang mga notification</translation>
 <translation id="8394908167088220973">I-Play/I-Pause ang Media</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 taon}one{# taon}other{# na taon}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> File (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

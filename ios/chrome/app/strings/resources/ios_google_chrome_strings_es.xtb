@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1326317727527857210">Inicia sesión en Chrome para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="1685087038067318291">Descubre páginas web enviadas por los objetos cercanos. Si el Bluetooth está activado, Chrome puede recopilar páginas web asociadas a los objetos que te rodean y enviarlas de forma anónima a Google para seleccionar las que te puedan resultar más útiles. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome no puede acceder a tus fotos y vídeos (para permitirlo, ve a Ajustes de iOS &gt; Privacidad &gt; Fotos).</translation>
 <translation id="4099578267706723511">Ayudar a mejorar Chrome enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="415767770115540173">Disfruta de una mejor experiencia en Chrome compartiendo tu ubicación.</translation>
-<translation id="4248297594476034182">Inicia sesión en Chrome para ver tus pestañas en todos tus dispositivos.</translation>
 <translation id="424864128008805179">¿Cerrar sesión en Chrome?</translation>
 <translation id="4523886039239821078">Algunos complementos hacen que Chrome falle. Desinstálalos.</translation>
 <translation id="4615174829807303908">Estás cerrando sesión en una cuenta gestionada por <ph name="SIGNOUT_MANAGED_DOMAIN" />. Se van a eliminar tus datos de Chrome de este dispositivo, pero van a permanecer en tu cuenta de Google.</translation>

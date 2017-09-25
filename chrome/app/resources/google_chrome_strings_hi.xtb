@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1795405610103747296">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके फ़ोन पर एक SMS भेजेंगे: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को अपडेट करना होगा.</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
@@ -58,7 +57,6 @@
 <translation id="2446511512801740068">Chrome पुराना हो गया है क्योंकि उसे कुछ समय से फिर से लॉन्च नहीं किया गया है. एक अपडेट उपलब्ध है और जैसे ही आप फिर से लॉन्च करेंगे, अपडेट लागू कर दिया जाएगा.</translation>
 <translation id="2485422356828889247">विस्थापित करें</translation>
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
-<translation id="2582790009689336987">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि यह Linux सिस्टम अब समर्थित नहीं रहेगा.</translation>
 <translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
@@ -84,7 +82,6 @@
 
 कृपया अतिरिक्त निर्देशों के लिए <ph name="ACCOUNT_EMAIL" /> पर अपना ईमेल देखें.</translation>
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
-<translation id="3311976847535831054">यह कंप्यूटर अब 32-बिट Google Chrome अपडेट प्राप्त नहीं करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="3395323229510056640">Chrome OS में सहायता प्राप्त करें</translation>
 <translation id="3396977131400919238">स्थापित करने के दौरान ऑपरेटिंग सिस्टम में गड़बड़ी आई. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
@@ -114,7 +111,6 @@
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4328355335528187361">Google Chrome डेवलपर (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">यह कंप्यूटर अब Google Chrome अपडेट प्राप्त नहीं करेगा क्योंकि यह Linux सिस्टम अब समर्थित नहीं है.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="4458462641685292929">Google Chrome पर कोई और क्रिया चल रही है. कृपया बाद में फिर से कोशिश करें.</translation>
@@ -128,7 +124,6 @@
 <translation id="4728575227883772061">अनिर्दिष्ट कारण से स्थापना विफल हुई. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और फिर से प्रयास करें.</translation>
 <translation id="4743926867934016338">स्‍वीकार करें और खोजें</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सक्षम करने के लिए Chrome फिर से चालू करें</translation>
-<translation id="4751441238232965030">यह कंप्यूटर जल्दी ही 32-बिट Google Chrome के अपडेट प्राप्त करना बंद करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">यह फ़ाइल खतरनाक हो सकती है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
@@ -207,7 +202,6 @@
 <translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="7106741999175697885">काम का प्रबंधक - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को मैन्युअल रूप से फिर से इंस्टॉल करना होगा.</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> को Chrome में जोड़ दिया गया है.</translation>

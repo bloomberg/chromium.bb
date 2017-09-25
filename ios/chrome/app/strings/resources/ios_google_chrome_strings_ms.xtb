@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1326317727527857210">Log masuk ke Chrome untuk mendapatkan tab daripada peranti anda yang lain.</translation>
 <translation id="1685087038067318291">Temui halaman web yang dihantar oleh objek yang berdekatan. Apabila Bluetooth dihidupkan, Chrome boleh mengumpulkan halaman web yang berkaitan dengan objek di sekeliling anda dan menghantarnya secara awanama ke Google untuk mencari halaman web yang paling berguna. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome mengesahkan bahawa <ph name="ISSUER" /> telah mengeluarkan sijil tapak web ini.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome tidak mempunyai akses ke foto atau video anda. Dayakan akses dalam Tetapan iOS &gt; Privasi &gt; Foto.</translation>
 <translation id="4099578267706723511">Bantu jadikan Chrome lebih baik dengan menghantar laporan perangkaan penggunaan dan ranap sistem kepada Google.</translation>
 <translation id="415767770115540173">Dapatkan pengalaman yang lebih baik dalam Chrome berdasarkan lokasi anda.</translation>
-<translation id="4248297594476034182">Log masuk ke Chrome untuk mendapatkan tab pada semua peranti anda.</translation>
 <translation id="424864128008805179">Log keluar daripada Chrome?</translation>
 <translation id="4523886039239821078">Beberapa tambahan menyebabkan Chrome ranap. Sila nyahpasang:</translation>
 <translation id="4615174829807303908">Anda log keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />. Tindakan ini akan memadamkan data Chrome anda daripada peranti ini, tetapi data anda akan kekal dalam akaun Google anda.</translation>

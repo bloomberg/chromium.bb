@@ -36,7 +36,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
 <translation id="1795405610103747296">Namestite Chrome v telefonu. V telefon bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chrome morate posodobiti.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="2063848847527508675">Če želite namestiti posodobitev, morate znova zagnati OS Chrome.</translation>
@@ -62,7 +61,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2446511512801740068">Chrome je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="2580411288591421699">Ni mogoče namestiti različice Google Chroma, enake tisti, ki se trenutno izvaja. Zaprite Google Chrome in poskusite znova.</translation>
-<translation id="2582790009689336987">Ta računalnik kmalu ne bo več prejemal posodobitev za Google Chrome, ker ta sistem Linux ne bo več podprt.</translation>
 <translation id="2586406160782125153">S tem bodo iz te naprave izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chromov logotip</translation>
 <translation id="2664962310688259219">Odprtokodne licence za Chrome OS</translation>
@@ -88,7 +86,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 
 Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Prijava v Google Chrome</translation>
-<translation id="3311976847535831054">Ta računalnik ne bo več prejemal posodobitev za 32-bitno različico Google Chroma. Nadgradite Google Chrome na 64-bitno različico.</translation>
 <translation id="3360895254066713204">Pomočnik za Chrome</translation>
 <translation id="3395323229510056640">Pomoč za OS Chrome</translation>
 <translation id="3396977131400919238">Med namestitvijo je prišlo do napake v operacijskem sistemu. Ponovno prenesite program Google Chrome.</translation>
@@ -118,7 +115,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="4309555186815777032">(zahteva <ph name="BEGIN_BUTTON" />vnovični zagon<ph name="END_BUTTON" /> Chroma)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker ta sistem Linux ni več podprt.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4458462641685292929">Poteka druga operacija v Google Chromu. Poskusite znova pozneje.</translation>
@@ -132,7 +128,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="4728575227883772061">Namestitev ni bila izvedena zaradi nedoločene napake. Če je Google Chrome trenutno vklopljen, ga zaprite in poskusite znova.</translation>
 <translation id="4743926867934016338">Sprejem in iskanje</translation>
 <translation id="4750550185319565338">Znova zaženite Chrome, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Ta računalnik bo kmalu prenehal prejemati posodobitve za 32-bitno različico Google Chroma. Nadgradite Google Chrome na 64-bitno različico.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ta datoteka je morda nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="4794050651896644714">Shrani podrobnosti v Chrome</translation>
@@ -213,7 +208,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6989339256997917931">Google Chrome je posodobljen, a ga niste uporabljali že vsaj 30 dni.</translation>
 <translation id="7098166902387133879">Google Chrome uporablja vaš mikrofon.</translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
-<translation id="7125719106133729027">Chrome se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chrome morate znova namestiti ročno.</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>
 <translation id="7164397146364144019">S samodejnim poročanjem podrobnosti o morebitnih varnostnih dogodkih Googlu lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
 <translation id="7185038942300673794">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chrome.</translation>

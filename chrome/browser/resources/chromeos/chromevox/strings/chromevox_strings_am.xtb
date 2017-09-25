@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1206619573307042055">መልሶ መልስ</translation>
 <translation id="1213216066620407844">ChromeVox - ድምጽ ለChrome መስጠት</translation>
-<translation id="1226487719524433143">በዚህ አዲስ ተሞክሮ ላይ ከእርስዎ ለመስማት ጓጉተናል። Search+a፣ ከዚያ i በመጫን ግብረመልስ በቀጥታ ይላኩን። ለመጀመር የሚያስፈልገዎት ነገር ሁሉ ለማወቅ የቀጣይ አዝራሩን ይጫኑና ወደ አጋዥ ስልጠናው ይቀጥሉ።</translation>
 <translation id="1229276918471378188">ቀዳሚ ዝላይ</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">ቀጣይ የደረጃ 6 ርዕስ</translation>
 <translation id="1275718070701477396">ተመርጧል</translation>
-<translation id="1310230882256010289">የውስጥ ለውስጥ ማላቂያዎች። ChromeVox እንዴት እንደሚሰራ ከስር መሠረቱ ጀምሮ አድሰነዋል። የተሻለ አፈጻጸም፣ እርጋታ እና የድር ድጋፍ/መገዛት ይጠብቁ።</translation>
 <translation id="1319608975892113573">ምንም ቀዳሚ የጽሑፍ ጥቅስ የለም።</translation>
 <translation id="1321576897702511272">የChromeVox እገዛን ደብቅ</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ከ<ph name="TOTAL" /></translation>
@@ -224,8 +222,6 @@
 <translation id="3163593631834463955">ባዶ የአምድ ራስጌ</translation>
 <translation id="316542773973815724">አሰሳ</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ክፍተት}one{# ክፍተቶች}other{# ክፍተቶች}}</translation>
-<translation id="3183233191569362040">እንኳን ደስ አለዎት! ChromeVox Next (ቅድመ-ይሁንታ)ን ለመጠቀም የሚያስፈልጉትን መሠረታዊ ነገሮች በተሳካ ሁኔታ አውቀዋቸዋል። በማንኛውም ጊዜ Search+Period በመጫን የChromeVox ትዕዛዝ ምናሌን መክፈት እንደሚችሉ ያስታውሱ። አሁንም ስለChromeVox እና Chrome OS ተጨማሪ ለማወቅ ከፈለጉ የሚከተሉትን ጽሑፎች ይጎብኙ።
-የአጋዥ ስልጠናውን ከጨረሱ ChromeVoxን ተጠቅመው ወደ ዝጋ አዝራር ይሂዱና ጠቅ ያድርጉት።</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> አስገብተዋል</translation>
 <translation id="3223701887221307104"><ph name="NAME" />፣ ትር</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -337,7 +333,6 @@
 <translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3909320334364316587">ቀዳሚ የደረጃ 6 ርዕስ</translation>
 <translation id="3914173277599553213">የሚያስፈልግ</translation>
-<translation id="3951424903203718058">የChromeVox Next የሚነገር ግብረመልስን ለመጀመሪያ ጊዜ እየተጠቀሙ ነው? ይህ ፈጣን አጋዥ ሥልጠና በChromeVox Next ለመጀመር የሚያስፈልጉትን ነገሮች ያብራራል።</translation>
 <translation id="3962990492275676168">ከአሁኑ አካባቢ ሆነው ማንበብ ይጀምሩ</translation>
 <translation id="4004802134384979325">ምልክት ተደርጎበታል</translation>
 <translation id="4006140876663370126">img</translation>
@@ -431,7 +426,6 @@
 <translation id="4846487886195635104">የስክረዛ መጨረሻ</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">ቀዳሚ ተመሳሳይ አባል።</translation>
-<translation id="485011152882364255">በChromeVox Next ውስጥ የSearch ቁልፍ የመቀየሪያ ቁልፉ ነው። አብዛኛዎቹ የChromeVox አቋራጮች በSearch ቁልፍ ነው የሚጀምሩት። እንዲሁም ለአሰሳ የቀስት ቁልፎቹን ነው የሚጠቀሙት።</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">የTTS ምዝግብ ማስታወሻ መያዝን ያንቁ</translation>
 <translation id="4877261390094455813">የፍለጋ መጠይቅ ያስገቡ።</translation>
@@ -500,7 +494,6 @@
 <translation id="5444587279251314700">(ገቢር)</translation>
 <translation id="5451268436205074266">ነጥቦች <ph name="DOT" /></translation>
 <translation id="5455441614648621694">ማሟያ</translation>
-<translation id="5458780372341732962">ChromeVox Next (ቅድመ-ይሁንታ) ይጠቀሙ</translation>
 <translation id="5485036206801896268">ምንም ቀዳሚ ስዕላዊ የለም።</translation>
 <translation id="5486947920110100234">ምንም ቀጣይ የመዝለያ ነጥብ የለም።</translation>
 <translation id="549602578321198708">ቃል</translation>
@@ -509,7 +502,6 @@
 <translation id="5507663321906818013">ካስማ ያርሙ</translation>
 <translation id="5518443085409638729">ጽሑፍ ሲያርትዑ ጠቋሚውን በቁምፊዎች መካከል ያስቀምጡት (እንደ Mac ስርዓተ ክወና X)።</translation>
 <translation id="552195134157544755">የሬዲዮ አዝራር</translation>
-<translation id="5531530875187439488">አዲስ የጆሮ አዶዎች። ማሰስ ይበልጥ ምላሽ ሰጪ እንዲሆን ለማድረግ የሚሰሟቸውን የኦዲዮ አዶዎችን አድሰናል።</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">ምንም ቀዳሚ የደረጃ 5 ርዕስ የለም።</translation>
 <translation id="556042886152191864">አዘራር</translation>
@@ -536,7 +528,6 @@
 <translation id="5682113568322255809">የመሬት ምልክት</translation>
 <translation id="5683155931978483559">ቀዳሚ አመልካች ሳጥን</translation>
 <translation id="5684277895745049190">ዝርዝር</translation>
-<translation id="5684905390246898631">እንኳን ወደ ChromeVox Next በደህና መጡ!</translation>
 <translation id="5695831708991916435">የሚከተሉት ጥቂት አቋራጮች የChromeVox ትዕዛዞች አይደሉም፣ ነገር ግን ከChrome ምርጡን ሁሉ ለማግኘት አሁንም በጣም ጠቃሚ ናቸው።
 እንደ አዝራሮች እና አገናኞች ባሉ የእርምጃ ንጥሎች ውስጥ ወደፊት ለመሄድ የTab አዝራሩን ይጫኑ። ወደኋላ ለመሄድ Shift+Tab ይጫኑ። 
 እንዲሁም ኦምኒቦክ በመባል ወደሚታወቀው የChrome አሳሽ የአድራሻ ሳጥን ለመግባት Control + L ይጫኑ። 
@@ -571,7 +562,6 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{እኩል}one{# የእኩል ምልክቶች}other{# የእኩል ምልክቶች}}</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="5948123859135882163">የሒሳብ አገላለጾች አተረጓገም በመዋቅራዊ እና ስነ ፍቺ መካከል ይቀያይሩ</translation>
-<translation id="5948485979596965684">ወደ አዲስ ዋና የChromeVox ልቀት ተዘምነዋል!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">መገናኛ</translation>
 <translation id="5963413905009737549">ክፍል</translation>
@@ -650,7 +640,6 @@
 <translation id="6786800275320335305">ጽሑፍ</translation>
 <translation id="6787839852456839824">የቁልፍ ሰሌዳ አቋራጮች</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">አዲስ እና የተሻሻለ የChromeVox ተሞክሮ ለማቅረብ ተግተን ሰርተናል፤ ያለው አዲስ ነገር እነሆ</translation>
 <translation id="6833103209700200188">ግርጌ</translation>
 <translation id="6871161210040114857">የሆሄ አቢይ/ንዑስ ችላ በማለት ላይ።</translation>
 <translation id="6877435256196695200">ምንም ቀጣይ ስዕላዊ የለም።</translation>
@@ -668,7 +657,6 @@
 <translation id="7037042857287298941">ቀዳሚ ዝርዝር</translation>
 <translation id="7041173719775863268">ምርጫ ይጨርሱ</translation>
 <translation id="7086377898680121060">ብሩህነት ጨምር</translation>
-<translation id="7094527465295945904">አዲስ የቁልፍ ትስስሮች። የ«ChromeVoxን ፈልግ» ቀያሪውን ሰርተነዋል፣ እና የቁልፍ ጥምሮችን ጉልህ በሆነ ሁኔታ አቅልሏቸዋል።</translation>
 <translation id="7095834689119144465">የጽሑፍ ቁጥር ብቻ ያርትዑ</translation>
 <translation id="7096001299300236431">ቀዳሚ ሚዲያ</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -772,7 +760,6 @@
 <translation id="8066678206530322333">ሰንደቅ</translation>
 <translation id="8076492880354921740">ትሮች</translation>
 <translation id="8091452896542422286">ክፍተት</translation>
-<translation id="8104178626892949749">ስለChromeVox Next የበለጠ ለመረዳት ChromeVox o፣ n ይጫኑ።</translation>
 <translation id="8110647606445335195">ምንም የARIA ምልክቶች የሉም።</translation>
 <translation id="8153880621934657047">በሠንጠረዥ ውስጥ አይደሉም።</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ሰረዘዘብጥ}one{# ሰረዘዘብጦች}other{# ሰረዘዘብጦች}}</translation>
@@ -782,7 +769,6 @@
 <translation id="8199231515320852133">የአሁኑ ሕዋስ ራስጌዎችን አስታውቅ</translation>
 <translation id="820417203470636242">ባዶ ሕዋስ።</translation>
 <translation id="8215202828671303819">ብዙ ምርጫ</translation>
-<translation id="8224171046658870249">ወደ ChromeVox Next ተቀይሯል</translation>
 <translation id="826991282343985864">ረ$1አ$2</translation>
 <translation id="8276439074553447000">ሊተኮርበት ወደሚችል ቀዳሚ ንጥል ይዝለሉ</translation>
 <translation id="8278417001922463147">ምንም ቀዳሚ ጽሑፍ የለም።</translation>
@@ -827,7 +813,6 @@
 <translation id="8664519043722036194">ሴኮንድ</translation>
 <translation id="867187640362843212">ርዕስ 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{ቁም መስመር}one{# የቁም መስመሮች}other{# የቁም መስመሮች}}</translation>
-<translation id="8721861170709424373">የChromeVox Next ትዕዛዝ ማጣቀሻ</translation>
 <translation id="8735450637152821465">ምርጫ ይጀምሩ</translation>
 <translation id="8743786158317878347">እንደ ሠንጠረዦች ያለ የተዋቀረ ይዘት ያስገቡ</translation>
 <translation id="8747966237988593539">በቅደም ተከተል የተቀመጠ ዝርዝር</translation>
@@ -880,7 +865,6 @@
 <translation id="923331726185079994">ChromeVox ተዘምኗል</translation>
 <translation id="930275611743429116">ምርጫ ይጀምሩ ወይም ይጨርሱ።</translation>
 <translation id="948171205378458592">የንግግር ፍጥነት ይቀንሱ</translation>
-<translation id="955917170449423694">ወደ የChromeVox የታወቀ ገጽታ ተቀይሯል</translation>
 <translation id="962913030769097253">ቀጣይ የደረጃ 1 ርዕስ</translation>
 <translation id="973955474346881951">አጣባቂ ሁነታን አንቃ/አሰናክል</translation>
 <translation id="976849232629612000">ምንም ንጥሎች የሉም።</translation>

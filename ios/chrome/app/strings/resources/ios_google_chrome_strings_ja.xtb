@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1685087038067318291">周囲のオブジェクトから送信されているウェブページを検出します。Bluetooth がオンになっている場合、Chrome は周囲のオブジェクトに関連付けられたウェブページを収集して、匿名で Google に送信し、最も役立つと判断されたウェブページを表示します。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであると確認されました。</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome で写真または動画にアクセスできません。iOS の [設定] &gt; [プライバシー] &gt; [写真] でアクセスを有効にしてください。</translation>
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="415767770115540173">ユーザーの場所に基づいてChromeでGoogleを使いやすくします。</translation>
-<translation id="4248297594476034182">お使いのどの端末でも同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトします。Chrome データはこのデバイスから削除されますが、Google アカウントで保持されます。</translation>

@@ -37,7 +37,6 @@
 <translation id="2265088490657775772">преузмите Chromium на iPhone</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="2347108572062610441">Овај додатак је променио страницу која се приказује када покренете Chromium.</translation>
-<translation id="2372704305038231957">32-битни Chromium неће исправно функционисати зато што више није подржан на овом Linux систему. Надоградите Chromium на 64-битну верзију.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Преузимање је у току. Желите ли да откажете преузимање и да изађете из Chromium-а?}one{# преузимање је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}few{# преузимања су у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}other{# преузимања је у току. Желите ли да откажете преузимања и да изађете из Chromium-а?}}</translation>
 <translation id="2396765026452590966">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chromium.</translation>
 <translation id="2483889755041906834">У Chromium-у</translation>
@@ -142,8 +141,6 @@
 <translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
-<translation id="5823381412099532241">Chromium не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба да ажурирате Chromium.</translation>
-<translation id="5859963531214966875">Будуће верзије Chromium-а више неће подржавати овај Linux систем.</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
@@ -169,8 +166,6 @@
 <translation id="6505742536731484931">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
 <translation id="6526111688217511984">Chromium-у је потребан приступ меморијском простору да би преузимао датотеке.</translation>
-<translation id="6584627348340620412">Будуће верзије 32-битног Chromium-а више неће подржавати овај Linux систем. Надоградите Chromium на 64-битну верзију.</translation>
-<translation id="6593914713218535185">Chromium неће исправно функционисати зато што више није подржан на овом Linux систему.</translation>
 <translation id="6638567566961868659">Пронађите обележиваче у Chromium менију или на траци са обележивачима.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6717134281241384636">Профил не може да се користи јер је из новије верзије Chromium-а.
@@ -184,7 +179,6 @@
 <translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="6944967875980567883">Модули који су учитани у Chromium</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>
-<translation id="7027298027173928763">Chromium не може сâм да се ажурира на најновију верзију, па пропуштате одличне нове функције и безбедносне исправке. Треба ручно поново да инсталирате Chromium.</translation>
 <translation id="705851970750939768">Ажурирај Chromium</translation>
 <translation id="7066436765290594559">Chromium ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="707471633328071618">Google Payments (копирано у Chromium)</translation>

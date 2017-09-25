@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1326317727527857210">Untuk mendapatkan tab dari perangkat lainnya, masuk ke Chrome.</translation>
 <translation id="1685087038067318291">Menemukan laman web yang dikirim oleh objek di sekitar. Jika Bluetooth diaktifkan, Chrome dapat mengumpulkan laman web yang dikaitkan dengan objek di sekitar Anda dan mengirimkannya secara anonim ke Google untuk menemukan laman web yang paling bermanfaat. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome tidak memiliki akses ke foto atau video Anda. Izinkan akses di iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="415767770115540173">Dapatkan pengalaman Google yang lebih baik di Chrome berdasarkan lokasi Anda.</translation>
-<translation id="4248297594476034182">Untuk mendapatkan tab di semua perangkat Anda, masuk ke Chrome.</translation>
 <translation id="424864128008805179">Keluar dari Chrome?</translation>
 <translation id="4523886039239821078">Beberapa pengaya (pengaya) menyebabkan Chrome mogok. Uninstal:</translation>
 <translation id="4615174829807303908">Anda keluar dari akun yang dikelola oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />. Tindakan ini akan menghapus data Chrome dari perangkat ini, namun data ini akan tetap tersedia di Akun Google.</translation>

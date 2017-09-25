@@ -36,7 +36,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pata msaada wa kutumia Chrome OS</translation>
 <translation id="1795405610103747296">Sakinisha Chrome kwenye simu yako. Tutatuma SMS kwenye simu yako: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Toleo hili la Chrome limepitwa na wakati</translation>
 <translation id="2063848847527508675">Mfumo wa Uendeshaji wa Chrome unahitaji kuzimwa na kuwashwa upya ili utumie sasisho.</translation>
@@ -62,7 +61,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="2446511512801740068">Muda wa matumizi wa Chrome umeisha kwa sababu haijafunguliwa upya kwa muda mrefu. Sasisho linapatikana na litaanza kutumika pindi tu utakapofungua upya.</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2580411288591421699">Huwezi kusakinisha toleo la Google Chrome ambalo tayari linatumika. Tafadhali funga Google Chrome na ujaribu tena.</translation>
-<translation id="2582790009689336987">Kompyuta itaacha kupokea sasisho za Google Chrome hivi karibuni kwa sababu mfumo huu wa Linux hautatumika tena.</translation>
 <translation id="2586406160782125153">Hatua hii itafuta data yako ya kuvinjari kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chrome ukitumia <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Nembo ya Chrome</translation>
 <translation id="2664962310688259219">Leseni za programu huria kwenye Chrome OS</translation>
@@ -88,7 +86,6 @@ Ili uzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa u
 
 Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagizo zaidi.</translation>
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
-<translation id="3311976847535831054">Kompyuta hii haitapokea tena sasisho za Google Chrome za 32-bit. Tafadhali pata toleo jipya la Google Chrome la 64-bit.</translation>
 <translation id="3360895254066713204">Msaidizi wa Chrome</translation>
 <translation id="3395323229510056640">Pata usaidizi wa kutumia mfumo wa uendeshaji wa Chrome</translation>
 <translation id="3396977131400919238">Hitilafu ya mfumo wa uendeshaji imetokea wakati wa kusanidi. Tafadhali pakua Google Chrome tena.</translation>
@@ -118,7 +115,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="4309555186815777032">(inahitaji uanzishaji upya wa <ph name="BEGIN_BUTTON" />Chrome<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Kompyuta hii haitapokea tena sasisho za Google Chrome hivi karibuni kwa sbabau mfumo huu wa Linux hautumika tena.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Tafadhali toka na uingie tena ili mabadiliko haya yafanye kazi.</translation>
 <translation id="4458462641685292929">Kuna shughuli nyingine zinaendelea kwenye Google Chrome. Tafadhali jaribu tena baadaye.</translation>
@@ -132,7 +128,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="4728575227883772061">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Ikiwa Google Chrome haitumiki kwa sasa, tafadhali ifunge na ujaribu tena.</translation>
 <translation id="4743926867934016338">Kubali na Utafute</translation>
 <translation id="4750550185319565338">Zima na uwashe Chrome tena ili uwashe <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Hivi karibuni kompyuta hii itaacha kupokea sasisho za Google Chrome za 32-bit. Tafadhali pata toleo jipya la Google Chrome la 64-bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Huenda faili hii ni hatari, kwa hivyo Chrome imeizuia.</translation>
 <translation id="4794050651896644714">Hifadhi maelezo katika Chrome</translation>
@@ -213,7 +208,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="6989339256997917931">Google Chrome imesasishwa, lakini hujaitumia kwa angalau siku 30.</translation>
 <translation id="7098166902387133879">Google Chrome inatumia maikrofoni yako.</translation>
 <translation id="7106741999175697885">Kidhibiti cha Shughuli - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kusakinisha Chrome upya mwenyewe.</translation>
 <translation id="7161904924553537242">Karibu Google Chrome</translation>
 <translation id="7164397146364144019">Unaweza kusaidia kuifanya Chrome kuwa salama na rahisi zaidi kutumia kwa kuripoti maelezo ya uwezekano wa matukio yasiyo salama kwa Google kiotomatiki.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> imeongezwa kwenye Chrome.</translation>

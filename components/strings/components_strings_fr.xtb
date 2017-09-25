@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ajuster à la largeur</translation>
 <translation id="1088860948719068836">Ajouter le nom du titulaire de la carte</translation>
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Afficher tous les mots de passe enregistrés…</translation>
 <translation id="1107591249535594099">Si cette case est cochée, une copie de votre carte est stockée sur cet appareil pour compléter les formulaires plus rapidement.</translation>
 <translation id="1111153019813902504">Favoris consultés récemment</translation>
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">Im&amp;primer...</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Signaler automatiquement<ph name="END_WHITEPAPER_LINK" /> les incidents de sécurité potentiels à Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Paiement non finalisé</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1201895884277373915">Plus de résultats pour ce site</translation>
 <translation id="1206967143813997005">Signature initiale incorrecte</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
 <translation id="5541546772353173584">Ajouter une adresse e-mail</translation>
 <translation id="5544037170328430102">Une page intégrée à l'adresse <ph name="SITE" /> indique :</translation>
+<translation id="5545756402275714221">Articles pour vous</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5560088892362098740">Date d'expiration</translation>
 <translation id="5565735124758917034">Actif</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
 <translation id="5633066919399395251">Des individus malveillants à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient tenter d'installer des programmes dangereux sur votre ordinateur afin de récupérer ou de supprimer certaines informations (photos, mots de passe, messages ou numéros de carte de crédit, par exemple). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Contenu trompeur bloqué.</translation>
-<translation id="5646376287012673985">Localisation</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Obtenir une recommandation de contenu personnalisé</translation>
 <translation id="5675650730144413517">Cette page ne fonctionne pas</translation>
+<translation id="5689199277474810259">Exporter au format JSON</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5719499550583120431">Les cartes prépayées sont acceptées.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Dernière récupération :</translation>
 <translation id="8253091569723639551">Adresse de facturation obligatoire</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8267698848189296333">Connexion en tant que <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Contactez votre administrateur réseau si vous n'êtes pas sûr de vous.</translation>
 <translation id="8293206222192510085">Ajouter aux favoris</translation>
 <translation id="8294431847097064396">Source</translation>

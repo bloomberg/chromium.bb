@@ -3,6 +3,7 @@
 <translationbundle lang="zh-TW">
 <translation id="1006017844123154345">在網路上開啟</translation>
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」...</translation>
+<translation id="1041308826830691739">來自網站</translation>
 <translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3295602654194328831">隱藏資訊</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
-<translation id="3319792846664697699">導覽面板</translation>
 <translation id="3321222012623826478">這項服務需要匿名傳送這個網址到 Google 伺服器，加以驗證。</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3341058695485821946">查看節省的數據用量</translation>
@@ -268,6 +268,7 @@
 
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
 <translation id="3616113530831147358">音訊</translation>
+<translation id="3620176948598597475">重設會清除 Data Saver 的紀錄，包含造訪過的網站清單。</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3649663272864015643">已選取 [首頁] 標籤</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">這裡沒有任何紀錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
 <translation id="3706423975342040244">娛樂</translation>
+<translation id="3712575778697986964">確定要重設 Data Saver 嗎？</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3734660163659757482">往上拉即可查看書籤和其他內容</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
-<translation id="3845539888601087042">目前顯示的歷史紀錄來源包括您已登入帳戶的所有裝置。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
 <translation id="3946611741043634542">繼續操作即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="3950820424414687140">登入</translation>
+<translation id="395206256282351086">已停用搜尋與網站建議</translation>
 <translation id="395922942268463099">定期更新的頁面</translation>
 <translation id="3967822245660637423">下載完成</translation>
 <translation id="397583555483684758">同步處理功能已停止運作</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="4242533952199664413">開啟設定</translation>
-<translation id="4248297594476034182">如要在所有裝置上存取您的分頁，請登入 Chrome。</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4254813446494774748">翻譯語言：</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
@@ -453,7 +454,6 @@
 <translation id="5423934151118863508">這裡會顯示您最常造訪的網頁</translation>
 <translation id="5424588387303617268">可用空間：<ph name="GIGABYTES" /> GB</translation>
 <translation id="5433691172869980887">已複製使用者名稱</translation>
-<translation id="5435775191620395718">目前顯示這個裝置的歷史紀錄。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">切換到網址列</translation>
 <translation id="5447201525962359567">所有網站儲存的資料，包括 Cookie 和其他儲存在本機上的資料</translation>
 <translation id="5447765697759493033">系統不會翻譯這個網站</translation>
@@ -480,7 +480,6 @@
 <translation id="5620928963363755975">透過「更多選項」按鈕前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5639724618331995626">允許所有網站</translation>
-<translation id="5646376287012673985">位置</translation>
 <translation id="5648166631817621825">過去 7 天</translation>
 <translation id="5655963694829536461">搜尋下載內容</translation>
 <translation id="5659593005791499971">電子郵件</translation>
@@ -550,6 +549,7 @@
 <translation id="6232535412751077445">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
 
 舉例來說，部分網站可能會以顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站紀錄而產生。許多網站仍會收集您的瀏覽資料，並將這些資料用於下列目的：提高網站安全性、在網站上提供更相關的內容、廣告和推薦項目，以及產生報告統計資料。</translation>
+<translation id="6255999984061454636">內容建議</translation>
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="6320088164292336938">震動</translation>
@@ -626,6 +626,7 @@
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個開啟的分頁}other{%1$d 個開啟的分頁}}</translation>
 <translation id="6896758677409633944">複製</translation>
+<translation id="6910211073230771657">已刪除</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -676,6 +677,7 @@
 <translation id="7423098979219808738">先詢問我</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7445411102860286510">允許網站自動播放靜音的影片 (建議)</translation>
+<translation id="7453467225369441013">你會從大多數網站登出，但不會因此登出 Google 帳戶。</translation>
 <translation id="7455923816558154057">輕觸即可查看</translation>
 <translation id="7464701184726199289">系統會將保持同步的資料從所有裝置上刪除。已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
@@ -742,6 +744,7 @@
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>
+<translation id="805047784848435650">根據你的瀏覽紀錄獨家推薦</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
 <translation id="8058746566562539958">在新的 Chrome 分頁中開啟</translation>
 <translation id="8063895661287329888">無法加入書籤。</translation>

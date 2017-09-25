@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Друк...</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Автоматично надсилати<ph name="END_WHITEPAPER_LINK" /> в Google інформацію про можливі порушення безпеки. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Оплату не завершено</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1201895884277373915">Більше з цього сайту</translation>
 <translation id="1206967143813997005">Недійсний підпис</translation>
@@ -616,7 +617,6 @@
 <translation id="5631439013527180824">Недійсний маркер керування пристрою</translation>
 <translation id="5633066919399395251">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш комп’ютер небезпечні програми, що викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення та дані кредитних карток). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Заблоковано оманливий вміст.</translation>
-<translation id="5646376287012673985">Місцезнаходження</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5669703222995421982">Отримувати персоналізовані пропозиції</translation>
 <translation id="5675650730144413517">Сторінка не працює</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Востаннє отримано:</translation>
 <translation id="8253091569723639551">Потрібно вказати платіжну адресу</translation>
 <translation id="8261506727792406068">Видалити</translation>
+<translation id="8267698848189296333">Ви входите як <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Зверніться до адміністратора своєї мережі, якщо ви не знаєте, що це означає.</translation>
 <translation id="8293206222192510085">Додати закладку</translation>
 <translation id="8294431847097064396">Джерело</translation>

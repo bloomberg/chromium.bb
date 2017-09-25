@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">Chromium auf das iPhone herunterladen</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2347108572062610441">Die beim Start von Chromium angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
-<translation id="2372704305038231957">Die 32-Bit-Version von Chromium funktioniert unter Umständen nicht ordnungsgemäß, da sie unter diesem Linux-System nicht mehr unterstützt wird. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Ein Download wird derzeit ausgeführt. Möchten Sie den Download abbrechen und Chromium beenden?}other{# Downloads werden derzeit ausgeführt. Möchten Sie die Downloads abbrechen und Chromium beenden?}}</translation>
 <translation id="2396765026452590966">Die beim Start von Chromium angezeigte Seite wurde durch die Erweiterung <ph name="EXTENSION_NAME" /> geändert.</translation>
 <translation id="2483889755041906834">In Chromium</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">Ein <ph name="BEGIN_BUTTON" />Neustart<ph name="END_BUTTON" /> von Chromium ist erforderlich.</translation>
 <translation id="5796460469508169315">Chromium ist gleich bereit.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">Chromium konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Aktualisieren Sie Chromium manuell.</translation>
-<translation id="5859963531214966875">Künftige Versionen von Chromium unterstützen dieses Linux-System nicht mehr.</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
 <translation id="6526111688217511984">Chromium benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
-<translation id="6584627348340620412">Künftige 32-Bit-Versionen von Chromium werden unter diesem Linux-System nicht mehr unterstützt. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
-<translation id="6593914713218535185">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter diesem Linux-System nicht mehr unterstützt wird.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
 <translation id="6717134281241384636">Ihr Profil kann nicht verwendet werden, da es aus einer neueren Version von Chromium stammt.
@@ -182,7 +177,6 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="6944967875980567883">In Chromium geladene Module</translation>
 <translation id="6970811910055250180">Ihr Gerät wird aktualisiert...</translation>
-<translation id="7027298027173928763">Chromium konnte nicht automatisch auf die neueste Version aktualisiert werden. In Ihrer Version fehlen einige neue Funktionen und Sicherheitsmerkmale. Installieren Sie Chromium manuell neu.</translation>
 <translation id="705851970750939768">Chromium aktualisieren</translation>
 <translation id="7066436765290594559">Chromium OS konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="707471633328071618">Google Payments (in Chromium kopiert)</translation>

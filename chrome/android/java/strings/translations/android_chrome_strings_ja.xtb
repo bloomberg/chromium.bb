@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> を追加しています...</translation>
+<translation id="1041308826830691739">ウェブサイトから</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
 <translation id="10614374240317010">常に保存しない</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />のページを翻訳しない</translation>
@@ -233,7 +234,6 @@
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3295602654194328831">情報を表示しない</translation>
 <translation id="3303414029551471755">コンテンツのダウンロードに進みますか？</translation>
-<translation id="3319792846664697699">ナビゲーション パネル</translation>
 <translation id="3321222012623826478">このサービスでは、このウェブサイトのアドレスを Google サーバーに匿名で送信し、確認を行うことが必要になります。</translation>
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="3341058695485821946">データ削減量を確認できます</translation>
@@ -268,6 +268,7 @@
 
 検索用語を押し続けるとその用語が選択され、選択範囲を調整できます。検索結果を絞り込むには、パネルを上にスライドして検索ボックスをタップします。</translation>
 <translation id="3616113530831147358">音声</translation>
+<translation id="3620176948598597475">リセットすると、アクセスしたサイトのリストなど、データセーバーの履歴が削除されます。</translation>
 <translation id="3632295766818638029">パスワードを表示</translation>
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="3649663272864015643">ホームタブが選択されています</translation>
@@ -276,6 +277,7 @@
 <translation id="3662546969139119822">履歴はありません</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
 <translation id="3706423975342040244">エンターテイメント</translation>
+<translation id="3712575778697986964">データセーバーをリセットしますか？</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3734660163659757482">上にスワイプするとブックマークなどが表示されます</translation>
 <translation id="3738139272394829648">タップして検索</translation>
@@ -288,7 +290,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>
-<translation id="3845539888601087042">ログインしている端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
@@ -299,6 +300,7 @@
 <translation id="393697183122708255">有効な音声検索がありません</translation>
 <translation id="3946611741043634542">続行すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />の内容に同意したことになります。</translation>
 <translation id="3950820424414687140">ログイン</translation>
+<translation id="395206256282351086">検索とサイトの候補の表示が無効</translation>
 <translation id="395922942268463099">ページは定期的に更新されます</translation>
 <translation id="3967822245660637423">ダウンロード完了</translation>
 <translation id="397583555483684758">同期は停止されました</translation>
@@ -330,7 +332,6 @@
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4226663524361240545">通知を受け取ると端末が振動します</translation>
 <translation id="4242533952199664413">設定を開く</translation>
-<translation id="4248297594476034182">お使いのどの端末でも同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4254813446494774748">翻訳言語:</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
@@ -453,7 +454,6 @@
 <translation id="5423934151118863508">最もアクセスの多かったページがここに表示されます</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB 使用可能</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
-<translation id="5435775191620395718">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">アドレスバーに移動する</translation>
 <translation id="5447201525962359567">すべてのサイトのストレージ（Cookie やローカルに保存した他のデータを含む）</translation>
 <translation id="5447765697759493033">このサイトは翻訳されません</translation>
@@ -480,7 +480,6 @@
 <translation id="5620928963363755975">[その他のオプション] から [ダウンロード] を開いて自分のファイルやページを探すことができます</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5639724618331995626">すべてのサイトを許可</translation>
-<translation id="5646376287012673985">現在地</translation>
 <translation id="5648166631817621825">過去 7 日間</translation>
 <translation id="5655963694829536461">ダウンロードしたアイテムを検索</translation>
 <translation id="5659593005791499971">メール</translation>
@@ -550,6 +549,7 @@
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
+<translation id="6255999984061454636">おすすめのコンテンツ</translation>
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="6320088164292336938">バイブレーション</translation>
@@ -626,6 +626,7 @@
 <translation id="688738109438487280">既存のデータを <ph name="TO_ACCOUNT" /> に追加します。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
 <translation id="6896758677409633944">コピー</translation>
+<translation id="6910211073230771657">削除済み</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -676,6 +677,7 @@
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7445411102860286510">ミュートされた動画の自動再生をサイトに許可する（推奨）</translation>
+<translation id="7453467225369441013">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="7455923816558154057">タップして表示</translation>
 <translation id="7464701184726199289">すべての端末から同期データを消去します。保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">スキップ</translation>
@@ -742,6 +744,7 @@
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
+<translation id="805047784848435650">閲覧履歴から</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
 <translation id="8058746566562539958">新しい Chrome タブで開く</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>

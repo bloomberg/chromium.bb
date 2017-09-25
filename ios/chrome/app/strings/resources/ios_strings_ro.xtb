@@ -66,6 +66,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="209018056901015185">Site desktop</translation>
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Pentru a naviga privat, deschide o filă incognito</translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
@@ -178,6 +179,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="430793432425771671">Sincronizează tot</translation>
 <translation id="4342284590510997375">Nou</translation>
+<translation id="434816576838749873">Alege aplicația de e-mail</translation>
 <translation id="4359125752503270327">Această pagină se va deschide în altă aplicație.</translation>
 <translation id="4370827530403103842">Sincronizarea nu funcționează. Atinge pentru a o remedia.</translation>
 <translation id="4375040482473363939">Căutare coduri QR</translation>
@@ -309,6 +311,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6785453220513215166">Se trimite raportul de blocare...</translation>
 <translation id="679325081238418596">Accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
 <translation id="6797885426782475225">Căutare vocală</translation>
+<translation id="6807889908376551050">Afișați toate...</translation>
 <translation id="681368974849482173">Element creat</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6903907808598579934">Activează sincronizarea</translation>
@@ -416,6 +419,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9148126808321036104">Conectează-te din nou</translation>
 <translation id="914898748153555155">Poți să modifici oricând această preferință din setările Chrome</translation>
+<translation id="91549621916703028">Creează mai multe file pentru toate activitățile</translation>
 <translation id="9157836665414082580">Închide casetele de dialog</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

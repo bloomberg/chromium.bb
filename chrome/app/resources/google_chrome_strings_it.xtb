@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Ricevi assistenza per l'utilizzo di Chrome OS</translation>
 <translation id="1795405610103747296">Installa Chrome sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome non è riuscito ad aggiornarsi all'ultima versione, quindi ti stai perdendo le nuove funzioni e correzioni per la sicurezza. Devi aggiornare Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="2063848847527508675">Per applicare l'aggiornamento è necessario riavviare Chrome OS.</translation>
@@ -58,7 +57,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2446511512801740068">Chrome non è aggiornato perché non viene riavviato da un po'. È disponibile un aggiornamento che verrà applicato non appena riavvierai.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2580411288591421699">Impossibile installare la stessa versione di Google Chrome attualmente in esecuzione. Chiudi Google Chrome e riprova.</translation>
-<translation id="2582790009689336987">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché questo sistema Linux non sarà più supportato.</translation>
 <translation id="2586406160782125153">Verranno eliminati i tuoi dati di navigazione da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chrome come <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo di Chrome</translation>
 <translation id="2664962310688259219">Licenze open source di Chrome OS</translation>
@@ -85,7 +83,6 @@ Per impedire a <ph name="NEW_PROFILE_NAME" /> di accedere al tuo account, assicu
 
 Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
-<translation id="3311976847535831054">Questo computer non riceverà più gli aggiornamenti di Google Chrome a 32 bit. Esegui l'upgrade a Google Chrome a 64 bit.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
 <translation id="3395323229510056640">Ricevi assistenza per Chrome OS</translation>
 <translation id="3396977131400919238">Durante l'installazione si è verificato un errore del sistema operativo. Scarica nuovamente Google Chrome.</translation>
@@ -115,7 +112,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4309555186815777032">(è necessario <ph name="BEGIN_BUTTON" />riavviare<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché questo sistema Linux non è più supportato.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
 <translation id="4458462641685292929">C'è un'altra operazione in corso su Google Chrome. Riprova più tardi.</translation>
@@ -129,7 +125,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="4728575227883772061">Installazione non riuscita a causa di un errore non specificato. Se Google Chrome è attivo, chiudilo e riprova.</translation>
 <translation id="4743926867934016338">Accetta e cerca</translation>
 <translation id="4750550185319565338">Riavvia Chrome per attivare <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome a 32 bit. Esegui l'upgrade a Google Chrome a 64 bit.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Questo file potrebbe essere pericoloso, pertanto è stato bloccato da Chrome.</translation>
 <translation id="4794050651896644714">Salva dati in Chrome</translation>
@@ -206,7 +201,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6989339256997917931">Google Chrome è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
 <translation id="7098166902387133879">Google Chrome sta utilizzando il microfono.</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome non è riuscito ad aggiornarsi all'ultima versione, quindi ti stai perdendo le nuove funzioni e correzioni per la sicurezza. Devi reinstallare manualmente Chrome.</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
 <translation id="7164397146364144019">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare segnalando automaticamente a Google i dettagli dei possibili problemi di sicurezza.</translation>
 <translation id="7185038942300673794">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chrome.</translation>

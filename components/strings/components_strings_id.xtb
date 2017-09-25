@@ -32,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Cetak...</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Otomatis laporkan<ph name="END_WHITEPAPER_LINK" /> detail kemungkinan insiden keamanan ke Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Pembayaran Belum Selesai</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1201895884277373915">Lainnya dari situs ini</translation>
 <translation id="1206967143813997005">Tanda tangan awal tidak valid</translation>
@@ -616,7 +617,6 @@
 <translation id="5631439013527180824">Token pengelolaan perangkat tidak valid</translation>
 <translation id="5633066919399395251">Saat ini, penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha menginstal program berbahaya di komputer Anda yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Konten penipuan diblokir.</translation>
-<translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Mendapatkan konten hasil personalisasi</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
@@ -919,6 +919,7 @@
 <translation id="8249320324621329438">Terakhir diambil:</translation>
 <translation id="8253091569723639551">Perlu alamat penagihan</translation>
 <translation id="8261506727792406068">Hapus</translation>
+<translation id="8267698848189296333">Masuk sebagai <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Hubungi administrator jaringan Anda jika Anda tidak yakin apa maksudnya.</translation>
 <translation id="8293206222192510085">Tambahkan Bookmark</translation>
 <translation id="8294431847097064396">Sumber</translation>

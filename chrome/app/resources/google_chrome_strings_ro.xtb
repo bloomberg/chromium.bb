@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="1795405610103747296">Instalează Chrome pe telefon. Vom trimite un SMS pe telefonul tău: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome nu este actualizat</translation>
 <translation id="2063848847527508675">Pentru a se aplica actualizarea, sistemul de operare Chrome trebuie să fie repornit.</translation>
@@ -58,7 +57,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2446511512801740068">Chrome este neactualizat, deoarece în ultimul timp nu a fost repornit. Este disponibilă o actualizare, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care rulează în prezent. Închide Google Chrome și încearcă din nou.</translation>
-<translation id="2582790009689336987">În curând, acest computer nu va mai primi actualizări pentru Google Chrome, deoarece acest sistem Linux nu va mai fi acceptat.</translation>
 <translation id="2586406160782125153">Astfel, se vor șterge datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Sigla Chrome</translation>
 <translation id="2664962310688259219">Licențe open source pentru sistemul de operare Chrome</translation>
@@ -84,7 +82,6 @@ Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți accese
 
 Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni suplimentare.</translation>
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
-<translation id="3311976847535831054">Acest computer nu va mai primi actualizări pentru Google Chrome pe 32 de biți. Fă upgrade la Google Chrome pe 64 de biți.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Obține ajutor privind sistemul de operare Chrome</translation>
 <translation id="3396977131400919238">S-a produs o eroare de sistem de operare în timpul instalării. Descarcă din nou Google Chrome.</translation>
@@ -114,7 +111,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4309555186815777032">(necesită <ph name="BEGIN_BUTTON" />repornirea<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
-<translation id="437002079035561265">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece acest sistem Linux nu mai este acceptat.</translation>
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4458462641685292929">O altă operație din Google Chrome este în curs de desfășurare. Încearcă din nou mai târziu.</translation>
@@ -128,7 +124,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4728575227883772061">Instalarea nu a reușit din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închide-l și încearcă din nou.</translation>
 <translation id="4743926867934016338">Acceptă și caută</translation>
 <translation id="4750550185319565338">Repornește Chrome pentru a activa <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">În curând, acest computer nu va mai primi actualizări pentru Google Chrome pe 32 de biți. Fă upgrade la Google Chrome pe 64 de biți.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este posibil ca fișierul să fie periculos, așadar Chrome l-a blocat.</translation>
 <translation id="4794050651896644714">Salvați detaliile în Chrome</translation>
@@ -205,7 +200,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="6989339256997917931">Google Chrome a fost actualizat, dar nu l-ai folosit cel puțin 30 de zile.</translation>
 <translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
 <translation id="7106741999175697885">Manager de activități - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să reinstalați Chrome manual.</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="7164397146364144019">Puteți contribui la un produs Chrome mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> a fost adăugată la Chrome.</translation>

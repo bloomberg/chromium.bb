@@ -66,6 +66,7 @@
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
+<translation id="213900355088104901">シークレット モードで閲覧するにはシークレット タブを開きます</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
@@ -178,6 +179,7 @@
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
 <translation id="4342284590510997375">新規</translation>
+<translation id="434816576838749873">メールアプリの選択</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
 <translation id="4375040482473363939">QR コード検索</translation>
@@ -309,6 +311,7 @@
 <translation id="6785453220513215166">クラッシュレポートを送信しています...</translation>
 <translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定がどの端末でも利用できるようになります</translation>
 <translation id="6797885426782475225">音声検索</translation>
+<translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
@@ -416,6 +419,7 @@
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="914898748153555155">この設定は Chrome の設定でいつでも変更できます</translation>
+<translation id="91549621916703028">複数のタブを開いてさまざまな作業を行うことができます</translation>
 <translation id="9157836665414082580">ダイアログを表示しない</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9203116392574189331">Handoff</translation>

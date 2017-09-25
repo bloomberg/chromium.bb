@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1685087038067318291">Découvrez des pages Web envoyées par des objets à proximité. Lorsque le Bluetooth est activé, Chrome peut réunir les pages Web associées aux objets qui vous entourent et les envoyer de manière anonyme à Google pour déterminer celles qui vous sont les plus utiles. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome n'a pas accès à vos photos ni à vos vidéos. Activez l'accès dans iOS via Réglages &gt; Confidentialité &gt; Photos.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="415767770115540173">Améliorez votre expérience Google dans Chrome grâce à votre position.</translation>
-<translation id="4248297594476034182">Connectez-vous à Chrome pour synchroniser vos onglets sur tous vos appareils.</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
 <translation id="4523886039239821078">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez les désinstaller.</translation>
 <translation id="4615174829807303908">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chrome de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>

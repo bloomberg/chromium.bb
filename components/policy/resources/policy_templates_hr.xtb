@@ -1173,7 +1173,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="5323128137188992869">Dopusti emitiranje sadržaja na uređaj pomoću usluge <ph name="PRODUCT_NAME" />.
 
-          Ako se to pravilo postavi na netočno, korisnici neće moći emitirati sadržaj na svom uređaju. Ako se pravilo postavi na točno, korisnici će moći emitirati sadržaj. Ako se pravilo ne postavi, korisnici neće moći emitirati sadržaj na registrirane uređaje s OS-om Chrome, ali će moći emitirati na neregistrirane uređaje.</translation>
+          Ako se to pravilo postavi na False, korisnici neće moći emitirati sadržaj na svom uređaju. Ako se pravilo postavi na True, korisnici će moći emitirati sadržaj. Ako se pravilo ne postavi, korisnici neće moći emitirati sadržaj na registrirane uređaje s OS-om Chrome, ali će moći emitirati na neregistrirane uređaje.</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
@@ -1712,7 +1712,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne postavi ili se postavi na "False", omogućit će se <ph name="TLS_FALSE_START" />. Ako se postavi na "True", neće se omogućiti <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Omogući Instant</translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
-<translation id="7468416082528382842">Lokacija Windows registra:</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
 <translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
 <translation id="7485481791539008776">Zadana pravila za odabir pisača</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1326317727527857210">Ili upate vichupo kutoka kwenye vifaa vyako vingine, ingia katika Chrome.</translation>
 <translation id="1685087038067318291">Gundua kurasa za wavuti zinazotumwa na vifaa vilivyo karibu. Bluetooth inapowashwa, Chrome inaweza kukusanya kurasa za wavuti zinazohusishwa na vifaa vilivyo karibu nawe na kuzituma bila maelezo yanayoweza kukutambulisha kwenye Google ili kupata kurasa muhimu zaidi. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome imethibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome haina uwezo wa kufikia picha au video zako. Washa ufikiaji katika Mipangilio ya iOS &gt; Faragha &gt; Picha.</translation>
 <translation id="4099578267706723511">Saidia kuboresha Chrome kwa kutumia Google takwimu za matumizi na ripoti wakati wowote kivinjari hiki kinapoacha kufanya kazi.</translation>
 <translation id="415767770115540173">Pata hali bora ya Google katika Chrome kulingana na mahali ulipo.</translation>
-<translation id="4248297594476034182">Ingia katika Chrome ili upate vichupo vyako kwenye vifaa vyako vyote.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
 <translation id="4523886039239821078">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali sanidua:</translation>
 <translation id="4615174829807303908">Unaondoka kwenye akaunti inayodhibitiwa na <ph name="SIGNOUT_MANAGED_DOMAIN" />. Hatua hii itafuta data yako ya Chrome kwenye kifaa hiki, lakini data yako itasalia katika akaunti yako ya Google.</translation>

@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox：為 Chrome 提供語音朗讀功能</translation>
-<translation id="1226487719524433143">歡迎針對這項全新體驗提供意見給我們，只要直接按下搜尋鍵 + A 鍵，再按下 I 鍵即可暢所欲言。按下 [繼續] 按鈕即可繼續瀏覽教學課程，學習所有入門須知。</translation>
 <translation id="1229276918471378188">上一個跳轉</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">下一個第 6 階標題</translation>
 <translation id="1275718070701477396">已選取</translation>
-<translation id="1310230882256010289">徹底升級！我們從頭改造了 ChromeVox 的運作方式，包括效能、穩定性與網路支援/符合規範程度皆更臻完善。</translation>
 <translation id="1319608975892113573">沒有上一個引用標記。</translation>
 <translation id="1321576897702511272">隱藏 ChromeVox 說明</translation>
 <translation id="1331702245475014624">第 <ph name="INDEX" /> 個，共 <ph name="TOTAL" /> 個</translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">欄標題沒有內容</translation>
 <translation id="316542773973815724">導覽</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{空格}other{# 個空格}}</translation>
-<translation id="3183233191569362040">恭喜！您已順利學完基本的 ChromeVox Next (測試版) 使用方法。提醒您，您隨時可以按下搜尋鍵 + 句號鍵開啟 ChromeVox 指令選單。如要進一步瞭解 ChromeVox 和 Chrome 作業系統，請參閱下列文章。
-如要結束教學課程，請使用 ChromeVox 找到 [關閉] 按鈕，按一下即可結束。</translation>
 <translation id="320961988183078793">已進入<ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />，分頁</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -338,7 +334,6 @@
 <translation id="3897092660631435901">選單</translation>
 <translation id="3909320334364316587">上一個第 6 階標題</translation>
 <translation id="3914173277599553213">必要</translation>
-<translation id="3951424903203718058">您是第一次使用 ChromeVox Next 互動朗讀嗎？本教學課程提供了簡要的基本操作說明，可協助您開始使用 ChromeVox Next。</translation>
 <translation id="3962990492275676168">從目前位置開始朗讀</translation>
 <translation id="4004802134384979325">已勾選</translation>
 <translation id="4006140876663370126">圖片</translation>
@@ -432,7 +427,6 @@
 <translation id="4846487886195635104">刪除線結尾</translation>
 <translation id="4848993367330139335">計時器</translation>
 <translation id="4850023505158945298">上一個相似的元素。</translation>
-<translation id="485011152882364255">使用 ChromeVox Next 時，搜尋鍵的功用是輔助鍵。大多數 ChromeVox 快速鍵都是使用搜尋鍵搭配其他按鍵。此外，瀏覽時也會用到方向鍵。</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">啟用 TTS 記錄功能</translation>
 <translation id="4877261390094455813">輸入搜尋查詢。</translation>
@@ -501,7 +495,6 @@
 <translation id="5444587279251314700">(運作中)</translation>
 <translation id="5451268436205074266">點 <ph name="DOT" /></translation>
 <translation id="5455441614648621694">互補</translation>
-<translation id="5458780372341732962">使用 ChromeVox Next (測試版)</translation>
 <translation id="5485036206801896268">沒有上一個圖形。</translation>
 <translation id="5486947920110100234">沒有下一個跳躍點。</translation>
 <translation id="549602578321198708">單字</translation>
@@ -510,7 +503,6 @@
 <translation id="5507663321906818013">偵錯基準測試</translation>
 <translation id="5518443085409638729">編輯文字時將滑鼠游標置於字元之間 (例如 Mac OS X)。</translation>
 <translation id="552195134157544755">圓形按鈕</translation>
-<translation id="5531530875187439488">耳聽訊號推陳出新！我們更新了整套耳聽語音訊號，讓瀏覽體驗的回應更迅速。</translation>
 <translation id="5534303576632885660">頁首</translation>
 <translation id="5546092960038624944">沒有上一個第 5 階標題。</translation>
 <translation id="556042886152191864">按鈕</translation>
@@ -537,7 +529,6 @@
 <translation id="5682113568322255809">地標</translation>
 <translation id="5683155931978483559">上一個核取方塊</translation>
 <translation id="5684277895745049190">清單</translation>
-<translation id="5684905390246898631">歡迎使用 ChromeVox Next！</translation>
 <translation id="5695831708991916435">以下這些快速鍵並非 ChromeVox 指令，但仍然很實用，可協助您善用 Chrome。
 如要前往下一個操作項目 (例如按鈕和連結)，請按下 Tab 鍵；如要返回上一個操作項目，請按下 Shift + Tab 鍵。
 如要進入 Chrome 瀏覽器的網址方塊 (又稱為網址列)，請按下 Control + L 鍵。
@@ -572,7 +563,6 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{等號}other{# 個等號}}</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5948123859135882163">切換數學運算式的轉譯方式 (選擇結構化轉譯或語意轉譯)</translation>
-<translation id="5948485979596965684">你已更新至最新的主要 ChromeVox 版本！</translation>
 <translation id="5955304353782037793">應用程式</translation>
 <translation id="5956928062748260866">對話方塊</translation>
 <translation id="5963413905009737549">區段</translation>
@@ -651,7 +641,6 @@
 <translation id="6786800275320335305">文章</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
 <translation id="6793101435925451627">清單方塊</translation>
-<translation id="6818172019016005152">我們投注了許多心力，為使用者提供更臻完善的最新 ChromeVox 體驗。更新內容如下</translation>
 <translation id="6833103209700200188">頁尾</translation>
 <translation id="6871161210040114857">不區分大小寫。</translation>
 <translation id="6877435256196695200">沒有下一個圖形。</translation>
@@ -669,7 +658,6 @@
 <translation id="7037042857287298941">上一個清單</translation>
 <translation id="7041173719775863268">結束選取</translation>
 <translation id="7086377898680121060">調高亮度</translation>
-<translation id="7094527465295945904">按鍵配對不一樣了！我們讓搜尋鍵成為 ChromeVox 輔助鍵，並且大幅簡化了按鍵組合。</translation>
 <translation id="7095834689119144465">編輯文字時僅限輸入數字</translation>
 <translation id="7096001299300236431">上一個媒體元素</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +761,6 @@
 <translation id="8066678206530322333">橫幅</translation>
 <translation id="8076492880354921740">分頁</translation>
 <translation id="8091452896542422286">空格</translation>
-<translation id="8104178626892949749">按下 ChromeVox 的 O 鍵、N 鍵，進一步瞭解 ChromeVox Next。</translation>
 <translation id="8110647606445335195">沒有 ARIA 地標。</translation>
 <translation id="8153880621934657047">不在表格內。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{底線}other{# 個底線}}</translation>
@@ -783,7 +770,6 @@
 <translation id="8199231515320852133">朗讀目前儲存格的標題</translation>
 <translation id="820417203470636242">空白儲存格。</translation>
 <translation id="8215202828671303819">多重選取</translation>
-<translation id="8224171046658870249">已切換至 ChromeVox Next</translation>
 <translation id="826991282343985864">第 $1 列，第 $2 欄</translation>
 <translation id="8276439074553447000">跳至上一個可選擇的項目</translation>
 <translation id="8278417001922463147">沒有上一篇文章。</translation>
@@ -828,7 +814,6 @@
 <translation id="8664519043722036194">秒</translation>
 <translation id="867187640362843212">標題 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{直立線符號}other{# 個直立線符號}}</translation>
-<translation id="8721861170709424373">ChromeVox Next 參考指令</translation>
 <translation id="8735450637152821465">開始選取</translation>
 <translation id="8743786158317878347">進入結構化內容，例如表格</translation>
 <translation id="8747966237988593539">排序清單</translation>
@@ -881,7 +866,6 @@
 <translation id="923331726185079994">ChromeVox 更新成功</translation>
 <translation id="930275611743429116">開始或結束選取。</translation>
 <translation id="948171205378458592">放慢說話速度</translation>
-<translation id="955917170449423694">已切換至傳統版 ChromeVox</translation>
 <translation id="962913030769097253">下一個第 1 階標題</translation>
 <translation id="973955474346881951">啟用/停用固定模式</translation>
 <translation id="976849232629612000">沒有選單項目。</translation>

@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ajusta a l'amplada</translation>
 <translation id="1088860948719068836">Afegeix el titular de la targeta</translation>
 <translation id="1103523840287552314">Tradueix sempre de: <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Mostra totes les contrasenyes desades...</translation>
 <translation id="1107591249535594099">Si s'activa aquesta casella, Chrome emmagatzema una còpia d'aquesta targeta al dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="1111153019813902504">Adreces d'interès recents</translation>
 <translation id="1113869188872983271">&amp;Desfés el canvi d'ordre</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Imprimeix...</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Informa automàticament<ph name="END_WHITEPAPER_LINK" /> Google dels detalls sobre possibles incidències de seguretat. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">No s'ha completat el pagament</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1201895884277373915">Més entrades d'aquest lloc</translation>
 <translation id="1206967143813997005">Signatura inicial incorrecta</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
 <translation id="5541546772353173584">Afegeix un correu electrònic</translation>
 <translation id="5544037170328430102">Una pàgina inserida a <ph name="SITE" /> diu:</translation>
+<translation id="5545756402275714221">Articles que et poden interessar</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5560088892362098740">Data de caducitat</translation>
 <translation id="5565735124758917034">Actiu</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Testimoni de gestió del dispositiu no vàlid</translation>
 <translation id="5633066919399395251">És possible que els atacants del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> provin d'instal·lar programes perillosos a l'ordinador per robar o suprimir la teva informació (per exemple, les fotos, les contrasenyes, els missatges i les targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">S'ha bloquejat el contingut enganyós.</translation>
-<translation id="5646376287012673985">Ubicació</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5669703222995421982">Obtén contingut personalitzat</translation>
 <translation id="5675650730144413517">Aquesta pàgina no funciona</translation>
+<translation id="5689199277474810259">Exporta a JSON</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5719499550583120431">S'accepten targetes de prepagament.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Última obtenció:</translation>
 <translation id="8253091569723639551">Cal indicar l'adreça de facturació</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
+<translation id="8267698848189296333">S'està iniciant la sessió com a <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Si no esteu segur de què significa això, contacteu amb l'administrador de la xarxa.</translation>
 <translation id="8293206222192510085">Afegeix una adreça d'interès</translation>
 <translation id="8294431847097064396">Font</translation>

@@ -35,7 +35,6 @@
 <translation id="2265088490657775772">Chromium beszerzése iPhone eszközre</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
-<translation id="2372704305038231957">Előfordulhat, hogy a 32 bites Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Letöltés van folyamatban. Megszakítja a letöltést, és kilép a Chromiumból?}other{# letöltés van folyamatban. Megszakítja a letöltéseket, és kilép a Chromiumból?}}</translation>
 <translation id="2396765026452590966">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2483889755041906834">A Chromiumban</translation>
@@ -140,8 +139,6 @@
 <translation id="5772805321386874569">(a Chromium <ph name="BEGIN_BUTTON" />újraindítását<ph name="END_BUTTON" /> igényli)</translation>
 <translation id="5796460469508169315">A Chromium majdnem készen áll.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5823381412099532241">A Chromium nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chromium frissítése szükséges.</translation>
-<translation id="5859963531214966875">A Chromium jövőbeli verziói nem fogják támogatni ezt a Linux rendszert.</translation>
 <translation id="5862307444128926510">Üdvözli a Chromium!</translation>
 <translation id="5877064549588274448">Módosult a csatorna. Indítsa újra az eszközt a módosítások alkalmazásához.</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
@@ -167,8 +164,6 @@
 <translation id="6505742536731484931">A Chromiumnak a helyadatokhoz való hozzáférésre van szüksége a ahhoz, hogy megoszthassa az Ön tartózkodási helyét a webhellyel.</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
 <translation id="6526111688217511984">A Chromiumnak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
-<translation id="6584627348340620412">A 32 bites Chromium jövőbeli verziói nem fogják támogatni ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
-<translation id="6593914713218535185">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert.</translation>
 <translation id="6638567566961868659">Könyvjelzőit megtalálhatja a Chromium menüben vagy a könyvjelzősávban.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="6717134281241384636">A profilja nem használható, mert az a Chromium egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Chromium újabb verzióját.</translation>
@@ -180,7 +175,6 @@
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
 <translation id="6944967875980567883">A Chromiumba betöltött modulok</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
-<translation id="7027298027173928763">A Chromium nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chromium kézi újratelepítése szükséges.</translation>
 <translation id="705851970750939768">A Chromium frissítése</translation>
 <translation id="7066436765290594559">A Chromium OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="707471633328071618">Google Payments (a Chromiumra másolva)</translation>

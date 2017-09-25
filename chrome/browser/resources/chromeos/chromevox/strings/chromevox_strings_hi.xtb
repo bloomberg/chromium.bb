@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome को ध्‍वनि देना</translation>
-<translation id="1226487719524433143">हम इस नए अनुभव के बारे में आपके विचार जानने के लिए उत्साहित हैं. Search+a, उसके बाद i दबाकर हमें सीधे फ़ीडबैक भेजें. ट्यूटोरियल पर जारी रखने के लिए अगला बटन दबाएं, ताकि आप शुरू करने संबंधी सभी चीज़ों के बारे में जान सकें.</translation>
 <translation id="1229276918471378188">पिछला जंप</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">अगले स्‍तर 6 का शीर्षक</translation>
 <translation id="1275718070701477396">चयनित</translation>
-<translation id="1310230882256010289">उन्नत अपग्रेड. हमने ChromeVox के काम करने के तरीके को नए सिरे से निर्मित किया है. बेहतर प्रदर्शन, स्थिरता और वेब समर्थन/अनुपालन की आशा की जाती है.</translation>
 <translation id="1319608975892113573">कोई पिछला ब्‍लॉककोट नहीं.</translation>
 <translation id="1321576897702511272">ChromeVox सहायता छिपाएं</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
@@ -225,8 +223,6 @@
 <translation id="3163593631834463955">खाली स्तंभ शीर्षलेख</translation>
 <translation id="316542773973815724">मार्गदर्शक</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{रिक्ति}one{# रिक्तियां}other{# रिक्तियां}}</translation>
-<translation id="3183233191569362040">बधाई हो! आपने ChromeVox Next (बीटा) का उपयोग करने के लिए महत्वपूर्ण बातों को सफलतापूर्वक सीख लिया है. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox आदेश मेनू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी अधिक जानकारी के लिए, निम्न लेखों पर जाएं.
-अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का उपयोग करके बंद करें बटन पर नेविगेट करें और उसे क्लिक करें.</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> डाला/डाली</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, टैब</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -338,7 +334,6 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909320334364316587">पिछले स्‍तर 6 का शीर्षक</translation>
 <translation id="3914173277599553213">आवश्यक</translation>
-<translation id="3951424903203718058">क्या आप ChromeVox Next मौखिक फ़ीडबैक का पहली बार उपयोग कर रहे हैं? ChromeVox Next के साथ प्रारंभ करने के लिए यह त्वरित ट्यूटोरियल महत्वपूर्ण बातों को समझाता है.</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थान से पढ़ना प्रारंभ करें</translation>
 <translation id="4004802134384979325">चेक किया गया</translation>
 <translation id="4006140876663370126">img</translation>
@@ -432,7 +427,6 @@
 <translation id="4846487886195635104">स्ट्राइक-थ्रू समाप्त</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">पिछला समान तत्व.</translation>
-<translation id="485011152882364255">ChromeVox Next में Search की, बदलने के साधन वाली की होती है. अधिकांश ChromeVox शॉर्टकट Search की से प्रारंभ होते हैं. आप नेविगेशन के लिए तीर की का भी उपयोग कर सकते हैं.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करें</translation>
 <translation id="4877261390094455813">खोज क्वेरी डालें.</translation>
@@ -501,7 +495,6 @@
 <translation id="5444587279251314700">(सक्रिय)</translation>
 <translation id="5451268436205074266">बिंदु <ph name="DOT" /></translation>
 <translation id="5455441614648621694">पूरक</translation>
-<translation id="5458780372341732962">ChromeVox Next (बीटा) का उपयोग करें</translation>
 <translation id="5485036206801896268">कोई पिछला ग्राफ़िक नहीं.</translation>
 <translation id="5486947920110100234">कोई अगला जंप बिंदु नहीं.</translation>
 <translation id="549602578321198708">शब्‍द</translation>
@@ -510,7 +503,6 @@
 <translation id="5507663321906818013">बेंचमार्क को डीबग करें</translation>
 <translation id="5518443085409638729">लेख (जैसे Mac OS X) को संपादित करते समय कर्सर को वर्णों के बीच रखें.</translation>
 <translation id="552195134157544755">रेडियो बटन</translation>
-<translation id="5531530875187439488">नए ईयरकॉन. हमने ब्राउज़िंग को अधिक प्रतिक्रियाशील बनाने के लिए उन ऑडियो आइकन का सेट रीफ्रेश किया है जिसे आप सुनते हैं.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">कोई पिछला स्तर 5 शीर्षक नहीं.</translation>
 <translation id="556042886152191864">बटन</translation>
@@ -537,7 +529,6 @@
 <translation id="5682113568322255809">स्थानचिह्न</translation>
 <translation id="5683155931978483559">पिछला चेकबॉक्स</translation>
 <translation id="5684277895745049190">सूची</translation>
-<translation id="5684905390246898631">ChromeVox Next में आपका स्वागत है!</translation>
 <translation id="5695831708991916435">अगले कुछ शॉर्टकट ChromeVox आदेश नहीं हैं, लेकिन फिर भी Chrome का अधिकतम लाभ प्राप्त करने के लिए वे बहुत उपयोगी हैं.
 बटन और लिंक जैसे कार्रवाई योग्य आइटम के माध्यम से आगे नेविगेट करने के लिए, Tab कुंजी दबाएं. पीछे नेविगेट करने के लिए, Shift+Tab दबाएं. 
 Chrome ब्राउज़र पता बॉक्स डालने के लिए, जिसे खोज वाली पट्टी भी कहा जाता है, Control + L दबाएं. 
@@ -572,7 +563,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}one{# बराबर चिह्न}other{# बराबर चिह्न}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5948123859135882163">गणितीय व्यंजकों की व्याख्या को संरचनात्मक और शब्दार्थ विज्ञान के बीच टॉगल करें</translation>
-<translation id="5948485979596965684">आपको ChromeVox के मुख्य नए रिलीज़ पर अपडेट किया गया है!</translation>
 <translation id="5955304353782037793">ऐप्स</translation>
 <translation id="5956928062748260866">डॉयलॉग</translation>
 <translation id="5963413905009737549">अनुभाग</translation>
@@ -651,7 +641,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6786800275320335305">लेख</translation>
 <translation id="6787839852456839824">कीबोर्ड शॉर्टकट</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">हमने नए और बेहतर ChromeVox अनुभव पर बहुत मेहनत की है; यहां बताया गया है कि नया क्या है</translation>
 <translation id="6833103209700200188">पादलेख</translation>
 <translation id="6871161210040114857">केस को अनदेखा करना.</translation>
 <translation id="6877435256196695200">कोई अगला ग्राफ़िक नहीं.</translation>
@@ -669,7 +658,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7041173719775863268">चयन समाप्त करें</translation>
 <translation id="7086377898680121060">स्क्रीन की रोशनी बढ़ाएं</translation>
-<translation id="7094527465295945904">नई कुंजी बाइंडिंग. हमने ChromeVox बदलने के साधन की खोज की है और कुंजी संयोजनों को प्रभावशाली तरीके से सरलीकृत किया है.</translation>
 <translation id="7095834689119144465">केवल संख्यात्मक लेख संपादित करें</translation>
 <translation id="7096001299300236431">पिछला मीडिया</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -773,7 +761,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="8066678206530322333">बैनर</translation>
 <translation id="8076492880354921740">टैब</translation>
 <translation id="8091452896542422286">खाली जगह</translation>
-<translation id="8104178626892949749">ChromeVox Next के बारे में अधिक जानने के लिए ChromeVox o, n दबाएं.</translation>
 <translation id="8110647606445335195">कोई ARIA स्थानचिह्न नहीं.</translation>
 <translation id="8153880621934657047">तालिका में नहीं है.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
@@ -783,7 +770,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="8199231515320852133">वर्तमान सेल के शीर्षलेखों को प्रदर्शित करें</translation>
 <translation id="820417203470636242">खाली सेल.</translation>
 <translation id="8215202828671303819">एकाधिक चयन</translation>
-<translation id="8224171046658870249">ChromeVox Next पर स्विच किया गया</translation>
 <translation id="826991282343985864">पंक्ति$1स्तंभ$2</translation>
 <translation id="8276439074553447000">पिछले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="8278417001922463147">कोई पिछला लेख नहीं.</translation>
@@ -828,7 +814,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="8664519043722036194">सेकंड</translation>
 <translation id="867187640362843212">शीर्षक 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# लम्बवत पाइप}other{# लम्बवत पाइप}}</translation>
-<translation id="8721861170709424373">ChromeVox Next आदेश संदर्भ</translation>
 <translation id="8735450637152821465">चयन प्रारंभ करें</translation>
 <translation id="8743786158317878347">संरचित सामग्री, जैसे तालिकाएं डालें</translation>
 <translation id="8747966237988593539">क्रमित सूची</translation>
@@ -881,7 +866,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
 <translation id="930275611743429116">चयन प्रारंभ या समाप्त करें.</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
-<translation id="955917170449423694">क्लासिक ChromeVox पर स्विच किया गया</translation>
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
 <translation id="973955474346881951">रोचक मोड सक्षम/अक्षम करें</translation>
 <translation id="976849232629612000">कोई आइटम नहीं.</translation>

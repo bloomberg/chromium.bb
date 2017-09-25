@@ -32,7 +32,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoć za upotrebu OS-a Chrome</translation>
 <translation id="1795405610103747296">Instalirajte Chrome na telefon. Poslat ćemo vam SMS na vaš telefonski broj: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Trebate ažurirati Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
@@ -58,7 +57,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="2446511512801740068">Chrome je zastario jer dulje vrijeme nije ponovo pokrenut. Ažuriranje je dostupno i primijenit će se čim ponovo pokrenete proizvod.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
-<translation id="2582790009689336987">Ovo će računalo uskoro prestati primati ažuriranja za Google Chrome jer taj sustav Linuxa više neće biti podržan.</translation>
 <translation id="2586406160782125153">Time će se izbrisati podaci o pregledavanju s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotip Chrome</translation>
 <translation id="2664962310688259219">Licence otvorenog izvornog koda OS-a Chrome</translation>
@@ -84,7 +82,6 @@ Ako ne želite da <ph name="NEW_PROFILE_NAME" /> pristupa vašem računu, zaklju
 
 Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
-<translation id="3311976847535831054">Ovo računalo više neće primati ažuriranja za 32-bitni Google Chrome. Nadogradite na 64-bitni Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Potraži pomoć za upotrebu OS-a Chrome</translation>
 <translation id="3396977131400919238">Došlo je do pogreške operacijskog sustava tijekom instalacije. Ponovno preuzmite program Google Chrome.</translation>
@@ -114,7 +111,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="4309555186815777032">(potrebno je <ph name="BEGIN_BUTTON" />ponovo pokrenuti<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Ovo računalo više neće primati ažuriranja Google Chromea jer taj sustav Linuxa više nije podržan.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
 <translation id="4458462641685292929">U tijeku je neka druga operacija na Google Chromeu. Pokušajte ponovo kasnije.</translation>
@@ -128,7 +124,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="4728575227883772061">Instalacija nije uspjela zbog nepoznate pogreške. Ako je program Google Chrome trenutno otvoren, zatvorite ga i pokušajte ponovno.</translation>
 <translation id="4743926867934016338">Prihvati i traži</translation>
 <translation id="4750550185319565338">Ponovo pokrenite Chrome da biste omogućili dodatak <ph name="PLUGIN_NAME" /></translation>
-<translation id="4751441238232965030">Ovo računalo uskoro više neće primati ažuriranja za 32-bitni Google Chrome. Nadogradite na 64-bitni Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Datoteka je možda opasna i Chrome ju je blokirao.</translation>
 <translation id="4794050651896644714">Spremi pojedinosti u sustavu Chrome</translation>
@@ -205,7 +200,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="6989339256997917931">Google Chrome ažuriran je, ali vi ga niste upotrebljavali barem 30 dana.</translation>
 <translation id="7098166902387133879">Google Chrome upotrebljava vaš mikrofon.</translation>
 <translation id="7106741999175697885">Upravitelj zadacima - Google Chrome:</translation>
-<translation id="7125719106133729027">Chrome se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Ponovo instalirajte Chrome ručno.</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="7164397146364144019">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="7185038942300673794">Proširenje "<ph name="EXTENSION_NAME" />" dodano je u Chrome.</translation>

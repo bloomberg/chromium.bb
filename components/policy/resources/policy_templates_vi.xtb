@@ -336,13 +336,13 @@
           Nếu cài đặt này không được định cấu hình, người dùng sử dụng mở khóa nhanh sẽ được yêu cầu nhập mật khẩu vào màn hình khóa hàng ngày.</translation>
 <translation id="2194470398825717446">Chính sách này không dùng trong M61 nữa, vui lòng sử dụng EcryptfsMigrationStrategy.
 
-      Chỉ định cách thiết bị đã có sẵn ecryptfs sẽ hoạt động và cần chuyển đổi sang mã hóa ext4.
+      Chỉ định cách thiết bị đã có sẵn ecryptfs sẽ hoạt động và cần chuyển đổi sang mã hóa ext4..
 
-      Nếu bạn đặt chính sách này thành 'DisallowArc', các ứng dụng Android sẽ bị vô hiệu hóa cho tất cả người dùng trên thiết bị (bao gồm những người dùng đã có mã hóa ext4) và sẽ không có người dùng nào được đề nghị di chuyển từ ecryptfs sang mã hóa ext4
+      Nếu bạn đặt chính sách này thành 'DisallowArc', các ứng dụng Android sẽ bị tắt cho tất cả người dùng trên thiết bị (bao gồm cả những người dùng đã có mã hóa ext4) và sẽ không có người dùng nào bị đề nghị di chuyển từ ecryptfs sang mã hóa ext4.
 
-      Nếu bạn đặt chính sách này thành 'AllowMigration', người dùng có thư mục gốc ecryptf sẽ được đề nghị di chuyển các thư mục này sang mã hóa ext4 nếu cần (hiện tại Android N đã có sẵn trên thiết bị).
+      Nếu bạn đặt chính sách này thành 'AllowMigration', người dùng có thư mục gốc ecryptf sẽ được đề nghị di chuyển các thư mục này sang mã hóa ext4 nếu cần (hiện tại, khi Android N đã có sẵn trên thiết bị).
 
-      Chính sách này không áp dụng cho các ứng dụng kiosk - các ứng dụng này sẽ được di chuyển tự động. Nếu bạn không đặt chính sách này, thiết bị sẽ hoạt động giống như bạn đã chọn 'DisallowArc'.</translation>
+      Chính sách này không áp dụng cho các ứng dụng kiosk - các ứng dụng này sẽ được di chuyển tự động. Nếu bạn không đặt chính sách này, thiết bị sẽ hoạt động giống như khi bạn chọn 'DisallowArc'.</translation>
 <translation id="2201555246697292490">Định cấu hình danh sách cho phép nhắn tin gốc</translation>
 <translation id="2204753382813641270">Kiểm soát tự động ẩn giá</translation>
 <translation id="2208976000652006649">Tham số cho URL tìm kiếm sử dụng POST</translation>
@@ -558,8 +558,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chỉ sử dụng chính sách này nếu đã chọn BlacklistRestriction cho
       NativePrintersBulkAccessMode.
 
-      Nếu bạn sử dụng chính sách này, thì tất cả máy in sẽ được cung cấp cho
-      người dùng trừ các máy in có id đã liệt kê trong chính sách này.
+      Nếu bạn sử dụng chính sách này, thì tất cả các máy in sẽ được cung cấp cho người dùng, ngoại trừ
+      các máy in có ID đã được liệt kê trong chính sách này.
       </translation>
 <translation id="2801230735743888564">Cho phép người dùng chơi trò chơi trứng khủng long Phục sinh khi thiết bị ngoại tuyến.
 
@@ -714,6 +714,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
+<translation id="332771718998993005">Xác định tên được quảng cáo là đích <ph name="PRODUCT_NAME" />.
+
+          Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không thì tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
@@ -1049,7 +1052,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4541530620466526913">Tài khoản trong thiết bị</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
 <translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
-<translation id="4558592878156368639">Khoảng thời gian tắt khi |ignored_policies| OffHours của thiết bị được phát hành</translation>
+<translation id="4558592878156368639">Khoảng thời gian tắt khi chính sách |ignored_policies| OffHours của thiết bị được phát hành</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1226,6 +1229,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Giá trị của chính sách được chỉ định theo mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi không sử dụng.</translation>
 <translation id="5307432759655324440">Tính khả dụng của chế độ ẩn danh</translation>
 <translation id="5318185076587284965">Cho phép máy chủ truy cập từ xa sử dụng máy chủ chuyển tiếp</translation>
+<translation id="5323128137188992869">Cho phép truyền nội dung đến thiết bị này bằng cách sử dụng <ph name="PRODUCT_NAME" />.
+
+          Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau</translation>
 <translation id="5365946944967967336">Hiển thị nút Trang chủ trên thanh công cụ</translation>
 <translation id="5366977351895725771">Nếu đặt thành sai, tác vụ tạo tài khoản người dùng bị giám sát của người dùng này sẽ bị tắt. Mọi tài khoản người dùng bị giám sát hiện có sẽ vẫn khả dụng.
@@ -1456,6 +1462,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
+<translation id="6139485614509308022">Nếu bạn đặt chính sách "OffHours", thì các chính sách thiết bị đã chỉ định sẽ bị bỏ qua (sử dụng cài đặt mặc định của các chính sách này) trong khoảng thời gian đã định. Chính sách thiết bị được Chrome áp dụng lại trên mọi sự kiện khi khoảng thời gian "OffHours" bắt đầu hoặc kết thúc. Người dùng sẽ được thông báo và bắt buộc phải đăng xuất khi kết thúc thời gian "OffHours" và cài đặt chính sách thiết bị thay đổi (tức là khi người dùng đăng nhập không phải bằng tài khoản được cho phép).</translation>
 <translation id="6145799962557135888">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1487,7 +1494,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6211428344788340116">Báo cáo số lần hoạt động của thiết bị.
 
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị được đăng ký sẽ báo cáo các khoảng thời gian khi có người dùng sử dụng thiết bị. Nếu cài đặt này được đặt giá trị thành Sai, số lần thiết bị hoạt động sẽ không được ghi lại hay báo cáo.</translation>
-<translation id="6212868225782276239">Tất cả máy in đều hiển thị trừ những máy in trong danh sách cấm.</translation>
+<translation id="6212868225782276239">Tất cả các máy in đều hiển thị trừ những máy in trong danh sách cấm.</translation>
 <translation id="6219965209794245435">Chính sách này nếu được bật sẽ buộc nhập dữ liệu biểu mẫu tự động điền từ trình duyệt mặc định trước. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
      Nếu tắt, dữ liệu biểu mẫu tự động điền sẽ không được nhập.
@@ -1724,7 +1731,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
 <translation id="7167436895080860385">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu (không dùng nữa)</translation>
 <translation id="7173856672248996428">Cấu hình tạm thời</translation>
-<translation id="717630378807352957">Cho phép tất cả máy in từ tệp cấu hình.</translation>
+<translation id="717630378807352957">Cho phép tất cả các máy in của tệp cấu hình.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="7194407337890404814">Tên nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -1803,7 +1810,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này chưa được đặt hoặc được đặt thành false, <ph name="TLS_FALSE_START" /> sẽ được bật. Nếu chính sách này được đặt thành true, <ph name="TLS_FALSE_START" /> sẽ bị tắt.</translation>
 <translation id="7433714841194914373">Bật chế độ Instant</translation>
 <translation id="7443616896860707393">Lời nhắc xác thực cơ bản HTTP giữa các gốc</translation>
-<translation id="7468416082528382842">Vị trí sổ đăng ký Windows:</translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
 <translation id="7474249562477552702">Có cho phép chứng chỉ có chữ ký SHA-1 do mẩu neo tin cậy nội bộ phát hành hay không</translation>
 <translation id="7485481791539008776">Quy tắc chọn máy in mặc định</translation>
@@ -2012,13 +2018,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách được đặt ở trạng thái tắt hoặc không được đặt, việc đăng nhập sẽ dẫn tới cấu hình thông thường.</translation>
 <translation id="8158758865057576716">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8169931650834542988">Người dùng có thể điều khiển máy in nào từ
+<translation id="8169931650834542988">Kiểm soát máy in nào có sẵn cho người dùng từ
       NativePrintersBulkConfiguration.
 
       Chỉ định chính sách truy cập nào được sử dụng cho cấu hình máy in số lượng lớn.
-      Nếu bạn chọn AllowAll, tất cả máy in sẽ hiển thị. Nếu bạn chọn BlacklistRestrction, thì
-      NativePrintersBulkBlacklist sẽ được sử dụng để hạn chế truy cập
-      vào các máy in đã chỉ định. Nếu bạn chọn WhitelistPrintersOnly, thì
+      Nếu bạn chọn AllowAll, tất cả các máy in sẽ hiển thị. Nếu bạn chọn BlacklistRestrction, thì
+      NativePrintersBulkBlacklist sẽ được sử dụng để hạn chế quyền truy cập vào
+      các máy in đã chỉ định. Nếu bạn chọn WhitelistPrintersOnly, thì
       NativePrintersWhitelist sẽ chỉ chỉ định những máy in
       có thể chọn được.
 
@@ -2133,12 +2139,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8480767919856518465">Chỉ định các máy in mà người dùng có thể sử dụng.
 
-      Chỉ sử dụng chính sách này nếu đã chọn WhitelistPrintersOnly cho
+      Chỉ sử dụng chính sách này nếu bạn đã chọn WhitelistPrintersOnly cho
       NativePrintersBulkAccessMode.
 
-      Nếu bạn sử dụng chính sách này, thì chỉ những máy in có id phù hợp với các
-      giá trị trong chính sách này mới được cung cấp cho người dùng. 
-      Những id này phải tương ứng với các mục nhập trong tệp đã chỉ định trong NativePrintersBulkConfiguration.</translation>
+      Nếu bạn sử dụng chính sách này, thì người dùng chỉ có thể sử dụng những máy in
+      có ID khớp với các giá trị trong chính sách này. Những ID này phải tương ứng với
+      các mục nhập trong tệp được chỉ định trong NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị.
 
           Nếu bạn không đặt chính sách này, kết xuất đồ họa mặc định sẽ được sử dụng cho tất cả các trang web được chỉ định theo chính sách 'ChromeFrameRendererSettings'.
@@ -2151,28 +2157,28 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="8555589883248082762">Cung cấp cấu hình máy in dành cho doanh nghiệp.
 
-      Chính sách này cho phép bạn cung cấp các cấu hình máy in cho thiết bị
+      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị
       <ph name="PRODUCT_OS_NAME" />.
       Kích thước tệp không được vượt quá 5 MB và phải được mã hóa ở định dạng JSON.
-      Định dạng này giống với định dạng của từ điển NativePrinters. Ước tính rằng một tệp chứa
-      xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB.
-      Hàm băm mật mã dùng để xác minh tính toàn vẹn của nội dung
-      tải xuống đó.
+      Định dạng này giống với định dạng của từ điển NativePrinters. Ước tính rằng
+      một tệp chứa xấp xỉ 21.000 máy in sẽ mã hóa dưới dạng một tệp 5 MB.
+      Hàm băm mật mã dùng để xác minh tính toàn vẹn của
+      nội dung tải xuống đó.
 
-      Tệp được tải xuống và lưu vào bộ nhớ cache. Tệp này sẽ được tải xuống
-      lại bất cứ khi nào URL hoặc hàm băm đó thay đổi.
+      Tệp được tải xuống và lưu vào bộ nhớ cache. Tệp này sẽ được tải xuống lại bất cứ khi nào
+      URL hoặc hàm băm đó thay đổi.
 
-      Nếu bạn đặt chính sách này,
-      <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp cấu hình máy in xuống và cung cấp máy in
-      theo đúng các chính sách NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
-      và NativePrintersBulkBlacklist,
-      .
+      Nếu bạn đặt chính sách này, thì
+      <ph name="PRODUCT_OS_NAME" /> sẽ tải
+      tệp cấu hình máy in xuống và cung cấp máy in theo
+      đúng các chính sách NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      và NativePrintersBulkBlacklist.
 
-      Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè.
+      Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách.
 
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu
-      hình máy in trên từng thiết bị hay không. Chính sách này nhằm bổ sung cho
-      cấu hình của các máy in theo từng người dùng.</translation>
+      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên
+      từng thiết bị hay không. Chính sách này nhằm bổ sung cho
+      cấu hình máy in của từng người dùng.</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>

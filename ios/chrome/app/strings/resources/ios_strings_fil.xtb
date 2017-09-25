@@ -66,6 +66,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="209018056901015185">Hilingin ang Site sa Desktop</translation>
 <translation id="2103075008456228677">Buksan ang history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang inilipat</translation>
+<translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng incognito tab</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
@@ -178,6 +179,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="430793432425771671">I-sync Lahat</translation>
 <translation id="4342284590510997375">Bago</translation>
+<translation id="434816576838749873">Pumili ng Email App</translation>
 <translation id="4359125752503270327">Magbubukas ang page na ito sa ibang application.</translation>
 <translation id="4370827530403103842">Hindi gumagana ang pag-sync. I-tap upang ayusin.</translation>
 <translation id="4375040482473363939">Paghahanap ng QR code</translation>
@@ -309,6 +311,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6785453220513215166">Nagpapadala ng ulat sa pag-crash...</translation>
 <translation id="679325081238418596">Kunin ang iyong mga bookmark, history, password at iba pang mga setting sa lahat ng iyong device</translation>
 <translation id="6797885426782475225">Paghahanap Gamit ang Boses</translation>
+<translation id="6807889908376551050">Ipakita Lahat...</translation>
 <translation id="681368974849482173">Nagawa ang item</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
@@ -416,6 +419,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9148126808321036104">Muling mag-sign in</translation>
 <translation id="914898748153555155">Maaari mong baguhin ang kagustuhang ito anumang oras sa mga setting ng Chrome</translation>
+<translation id="91549621916703028">Gumawa ng maraming tab para sa lahat ng iyong gawain</translation>
 <translation id="9157836665414082580">Pigilan ang Mga Dialog</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9203116392574189331">Handoff</translation>

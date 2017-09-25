@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="1685087038067318291">Upptäck webbsidor som skickats av enheter i närheten. När Bluetooth är aktiverat kan Chrome samla webbsidor som är kopplade till enheter i din omgivning, skicka dem anonymt till Google och sedan välja ut dem som är mest användbara för dig. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="415767770115540173">Ange din plats och få en bättre upplevelse av Google när du använder Chrome.</translation>
-<translation id="4248297594476034182">Logga in i Chrome om du vill få tillgång till samma flikar på alla enheter.</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4523886039239821078">Några tillägg har fått Chrome att krascha. Avinstallera följande:</translation>
 <translation id="4615174829807303908">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chrome från den här enheten, men den finns kvar på Google-kontot.</translation>

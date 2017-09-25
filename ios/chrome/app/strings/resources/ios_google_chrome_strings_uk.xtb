@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1685087038067318291">Переглядайте веб-сторінки, надіслані об’єктами поблизу. Коли Bluetooth увімкнено, Chrome збирає веб-сторінки, пов’язані з об’єктами поблизу вас, і анонімно надсилає їх у Google, щоб показувати вам найцікавіші. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome підтвердив, що сертифікат цьому веб-сайту надала компанія <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome не має доступу до ваших фото чи відео. Надайте доступ у меню iOS "Параметри &gt; Конфіденційність &gt; Фото".</translation>
 <translation id="4099578267706723511">Допоможіть покращити Chrome, надсилаючи статистику та звіти про збої в Google.</translation>
 <translation id="415767770115540173">Знаючи ваше місцезнаходження, Google зможе створити для вас зручніші умови роботи в Chrome.</translation>
-<translation id="4248297594476034182">Щоб мати доступ до вкладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
 <translation id="4523886039239821078">Деякі додатки спричиняють аварійне завершення роботи Chrome. Видаліть такі додатки:</translation>
 <translation id="4615174829807303908">Ви виходите з облікового запису, зареєстрованого в домені <ph name="SIGNOUT_MANAGED_DOMAIN" />. Дані Chrome буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>

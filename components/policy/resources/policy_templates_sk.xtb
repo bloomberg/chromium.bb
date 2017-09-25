@@ -709,7 +709,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto pravidlo ponecháte nenastavené, pre všetky stránky sa použije globálna predvolená hodnota buď z pravidla DefaultKeygenSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="332771718998993005">Umožňuje zistiť názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />.
 
-          Ak ako toto pravidlo nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť vlastník zariadenia. Názov bude mať maximálne 24 znakov.</translation>
+          Ak v tomto pravidle nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť vlastník zariadenia. Názov môže mať maximálne 24 znakov.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
@@ -1808,7 +1808,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto pravidlo nenastavíte alebo nastavíte na hodnotu False, bude povolená funkcia <ph name="TLS_FALSE_START" />. Ak ho nastavíte na hodnotu True, funkcia <ph name="TLS_FALSE_START" /> bude zakázaná.</translation>
 <translation id="7433714841194914373">Povoliť Dynamické vyhľadávanie</translation>
 <translation id="7443616896860707393">Požiadavky typu cross-origin štandardu HTTP Basic Auth</translation>
-<translation id="7468416082528382842">Umiestnenie v registri systému Windows:</translation>
 <translation id="7469554574977894907">Povoliť návrhy pre vyhľadávanie</translation>
 <translation id="7474249562477552702">Či sú povolené certifikáty podpísané algoritmom SHA-1 vydané miestnymi ukotveniami dôvery</translation>
 <translation id="7485481791539008776">Pravidlá výberu predvolenej tlačiarne</translation>

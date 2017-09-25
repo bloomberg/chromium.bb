@@ -1162,7 +1162,7 @@
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido no dispositivo usando o <ph name="PRODUCT_NAME" />.
 
-          Se essa política for definida como False, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como True, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
+          Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="5366977351895725771">Se definida como falsa, a criação de usuários supervisionados por este usuário será desativada. Quaisquer usuários supervisionados existentes permanecerão disponíveis.
@@ -1697,7 +1697,6 @@
       Se a política não for configurada ou se for definida como "false", <ph name="TLS_FALSE_START" /> será ativada. Se for definida como "true", <ph name="TLS_FALSE_START" /> será desativada.</translation>
 <translation id="7433714841194914373">Ativar o Instant</translation>
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
-<translation id="7468416082528382842">Local do registro do Windows:</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados SHA-1 assinados emitidos pelas âncoras de confiança locais são permitidos ou não</translation>
 <translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>

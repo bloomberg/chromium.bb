@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
 <translation id="1795405610103747296">Instalējiet pārlūku Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
-<translation id="1818142563254268765">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Atjauniniet pārlūku Chrome.</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
 <translation id="2063848847527508675">Lai lietotu atjauninājumu, Chrome OS ir jārestartē.</translation>
@@ -60,7 +59,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2446511512801740068">Pārlūks Chrome ir novecojis, jo jau kādu laiku tas nav atkārtoti palaists. Atjauninājums ir pieejams un tiks lietots, tiklīdz atkārtoti palaidīsiet pārlūku.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
-<translation id="2582790009689336987">Šajā datorā drīzumā vairs netiks saņemti Google Chrome atjauninājumi, jo šī Linux sistēma vairs netiks atbalstīta.</translation>
 <translation id="2586406160782125153">Veicot šo darbību, no šīs ierīces tiks dzēsti pārlūkošanas dati. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome logotips</translation>
 <translation id="2664962310688259219">Chrome OS atklātā pirmkoda licences</translation>
@@ -86,7 +84,6 @@ Lai <ph name="NEW_PROFILE_NAME" /> nevarētu piekļūt jūsu kontam, noteikti bl
 
 Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Pierakstīties pārlūkā Chrome</translation>
-<translation id="3311976847535831054">Šis dators vairs nesaņems Google Chrome 32 bitu versijas atjauninājumus. Lūdzu, jauniniet uz Google Chrome 64 bitu versiju.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3395323229510056640">Saņemt palīdzību par Chrome OS</translation>
 <translation id="3396977131400919238">Instalācijas laikā radās operētājsistēmas kļūda. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>
@@ -116,7 +113,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4309555186815777032">(ir <ph name="BEGIN_BUTTON" />jārestartē<ph name="END_BUTTON" /> pārlūks Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo šī Linux sistēma vairs netiek atbalstīta.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4458462641685292929">Tiek veikta cita darbība pārlūkā Google Chrome. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
@@ -130,7 +126,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4728575227883772061">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Google Chrome pašlaik darbojas, lūdzu, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="4743926867934016338">Pieņemt un meklēt</translation>
 <translation id="4750550185319565338">Restartējiet pārlūku Chrome, lai iespējotu spraudni <ph name="PLUGIN_NAME" />.</translation>
-<translation id="4751441238232965030">Šis dators drīz vairs nesaņems Google Chrome 32 bitu versijas atjauninājumus. Lūdzu, jauniniet uz Google Chrome 64 bitu versiju.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (ienākošā mDNS datplūsma)</translation>
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="4794050651896644714">Saglabāt informāciju pārlūkā Chrome</translation>
@@ -209,7 +204,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="6989339256997917931">Pārlūkprogramma Google Chrome ir atjaunināta, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
 <translation id="7098166902387133879">Pārlūkā Google Chrome tiek izmantots mikrofons.</translation>
 <translation id="7106741999175697885">Uzdevumu pārvaldnieks - Google Chrome</translation>
-<translation id="7125719106133729027">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Jums manuāli jāpārinstalē pārlūks Chrome.</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
 <translation id="7164397146364144019">Varat palīdzēt uzlabot Chrome drošību un lietošanas ērtumu, automātiski nosūtot Google serveriem informāciju par iespējamām drošības problēmām.</translation>
 <translation id="7185038942300673794">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots pārlūkam Chrome.</translation>

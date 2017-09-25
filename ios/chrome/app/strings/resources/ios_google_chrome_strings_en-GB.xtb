@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1685087038067318291">Discover web pages sent by nearby objects. When Bluetooth is turned on, Chrome can gather web pages associated with objects around you and send them anonymously to Google to find the most useful ones. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="415767770115540173">Get a better Google experience in Chrome based on your location.</translation>
-<translation id="4248297594476034182">To get your tabs on all your devices, sign in to Chrome.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="4615174829807303908">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>

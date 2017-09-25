@@ -29,12 +29,10 @@
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1206619573307042055">pohyblivý prvok</translation>
 <translation id="1213216066620407844">ChromeVox – hlas prehliadača Chrome</translation>
-<translation id="1226487719524433143">Veľmi uvítame váš názor na toto nové prostredie. Spätnú väzbu nám môžete odoslať priamo tak, že stlačíte kombináciu klávesov Hľadať+a a potom kláves i. Stlačením tlačidla Ďalej prejdete na návod, v ktorom sa dozviete všetko potrebné na to, aby ste mohli začať.</translation>
 <translation id="1229276918471378188">Predchádzajúci skok</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Ďalší nadpis 6. úrovne</translation>
 <translation id="1275718070701477396">Vybraté</translation>
-<translation id="1310230882256010289">Aktualizácie pod kapotou. Od základov sme zmenili fungovanie čítačky ChromeVox. Očakávajte lepšiu výkonnosť, stabilitu a podporu.</translation>
 <translation id="1319608975892113573">Žiadny predchádzajúci prvok blockquote</translation>
 <translation id="1321576897702511272">Skryť pomocníka rozšírenia ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
@@ -224,8 +222,6 @@
 <translation id="3163593631834463955">Prázdna hlavička stĺpca</translation>
 <translation id="316542773973815724">Navigácia</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{medzera}few{# medzery}many{# spaces}other{# medzier}}</translation>
-<translation id="3183233191569362040">Blahoželáme! Úspešne ste sa naučili základy používania čítačky ChromeVox Next (beta). Ponuku s príkazmi čítačky ChromeVox môžete kedykoľvek otvoriť stlačením kombinácie klávesov Hľadať + Bodka. Ak chcete o čítačke ChromeVox a systéme Chrome OS získať ďalšie informácie, navštívte nasledujúce články.
-Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlačidlo Zavrieť a kliknite naň.</translation>
 <translation id="320961988183078793">zadané: <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, karta</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -337,7 +333,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3909320334364316587">Predchádzajúca hlavička 6. úrovne</translation>
 <translation id="3914173277599553213">Povinné</translation>
-<translation id="3951424903203718058">Používate hovorenú spätnú väzbu čítačky ChromeVox Next prvýkrát? Tento stručný návod vám vysvetlí základy potrebné na začatie používania čítačky ChromeVox Next.</translation>
 <translation id="3962990492275676168">Začať čítať z aktuálneho miesta</translation>
 <translation id="4004802134384979325">začiarknuté</translation>
 <translation id="4006140876663370126">obrázok</translation>
@@ -431,7 +426,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4846487886195635104">Koniec prečiarknutia</translation>
 <translation id="4848993367330139335">časovač</translation>
 <translation id="4850023505158945298">Predchádzajúci podobný prvok</translation>
-<translation id="485011152882364255">Na čítačke ChromeVox Next slúži kláves Hľadať ako kláves modifikátora. Väčšina skratiek čítačky ChromeVox sa začína klávesom Hľadať. Na navigáciu budete tiež používať klávesy so šípkami.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Povoliť zapisovanie do denníka TTS</translation>
 <translation id="4877261390094455813">Zadajte vyhľadávací dopyt</translation>
@@ -500,7 +494,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5444587279251314700">(aktívne)</translation>
 <translation id="5451268436205074266">bodky <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Doplnkové</translation>
-<translation id="5458780372341732962">Použiť ChromeVox Next (beta)</translation>
 <translation id="5485036206801896268">Žiadna predchádzajúca grafika</translation>
 <translation id="5486947920110100234">Žiadny ďalší bod preskočenia</translation>
 <translation id="549602578321198708">Slovo</translation>
@@ -509,7 +502,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5507663321906818013">Ukazovateľ ladenia</translation>
 <translation id="5518443085409638729">Pri úprave textu umiestnite kurzor medzi znaky (podobne ako v systéme Mac OS X).</translation>
 <translation id="552195134157544755">Prepínač</translation>
-<translation id="5531530875187439488">Nové zvukové signály. S cieľom zvýšiť odozvu prehliadania sme obnovili súpravu zvukových ikon, ktoré počujete.</translation>
 <translation id="5534303576632885660">hlavička</translation>
 <translation id="5546092960038624944">Žiadny predchádzajúci nadpis 5. úrovne</translation>
 <translation id="556042886152191864">Tlačidlo</translation>
@@ -536,7 +528,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5682113568322255809">Orientačný bod</translation>
 <translation id="5683155931978483559">Predchádzajúce začiarkavacie políčko</translation>
 <translation id="5684277895745049190">Zoznam</translation>
-<translation id="5684905390246898631">Víta vás čítačka ChromeVox Next!</translation>
 <translation id="5695831708991916435">Nasledujúce skratky nie sú príkazy čítačky ChromeVox, ale sú stále veľmi užitočné a pomôžu vám získať z Chromu maximum.
 Ak chcete prechádzať dopredu medzi klikateľnými položkami, ako sú tlačidlá a odkazy, stláčajte kláves Tab. Ak chcete prechádzať dozadu, stláčajte klávesy Shift + Tab. 
 Ak chcete aktivovať panel s adresou prehliadača Chrome (nazývaný tiež všeobecné pole), stlačte klávesy Control + L. 
@@ -571,7 +562,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="5937336320314038555">{COUNT,plural, =1{znak rovnosti}few{# znaky rovnosti}many{# equal signs}other{# znakov rovnosti}}</translation>
 <translation id="5939518447894949180">Obnoviť</translation>
 <translation id="5948123859135882163">Prepnúť medzi štrukturálnou a sémantickou interpretáciou matematických výrazov</translation>
-<translation id="5948485979596965684">Čítačka ChromeVox bola aktualizovaná na dôležité nové vydanie!</translation>
 <translation id="5955304353782037793">aplikácia</translation>
 <translation id="5956928062748260866">Dialógové okno</translation>
 <translation id="5963413905009737549">Sekcia</translation>
@@ -650,7 +640,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="6786800275320335305">Článok</translation>
 <translation id="6787839852456839824">Klávesové skratky</translation>
 <translation id="6793101435925451627">pole zoznamu</translation>
-<translation id="6818172019016005152">Usilovne sme pracovali na novom a zlepšenom prostredí čítačky ChromeVox; tu sú novinky</translation>
 <translation id="6833103209700200188">Päta</translation>
 <translation id="6871161210040114857">Malé a veľké písmená sa ignorujú.</translation>
 <translation id="6877435256196695200">Žiadna ďalšia grafika</translation>
@@ -668,7 +657,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7037042857287298941">Predchádzajúci zoznam</translation>
 <translation id="7041173719775863268">Ukončiť výber</translation>
 <translation id="7086377898680121060">Zvýšenie jasu</translation>
-<translation id="7094527465295945904">Nové priradenia klávesov. Nastavili sme kláves Hľadať ako modifikátor čítačky ChromeVox a výrazne sme zjednodušili kombinácie klávesov.</translation>
 <translation id="7095834689119144465">Úprava iba numerického textu</translation>
 <translation id="7096001299300236431">Predchádzajúce médiá</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -772,7 +760,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8091452896542422286">Medzera</translation>
-<translation id="8104178626892949749">Ak chcete získať ďalšie informácie o čítačke ChromeVox Next, stlačte tlačidlá ChromeVox + o + n.</translation>
 <translation id="8110647606445335195">Žiadne orientačné body ARIA</translation>
 <translation id="8153880621934657047">Mimo tabuľky</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčiarkovník}few{# podčiarkovníky}many{# underscores}other{# podčiarkovníkov}}</translation>
@@ -782,7 +769,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8199231515320852133">Oznámiť hlavičky aktuálnej bunky</translation>
 <translation id="820417203470636242">Prázdna bunka</translation>
 <translation id="8215202828671303819">Hromadný výber</translation>
-<translation id="8224171046658870249">Prepnuté na čítačku ChromeVox Next</translation>
 <translation id="826991282343985864">r$1s$2</translation>
 <translation id="8276439074553447000">Prejsť na predchádzajúcu zamerateľnú položku</translation>
 <translation id="8278417001922463147">Žiadny predchádzajúci článok</translation>
@@ -827,7 +813,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8664519043722036194">sekundy</translation>
 <translation id="867187640362843212">Nadpis 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{zvislá čiara}few{# zvislé čiary}many{# vertical pipes}other{# zvislých čiar}}</translation>
-<translation id="8721861170709424373">Zoznam príkazov čítačky ChromeVox Next</translation>
 <translation id="8735450637152821465">Začnite výber</translation>
 <translation id="8743786158317878347">zadať štruktúrovaný obsah, ako sú napríklad tabuľky</translation>
 <translation id="8747966237988593539">Číslovaný zoznam</translation>
@@ -880,7 +865,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="923331726185079994">Aplikácia ChromeVox bola aktualizovaná</translation>
 <translation id="930275611743429116">Začať alebo ukončiť výber</translation>
 <translation id="948171205378458592">Znížiť rýchlosť reči</translation>
-<translation id="955917170449423694">Prepnuté na klasickú čitačku ChromeVox</translation>
 <translation id="962913030769097253">Ďalší nadpis 1. úrovne</translation>
 <translation id="973955474346881951">Povoliť alebo zakázať rýchly režim</translation>
 <translation id="976849232629612000">Žiadne položky.</translation>

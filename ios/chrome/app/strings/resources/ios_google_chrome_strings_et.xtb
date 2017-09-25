@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1326317727527857210">Vahelehtede hankimiseks oma teistest seadmetest logige Chrome'i sisse.</translation>
 <translation id="1685087038067318291">Avastage lähedalasuvate objektide saadetud veebilehti. Kui Bluetooth on sisse lülitatud, kogub Chrome teie ümbruses olevate objektidega seotud veebilehed kokku ja saadab need anonüümselt Google'i teenusele, et leida teie jaoks kõige kasulikumad lehed. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="2147651015520127414">Chrome kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
@@ -23,7 +24,6 @@
 <translation id="3988789688219830639">Google Chrome'il pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdep. valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
 <translation id="4099578267706723511">Aidake muuta Chrome'i paremaks, saates Google'ile kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="415767770115540173">Asukohapõhised andmed tagavad teile parema Google Chrome'i kasutuskogemuse.</translation>
-<translation id="4248297594476034182">Vahelehtede hankimiseks kõikidesse oma seadmetesse logige Chrome'i sisse.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
 <translation id="4615174829807303908">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>

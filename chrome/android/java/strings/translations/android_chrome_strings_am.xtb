@@ -234,7 +234,6 @@
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3295602654194328831">መረጃ ደብቅ</translation>
 <translation id="3303414029551471755">ይዘቱን ማውረድ ይቀጥል?</translation>
-<translation id="3319792846664697699">የመዳሰሻ ፓነል</translation>
 <translation id="3321222012623826478">ይህ አገልግሎት የዚህም ድር ጣቢያ አድራሻ ለማረጋገጥ ስም-አልባ ሆኖ ወደ Google መላክ አለበት።</translation>
 <translation id="3328801116991980348">የጣቢያ መረጃ</translation>
 <translation id="3341058695485821946">ምን ያህል ውሂብ እንዳስቀመጡ ይመልከቱ</translation>
@@ -291,7 +290,6 @@
 <translation id="3810973564298564668">አቀናብር</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
-<translation id="3845539888601087042">ታሪክን ወደ መለያዎ ከገቡ መሣሪያዎችዎ በማሳየት ላይ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
 <translation id="3895926599014793903">ማጉላት አንቃን ያስገድዱ</translation>
@@ -334,7 +332,6 @@
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
-<translation id="4248297594476034182">የእርስዎን ትሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4254813446494774748">የትርጉም ቋንቋ፦</translation>
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
@@ -457,7 +454,6 @@
 <translation id="5423934151118863508">በጣም በብዛት የተጎበኙ ገጾችዎ እዚህ ይመጣሉ</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> ጊባ ይገኛል</translation>
 <translation id="5433691172869980887">የተጠቃሚ ስም ተቀድቷል</translation>
-<translation id="5435775191620395718">ታሪክን ከዚህ መሣሪያ በማሳየት ላይ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">ወደ የአድራሻው አሞሌ ዘልለህ ሂድ</translation>
 <translation id="5447201525962359567">ኩኪዎች እና ሌላ በአከባቢያዊ የተከማቸ ውሂብን ጨምሮ ሁሉም የጣቢያ ማከማቻ</translation>
 <translation id="5447765697759493033">ይህ ጣቢያ አይተረጎምም</translation>
@@ -484,7 +480,6 @@
 <translation id="5620928963363755975">ከተጨማሪ አማራጮች አዝራር ሆነው የእርስዎን ፋይሎች እና ገጾች በውርዶች ውስጥ ያግኙ</translation>
 <translation id="5626134646977739690">ስም፦</translation>
 <translation id="5639724618331995626">ሁሉንም ጣቢያዎች ፍቀድ</translation>
-<translation id="5646376287012673985">አካባቢ</translation>
 <translation id="5648166631817621825">ያለፉት 7 ቀኖች</translation>
 <translation id="5655963694829536461">የእርስዎን ውርዶች ይፈልጉ</translation>
 <translation id="5659593005791499971">ኢሜይል</translation>
@@ -631,6 +626,7 @@
 <translation id="688738109438487280">ነባሩን ውሂብ ወደ <ph name="TO_ACCOUNT" /> ያክሉ።</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ክፍት ትር}one{%1$d ክፍት ትሮች}other{%1$d ክፍት ትሮች}}</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
+<translation id="6910211073230771657">ተሰርዟል</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6963766334940102469">ዕልባቶችን ሰርዝ</translation>
 <translation id="6965382102122355670">እሺ</translation>

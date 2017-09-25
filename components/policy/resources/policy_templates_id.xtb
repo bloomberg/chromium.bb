@@ -1172,7 +1172,7 @@
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
 
-          Jika kebijakan ini disetel ke False, pengguna tidak akan dapat mentransmisikan konten ke perangkat mereka. Jika kebijakan disetel ke True, pengguna diizinkan untuk mentransmisikan konten. Jika kebijakan ini tidak disetel, pengguna tidak diizinkan mentransmisikan konten ke perangkat Chrome OS yang terdaftar, namun dapat mentransmisikan ke perangkat yang tidak terdaftar.</translation>
+          Jika kebijakan ini disetel ke False, pengguna tidak akan dapat mentransmisikan (cast) konten ke perangkat mereka. Jika kebijakan disetel ke True, pengguna diizinkan untuk mentransmisikan konten. Jika kebijakan ini tidak disetel, pengguna tidak diizinkan mentransmisikan konten ke perangkat Chrome OS yang terdaftar, namun dapat mentransmisikan ke perangkat yang tidak terdaftar.</translation>
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut</translation>
 <translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang dilindungi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
@@ -1713,7 +1713,6 @@
       Jika kebijakan tidak disetel, atau disetel ke False, <ph name="TLS_FALSE_START" /> akan diaktifkan. Jika disetel ke True, <ph name="TLS_FALSE_START" /> akan dinonaktifkan.</translation>
 <translation id="7433714841194914373">Aktifkan Instan</translation>
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
-<translation id="7468416082528382842">Lokasi registry Windows:</translation>
 <translation id="7469554574977894907">Aktifkan saran penelusuran</translation>
 <translation id="7474249562477552702">Apakah sertifikat bertanda tangan SHA-1 yang dikeluarkan oleh sumber tepercaya setempat diizinkan atau tidak</translation>
 <translation id="7485481791539008776">Aturan pemilihan printer default</translation>

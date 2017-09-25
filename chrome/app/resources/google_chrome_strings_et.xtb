@@ -34,7 +34,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Hankige abi Chrome OS-i kasutamise kohta</translation>
 <translation id="1795405610103747296">Installige Chrome oma telefoni. Saadame SMS-i teie telefoni: <ph name="PHONE_NUMBER" /></translation>
-<translation id="1818142563254268765">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i värskendama.</translation>
 <translation id="1874309113135274312">Google Chrome'i beetaversioon (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
 <translation id="2063848847527508675">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
@@ -60,7 +59,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2446511512801740068">Chrome on aegunud, kuna seda ei ole tükk aega taaskäivitatud. Saadaval on värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
-<translation id="2582790009689336987">See arvuti ei saa peagi enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>
 <translation id="2586406160782125153">See kustutab sellest seadmest teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome'i logo</translation>
 <translation id="2664962310688259219">Chrome OS-i avatud lähtekoodi litsentsid</translation>
@@ -86,7 +84,6 @@ Kui soovite takistada kasutajal <ph name="NEW_PROFILE_NAME" /> teie kontole juur
 
 Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
-<translation id="3311976847535831054">See arvuti ei saa enam 32-bitise Google Chrome'i värskendusi. Viige Google Chrome üle 64-bitisele versioonile.</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
 <translation id="3395323229510056640">Chrome OS-i puhul abi hankimine</translation>
 <translation id="3396977131400919238">Installimisel ilmnes operatsioonisüsteemi viga. Palun laadige Google Chrome uuesti alla.</translation>
@@ -116,7 +113,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4309555186815777032">(nõuab Chrome'i <ph name="BEGIN_BUTTON" />taaskäivitamist<ph name="END_BUTTON" />)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="437002079035561265">See arvuti ei saa enam Google Chrome'i värskendusi, kuna seda Linuxi süsteemi enam ei toetata.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4458462641685292929">Teine toiming on Google Chrome'is pooleli. Proovige hiljem uuesti.</translation>
@@ -130,7 +126,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="4750550185319565338">Taaskäivitage pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks Chrome</translation>
-<translation id="4751441238232965030">See arvuti ei saa peagi enam 32-bitise Google Chrome'i värskendusi. Viige Google Chrome üle 64-bitisele versioonile.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome blokeeris faili, kuna see võib olla ohtlik.</translation>
 <translation id="4794050651896644714">Salvesta üksikasjad Chrome'i</translation>
@@ -209,7 +204,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
-<translation id="7125719106133729027">Chrome ei suutnud ennast uusimale versioonile värskendada, nii et te ei saa kasutada lahedaid uusi funktsioone ja turvaparandusi. Peate Chrome'i käsitsi uuesti installima.</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="7164397146364144019">Saate aidata muuta Chrome'i turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> on Chrome'i lisatud.</translation>

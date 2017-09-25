@@ -8,6 +8,7 @@
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1153356358378277386">Сдвоени устройства</translation>
 <translation id="1195412055398077112">допълнителна област</translation>
+<translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="1247372569136754018">Микрофон (вътрешен)</translation>
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1267032506238418139">Промяна на клавишната комбинация</translation>
@@ -61,6 +62,7 @@
 <translation id="2365393535144473978">Активирането на мобилните данни ще включи Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
+<translation id="2482878487686419369">Известия</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
 <translation id="2532589005999780174">Режим на висок контраст</translation>
@@ -101,6 +103,7 @@
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
 <translation id="3547954654003013442">Настройки за прокси сървър</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
+<translation id="3582792037806681688">Централизираният вход е забранен за потребител в тази сесия</translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="3621202678540785336">Вход</translation>
@@ -198,7 +201,11 @@
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
+<translation id="6528179044667508675">Не безпокойте</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
+<translation id="6580955892089546165">С тази функция получавате бърз достъп без парола до всеки влязъл потребител.
+
+Използвайте я само с надеждни профили.</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
@@ -215,9 +222,11 @@
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
+<translation id="7054808953701320293">Разбрах, да не се показва повече.</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
+<translation id="7135556860107312402">Разрешаване на известията от следните неща:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
@@ -233,7 +242,9 @@
 <translation id="7562368315689366235">Панел с емотикони</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
+<translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
 <translation id="7649070708921625228">Помощ</translation>
+<translation id="7658239707568436148">Отказ</translation>
 <translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>
 <translation id="776344839111254542">Кликнете, за да видите подробности за актуализацията</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
@@ -241,8 +252,11 @@
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7977927628060636163">Търсят се мобилни мрежи...</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="7994370417837006925">Централизиран вход</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
+<translation id="8056430285089645882">Разбрах, не показвайте това отново.</translation>
+<translation id="8088137642766812908">Внимателно, тази функция може да е опасна</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
@@ -253,6 +267,7 @@
 <translation id="8308637677604853869">Предишно меню</translation>
 <translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8392234662362215700">Натиснете „Control-Shift-интервал“ за превключване на клавиатурната подредба.</translation>
+<translation id="8392688371657486010">Нямате известия</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки на мрежата</translation>
 <translation id="8433977262951327081">Комбинацията за показване в лавицата на балончето с менюто за опциите за въвеждане е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -265,6 +280,9 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814715559352963456">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение.
+
+Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
 <translation id="8825534185036233643">Дублирането с повече от два екрана не се поддържа.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">търсене + Esc</translation>
@@ -277,6 +295,7 @@
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
 <translation id="9089416786594320554">Методи за въвеждане</translation>
 <translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
+<translation id="9111102763498581341">Отключване</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
 <translation id="9194617393863864469">Влизане в профила на друг потребител...</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE" />% пълна.</translation>

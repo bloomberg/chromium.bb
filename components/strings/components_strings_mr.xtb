@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">रूंदीत फिट करा</translation>
 <translation id="1088860948719068836">कार्डवर नाव जोडा</translation>
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">सेव्ह केलेले सर्व पासवर्ड दाखवा...</translation>
 <translation id="1107591249535594099">चेक केल्यास, अधिक जलद फॉर्म भरण्यासाठी या डिव्हाइसवर Chrome आपल्या कार्डची एक प्रत संचयित करेल.</translation>
 <translation id="1111153019813902504">अलीकडील बुकमार्क</translation>
 <translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;मुद्रण...</translation>
 <translation id="1181037720776840403">काढा</translation>
 <translation id="1184214524891303587">Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांचा <ph name="BEGIN_WHITEPAPER_LINK" />स्वयंचलितपणे अहवाल द्या.<ph name="END_WHITEPAPER_LINK" /> <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">पेमेंट पूर्ण झाले नाही</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1201895884277373915">या साइटकडून अधिक</translation>
 <translation id="1206967143813997005">खराब प्रारंभिक स्वाक्षरी</translation>
@@ -431,7 +433,7 @@
 <translation id="4151403195736952345">जागतिक डीफॉल्‍ट (शोधणे) वापरा</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4169947484918424451">Chromium ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
-<translation id="4171400957073367226">खराब सत्यापन स्वाक्षरी</translation>
+<translation id="4171400957073367226">खराब पडताळणी स्वाक्षरी</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{आणखी <ph name="ITEM_COUNT" /> आयटम}one{आणखी <ph name="ITEM_COUNT" /> आयटम}other{आणखी <ph name="ITEM_COUNT" /> आयटम}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
 <translation id="5541546772353173584">ईमेल जोडा</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> वरील एम्बेड केलेले पृष्ठ म्हणते:</translation>
+<translation id="5545756402275714221">तुमच्यासाठी लेख</translation>
 <translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5560088892362098740">एक्सपायर होण्याची तारीख</translation>
 <translation id="5565735124758917034">सक्रिय</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">अवैध डिव्हाइस व्यवस्थापन टोकन</translation>
 <translation id="5633066919399395251">सध्या <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वर असलेले हल्लेखोर कदाचित तुमच्या काँप्युटरमधील तुमची माहिती चोरू किंवा हटवू शकणारे धोकादायक प्रोग्राम (उदाहरणार्थ, फोटो, पासवर्ड, संदेश आणि क्रेडिट कार्डे) इंस्टॉल करण्याचा प्रयत्न करू शकतील. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">फसवणारा आशय ब्लॉक केला.</translation>
-<translation id="5646376287012673985">स्थान</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5669703222995421982">वैयक्तीकृत सामग्री मिळवा</translation>
 <translation id="5675650730144413517">हे पृष्ठ कार्य करीत नाही</translation>
+<translation id="5689199277474810259">JSON वर निर्यात करा</translation>
 <translation id="5710435578057952990">या वेबसाइटची ओळख सत्यापित केली गेली नाही.</translation>
 <translation id="5719499550583120431">प्रीपेड कार्डे स्वीकारली जातात.</translation>
 <translation id="5720705177508910913">वर्तमान वापरकर्ता</translation>
@@ -917,6 +920,7 @@
 <translation id="8249320324621329438">अंतिम प्राप्त केलेले:</translation>
 <translation id="8253091569723639551">बिलिंग पत्ता आवश्यक आहे</translation>
 <translation id="8261506727792406068">हटवा</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" /> म्हणून साइन इन करीत आहे</translation>
 <translation id="8289355894181816810">याचा निश्चित अर्थ आपल्याला माहिती नसल्यास आपल्या नेटवर्क प्रशासकाशी संपर्क साधा.</translation>
 <translation id="8293206222192510085">बुकमार्क जोडा</translation>
 <translation id="8294431847097064396">स्रोत</translation>

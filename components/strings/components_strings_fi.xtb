@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Sovita leveyteen</translation>
 <translation id="1088860948719068836">Lisää kortissa oleva nimi</translation>
 <translation id="1103523840287552314">Käännä <ph name="LANGUAGE" /> aina</translation>
+<translation id="1103778128462718200">Näytä kaikki tallennetut salasanat…</translation>
 <translation id="1107591249535594099">Jos tämä ruutu on valittu, Chrome tallentaa kortin kopion tälle laitteelle, jotta lomakkeiden täyttö nopeutuu.</translation>
 <translation id="1111153019813902504">Uusimmat kirjanmerkit</translation>
 <translation id="1113869188872983271">K&amp;umoa uudelleenjärjestely</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Ilmoita Googlelle automaattisesti<ph name="END_WHITEPAPER_LINK" /> mahdollisista turvallisuusongelmista. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Maksua ei suoritettu loppuun</translation>
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1201895884277373915">Lisää tästä sivustosta</translation>
 <translation id="1206967143813997005">Virheellinen alkuperäinen allekirjoitus</translation>
@@ -598,6 +600,7 @@
 <translation id="5540224163453853">Pyydettyä artikkelia ei löydy.</translation>
 <translation id="5541546772353173584">Lisää sähköposti</translation>
 <translation id="5544037170328430102">Viesti upotetulta sivulta osoitteessa <ph name="SITE" />:</translation>
+<translation id="5545756402275714221">Sinulle valitut artikkelit</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5560088892362098740">Viimeinen voimassaolopäivä</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
@@ -615,10 +618,10 @@
 <translation id="5631439013527180824">Laitteenhallintatunnus on virheellinen</translation>
 <translation id="5633066919399395251">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää asentaa tietokoneellesi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, esimerkiksi kuvia, salasanoja, viestejä tai luottokorttitietoja. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Harhaanjohtava sisältö estetty</translation>
-<translation id="5646376287012673985">Sijainti</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
 <translation id="5669703222995421982">Hanki räätälöityä sisältöä</translation>
 <translation id="5675650730144413517">Sivu ei toimi</translation>
+<translation id="5689199277474810259">Vie JSON-tiedostoon</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5719499550583120431">Prepaid-kortit hyväksytään.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
@@ -917,6 +920,7 @@
 <translation id="8249320324621329438">Viimeksi haettu:</translation>
 <translation id="8253091569723639551">Laskutusosoite tarvitaan</translation>
 <translation id="8261506727792406068">Poista</translation>
+<translation id="8267698848189296333">Kirjaudutaan käyttäjänä <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Ota yhteyttä verkon ylläpitäjään, jos et tiedä, mitä tämä tarkoittaa.</translation>
 <translation id="8293206222192510085">Lisää kirjanmerkki</translation>
 <translation id="8294431847097064396">Lähde</translation>

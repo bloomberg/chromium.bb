@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Vừa với chiều rộng</translation>
 <translation id="1088860948719068836">Thêm tên trên thẻ</translation>
 <translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Hiển thị tất cả mật khẩu đã lưu...</translation>
 <translation id="1107591249535594099">Nếu được chọn, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="1111153019813902504">Dấu trang gần đây</translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;In...</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Tự động báo cáo<ph name="END_WHITEPAPER_LINK" /> chi tiết các sự cố bảo mật có thể xảy ra với Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Thanh toán chưa hoàn tất</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1201895884277373915">Thêm từ trang web này</translation>
 <translation id="1206967143813997005">Chữ ký ban đầu không hợp lệ</translation>
@@ -525,7 +527,7 @@
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
-<translation id="503069730517007720">Cần có chứng chỉ gốc của "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="503069730517007720">Cần có chứng chỉ gốc cho "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT của bạn xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
 <translation id="5541546772353173584">Thêm email</translation>
 <translation id="5544037170328430102">Trang được nhúng tại <ph name="SITE" /> cho biết:</translation>
+<translation id="5545756402275714221">Tin bài dành cho bạn</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5560088892362098740">Ngày hết hạn</translation>
 <translation id="5565735124758917034">Đang hoạt động</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Mã thông báo quản lý thiết bị không hợp lệ</translation>
 <translation id="5633066919399395251">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Đã chặn nội dung lừa đảo.</translation>
-<translation id="5646376287012673985">Vị trí</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Nhận nội dung được cá nhân hóa</translation>
 <translation id="5675650730144413517">Trang này hiện không hoạt động</translation>
+<translation id="5689199277474810259">Xuất sang định dạng JSON</translation>
 <translation id="5710435578057952990">Nhận dạng trang web này chưa được xác minh.</translation>
 <translation id="5719499550583120431">Thẻ trả trước được chấp nhận.</translation>
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
@@ -896,7 +899,7 @@
 <translation id="8094917007353911263">Mạng mà bạn đang sử dụng có thể yêu cầu bạn phải truy cập <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Phương thức thanh toán</translation>
 <translation id="8118489163946903409">Phương thức thanh toán</translation>
-<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng cách trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8134994873729925007">Không thể tìm thấy <ph name="BEGIN_ABBR" />địa chỉ DNS<ph name="END_ABBR" /> của máy chủ của <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
 <translation id="8253091569723639551">Yêu cầu địa chỉ thanh toán</translation>
 <translation id="8261506727792406068">Xóa</translation>
+<translation id="8267698848189296333">Đăng nhập với tên <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Hãy liên hệ với quản trị viên mạng của bạn nếu bạn không chắc chắn về điều này có ý nghĩa gì.</translation>
 <translation id="8293206222192510085">Thêm Dấu trang</translation>
 <translation id="8294431847097064396">Nguồn</translation>
@@ -1028,7 +1032,7 @@
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 <translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
-<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng cách trên máy tính hoặc mạng của bạn:
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn:
     &lt;ul&gt;
     &lt;li&gt;Hãy thử gỡ cài đặt hoặc vô hiệu hóa "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
     &lt;li&gt;Hãy thử kết nối với một mạng khác&lt;/li&gt;

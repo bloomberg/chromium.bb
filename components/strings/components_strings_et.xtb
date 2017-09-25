@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Sobita laiusesse</translation>
 <translation id="1088860948719068836">Kaardil oleva nime lisamine</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Kuva kõik salvestatud paroolid …</translation>
 <translation id="1107591249535594099">Kui see on märgitud, salvestab Chrome teie kaardi koopia sellesse seadmesse, et vormi kiiremini täita.</translation>
 <translation id="1111153019813902504">Hiljuti kasutatud järjehoidjad</translation>
 <translation id="1113869188872983271">&amp;Võta korrastamine tagasi</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">&amp;Prindi...</translation>
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Teavita Google'it automaatselt<ph name="END_WHITEPAPER_LINK" /> võimalikest turvaintsidentidest. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">Makset ei viidud lõpule</translation>
 <translation id="1201402288615127009">Edasi</translation>
 <translation id="1201895884277373915">Veel sellelt saidilt</translation>
 <translation id="1206967143813997005">Sobimatu algne allkiri</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Taotletud artiklit ei õnnestunud leida.</translation>
 <translation id="5541546772353173584">E-posti aadressi lisamine</translation>
 <translation id="5544037170328430102">Manustatud leht saidil <ph name="SITE" /> ütleb:</translation>
+<translation id="5545756402275714221">Teile soovitatud artiklid</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5560088892362098740">Aegumiskuupäev</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
 <translation id="5633066919399395251">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie arvutisse ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaarditeave). <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Petlik sisu blokeeriti.</translation>
-<translation id="5646376287012673985">Asukoht</translation>
 <translation id="5659593005791499971">Meil</translation>
 <translation id="5669703222995421982">Isikupärastatud sisu hankimine</translation>
 <translation id="5675650730144413517">See leht ei tööta</translation>
+<translation id="5689199277474810259">Ekspordi JSON-vormingus</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5719499550583120431">Kaupmees aktsepteerib ettemakstud kaarte.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">Viimati toodud:</translation>
 <translation id="8253091569723639551">Arveldusaadress on nõutav</translation>
 <translation id="8261506727792406068">Kustuta</translation>
+<translation id="8267698848189296333">Sisselogimine kasutajana <ph name="USERNAME" /></translation>
 <translation id="8289355894181816810">Kui te pole kindel, mida see tähendab, võtke ühendust oma võrguadministraatoriga.</translation>
 <translation id="8293206222192510085">Lisa järjehoidja</translation>
 <translation id="8294431847097064396">Allikas</translation>

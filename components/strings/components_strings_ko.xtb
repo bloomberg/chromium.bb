@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">너비에 맞춤</translation>
 <translation id="1088860948719068836">카드 명의 추가</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
+<translation id="1103778128462718200">모든 저장된 비밀번호 표시...</translation>
 <translation id="1107591249535594099">선택하면 Chrome에서 양식을 더 빠르게 입력할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
 <translation id="1111153019813902504">최근 북마크</translation>
 <translation id="1113869188872983271">재정렬 실행 취소(&amp;U)</translation>
@@ -31,6 +32,7 @@
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1184214524891303587">발생 가능성이 있는 보안 문제의 세부정보를 Google에 <ph name="BEGIN_WHITEPAPER_LINK" />자동으로 보고<ph name="END_WHITEPAPER_LINK" />합니다. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1193706408197842297">결제가 완료되지 않음</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1201895884277373915">이 사이트에서 더보기</translation>
 <translation id="1206967143813997005">잘못된 초기 서명</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">요청한 글을 찾지 못했습니다.</translation>
 <translation id="5541546772353173584">이메일 추가</translation>
 <translation id="5544037170328430102"><ph name="SITE" />에 삽입된 페이지 내용:</translation>
+<translation id="5545756402275714221">추천 기사</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5560088892362098740">만료일</translation>
 <translation id="5565735124758917034">활성</translation>
@@ -614,10 +617,10 @@
 <translation id="5631439013527180824">잘못된 기기 관리 토큰</translation>
 <translation id="5633066919399395251">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 프로그램을 컴퓨터에 설치하려고 시도할 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">사기성 콘텐츠 차단됨</translation>
-<translation id="5646376287012673985">위치</translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5669703222995421982">내게 맞는 콘텐츠 추천 받기</translation>
 <translation id="5675650730144413517">페이지가 작동하지 않습니다.</translation>
+<translation id="5689199277474810259">JSON 형식으로 내보내기</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5719499550583120431">선불카드를 사용할 수 있습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
@@ -916,6 +919,7 @@
 <translation id="8249320324621329438">마지막으로 가져온 시간:</translation>
 <translation id="8253091569723639551">청구지 주소 필요</translation>
 <translation id="8261506727792406068">삭제</translation>
+<translation id="8267698848189296333"><ph name="USERNAME" />(으)로 로그인</translation>
 <translation id="8289355894181816810">잘 모르는 경우 네트워크 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="8293206222192510085">북마크 추가</translation>
 <translation id="8294431847097064396">출처</translation>
