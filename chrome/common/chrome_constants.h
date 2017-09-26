@@ -33,7 +33,6 @@ extern const base::FilePath::CharType kFrameworkExecutableName[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];
-extern const base::FilePath::CharType kChromeElfDllName[];
 extern const base::FilePath::CharType kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 

@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome_elf/chrome_elf_main.h"
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/metrics/client_info.h"
 
@@ -35,7 +36,6 @@ void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
 void Init() {
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueTrampoline,
                                              &ClearCrashKeyValueTrampoline);
-
   // This would be handled by BreakpadClient::SetCrashClientIdFromGUID(), but
   // because of the aforementioned issue, crash keys aren't ready yet at the
   // time of Breakpad initialization, load the client id backed up in Google
@@ -45,34 +45,12 @@ void Init() {
   std::unique_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
 
-  // Set the client id in chrome_elf if it is loaded. We should not be
-  // registering crash keys in this case as that would already have been
-  // done by chrome_elf.
-  HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
-  if (elf_module) {
-// TODO(ananta)
-// Remove this when the change to not require crash key registration lands.
-// Please note that we are registering the crash keys twice if chrome_elf is
-// loaded. Once in chrome_elf and once in the current module. Alternatively
-// we could implement a crash key lookup trampoline which defers to
-// chrome_elf. We decided to go with the duplicate key registration for
-// simplicity.
 #if !defined(COMPONENT_BUILD)
-    crash_keys::RegisterChromeCrashKeys();
+  crash_keys::RegisterChromeCrashKeys();
 #endif
-    using SetMetricsClientIdFunction = void (*)(const char* client_id);
-    SetMetricsClientIdFunction set_metrics_id_fn =
-        reinterpret_cast<SetMetricsClientIdFunction>(
-            ::GetProcAddress(elf_module, "SetMetricsClientId"));
-    DCHECK(set_metrics_id_fn);
-    set_metrics_id_fn(client_info ? client_info->client_id.c_str() : nullptr);
-  } else {
-    // TODO(ananta)
-    // Remove this when the change to not require crash key registration lands.
-    crash_keys::RegisterChromeCrashKeys();
-    if (client_info)
-      crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
-  }
+
+  // Set the client id chrome_elf (in tests this is stubbed).
+  SetMetricsClientId(client_info ? client_info->client_id.c_str() : nullptr);
 }
 
 }  // namespace child_process_logging

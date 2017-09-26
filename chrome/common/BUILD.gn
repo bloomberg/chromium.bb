@@ -436,6 +436,7 @@ static_library("common") {
   if (is_win) {
     deps = [
       "//chrome/common/win:eventlog_messages",
+      "//chrome_elf:chrome_elf_main_include",
       "//components/crash/content/app:crash_export_thunk_include",
     ]
 

@@ -69,3 +69,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
 void DumpProcessWithoutCrash() {
   elf_crash::DumpWithoutCrashing();
 }
+
+void SetMetricsClientId(const char* client_id) {
+  elf_crash::SetMetricsClientIdImpl(client_id);
+}

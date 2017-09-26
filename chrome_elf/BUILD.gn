@@ -28,6 +28,14 @@ windows_manifest("chrome_elf_manifest") {
   ]
 }
 
+# Users of chrome_elf exports can depend on this target, which doesn't
+# pin them to linking either chrome_elf.dll or test_stubs.
+source_set("chrome_elf_main_include") {
+  sources = [
+    "chrome_elf_main.h",
+  ]
+}
+
 # We should move chrome_result_codes.h to another target which does not bring
 # in the world.
 shared_library("chrome_elf") {
