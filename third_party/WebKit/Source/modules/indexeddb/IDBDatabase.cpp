@@ -507,7 +507,7 @@ DispatchEventResult IDBDatabase::DispatchEventInternal(Event* event) {
          event->type() == EventTypeNames::close);
   for (size_t i = 0; i < enqueued_events_.size(); ++i) {
     if (enqueued_events_[i].Get() == event)
-      enqueued_events_.erase(i);
+      enqueued_events_.EraseAt(i);
   }
 
   DispatchEventResult dispatch_result =

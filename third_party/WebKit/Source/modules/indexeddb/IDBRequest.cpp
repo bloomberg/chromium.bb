@@ -757,7 +757,7 @@ void IDBRequest::EnqueueEvent(Event* event) {
 void IDBRequest::DequeueEvent(Event* event) {
   for (size_t i = 0; i < enqueued_events_.size(); ++i) {
     if (enqueued_events_[i].Get() == event)
-      enqueued_events_.erase(i);
+      enqueued_events_.EraseAt(i);
   }
 }
 

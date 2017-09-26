@@ -622,7 +622,7 @@ void Fullscreen::FullyExitFullscreen(Document& document) {
   // 2. Unfullscreen elements whose fullscreen flag is set, within
   // |document|'s top layer, except for |document|'s fullscreen element.
   size_t stack_size = From(doc).fullscreen_element_stack_.size();
-  From(doc).fullscreen_element_stack_.erase(0, stack_size - 1);
+  From(doc).fullscreen_element_stack_.EraseAt(0, stack_size - 1);
   DCHECK_EQ(From(doc).fullscreen_element_stack_.size(), 1u);
 
   // 3. Exit fullscreen |document|.
@@ -808,7 +808,7 @@ void Fullscreen::ElementRemoved(Element& node) {
   // 2.2. Otherwise, unfullscreen |node| within its node document.
   for (size_t i = 0; i < fullscreen_element_stack_.size(); ++i) {
     if (fullscreen_element_stack_[i].first.Get() == &node) {
-      fullscreen_element_stack_.erase(i);
+      fullscreen_element_stack_.EraseAt(i);
       return;
     }
   }

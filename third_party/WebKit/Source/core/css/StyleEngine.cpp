@@ -152,7 +152,7 @@ WebStyleSheetId StyleEngine::InjectAuthorSheet(
 void StyleEngine::RemoveInjectedAuthorSheet(WebStyleSheetId author_sheet_id) {
   for (size_t i = 0; i < injected_author_style_sheets_.size(); ++i) {
     if (injected_author_style_sheets_[i].first == author_sheet_id) {
-      injected_author_style_sheets_.erase(i);
+      injected_author_style_sheets_.EraseAt(i);
       MarkDocumentDirty();
     }
   }

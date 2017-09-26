@@ -252,7 +252,7 @@ void LayoutTable::RemoveCaption(const LayoutTableCaption* old_caption) {
   if (index == kNotFound)
     return;
 
-  captions_.erase(index);
+  captions_.EraseAt(index);
 }
 
 void LayoutTable::InvalidateCachedColumns() {

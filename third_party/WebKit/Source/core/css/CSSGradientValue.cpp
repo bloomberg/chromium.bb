@@ -243,7 +243,7 @@ static void ReplaceColorHintsWithColorStops(
     DCHECK_LE(offset, offset_right);
 
     if (WebCoreFloatNearlyEqual(left_dist, right_dist)) {
-      stops.erase(x);
+      stops.EraseAt(x);
       --index_offset;
       continue;
     }
@@ -285,7 +285,7 @@ static void ReplaceColorHintsWithColorStops(
     }
 
     // Replace the color hint with the new color stops.
-    stops.erase(x);
+    stops.EraseAt(x);
     stops.insert(x, new_stops, 9);
     index_offset += 8;
   }

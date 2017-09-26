@@ -236,10 +236,10 @@ void StringBuilder::erase(unsigned index) {
 
   if (is8_bit_) {
     EnsureBuffer8(0);
-    buffer8_->erase(index);
+    buffer8_->EraseAt(index);
   } else {
     EnsureBuffer16(0);
-    buffer16_->erase(index);
+    buffer16_->EraseAt(index);
   }
   --length_;
 }

@@ -4211,7 +4211,7 @@ void Element::DetachAttrNodeFromElementWithValue(Attr* attr_node,
   AttrNodeList* list = GetAttrNodeList();
   size_t index = list->Find(attr_node);
   DCHECK_NE(index, kNotFound);
-  list->erase(index);
+  list->EraseAt(index);
   if (list->IsEmpty())
     RemoveAttrNodeList();
 }

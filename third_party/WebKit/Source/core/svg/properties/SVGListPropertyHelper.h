@@ -204,7 +204,7 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::RemoveItem(
 
   DCHECK_EQ(values_.at(index)->OwnerList(), this);
   ItemPropertyType* old_item = values_.at(index);
-  values_.erase(index);
+  values_.EraseAt(index);
   old_item->SetOwnerList(nullptr);
   return old_item;
 }

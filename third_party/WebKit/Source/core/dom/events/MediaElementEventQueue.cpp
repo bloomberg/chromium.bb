@@ -81,7 +81,7 @@ bool MediaElementEventQueue::CancelEvent(Event* event) {
   if (found) {
     EventTarget* target = event->target() ? event->target() : owner_.Get();
     probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
-    pending_events_.erase(pending_events_.Find(event));
+    pending_events_.EraseAt(pending_events_.Find(event));
     TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
                            event, "type", event->type().Ascii(), "status",
                            "cancelled");

@@ -1189,8 +1189,9 @@ class Vector
   // take O(size())-time. All of the elements after the removed ones will be
   // moved to the new locations. All the iterators pointing to any element
   // after |position| will be invalidated.
-  void erase(size_t position);
-  void erase(size_t position, size_t length);
+  void EraseAt(size_t position);
+  void EraseAt(size_t position, size_t length);
+  iterator erase(iterator position);
 
   // Remove the last element. Unlike remove(), (1) this function is fast, and
   // (2) only iterators pointing to the last element will be invalidated. Other
@@ -1273,6 +1274,9 @@ class Vector
   void ShrinkCapacity(size_t new_capacity);
   template <typename U>
   void AppendSlowCase(U&&);
+
+  // This is to prevent compilation of deprecated calls like 'vector.erase(0)'.
+  void erase(std::nullptr_t) = delete;
 
   using Base::size_;
   using Base::Buffer;
@@ -1838,7 +1842,7 @@ inline void Vector<T, inlineCapacity, Allocator>::PrependVector(
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position) {
+inline void Vector<T, inlineCapacity, Allocator>::EraseAt(size_t position) {
   CHECK_LT(position, size());
   T* spot = begin() + position;
   spot->~T();
@@ -1849,8 +1853,16 @@ inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position) {
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Vector<T, inlineCapacity, Allocator>::erase(size_t position,
-                                                        size_t length) {
+inline auto Vector<T, inlineCapacity, Allocator>::erase(iterator position)
+    -> iterator {
+  size_t index = position - begin();
+  EraseAt(index);
+  return begin() + index;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline void Vector<T, inlineCapacity, Allocator>::EraseAt(size_t position,
+                                                          size_t length) {
   SECURITY_DCHECK(position <= size());
   if (!length)
     return;

@@ -56,7 +56,7 @@ void SpellCheckMarkerListImpl::Add(DocumentMarker* marker) {
 
   *first_overlapping = marker;
   size_t num_to_erase = last_overlapping - (first_overlapping + 1);
-  markers_.erase(first_overlapping + 1 - markers_.begin(), num_to_erase);
+  markers_.EraseAt(first_overlapping + 1 - markers_.begin(), num_to_erase);
 }
 
 void SpellCheckMarkerListImpl::Clear() {
@@ -117,7 +117,7 @@ bool SpellCheckMarkerListImpl::RemoveMarkersUnderWords(
     const unsigned length = marker.EndOffset() - marker.StartOffset();
     const String& marker_text = node_text.Substring(start, length);
     if (words.Contains(marker_text)) {
-      markers_.erase(j - 1);
+      markers_.EraseAt(j - 1);
       removed_markers = true;
     }
   }

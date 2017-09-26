@@ -45,7 +45,7 @@ bool PresentationConnectionList::RemoveConnection(
     WebPresentationConnection* connection) {
   for (size_t i = 0; i < connections_.size(); i++) {
     if (connections_[i] == connection) {
-      connections_.erase(i);
+      connections_.EraseAt(i);
       return true;
     }
   }

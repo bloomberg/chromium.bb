@@ -120,7 +120,7 @@ bool MediaQuerySet::Remove(const String& query_string_to_remove) {
   for (size_t i = 0; i < queries_.size(); ++i) {
     MediaQuery& query = *queries_[i];
     if (query == *new_query) {
-      queries_.erase(i);
+      queries_.EraseAt(i);
       --i;
       found = true;
     }

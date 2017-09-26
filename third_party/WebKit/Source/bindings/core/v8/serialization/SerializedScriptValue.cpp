@@ -511,8 +511,8 @@ ArrayBufferArray SerializedScriptValue::ExtractNonSharedArrayBuffers(
   // Copy the non-shared array buffers into result, and remove them from
   // array_buffers.
   result.AppendRange(non_shared_begin, array_buffers.end());
-  array_buffers.erase(non_shared_begin - array_buffers.begin(),
-                      array_buffers.end() - non_shared_begin);
+  array_buffers.EraseAt(non_shared_begin - array_buffers.begin(),
+                        array_buffers.end() - non_shared_begin);
   return result;
 }
 

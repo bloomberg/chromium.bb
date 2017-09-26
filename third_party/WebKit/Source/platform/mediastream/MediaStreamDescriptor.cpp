@@ -91,12 +91,12 @@ void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
     case MediaStreamSource::kTypeAudio:
       pos = audio_components_.Find(component);
       if (pos != kNotFound)
-        audio_components_.erase(pos);
+        audio_components_.EraseAt(pos);
       break;
     case MediaStreamSource::kTypeVideo:
       pos = video_components_.Find(component);
       if (pos != kNotFound)
-        video_components_.erase(pos);
+        video_components_.EraseAt(pos);
       break;
   }
 
@@ -127,7 +127,7 @@ void MediaStreamDescriptor::AddObserver(WebMediaStreamObserver* observer) {
 void MediaStreamDescriptor::RemoveObserver(WebMediaStreamObserver* observer) {
   size_t index = observers_.Find(observer);
   DCHECK(index != kNotFound);
-  observers_.erase(index);
+  observers_.EraseAt(index);
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(

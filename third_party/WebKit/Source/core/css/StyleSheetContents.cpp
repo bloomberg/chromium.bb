@@ -297,7 +297,7 @@ bool StyleSheetContents::WrapperDeleteRule(unsigned index) {
     import_rules_[index]->ClearParentStyleSheet();
     if (import_rules_[index]->IsFontFaceRule())
       NotifyRemoveFontFaceRule(ToStyleRuleFontFace(import_rules_[index].Get()));
-    import_rules_.erase(index);
+    import_rules_.EraseAt(index);
     return true;
   }
   index -= import_rules_.size();
@@ -305,14 +305,14 @@ bool StyleSheetContents::WrapperDeleteRule(unsigned index) {
   if (index < namespace_rules_.size()) {
     if (!child_rules_.IsEmpty())
       return false;
-    namespace_rules_.erase(index);
+    namespace_rules_.EraseAt(index);
     return true;
   }
   index -= namespace_rules_.size();
 
   if (child_rules_[index]->IsFontFaceRule())
     NotifyRemoveFontFaceRule(ToStyleRuleFontFace(child_rules_[index].Get()));
-  child_rules_.erase(index);
+  child_rules_.EraseAt(index);
   return true;
 }
 

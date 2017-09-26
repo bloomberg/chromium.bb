@@ -106,7 +106,7 @@ void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
     callback->call(nullptr, data);
   size_t index = callbacks_.Find(callback);
   DCHECK(index != kNotFound);
-  callbacks_.erase(index);
+  callbacks_.EraseAt(index);
 }
 
 DEFINE_TRACE(DataTransferItem) {

@@ -236,7 +236,7 @@ void TreeInsertionAndDeletionTest(int32_t seed, int tree_size) {
         << "Test failed for seed " << seed;
     tree.Remove(added_elements[index]);
     removed_elements.push_back(added_elements[index]);
-    added_elements.erase(index);
+    added_elements.EraseAt(index);
     ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
   }
   // Now randomly add or remove elements.
@@ -257,7 +257,7 @@ void TreeInsertionAndDeletionTest(int32_t seed, int tree_size) {
 #endif
       tree.Add(removed_elements[index]);
       added_elements.push_back(removed_elements[index]);
-      removed_elements.erase(index);
+      removed_elements.EraseAt(index);
     } else {
       int index = NextRandom(added_elements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
@@ -270,7 +270,7 @@ void TreeInsertionAndDeletionTest(int32_t seed, int tree_size) {
       ASSERT_TRUE(tree.Remove(added_elements[index]))
           << "Test failed for seed " << seed;
       removed_elements.push_back(added_elements[index]);
-      added_elements.erase(index);
+      added_elements.EraseAt(index);
     }
     ASSERT_TRUE(tree.CheckInvariants()) << "Test failed for seed " << seed;
   }

@@ -118,7 +118,7 @@ void FormData::deleteEntry(const String& name) {
   size_t i = 0;
   while (i < entries_.size()) {
     if (entries_[i]->name() == encoded_name) {
-      entries_.erase(i);
+      entries_.EraseAt(i);
     } else {
       ++i;
     }
@@ -185,7 +185,7 @@ void FormData::SetEntry(const Entry* entry) {
     if (entries_[i]->name() != encoded_name) {
       ++i;
     } else if (found) {
-      entries_.erase(i);
+      entries_.EraseAt(i);
     } else {
       found = true;
       entries_[i] = entry;

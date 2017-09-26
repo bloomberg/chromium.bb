@@ -99,7 +99,7 @@ static const Vector<CSSPropertyID>& AllEditingProperties() {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
         properties);
-    properties.erase(properties.Find(CSSPropertyTextDecoration));
+    properties.EraseAt(properties.Find(CSSPropertyTextDecoration));
   }
   return properties;
 }
@@ -112,7 +112,7 @@ static const Vector<CSSPropertyID>& InheritableEditingProperties() {
         properties);
     for (size_t index = 0; index < properties.size();) {
       if (!CSSPropertyAPI::Get(properties[index]).IsInherited()) {
-        properties.erase(index);
+        properties.EraseAt(index);
         continue;
       }
       ++index;
