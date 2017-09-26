@@ -9,6 +9,7 @@
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/encode_values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {
 
@@ -18,6 +19,14 @@ const base::TimeDelta kOCSPAgeOneWeek = base::TimeDelta::FromDays(7);
 
 std::string GetFilePath(const std::string& file_name) {
   return std::string("net/data/ocsp_unittest/") + file_name;
+}
+
+scoped_refptr<ParsedCertificate> ParseCertificate(base::StringPiece data) {
+  CertErrors errors;
+  return ParsedCertificate::Create(
+      bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
+          reinterpret_cast<const uint8_t*>(data.data()), data.size(), nullptr)),
+      {}, &errors);
 }
 
 struct TestParams {
@@ -122,10 +131,12 @@ TEST_P(CheckOCSPTest, FromFile) {
   std::string ocsp_data;
   std::string ca_data;
   std::string cert_data;
+  std::string request_data;
   const PemBlockMapping mappings[] = {
       {"OCSP RESPONSE", &ocsp_data},
       {"CA CERTIFICATE", &ca_data},
       {"CERTIFICATE", &cert_data},
+      {"OCSP REQUEST", &request_data},
   };
 
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(params.file_name), mappings));
@@ -134,12 +145,26 @@ TEST_P(CheckOCSPTest, FromFile) {
   base::Time kVerifyTime =
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1488672000);
 
+  // Test that CheckOCSP() works.
   OCSPVerifyResult::ResponseStatus response_status;
   OCSPRevocationStatus revocation_status =
       CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, &response_status);
 
   EXPECT_EQ(params.expected_revocation_status, revocation_status);
   EXPECT_EQ(params.expected_response_status, response_status);
+
+  // Check that CreateOCSPRequest() works.
+  scoped_refptr<ParsedCertificate> cert = ParseCertificate(cert_data);
+  ASSERT_TRUE(cert);
+
+  scoped_refptr<ParsedCertificate> issuer = ParseCertificate(ca_data);
+  ASSERT_TRUE(issuer);
+
+  std::vector<uint8_t> encoded_request;
+  ASSERT_TRUE(CreateOCSPRequest(cert.get(), issuer.get(), &encoded_request));
+
+  EXPECT_EQ(der::Input(encoded_request.data(), encoded_request.size()),
+            der::Input(&request_data));
 }
 
 TEST(OCSPDateTest, Valid) {

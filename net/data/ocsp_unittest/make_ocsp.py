@@ -11,6 +11,8 @@ from pyasn1.codec.der import decoder, encoder
 from pyasn1_modules import rfc2560, rfc2459
 from pyasn1.type import univ, useful
 import hashlib, datetime
+import subprocess
+import os
 
 from OpenSSL import crypto
 
@@ -232,15 +234,64 @@ def Create(signer=None,
   return ocsp
 
 
+def MakePemBlock(der, name):
+  b64 = base64.b64encode(der)
+  wrapped = '\n'.join(b64[pos:pos + 64] for pos in xrange(0, len(b64), 64))
+  return '-----BEGIN %s-----\n%s\n-----END %s-----' % (name, wrapped, name)
+
+
+def WriteStringToFile(data, path):
+  with open(path, "w") as f:
+    f.write(data)
+
+
+def ReadFileToString(path):
+  with open(path, 'r') as f:
+    return f.read()
+
+
+def CreateOCSPRequestDer(issuer_cert_pem, cert_pem):
+  '''Uses OpenSSL to generate a basic OCSPRequest for |cert_pem|.'''
+
+  issuer_path = "tmp_issuer.pem"
+  cert_path = "tmp_cert.pem"
+  request_path = "tmp_request.der"
+
+  WriteStringToFile(issuer_cert_pem, issuer_path)
+  WriteStringToFile(cert_pem, cert_path)
+
+  p = subprocess.Popen(["openssl", "ocsp", "-no_nonce", "-issuer", issuer_path,
+                        "-cert", cert_path, "-reqout", request_path],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+  stdout_data, stderr_data = p.communicate()
+
+  os.remove(issuer_path)
+  os.remove(cert_path)
+
+  result = None
+  if p.returncode == 0:
+    result = ReadFileToString(request_path)
+
+  os.remove(request_path)
+  return result
+
+
 def Store(fname, description, ca, data):
-  ca64 = crypto.dump_certificate(crypto.FILETYPE_PEM, ca[1]).replace(
-      'CERTIFICATE', 'CA CERTIFICATE')
-  c64 = crypto.dump_certificate(crypto.FILETYPE_PEM, CERT[1])
+  ca_cert_pem = crypto.dump_certificate(crypto.FILETYPE_PEM, ca[1])
+  cert_pem = crypto.dump_certificate(crypto.FILETYPE_PEM, CERT[1])
+
+  ocsp_request_der = CreateOCSPRequestDer(ca_cert_pem, cert_pem)
+
   d64 = base64.b64encode(encoder.encode(data))
   wd64 = '\n'.join(d64[pos:pos + 64] for pos in xrange(0, len(d64), 64))
-  out = ('%s\n-----BEGIN OCSP RESPONSE-----\n%s\n'
-         '-----END OCSP RESPONSE-----\n\n%s\n\n%s') % (description, wd64, ca64,
-                                                       c64)
+  out = ('%s\n%s\n%s\n\n%s\n%s') % (
+      description,
+      MakePemBlock(encoder.encode(data), "OCSP RESPONSE"),
+      ca_cert_pem.replace('CERTIFICATE', 'CA CERTIFICATE'),
+      cert_pem,
+      MakePemBlock(ocsp_request_der, "OCSP REQUEST"))
   open('%s.pem' % fname, 'w').write(out)
 
 

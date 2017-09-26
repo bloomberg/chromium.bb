@@ -118,6 +118,8 @@ def GetUserComment(comment):
   comment = comment.split('$ openssl', 1)[0]
   if IsEntirelyWhiteSpace(comment):
     comment = ''
+  elif not comment.endswith("\n\n"):
+    comment += "\n\n"
   return comment
 
 
