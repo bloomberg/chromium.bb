@@ -1475,23 +1475,22 @@ static bool IsVisiblyAdjacent(const Position& first, const Position& second) {
              .DeepEquivalent();
 }
 
-bool CanMergeLists(Element* first_list, Element* second_list) {
-  if (!first_list || !second_list || !first_list->IsHTMLElement() ||
-      !second_list->IsHTMLElement())
+bool CanMergeLists(const Element& first_list, const Element& second_list) {
+  if (!first_list.IsHTMLElement() || !second_list.IsHTMLElement())
     return false;
 
-  DCHECK(!NeedsLayoutTreeUpdate(*first_list));
-  DCHECK(!NeedsLayoutTreeUpdate(*second_list));
-  return first_list->HasTagName(
+  DCHECK(!NeedsLayoutTreeUpdate(first_list));
+  DCHECK(!NeedsLayoutTreeUpdate(second_list));
+  return first_list.HasTagName(
              second_list
-                 ->TagQName())  // make sure the list types match (ol vs. ul)
-         && HasEditableStyle(*first_list) &&
-         HasEditableStyle(*second_list)  // both lists are editable
-         && RootEditableElement(*first_list) ==
-                RootEditableElement(
-                    *second_list)  // don't cross editing boundaries
-         && IsVisiblyAdjacent(Position::InParentAfterNode(*first_list),
-                              Position::InParentBeforeNode(*second_list));
+                 .TagQName())  // make sure the list types match (ol vs. ul)
+         && HasEditableStyle(first_list) &&
+         HasEditableStyle(second_list)  // both lists are editable
+         &&
+         RootEditableElement(first_list) ==
+             RootEditableElement(second_list)  // don't cross editing boundaries
+         && IsVisiblyAdjacent(Position::InParentAfterNode(first_list),
+                              Position::InParentBeforeNode(second_list));
   // Make sure there is no visible content between this li and the previous list
 }
 

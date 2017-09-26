@@ -134,14 +134,15 @@ bool IndentOutdentCommand::TryIndentingAsListItem(const Position& start,
   }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (CanMergeLists(previous_list, new_list)) {
+  DCHECK(new_list);
+  if (previous_list && CanMergeLists(*previous_list, *new_list)) {
     MergeIdenticalElements(previous_list, new_list, editing_state);
     if (editing_state->IsAborted())
       return false;
   }
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (CanMergeLists(new_list, next_list)) {
+  if (next_list && CanMergeLists(*new_list, *next_list)) {
     MergeIdenticalElements(new_list, next_list, editing_state);
     if (editing_state->IsAborted())
       return false;

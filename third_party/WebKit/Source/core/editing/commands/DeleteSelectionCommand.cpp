@@ -68,6 +68,13 @@ static bool IsTableRowEmpty(Node* row) {
   return true;
 }
 
+static bool CanMergeListElements(Element* first_list, Element* second_list) {
+  if (!first_list || !second_list || first_list == second_list)
+    return false;
+
+  return CanMergeLists(*first_list, *second_list);
+}
+
 DeleteSelectionCommand::DeleteSelectionCommand(
     Document& document,
     bool smart_delete,
@@ -877,10 +884,8 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
   Node* list_item_in_second_paragraph =
       EnclosingNodeOfType(downstream_end_, IsListItem);
   if (list_item_in_first_paragraph && list_item_in_second_paragraph &&
-      list_item_in_first_paragraph->parentElement() !=
-          list_item_in_second_paragraph->parentElement() &&
-      CanMergeLists(list_item_in_first_paragraph->parentElement(),
-                    list_item_in_second_paragraph->parentElement())) {
+      CanMergeListElements(list_item_in_first_paragraph->parentElement(),
+                           list_item_in_second_paragraph->parentElement())) {
     MergeIdenticalElements(list_item_in_first_paragraph->parentElement(),
                            list_item_in_second_paragraph->parentElement(),
                            editing_state);

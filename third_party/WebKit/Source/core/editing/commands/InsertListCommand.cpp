@@ -72,10 +72,11 @@ HTMLUListElement* InsertListCommand::FixOrphanedListChild(
 HTMLElement* InsertListCommand::MergeWithNeighboringLists(
     HTMLElement* passed_list,
     EditingState* editing_state) {
+  DCHECK(passed_list);
   HTMLElement* list = passed_list;
   Element* previous_list = ElementTraversal::PreviousSibling(*list);
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (CanMergeLists(previous_list, list)) {
+  if (previous_list && CanMergeLists(*previous_list, *list)) {
     MergeIdenticalElements(previous_list, list, editing_state);
     if (editing_state->IsAborted())
       return nullptr;
@@ -90,7 +91,7 @@ HTMLElement* InsertListCommand::MergeWithNeighboringLists(
 
   HTMLElement* next_list = ToHTMLElement(next_sibling);
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (CanMergeLists(list, next_list)) {
+  if (CanMergeLists(*list, *next_list)) {
     MergeIdenticalElements(list, next_list, editing_state);
     if (editing_state->IsAborted())
       return nullptr;
@@ -599,7 +600,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
       return;
 
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-    if (CanMergeLists(previous_list, next_list))
+    if (previous_list && next_list && CanMergeLists(*previous_list, *next_list))
       MergeIdenticalElements(previous_list, next_list, editing_state);
 
     return;
