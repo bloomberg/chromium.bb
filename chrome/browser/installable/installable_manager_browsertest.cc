@@ -23,9 +23,6 @@ using IconPurpose = content::Manifest::Icon::IconPurpose;
 
 namespace {
 
-const std::tuple<int, int, IconPurpose> kPrimaryIconParams{144, 144,
-                                                           IconPurpose::ANY};
-
 InstallableParams GetManifestParams() {
   InstallableParams params;
   params.check_installable = false;
@@ -35,8 +32,6 @@ InstallableParams GetManifestParams() {
 
 InstallableParams GetWebAppParams() {
   InstallableParams params = GetManifestParams();
-  params.ideal_primary_icon_size_in_px = 144;
-  params.minimum_primary_icon_size_in_px = 144;
   params.check_installable = true;
   params.fetch_valid_primary_icon = true;
   return params;
@@ -44,19 +39,13 @@ InstallableParams GetWebAppParams() {
 
 InstallableParams GetPrimaryIconParams() {
   InstallableParams params = GetManifestParams();
-  params.ideal_primary_icon_size_in_px = 144;
-  params.minimum_primary_icon_size_in_px = 144;
   params.fetch_valid_primary_icon = true;
   return params;
 }
 
 InstallableParams GetPrimaryIconAndBadgeIconParams() {
   InstallableParams params = GetManifestParams();
-  params.ideal_primary_icon_size_in_px = 144;
-  params.minimum_primary_icon_size_in_px = 144;
   params.fetch_valid_primary_icon = true;
-  params.ideal_badge_icon_size_in_px = 72;
-  params.minimum_badge_icon_size_in_px = 72;
   params.fetch_valid_badge_icon = true;
   return params;
 }
@@ -352,6 +341,78 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckManifestWithIconThatIsTooSmall) {
+  // This page has a manifest with only a 48x48 icon which is too small to be
+  // installable. Asking for a primary icon should fail with NO_ACCEPTABLE_ICON.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), GetPrimaryIconParams(),
+        GetURLOfPageWithServiceWorkerAndManifest(
+            "/banners/manifest_too_small_icon.json"));
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_TRUE(tester->primary_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
+    EXPECT_TRUE(tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->badge_icon());
+    EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
+  }
+
+  // Ask for everything except badge icon. This should fail with
+  // NO_ACCEPTABLE_ICON - the primary icon fetch has already failed, so that
+  // cached error stops the installable check from being performed.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    RunInstallableManager(tester.get(), GetWebAppParams());
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_TRUE(tester->primary_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->is_installable());
+    EXPECT_TRUE(tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->badge_icon());
+    EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
+  }
+
+  // Ask for a badge icon. This should fail to get a badge icon but not record
+  // an error.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    InstallableParams params = GetPrimaryIconAndBadgeIconParams();
+    params.fetch_valid_primary_icon = false;
+    RunInstallableManager(tester.get(), params);
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_TRUE(tester->primary_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->badge_icon());
+    EXPECT_FALSE(tester->is_installable());
+    EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckManifestWithOnlyRelatedApplications) {
   // This page has a manifest with only related applications specified. Asking
   // for just the manifest should succeed.
@@ -487,30 +548,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestAndIcon) {
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
   }
 
-  // Request an oversized badge icon. This should fetch only the manifest and
-  // the primary icon, and return no errors.
-  {
-    base::RunLoop run_loop;
-    std::unique_ptr<CallbackTester> tester(
-        new CallbackTester(run_loop.QuitClosure()));
-
-    InstallableParams params = GetPrimaryIconAndBadgeIconParams();
-    params.ideal_badge_icon_size_in_px = 2000;
-    params.minimum_badge_icon_size_in_px = 2000;
-    RunInstallableManager(tester.get(), params);
-    run_loop.Run();
-
-    EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_FALSE(tester->manifest_url().is_empty());
-
-    EXPECT_FALSE(tester->primary_icon_url().is_empty());
-    EXPECT_NE(nullptr, tester->primary_icon());
-    EXPECT_FALSE(tester->is_installable());
-    EXPECT_TRUE(tester->badge_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
-  }
-
   // Navigate to a page with a bad badge icon. This should now fail with
   // NO_ICON_AVAILABLE, but still have the manifest and primary icon.
   {
@@ -568,12 +605,12 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->is_installable());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+    EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
+    EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
 
     histograms.ExpectUniqueSample(
@@ -621,12 +658,12 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->is_installable());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+    EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
+    EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 
@@ -788,12 +825,12 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(manager->manifest_url().is_empty());
   EXPECT_FALSE(manager->is_installable());
   EXPECT_EQ(1u, manager->icons_.size());
-  EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
-  EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+  EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
   EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   EXPECT_TRUE(!manager->task_queue_.paused_tasks_.empty());
 
@@ -838,12 +875,12 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(manager->manifest_url().is_empty());
   EXPECT_TRUE(manager->is_installable());
   EXPECT_EQ(1u, manager->icons_.size());
-  EXPECT_FALSE((manager->icon_url(kPrimaryIconParams).is_empty()));
-  EXPECT_NE(nullptr, (manager->icon(kPrimaryIconParams)));
+  EXPECT_FALSE((manager->icon_url(IconPurpose::ANY).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(IconPurpose::ANY)));
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
+  EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
   EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   EXPECT_FALSE(!manager->task_queue_.paused_tasks_.empty());
 }
@@ -1095,54 +1132,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     EXPECT_TRUE(tester->badge_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->badge_icon());
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
-  }
-
-  {
-    base::RunLoop run_loop;
-    std::unique_ptr<CallbackTester> tester(
-        new CallbackTester(run_loop.QuitClosure()));
-
-    // Dial up the primary icon size requirements to something that isn't
-    // available. This should now fail with NO_ACCEPTABLE_ICON.
-    InstallableParams params = GetWebAppParams();
-    params.ideal_primary_icon_size_in_px = 2000;
-    params.minimum_primary_icon_size_in_px = 2000;
-    RunInstallableManager(tester.get(), params);
-    run_loop.Run();
-
-    EXPECT_FALSE(tester->manifest_url().is_empty());
-    EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->primary_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->primary_icon());
-    EXPECT_TRUE(tester->is_installable());
-    EXPECT_TRUE(tester->badge_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
-  }
-
-  // Navigate and verify the reverse: an overly large primary icon requested
-  // first fails, but a smaller primary icon requested second passes.
-  {
-    base::RunLoop run_loop;
-    std::unique_ptr<CallbackTester> tester(
-        new CallbackTester(run_loop.QuitClosure()));
-
-    // This should fail with NO_ACCEPTABLE_ICON.
-    InstallableParams params = GetWebAppParams();
-    params.ideal_primary_icon_size_in_px = 2000;
-    params.minimum_primary_icon_size_in_px = 2000;
-    NavigateAndRunInstallableManager(tester.get(), params,
-                                     "/banners/manifest_test_page.html");
-    run_loop.Run();
-
-    EXPECT_FALSE(tester->manifest_url().is_empty());
-    EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_TRUE(tester->primary_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->primary_icon());
-    EXPECT_FALSE(tester->is_installable());
-    EXPECT_TRUE(tester->badge_icon_url().is_empty());
-    EXPECT_EQ(nullptr, tester->badge_icon());
-    EXPECT_EQ(NO_ACCEPTABLE_ICON, tester->error_code());
   }
 
   {

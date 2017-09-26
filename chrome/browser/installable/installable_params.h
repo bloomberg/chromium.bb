@@ -9,22 +9,6 @@
 // Data is cached and fetched in the order specified in this struct. A web app
 // manifest will always be fetched first.
 struct InstallableParams {
-  // The ideal primary icon size to fetch. Used only if
-  // |fetch_valid_primary_icon| is true.
-  int ideal_primary_icon_size_in_px = -1;
-
-  // The minimum primary icon size to fetch. Used only if
-  // |fetch_valid_primary_icon| is true.
-  int minimum_primary_icon_size_in_px = -1;
-
-  // The ideal badge icon size to fetch. Used only if
-  // |fetch_valid_badge_icon| is true.
-  int ideal_badge_icon_size_in_px = -1;
-
-  // The minimum badge icon size to fetch. Used only if
-  // |fetch_valid_badge_icon| is true.
-  int minimum_badge_icon_size_in_px = -1;
-
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the primary icon size parameters.
   bool fetch_valid_primary_icon = false;

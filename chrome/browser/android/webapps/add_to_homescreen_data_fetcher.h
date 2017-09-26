@@ -54,11 +54,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   // OnDidGetWebApplicationInfo is expected to be called when finished.
   // |observer| must outlive AddToHomescreenDataFetcher.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
-                             int ideal_icon_size_in_px,
-                             int minimum_icon_size_in_px,
-                             int ideal_splash_image_size_in_px,
-                             int minimum_splash_image_size_in_px,
-                             int badge_size_in_px,
                              int data_timeout_ms,
                              bool check_webapk_compatible,
                              Observer* observer);
@@ -110,11 +105,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   base::CancelableTaskTracker favicon_task_tracker_;
   base::OneShotTimer data_timeout_timer_;
 
-  const int ideal_icon_size_in_px_;
-  const int minimum_icon_size_in_px_;
-  const int ideal_splash_image_size_in_px_;
-  const int minimum_splash_image_size_in_px_;
-  const int badge_size_in_px_;
   const int data_timeout_ms_;
 
   // Indicates whether to check WebAPK compatibility.

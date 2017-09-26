@@ -148,10 +148,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // |code|. Returns the empty string if |code| requires no parameter.
   std::string GetStatusParam(InstallableStatusCode code);
 
-  // Returns the ideal and minimum primary icon size requirements.
-  virtual int GetIdealPrimaryIconSizeInPx();
-  virtual int GetMinimumPrimaryIconSizeInPx();
-
   // Returns true if |has_sufficient_engagement_| is true or IsDebugMode()
   // returns true.
   bool HasSufficientEngagement() const;

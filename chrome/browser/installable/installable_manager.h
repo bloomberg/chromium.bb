@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -27,7 +26,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-
 // This class is responsible for fetching the resources required to check and
 // install a site.
 class InstallableManager
@@ -43,8 +41,6 @@ class InstallableManager
   static bool IsContentSecure(content::WebContents* web_contents);
 
   // Returns the minimum icon size in pixels for a site to be installable.
-  // TODO(dominickn): consolidate this concept with minimum_icon_size_in_px
-  // across all platforms.
   static int GetMinimumIconSizeInPx();
 
   // Get the installable data, fetching the resources specified in |params|.
@@ -91,7 +87,7 @@ class InstallableManager
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerNoFetchHandlerFails);
 
-  using IconParams = std::tuple<int, int, content::Manifest::Icon::IconPurpose>;
+  using IconPurpose = content::Manifest::Icon::IconPurpose;
 
   struct ManifestProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;
@@ -129,19 +125,12 @@ class InstallableManager
     DISALLOW_COPY_AND_ASSIGN(IconProperty);
   };
 
-  // Returns an IconParams object that queries for a primary icon conforming to
-  // the primary icon size parameters in |params|.
-  IconParams ParamsForPrimaryIcon(const InstallableParams& params) const;
-  // Returns an IconParams object that queries for a badge icon conforming to
-  // the badge icon size parameters in |params|.
-  IconParams ParamsForBadgeIcon(const InstallableParams& params) const;
-
-  // Returns true if |params| matches any fetched icon, or false if no icon has
+  // Returns true if |purpose| matches any fetched icon, or false if no icon has
   // been requested yet or there is no match.
-  bool IsIconFetched(const IconParams& params) const;
+  bool IsIconFetched(const IconPurpose purpose) const;
 
-  // Sets the icon matching |params| as fetched.
-  void SetIconFetched(const IconParams& params);
+  // Sets the icon matching |purpose| as fetched.
+  void SetIconFetched(const IconPurpose purpose);
 
   // Returns the error code associated with the resources requested in |params|,
   // or NO_ERROR_DETECTED if there is no error.
@@ -152,9 +141,9 @@ class InstallableManager
   InstallableStatusCode valid_manifest_error() const;
   void set_valid_manifest_error(InstallableStatusCode error_code);
   InstallableStatusCode worker_error() const;
-  InstallableStatusCode icon_error(const IconParams& icon_params);
-  GURL& icon_url(const IconParams& icon_params);
-  const SkBitmap* icon(const IconParams& icon);
+  InstallableStatusCode icon_error(const IconPurpose purpose);
+  GURL& icon_url(const IconPurpose purpose);
+  const SkBitmap* icon(const IconPurpose purpose);
 
   // Returns the WebContents to which this object is attached, or nullptr if the
   // WebContents doesn't exist or is currently being destroyed.
@@ -188,9 +177,11 @@ class InstallableManager
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
-  void CheckAndFetchBestIcon(const IconParams& params);
+  void CheckAndFetchBestIcon(int ideal_icon_size_in_px,
+                             int minimum_icon_size_in_px,
+                             const IconPurpose purpose);
   void OnIconFetched(const GURL icon_url,
-                     const IconParams& params,
+                     const IconPurpose purpose,
                      const SkBitmap& bitmap);
 
   // content::ServiceWorkerContextObserver overrides
@@ -211,7 +202,7 @@ class InstallableManager
   std::unique_ptr<ManifestProperty> manifest_;
   std::unique_ptr<ValidManifestProperty> valid_manifest_;
   std::unique_ptr<ServiceWorkerProperty> worker_;
-  std::map<IconParams, IconProperty> icons_;
+  std::map<IconPurpose, IconProperty> icons_;
 
   // Owned by the storage partition attached to the content::WebContents which
   // this object is scoped to.
