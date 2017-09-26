@@ -45,6 +45,9 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
 
     // Other error that is not expected to be transient.
     INTERNAL_ERROR,
+
+    // The provded PPD was too large to be processed.
+    PPD_TOO_LARGE,
   };
 
   // Construction-time options.  Everything in this structure should have
