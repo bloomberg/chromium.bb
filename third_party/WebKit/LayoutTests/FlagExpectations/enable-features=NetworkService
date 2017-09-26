@@ -310,7 +310,7 @@ crbug.com/721408 http/tests/inspector-protocol/page/frameScheduledNavigation.js 
 crbug.com/721408 http/tests/devtools/service-workers/service-worker-network-fetch.html [ Failure ]
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-bypass-for-network-redirect.html [ Crash ]
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-force-update-on-page-load.html [ Timeout ]
-crbug.com/721408 http/tests/devtools/service-workers/service-workers-navigation-preload.html [ Timeout ]
+crbug.com/721408 http/tests/devtools/service-workers/service-workers-navigation-preload.html [ Crash Timeout ]
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-redundant.html [ Timeout ]
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-view.html [ Timeout ]
 crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.html [ Failure ]
