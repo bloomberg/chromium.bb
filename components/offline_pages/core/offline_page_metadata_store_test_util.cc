@@ -7,9 +7,24 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
+
+namespace {
+
+int64_t GetPageCountSync(sql::Connection* db) {
+  const char kSql[] = "SELECT count(*) FROM offlinepages_v1";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  if (statement.Step()) {
+    return statement.ColumnInt64(0);
+  }
+  return 0UL;
+}
+
+}  // namespace
 
 OfflinePageMetadataStoreTestUtil::OfflinePageMetadataStoreTestUtil(
     scoped_refptr<base::TestSimpleTaskRunner> task_runner)
@@ -49,6 +64,16 @@ void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
                        &status));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
+int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
+  int64_t page_count = 0;
+  store_->Execute(base::BindOnce(&GetPageCountSync),
+                  base::BindOnce([](int64_t* out_count,
+                                    int64_t count) { *out_count = count; },
+                                 &page_count));
+  task_runner_->RunUntilIdle();
+  return page_count;
 }
 
 }  // namespace offline_pages

@@ -44,7 +44,7 @@ DeletedPageInfoWrapper::DeletedPageInfoWrapper() = default;
 DeletedPageInfoWrapper::DeletedPageInfoWrapper(
     const DeletedPageInfoWrapper& other) = default;
 
-bool DeleteArchiveSync(base::FilePath file_path) {
+bool DeleteArchiveSync(const base::FilePath& file_path) {
   // Delete the file only, |false| for recursive.
   return base::DeleteFile(file_path, false);
 }

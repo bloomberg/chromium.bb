@@ -45,6 +45,23 @@ struct PageSettings {
   int fresh_pages_count;
   int expired_pages_count;
 };
+
+class TestArchiveManager : public ArchiveManager {
+ public:
+  explicit TestArchiveManager(StorageStats stats) : stats_(stats) {}
+
+  void GetStorageStats(const base::Callback<
+                       void(const ArchiveManager::StorageStats& storage_stats)>&
+                           callback) const override {
+    callback.Run(stats_);
+  }
+
+  void SetValues(ArchiveManager::StorageStats stats) { stats_ = stats; }
+
+ private:
+  StorageStats stats_;
+};
+
 }  // namespace
 
 class OfflinePageTestModel : public OfflinePageModelImpl {
@@ -173,22 +190,6 @@ void OfflinePageTestModel::AddPages(const PageSettings& setting) {
     next_offline_id_++;
   }
 }
-
-class TestArchiveManager : public ArchiveManager {
- public:
-  explicit TestArchiveManager(StorageStats stats) : stats_(stats) {}
-
-  void GetStorageStats(const base::Callback<
-                       void(const ArchiveManager::StorageStats& storage_stats)>&
-                           callback) const override {
-    callback.Run(stats_);
-  }
-
-  void SetValues(ArchiveManager::StorageStats stats) { stats_ = stats; }
-
- private:
-  StorageStats stats_;
-};
 
 class OfflinePageStorageManagerTest : public testing::Test {
  public:
