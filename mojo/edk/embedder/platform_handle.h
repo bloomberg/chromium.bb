@@ -37,7 +37,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   }
   static PlatformHandle ForFd(int fd) {
     PlatformHandle platform_handle;
-    DCHECK_LT(fd, MAX_FDIO_FD);
+    DCHECK_LT(fd, FDIO_MAX_FD);
     platform_handle.fd = fd;
     return platform_handle;
   }
