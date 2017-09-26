@@ -18,7 +18,15 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
+extern bool g_OnlyOneRunFrame;
+
 int main(int argc, char** argv) {
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp("--one-frame-only", argv[i]) == 0) {
+      g_OnlyOneRunFrame = true;
+    }
+  }
+
   base::CommandLine::Init(argc, argv);
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(

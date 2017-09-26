@@ -2223,6 +2223,10 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         ],
       },
     ],
+    'args': [
+      # Tell the tests to exit after one frame for faster iteration.
+      '--one-frame-only',
+    ],
   },
 }
 
