@@ -1311,6 +1311,20 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
   SendCopyCommandAndCheckCopyPasteClipboard("L");
 }
 
+// Verifies that an <embed> of size zero will still instantiate a guest and post
+// message to the <embed> is correctly forwarded to the extension. This is for
+// catching future regression in docs/ and slides/ pages (see
+// https://crbug.com/763812).
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PostMessageForZeroSizedEmbed) {
+  content::DOMMessageQueue queue;
+  GURL url(embedded_test_server()->GetURL(
+      "/pdf/post_message_zero_sized_embed.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  std::string message;
+  EXPECT_TRUE(queue.WaitForMessage(&message));
+  EXPECT_EQ("\"POST_MESSAGE_OK\"", message);
+}
+
 #if defined(OS_MACOSX)
 // Test that "smart zoom" (double-tap with two fingers on Mac trackpad)
 // is disabled for the PDF viewer. This prevents the viewer's controls from
