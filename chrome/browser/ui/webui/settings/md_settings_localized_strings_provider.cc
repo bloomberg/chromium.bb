@@ -258,10 +258,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpgradeSuccessChannelSwitch",
      IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
     {"aboutUserAgentLabel", IDS_VERSION_UI_USER_AGENT},
-    {"aboutTPMFirmwareUpdateTitle",
-     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_TITLE},
-    {"aboutTPMFirmwareUpdateDescription",
-     IDS_SETTINGS_ABOUT_TPM_FIRMWARE_UPDATE_DESCRIPTION},
 
     // About page, channel switcher dialog.
     {"aboutChangeChannel", IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL},
@@ -299,11 +295,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
       ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
 #else
       l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
-#endif
-
-#if defined(OS_CHROMEOS)
-  html_source->AddString("aboutTPMFirmwareUpdateLearnMoreURL",
-                         chrome::kTPMFirmwareUpdateLearnMoreURL);
 #endif
 }
 
