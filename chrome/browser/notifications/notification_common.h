@@ -40,7 +40,8 @@ class NotificationCommon {
     PERSISTENT = 0,
     NON_PERSISTENT = 1,
     EXTENSION = 2,
-    TYPE_MAX = EXTENSION
+    PRODUCT_EOL = 3,
+    TYPE_MAX = PRODUCT_EOL,
   };
 
   // A struct that contains extra data about a notification specific to one of

@@ -7,7 +7,10 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/pref_names.h"
@@ -29,65 +32,57 @@ using l10n_util::GetStringUTF16;
 namespace chromeos {
 namespace {
 
-const char kEolNotificationId[] = "eol";
+const char kEolNotificationId[] = "chrome://product_eol";
 const SkColor kButtonIconColor = SkColorSetRGB(150, 150, 152);
 const SkColor kNotificationIconColor = SkColorSetRGB(219, 68, 55);
 
-class EolNotificationDelegate : public message_center::NotificationDelegate {
+class EolNotificationHandler : public NotificationHandler {
  public:
-  explicit EolNotificationDelegate(Profile* profile);
+  ~EolNotificationHandler() override = default;
+
+  void OnClick(Profile* profile,
+               const std::string& origin,
+               const std::string& notification_id,
+               const base::Optional<int>& action_index,
+               const base::Optional<base::string16>& reply) override {
+    switch (*action_index) {
+      case BUTTON_MORE_INFO: {
+        // show eol link
+        chrome::NavigateParams params(profile,
+                                      GURL(chrome::kEolNotificationURL),
+                                      ui::PAGE_TRANSITION_LINK);
+        params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+        params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+        chrome::Navigate(&params);
+        break;
+      }
+      case BUTTON_DISMISS:
+        // set dismiss pref.
+        profile->GetPrefs()->SetBoolean(prefs::kEolNotificationDismissed, true);
+        break;
+    }
+    NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
+        NotificationCommon::PRODUCT_EOL, kEolNotificationId);
+  }
+
+  static void Register(Profile* profile) {
+    NotificationDisplayService* service =
+        NotificationDisplayServiceFactory::GetForProfile(profile);
+    if (!service->GetNotificationHandler(NotificationCommon::PRODUCT_EOL)) {
+      service->AddNotificationHandler(
+          NotificationCommon::PRODUCT_EOL,
+          base::WrapUnique(new EolNotificationHandler()));
+    }
+  }
 
  private:
+  EolNotificationHandler() = default;
+
   // Buttons that appear in notifications.
-  enum EOL_Button { BUTTON_MORE_INFO = 0, BUTTON_DISMISS };
+  enum { BUTTON_MORE_INFO = 0, BUTTON_DISMISS };
 
-  ~EolNotificationDelegate() override;
-
-  // NotificationDelegate overrides:
-  void ButtonClick(int button_index) override;
-
-  Profile* const profile_;
-
-  void OpenMoreInfoPage();
-  void CancelNotification();
-
-  DISALLOW_COPY_AND_ASSIGN(EolNotificationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(EolNotificationHandler);
 };
-
-EolNotificationDelegate::EolNotificationDelegate(Profile* profile)
-    : profile_(profile) {}
-
-EolNotificationDelegate::~EolNotificationDelegate() {}
-
-void EolNotificationDelegate::ButtonClick(int button_index) {
-  switch (button_index) {
-    case BUTTON_MORE_INFO:
-      // show eol link
-      OpenMoreInfoPage();
-      break;
-    case BUTTON_DISMISS:
-      // set dismiss pref.
-      profile_->GetPrefs()->SetBoolean(prefs::kEolNotificationDismissed, true);
-      break;
-    default:
-      NOTREACHED();
-  }
-  CancelNotification();
-}
-
-void EolNotificationDelegate::OpenMoreInfoPage() {
-  chrome::NavigateParams params(profile_, GURL(chrome::kEolNotificationURL),
-                                ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
-}
-
-void EolNotificationDelegate::CancelNotification() {
-  // Clean up the notification
-  g_browser_process->notification_ui_manager()->CancelById(
-      kEolNotificationId, NotificationUIManager::GetProfileID(profile_));
-}
 
 }  // namespace
 
@@ -156,8 +151,9 @@ void EolNotification::Update() {
           : gfx::Image(CreateVectorIcon(kEolIcon, kNotificationIconColor)),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kEolNotificationId),
-      GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE), GURL(),
-      kEolNotificationId, data, new EolNotificationDelegate(profile_));
+      GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
+      GURL(kEolNotificationId), kEolNotificationId, data, nullptr);
+
   if (message_center::IsNewStyleNotificationEnabled()) {
     notification.set_accent_color(
         message_center::kSystemNotificationColorCriticalWarning);
@@ -166,7 +162,10 @@ void EolNotification::Update() {
         message_center::kSystemNotificationColorCriticalWarning)));
     notification.set_vector_small_image(kNotificationEndOfSupportIcon);
   }
-  g_browser_process->notification_ui_manager()->Add(notification, profile_);
+
+  EolNotificationHandler::Register(profile_);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationCommon::PRODUCT_EOL, kEolNotificationId, notification);
 }
 
 }  // namespace chromeos
