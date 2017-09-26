@@ -267,6 +267,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoShadow:
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
+    case kPseudoFullscreen:
     case kPseudoSpatialNavigationFocus:
     case kPseudoListBox:
     case kPseudoHostHasAppearance:
@@ -336,6 +337,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"first-of-type", CSSSelector::kPseudoFirstOfType},
     {"focus", CSSSelector::kPseudoFocus},
     {"focus-within", CSSSelector::kPseudoFocusWithin},
+    {"fullscreen", CSSSelector::kPseudoFullscreen},
     {"future", CSSSelector::kPseudoFutureCue},
     {"horizontal", CSSSelector::kPseudoHorizontal},
     {"host", CSSSelector::kPseudoHost},
@@ -427,6 +429,10 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
       std::lower_bound(pseudo_type_map, pseudo_type_map_end, dummy_key,
                        NameToPseudoCompare(name));
   if (match == pseudo_type_map_end || match->string != name.GetString())
+    return CSSSelector::kPseudoUnknown;
+
+  if (match->type == CSSSelector::kPseudoFullscreen &&
+      !RuntimeEnabledFeatures::FullscreenUnprefixedEnabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);
@@ -578,6 +584,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoFullPageMedia:
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:
+    case kPseudoFullscreen:
     case kPseudoFutureCue:
     case kPseudoHorizontal:
     case kPseudoHost:

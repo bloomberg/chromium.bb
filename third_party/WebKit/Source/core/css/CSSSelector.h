@@ -208,8 +208,12 @@ class CORE_EXPORT CSSSelector {
     kPseudoLeftPage,
     kPseudoRightPage,
     kPseudoFirstPage,
+    // TODO(foolip): When the unprefixed Fullscreen API is enabled, merge
+    // kPseudoFullScreen and kPseudoFullscreen into one. (kPseudoFullscreen is
+    // controlled by the FullscreenUnprefixed REF, but is otherwise an alias.)
     kPseudoFullScreen,
     kPseudoFullScreenAncestor,
+    kPseudoFullscreen,
     kPseudoInRange,
     kPseudoOutOfRange,
     // Pseudo elements in UA ShadowRoots. Available in any stylesheets.
