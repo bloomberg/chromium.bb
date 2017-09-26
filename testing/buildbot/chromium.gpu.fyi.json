@@ -3097,7 +3097,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v"
+          "-v",
+          "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -4646,7 +4647,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v"
+          "-v",
+          "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -10695,7 +10697,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v"
+          "-v",
+          "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -11398,7 +11401,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v"
+          "-v",
+          "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
@@ -16955,7 +16959,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v"
+          "-v",
+          "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
         "name": "angle_perftests",
