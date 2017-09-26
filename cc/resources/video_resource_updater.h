@@ -154,14 +154,12 @@ class CC_EXPORT VideoResourceUpdater {
       viz::ResourceFormat resource_format,
       const gfx::ColorSpace& color_space,
       bool software_resource,
-      bool immutable_hint,
       int unique_id,
       int plane_index);
   ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
                                           viz::ResourceFormat format,
                                           const gfx::ColorSpace& color_space,
-                                          bool has_mailbox,
-                                          bool immutable_hint);
+                                          bool has_mailbox);
   void DeleteResource(ResourceList::iterator resource_it);
   void CopyPlaneTexture(media::VideoFrame* video_frame,
                         const gfx::ColorSpace& resource_color_space,
