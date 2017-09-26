@@ -57,9 +57,6 @@ namespace {
 const int kInfobarVerticalPadding = 3;
 const int kInfobarHorizontalPadding = 8;
 
-// Width of the infobar frame.
-const int kInfobarBorderSize = 1;
-
 // Dimensions of the tree views.
 const int kTreeViewWidth = 400;
 const int kTreeViewHeight = 125;
@@ -140,9 +137,6 @@ class InfobarView : public views::View {
  public:
   InfobarView() {
     content_ = new views::View;
-    SkColor border_color = SK_ColorGRAY;
-    content_->SetBorder(
-        views::CreateSolidBorder(kInfobarBorderSize, border_color));
 
     info_image_ = new views::ImageView();
     info_image_->SetImage(gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon,
