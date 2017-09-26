@@ -639,11 +639,10 @@ public class PostMessageTest {
     // transferred to JS and full communication can happen on it.
     // Do this by sending a message to JS and let it echo'ing the message with
     // some text prepended to it.
-    // Disabled because flaky, see crbug.com/715960.
-    // @SmallTest
-    // @Feature({"AndroidWebView", "Android-PostMessage"})
+    @RetryOnFailure // crbug.com/715960
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
     @Test
-    @DisabledTest
     public void testMessageChannelUsingPendingPort() throws Throwable {
         final ChannelContainer channelContainer = new ChannelContainer();
         loadPage(ECHO_PAGE);
