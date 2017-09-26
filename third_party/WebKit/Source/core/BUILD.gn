@@ -901,7 +901,6 @@ make_event_factory("make_core_generated_event_factory") {
   ]
   outputs = [
     "$blink_core_output_dir/event_factory.cc",
-    "$blink_core_output_dir/event_headers.h",
   ]
 }
 
