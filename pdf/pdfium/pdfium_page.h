@@ -65,6 +65,7 @@ class PDFiumPage {
     // That prevents us from using union here.
     std::string url;  // Valid for WEBLINK_AREA only.
     int page;         // Valid for DOCLINK_AREA only.
+    int y_in_pixels;  // Valid for DOCLINK_AREA only. From the top of the page.
   };
 
   // Given a point in the document that's in this page, returns its character

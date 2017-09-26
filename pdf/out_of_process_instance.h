@@ -98,8 +98,8 @@ class OutOfProcessInstance : public pp::Instance,
   void DocumentSizeUpdated(const pp::Size& size) override;
   void Invalidate(const pp::Rect& rect) override;
   void Scroll(const pp::Point& point) override;
-  void ScrollToX(int position) override;
-  void ScrollToY(int position) override;
+  void ScrollToX(int x_in_screen_coords) override;
+  void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override;
   void ScrollToPage(int page) override;
   void NavigateTo(const std::string& url,
                   WindowOpenDisposition disposition) override;
@@ -281,7 +281,9 @@ class OutOfProcessInstance : public pp::Instance,
   pp::FloatPoint scroll_offset_at_last_raster_;
   // True if last bitmap was smaller than screen.
   bool last_bitmap_smaller_;
-  // Current device scale factor.
+  // Current device scale factor. Multiply by |device_scale_| to convert from
+  // viewport to screen coordinates. Divide by |device_scale_| to convert from
+  // screen to viewport coordinates.
   float device_scale_;
   // True if the plugin is full-page.
   bool full_;
@@ -405,7 +407,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   // The blank space above the first page of the document reserved for the
   // toolbar.
-  int top_toolbar_height_;
+  int top_toolbar_height_in_viewport_coords_;
 
   // The current state of accessibility: either off, enabled but waiting
   // for the document to load, or fully loaded.
