@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/devtools/chrome_devtools_session.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -108,15 +108,6 @@ bool GetExtensionInfo(content::WebContents* wc,
     return true;
   }
   return false;
-}
-
-void ToggleAdBlocking(bool enabled, content::DevToolsAgentHost* agent_host) {
-  if (content::WebContents* web_contents = agent_host->GetWebContents()) {
-    if (auto* client =
-            ChromeSubresourceFilterClient::FromWebContents(web_contents)) {
-      client->ToggleForceActivationInCurrentWebContents(enabled);
-    }
-  }
 }
 
 std::string ToString(std::unique_ptr<base::DictionaryValue> value) {
@@ -292,27 +283,6 @@ ChromeDevToolsManagerDelegate::SetWindowBounds(int id,
 }
 
 std::unique_ptr<base::DictionaryValue>
-ChromeDevToolsManagerDelegate::SetAdBlockingEnabled(
-    content::DevToolsAgentHost* agent_host,
-    int id,
-    base::DictionaryValue* params) {
-  if (!page_enable_)
-    return DevToolsProtocol::CreateErrorResponse(id, "Page domain is disabled");
-  bool enabled = false;
-  params->GetBoolean("enabled", &enabled);
-  ToggleAdBlocking(enabled, agent_host);
-  return DevToolsProtocol::CreateSuccessResponse(id, nullptr);
-}
-
-void ChromeDevToolsManagerDelegate::TogglePageEnable(
-    bool enable,
-    content::DevToolsAgentHost* agent_host) {
-  page_enable_ = enable;
-  if (!page_enable_)
-    ToggleAdBlocking(false /* enable */, agent_host);
-}
-
-std::unique_ptr<base::DictionaryValue>
 ChromeDevToolsManagerDelegate::HandleBrowserCommand(
     int id,
     std::string method,
@@ -364,28 +334,8 @@ bool ChromeDevToolsManagerDelegate::HandleCommand(
   if (!DevToolsProtocol::ParseCommand(command_dict, &id, &method, &params))
     return false;
 
-  // Do not actually handle the enable/disable commands, just keep track of the
-  // enable state.
-  if (method == chrome::devtools::Page::enable::kName) {
-    TogglePageEnable(true /* enable */, agent_host);
-    return false;
-  }
-
-  if (method == chrome::devtools::Page::disable::kName) {
-    TogglePageEnable(false /* enable */, agent_host);
-    return false;
-  }
-
   auto result = HandleBrowserCommand(id, method, params);
   if (result) {
-    agent_host->SendProtocolMessageToClient(session_id,
-                                            ToString(std::move(result)));
-    return true;
-  }
-
-  if (method == chrome::devtools::Page::setAdBlockingEnabled::kName) {
-    result = SetAdBlockingEnabled(agent_host, id, params);
-    DCHECK(result);
     agent_host->SendProtocolMessageToClient(session_id,
                                             ToString(std::move(result)));
     return true;
@@ -399,7 +349,10 @@ bool ChromeDevToolsManagerDelegate::HandleCommand(
     return true;
   }
 
-  return false;
+  DCHECK(sessions_.find(session_id) != sessions_.end());
+  auto response = sessions_[session_id]->dispatcher()->dispatch(
+      protocol::toProtocolValue(command_dict, 1000));
+  return response != protocol::DispatchResponse::Status::kFallThrough;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
@@ -423,6 +376,20 @@ std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
   if (!GetExtensionInfo(web_contents, &extension_name, &extension_type))
     return std::string();
   return extension_name;
+}
+
+void ChromeDevToolsManagerDelegate::SessionCreated(
+    content::DevToolsAgentHost* agent_host,
+    int session_id) {
+  DCHECK(sessions_.find(session_id) == sessions_.end());
+  sessions_[session_id] =
+      std::make_unique<ChromeDevToolsSession>(agent_host, session_id);
+}
+
+void ChromeDevToolsManagerDelegate::SessionDestroyed(
+    content::DevToolsAgentHost* agent_host,
+    int session_id) {
+  sessions_.erase(session_id);
 }
 
 scoped_refptr<DevToolsAgentHost>
@@ -454,8 +421,6 @@ void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  ToggleAdBlocking(false /* enable */, agent_host);
-
   // This class is created lazily, so it may not know about some attached hosts.
   if (host_data_.find(agent_host) != host_data_.end()) {
     host_data_.erase(agent_host);
