@@ -702,7 +702,14 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   variables = chrome_sync_shell_jinja_variables
 }
 
-shared_library("chrome") {
+# TODO(agrieve): Delete target once downstream references are removed.
+group("chrome") {
+  public_deps = [
+    ":libchrome",
+  ]
+}
+
+shared_library("libchrome") {
   sources = [
     "../app/android/chrome_main_delegate_android_initializer.cc",
     "../browser/android/chrome_entry_point.cc",
@@ -955,14 +962,14 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest = chrome_public_android_manifest
   android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublic"
-  shared_libraries = [ ":chrome" ]
+  shared_libraries = [ ":libchrome" ]
 }
 
 chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
   android_manifest = chrome_modern_public_android_manifest
   android_manifest_dep = ":chrome_modern_public_android_manifest"
   apk_name = "ChromeModernPublic"
-  shared_libraries = [ ":chrome" ]
+  shared_libraries = [ ":libchrome" ]
 
   if (!is_java_debug) {
     png_to_webp = true
