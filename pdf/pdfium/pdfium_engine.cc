@@ -2028,7 +2028,10 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
       return true;
     }
     if (area == PDFiumPage::DOCLINK_AREA) {
-      client_->ScrollToPage(target.page);
+      pp::Rect page_rect(GetPageScreenRect(target.page));
+      client_->ScrollToY(
+          position_.y() + page_rect.y() + target.y_in_pixels * current_zoom_,
+          /*compensate_for_toolbar=*/true);
       SetInFormTextArea(false);
       return true;
     }
@@ -2471,7 +2474,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
                 static_cast<int>(visible_rect.height() * current_zoom_ / 2);
     if (new_y < 0)
       new_y = 0;
-    client_->ScrollToY(new_y);
+    client_->ScrollToY(new_y, /*compensate_for_toolbar=*/false);
 
     // Only move horizontally if it's not visible.
     if (center.x() < visible_rect.x() || center.x() > visible_rect.right()) {

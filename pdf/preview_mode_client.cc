@@ -22,11 +22,12 @@ void PreviewModeClient::Scroll(const pp::Point& point) {
   NOTREACHED();
 }
 
-void PreviewModeClient::ScrollToX(int position) {
+void PreviewModeClient::ScrollToX(int x_in_screen_coords) {
   NOTREACHED();
 }
 
-void PreviewModeClient::ScrollToY(int position) {
+void PreviewModeClient::ScrollToY(int y_in_screen_coords,
+                                  bool compensate_for_toolbar) {
   NOTREACHED();
 }
 
