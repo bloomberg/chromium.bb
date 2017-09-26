@@ -119,8 +119,9 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
     return false;
 
   return content::ManifestIconDownloader::Download(
-      web_contents(), primary_icon_url_, GetIdealPrimaryIconSizeInPx(),
-      GetMinimumPrimaryIconSizeInPx(),
+      web_contents(), primary_icon_url_,
+      ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
+      ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
       base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
@@ -133,10 +134,6 @@ void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
   AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
 }
 
-int AppBannerManagerAndroid::GetIdealBadgeIconSizeInPx() {
-  return ShortcutHelper::GetIdealBadgeIconSizeInPx();
-}
-
 std::string AppBannerManagerAndroid::GetAppIdentifier() {
   return native_app_data_.is_null() ? AppBannerManager::GetAppIdentifier()
                                     : native_app_package_;
@@ -145,14 +142,6 @@ std::string AppBannerManagerAndroid::GetAppIdentifier() {
 std::string AppBannerManagerAndroid::GetBannerType() {
   return native_app_data_.is_null() ? AppBannerManager::GetBannerType()
                                     : "play";
-}
-
-int AppBannerManagerAndroid::GetIdealPrimaryIconSizeInPx() {
-  return ShortcutHelper::GetIdealHomescreenIconSizeInPx();
-}
-
-int AppBannerManagerAndroid::GetMinimumPrimaryIconSizeInPx() {
-  return ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
 }
 
 bool AppBannerManagerAndroid::IsWebAppInstalled(
@@ -172,12 +161,7 @@ bool AppBannerManagerAndroid::IsWebAppInstalled(
 InstallableParams AppBannerManagerAndroid::ParamsToPerformInstallableCheck() {
   InstallableParams params =
       AppBannerManager::ParamsToPerformInstallableCheck();
-
-  if (can_install_webapk_) {
-    params.ideal_badge_icon_size_in_px = GetIdealBadgeIconSizeInPx();
-    params.minimum_badge_icon_size_in_px = GetIdealBadgeIconSizeInPx();
-    params.fetch_valid_badge_icon = true;
-  }
+  params.fetch_valid_badge_icon = can_install_webapk_;
 
   return params;
 }
@@ -296,9 +280,9 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
       ConvertUTF8ToJavaString(env, validated_url_.spec()));
   ScopedJavaLocalRef<jstring> jpackage(ConvertUTF8ToJavaString(env, id));
   ScopedJavaLocalRef<jstring> jreferrer(ConvertUTF8ToJavaString(env, referrer));
-  Java_AppBannerManager_fetchAppDetails(env, java_banner_manager_, jurl,
-                                        jpackage, jreferrer,
-                                        GetIdealPrimaryIconSizeInPx());
+  Java_AppBannerManager_fetchAppDetails(
+      env, java_banner_manager_, jurl, jpackage, jreferrer,
+      ShortcutHelper::GetIdealHomescreenIconSizeInPx());
   return true;
 }
 

@@ -163,14 +163,6 @@ std::string AppBannerManager::GetStatusParam(InstallableStatusCode code) {
   return std::string();
 }
 
-int AppBannerManager::GetIdealPrimaryIconSizeInPx() {
-  return InstallableManager::GetMinimumIconSizeInPx();
-}
-
-int AppBannerManager::GetMinimumPrimaryIconSizeInPx() {
-  return InstallableManager::GetMinimumIconSizeInPx();
-}
-
 bool AppBannerManager::HasSufficientEngagement() const {
   return has_sufficient_engagement_ || IsDebugMode();
 }
@@ -207,8 +199,6 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
 
 InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   InstallableParams params;
-  params.ideal_primary_icon_size_in_px = GetIdealPrimaryIconSizeInPx();
-  params.minimum_primary_icon_size_in_px = GetMinimumPrimaryIconSizeInPx();
   params.check_installable = true;
   params.fetch_valid_primary_icon = true;
 

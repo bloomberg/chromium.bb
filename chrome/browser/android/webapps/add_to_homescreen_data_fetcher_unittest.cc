@@ -254,7 +254,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
       bool check_webapk_compatible,
       AddToHomescreenDataFetcher::Observer* observer) {
     return base::MakeUnique<AddToHomescreenDataFetcher>(
-        web_contents(), 1, 1, 1, 1, 1, 500, check_webapk_compatible, observer);
+        web_contents(), 500, check_webapk_compatible, observer);
   }
 
   void RunFetcher(AddToHomescreenDataFetcher* fetcher,

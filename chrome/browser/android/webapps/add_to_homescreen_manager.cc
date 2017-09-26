@@ -103,12 +103,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   Java_AddToHomescreenManager_showDialog(env, java_ref_);
 
   data_fetcher_ = base::MakeUnique<AddToHomescreenDataFetcher>(
-      web_contents, ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
-      ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
-      ShortcutHelper::GetIdealSplashImageSizeInPx(),
-      ShortcutHelper::GetMinimumSplashImageSizeInPx(),
-      ShortcutHelper::GetIdealBadgeIconSizeInPx(), kDataTimeoutInMilliseconds,
-      check_webapk_compatible, this);
+      web_contents, kDataTimeoutInMilliseconds, check_webapk_compatible, this);
 }
 
 AddToHomescreenManager::~AddToHomescreenManager() {}

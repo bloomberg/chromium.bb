@@ -70,14 +70,9 @@ class AppBannerManagerAndroid
   void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
 
  protected:
-  // Return the ideal badge icon size.
-  int GetIdealBadgeIconSizeInPx();
-
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  int GetIdealPrimaryIconSizeInPx() override;
-  int GetMinimumPrimaryIconSizeInPx() override;
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url,
                          const GURL& manifest_url) override;
