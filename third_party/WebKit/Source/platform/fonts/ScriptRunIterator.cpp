@@ -346,7 +346,7 @@ bool ScriptRunIterator::Fetch(size_t* pos, UChar32* ch) {
     if (next_set_[0] == USCRIPT_COMMON) {
       // Overwrite the next set with the non-inherited portion of the set.
       next_set_ = ahead_set_;
-      next_set_.erase(0);
+      next_set_.EraseAt(0);
       // Discard the remaining values, we'll inherit.
       ahead_set_.resize(1);
     } else {

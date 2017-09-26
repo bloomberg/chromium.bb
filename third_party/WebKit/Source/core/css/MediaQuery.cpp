@@ -100,7 +100,7 @@ MediaQuery::MediaQuery(RestrictorType restrictor,
     MediaQueryExp exp = expressions_.at(i);
     CHECK(exp.IsValid());
     if (exp == key)
-      expressions_.erase(i);
+      expressions_.EraseAt(i);
     else
       key = exp;
   }

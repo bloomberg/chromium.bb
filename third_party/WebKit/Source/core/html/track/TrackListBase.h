@@ -62,7 +62,7 @@ class TrackListBase : public EventTargetWithInlineData {
       tracks_[i]->SetMediaElement(0);
       ScheduleEvent(
           TrackEvent::Create(EventTypeNames::removetrack, tracks_[i].Get()));
-      tracks_.erase(i);
+      tracks_.EraseAt(i);
       return;
     }
     NOTREACHED();

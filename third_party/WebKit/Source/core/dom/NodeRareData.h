@@ -64,7 +64,7 @@ class NodeMutationObserverData final
 
   void RemoveRegistration(MutationObserverRegistration* registration) {
     DCHECK(registry_.Contains(registration));
-    registry_.erase(registry_.Find(registration));
+    registry_.EraseAt(registry_.Find(registration));
   }
 
   DEFINE_INLINE_TRACE() {

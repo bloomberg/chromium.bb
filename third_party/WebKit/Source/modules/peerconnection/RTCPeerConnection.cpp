@@ -1135,7 +1135,7 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
   if (pos == kNotFound)
     return;
 
-  local_streams_.erase(pos);
+  local_streams_.EraseAt(pos);
   stream->UnregisterObserver(this);
 
   peer_handler_->RemoveStream(stream->Descriptor());
@@ -1506,7 +1506,7 @@ void RTCPeerConnection::DidRemoveRemoteStream(
 
   size_t pos = remote_streams_.Find(stream);
   DCHECK(pos != kNotFound);
-  remote_streams_.erase(pos);
+  remote_streams_.EraseAt(pos);
   stream->UnregisterObserver(this);
   // TODO(hbos): When we listen to receivers/tracks being added and removed
   // instead of streams we should remove the receiver(s) from |rtp_receivers_|

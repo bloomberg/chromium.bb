@@ -489,7 +489,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         *running_animations_[cancelled_indices[i]]->animation;
     animation.cancel();
     animation.Update(kTimingUpdateOnDemand);
-    running_animations_.erase(cancelled_indices[i]);
+    running_animations_.EraseAt(cancelled_indices[i]);
   }
 
   for (const auto& entry : pending_update_.NewAnimations()) {

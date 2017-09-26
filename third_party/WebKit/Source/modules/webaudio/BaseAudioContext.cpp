@@ -386,13 +386,13 @@ void BaseAudioContext::HandleDecodeAudioData(
   if (success_callback) {
     size_t index = success_callbacks_.Find(success_callback);
     DCHECK_NE(index, kNotFound);
-    success_callbacks_.erase(index);
+    success_callbacks_.EraseAt(index);
   }
 
   if (error_callback) {
     size_t index = error_callbacks_.Find(error_callback);
     DCHECK_NE(index, kNotFound);
-    error_callbacks_.erase(index);
+    error_callbacks_.EraseAt(index);
   }
 }
 

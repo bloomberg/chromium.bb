@@ -145,12 +145,12 @@ void VibrationController::DidVibrate() {
 
   // Use the current vibration entry of the pattern as the initial interval.
   unsigned interval = pattern_[0];
-  pattern_.erase(0);
+  pattern_.EraseAt(0);
 
   // If there is another entry it is for a pause.
   if (!pattern_.IsEmpty()) {
     interval += pattern_[0];
-    pattern_.erase(0);
+    pattern_.EraseAt(0);
   }
 
   timer_do_vibrate_.StartOneShot(interval / 1000.0, BLINK_FROM_HERE);

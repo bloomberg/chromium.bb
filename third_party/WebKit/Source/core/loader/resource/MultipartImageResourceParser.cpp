@@ -42,7 +42,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
       return;
     }
     if (pos)
-      data_.erase(0, pos);
+      data_.EraseAt(0, pos);
 
     // Some servers don't send a boundary token before the first chunk of
     // data.  We handle this case anyway (Gecko does too).
@@ -91,7 +91,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
     }
 
     // We can now throw out data up through the boundary
-    data_.erase(0, boundary_end_position);
+    data_.EraseAt(0, boundary_end_position);
 
     // Ok, back to parsing headers
     if (!ParseHeaders()) {
@@ -108,7 +108,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
   if (!is_parsing_headers_ && data_.size() > boundary_.size() + 2) {
     size_t send_length = data_.size() - boundary_.size() - 2;
     client_->MultipartDataReceived(data_.data(), send_length);
-    data_.erase(0, send_length);
+    data_.EraseAt(0, send_length);
   }
 }
 
@@ -149,7 +149,7 @@ bool MultipartImageResourceParser::ParseHeaders() {
   if (!ParseMultipartHeadersFromBody(data_.data() + pos, data_.size() - pos,
                                      &response, &end))
     return false;
-  data_.erase(0, end + pos);
+  data_.EraseAt(0, end + pos);
   // Send the response!
   client_->OnePartInMultipartReceived(response);
   return true;

@@ -6398,7 +6398,7 @@ void Document::RemoveFromTopLayer(Element* element) {
     return;
   size_t position = top_layer_elements_.Find(element);
   DCHECK_NE(position, kNotFound);
-  top_layer_elements_.erase(position);
+  top_layer_elements_.EraseAt(position);
   element->SetIsInTopLayer(false);
 }
 

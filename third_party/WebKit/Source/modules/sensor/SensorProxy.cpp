@@ -270,7 +270,7 @@ void SensorProxy::RemoveActiveFrequency(double frequency) {
     return;
   }
 
-  active_frequencies_.erase(std::distance(active_frequencies_.begin(), it));
+  active_frequencies_.erase(it);
   UpdatePollingStatus();
 }
 

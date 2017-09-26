@@ -145,7 +145,7 @@ void TimeRanges::Add(double start, double end) {
       // We need to merge the addedRange and that range.
       added_range = added_range.UnionWithOverlappingOrContiguousRange(
           ranges_[overlapping_arc_index]);
-      ranges_.erase(overlapping_arc_index);
+      ranges_.EraseAt(overlapping_arc_index);
       overlapping_arc_index--;
     } else {
       // Check the case for which there is no more to do

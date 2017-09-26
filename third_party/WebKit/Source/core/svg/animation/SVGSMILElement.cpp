@@ -281,7 +281,7 @@ static inline void ClearTimesWithDynamicOrigins(
     Vector<SMILTimeWithOrigin>& time_list) {
   for (int i = time_list.size() - 1; i >= 0; --i) {
     if (time_list[i].OriginIsScript())
-      time_list.erase(i);
+      time_list.EraseAt(i);
   }
 }
 
@@ -1258,7 +1258,7 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
          event_type == EventTypeNames::repeatEvent || event_type == "repeatn");
   if (event_type == "repeatn") {
     unsigned repeat_event_count = repeat_event_count_list_.front();
-    repeat_event_count_list_.erase(0);
+    repeat_event_count_list_.EraseAt(0);
     DispatchEvent(RepeatEvent::Create(event_type, repeat_event_count));
   } else {
     DispatchEvent(Event::Create(event_type));

@@ -612,7 +612,7 @@ void AudioParamTimeline::CancelScheduledValues(
   // Remove all events starting at startTime.
   for (unsigned i = 0; i < events_.size(); ++i) {
     if (events_[i]->Time() >= start_time) {
-      events_.erase(i, events_.size() - i);
+      events_.EraseAt(i, events_.size() - i);
       break;
     }
   }
@@ -723,9 +723,10 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
   }
 
   // Now remove all the following events from the timeline.
-  if (cancelled_event_index < events_.size())
-    events_.erase(cancelled_event_index,
-                  events_.size() - cancelled_event_index);
+  if (cancelled_event_index < events_.size()) {
+    events_.EraseAt(cancelled_event_index,
+                    events_.size() - cancelled_event_index);
+  }
 
   // Insert the new event, if any.
   if (new_event) {
@@ -984,7 +985,7 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
   // running with the m_events lock so we can safely modify the m_events
   // array.)
   if (last_skipped_event_index > 0)
-    events_.erase(0, last_skipped_event_index - 1);
+    events_.EraseAt(0, last_skipped_event_index - 1);
 
   // If there's any time left after processing the last event then just
   // propagate the last value to the end of the values buffer.

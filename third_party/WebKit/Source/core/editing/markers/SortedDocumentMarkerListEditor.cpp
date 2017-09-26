@@ -56,7 +56,7 @@ bool SortedDocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
   }
 
   // Remove the range of markers that were moved to dstNode
-  src_list->erase(0, it - src_list->begin());
+  src_list->EraseAt(0, it - src_list->begin());
 
   return didMoveMarker;
 }
@@ -77,7 +77,7 @@ bool SortedDocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
         return marker->StartOffset() < end_offset;
       });
 
-  list->erase(start_pos - list->begin(), end_pos - start_pos);
+  list->EraseAt(start_pos - list->begin(), end_pos - start_pos);
   return start_pos != end_pos;
 }
 
@@ -116,9 +116,9 @@ bool SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(
 
   // Note: shift_range_begin could point at a marker being shifted instead of
   // deleted, but if this is the case, we don't need to delete any markers, and
-  // erase() will get 0 for the length param
-  list->erase(shift_range_begin - list->begin(),
-              erase_range_end - shift_range_begin);
+  // EraseAt() will get 0 for the length param
+  list->EraseAt(shift_range_begin - list->begin(),
+                erase_range_end - shift_range_begin);
   return did_shift_marker;
 }
 
@@ -161,8 +161,8 @@ bool SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(
     }
   }
 
-  list->erase(erase_range_begin - list->begin(),
-              erase_range_end - erase_range_begin);
+  list->EraseAt(erase_range_begin - list->begin(),
+                erase_range_end - erase_range_begin);
   return did_shift_marker;
 }
 

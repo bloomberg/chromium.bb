@@ -97,7 +97,7 @@ bool TextTrackCueList::Remove(TextTrackCue* cue) {
   if (index == kNotFound)
     return false;
 
-  list_.erase(index);
+  list_.EraseAt(index);
   InvalidateCueIndex(index);
   cue->InvalidateCueIndex();
   return true;

@@ -56,7 +56,7 @@ void SourceBufferList::Remove(SourceBuffer* buffer) {
   size_t index = list_.Find(buffer);
   if (index == kNotFound)
     return;
-  list_.erase(index);
+  list_.EraseAt(index);
   ScheduleEvent(EventTypeNames::removesourcebuffer);
 }
 

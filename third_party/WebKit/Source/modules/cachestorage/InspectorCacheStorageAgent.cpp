@@ -248,11 +248,11 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
                                                      b.request_url);
               });
     if (params_.skip_count > 0)
-      responses_.erase(0, params_.skip_count);
+      responses_.EraseAt(0, params_.skip_count);
     bool has_more = false;
     if (static_cast<size_t>(params_.page_size) < responses_.size()) {
-      responses_.erase(params_.page_size,
-                       responses_.size() - params_.page_size);
+      responses_.EraseAt(params_.page_size,
+                         responses_.size() - params_.page_size);
       has_more = true;
     }
     std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();

@@ -33,7 +33,7 @@ void FrameRequestCallbackCollection::CancelCallback(CallbackId id) {
     if (callbacks_[i]->Id() == id) {
       probe::AsyncTaskCanceledBreakable(context_, "cancelAnimationFrame",
                                         callbacks_[i]);
-      callbacks_.erase(i);
+      callbacks_.EraseAt(i);
       TRACE_EVENT_INSTANT1("devtools.timeline", "CancelAnimationFrame",
                            TRACE_EVENT_SCOPE_THREAD, "data",
                            InspectorAnimationFrameEvent::Data(context_, id));

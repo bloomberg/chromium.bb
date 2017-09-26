@@ -1078,7 +1078,7 @@ static void SetProperty(P property,
     auto& item = properties[i];
     if (item.first == property) {
       if (is_null)
-        properties.erase(i);
+        properties.EraseAt(i);
       else
         item.second = value;
       return;

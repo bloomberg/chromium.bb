@@ -195,7 +195,7 @@ bool CSSParserImpl::ParseDeclarationList(MutableStylePropertySet* declaration,
   FilterProperties(false, parser.parsed_properties_, results, unused_entries,
                    seen_properties, seen_custom_properties);
   if (unused_entries)
-    results.erase(0, unused_entries);
+    results.EraseAt(0, unused_entries);
   return declaration->AddParsedProperties(results);
 }
 
@@ -324,7 +324,7 @@ ImmutableStylePropertySet* CSSParserImpl::ParseCustomPropertySet(
   // a different StyleRule type
   for (size_t i = parser.parsed_properties_.size(); i--;) {
     if (parser.parsed_properties_[i].Id() == CSSPropertyApplyAtRule)
-      parser.parsed_properties_.erase(i);
+      parser.parsed_properties_.EraseAt(i);
   }
 
   return CreateStylePropertySet(parser.parsed_properties_, kHTMLStandardMode);

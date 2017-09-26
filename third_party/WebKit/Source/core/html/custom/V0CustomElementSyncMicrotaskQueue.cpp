@@ -19,7 +19,7 @@ void V0CustomElementSyncMicrotaskQueue::DoDispatch() {
       break;
   }
 
-  queue_.erase(0, i);
+  queue_.EraseAt(0, i);
 }
 
 }  // namespace blink

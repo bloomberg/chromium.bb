@@ -429,7 +429,7 @@ void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
   for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
     ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).Get();
     if (pseudo_style->StyleType() == pid) {
-      cached_pseudo_styles_->erase(i);
+      cached_pseudo_styles_->EraseAt(i);
       return;
     }
   }
