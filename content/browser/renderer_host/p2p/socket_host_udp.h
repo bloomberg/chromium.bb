@@ -26,21 +26,28 @@
 #include "net/socket/udp_server_socket.h"
 #include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
+namespace net {
+class NetLog;
+}  // namespace net
+
 namespace content {
 
 class P2PMessageThrottler;
 
 class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
  public:
-  typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>()>
+  typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>(
+      net::NetLog* net_log)>
       DatagramServerSocketFactory;
   P2PSocketHostUdp(IPC::Sender* message_sender,
                    int socket_id,
                    P2PMessageThrottler* throttler,
+                   net::NetLog* net_log,
                    const DatagramServerSocketFactory& socket_factory);
   P2PSocketHostUdp(IPC::Sender* message_sender,
                    int socket_id,
-                   P2PMessageThrottler* throttler);
+                   P2PMessageThrottler* throttler,
+                   net::NetLog* net_log);
   ~P2PSocketHostUdp() override;
 
   // P2PSocketHost overrides.
@@ -93,7 +100,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                         int32_t transport_sequence_number,
                         base::TimeTicks send_time,
                         int result);
-  static std::unique_ptr<net::DatagramServerSocket> DefaultSocketFactory();
+  static std::unique_ptr<net::DatagramServerSocket> DefaultSocketFactory(
+      net::NetLog* net_log);
 
   std::unique_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
@@ -110,6 +118,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   // Keep track of the send socket buffer size under experiment.
   size_t send_buffer_size_;
+
+  net::NetLog* net_log_;
 
   // Callback object that returns a new socket when invoked.
   DatagramServerSocketFactory socket_factory_;

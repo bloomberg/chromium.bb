@@ -12,6 +12,8 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 #include "third_party/webrtc/media/base/turnutils.h"
 
@@ -182,7 +184,9 @@ P2PSocketHost* P2PSocketHost::Create(IPC::Sender* message_sender,
                                      P2PMessageThrottler* throttler) {
   switch (type) {
     case P2P_SOCKET_UDP:
-      return new P2PSocketHostUdp(message_sender, socket_id, throttler);
+      return new P2PSocketHostUdp(
+          message_sender, socket_id, throttler,
+          url_context->GetURLRequestContext()->net_log());
     case P2P_SOCKET_TCP_SERVER:
       return new P2PSocketHostTcpServer(
           message_sender, socket_id, P2P_SOCKET_TCP_CLIENT);

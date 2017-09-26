@@ -192,7 +192,8 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 
 std::unique_ptr<net::DatagramServerSocket> CreateFakeDatagramServerSocket(
     base::circular_deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
-    std::vector<uint16_t>* used_ports) {
+    std::vector<uint16_t>* used_ports,
+    net::NetLog* net_log) {
   return base::MakeUnique<FakeDatagramServerSocket>(sent_packets, used_ports);
 }
 
@@ -209,7 +210,7 @@ class P2PSocketHostUdpTest : public testing::Test {
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
     socket_host_.reset(new P2PSocketHostUdp(
-        &sender_, 0, &throttler_,
+        &sender_, 0, &throttler_, /*net_log=*/nullptr,
         base::Bind(&CreateFakeDatagramServerSocket, &sent_packets_, nullptr)));
 
     local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
@@ -507,8 +508,8 @@ TEST_F(P2PSocketHostUdpTest, PortRangeImplicitPort) {
       .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
 
   for (unsigned port = min_port; port <= max_port; ++port) {
-    std::unique_ptr<P2PSocketHostUdp> socket_host(
-        new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+    std::unique_ptr<P2PSocketHostUdp> socket_host(new P2PSocketHostUdp(
+        &sender, 0, &throttler, /*net_log=*/nullptr, fake_socket_factory));
     net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
     bool rv = socket_host->Init(local_address, min_port, max_port,
                                 P2PHostAndIPEndPoint());
@@ -523,8 +524,8 @@ TEST_F(P2PSocketHostUdpTest, PortRangeImplicitPort) {
   EXPECT_CALL(sender,
               Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
-  std::unique_ptr<P2PSocketHostUdp> socket_host(
-      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  std::unique_ptr<P2PSocketHostUdp> socket_host(new P2PSocketHostUdp(
+      &sender, 0, &throttler, /*net_log=*/nullptr, fake_socket_factory));
   net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
   bool rv = socket_host->Init(local_address, min_port, max_port,
                               P2PHostAndIPEndPoint());
@@ -548,8 +549,8 @@ TEST_F(P2PSocketHostUdpTest, PortRangeExplictValidPort) {
       Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  std::unique_ptr<P2PSocketHostUdp> socket_host(
-      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  std::unique_ptr<P2PSocketHostUdp> socket_host(new P2PSocketHostUdp(
+      &sender, 0, &throttler, /*net_log=*/nullptr, fake_socket_factory));
   net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, valid_port);
   bool rv = socket_host->Init(local_address, min_port, max_port,
                               P2PHostAndIPEndPoint());
@@ -577,8 +578,8 @@ TEST_F(P2PSocketHostUdpTest, PortRangeExplictInvalidPort) {
               Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-  std::unique_ptr<P2PSocketHostUdp> socket_host(
-      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  std::unique_ptr<P2PSocketHostUdp> socket_host(new P2PSocketHostUdp(
+      &sender, 0, &throttler, /*net_log=*/nullptr, fake_socket_factory));
   net::IPEndPoint local_address =
       ParseAddress(kTestLocalIpAddress, invalid_port);
   bool rv = socket_host->Init(local_address, min_port, max_port,
