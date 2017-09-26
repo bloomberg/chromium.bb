@@ -1,7 +1,7 @@
 include_rules = [
   "+cc",
   "-cc/blink",
-  "+components/viz/common/quads",
+  "+components/viz/common/frame_sinks",
   "-components/viz/service/surfaces",
   "+skia/ext",
   "+third_party/skia",

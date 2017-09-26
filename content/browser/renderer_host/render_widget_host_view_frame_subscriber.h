@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
-#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 
 namespace gfx {
 class Rect;

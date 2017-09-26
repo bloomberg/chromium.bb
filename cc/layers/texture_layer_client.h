@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 #define CC_LAYERS_TEXTURE_LAYER_CLIENT_H_
 
-#include "components/viz/common/quads/single_release_callback.h"
+#include "components/viz/common/resources/single_release_callback.h"
 
 namespace viz {
 class TextureMailbox;

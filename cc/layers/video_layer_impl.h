@@ -11,7 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/video_resource_updater.h"
-#include "components/viz/common/quads/release_callback.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "media/base/video_rotation.h"
 
 namespace media {

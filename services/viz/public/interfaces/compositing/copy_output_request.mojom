@@ -9,7 +9,7 @@ import "services/viz/public/interfaces/compositing/texture_mailbox.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// See components/viz/common/quads/copy_output_request.h.
+// See components/viz/common/frame_sinks/copy_output_request.h.
 struct CopyOutputRequest {
   CopyOutputResultFormat result_format;
 

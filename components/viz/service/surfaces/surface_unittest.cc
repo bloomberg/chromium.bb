@@ -5,7 +5,7 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "base/memory/ptr_util.h"
 #include "cc/test/scheduler_test_common.h"
-#include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
