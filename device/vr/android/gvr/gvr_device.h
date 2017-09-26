@@ -5,6 +5,8 @@
 #ifndef DEVICE_VR_ANDROID_GVR_DEVICE_H
 #define DEVICE_VR_ANDROID_GVR_DEVICE_H
 
+#include <jni.h>
+
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
@@ -36,6 +38,9 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   void OnListeningForActivateChanged(VRDisplayImpl* display) override;
   void PauseTracking() override;
   void ResumeTracking() override;
+
+  void OnDIPScaleChanged(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& obj);
 
  private:
   GvrDevice();
