@@ -29,12 +29,13 @@ void network_traffic_annotation_template() {
           setting: "..."
           chrome_policy {
             [POLICY_NAME] {
-                policy_options {mode: MANDATORY/RECOMMENDED/UNSET}
                 [POLICY_NAME]: ...
             }
           }
           policy_exception_justification = "..."
-        })");
+        }
+        comments: "..."
+      )");
 }
 
 // An example on one level traffic annotation.
@@ -65,7 +66,6 @@ void network_traffic_annotation_sample() {
             "Advanced. The feature is disabled by default."
           chrome_policy {
             SpellCheckServiceEnabled {
-                policy_options {mode: MANDATORY}
                 SpellCheckServiceEnabled: false
             }
           }
@@ -107,7 +107,6 @@ void PrefetchImage1(const GURL& url) {
             "feature is enabled by default."
           chrome_policy {
             SearchSuggestEnabled {
-                policy_options {mode: MANDATORY}
                 SearchSuggestEnabled: false
             }
           }
@@ -141,7 +140,6 @@ void PrefetchImage2(const GURL& url) {
             "'Passwords and forms'). There is no setting to disable the API."
           chrome_policy {
             PasswordManagerEnabled {
-                policy_options {mode: MANDATORY}
                 PasswordManagerEnabled: false
             }
           }
@@ -232,7 +230,6 @@ void UploadLog(const bool& uma_service_type) {
             "feature is enabled by default."
           chrome_policy {
             MetricsReportingEnabled {
-              policy_options {mode: MANDATORY}
               MetricsReportingEnabled: false
             }
           }
