@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/ui_scene_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,7 +61,7 @@ std::set<UiElementName> kElementsVisibleWithExitWarning = {
 };
 
 static constexpr float kTolerance = 1e-5;
-static constexpr float kTransienceDelayMs = 6000;
+static constexpr float kSmallDelaySeconds = 0.1;
 
 MATCHER_P2(SizeFsAreApproximatelyEqual, other, tolerance, "") {
   return cc::MathUtil::ApproximatelyEqual(arg.width(), other.width(),
@@ -172,13 +173,13 @@ TEST_F(UiSceneManagerTest, ToastTransience) {
   manager_->SetFullscreen(true);
   AnimateBy(MsToDelta(10));
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  AnimateBy(MsToDelta(kTransienceDelayMs));
+  AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds));
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(true, true);
   AnimateBy(MsToDelta(10));
   EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
-  AnimateBy(MsToDelta(kTransienceDelayMs));
+  AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds));
   EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(false, false);
@@ -268,16 +269,17 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   initial_elements.insert(kSplashScreenBackground);
   VerifyElementsVisible("Initial", initial_elements);
 
+  // The splash screen should go away.
   manager_->OnWebVrFrameAvailable();
-  // Start the transition, but don't finish it.
-  AnimateBy(MsToDelta(50));
+  AnimateBy(base::TimeDelta::FromSecondsD(kSplashScreenMinDurationSeconds +
+                                          kSmallDelaySeconds));
   VerifyElementsVisible(
       "Autopresented",
       std::set<UiElementName>{kWebVrPermanentHttpSecurityWarning,
                               kWebVrHttpSecurityWarning, kWebVrUrlToast});
 
   // Make sure the transient elements go away.
-  AnimateBy(MsToDelta(kTransienceDelayMs));
+  AnimateBy(base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds));
   UiElement* transient_url_bar =
       scene_->GetUiElementByName(kWebVrUrlToastTransientParent);
   EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));
@@ -301,13 +303,15 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
   manager_->OnWebVrFrameAvailable();
-  // Start the transition, but don't finish it.
-  AnimateBy(MsToDelta(50));
+  // The splash screen should go away.
+  AnimateBy(base::TimeDelta::FromSecondsD(kSplashScreenMinDurationSeconds +
+                                          kSmallDelaySeconds));
   VerifyElementsVisible("Autopresented",
                         std::set<UiElementName>{kWebVrUrlToast});
 
   // Make sure the transient URL bar times out.
-  AnimateBy(MsToDelta(kTransienceDelayMs));
+  AnimateBy(base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds +
+                                         kSmallDelaySeconds));
   UiElement* transient_url_bar =
       scene_->GetUiElementByName(kWebVrUrlToastTransientParent);
   EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));

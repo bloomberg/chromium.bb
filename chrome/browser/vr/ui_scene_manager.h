@@ -58,6 +58,8 @@ struct UiInitialState;
 //           kLoadingIndicator
 //       kExitPrompt
 //         kExitPromptBackplane
+//       kExclusiveScreenToastTransientParent
+//         kExclusiveScreenToast
 //       kCloseButton
 //       kUrlBar
 //         kLoadingIndicator
@@ -68,14 +70,18 @@ struct UiInitialState;
 //       kExitWarning
 //   kWebVrRoot
 //     kWebVrViewportAwareRoot
-//       kExclusiveScreenToastViewportAware
+//       kExclusiveScreenToastTransientParent
+//         kExclusiveScreenToastViewportAware
 //       kWebVrPermanentHttpSecurityWarning
-//       kWebVrTransientHttpSecurityWarning
-//       kWebVrUrlToast
+//       kWebVrTransientHttpSecurityWarningTransientParent
+//         kWebVrTransientHttpSecurityWarning
+//       kWebVrUrlToastTransientParent
+//         kWebVrUrlToast
 //   kSplashScreenRoot
 //     kSplashScreenViewportAwareRoot
-//       kSplashScreenText
-//         kSplashScreenBackground
+//       kSplashScreenTransientParent
+//         kSplashScreenText
+//           kSplashScreenBackground
 //
 // TODO(vollick): The above hierarchy is complex, brittle, and would be easier
 // to manage if it were specified in a declarative format.
@@ -115,6 +121,7 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   void OnWebVrFrameAvailable() override;
   void OnWebVrTimedOut() override;
 
+  void OnSplashScreenHidden(TransientElementHideReason);
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
 
   void OnSecurityIconClickedForTesting();
@@ -165,6 +172,7 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   TransientElement* exclusive_screen_toast_transient_parent_ = nullptr;
   TransientElement* exclusive_screen_toast_viewport_aware_transient_parent_ =
       nullptr;
+  ShowUntilSignalTransientElement* splash_screen_transient_parent_ = nullptr;
   ExitPrompt* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
