@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,11 +22,8 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 class Value;
-}
-
-namespace filesystem {
-class LockTable;
 }
 
 namespace service_manager {
@@ -63,6 +61,7 @@ class Catalog {
   Instance* GetInstanceForUserId(const std::string& user_id);
 
  private:
+  class DirectoryThreadState;
   class ServiceImpl;
 
   void BindCatalogRequest(mojom::CatalogRequest request,
@@ -71,13 +70,23 @@ class Catalog {
   void BindDirectoryRequest(filesystem::mojom::DirectoryRequest request,
                             const service_manager::BindSourceInfo& source_info);
 
+  static void BindDirectoryRequestOnBackgroundThread(
+      scoped_refptr<DirectoryThreadState> thread_state,
+      filesystem::mojom::DirectoryRequest request,
+      const service_manager::BindSourceInfo& source_info);
+
   service_manager::mojom::ServicePtr service_;
   std::unique_ptr<service_manager::ServiceContext> service_context_;
   ManifestProvider* service_manifest_provider_;
   EntryCache system_cache_;
   std::map<std::string, std::unique_ptr<Instance>> instances_;
 
-  scoped_refptr<filesystem::LockTable> lock_table_;
+  // The TaskRunner used for directory requests. Directory requests run on a
+  // separate thread as they run file io, which is not allowed on the thread the
+  // service manager runs on. Additionally we shouldn't block the service
+  // manager while doing file io.
+  scoped_refptr<base::SequencedTaskRunner> directory_task_runner_;
+  scoped_refptr<DirectoryThreadState> directory_thread_state_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 
