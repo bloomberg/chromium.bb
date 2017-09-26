@@ -388,7 +388,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         }
 
         if (mUrlBar.setUrl(url, displayText)) {
-            mUrlBar.deEmphasizeUrl();
             mUrlBar.emphasizeUrl();
         }
     }
