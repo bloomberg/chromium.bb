@@ -1,6 +1,7 @@
 {
   "name": "pdf_compositor",
   "display_name": "PDF Compositor Service",
+  "sandbox_type": "ppapi",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
