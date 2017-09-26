@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="files_icon_button.html">
 <link rel="import" href="files_metadata_box.html">
 <link rel="import" href="files_safe_media.html">
@@ -17,8 +16,8 @@
   <link rel="import" type="css" href="files_quick_view.css">
   <template>
     <dialog id="dialog">
-      <paper-toolbar id="toolbar">
-        <div>[[filePath]]</div>
+      <div id="toolbar">
+        <div id="file-path">[[filePath]]</div>
         <div id="buttons">
            <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[!hasTask]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
@@ -26,8 +25,8 @@
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
            </files-icon-button>
         </div>
-	<files-tooltip></files-tooltip>
-      </paper-toolbar>
+        <files-tooltip></files-tooltip>
+      </div>
       <div id="mainPanel">
         <div id="contentPanel" metadata-box-active$="[[metadataBoxActive]]" on-tap="onContentPanelTap_">
           <div id="innerContentPanel" type$="[[type]]" tabindex="0">
