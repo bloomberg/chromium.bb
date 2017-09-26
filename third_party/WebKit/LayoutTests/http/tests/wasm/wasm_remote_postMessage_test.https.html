@@ -10,25 +10,30 @@ promise_test(async function() {
   assert_true(mod instanceof WebAssembly.Module);
   var remote;
   await new Promise((resolve, reject) => {
+    var nr_of_tries = 0;
     var i = setInterval(()=>{
       try {
         remote.document;
+        ++nr_of_tries;
+        if(nr_of_tries > 30) {
+          reject();
+        }
       } catch(e) {
         clearInterval(i);
         resolve();
       }
-    }, 100);
+    }, 1000);
     remote = window.open("about:blank");
     remote.opener = null;
     remote.location = remote_loc;
   });
   var ans = await new Promise((resolve, reject) => {
-    remote.postMessage(mod, '*');
-    window.addEventListener("message",
-      function f(reply) {
-        resolve(reply.data);
-        window.removeEventListener("message", f);
-      }, false);
+  remote.postMessage(mod, '*');
+  window.addEventListener("message",
+     function f(reply) {
+       resolve(reply.data);
+       window.removeEventListener("message", f);
+     }, false);
   });
   assert_equals(ans, "didn't make it");
   ans = await new Promise((resolve, reject) => {
