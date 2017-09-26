@@ -31,6 +31,8 @@ class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
   bool IsAttached() const override;
   views::NativeViewHost* GetAttachedHost() const override;
   void FocusSurfaceWindow() override;
+  void SetAXTreeId(int32_t ax_tree_id) override;
+  int32_t GetAXTreeId() const override;
 
   exo::NotificationSurface* surface() const { return surface_; }
 
@@ -38,6 +40,7 @@ class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
   exo::NotificationSurface* surface_;
   views::NativeViewHost* native_view_host_ = nullptr;
   std::unique_ptr<aura::Window> native_view_;
+  int32_t ax_tree_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurfaceImpl);
 };

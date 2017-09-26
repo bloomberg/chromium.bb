@@ -628,11 +628,17 @@ bool ArcNotificationContentView::HandleAccessibleAction(
 
 void ArcNotificationContentView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_BUTTON;
-  node_data->AddStringAttribute(
-      ui::AX_ATTR_ROLE_DESCRIPTION,
-      l10n_util::GetStringUTF8(
-          IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+  if (surface_ && surface_->GetAXTreeId() != -1) {
+    node_data->role = ui::AX_ROLE_CLIENT;
+    node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID,
+                               surface_->GetAXTreeId());
+  } else {
+    node_data->role = ui::AX_ROLE_BUTTON;
+    node_data->AddStringAttribute(
+        ui::AX_ATTR_ROLE_DESCRIPTION,
+        l10n_util::GetStringUTF8(
+            IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+  }
   node_data->SetName(accessible_name_);
 }
 
@@ -676,6 +682,12 @@ void ArcNotificationContentView::OnNotificationSurfaceAdded(
     return;
 
   SetSurface(surface);
+
+  // Notify AX_EVENT_CHILDREN_CHANGED to force AXNodeData of this view updated.
+  // As order of OnNotificationSurfaceAdded call is not guaranteed, we are
+  // dispatching the event in both ArcNotificationContentView and
+  // ArcAccessibilityHelperBridge.
+  NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
 }
 
 void ArcNotificationContentView::OnNotificationSurfaceRemoved(

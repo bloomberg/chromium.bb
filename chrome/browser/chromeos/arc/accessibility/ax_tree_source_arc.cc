@@ -290,6 +290,10 @@ void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
     out_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
                               ui::AX_RESTRICTION_DISABLED);
   }
+
+  if (!GetBooleanProperty(node, AXBooleanProperty::VISIBLE_TO_USER)) {
+    out_data->AddState(ui::AX_STATE_INVISIBLE);
+  }
 }
 
 }  // namespace
@@ -322,6 +326,7 @@ class AXTreeSourceArc::FocusStealer : public views::View {
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
       root_id_(-1),
+      window_id_(-1),
       focused_node_id_(-1),
       delegate_(delegate),
       focus_stealer_(new FocusStealer(tree_id())) {}
@@ -335,6 +340,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   tree_map_.clear();
   parent_map_.clear();
   root_id_ = -1;
+
+  window_id_ = event_data->window_id;
+
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     if (!event_data->node_data[i]->int_list_properties)
       continue;

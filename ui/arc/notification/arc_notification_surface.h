@@ -55,6 +55,12 @@ class ArcNotificationSurface {
   // Focuses the surface window manually.
   virtual void FocusSurfaceWindow() = 0;
 
+  // Sets AXTreeId of this surface.
+  virtual void SetAXTreeId(int32_t ax_tree_id) = 0;
+
+  // Returns AXTreeId of this surface.
+  virtual int32_t GetAXTreeId() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurface);
 };
