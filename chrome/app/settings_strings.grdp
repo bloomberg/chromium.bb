@@ -947,9 +947,6 @@
   <message name="IDS_SETTINGS_CLEAR_FORM_DATA" desc="Checkbox for deleting form data saved for Autofill">
     Autofill form data
   </message>
-  <message name="IDS_SETTINGS_CLEAR_SITE_SETTINGS" desc="Checkbox for deleting site settings">
-    Site settings
-  </message>
   <message name="IDS_SETTINGS_CLEAR_HOSTED_APP_DATA" desc="Checkbox for deleting data of hosted apps">
     Hosted app data
   </message>

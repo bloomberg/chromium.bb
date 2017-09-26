@@ -429,7 +429,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearCookiesFlash", IDS_SETTINGS_CLEAR_COOKIES_FLASH},
       {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
       {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
-      {"clearSiteSettings", IDS_SETTINGS_CLEAR_SITE_SETTINGS},
       {"clearHostedAppData", IDS_SETTINGS_CLEAR_HOSTED_APP_DATA},
       {"clearMediaLicenses", IDS_SETTINGS_CLEAR_MEDIA_LICENSES},
       {"clearDataHour", IDS_SETTINGS_CLEAR_DATA_HOUR},
