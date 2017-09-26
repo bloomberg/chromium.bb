@@ -189,7 +189,7 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXNodeData content_editable_node;
     content_editable_node.id = 1;
     content_editable_node.role = AX_ROLE_GROUP;
-    content_editable_node.AddState(AX_STATE_EDITABLE);
+    content_editable_node.AddState(AX_STATE_RICHLY_EDITABLE);
     content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
     content_editable_node.SetValue("How now brown cow.");
 
@@ -204,7 +204,7 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXNodeData content_editable_node;
     content_editable_node.id = 1;
     content_editable_node.role = AX_ROLE_GROUP;
-    content_editable_node.AddState(AX_STATE_EDITABLE);
+    content_editable_node.AddState(AX_STATE_RICHLY_EDITABLE);
     content_editable_node.AddState(AX_STATE_SELECTED);
     content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
     content_editable_node.SetValue("How now brown cow.");
