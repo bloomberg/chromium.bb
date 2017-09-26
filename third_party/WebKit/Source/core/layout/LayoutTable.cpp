@@ -52,6 +52,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+bool g_disable_updating_collapsed_borders = false;
+
+}  // namespace
+
+LayoutTable::DisableUpdatingCollapsedBorders::DisableUpdatingCollapsedBorders()
+    : disabler_(&g_disable_updating_collapsed_borders, true) {}
+
 LayoutTable::LayoutTable(Element* element)
     : LayoutBlock(element),
       head_(nullptr),
@@ -1648,6 +1657,12 @@ LayoutUnit LayoutTable::PaddingRight() const {
 
 void LayoutTable::UpdateCollapsedOuterBorders() const {
   if (collapsed_outer_borders_valid_)
+    return;
+
+  // If further valid code paths are found to call this function when
+  // needs_section_recalc_ is true, then we should remove this check in favor of
+  // if (NeedsSectionRecalc()) return;
+  if (g_disable_updating_collapsed_borders)
     return;
 
   collapsed_outer_borders_valid_ = true;
