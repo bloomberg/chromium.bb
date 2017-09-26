@@ -947,4 +947,104 @@ TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
   EXPECT_EQ("(50, 599) size (150 x 1)", GetBoundsAsString(tree, 5));
 }
 
+TEST(AXTreeTest, IntReverseRelations) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddIntAttribute(AX_ATTR_ACTIVEDESCENDANT_ID, 2);
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[0].child_ids.push_back(4);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].AddIntAttribute(AX_ATTR_MEMBER_OF_ID, 1);
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].AddIntAttribute(AX_ATTR_MEMBER_OF_ID, 1);
+  AXTree tree(initial_state);
+
+  auto reverse_active_descendant =
+      tree.GetReverseRelations(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 2);
+  ASSERT_EQ(1U, reverse_active_descendant.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 1));
+
+  reverse_active_descendant =
+      tree.GetReverseRelations(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 1);
+  ASSERT_EQ(0U, reverse_active_descendant.size());
+
+  auto reverse_errormessage =
+      tree.GetReverseRelations(ui::AX_ATTR_ERRORMESSAGE_ID, 1);
+  ASSERT_EQ(0U, reverse_errormessage.size());
+
+  auto reverse_member_of =
+      tree.GetReverseRelations(ui::AX_ATTR_MEMBER_OF_ID, 1);
+  ASSERT_EQ(2U, reverse_member_of.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 3));
+  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 4));
+
+  AXTreeUpdate update = initial_state;
+  update.nodes.resize(5);
+  update.nodes[0].int_attributes.clear();
+  update.nodes[0].AddIntAttribute(AX_ATTR_ACTIVEDESCENDANT_ID, 5);
+  update.nodes[0].child_ids.push_back(5);
+  update.nodes[2].int_attributes.clear();
+  update.nodes[4].id = 5;
+  update.nodes[4].AddIntAttribute(AX_ATTR_MEMBER_OF_ID, 1);
+
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  reverse_active_descendant =
+      tree.GetReverseRelations(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 2);
+  ASSERT_EQ(0U, reverse_active_descendant.size());
+
+  reverse_active_descendant =
+      tree.GetReverseRelations(ui::AX_ATTR_ACTIVEDESCENDANT_ID, 5);
+  ASSERT_EQ(1U, reverse_active_descendant.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_active_descendant, 1));
+
+  reverse_member_of = tree.GetReverseRelations(ui::AX_ATTR_MEMBER_OF_ID, 1);
+  ASSERT_EQ(2U, reverse_member_of.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 4));
+  EXPECT_TRUE(base::ContainsKey(reverse_member_of, 5));
+}
+
+TEST(AXTreeTest, IntListReverseRelations) {
+  std::vector<int32_t> node_two;
+  node_two.push_back(2);
+
+  std::vector<int32_t> nodes_two_three;
+  nodes_two_three.push_back(2);
+  nodes_two_three.push_back(3);
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].AddIntListAttribute(AX_ATTR_LABELLEDBY_IDS, node_two);
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+
+  AXTree tree(initial_state);
+
+  auto reverse_labelled_by =
+      tree.GetReverseRelations(ui::AX_ATTR_LABELLEDBY_IDS, 2);
+  ASSERT_EQ(1U, reverse_labelled_by.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
+
+  reverse_labelled_by = tree.GetReverseRelations(ui::AX_ATTR_LABELLEDBY_IDS, 3);
+  ASSERT_EQ(0U, reverse_labelled_by.size());
+
+  // Change existing attributes.
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].intlist_attributes.clear();
+  update.nodes[0].AddIntListAttribute(AX_ATTR_LABELLEDBY_IDS, nodes_two_three);
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  reverse_labelled_by = tree.GetReverseRelations(ui::AX_ATTR_LABELLEDBY_IDS, 3);
+  ASSERT_EQ(1U, reverse_labelled_by.size());
+  EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
+}
+
 }  // namespace ui

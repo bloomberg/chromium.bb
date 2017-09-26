@@ -187,6 +187,18 @@ class AX_EXPORT AXTree {
   // Get the bounds of a node in the coordinate space of the tree.
   gfx::RectF GetTreeBounds(const AXNode* node) const;
 
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
+  // and a destination node ID, return a set of all source node IDs that
+  // have that relationship attribute between them and the destination.
+  std::set<int32_t> GetReverseRelations(AXIntAttribute attr, int32_t dst_id);
+
+  // Given a node ID list attribute (one where
+  // IsNodeIdIntListAttribute is true), and a destination node ID,
+  // return a set of all source node IDs that have that relationship
+  // attribute between them and the destination.
+  std::set<int32_t> GetReverseRelations(AXIntListAttribute attr,
+                                        int32_t dst_id);
+
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;
 
@@ -208,6 +220,8 @@ class AX_EXPORT AXTree {
                   AXTreeUpdateState* update_state);
 
   void CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data);
+
+  void UpdateReverseRelations(AXNode* node, const AXNodeData& new_data);
 
   void OnRootChanged();
 
@@ -241,6 +255,15 @@ class AX_EXPORT AXTree {
   base::hash_map<int32_t, AXNode*> id_map_;
   std::string error_;
   AXTreeData data_;
+
+  // Map from an int attribute (if IsNodeIdIntAttribute is true) to
+  // a reverse mapping from target nodes to source nodes.
+  std::map<AXIntAttribute, std::map<int32_t, std::set<int32_t>>>
+      int_reverse_relations_;
+  // Map from an int list attribute (if IsNodeIdIntListAttribute is true) to
+  // a reverse mapping from target nodes to source nodes.
+  std::map<AXIntListAttribute, std::map<int32_t, std::set<int32_t>>>
+      intlist_reverse_relations_;
 };
 
 }  // namespace ui

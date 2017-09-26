@@ -258,6 +258,18 @@ gfx::RectF AXTree::GetTreeBounds(const AXNode* node) const {
   return RelativeToTreeBounds(node, gfx::RectF());
 }
 
+std::set<int32_t> AXTree::GetReverseRelations(AXIntAttribute attr,
+                                              int32_t dst_id) {
+  DCHECK(IsNodeIdIntAttribute(attr));
+  return int_reverse_relations_[attr][dst_id];
+}
+
+std::set<int32_t> AXTree::GetReverseRelations(AXIntListAttribute attr,
+                                              int32_t dst_id) {
+  DCHECK(IsNodeIdIntListAttribute(attr));
+  return intlist_reverse_relations_[attr][dst_id];
+}
+
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
   AXTreeUpdateState update_state;
   int32_t old_root_id = root_ ? root_->id() : 0;
@@ -388,6 +400,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     update_state->pending_nodes.erase(node);
     if (update_state->new_nodes.find(node) == update_state->new_nodes.end())
       CallNodeChangeCallbacks(node, src);
+    UpdateReverseRelations(node, src);
     node->SetData(src);
   } else {
     if (!is_new_root) {
@@ -399,6 +412,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     update_state->new_root = CreateNode(NULL, src.id, 0, update_state);
     node = update_state->new_root;
     update_state->new_nodes.insert(node);
+    UpdateReverseRelations(node, src);
     node->SetData(src);
   }
 
@@ -519,6 +533,37 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   CallIfAttributeValuesChanged(old_data.stringlist_attributes,
                                new_data.stringlist_attributes,
                                std::vector<std::string>(), stringlist_callback);
+}
+
+void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
+  const AXNodeData& old_data = node->data();
+  int id = new_data.id;
+  auto int_callback = [this, node, id](AXIntAttribute attr, const int& old_int,
+                                       const int& new_int) {
+    if (!IsNodeIdIntAttribute(attr))
+      return;
+
+    int_reverse_relations_[attr][old_int].erase(id);
+    int_reverse_relations_[attr][new_int].insert(id);
+  };
+  CallIfAttributeValuesChanged(old_data.int_attributes, new_data.int_attributes,
+                               0, int_callback);
+
+  auto intlist_callback = [this, node, id](
+                              AXIntListAttribute attr,
+                              const std::vector<int32_t>& old_intlist,
+                              const std::vector<int32_t>& new_intlist) {
+    if (!IsNodeIdIntListAttribute(attr))
+      return;
+
+    for (int32_t old_id : old_intlist)
+      intlist_reverse_relations_[attr][old_id].erase(id);
+    for (int32_t new_id : new_intlist)
+      intlist_reverse_relations_[attr][new_id].insert(id);
+  };
+  CallIfAttributeValuesChanged(old_data.intlist_attributes,
+                               new_data.intlist_attributes,
+                               std::vector<int32_t>(), intlist_callback);
 }
 
 void AXTree::DestroySubtree(AXNode* node,
