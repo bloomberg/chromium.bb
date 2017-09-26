@@ -6,17 +6,11 @@
 
 #include <stddef.h>
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread.h"
-#include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -29,16 +23,14 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-
 namespace {
 
 // Whether we accept requests for launching external protocols. This is set to
 // false every time an external protocol is requested, and set back to true on
 // each user gesture. This variable should only be accessed from the UI thread.
-static bool g_accept_requests = true;
+bool g_accept_requests = true;
 
-static const char* const kDeniedSchemes[] = {
+constexpr const char* kDeniedSchemes[] = {
     "afp", "data", "disk", "disks",
     // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
     // execute the file specified!  Hopefully we won't see any "file" schemes
@@ -51,7 +43,7 @@ static const char* const kDeniedSchemes[] = {
     "view-source", "vnd.ms.radio",
 };
 
-static const char* const kAllowedSchemes[] = {
+constexpr const char* kAllowedSchemes[] = {
     "mailto", "news", "snews",
 };
 
@@ -63,18 +55,17 @@ scoped_refptr<shell_integration::DefaultProtocolClientWorker> CreateShellWorker(
     ExternalProtocolHandler::Delegate* delegate) {
   if (delegate)
     return delegate->CreateShellWorker(callback, protocol);
-
-  return new shell_integration::DefaultProtocolClientWorker(callback, protocol);
+  return base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
+      callback, protocol);
 }
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
     const std::string& scheme,
     ExternalProtocolHandler::Delegate* delegate,
     Profile* profile) {
-  if (!delegate)
-    return ExternalProtocolHandler::GetBlockState(scheme, profile);
-
-  return delegate->GetBlockState(scheme, profile);
+  if (delegate)
+    return delegate->GetBlockState(scheme, profile);
+  return ExternalProtocolHandler::GetBlockState(scheme, profile);
 }
 
 void RunExternalProtocolDialogWithDelegate(
@@ -84,15 +75,14 @@ void RunExternalProtocolDialogWithDelegate(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     ExternalProtocolHandler::Delegate* delegate) {
-  if (!delegate) {
-    ExternalProtocolHandler::RunExternalProtocolDialog(
-        url, render_process_host_id, routing_id, page_transition,
-        has_user_gesture);
-  } else {
-    delegate->RunExternalProtocolDialog(
-        url, render_process_host_id, routing_id, page_transition,
-        has_user_gesture);
+  if (delegate) {
+    delegate->RunExternalProtocolDialog(url, render_process_host_id, routing_id,
+                                        page_transition, has_user_gesture);
+    return;
   }
+  ExternalProtocolHandler::RunExternalProtocolDialog(
+      url, render_process_host_id, routing_id, page_transition,
+      has_user_gesture);
 }
 
 void LaunchUrlWithoutSecurityCheckWithDelegate(
@@ -102,12 +92,11 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
     ExternalProtocolHandler::Delegate* delegate) {
   content::WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id, render_view_routing_id);
-
-  if (!delegate) {
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
-  } else {
+  if (delegate) {
     delegate->LaunchUrlWithoutSecurityCheck(url, web_contents);
+    return;
   }
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
 }
 
 // When we are about to launch a URL with the default OS level application, we
@@ -122,7 +111,7 @@ void OnDefaultProtocolClientWorkerFinished(
     bool has_user_gesture,
     ExternalProtocolHandler::Delegate* delegate,
     shell_integration::DefaultWebClientState state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (delegate)
     delegate->FinishedProcessingCheck();
@@ -158,6 +147,8 @@ const char ExternalProtocolHandler::kHandleStateMetric[] =
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     const std::string& scheme,
     Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // If we are being carpet bombed, block the request.
   if (!g_accept_requests)
     return BLOCK;
@@ -227,7 +218,7 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     Delegate* delegate) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
@@ -256,8 +247,8 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
       render_view_routing_id, block_state == UNKNOWN, page_transition,
       has_user_gesture, delegate);
 
-  // Start the check process running. This will send tasks to the FILE thread
-  // and when the answer is known will send the result back to
+  // Start the check process running. This will send tasks to a worker task
+  // runner and when the answer is known will send the result back to
   // OnDefaultProtocolClientWorkerFinished().
   CreateShellWorker(callback, escaped_url.scheme(), delegate)
       ->StartCheckIsDefault();
@@ -278,7 +269,8 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
 
 // static
 void ExternalProtocolHandler::PermitLaunchUrl() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   g_accept_requests = true;
 }
 
