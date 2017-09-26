@@ -96,6 +96,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return filter_.HasFilterThatMovesPixels();
   }
 
+  FloatPoint PaintOffset() const { return paint_offset_; }
+
   // Returns a rect covering the pixels that can be affected by pixels in
   // |inputRect|. The rects are in the space of localTransformSpace.
   FloatRect MapRect(const FloatRect& input_rect) const;
