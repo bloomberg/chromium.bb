@@ -80,6 +80,8 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(EXTERNS_GYP):networking_private',
+        '<(INTERFACES_GYP):networking_private_interface',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

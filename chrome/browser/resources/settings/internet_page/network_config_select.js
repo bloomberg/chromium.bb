@@ -15,6 +15,9 @@ Polymer({
 
     disabled: Boolean,
 
+    /** Set to true if |items| is a list of certificates. */
+    certList: Boolean,
+
     /**
      * Array of item values to select from.
      * @type {!Array<string>}
@@ -22,7 +25,10 @@ Polymer({
     items: Array,
 
     /** Prefix used to look up ONC property names. */
-    oncPrefix: String,
+    oncPrefix: {
+      type: String,
+      value: ''
+    },
 
     /** Select item value */
     value: {
@@ -47,16 +53,52 @@ Polymer({
   },
 
   /**
-   * @param {string} key
+   * @param {string|!chrome.networkingPrivate.Certificate} item
    * @param {string} prefix
    * @return {string} The text to display for the onc value.
    * @private
    */
-  getOncLabel_: function(key, prefix) {
+  getItemLabel_: function(item, prefix) {
+    if (this.certList) {
+      return this.getCertificateName_(
+          /** @type {chrome.networkingPrivate.Certificate}*/ (item));
+    }
+    var key = /** @type {string} */ (item);
     var oncKey = 'Onc' + prefix.replace(/\./g, '-') + '_' + key;
     if (this.i18nExists(oncKey))
       return this.i18n(oncKey);
     assertNotReached();
     return key;
+  },
+
+  /**
+   * @param {string|!chrome.networkingPrivate.Certificate} item
+   * @return {boolean}
+   * @private
+   */
+  getItemEnabled_: function(item) {
+    if (this.certList) {
+      var cert = /** @type {chrome.networkingPrivate.Certificate}*/ (item);
+      return !!cert.hash;
+    }
+    return true;
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.Certificate} certificate
+   * @return {string}
+   * @private
+   */
+  getCertificateName_: function(certificate) {
+    if (certificate.hardwareBacked) {
+      return this.i18n(
+          'networkCertificateNameHardwareBacked', certificate.issuedBy,
+          certificate.issuedTo);
+    }
+    if (certificate.issuedTo) {
+      return this.i18n(
+          'networkCertificateName', certificate.issuedBy, certificate.issuedTo);
+    }
+    return certificate.issuedBy;
   },
 });
