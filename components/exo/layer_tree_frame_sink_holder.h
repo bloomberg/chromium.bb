@@ -9,7 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
-#include "components/viz/common/quads/release_callback.h"
+#include "components/viz/common/resources/release_callback.h"
 
 namespace cc {
 class LayerTreeFrameSink;

@@ -28,6 +28,7 @@ component("snapshot") {
     ":snapshot_export",
     ":snapshot_win",
     "//base",
+    "//components/viz/common",
     "//skia",
     "//ui/base",
     "//ui/display",

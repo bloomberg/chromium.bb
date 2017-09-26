@@ -13,10 +13,10 @@
 #include "cc/resources/scoped_resource.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
-#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/single_release_callback.h"
 
 namespace cc {
 

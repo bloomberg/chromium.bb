@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "content/common/content_export.h"
 
 namespace cc {

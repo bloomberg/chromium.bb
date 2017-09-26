@@ -10,13 +10,13 @@ import "services/viz/public/interfaces/compositing/texture_mailbox_releaser.mojo
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// See components/viz/common/quads/copy_output_result.h.
+// See components/viz/common/frame_sinks/copy_output_result.h.
 enum CopyOutputResultFormat {
   RGBA_BITMAP,
   RGBA_TEXTURE,
 };
 
-// See components/viz/common/quads/copy_output_result.h.
+// See components/viz/common/frame_sinks/copy_output_result.h.
 struct CopyOutputResult {
   CopyOutputResultFormat format;
   gfx.mojom.Rect rect;

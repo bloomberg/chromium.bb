@@ -6,7 +6,7 @@
 
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 
 namespace cc {
 

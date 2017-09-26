@@ -8,7 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "components/viz/common/quads/single_release_callback.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {

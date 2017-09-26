@@ -14,10 +14,10 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"
-#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/color_space.h"
 

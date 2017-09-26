@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_
-#define COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_
+#ifndef COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_RESULT_H_
+#define COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_RESULT_H_
 
 #include <memory>
 
-#include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect.h"
@@ -114,4 +114,4 @@ class VIZ_COMMON_EXPORT CopyOutputTextureResult : public CopyOutputResult {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_RESULT_H_
+#endif  // COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_RESULT_H_

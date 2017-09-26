@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_
-#define COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_
+#ifndef COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_REQUEST_H_
+#define COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_REQUEST_H_
 
 #include <memory>
 
@@ -12,9 +12,9 @@
 #include "base/optional.h"
 #include "base/task_runner.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/quads/copy_output_result.h"
-#include "components/viz/common/quads/single_release_callback.h"
+#include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -110,4 +110,4 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_QUADS_COPY_OUTPUT_REQUEST_H_
+#endif  // COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_REQUEST_H_
