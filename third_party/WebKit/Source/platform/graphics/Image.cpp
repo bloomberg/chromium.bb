@@ -55,7 +55,9 @@ Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
       stable_image_id_(PaintImage::GetNextId()),
-      is_multipart_(is_multipart) {}
+      is_multipart_(is_multipart),
+      high_contrast_classification_(
+          HighContrastClassification::kNotClassified) {}
 
 Image::~Image() {}
 
