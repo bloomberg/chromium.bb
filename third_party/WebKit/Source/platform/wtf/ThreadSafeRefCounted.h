@@ -55,16 +55,31 @@ class WTF_EXPORT ThreadSafeRefCountedBase {
   base::AtomicRefCount ref_count_;
 };
 
-template <class T>
+template <typename T, typename Traits>
+class ThreadSafeRefCounted;
+
+template <typename T>
+struct DefaultThreadSafeRefCountedTraits {
+  static void Destruct(const T* x) {
+    WTF::ThreadSafeRefCounted<
+        T, DefaultThreadSafeRefCountedTraits>::DeleteInternal(x);
+  }
+};
+
+template <typename T, typename Traits = DefaultThreadSafeRefCountedTraits<T>>
 class ThreadSafeRefCounted : public ThreadSafeRefCountedBase {
  public:
   void Deref() {
     if (DerefBase())
-      delete static_cast<T*>(this);
+      Traits::Destruct(static_cast<T*>(this));
   }
 
  protected:
   ThreadSafeRefCounted() {}
+
+ private:
+  friend struct DefaultThreadSafeRefCountedTraits<T>;
+  static void DeleteInternal(const T* x) { delete x; }
 };
 
 }  // namespace WTF

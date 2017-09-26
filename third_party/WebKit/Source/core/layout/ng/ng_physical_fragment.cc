@@ -128,6 +128,11 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
 
 }  // namespace
 
+// static
+void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
+  fragment->Destroy();
+}
+
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        const ComputedStyle& style,
                                        NGPhysicalSize size,

@@ -19,6 +19,12 @@ class ComputedStyle;
 class LayoutObject;
 struct NGPixelSnappedPhysicalBoxStrut;
 
+class NGPhysicalFragment;
+
+struct CORE_EXPORT NGPhysicalFragmentTraits {
+  static void Destruct(const NGPhysicalFragment*);
+};
+
 // The NGPhysicalFragment contains the output geometry from layout. The
 // fragment stores all of its information in the physical coordinate system for
 // use by paint, hit-testing etc.
@@ -39,9 +45,10 @@ struct NGPixelSnappedPhysicalBoxStrut;
 //   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
 // - image (<img>, svg <image>) or video (<video>) elements that are
 //   placeholders for displaying them.
-class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment>,
-                                       public DisplayItemClient,
-                                       public ImageResourceObserver {
+class CORE_EXPORT NGPhysicalFragment
+    : public RefCounted<NGPhysicalFragment, NGPhysicalFragmentTraits>,
+      public DisplayItemClient,
+      public ImageResourceObserver {
  public:
   enum NGFragmentType {
     kFragmentBox = 0,
@@ -133,13 +140,6 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment>,
   void ShowFragmentTree() const;
 #endif
 
-  // Override RefCounted's deref() to ensure operator delete is called on the
-  // appropriate subclass type.
-  void Deref() const {
-    if (DerefBase())
-      Destroy();
-  }
-
  protected:
   NGPhysicalFragment(LayoutObject* layout_object,
                      const ComputedStyle& style,
@@ -162,6 +162,7 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment>,
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
  private:
+  friend struct NGPhysicalFragmentTraits;
   void Destroy() const;
 };
 

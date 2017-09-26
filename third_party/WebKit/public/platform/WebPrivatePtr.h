@@ -41,7 +41,7 @@
 #endif
 
 namespace WTF {
-template <class T>
+template <class T, typename Traits>
 class ThreadSafeRefCounted;
 }
 
