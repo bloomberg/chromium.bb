@@ -138,7 +138,7 @@ public class InvalidationControllerTest {
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mContext, delegate);
+        AndroidSyncSettings.overrideForTests(mContext, delegate, null);
 
         ChromeSigninController.get().setSignedInAccountName("test@example.com");
         AndroidSyncSettings.updateAccount(mContext, ChromeSigninController.get().getSignedInUser());

@@ -84,7 +84,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         delegate.setMasterSyncAutomatically(syncable);
-        AndroidSyncSettings.overrideForTests(context, delegate);
+        AndroidSyncSettings.overrideForTests(context, delegate, null);
         if (syncable) {
             AndroidSyncSettings.enableChromeSync(context);
         } else {

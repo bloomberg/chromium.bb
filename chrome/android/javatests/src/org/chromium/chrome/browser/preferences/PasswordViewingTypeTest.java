@@ -60,7 +60,7 @@ public class PasswordViewingTypeTest {
         mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
         setupTestAccount();
-        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
+        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate, null);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
         AndroidSyncSettings.updateAccount(mContext, mAccount);
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();

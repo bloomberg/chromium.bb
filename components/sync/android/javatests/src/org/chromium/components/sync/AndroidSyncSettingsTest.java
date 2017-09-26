@@ -20,7 +20,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -121,13 +120,26 @@ public class AndroidSyncSettingsTest {
         ChromeSigninController.get().setSignedInAccountName(mAccount.name);
 
         mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
-        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
+        overrideAndroidSyncSettings();
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
         Assert.assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
         mSyncSettingsObserver = new MockSyncSettingsObserver();
         AndroidSyncSettings.registerObserver(mContext, mSyncSettingsObserver);
 
+    }
+
+    /**
+     * Overrides AndroidSyncSettings passing mSyncContentResolverDelegate and waits for settings
+     * changes to propagate to ContentResolverDelegate.
+     */
+    private void overrideAndroidSyncSettings() throws Exception {
+        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate,
+                (Boolean result) -> {
+                    mCallbackHelper.notifyCalled();
+                });
+        mNumberOfCallsToWait++;
+        mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
     }
 
     private void setupTestAccounts() {
@@ -181,11 +193,8 @@ public class AndroidSyncSettingsTest {
     }
 
     private void updateAccount(Account account) {
-        updateAccountWithCallback(account, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                mCallbackHelper.notifyCalled();
-            }
+        updateAccountWithCallback(account, (Boolean result) -> {
+            mCallbackHelper.notifyCalled();
         });
     }
 
@@ -323,7 +332,6 @@ public class AndroidSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisabledTest(message = "crbug.com/737862")
     public void testSyncSettingsCaching() throws InterruptedException {
         // Turn on syncability.
         mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
@@ -422,15 +430,11 @@ public class AndroidSyncSettingsTest {
             throws InterruptedException, TimeoutException {
         Assert.assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
-        int currentCalls = mCallbackHelper.getCallCount();
-        updateAccountWithCallback(null, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                Assert.assertTrue(result);
-                mCallbackHelper.notifyCalled();
-            }
+        updateAccountWithCallback(null, (Boolean result) -> {
+            Assert.assertTrue(result);
+            mCallbackHelper.notifyCalled();
         });
-        mCallbackHelper.waitForCallback(currentCalls, mNumberOfCallsToWait);
+        mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
 
         Assert.assertEquals(0, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
         updateAccount(mAccount);
