@@ -3372,6 +3372,19 @@ void RenderFrameHostImpl::CommitNavigation(
       !IsURLHandledByNetworkStack(common_params.url) ||
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
       IsRendererDebugURL(common_params.url));
+
+  // TODO(arthursonzogni): Consider using separate methods and IPCs for
+  // javascript-url navigation. Excluding this case from the general one will
+  // prevent us from doing inappropriate things with javascript-url.
+  // See https://crbug.com/766149.
+  if (common_params.url.SchemeIs(url::kJavaScriptScheme)) {
+    Send(new FrameMsg_CommitNavigation(
+        routing_id_, ResourceResponseHead(), GURL(),
+        FrameMsg_CommitDataNetworkService_Params(), common_params,
+        request_params));
+    return;
+  }
+
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without
