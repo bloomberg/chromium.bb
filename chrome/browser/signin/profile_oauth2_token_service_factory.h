@@ -36,6 +36,8 @@ class ProfileOAuth2TokenServiceFactory
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceFactory);
 };

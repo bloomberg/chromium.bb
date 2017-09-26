@@ -9,7 +9,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
@@ -45,9 +44,7 @@ OAuth2TokenServiceFactory* OAuth2TokenServiceFactory::GetInstance() {
 
 void OAuth2TokenServiceFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kTokenServiceExcludeAllSecondaryAccounts,
-                                false);
-  registry->RegisterListPref(prefs::kTokenServiceExcludedSecondaryAccounts);
+  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
 }
 
 std::unique_ptr<KeyedService>
