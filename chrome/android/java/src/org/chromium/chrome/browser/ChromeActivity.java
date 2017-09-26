@@ -1711,8 +1711,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             if (newConfig.densityDpi != mDensityDpi) {
+                if (!VrShellDelegate.onDensityChanged(mDensityDpi, newConfig.densityDpi)) {
+                    recreate();
+                    return;
+                }
                 mDensityDpi = newConfig.densityDpi;
-                if (!VrShellDelegate.onDensityChanged()) recreate();
             }
         }
 

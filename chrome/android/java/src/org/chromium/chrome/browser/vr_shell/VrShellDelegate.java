@@ -423,7 +423,7 @@ public class VrShellDelegate
      * @return Whether VrShellDelegate handled the density change. If the density change is
      * unhandled, the Activity should be recreated in order to handle the change.
      */
-    public static boolean onDensityChanged() {
+    public static boolean onDensityChanged(float oldDpi, float newDpi) {
         if (sInstance == null) return false;
         // If density changed while in VR, we expect a second density change to restore the density
         // to what it previously was when we exit VR. We shouldn't have to recreate the activity as
@@ -434,6 +434,7 @@ public class VrShellDelegate
             return true;
         }
         if (sInstance.mInVr || sInstance.mDonSucceeded) {
+            sInstance.onDensityChangedInternal(oldDpi, newDpi);
             sInstance.mDensityChanged = true;
             return true;
         }
@@ -1515,6 +1516,10 @@ public class VrShellDelegate
                     .setSystemUiVisibility(mRestoreSystemUiVisibilityFlag);
         }
         mRestoreSystemUiVisibilityFlag = -1;
+    }
+
+    private void onDensityChangedInternal(float oldDpi, float newDpi) {
+        if (mVrShell != null) mVrShell.onDensityChanged(oldDpi, newDpi);
     }
 
     /**
