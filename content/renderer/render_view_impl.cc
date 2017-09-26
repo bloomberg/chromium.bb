@@ -57,7 +57,6 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/associated_interface_provider.h"
-#include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -529,7 +528,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                    params.never_visible),
       webkit_preferences_(params.web_preferences),
       send_content_state_immediately_(false),
-      enabled_bindings_(0),
       send_preferred_size_changes_(false),
       navigation_gesture_(NavigationGestureUnknown),
       history_list_offset_(-1),
