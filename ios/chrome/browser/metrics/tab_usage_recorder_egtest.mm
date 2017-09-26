@@ -132,16 +132,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
       @"Waiting for tab to close");
 }
-
-// Select the tab with title |title| using UI (tab strip on iPad, stack view on
-// iPhone).
-void SelectTabUsingUI(NSString* title) {
-  if (IsCompact()) {
-    WaitAndTap(chrome_test_util::ShowTabsButton(), @"Tab switcher");
-  }
-  WaitAndTap(grey_text(title),
-             [NSString stringWithFormat:@"tab with title %@", title]);
-}
 }  // namespace
 
 // Test for the TabUsageRecorder class.
@@ -700,7 +690,7 @@ void SelectTabUsingUI(NSString* title) {
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:(numberOfTabs + 1)];
 
-  SelectTabUsingUI(base::SysUTF8ToNSString(destinationURL.GetContent()));
+  chrome_test_util::SelectTabAtIndexInCurrentMode(numberOfTabs);
 
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];
