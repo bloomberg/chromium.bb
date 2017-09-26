@@ -36,9 +36,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
  protected:
   ThreadedWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
 
-  ThreadedWorkletObjectProxy& WorkletObjectProxy() {
-    return *worklet_object_proxy_;
-  }
+  ThreadedWorkletObjectProxy& WorkletObjectProxy();
 
  private:
   friend class ThreadedWorkletMessagingProxyForTest;
