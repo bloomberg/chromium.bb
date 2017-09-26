@@ -270,4 +270,102 @@ TEST_F(SelectionSampleTest, ConvertTemplatesToShadowRootsMultipleTemplates) {
             shadow_root_2->InnerHTMLAsString());
 }
 
+TEST_F(SelectionSampleTest, TraverseShadowContent) {
+  HTMLElement* body = GetDocument().body();
+  const std::string content = "<div id=host>"
+                                "<template data-mode='open'>"
+                                  "<div id=shadow1>^shadow_first</div>"
+                                  "<div id=shadow2>shadow_second|</div>"
+                                "</template>"
+                              "</div>";
+  const SelectionInDOMTree& selection =
+      SelectionSample::SetSelectionText(body, content);
+  EXPECT_EQ("<div id=\"host\"></div>", body->InnerHTMLAsString());
+
+  Element* host = body->getElementById("host");
+  ShadowRoot* shadow_root = host->ShadowRootIfV1();
+  EXPECT_TRUE(shadow_root->IsShadowRoot());
+  EXPECT_EQ(
+      "<div id=\"shadow1\">shadow_first</div>"
+      "<div id=\"shadow2\">shadow_second</div>",
+      shadow_root->InnerHTMLAsString());
+
+  EXPECT_EQ(Position(shadow_root->getElementById("shadow1")->firstChild(), 0),
+            selection.Base());
+  EXPECT_EQ(Position(shadow_root->getElementById("shadow2")->firstChild(), 13),
+            selection.Extent());
+}
+
+TEST_F(SelectionSampleTest, TraverseShadowContentWithSlot) {
+  HTMLElement* body = GetDocument().body();
+  const std::string content = "<div id=host>^foo"
+                                "<template data-mode='open'>"
+                                  "<div id=shadow1>shadow_first</div>"
+                                  "<slot name=slot1>slot|</slot>"
+                                  "<div id=shadow2>shadow_second</div>"
+                                "</template>"
+                                "<span slot=slot1>bar</slot>"
+                              "</div>";
+  const SelectionInDOMTree& selection =
+      SelectionSample::SetSelectionText(body, content);
+  EXPECT_EQ("<div id=\"host\">foo<span slot=\"slot1\">bar</span></div>",
+            body->InnerHTMLAsString());
+
+  Element* host = body->getElementById("host");
+  ShadowRoot* shadow_root = host->ShadowRootIfV1();
+  EXPECT_TRUE(shadow_root->IsShadowRoot());
+  EXPECT_EQ(
+      "<div id=\"shadow1\">shadow_first</div>"
+      "<slot name=\"slot1\">slot</slot>"
+      "<div id=\"shadow2\">shadow_second</div>",
+      shadow_root->InnerHTMLAsString());
+
+  EXPECT_EQ(Position(GetDocument().getElementById("host")->firstChild(), 0),
+            selection.Base());
+  EXPECT_EQ(
+      Position(shadow_root->QuerySelector("[name=slot1]")->firstChild(), 4),
+      selection.Extent());
+}
+
+TEST_F(SelectionSampleTest, TraverseMultipleShadowContents) {
+  HTMLElement* body = GetDocument().body();
+  const std::string content = "<div id=host1>"
+                                "<template data-mode='open'>"
+                                  "<div id=shadow1>^shadow_first</div>"
+                                  "<div id=shadow2>shadow_second</div>"
+                                "</template>"
+                              "</div>"
+                            "<div id=host2>"
+                              "<template data-mode='open'>"
+                                "<div id=shadow3>shadow_third</div>"
+                                "<div id=shadow4>shadow_forth|</div>"
+                              "</template>"
+                            "</div>";
+  const SelectionInDOMTree& selection =
+      SelectionSample::SetSelectionText(body, content);
+  EXPECT_EQ("<div id=\"host1\"></div><div id=\"host2\"></div>",
+            body->InnerHTMLAsString());
+
+  Element* host1 = body->getElementById("host1");
+  ShadowRoot* shadow_root1 = host1->ShadowRootIfV1();
+  Element* host2 = body->getElementById("host2");
+  ShadowRoot* shadow_root2 = host2->ShadowRootIfV1();
+  EXPECT_TRUE(shadow_root1->IsShadowRoot());
+  EXPECT_TRUE(shadow_root2->IsShadowRoot());
+  EXPECT_EQ(
+      "<div id=\"shadow1\">shadow_first</div>"
+      "<div id=\"shadow2\">shadow_second</div>",
+      shadow_root1->InnerHTMLAsString());
+  EXPECT_EQ(
+      "<div id=\"shadow3\">shadow_third</div>"
+      "<div id=\"shadow4\">shadow_forth</div>",
+      shadow_root2->InnerHTMLAsString());
+
+  EXPECT_EQ(Position(shadow_root1->getElementById("shadow1")->firstChild(), 0),
+            selection.Base());
+  EXPECT_EQ(
+      Position(shadow_root2->getElementById("shadow4")->firstChild(), 12),
+      selection.Extent());
+}
+
 }  // namespace blink
