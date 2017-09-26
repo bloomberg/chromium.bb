@@ -17,10 +17,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
+#include "chrome/browser/offline_pages/prefetch/prefetched_pages_notifier.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -150,6 +153,19 @@ void SingleOfflinePageItemCallback(
 
   if (result)
     j_result = ToJavaOfflinePageItem(env, *result);
+  base::android::RunCallbackAndroid(j_callback_obj, j_result);
+}
+
+void CheckForNewOfflineContentCallback(
+    const base::Time& pages_created_after,
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const OfflinePageModel::MultipleOfflinePageItemResult& result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::string16 relevant_host =
+      ExtractRelevantHostFromOfflinePageItemList(pages_created_after, result);
+  ScopedJavaLocalRef<jstring> j_result =
+      base::android::ConvertUTF16ToJavaString(env, relevant_host);
+
   base::android::RunCallbackAndroid(j_callback_obj, j_result);
 }
 
@@ -747,6 +763,18 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetOfflinePage(
 
   return offline_pages::android::OfflinePageBridge::ConvertToJavaOfflinePage(
       env, *offline_page);
+}
+
+void OfflinePageBridge::CheckForNewOfflineContent(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jlong j_timestamp_millis,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  base::Time pages_created_after = base::Time::FromJavaTime(j_timestamp_millis);
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+
+  offline_page_model_->GetPagesSupportedByDownloads(base::Bind(
+      &CheckForNewOfflineContentCallback, pages_created_after, j_callback_ref));
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {
