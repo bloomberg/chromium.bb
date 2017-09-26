@@ -45,7 +45,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   FocusCycler* focus_cycler() { return focus_cycler_; }
 
   ui::Layer* opaque_background() { return &opaque_background_; }
-  ui::Layer* opaque_foreground() { return &opaque_foreground_; }
 
   void SetParentLayer(ui::Layer* layer);
 
@@ -67,10 +66,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
-  // A black foreground layer which is shown while transitioning between users.
-  // Note: Since the back- and foreground layers have different functions they
-  // can be used simultaneously - so no repurposing possible.
-  ui::Layer opaque_foreground_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
@@ -78,22 +73,17 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
     : shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
-      opaque_background_(ui::LAYER_SOLID_COLOR),
-      opaque_foreground_(ui::LAYER_SOLID_COLOR) {
+      opaque_background_(ui::LAYER_SOLID_COLOR) {
   DCHECK(shelf_widget_);
   SetLayoutManager(new views::FillLayout());
   set_allow_deactivate_on_esc(true);
   opaque_background_.SetBounds(GetLocalBounds());
-  opaque_foreground_.SetBounds(GetLocalBounds());
-  opaque_foreground_.SetOpacity(0.0f);
-  opaque_foreground_.SetColor(SK_ColorBLACK);
 }
 
 ShelfWidget::DelegateView::~DelegateView() {}
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&opaque_background_);
-  layer->Add(&opaque_foreground_);
   ReorderLayers();
 }
 
@@ -105,12 +95,10 @@ bool ShelfWidget::DelegateView::CanActivate() const {
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(&opaque_background_);
-  parent_layer->StackAtTop(&opaque_foreground_);
 }
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_background_.SetBounds(GetLocalBounds());
-  opaque_foreground_.SetBounds(GetLocalBounds());
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
@@ -201,27 +189,6 @@ ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
 int ShelfWidget::GetBackgroundAlphaValue(
     ShelfBackgroundType background_type) const {
   return background_animator_.GetBackgroundAlphaValue(background_type);
-}
-
-void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
-  if (IsShelfHiddenBehindBlackBar() == hide)
-    return;
-
-  ui::Layer* opaque_foreground = delegate_view_->opaque_foreground();
-  float target_opacity = hide ? 1.0f : 0.0f;
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> opaque_foreground_animation;
-  opaque_foreground_animation.reset(
-      new ui::ScopedLayerAnimationSettings(opaque_foreground->GetAnimator()));
-  opaque_foreground_animation->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(animation_time_ms));
-  opaque_foreground_animation->SetPreemptionStrategy(
-      ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-
-  opaque_foreground->SetOpacity(target_opacity);
-}
-
-bool ShelfWidget::IsShelfHiddenBehindBlackBar() const {
-  return delegate_view_->opaque_foreground()->GetTargetOpacity() != 0.0f;
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {

@@ -79,7 +79,7 @@ class UserSwitchAnimatorChromeOS {
   // Execute the user wallpaper animations for |animation_step|.
   void TransitionWallpaper(AnimationStep animtion_step);
 
-  // Execute the user shelf animations for |animation_step|.
+  // Update the shelf for |animation_step|.
   void TransitionUserShelf(AnimationStep animtion_step);
 
   // Execute the window animations for |animation_step|.
@@ -108,7 +108,7 @@ class UserSwitchAnimatorChromeOS {
   AnimationStep animation_step_;
 
   // The screen cover status before the animation has started.
-  TransitioningScreenCover screen_cover_;
+  const TransitioningScreenCover screen_cover_;
 
   // Mapping users IDs to the list of windows to show for these users.
   typedef std::map<AccountId, aura::Window::Windows> UserToWindowsMap;

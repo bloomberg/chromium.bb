@@ -55,11 +55,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Gets the alpha value of |background_type|.
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
 
-  // Hide the shelf behind a black bar during e.g. a user transition when |hide|
-  // is true. The |animation_time_ms| will be used as animation duration.
-  void HideShelfBehindBlackBar(bool hide, int animation_time_ms);
-  bool IsShelfHiddenBehindBlackBar() const;
-
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
