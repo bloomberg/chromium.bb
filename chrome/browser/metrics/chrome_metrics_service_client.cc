@@ -178,6 +178,21 @@ void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
 #endif
 }
 
+// crbug/760317: Attempt to remove all files in a directory but then report
+// on how successful that was.
+bool DeleteDirectoryAndReport(const base::FilePath& path, bool recursive) {
+  bool success = base::DeleteFile(path, recursive);
+  int64_t dir_size = base::ComputeDirectorySize(path);
+  if (success) {
+    UMA_HISTOGRAM_MEMORY_KB("UMA.MetricsService.DeletedDirectorySize.Success",
+                            dir_size);
+  } else {
+    UMA_HISTOGRAM_MEMORY_KB("UMA.MetricsService.DeletedDirectorySize.Failure",
+                            dir_size);
+  }
+  return success;
+}
+
 // Constructs the name of a persistent metrics file from a directory and metrics
 // name, and either registers that file as associated with a previous run if
 // metrics reporting is enabled, or deletes it if not.
@@ -254,7 +269,7 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
           FROM_HERE,
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+          base::BindOnce(base::IgnoreResult(&DeleteDirectoryAndReport),
                          base::Passed(&browser_metrics_upload_dir),
                          /*recursive=*/true));
     }

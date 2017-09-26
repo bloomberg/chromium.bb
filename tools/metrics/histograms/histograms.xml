@@ -85767,6 +85767,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.MetricsService.DeletedDirectorySize.Failure" units="KB">
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the size of the metrics directory size, after failing to be deleted.
+    This is a temporary metric that will be removed in M63 or M64.
+  </summary>
+</histogram>
+
+<histogram name="UMA.MetricsService.DeletedDirectorySize.Success" units="KB">
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the size of the metrics directory size, after being successfully
+    deleted. This should always be zero unless there is a bug in the return
+    code. This is a temporary metric that will be removed in M63 or M64.
+  </summary>
+</histogram>
+
 <histogram name="UMA.MetricsService.RecordCurrentHistograms.Time" units="ms">
   <owner>asvitkine@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
