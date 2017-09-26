@@ -3352,14 +3352,11 @@ static void read_tile_info(AV1Decoder *const pbi,
   cm->log2_tile_rows = aom_rb_read_bit(rb);
   if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
 
-  cm->tile_width = get_tile_size(cm->mi_cols, cm->log2_tile_cols);
-  cm->tile_height = get_tile_size(cm->mi_rows, cm->log2_tile_rows);
+  cm->tile_width =
+      get_tile_size(cm->mi_cols, cm->log2_tile_cols, &cm->tile_cols);
+  cm->tile_height =
+      get_tile_size(cm->mi_rows, cm->log2_tile_rows, &cm->tile_rows);
 
-  const int max_cols = (cm->mi_cols + cm->tile_width - 1) / cm->tile_width;
-  const int max_rows = (cm->mi_rows + cm->tile_height - 1) / cm->tile_height;
-
-  cm->tile_cols = AOMMIN(1 << cm->log2_tile_cols, max_cols);
-  cm->tile_rows = AOMMIN(1 << cm->log2_tile_rows, max_rows);
 #endif  // CONFIG_MAX_TILE
 #if CONFIG_DEPENDENT_HORZTILES
     if (cm->tile_rows > 1)

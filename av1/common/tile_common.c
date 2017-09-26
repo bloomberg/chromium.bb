@@ -218,15 +218,27 @@ void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
   }
 }
 
-int get_tile_size(int frame_mi_size, int log2_tile_num) {
+int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
   // Round the frame up to a whole number of max superblocks
-  frame_mi_size = ALIGN_POWER_OF_TWO(frame_mi_size, MAX_MIB_SIZE_LOG2);
-  // Divide by the number of tiles, rounding up to the multiple of the max
-  // superblock size. To do this, shift right (and round up) to get the number
-  // of super-blocks and then shift left again to convert it to mi units.
-  const int shift = log2_tile_num + MAX_MIB_SIZE_LOG2;
-  const int round = (1 << shift) - 1;
-  return ((frame_mi_size + round) >> shift) << MAX_MIB_SIZE_LOG2;
+  mi_frame_size = ALIGN_POWER_OF_TWO(mi_frame_size, MAX_MIB_SIZE_LOG2);
+
+  // Divide by the signalled number of tiles, rounding up to the multiple of
+  // the max superblock size. To do this, shift right (and round up) to get the
+  // tile size in max super-blocks and then shift left again to convert it to
+  // mi units.
+  const int max_sb_tile_size =
+      ROUND_POWER_OF_TWO(mi_frame_size, log2_tile_num + MAX_MIB_SIZE_LOG2);
+  const int mi_tile_size = max_sb_tile_size << MAX_MIB_SIZE_LOG2;
+
+  // The actual number of tiles is the ceiling of the frame size in mi units
+  // divided by mi_size. This is at most 1 << log2_tile_num but might be
+  // strictly less if max_sb_tile_size got rounded up significantly.
+  if (ntiles) {
+    *ntiles = (mi_frame_size + mi_tile_size - 1) / mi_tile_size;
+    assert(*ntiles <= (1 << log2_tile_num));
+  }
+
+  return mi_tile_size;
 }
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES

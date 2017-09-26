@@ -46,7 +46,7 @@ void av1_setup_frame_boundary_info(const struct AV1Common *const cm);
 
 // Calculate the correct tile size (width or height) for (1 << log2_tile_num)
 // tiles horizontally or vertically in the frame.
-int get_tile_size(int frame_mi_size, int log2_tile_num);
+int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles);
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 void av1_setup_across_tile_boundary_info(const struct AV1Common *const cm,
