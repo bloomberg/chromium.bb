@@ -16396,6 +16396,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2155" label="WebAudioDezipperBiquadFilterNodeQ"/>
   <int value="2156" label="WebAudioDezipperBiquadFilterNodeGain"/>
   <int value="2157" label="PerformanceServerTiming"/>
+  <int value="2158" label="FileReaderResultBeforeCompletion"/>
 </enum>
 
 <enum name="FeedbackSource">
