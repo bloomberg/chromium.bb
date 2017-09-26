@@ -163,18 +163,6 @@ function isClosedCaptionsButtonVisible(currentMediaElement)
     return false;
 }
 
-function toggleClosedCaptionsButton(videoElement) {
-    return mediaControlsButton(videoElement, 'toggle-closed-captions-button');
-}
-
-function playButton(videoElement) {
-    return mediaControlsButton(videoElement, 'play-button');
-}
-
-function muteButton(videoElement) {
-    return mediaControlsButton(videoElement, 'mute-button');
-}
-
 function clickAtCoordinates(x, y)
 {
     eventSender.mouseMoveTo(x, y);

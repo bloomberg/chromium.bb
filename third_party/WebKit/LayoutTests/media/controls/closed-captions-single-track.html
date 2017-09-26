@@ -36,7 +36,6 @@ async_test(t => {
 
       // Captions track should become visible after the closed caption button is pressed.
       checkCaptionsVisible(video, captions);
-      checkButtonHasClass(toggleClosedCaptionsButton(video), "visible");
 
       // Click the closed captions button again and make sure the menu does not appear.
       clickCaptionButton(video);
@@ -44,7 +43,6 @@ async_test(t => {
 
       // Captions track should become invisible after the closed caption button is pressed.
       checkCaptionsHidden(video);
-      checkButtonNotHasClass(toggleClosedCaptionsButton(video), "visible");
     }));
   });
 
