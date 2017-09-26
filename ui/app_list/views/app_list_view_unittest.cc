@@ -985,6 +985,63 @@ TEST_F(AppListViewFullscreenTest, TapAndClickWithinAppsGridView) {
   EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
+// Tests that search box should not become a rectangle during drag.
+TEST_F(AppListViewFullscreenTest, SearchBoxCornerRadiusDuringDragging) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+  view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
+
+  // Send SCROLL_START and SCROLL_UPDATE events, simulating dragging the
+  // launcher.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  const gfx::Point start = view_->get_fullscreen_widget_for_test()
+                               ->GetWindowBoundsInScreen()
+                               .top_right();
+  int delta_y = 0;
+  ui::GestureEvent start_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
+  view_->OnGestureEvent(&start_event);
+
+  // Drag down the launcher.
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  delta_y += 10;
+  ui::GestureEvent update_event = ui::GestureEvent(
+      start.x(), start.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
+  view_->OnGestureEvent(&update_event);
+
+  EXPECT_TRUE(IsStateShown(AppListModel::STATE_APPS));
+  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
+                AppListModel::STATE_APPS));
+
+  // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
+  // during drag.
+  EXPECT_TRUE(SetAppListState(AppListModel::STATE_SEARCH_RESULTS));
+  EXPECT_TRUE(view_->is_in_drag());
+  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
+                AppListModel::STATE_SEARCH_RESULTS));
+
+  // Ends to drag the launcher.
+  EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
+  timestamp += base::TimeDelta::FromMilliseconds(25);
+  ui::GestureEvent end_event =
+      ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
+                       ui::GestureEventDetails(ui::ET_GESTURE_END));
+  view_->OnGestureEvent(&end_event);
+
+  // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
+  // if launcher drag finished.
+  EXPECT_FALSE(view_->is_in_drag());
+  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+            search_box_view()->GetSearchBoxBorderCornerRadiusForState(
+                AppListModel::STATE_APPS));
+}
+
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views. Then closes the window.
 TEST_F(AppListViewTest, DisplayTest) {

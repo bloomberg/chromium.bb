@@ -708,9 +708,11 @@ void SearchBoxView::OnTabletModeChanged(bool started) {
 }
 
 int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
-    AppListModel::State state) {
-  if (state == AppListModel::STATE_SEARCH_RESULTS)
+    AppListModel::State state) const {
+  if (state == AppListModel::STATE_SEARCH_RESULTS &&
+      !app_list_view_->is_in_drag()) {
     return kSearchBoxBorderCornerRadiusSearchResult;
+  }
   return kSearchBoxBorderCornerRadiusFullscreen;
 }
 

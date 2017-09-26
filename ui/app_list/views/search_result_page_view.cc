@@ -447,8 +447,8 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
         color,
         gfx::Tween::LinearIntValueBetween(
             progress,
-            SearchBoxView::GetSearchBoxBorderCornerRadiusForState(from_state),
-            SearchBoxView::GetSearchBoxBorderCornerRadiusForState(to_state))));
+            search_box->GetSearchBoxBorderCornerRadiusForState(from_state),
+            search_box->GetSearchBoxBorderCornerRadiusForState(to_state))));
   }
 
   gfx::Rect onscreen_bounds(

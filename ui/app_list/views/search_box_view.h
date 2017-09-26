@@ -137,7 +137,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void OnTabletModeChanged(bool started);
 
   // Returns background border corner radius in the given state.
-  static int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state);
+  int GetSearchBoxBorderCornerRadiusForState(AppListModel::State state) const;
 
   // Returns background color for the given state.
   SkColor GetBackgroundColorForState(AppListModel::State state) const;
