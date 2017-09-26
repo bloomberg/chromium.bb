@@ -30,6 +30,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
+import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
@@ -1007,18 +1008,12 @@ public class BottomSheet
                     contentView, oldContent, mBottomSheetContentContainer, true));
         }
 
-        // Return early if there are no animators to run.
-        if (animators.isEmpty()) {
-            onContentSwapAnimationEnd(content);
-            return;
-        }
-
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
         int colorId = content == null || !content.isIncognitoThemedContent()
                 ? R.color.modern_primary_color
                 : R.color.incognito_primary_color;
-        if (!mIsSheetOpen || content.isIncognitoThemedContent()
+        if (!mIsSheetOpen || (content != null && content.isIncognitoThemedContent())
                 || (mSheetContent != null && mSheetContent.isIncognitoThemedContent())) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
             // background color is needed on the toolbar holder to prevent a blank rectangle from
@@ -1029,12 +1024,25 @@ public class BottomSheet
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), colorId));
 
+        // Set color on the content view to compensate for a JellyBean bug (crbug.com/766237).
+        if (content != null) {
+            content.getContentView().setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), colorId));
+        }
+
+        // Return early if there are no animators to run.
+        if (animators.isEmpty()) {
+            onContentSwapAnimationEnd(content);
+            return;
+        }
+
         mContentSwapAnimatorSet.playTogether(animators);
         mContentSwapAnimatorSet.start();
 
         // If the existing content is null or the tab switcher assets are showing, end the animation
         // immediately.
-        if (mSheetContent == null || mDefaultToolbarView.isInTabSwitcherMode()) {
+        if (mSheetContent == null || mDefaultToolbarView.isInTabSwitcherMode()
+                || SysUtils.isLowEndDevice()) {
             mContentSwapAnimatorSet.end();
         }
     }

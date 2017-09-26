@@ -186,13 +186,15 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         if (FeatureUtilities.isChromeHomeEnabled()) {
             mModernLayout.setVisibility(incognitoEnabled ? View.VISIBLE : View.GONE);
             if (incognitoSelected) {
-                setBackgroundResource(R.color.incognito_primary_color);
+                setBackgroundColor(ApiCompatibilityUtils.getColor(
+                        getResources(), R.color.incognito_primary_color));
                 mModernStackButtonWrapper.setSelectedTabIndicatorColor(
                         mTabIconSelectedLightColor.getDefaultColor());
                 mModernStandardButtonIcon.setTint(mTabIconLightColor);
                 mModernIncognitoButtonIcon.setTint(mTabIconSelectedLightColor);
             } else {
-                setBackgroundResource(R.color.modern_primary_color);
+                setBackgroundColor(ApiCompatibilityUtils.getColor(
+                        getResources(), R.color.modern_primary_color));
                 mModernStackButtonWrapper.setSelectedTabIndicatorColor(
                         mTabIconSelectedDarkColor.getDefaultColor());
                 mModernStandardButtonIcon.setTint(mTabIconSelectedDarkColor);
