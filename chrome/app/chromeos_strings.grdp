@@ -545,10 +545,10 @@ Press any key to continue exploring.
     Cancel selection
   </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_LISTVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'list view' mode.">
-    List view
+    Switch to list view
   </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'thumbnail view' mode.">
-    Thumbnail view
+    Switch to thumbnail view
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TITLE" desc="Title of the cloud import feature.">
     Cloud backup
