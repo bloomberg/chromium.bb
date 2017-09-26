@@ -140,14 +140,16 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
 
   PrefService* pref_service = GetPrefService();
 
-  std::unique_ptr<base::DictionaryValue> share_targets_dict =
-      pref_service->GetDictionary(prefs::kWebShareVisitedTargets)
-          ->CreateDeepCopy();
+  const base::DictionaryValue* share_targets_dict =
+      pref_service->GetDictionary(prefs::kWebShareVisitedTargets);
 
   std::vector<WebShareTarget> sufficiently_engaged_targets;
   for (const auto& it : *share_targets_dict) {
     GURL manifest_url(it.first);
-    DCHECK(manifest_url.is_valid());
+    // This should not happen, but if the prefs file is corrupted, it might, so
+    // don't (D)CHECK, just continue gracefully.
+    if (!manifest_url.is_valid())
+      continue;
 
     if (GetEngagementLevel(manifest_url) < kMinimumEngagementLevel)
       continue;

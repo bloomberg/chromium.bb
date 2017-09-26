@@ -24,6 +24,11 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
     return;
   }
 
+  // TODO(mgiuca): This DCHECK is known to fail due to https://crbug.com/762388.
+  // Currently, this can only happen if flags are turned on. These cases should
+  // be fixed before this feature is rolled out.
+  DCHECK(manifest_url.is_valid());
+
   std::string url_template =
       base::UTF16ToUTF8(manifest.share_target.value().url_template.string());
 
