@@ -18,7 +18,6 @@ cr.define('settings_about_page', function() {
           'getChannelInfo',
           'getVersionInfo',
           'getRegulatoryInfo',
-          'refreshTPMFirmwareUpdateStatus',
           'setChannel');
       }
 
@@ -47,11 +46,6 @@ cr.define('settings_about_page', function() {
 
         /** @private {?RegulatoryInfo} */
         this.regulatoryInfo_ = null;
-
-        /** @private {!TPMFirmwareUpdateStatus} */
-        this.tpmFirmwareUpdateStatus_ = {
-          updateAvailable: false,
-        };
       }
     }
 
@@ -152,20 +146,6 @@ cr.define('settings_about_page', function() {
         channel, isPowerwashAllowed) {
       this.methodCalled('setChannel', [channel, isPowerwashAllowed]);
     };
-
-    /** @param {!TPMFirmwareUpdateStatus} status */
-    TestAboutPageBrowserProxy.prototype.setTPMFirmwareUpdateStatus = function(
-        status) {
-      this.tpmFirmwareUpdateStatus_ = status;
-    };
-
-    /** @override */
-    TestAboutPageBrowserProxy.prototype.refreshTPMFirmwareUpdateStatus =
-        function() {
-      this.methodCalled('refreshTPMFirmwareUpdateStatus');
-      cr.webUIListenerCallback(
-          'tpm-firmware-update-status-changed', this.tpmFirmwareUpdateStatus_);
-    };
   }
 
 
@@ -229,7 +209,6 @@ cr.define('settings_about_page', function() {
           return Promise.all([
             aboutBrowserProxy.whenCalled('getChannelInfo'),
             aboutBrowserProxy.whenCalled('refreshUpdateStatus'),
-            aboutBrowserProxy.whenCalled('refreshTPMFirmwareUpdateStatus'),
           ]);
         }
       }
@@ -562,27 +541,6 @@ cr.define('settings_about_page', function() {
             return initNewPage();
           }).then(function() {
             return checkRegulatoryInfo(true);
-          });
-        });
-
-        test('TPMFirmwareUpdate', function() {
-          return initNewPage().then(function() {
-            assertTrue(page.$.aboutTPMFirmwareUpdate.hidden);
-            aboutBrowserProxy.setTPMFirmwareUpdateStatus(
-                {updateAvailable: true});
-            aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
-          }).then(function() {
-            assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
-            MockInteractions.tap(page.$.aboutTPMFirmwareUpdate);
-          }).then(function() {
-            var dialog = page.$$('settings-powerwash-dialog');
-            assertTrue(!!dialog);
-            assertTrue(dialog.$.dialog.open);
-            MockInteractions.tap(dialog.$$('#powerwash'));
-            return lifetimeBrowserProxy.whenCalled('factoryReset')
-                .then(function(requestTpmFirmwareUpdate) {
-                  assertTrue(requestTpmFirmwareUpdate);
-                });
           });
         });
       }

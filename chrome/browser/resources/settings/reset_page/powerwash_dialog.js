@@ -4,16 +4,11 @@
 
 /**
  * @fileoverview
- * 'settings-powerwash-dialog' is a dialog shown to request confirmation from
- * the user for a device reset (aka powerwash).
+ * 'settings-reset-page' is the settings page containing reset
+ * settings.
  */
 Polymer({
   is: 'settings-powerwash-dialog',
-
-  properties: {
-    /** @public */
-    requestTpmFirmwareUpdate: Boolean,
-  },
 
   /** @override */
   attached: function() {
@@ -28,7 +23,6 @@ Polymer({
 
   /** @private */
   onRestartTap_: function() {
-    settings.LifetimeBrowserProxyImpl.getInstance().factoryReset(
-        this.requestTpmFirmwareUpdate);
+    settings.LifetimeBrowserProxyImpl.getInstance().factoryReset();
   },
 });
