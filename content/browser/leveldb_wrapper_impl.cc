@@ -19,6 +19,11 @@ void LevelDBWrapperImpl::Delegate::MigrateData(
   std::move(callback).Run(nullptr);
 }
 
+std::vector<LevelDBWrapperImpl::Change> LevelDBWrapperImpl::Delegate::FixUpData(
+    const ValueMap& data) {
+  return std::vector<Change>();
+}
+
 void LevelDBWrapperImpl::Delegate::OnMapLoaded(leveldb::mojom::DatabaseError) {}
 
 bool LevelDBWrapperImpl::s_aggressive_flushing_enabled_ = false;
@@ -344,6 +349,31 @@ void LevelDBWrapperImpl::OnMapLoaded(
     (*map_)[std::vector<uint8_t>(it->key.begin() + prefix_.size(),
                                  it->key.end())] = it->value;
     bytes_used_ += it->key.size() - prefix_.size() + it->value.size();
+  }
+
+  std::vector<Change> changes = delegate_->FixUpData(*map_);
+  if (!changes.empty()) {
+    DCHECK(database_);
+    CreateCommitBatchIfNeeded();
+    for (auto& change : changes) {
+      auto it = map_->find(change.first);
+      if (!change.second) {
+        DCHECK(it != map_->end());
+        bytes_used_ -= it->first.size() + it->second.size();
+        map_->erase(it);
+      } else {
+        if (it != map_->end()) {
+          bytes_used_ -= it->second.size();
+          it->second = std::move(*change.second);
+          bytes_used_ += it->second.size();
+        } else {
+          bytes_used_ += change.first.size() + change.second->size();
+          (*map_)[change.first] = std::move(*change.second);
+        }
+      }
+      commit_batch_->changed_keys.insert(std::move(change.first));
+    }
+    CommitChanges();
   }
 
   // We proceed without using a backing store, nothing will be persisted but the

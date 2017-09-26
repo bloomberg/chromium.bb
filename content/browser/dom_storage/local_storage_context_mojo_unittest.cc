@@ -115,6 +115,21 @@ class TestLevelDBObserver : public mojom::LevelDBObserver {
   mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
 };
 
+class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+ public:
+  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind() {
+    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo ptr_info;
+    auto request = mojo::MakeRequest(&ptr_info);
+    mojo::MakeStrongAssociatedBinding(base::WrapUnique(new GetAllCallback),
+                                      std::move(request));
+    return ptr_info;
+  }
+
+ private:
+  GetAllCallback() {}
+  void Complete(bool success) override {}
+};
+
 }  // namespace
 
 class LocalStorageContextMojoTest : public testing::Test {
@@ -692,11 +707,15 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   url::Origin origin2(GURL("http://example.com"));
   base::string16 key = base::ASCIIToUTF16("key");
   base::string16 value = base::ASCIIToUTF16("value");
+  base::string16 key2 = base::ASCIIToUTF16("key2");
+  key2.push_back(0xd83d);
+  key2.push_back(0xde00);
 
   DOMStorageNamespace* local = local_storage_namespace();
   DOMStorageArea* area = local->OpenStorageArea(origin1.GetURL());
   base::NullableString16 dummy;
   area->SetItem(key, value, dummy, &dummy);
+  area->SetItem(key2, value, dummy, &dummy);
   local->CloseStorageArea(area);
   FlushAndPurgeDOMStorageMemory();
 
@@ -714,20 +733,98 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(mock_data().empty());
 
-  base::RunLoop run_loop;
-  bool success = false;
-  std::vector<uint8_t> result;
-  wrapper->Get(
-      LocalStorageContextMojo::MigrateString(key),
-      base::BindOnce(&GetCallback, run_loop.QuitClosure(), &success, &result));
-  run_loop.Run();
-  EXPECT_TRUE(success);
-  EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    wrapper->Get(LocalStorageContextMojo::MigrateString(key),
+                 base::BindOnce(&GetCallback, run_loop.QuitClosure(), &success,
+                                &result));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
+  }
+
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    wrapper->Get(LocalStorageContextMojo::MigrateString(key2),
+                 base::BindOnce(&GetCallback, run_loop.QuitClosure(), &success,
+                                &result));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
+  }
 
   // Origin1 should no longer exist in old storage.
   area = local->OpenStorageArea(origin1.GetURL());
   ASSERT_EQ(0u, area->Length());
   local->CloseStorageArea(area);
+}
+
+static std::string EncodeKeyAsUTF16(const std::string& origin,
+                                    const base::string16& key) {
+  std::string result = '_' + origin + '\x00' + '\x00';
+  std::copy(reinterpret_cast<const char*>(key.data()),
+            reinterpret_cast<const char*>(key.data()) +
+                key.size() * sizeof(base::char16),
+            std::back_inserter(result));
+  return result;
+}
+
+TEST_F(LocalStorageContextMojoTest, FixUp) {
+  set_mock_data("VERSION", "1");
+  // Add mock data for the "key" key, with both possible encodings for key.
+  // We expect the value of the correctly encoded key to take precedence over
+  // the incorrectly encoded key (and expect the incorrectly encoded key to be
+  // deleted.
+  set_mock_data(std::string("_http://foobar.com") + '\x00' + "\x01key",
+                "value1");
+  set_mock_data(
+      EncodeKeyAsUTF16("http://foobar.com", base::ASCIIToUTF16("key")),
+      "value2");
+  // Also add mock data for the "foo" key, this time only with the incorrec
+  // encoding. This should be updated to the correct encoding.
+  set_mock_data(
+      EncodeKeyAsUTF16("http://foobar.com", base::ASCIIToUTF16("foo")),
+      "value3");
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    wrapper->Get(leveldb::StdStringToUint8Vector("\x01key"),
+                 base::BindOnce(&GetCallback, run_loop.QuitClosure(), &success,
+                                &result));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    EXPECT_EQ(leveldb::StdStringToUint8Vector("value1"), result);
+  }
+  {
+    base::RunLoop run_loop;
+    bool success = false;
+    std::vector<uint8_t> result;
+    wrapper->Get(leveldb::StdStringToUint8Vector("\x01"
+                                                 "foo"),
+                 base::BindOnce(&GetCallback, run_loop.QuitClosure(), &success,
+                                &result));
+    run_loop.Run();
+    EXPECT_TRUE(success);
+    EXPECT_EQ(leveldb::StdStringToUint8Vector("value3"), result);
+  }
+
+  // Expect 4 rows in the database: VERSION, meta-data for the origin, and two
+  // rows of actual data.
+  EXPECT_EQ(4u, mock_data().size());
+  EXPECT_EQ(leveldb::StdStringToUint8Vector("value1"),
+            mock_data().rbegin()->second);
+  EXPECT_EQ(leveldb::StdStringToUint8Vector("value3"),
+            std::next(mock_data().rbegin())->second);
 }
 
 TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
