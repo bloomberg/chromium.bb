@@ -437,7 +437,9 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
 
     RunCaptivePortalTest();
 
-    // Timer should start for captive portal detection.
+#if !defined(OS_ANDROID)
+    // On non-Android platforms (except for iOS where this code is disabled),
+    // timer should start for captive portal detection.
     EXPECT_TRUE(error_handler()->IsTimerRunningForTesting());
     EXPECT_TRUE(delegate()->captive_portal_checked());
     EXPECT_FALSE(delegate()->ssl_interstitial_shown());
@@ -447,10 +449,30 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+
+    // Captive portal should be checked on non-Android platforms.
     EXPECT_TRUE(delegate()->captive_portal_checked());
     EXPECT_TRUE(delegate()->ssl_interstitial_shown());
     EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
     EXPECT_FALSE(delegate()->suggested_url_checked());
+#else
+    // On Android there is no custom captive portal detection logic, so the
+    // timer should not start and an SSL interstitial should be shown
+    // immediately.
+    EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+    EXPECT_FALSE(delegate()->captive_portal_checked());
+    EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+    EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+    EXPECT_FALSE(delegate()->suggested_url_checked());
+
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+    EXPECT_FALSE(delegate()->captive_portal_checked());
+    EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+    EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
+    EXPECT_FALSE(delegate()->suggested_url_checked());
+#endif
 
     // Check that the histogram for the captive portal cert was recorded.
     histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
@@ -1030,8 +1052,6 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
   ASSERT_TRUE(test_server()->ShutdownAndWaitUntilComplete());
 }
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-
 // Tests that a certificate marked as a known captive portal certificate causes
 // the captive portal interstitial to be shown.
 TEST_F(SSLErrorAssistantTest, CaptivePortal_FeatureEnabled) {
@@ -1124,42 +1144,6 @@ TEST_F(SSLErrorAssistantTest,
   ResetErrorHandlerFromFile(kOkayCertName, cert_status);
   TestNoCaptivePortalInterstitial();
 }
-
-#else
-
-TEST_F(SSLErrorAssistantTest, CaptivePortal_DisabledByBuild) {
-  SetCaptivePortalFeatureEnabled(true);
-
-  // Default error for SSLErrorHandlerNameMismatchTest tests is name mismatch,
-  // but the feature is disabled by build so a generic SSL interstitial will be
-  // displayed.
-  base::HistogramTester histograms;
-
-  RunCaptivePortalTest();
-
-  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_FALSE(delegate()->captive_portal_checked());
-  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
-  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
-  EXPECT_FALSE(delegate()->suggested_url_checked());
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
-  EXPECT_FALSE(delegate()->captive_portal_checked());
-  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
-  EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
-  EXPECT_FALSE(delegate()->suggested_url_checked());
-
-  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
-  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::HANDLE_ALL, 1);
-  histograms.ExpectBucketCount(
-      SSLErrorHandler::GetHistogramNameForTesting(),
-      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
-}
-
-#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 // Tests that if a certificate matches the issuer common name regex of a MITM
 // software entry but not the issuer organization name a MITM software
