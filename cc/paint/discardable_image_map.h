@@ -31,10 +31,12 @@ class PaintOpBuffer;
 class CC_PAINT_EXPORT DiscardableImageMap {
  public:
   struct CC_PAINT_EXPORT AnimatedImageMetadata {
-    AnimatedImageMetadata(PaintImage::Id paint_image_id,
-                          PaintImage::CompletionState completion_state,
-                          std::vector<FrameMetadata> frames,
-                          int repetition_count);
+    AnimatedImageMetadata(
+        PaintImage::Id paint_image_id,
+        PaintImage::CompletionState completion_state,
+        std::vector<FrameMetadata> frames,
+        int repetition_count,
+        PaintImage::AnimationSequenceId reset_animation_sequence_id);
     AnimatedImageMetadata(const AnimatedImageMetadata& other);
     ~AnimatedImageMetadata();
 
@@ -42,6 +44,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
     PaintImage::CompletionState completion_state;
     std::vector<FrameMetadata> frames;
     int repetition_count;
+    PaintImage::AnimationSequenceId reset_animation_sequence_id;
   };
 
   DiscardableImageMap();

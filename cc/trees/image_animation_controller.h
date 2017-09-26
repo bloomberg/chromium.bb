@@ -126,6 +126,7 @@ class CC_EXPORT ImageAnimationController {
     }
 
    private:
+    void ResetAnimation();
     size_t NextFrameIndex() const;
     bool is_complete() const {
       return completion_state_ == PaintImage::CompletionState::DONE;
@@ -167,6 +168,9 @@ class CC_EXPORT ImageAnimationController {
 
     // Set if the animation has been started.
     bool animation_started_ = false;
+
+    // The last synchronized sequence id for resetting this animation.
+    PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;
 
     // Whether the image is known to be completely loaded in the most recent
     // recording received.

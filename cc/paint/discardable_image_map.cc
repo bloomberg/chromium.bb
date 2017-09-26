@@ -226,7 +226,8 @@ class DiscardableImageGenerator {
     if (paint_image.ShouldAnimate()) {
       animated_images_metadata_.emplace_back(
           paint_image.stable_id(), paint_image.completion_state(),
-          paint_image.GetFrameMetadata(), paint_image.repetition_count());
+          paint_image.GetFrameMetadata(), paint_image.repetition_count(),
+          paint_image.reset_animation_sequence_id());
     }
 
     image_set_.emplace_back(
@@ -298,11 +299,13 @@ DiscardableImageMap::AnimatedImageMetadata::AnimatedImageMetadata(
     PaintImage::Id paint_image_id,
     PaintImage::CompletionState completion_state,
     std::vector<FrameMetadata> frames,
-    int repetition_count)
+    int repetition_count,
+    PaintImage::AnimationSequenceId reset_animation_sequence_id)
     : paint_image_id(paint_image_id),
       completion_state(completion_state),
       frames(std::move(frames)),
-      repetition_count(repetition_count) {}
+      repetition_count(repetition_count),
+      reset_animation_sequence_id(reset_animation_sequence_id) {}
 
 DiscardableImageMap::AnimatedImageMetadata::~AnimatedImageMetadata() = default;
 
