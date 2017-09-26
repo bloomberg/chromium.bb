@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TrustedURL_h
-#define TrustedURL_h
+#ifndef TrustedScriptURL_h
+#define TrustedScriptURL_h
 
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -15,27 +15,28 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT TrustedURL final
-    : public GarbageCollectedFinalized<TrustedURL>,
+class CORE_EXPORT TrustedScriptURL final
+    : public GarbageCollectedFinalized<TrustedScriptURL>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TrustedURL* Create(const KURL& url) { return new TrustedURL(url); }
+  static TrustedScriptURL* Create(const KURL& url) {
+    return new TrustedScriptURL(url);
+  }
 
-  // TrustedURL.idl
+  // TrustedScriptURL.idl
   String toString() const;
-  static TrustedURL* create(ScriptState*, const String& url);
-  static TrustedURL* unsafelyCreate(ScriptState*, const String& url);
+  static TrustedScriptURL* unsafelyCreate(ScriptState*, const String& url);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
-  TrustedURL(const KURL&);
+  TrustedScriptURL(const KURL&);
 
   KURL url_;
 };
 
 }  // namespace blink
 
-#endif  // TrustedURL_h
+#endif  // TrustedScriptURL_h
