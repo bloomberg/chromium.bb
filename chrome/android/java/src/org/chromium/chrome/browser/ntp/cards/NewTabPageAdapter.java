@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SuggestionsCarousel;
@@ -185,6 +186,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
             case ItemViewType.CAROUSEL:
                 return new SuggestionsCarousel.ViewHolder(mRecyclerView);
+
+            case ItemViewType.PLACEHOLDER_CARD:
+                return new ContentSuggestionPlaceholder.ViewHolder(
+                        mRecyclerView, mUiConfig, mContextMenuManager);
         }
 
         assert false : viewType;
@@ -347,7 +352,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         // In the modern layout, we only consider articles.
         SuggestionsSection suggestions = mSections.getSection(KnownCategories.ARTICLES);
-        return suggestions == null || !suggestions.hasSuggestions();
+        return suggestions == null || !suggestions.hasCards();
     }
 
     private int getChildPositionOffset(TreeNode child) {

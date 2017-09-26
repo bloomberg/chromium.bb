@@ -127,6 +127,7 @@ public class NewTabPageAdapterTest {
         public boolean mViewAllButton;
         public boolean mFetchButton;
         public boolean mProgressItem;
+        public boolean mPlaceholder;
 
         public SectionDescriptor() {}
 
@@ -172,6 +173,11 @@ public class NewTabPageAdapterTest {
             mStatusCard = true;
             return this;
         }
+
+        public SectionDescriptor withPlaceholder() {
+            mPlaceholder = true;
+            return this;
+        }
     }
 
     /**
@@ -212,6 +218,10 @@ public class NewTabPageAdapterTest {
 
             if (descriptor.mHeader) {
                 mInOrder.verify(mVisitor, mVerification).visitHeader();
+            }
+
+            if (descriptor.mPlaceholder) {
+                mInOrder.verify(mVisitor, mVerification).visitPlaceholderItem();
             }
 
             for (SnippetArticle suggestion : descriptor.mSuggestions) {
@@ -273,7 +283,7 @@ public class NewTabPageAdapterTest {
         FeatureUtilities.resetChromeHomeEnabledForTests();
 
         // Set empty variation params for the test.
-        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+        CardsVariationParameters.setTestVariationParams(new HashMap<>());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(
@@ -546,7 +556,7 @@ public class NewTabPageAdapterTest {
 
         // Part 2: VisibleIfEmpty = false
         suggestionsSource = new FakeSuggestionsSource();
-        suggestionsSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
+        suggestionsSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
         suggestionsSource.setInfoForCategory(
                 TEST_CATEGORY, new CategoryInfoBuilder(TEST_CATEGORY).build());
 
@@ -966,7 +976,7 @@ public class NewTabPageAdapterTest {
 
     @Test
     @Feature({"Ntp"})
-    @Features({ @Features.Register(ChromeFeatureList.CHROME_HOME) })
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testSigninPromoModern() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
@@ -974,7 +984,7 @@ public class NewTabPageAdapterTest {
         reloadNtp();
 
         // Special case of the modern layout: the signin promo comes before the content suggestions.
-        assertItemsFor(signinPromo(), emptySection().withProgress());
+        assertItemsFor(signinPromo(), emptySection().withPlaceholder().withProgress());
     }
 
     @Test
@@ -1133,18 +1143,19 @@ public class NewTabPageAdapterTest {
 
     @Test
     @Feature({"Ntp"})
-    @Features({ @Features.Register(value = ChromeFeatureList.CHROME_HOME) })
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
     public void testAllDismissedModern() {
         when(mUiDelegate.isVisible()).thenReturn(true);
 
+        @CategoryInt
+        int category = KnownCategories.ARTICLES;
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.NOT_PROVIDED);
-        mSource.setInfoForCategory(KnownCategories.ARTICLES,
-                new CategoryInfoBuilder(TEST_CATEGORY).showIfEmpty().build());
-        mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
+        mSource.setInfoForCategory(
+                category, new CategoryInfoBuilder(category).showIfEmpty().build());
+        mSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
         final int numSuggestions = 3;
-        List<SnippetArticle> suggestions =
-                createDummySuggestions(numSuggestions, KnownCategories.ARTICLES);
-        mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, suggestions);
+        List<SnippetArticle> suggestions = createDummySuggestions(numSuggestions, category);
+        mSource.setSuggestionsForCategory(category, suggestions);
         reloadNtp();
         assertItemsForChromeHome(section(suggestions).withoutHeader());
 
@@ -1155,7 +1166,42 @@ public class NewTabPageAdapterTest {
             verify(itemRemovedCallback).onResult(anyString());
         }
 
-        assertItemsForChromeHome(emptySection().withoutHeader());
+        assertItemsForEmptyChromeHome(emptySection().withoutHeader());
+    }
+
+    /** Tests whether a section stays visible if empty, if required. */
+    @Test
+    @Feature({"Ntp"})
+    @Features(@Features.Register(ChromeFeatureList.CHROME_HOME))
+    public void testPlaceholderModern() {
+        // Need to use ARTICLES for Home features to work properly, e.g. All Dismissed visibility.
+        int category = KnownCategories.ARTICLES;
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.NOT_PROVIDED);
+        mSource.setInfoForCategory(
+                category, new CategoryInfoBuilder(category).showIfEmpty().build());
+        mSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
+        reloadNtp();
+
+        // By default we have an initializing section. It should show a placeholder in modern.
+        assertItemsForChromeHome(emptySection().withoutHeader().withPlaceholder().withProgress());
+
+        // We stop loading (timeout?), we should remove the placeholder.
+        mSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        assertItemsForEmptyChromeHome(emptySection().withoutHeader());
+
+        // Loading suggestions show a placeholder when they are empty
+        mSource.setStatusForCategory(category, CategoryStatus.AVAILABLE_LOADING);
+        assertItemsForChromeHome(emptySection().withoutHeader().withPlaceholder().withProgress());
+
+        // Simulating an update from the component (timeout or success), we are notified about a
+        // status changes and that we should fetch the new suggestions.
+        mSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        List<SnippetArticle> suggestions = mSource.createAndSetSuggestions(2, category);
+        assertItemsForChromeHome(section(suggestions).withoutHeader());
+
+        // Loading suggestions should not show a placeholder when they are not empty
+        mSource.setStatusForCategory(category, CategoryStatus.AVAILABLE_LOADING);
+        assertItemsForChromeHome(section(suggestions).withoutHeader().withProgress());
     }
 
     /**
@@ -1208,9 +1254,19 @@ public class NewTabPageAdapterTest {
 
         // TODO(bauerb): Remove above-the-fold from test setup in Chrome Home.
         matcher.expectAboveTheFoldItem();
-        if (section.mSuggestions.isEmpty()) matcher.expectAllDismissedItem();
         matcher.expectSection(section);
-        if (!section.mSuggestions.isEmpty()) matcher.expectFooter();
+        matcher.expectFooter(); // TODO(dgn): Handle scroll to reload with removes the footer
+        matcher.expectSpacingItem();
+        matcher.expectEnd();
+    }
+
+    private void assertItemsForEmptyChromeHome(SectionDescriptor section) {
+        ItemsMatcher matcher = new ItemsMatcher(mAdapter.getRootForTesting());
+
+        // TODO(bauerb): Remove above-the-fold from test setup in Chrome Home.
+        matcher.expectAboveTheFoldItem();
+        matcher.expectAllDismissedItem();
+        matcher.expectSection(section);
         matcher.expectSpacingItem();
         matcher.expectEnd();
     }
@@ -1240,7 +1296,7 @@ public class NewTabPageAdapterTest {
      */
     private SectionDescriptor sectionWithStatusCard() {
         assertFalse(FeatureUtilities.isChromeHomeEnabled());
-        return new SectionDescriptor(Collections.<SnippetArticle>emptyList()).withStatusCard();
+        return new SectionDescriptor(Collections.emptyList()).withStatusCard();
     }
 
     /**
@@ -1251,7 +1307,7 @@ public class NewTabPageAdapterTest {
      */
     private SectionDescriptor emptySection() {
         assertTrue(FeatureUtilities.isChromeHomeEnabled());
-        return new SectionDescriptor(Collections.<SnippetArticle>emptyList());
+        return new SectionDescriptor(Collections.emptyList());
     }
 
     private void resetUiDelegate() {

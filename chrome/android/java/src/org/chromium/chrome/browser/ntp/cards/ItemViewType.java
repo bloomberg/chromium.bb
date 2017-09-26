@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 @IntDef({ItemViewType.ABOVE_THE_FOLD, ItemViewType.SITE_SECTION, ItemViewType.HEADER,
         ItemViewType.SNIPPET, ItemViewType.SPACING, ItemViewType.STATUS, ItemViewType.PROGRESS,
         ItemViewType.ACTION, ItemViewType.FOOTER, ItemViewType.PROMO, ItemViewType.ALL_DISMISSED,
-        ItemViewType.CAROUSEL})
+        ItemViewType.CAROUSEL, ItemViewType.PLACEHOLDER_CARD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface ItemViewType {
     /**
@@ -96,4 +96,11 @@ public @interface ItemViewType {
      * @see Adapter#getItemViewType(int)
      */
     int CAROUSEL = 12;
+
+    /**
+     * View type for a {@link org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder}.
+     *
+     * @see Adapter#getItemViewType(int)
+     */
+    int PLACEHOLDER_CARD = 13;
 }

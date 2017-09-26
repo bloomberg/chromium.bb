@@ -175,7 +175,7 @@ public abstract class CardViewHolder
      * with data.
      */
     @CallSuper
-    protected void onBindViewHolder() {
+    public void onBindViewHolder() {
         // Reset the transparency and translation in case a dismissed card is being recycled.
         itemView.setAlpha(1f);
         itemView.setTranslationX(0f);

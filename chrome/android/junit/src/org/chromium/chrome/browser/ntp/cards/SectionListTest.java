@@ -32,9 +32,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
@@ -48,6 +50,7 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -83,7 +86,10 @@ public class SectionListTest {
 
     @Before
     public void setUp() {
-        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        FeatureUtilities.resetChromeHomeEnabledForTests();
+
+        CardsVariationParameters.setTestVariationParams(new HashMap<>());
         MockitoAnnotations.initMocks(this);
         mSuggestionSource = spy(new FakeSuggestionsSource());
 
@@ -440,7 +446,7 @@ public class SectionListTest {
         assertFalse(sectionList.categoriesChanged(mSuggestionSource.getCategories()));
         assertFalse(sectionList.categoriesChanged(new int[] {CATEGORY1}));
 
-        mSuggestionSource.setStatusForCategory(CATEGORY2, CategoryStatus.AVAILABLE_LOADING);
+        mSuggestionSource.setStatusForCategory(CATEGORY2, CategoryStatus.AVAILABLE);
 
         // After notifying of a change for the category, it stops being ignored.
         assertTrue(sectionList.categoriesChanged(mSuggestionSource.getCategories()));
