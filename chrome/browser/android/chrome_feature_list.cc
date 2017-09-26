@@ -64,9 +64,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeSwipeLogic,
     &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsScrollToLoad,
-    &kContentSuggestionsVideoOverlay,
     &kContentSuggestionsSettings,
     &kContentSuggestionsShowSummary,
+    &kContentSuggestionsThumbnailDominantColor,
+    &kContentSuggestionsVideoOverlay,
     &kContextualSearchSingleActions,
     &kContextualSearchUrlActions,
     &kContextualSuggestionsCarousel,
@@ -180,14 +181,18 @@ const base::Feature kContentSuggestionsLargeThumbnail{
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kContentSuggestionsVideoOverlay{
-    "ContentSuggestionsVideoOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContentSuggestionsSettings{
     "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsShowSummary{
     "ContentSuggestionsShowSummary", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsThumbnailDominantColor{
+    "ContentSuggestionsThumbnailDominantColor",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContentSuggestionsVideoOverlay{
+    "ContentSuggestionsVideoOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_ENABLED_BY_DEFAULT};
