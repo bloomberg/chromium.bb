@@ -197,6 +197,7 @@ test("vr_common_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/accessibility:ax_gen",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
