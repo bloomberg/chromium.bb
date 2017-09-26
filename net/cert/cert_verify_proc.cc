@@ -13,6 +13,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
@@ -449,6 +450,14 @@ int CertVerifyProc::Verify(X509Certificate* cert,
                            CRLSet* crl_set,
                            const CertificateList& additional_trust_anchors,
                            CertVerifyResult* verify_result) {
+  // CertVerifyProc's contract allows ::VerifyInternal() to wait on File I/O
+  // (such as the Windows registry or smart cards on all platforms) or may re-
+  // enter this code via extension hooks (such as smart card UI). To ensure
+  // threads are not starved or deadlocked, the base::ScopedBlockingCall below
+  // increments the thread pool capacity when this method takes too much time to
+  // run.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   verify_result->Reset();
   verify_result->verified_cert = cert;
 
