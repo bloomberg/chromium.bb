@@ -39,7 +39,8 @@ const size_t kLogCutoffSize = 50 * 1024 * 1024;  // 50 MiB.
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
 const char* const kSystemLogFileNames[] = {
-    "/var/log/bios_info.txt", "/var/log/chrome/chrome",
+    "/var/log/bios_info.txt",
+    "/var/log/chrome/chrome", "/var/log/chrome/chrome.PREVIOUS",
     "/var/log/eventlog.txt",  "/var/log/platform_info.txt",
     "/var/log/messages",      "/var/log/messages.1",
     "/var/log/net.log",       "/var/log/net.1.log",
