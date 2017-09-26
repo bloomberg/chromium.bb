@@ -179,17 +179,17 @@ class NetworkStateNotifierTest : public ::testing::Test {
   void AddObserverOnNotification(StateObserver* observer,
                                  StateObserver* observer_to_add) {
     observer->SetNotificationCallback(
-        Bind(&NetworkStateNotifier::AddConnectionObserver,
-             WTF::Unretained(&notifier_), WTF::Unretained(observer_to_add),
-             WTF::Unretained(GetTaskRunner())));
+        WTF::Bind(&NetworkStateNotifier::AddConnectionObserver,
+                  WTF::Unretained(&notifier_), WTF::Unretained(observer_to_add),
+                  WTF::Unretained(GetTaskRunner())));
   }
 
   void RemoveObserverOnNotification(StateObserver* observer,
                                     StateObserver* observer_to_remove) {
-    observer->SetNotificationCallback(
-        Bind(&NetworkStateNotifier::RemoveConnectionObserver,
-             WTF::Unretained(&notifier_), WTF::Unretained(observer_to_remove),
-             WTF::Unretained(GetTaskRunner())));
+    observer->SetNotificationCallback(WTF::Bind(
+        &NetworkStateNotifier::RemoveConnectionObserver,
+        WTF::Unretained(&notifier_), WTF::Unretained(observer_to_remove),
+        WTF::Unretained(GetTaskRunner())));
   }
 
   bool VerifyObservations(

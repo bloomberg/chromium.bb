@@ -12,7 +12,7 @@ namespace {
 class LayoutThemeFuchsia : public LayoutThemeDefault {
  public:
   static RefPtr<LayoutTheme> Create() {
-    return AdoptRef(new LayoutThemeFuchsia());
+    return WTF::AdoptRef(new LayoutThemeFuchsia());
   }
 };
 
