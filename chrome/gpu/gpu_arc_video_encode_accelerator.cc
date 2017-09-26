@@ -63,6 +63,7 @@ void GpuArcVideoEncodeAccelerator::BitstreamBufferReady(
   auto iter = use_bitstream_cbs_.find(bitstream_buffer_id);
   DCHECK(iter != use_bitstream_cbs_.end());
   iter->second.Run(payload_size, key_frame, timestamp.InMicroseconds());
+  use_bitstream_cbs_.erase(iter);
 }
 
 void GpuArcVideoEncodeAccelerator::NotifyError(Error error) {
