@@ -6,6 +6,8 @@
 #define CSSLazyParsingState_h
 
 #include "core/css/CSSSelectorList.h"
+#include "core/css/RuleSet.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/wtf/Vector.h"
@@ -31,15 +33,21 @@ class CSSLazyParsingState
   // know the total number of style rules that deferred parsing.
   void FinishInitialParsing();
 
+  void SetHasBeforeOrAfter() { has_before_or_after = true; }
+  bool HasBeforeOrAfter() { return has_before_or_after; }
+
   // Helper method used to bump total_style_rules_.
   CSSLazyPropertyParserImpl* CreateLazyParser(const CSSParserTokenRange& block);
 
   const CSSParserContext* Context();
+  StyleEngine& GetStyleEngine();
+
+  RuleSet& GetRuleSet() { return owning_contents_->GetRuleSet(); }
+  bool HasRuleSet() { return owning_contents_->HasRuleSet(); }
 
   void CountRuleParsed();
 
-  bool ShouldLazilyParseProperties(const CSSSelectorList&,
-                                   const CSSParserTokenRange& block) const;
+  bool IsEmptyBlock(const CSSParserTokenRange& block) const;
 
   DECLARE_TRACE();
 
@@ -81,6 +89,10 @@ class CSSLazyParsingState
   int style_rules_needed_for_next_milestone_;
 
   int usage_;
+
+  // Used to enable lazy parsing for content attributes inside ::before/::after
+  // blocks
+  bool has_before_or_after = false;
 
   // Whether or not use counting is enabled for parsing. This will usually be
   // true, except for when stylesheets with @imports are removed from the page.
