@@ -3614,10 +3614,10 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='test_builders.VMInformationalBuilder',
       vm_tests=[config_lib.VMTestConfig(
           constants.VMTEST_INFORMATIONAL_TEST_TYPE,
-          timeout=24*60*60)],
+          timeout=23*60*60)],
       vm_tests_override=[config_lib.VMTestConfig(
           constants.VMTEST_INFORMATIONAL_TEST_TYPE,
-          timeout=24*60*60)],
+          timeout=23*60*60)],
       active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
