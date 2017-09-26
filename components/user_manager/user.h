@@ -31,6 +31,10 @@ class UserImageManagerImpl;
 class UserSessionManager;
 }
 
+namespace policy {
+class ProfilePolicyConnectorTest;
+}
+
 namespace user_manager {
 
 class UserManagerBase;
@@ -191,6 +195,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   friend class chromeos::FakeChromeUserManager;
   friend class chromeos::MockUserManager;
   friend class chromeos::UserAddingScreenTest;
+  friend class policy::ProfilePolicyConnectorTest;
   FRIEND_TEST_ALL_PREFIXES(UserTest, DeviceLocalAccountAffiliation);
   FRIEND_TEST_ALL_PREFIXES(UserTest, UserSessionInitialized);
 
