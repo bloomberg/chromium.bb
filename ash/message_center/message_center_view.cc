@@ -490,6 +490,11 @@ void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   settings_transition_animation_.reset();
   PreferredSizeChanged();
   Layout();
+
+  // We should update minimum fixed height based on new |scroller_| height.
+  // This is required when switching between message list and settings panel.
+  if (!scroller_->visible())
+    message_list_view_->ResetRepositionSession();
 }
 
 void MessageCenterView::AnimationProgressed(const gfx::Animation* animation) {
