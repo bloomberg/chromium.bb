@@ -156,6 +156,16 @@ Polymer({
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
   },
 
+  /**
+   * Choose a summary checkbox label.
+   * @param {boolean} isSignedIn
+   * @param {boolean} isSyncingHistory
+   * @param {string} historySummary
+   * @param {string} historySummarySigned
+   * @param {string} historySummarySynced
+   * @return {string}
+   * @private
+   */
   browsingCheckboxLabel_: function(
       isSignedIn, isSyncingHistory, historySummary, historySummarySigned,
       historySummarySynced) {
@@ -165,6 +175,18 @@ Polymer({
       return historySummarySigned;
     }
     return historySummary;
+  },
+
+  /**
+   * Choose a content/site settings label.
+   * @param {string} siteSettings
+   * @param {string} contentSettings
+   * @return {string}
+   * @private
+   */
+  siteSettingsLabel_: function(siteSettings, contentSettings) {
+    return loadTimeData.getBoolean('enableSiteSettings') ? siteSettings :
+                                                           contentSettings;
   },
 
   /**
