@@ -199,11 +199,9 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // current screen view.
 - (void)testContextMenuOpenInNewTabFromTallPage {
 // TODO(crbug.com/755888): Reenable this test.
-#if !TARGET_IPHONE_SIMULATOR
   if (!IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Failing constently on iPhone devices.");
   }
-#endif
 
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
