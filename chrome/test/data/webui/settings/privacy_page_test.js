@@ -117,11 +117,11 @@ cr.define('settings_privacy_page', function() {
       teardown(function() { page.remove(); });
 
       test('showClearBrowsingDataDialog', function() {
-        assertFalse(!!page.$$('settings-clear-browsing-data-dialog'));
+        assertFalse(!!page.$$('settings-clear-browsing-data-dialog-tabs'));
         MockInteractions.tap(page.$$('#clearBrowsingData'));
         Polymer.dom.flush();
 
-        var dialog = page.$$('settings-clear-browsing-data-dialog');
+        var dialog = page.$$('settings-clear-browsing-data-dialog-tabs');
         assertTrue(!!dialog);
 
         // Ensure that the dialog is fully opened before returning from this

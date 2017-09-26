@@ -111,14 +111,7 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
 #endif  // defined(OS_MACOSX)
 
 // Enables Basic/Advanced tabs in ClearBrowsingData.
-const base::Feature kTabsInCbd {
-  "TabsInCBD",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, we'll only take thumbnails of unknown URLs (i.e. URLs that are
 // not (yet) part of TopSites) if they have an interesting transition type, i.e.
