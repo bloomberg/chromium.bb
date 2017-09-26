@@ -8,12 +8,6 @@
 #include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/common/profiling/memlog_stream.h"
 
-// This is a temporary allocator shim for testing out-of-process heap
-// profiling.
-//
-// TODO(brettw) replace this with the base allocator shim, plus a way to get
-// the events at the Chrome layer.
-
 namespace profiling {
 
 // Begin profiling all allocations in the process. Send the results to
@@ -39,6 +33,17 @@ void AllocatorShimLogAlloc(AllocatorType type,
                            const char* context);
 
 void AllocatorShimLogFree(void* address);
+
+// Sets the functions that can be called to hook GC heap allocations. These
+// must be set externally since GC heap only exists in renderer processes. If
+// set, these functions functions will be called to enable logging of the GC
+// heap.
+using SetGCAllocHookFunction = void (*)(void (*)(uint8_t*,
+                                                 size_t,
+                                                 const char*));
+using SetGCFreeHookFunction = void (*)(void (*)(uint8_t*));
+void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
+                                      SetGCFreeHookFunction hook_free);
 
 }  // namespace profiling
 

@@ -36,6 +36,12 @@ constexpr int kSendBufferSize = 65536;
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
 constexpr int kNumSendBuffers = 17;
 
+// Functions set by a callback if the GC heap exists in the current process.
+// This function pointers can be used to hook or unhook the oilpan allocations.
+// It will be null in the browser process.
+SetGCAllocHookFunction g_hook_gc_alloc = nullptr;
+SetGCFreeHookFunction g_hook_gc_free = nullptr;
+
 class SendBuffer {
  public:
   SendBuffer() : buffer_(new char[kSendBufferSize]) {}
@@ -182,6 +188,14 @@ void HookPartitionFree(void* address) {
   AllocatorShimLogFree(address);
 }
 
+void HookGCAlloc(uint8_t* address, size_t size, const char* type) {
+  AllocatorShimLogAlloc(AllocatorType::kOilpan, address, size, type);
+}
+
+void HookGCFree(uint8_t* address) {
+  AllocatorShimLogFree(address);
+}
+
 }  // namespace
 
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
@@ -199,12 +213,23 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
   // PartitionAlloc allocator shim.
   base::PartitionAllocHooks::SetAllocationHook(&HookPartitionAlloc);
   base::PartitionAllocHooks::SetFreeHook(&HookPartitionFree);
+
+  // GC (Oilpan) allocator shim.
+  if (g_hook_gc_alloc && g_hook_gc_free) {
+    g_hook_gc_alloc(&HookGCAlloc);
+    g_hook_gc_free(&HookGCFree);
+  }
 }
 
 void StopAllocatorShimDangerous() {
   g_send_buffers = nullptr;
   base::PartitionAllocHooks::SetAllocationHook(nullptr);
   base::PartitionAllocHooks::SetFreeHook(nullptr);
+
+  if (g_hook_gc_alloc && g_hook_gc_free) {
+    g_hook_gc_alloc(nullptr);
+    g_hook_gc_free(nullptr);
+  }
 }
 
 void AllocatorShimLogAlloc(AllocatorType type,
@@ -272,6 +297,19 @@ void AllocatorShimLogFree(void* address) {
     free_packet.address = (uint64_t)address;
 
     DoSend(address, &free_packet, sizeof(FreePacket));
+  }
+}
+
+void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
+                                      SetGCFreeHookFunction hook_free) {
+  g_hook_gc_alloc = hook_alloc;
+  g_hook_gc_free = hook_free;
+
+  if (g_sender_pipe) {
+    // If starting the memlog pipe beat Blink initialization, hook the
+    // functions now.
+    g_hook_gc_alloc(&HookGCAlloc);
+    g_hook_gc_free(&HookGCFree);
   }
 }
 
