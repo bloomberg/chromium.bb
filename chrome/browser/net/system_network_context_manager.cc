@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/system_network_context_manager.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -28,6 +30,8 @@ content::mojom::NetworkContextParamsPtr CreateNetworkContextParams() {
   // TODO(mmenke): Set up parameters here (in memory cookie store, etc).
   content::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
+
+  network_context_params->context_name = std::string("system");
 
   network_context_params->http_cache_enabled = false;
 

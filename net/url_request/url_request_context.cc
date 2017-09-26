@@ -50,7 +50,7 @@ URLRequestContext::URLRequestContext()
       network_error_logging_delegate_(nullptr),
       enable_brotli_(false),
       check_cleartext_permitted_(false),
-      name_(nullptr),
+      name_("unknown"),
       largest_outstanding_requests_count_seen_(0) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "URLRequestContext", base::ThreadTaskRunnerHandle::Get());
@@ -174,14 +174,11 @@ void URLRequestContext::AssertURLRequestPresent(
 bool URLRequestContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  if (!name_)
-    name_ = "unknown";
-
   SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(pmd);
 
   std::string dump_name =
-      base::StringPrintf("net/url_request_context/%s/0x%" PRIxPTR, name_,
-                         reinterpret_cast<uintptr_t>(this));
+      base::StringPrintf("net/url_request_context/%s/0x%" PRIxPTR,
+                         name_.c_str(), reinterpret_cast<uintptr_t>(this));
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,

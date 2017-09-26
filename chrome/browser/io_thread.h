@@ -154,9 +154,6 @@ class IOThread : public content::BrowserThreadDelegate {
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
     std::unique_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
-
-    // Enables Brotli Content-Encoding support
-    bool enable_brotli;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

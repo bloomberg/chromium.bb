@@ -1010,14 +1010,11 @@ void ProfileIOData::Init(
   // Create the main request context.
   std::unique_ptr<net::URLRequestContextBuilderMojo> builder =
       base::MakeUnique<net::URLRequestContextBuilderMojo>();
-  builder->set_name("main");
 
   builder->set_net_log(io_thread->net_log());
   builder->set_shared_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
   builder->set_ssl_config_service(profile_params_->ssl_config_service);
-
-  builder->set_enable_brotli(io_thread_globals->enable_brotli);
 
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(

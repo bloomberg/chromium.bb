@@ -13,6 +13,12 @@ import "url/mojo/url.mojom";
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
+  // Name used by memory tools to identify the context.
+  string? context_name;
+
+  // Whether Brotli content-encoding should be enabled for HTTPS responses.
+  bool enable_brotli = true;
+
   // QUIC user agent.
   string quic_user_agent_id;
 
