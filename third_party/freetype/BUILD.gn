@@ -45,7 +45,6 @@ static_library("bootstrap_freetype_for_harfbuzz") {
     "include/freetype-custom-config/ftoption.h",
     "src/src/base/ftbase.c",
     "src/src/base/ftbitmap.c",
-    "src/src/base/ftlcdfil.c",
   ]
 
   include_dirs = []
@@ -120,6 +119,7 @@ component("freetype") {
     "src/src/base/ftgasp.c",
     "src/src/base/ftglyph.c",
     "src/src/base/ftinit.c",
+    "src/src/base/ftlcdfil.c",
     "src/src/base/ftmm.c",
     "src/src/base/ftstroke.c",
     "src/src/base/fttype1.c",
