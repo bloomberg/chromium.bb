@@ -67,16 +67,17 @@ class NotificationDisplayService : public KeyedService {
   bool ShouldDisplayOverFullscreen(const GURL& origin,
                                    NotificationCommon::Type notification_type);
 
- protected:
+  // Returns the notification handler that was registered for the given type.
+  // May return null.
   NotificationHandler* GetNotificationHandler(
       NotificationCommon::Type notification_type);
 
- private:
   // Registers an implementation object to handle notification operations
   // for |notification_type|.
   void AddNotificationHandler(NotificationCommon::Type notification_type,
                               std::unique_ptr<NotificationHandler> handler);
 
+ private:
   std::map<NotificationCommon::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
   Profile* profile_;
