@@ -118,6 +118,10 @@
       status: "stable",
     },
     {
+      name: "BlockMetaSetCookie",
+      status: "experimental"
+    },
+    {
       name: "Budget",
       status: "stable",
     },

@@ -363,6 +363,16 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
              "https://www.chromestatus.com/feature/5669008342777856 for more "
              "details.";
 
+    // Blocked `<meta http-equiv="set-cookie" ...>`
+    case WebFeature::kMetaSetCookie:
+      return String::Format(
+          "Setting cookies via `<meta http-equiv='Set-Cookie' ...>` is "
+          "deprecated, and will stop working in %s. Consider switching "
+          "to `document.cookie = ...`, or to `Set-Cookie` HTTP headers "
+          "instead. See %s for more details.",
+          milestoneString(M65),
+          "https://www.chromestatus.com/feature/6170540112871424");
+
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case WebFeature::kDeviceMotionInsecureOrigin:
       return "The devicemotion event is deprecated on insecure origins, and "
