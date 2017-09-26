@@ -100,7 +100,9 @@ def main():
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.
 def main_compile_targets(args):
-  json.dump([], args.output)
+  # Force compilation of the new isolate. Will change to telemetry_perf_tests
+  # once we switch the main isolate over to running this file.
+  json.dump(['telemetry_perf_tests_new'], args.output)
 
 
 if __name__ == '__main__':
