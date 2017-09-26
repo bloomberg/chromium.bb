@@ -568,6 +568,7 @@ post_process_cmdline() {
     enabled rect_tx_ext && enable_feature rect_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
+    enabled new_multisymbol && enable_feature restrict_compressed_hdr
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"

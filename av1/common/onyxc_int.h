@@ -1304,11 +1304,13 @@ static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
 
 static INLINE int use_compressed_header(const AV1_COMMON *cm) {
   (void)cm;
-#if CONFIG_RESTRICT_COMPRESSED_HDR
+#if CONFIG_RESTRICT_COMPRESSED_HDR && CONFIG_NEW_MULTISYMBOL
+  return 0;
+#elif CONFIG_RESTRICT_COMPRESSED_HDR
   return cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD;
 #else
   return 1;
-#endif  // CONFIG_RESTRICT_COMPRESSED_HDR
+#endif  // CONFIG_RESTRICT_COMPRESSED_HDR && CONFIG_NEW_MULTISYMBOL
 }
 
 #ifdef __cplusplus
