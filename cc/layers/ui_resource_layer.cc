@@ -15,7 +15,7 @@
 namespace cc {
 
 scoped_refptr<UIResourceLayer> UIResourceLayer::Create() {
-  return make_scoped_refptr(new UIResourceLayer());
+  return base::WrapRefCounted(new UIResourceLayer());
 }
 
 UIResourceLayer::UIResourceLayer()

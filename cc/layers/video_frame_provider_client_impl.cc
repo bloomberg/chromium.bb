@@ -15,7 +15,8 @@ namespace cc {
 scoped_refptr<VideoFrameProviderClientImpl>
 VideoFrameProviderClientImpl::Create(VideoFrameProvider* provider,
                                      VideoFrameControllerClient* client) {
-  return make_scoped_refptr(new VideoFrameProviderClientImpl(provider, client));
+  return base::WrapRefCounted(
+      new VideoFrameProviderClientImpl(provider, client));
 }
 
 VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(

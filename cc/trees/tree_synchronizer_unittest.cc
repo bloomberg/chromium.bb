@@ -66,7 +66,7 @@ class MockLayer : public Layer {
  public:
   static scoped_refptr<MockLayer> Create(
       std::vector<int>* layer_impl_destruction_list) {
-    return make_scoped_refptr(new MockLayer(layer_impl_destruction_list));
+    return base::WrapRefCounted(new MockLayer(layer_impl_destruction_list));
   }
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(

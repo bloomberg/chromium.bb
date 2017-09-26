@@ -64,7 +64,7 @@ LazyTaskRunner<SingleThreadTaskRunner, true>::Create() {
 
 template <typename TaskRunnerType, bool com_sta>
 scoped_refptr<TaskRunnerType> LazyTaskRunner<TaskRunnerType, com_sta>::Get() {
-  return make_scoped_refptr(static_cast<TaskRunnerType*>(GetOrCreateLazyPointer(
+  return WrapRefCounted(static_cast<TaskRunnerType*>(GetOrCreateLazyPointer(
       &state_,
       [this]() {
         scoped_refptr<TaskRunnerType> task_runner = Create();

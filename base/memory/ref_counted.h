@@ -438,11 +438,18 @@ scoped_refptr<T> AdoptRefIfNeeded(T* obj, StartRefCountFromOneTag) {
 }  // namespace subtle
 
 // Constructs an instance of T, which is a ref counted type, and wraps the
-// object into a scoped_refptr.
+// object into a scoped_refptr<T>.
 template <typename T, typename... Args>
 scoped_refptr<T> MakeRefCounted(Args&&... args) {
   T* obj = new T(std::forward<Args>(args)...);
   return subtle::AdoptRefIfNeeded(obj, T::kRefCountPreference);
+}
+
+// Takes an instance of T, which is a ref counted type, and wraps the object
+// into a scoped_refptr<T>.
+template <typename T>
+scoped_refptr<T> WrapRefCounted(T* t) {
+  return scoped_refptr<T>(t);
 }
 
 }  // namespace base
@@ -647,8 +654,8 @@ void scoped_refptr<T>::Release(T* ptr) {
   ptr->Release();
 }
 
-// Handy utility for creating a scoped_refptr<T> out of a T* explicitly without
-// having to retype all the template arguments
+// DEPRECATED(crbug.com/765333): Use WrapRefCounted<T>() instead.
+// TODO(kylechar): Delete when all uses are gone.
 template <typename T>
 scoped_refptr<T> make_scoped_refptr(T* t) {
   return scoped_refptr<T>(t);

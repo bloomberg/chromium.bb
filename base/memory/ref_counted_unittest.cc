@@ -578,11 +578,16 @@ TEST(RefCountedUnitTest, TestInitialRefCountIsOne) {
 }
 
 TEST(RefCountedDeathTest, TestAdoptRef) {
-  EXPECT_DCHECK_DEATH(make_scoped_refptr(new InitialRefCountIsOne));
+  // Check that WrapRefCounted() DCHECKs if passed a type that defines
+  // REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE.
+  EXPECT_DCHECK_DEATH(base::WrapRefCounted(new InitialRefCountIsOne));
 
+  // Check that AdoptRef() DCHECKs if passed a nullptr.
   InitialRefCountIsOne* ptr = nullptr;
   EXPECT_DCHECK_DEATH(base::AdoptRef(ptr));
 
+  // Check that AdoptRef() DCHECKs if passed an object that doesn't need to be
+  // adopted.
   scoped_refptr<InitialRefCountIsOne> obj =
       base::MakeRefCounted<InitialRefCountIsOne>();
   EXPECT_DCHECK_DEATH(base::AdoptRef(obj.get()));

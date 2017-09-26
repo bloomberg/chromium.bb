@@ -14,7 +14,7 @@ std::unique_ptr<LayerImpl> SolidColorLayer::CreateLayerImpl(
 }
 
 scoped_refptr<SolidColorLayer> SolidColorLayer::Create() {
-  return make_scoped_refptr(new SolidColorLayer());
+  return base::WrapRefCounted(new SolidColorLayer());
 }
 
 SolidColorLayer::SolidColorLayer() {}

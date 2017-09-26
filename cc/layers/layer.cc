@@ -74,7 +74,7 @@ Layer::Inputs::Inputs(int layer_id)
 Layer::Inputs::~Inputs() {}
 
 scoped_refptr<Layer> Layer::Create() {
-  return make_scoped_refptr(new Layer());
+  return base::WrapRefCounted(new Layer());
 }
 
 Layer::Layer()

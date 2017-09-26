@@ -21,7 +21,7 @@
 namespace cc {
 
 scoped_refptr<AnimationPlayer> AnimationPlayer::Create(int id) {
-  return make_scoped_refptr(new AnimationPlayer(id));
+  return base::WrapRefCounted(new AnimationPlayer(id));
 }
 
 AnimationPlayer::AnimationPlayer(int id)

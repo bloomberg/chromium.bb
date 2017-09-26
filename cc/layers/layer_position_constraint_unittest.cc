@@ -94,8 +94,9 @@ class LayerPositionConstraintTest : public testing::Test {
     outer_viewport_container_layer_ = Layer::Create();
     child_transform_layer_ = Layer::Create();
     child_ = Layer::Create();
-    grand_child_ = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    great_grand_child_ = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    grand_child_ = base::WrapRefCounted(new LayerWithForcedDrawsContent());
+    great_grand_child_ =
+        base::WrapRefCounted(new LayerWithForcedDrawsContent());
 
     gfx::Transform IdentityMatrix;
     gfx::Point3F transform_origin;
@@ -569,7 +570,7 @@ TEST_F(LayerPositionConstraintTest,
 
   // Add one more layer to the test tree for this scenario.
   scoped_refptr<Layer> fixed_position_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      base::WrapRefCounted(new LayerWithForcedDrawsContent());
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -729,7 +730,7 @@ TEST_F(
 
   // Add one more layer to the test tree for this scenario.
   scoped_refptr<Layer> fixed_position_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      base::WrapRefCounted(new LayerWithForcedDrawsContent());
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -1066,7 +1067,7 @@ TEST_F(LayerPositionConstraintTest,
 
   // Add one more layer to the hierarchy for this test.
   scoped_refptr<Layer> great_great_grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      base::WrapRefCounted(new LayerWithForcedDrawsContent());
   great_grand_child_->AddChild(great_great_grand_child);
 
   child_->SetIsContainerForFixedPositionLayers(true);
@@ -1122,7 +1123,7 @@ TEST_F(LayerPositionConstraintTest,
   // This test checks for correct scroll compensation when the fixed-position
   // container is the outer viewport scroll layer and has non-zero bounds delta.
   scoped_refptr<Layer> fixed_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      base::WrapRefCounted(new LayerWithForcedDrawsContent());
   fixed_child->SetBounds(gfx::Size(300, 300));
   child_->AddChild(fixed_child);
   fixed_child->SetPositionConstraint(fixed_to_top_left_);

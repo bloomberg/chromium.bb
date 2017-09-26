@@ -14,7 +14,7 @@
 namespace cc {
 
 scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
-  return make_scoped_refptr(new HeadsUpDisplayLayer());
+  return base::WrapRefCounted(new HeadsUpDisplayLayer());
 }
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()

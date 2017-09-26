@@ -15,7 +15,7 @@
 namespace cc {
 
 scoped_refptr<PictureImageLayer> PictureImageLayer::Create() {
-  return make_scoped_refptr(new PictureImageLayer());
+  return base::WrapRefCounted(new PictureImageLayer());
 }
 
 PictureImageLayer::PictureImageLayer() : PictureLayer(this) {}

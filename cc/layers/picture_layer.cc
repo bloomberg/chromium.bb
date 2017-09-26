@@ -24,7 +24,7 @@ PictureLayer::PictureLayerInputs::PictureLayerInputs() = default;
 PictureLayer::PictureLayerInputs::~PictureLayerInputs() = default;
 
 scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
-  return make_scoped_refptr(new PictureLayer(client));
+  return base::WrapRefCounted(new PictureLayer(client));
 }
 
 PictureLayer::PictureLayer(ContentLayerClient* client)
