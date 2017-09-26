@@ -12,7 +12,6 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
-using leveldb_env::SharedReadCache;
 using leveldb_proto::ProtoDatabaseImpl;
 
 namespace {

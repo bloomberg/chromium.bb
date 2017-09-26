@@ -12,8 +12,6 @@
 #include "components/download/internal/proto_conversions.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 
-using leveldb_env::SharedReadCache;
-
 namespace download {
 
 namespace {
