@@ -1328,19 +1328,13 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   return nullptr;
 }
 
-bool GraphicsContext::ShouldApplyHighContrastFilterToImage(Image& image) {
+bool GraphicsContext::ShouldApplyHighContrastFilterToImage(
+    const Image& image) const {
   if (!high_contrast_filter_)
     return false;
 
-  switch (high_contrast_settings_.image_policy) {
-    case HighContrastImagePolicy::kFilterSmart:
-      return high_contrast_image_classifier_
-          .ShouldApplyHighContrastFilterToImage(image);
-    case HighContrastImagePolicy::kFilterAll:
-      return true;
-    default:
-      return false;
-  }
+  return high_contrast_settings_.image_policy ==
+         HighContrastImagePolicy::kFilterAll;
 }
 
 Color GraphicsContext::ApplyHighContrastFilter(const Color& input) const {
