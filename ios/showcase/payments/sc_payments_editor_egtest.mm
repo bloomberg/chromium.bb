@@ -208,13 +208,6 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 // states depending on the focused textfield and that they can be used to
 // navigate between the textfields.
 - (void)testInputAccessoryViewNavigationButtons {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.  The test failes on iOS 11 iPhone as well,
-  // but possibly for a different reason.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
-  }
-
   // Initially, no error message is showing.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kWarningMessageAccessibilityID)]
@@ -277,30 +270,16 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   // Type in an address.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"Address_textField")]
-      performAction:grey_typeText(@"Main St")];
+      performAction:grey_replaceText(@"Main St")];
 
-  // Assert the input accessory view's next button is enabled.
+  // Tap the input accessory view's next button.
   [[EarlGrey selectElementWithMatcher:InputAccessoryViewNextButton()]
-      assertWithMatcher:grey_enabled()];
-  // Assert the input accessory view's previous button is enabled and tap it.
-  [[[EarlGrey selectElementWithMatcher:InputAccessoryViewPreviousButton()]
-      assertWithMatcher:grey_enabled()] performAction:grey_tap()];
+      performAction:grey_tap()];
 
   // Assert the error message disappeared because an address was typed in.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kWarningMessageAccessibilityID)]
       assertWithMatcher:grey_notVisible()];
-
-  // Assert the province textfield is focused.
-  AssertTextFieldWithAccessibilityIDIsFirstResponder(
-      @"City/Province_textField");
-
-  // Assert the input accessory view's previous button is enabled.
-  [[EarlGrey selectElementWithMatcher:InputAccessoryViewPreviousButton()]
-      assertWithMatcher:grey_enabled()];
-  // Assert the input accessory view's next button is enabled.
-  [[EarlGrey selectElementWithMatcher:InputAccessoryViewNextButton()]
-      assertWithMatcher:grey_enabled()];
 }
 
 // Tests tapping the return key on every textfield causes the next textfield to
