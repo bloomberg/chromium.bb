@@ -1311,7 +1311,13 @@
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
       Save identity and password
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME" desc="Settings > Internet > Network configuration: Formatting string for network certificate names.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CA_USE_DEFAULT" desc="Settings > Internet > Network config: Label for selecting the default Certificate Authority for an EAP network.">
+      Default
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CA_DO_NOT_CHECK" desc="Settings > Internet > Network config: Label for selecting that no Certificate Authority should be used for an EAP network.">
+      Do not check
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME" desc="Settings > Internet > Network config: Formatting string for network certificate names.">
       <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>]
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME_HARDWARE_BACKED" desc="Settings > Internet > Network configuration: Formatting string for network certificate names that are hardware backed.">

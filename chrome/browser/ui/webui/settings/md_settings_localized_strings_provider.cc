@@ -921,6 +921,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkButtonDisconnect", IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT},
       {"networkButtonForget", IDS_SETTINGS_INTERNET_BUTTON_FORGET},
       {"networkButtonViewAccount", IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT},
+      {"networkCAUseDefault", IDS_SETTINGS_INTERNET_NETWORK_CA_USE_DEFAULT},
+      {"networkCADoNotCheck", IDS_SETTINGS_INTERNET_NETWORK_CA_DO_NOT_CHECK},
       {"networkCertificateName",
        IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME},
       {"networkCertificateNameHardwareBacked",
