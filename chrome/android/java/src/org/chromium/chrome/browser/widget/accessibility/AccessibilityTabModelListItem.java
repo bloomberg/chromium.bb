@@ -246,6 +246,10 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mUndoContents = (LinearLayout) findViewById(R.id.undo_contents);
         mUndoButton = (Button) findViewById(R.id.undo_button);
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            findViewById(R.id.undo_start_space).setVisibility(View.VISIBLE);
+            ApiCompatibilityUtils.setTextAppearance(mUndoButton, R.style.BlueButtonText2);
+        }
 
         setClickable(true);
         setFocusable(true);
