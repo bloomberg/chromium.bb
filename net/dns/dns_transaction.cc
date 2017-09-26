@@ -48,11 +48,6 @@ namespace net {
 
 namespace {
 
-// Provide a common macro to simplify code and readability. We must use a
-// macro as the underlying HISTOGRAM macro creates static variables.
-#define DNS_HISTOGRAM(name, time) UMA_HISTOGRAM_CUSTOM_TIMES(name, time, \
-    base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100)
-
 // Count labels in the fully-qualified name in DNS format.
 int CountLabels(const std::string& name) {
   size_t count = 0;
@@ -216,11 +211,11 @@ class DnsUDPAttempt : public DnsAttempt {
       return ERR_DNS_MALFORMED_RESPONSE;
     if (rv == OK) {
       DCHECK_EQ(STATE_NONE, next_state_);
-      DNS_HISTOGRAM("AsyncDNS.UDPAttemptSuccess",
-                    base::TimeTicks::Now() - start_time_);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.UDPAttemptSuccess",
+                                   base::TimeTicks::Now() - start_time_);
     } else if (rv != ERR_IO_PENDING) {
-      DNS_HISTOGRAM("AsyncDNS.UDPAttemptFail",
-                    base::TimeTicks::Now() - start_time_);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.UDPAttemptFail",
+                                   base::TimeTicks::Now() - start_time_);
     }
     return rv;
   }
@@ -389,11 +384,11 @@ class DnsTCPAttempt : public DnsAttempt {
     set_result(rv);
     if (rv == OK) {
       DCHECK_EQ(STATE_NONE, next_state_);
-      DNS_HISTOGRAM("AsyncDNS.TCPAttemptSuccess",
-                    base::TimeTicks::Now() - start_time_);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TCPAttemptSuccess",
+                                   base::TimeTicks::Now() - start_time_);
     } else if (rv != ERR_IO_PENDING) {
-      DNS_HISTOGRAM("AsyncDNS.TCPAttemptFail",
-                    base::TimeTicks::Now() - start_time_);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TCPAttemptFail",
+                                   base::TimeTicks::Now() - start_time_);
     }
     return rv;
   }

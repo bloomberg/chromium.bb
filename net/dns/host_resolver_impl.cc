@@ -231,23 +231,30 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
                         kSuffix, kSuffixLenTrimmed);
 }
 
-// Provide a common macro to simplify code and readability. We must use a
-// macro as the underlying HISTOGRAM macro creates static variables.
-#define DNS_HISTOGRAM(name, time) UMA_HISTOGRAM_CUSTOM_TIMES(name, time, \
-    base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100)
-
 // A macro to simplify code and readability.
-#define DNS_HISTOGRAM_BY_PRIORITY(basename, priority, time) \
-  do { \
-    switch (priority) { \
-      case HIGHEST: DNS_HISTOGRAM(basename "_HIGHEST", time); break; \
-      case MEDIUM: DNS_HISTOGRAM(basename "_MEDIUM", time); break; \
-      case LOW: DNS_HISTOGRAM(basename "_LOW", time); break; \
-      case LOWEST: DNS_HISTOGRAM(basename "_LOWEST", time); break; \
-      case IDLE: DNS_HISTOGRAM(basename "_IDLE", time); break; \
-      case THROTTLED: DNS_HISTOGRAM(basename "_THROTTLED", time); break; \
-    } \
-    DNS_HISTOGRAM(basename, time); \
+#define DNS_HISTOGRAM_BY_PRIORITY(basename, priority, time)        \
+  do {                                                             \
+    switch (priority) {                                            \
+      case HIGHEST:                                                \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_HIGHEST", time);   \
+        break;                                                     \
+      case MEDIUM:                                                 \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_MEDIUM", time);    \
+        break;                                                     \
+      case LOW:                                                    \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_LOW", time);       \
+        break;                                                     \
+      case LOWEST:                                                 \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_LOWEST", time);    \
+        break;                                                     \
+      case IDLE:                                                   \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_IDLE", time);      \
+        break;                                                     \
+      case THROTTLED:                                              \
+        UMA_HISTOGRAM_LONG_TIMES_100(basename "_THROTTLED", time); \
+        break;                                                     \
+    }                                                              \
+    UMA_HISTOGRAM_LONG_TIMES_100(basename, time);                  \
   } while (0)
 
 // Record time from Request creation until a valid DNS response.
@@ -256,15 +263,15 @@ void RecordTotalTime(bool had_dns_config,
                      base::TimeDelta duration) {
   if (had_dns_config) {
     if (speculative) {
-      DNS_HISTOGRAM("AsyncDNS.TotalTime_speculative", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TotalTime_speculative", duration);
     } else {
-      DNS_HISTOGRAM("AsyncDNS.TotalTime", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TotalTime", duration);
     }
   } else {
     if (speculative) {
-      DNS_HISTOGRAM("DNS.TotalTime_speculative", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("DNS.TotalTime_speculative", duration);
     } else {
-      DNS_HISTOGRAM("DNS.TotalTime", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("DNS.TotalTime", duration);
     }
   }
 }
@@ -874,44 +881,48 @@ class HostResolverImpl::ProcTask
     if (error == OK) {
       if (had_non_speculative_request_) {
         category = RESOLVE_SUCCESS;
-        DNS_HISTOGRAM("DNS.ResolveSuccess", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess", duration);
       } else {
         category = RESOLVE_SPECULATIVE_SUCCESS;
-        DNS_HISTOGRAM("DNS.ResolveSpeculativeSuccess", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSpeculativeSuccess", duration);
       }
 
       // Log DNS lookups based on |address_family|. This will help us determine
       // if IPv4 or IPv4/6 lookups are faster or slower.
       switch (key_.address_family) {
         case ADDRESS_FAMILY_IPV4:
-          DNS_HISTOGRAM("DNS.ResolveSuccess_FAMILY_IPV4", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_IPV4",
+                                       duration);
           break;
         case ADDRESS_FAMILY_IPV6:
-          DNS_HISTOGRAM("DNS.ResolveSuccess_FAMILY_IPV6", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_IPV6",
+                                       duration);
           break;
         case ADDRESS_FAMILY_UNSPECIFIED:
-          DNS_HISTOGRAM("DNS.ResolveSuccess_FAMILY_UNSPEC", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_UNSPEC",
+                                       duration);
           break;
       }
     } else {
       if (had_non_speculative_request_) {
         category = RESOLVE_FAIL;
-        DNS_HISTOGRAM("DNS.ResolveFail", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail", duration);
       } else {
         category = RESOLVE_SPECULATIVE_FAIL;
-        DNS_HISTOGRAM("DNS.ResolveSpeculativeFail", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSpeculativeFail", duration);
       }
       // Log DNS lookups based on |address_family|. This will help us determine
       // if IPv4 or IPv4/6 lookups are faster or slower.
       switch (key_.address_family) {
         case ADDRESS_FAMILY_IPV4:
-          DNS_HISTOGRAM("DNS.ResolveFail_FAMILY_IPV4", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_IPV4", duration);
           break;
         case ADDRESS_FAMILY_IPV6:
-          DNS_HISTOGRAM("DNS.ResolveFail_FAMILY_IPV6", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_IPV6", duration);
           break;
         case ADDRESS_FAMILY_UNSPECIFIED:
-          DNS_HISTOGRAM("DNS.ResolveFail_FAMILY_UNSPEC", duration);
+          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_UNSPEC",
+                                       duration);
           break;
       }
       UMA_HISTOGRAM_CUSTOM_ENUMERATION(kOSErrorsForGetAddrinfoHistogramName,
@@ -953,8 +964,9 @@ class HostResolverImpl::ProcTask
     // If first attempt didn't finish before retry attempt, then calculate stats
     // on how much time is saved by having spawned an extra attempt.
     if (!first_attempt_to_complete && is_first_attempt && !was_canceled()) {
-      DNS_HISTOGRAM("DNS.AttemptTimeSavedByRetry",
-                    base::TimeTicks::Now() - retry_attempt_finished_time_);
+      UMA_HISTOGRAM_LONG_TIMES_100(
+          "DNS.AttemptTimeSavedByRetry",
+          base::TimeTicks::Now() - retry_attempt_finished_time_);
     }
 
     if (was_canceled() || !first_attempt_to_complete) {
@@ -970,9 +982,9 @@ class HostResolverImpl::ProcTask
 
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     if (error == OK)
-      DNS_HISTOGRAM("DNS.AttemptSuccessDuration", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("DNS.AttemptSuccessDuration", duration);
     else
-      DNS_HISTOGRAM("DNS.AttemptFailDuration", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("DNS.AttemptFailDuration", duration);
   }
 
   // Set on the task runner thread, read on the worker thread.
@@ -1111,18 +1123,19 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     DCHECK(transaction);
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     if (net_error != OK) {
-      DNS_HISTOGRAM("AsyncDNS.TransactionFailure", duration);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionFailure", duration);
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK);
       return;
     }
 
-    DNS_HISTOGRAM("AsyncDNS.TransactionSuccess", duration);
+    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess", duration);
     switch (transaction->GetType()) {
       case dns_protocol::kTypeA:
-        DNS_HISTOGRAM("AsyncDNS.TransactionSuccess_A", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess_A", duration);
         break;
       case dns_protocol::kTypeAAAA:
-        DNS_HISTOGRAM("AsyncDNS.TransactionSuccess_AAAA", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess_AAAA",
+                                     duration);
         break;
     }
 
@@ -1188,14 +1201,14 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                       bool success,
                       const AddressList& addr_list) {
     if (!success) {
-      DNS_HISTOGRAM("AsyncDNS.SortFailure",
-                    base::TimeTicks::Now() - start_time);
+      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.SortFailure",
+                                   base::TimeTicks::Now() - start_time);
       OnFailure(ERR_DNS_SORT_ERROR, DnsResponse::DNS_PARSE_OK);
       return;
     }
 
-    DNS_HISTOGRAM("AsyncDNS.SortSuccess",
-                  base::TimeTicks::Now() - start_time);
+    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.SortSuccess",
+                                 base::TimeTicks::Now() - start_time);
 
     // AddressSorter prunes unusable destinations.
     if (addr_list.empty()) {
@@ -1575,7 +1588,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (dns_task_error_ != OK) {
       base::TimeDelta duration = base::TimeTicks::Now() - start_time;
       if (net_error == OK) {
-        DNS_HISTOGRAM("AsyncDNS.FallbackSuccess", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackSuccess", duration);
         if ((dns_task_error_ == ERR_NAME_NOT_RESOLVED) &&
             ResemblesNetBIOSName(key_.hostname)) {
           UmaAsyncDnsResolveStatus(RESOLVE_STATUS_SUSPECT_NETBIOS);
@@ -1586,7 +1599,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                     std::abs(dns_task_error_));
         resolver_->OnDnsTaskResolve(dns_task_error_);
       } else {
-        DNS_HISTOGRAM("AsyncDNS.FallbackFail", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackFail", duration);
         UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
       }
     }
@@ -1625,7 +1638,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   void OnDnsTaskFailure(const base::WeakPtr<DnsTask>& dns_task,
                         base::TimeDelta duration,
                         int net_error) {
-    DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
+    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveFail", duration);
 
     if (!dns_task)
       return;
@@ -1660,17 +1673,20 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       OnDnsTaskFailure(dns_task_->AsWeakPtr(), duration, net_error);
       return;
     }
-    DNS_HISTOGRAM("AsyncDNS.ResolveSuccess", duration);
+    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess", duration);
     // Log DNS lookups based on |address_family|.
     switch (key_.address_family) {
       case ADDRESS_FAMILY_IPV4:
-        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_IPV4", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_IPV4",
+                                     duration);
         break;
       case ADDRESS_FAMILY_IPV6:
-        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_IPV6", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_IPV6",
+                                     duration);
         break;
       case ADDRESS_FAMILY_UNSPECIFIED:
-        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_UNSPEC", duration);
+        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_UNSPEC",
+                                     duration);
         break;
     }
 
