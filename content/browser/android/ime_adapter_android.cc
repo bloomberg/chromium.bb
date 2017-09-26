@@ -99,21 +99,25 @@ void AppendSuggestionSpan(JNIEnv* env,
                           jlong ime_text_spans_ptr,
                           jint start,
                           jint end,
+                          jboolean is_misspelling,
                           jint underline_color,
                           jint suggestion_highlight_color,
                           const JavaParamRef<jobjectArray>& suggestions) {
   DCHECK_GE(start, 0);
   DCHECK_GE(end, 0);
 
+  blink::WebImeTextSpan::Type type =
+      is_misspelling ? blink::WebImeTextSpan::Type::kMisspellingSuggestion
+                     : blink::WebImeTextSpan::Type::kSuggestion;
+
   std::vector<blink::WebImeTextSpan>* ime_text_spans =
       reinterpret_cast<std::vector<blink::WebImeTextSpan>*>(ime_text_spans_ptr);
   std::vector<std::string> suggestions_vec;
   AppendJavaStringArrayToStringVector(env, suggestions, &suggestions_vec);
   ime_text_spans->push_back(blink::WebImeTextSpan(
-      blink::WebImeTextSpan::Type::kSuggestion, static_cast<unsigned>(start),
-      static_cast<unsigned>(end), static_cast<unsigned>(underline_color), true,
-      SK_ColorTRANSPARENT, static_cast<unsigned>(suggestion_highlight_color),
-      suggestions_vec));
+      type, static_cast<unsigned>(start), static_cast<unsigned>(end),
+      static_cast<unsigned>(underline_color), true, SK_ColorTRANSPARENT,
+      static_cast<unsigned>(suggestion_highlight_color), suggestions_vec));
 }
 
 // Callback from Java to convert UnderlineSpan data to a

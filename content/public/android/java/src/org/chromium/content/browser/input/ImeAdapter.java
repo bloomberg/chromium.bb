@@ -911,8 +911,7 @@ public class ImeAdapter {
             } else if (span instanceof SuggestionSpan) {
                 final SuggestionSpan suggestionSpan = (SuggestionSpan) span;
 
-                // We currently only support FLAG_EASY_CORRECT SuggestionSpans.
-                // TODO(rlanday): support FLAG_MISSPELLED SuggestionSpans.
+                // We currently only support FLAG_EASY_CORRECT and FLAG_MISSPELLED SuggestionSpans.
 
                 // Other types:
                 // - FLAG_AUTO_CORRECTION is used e.g. by Samsung's IME to flash a blue background
@@ -923,7 +922,10 @@ public class ImeAdapter {
                 //   flags set and no underline color to add suggestions to words marked as
                 //   misspelled (instead of having the spell checker return the suggestions when
                 //   called). We don't support these either.
-                if (suggestionSpan.getFlags() != SuggestionSpan.FLAG_EASY_CORRECT) {
+                final boolean isMisspellingSpan =
+                        (suggestionSpan.getFlags() & SuggestionSpan.FLAG_MISSPELLED) != 0;
+                if (suggestionSpan.getFlags() != SuggestionSpan.FLAG_EASY_CORRECT
+                        && !isMisspellingSpan) {
                     continue;
                 }
 
@@ -937,8 +939,8 @@ public class ImeAdapter {
 
                 nativeAppendSuggestionSpan(imeTextSpans,
                         spannableString.getSpanStart(suggestionSpan),
-                        spannableString.getSpanEnd(suggestionSpan), underlineColor,
-                        suggestionHighlightColor, suggestionSpan.getSuggestions());
+                        spannableString.getSpanEnd(suggestionSpan), isMisspellingSpan,
+                        underlineColor, suggestionHighlightColor, suggestionSpan.getSuggestions());
             }
         }
     }
@@ -971,7 +973,8 @@ public class ImeAdapter {
     private static native void nativeAppendBackgroundColorSpan(
             long spanPtr, int start, int end, int backgroundColor);
     private static native void nativeAppendSuggestionSpan(long spanPtr, int start, int end,
-            int underlineColor, int suggestionHighlightColor, String[] suggestions);
+            boolean isMisspelling, int underlineColor, int suggestionHighlightColor,
+            String[] suggestions);
     private native void nativeSetComposingText(long nativeImeAdapterAndroid, CharSequence text,
             String textStr, int newCursorPosition);
     private native void nativeCommitText(
