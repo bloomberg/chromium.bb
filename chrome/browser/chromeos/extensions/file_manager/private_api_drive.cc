@@ -90,6 +90,9 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
   properties->size.reset(new double(file_info.size()));
   properties->modification_time.reset(new double(
       base::Time::FromInternalValue(file_info.last_modified()).ToJsTime()));
+  properties->modification_by_me_time.reset(new double(
+      base::Time::FromInternalValue(entry_proto.last_modified_by_me())
+          .ToJsTime()));
 
   if (!entry_proto.has_file_specific_info())
     return;

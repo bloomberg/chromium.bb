@@ -158,6 +158,7 @@ enum DriveShareType {
 enum EntryPropertyName {
   size,
   modificationTime,
+  modificationByMeTime,
   thumbnailUrl,
   croppedThumbnailUrl,
   imageWidth,
@@ -247,6 +248,9 @@ dictionary EntryProperties {
 
   // Timestamp of entry update time, in milliseconds past the epoch.
   double? modificationTime;
+
+  // Timestamp of entry update time by me, in milliseconds past the epoch.
+  double? modificationByMeTime;
 
   // URL to the Drive thumbnail image for this file.
   DOMString? thumbnailUrl;
