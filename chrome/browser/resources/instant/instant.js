@@ -5,8 +5,8 @@
 // Redefine '$' here rather than including 'cr.js', since this is
 // the only function needed.  This allows this file to be loaded
 // in a browser directly for layout and some testing purposes.
-// eslint-disable-next-line no-restricted-properties
 var $ = function(id) {
+  // eslint-disable-next-line no-restricted-properties
   return document.getElementById(id);
 };
 
@@ -138,37 +138,6 @@ var instantConfig = (function() {
     return false;
   }
 
-  /**
-   * Request debug info.
-   * The method is asynchronous, results being provided via getDebugInfoResult.
-   */
-  function getDebugInfo() {
-    chrome.send('getDebugInfo');
-  }
-
-  /**
-   * Handles callback from getDebugInfo.
-   * @param {Object} info The debug info.
-   */
-  function getDebugInfoResult(info) {
-    for (var i = 0; i < info.entries.length; ++i) {
-      var entry = info.entries[i];
-      var row = createElementWithClass('p', 'debug');
-      row.appendChild(createElementWithClass('span', 'timestamp')).textContent =
-          entry.time;
-      row.appendChild(document.createElement('span')).textContent = entry.text;
-      $('instant-debug-info').appendChild(row);
-    }
-  }
-
-  /**
-   * Resets list of debug events.
-   */
-  function clearDebugInfo() {
-    $('instant-debug-info').innerHTML = '';
-    chrome.send('clearDebugInfo');
-  }
-
   function loadForm() {
     for (var i = 0; i < FIELDS.length; i++)
       getPreferenceValue(FIELDS[i].key);
@@ -181,15 +150,12 @@ var instantConfig = (function() {
     buildForm();
     loadForm();
     initForm();
-    getDebugInfo();
 
     $('save-button').onclick = onSave.bind(this);
-    $('clear-button').onclick = clearDebugInfo.bind(this);
   }
 
   return {
     initialize: initialize,
-    getDebugInfoResult: getDebugInfoResult,
     getPreferenceValueResult: getPreferenceValueResult
   };
 })();

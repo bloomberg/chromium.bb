@@ -12,7 +12,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Provides configuration options for Instant web search and shows debug info.
+// Provides configuration options for Instant web search.
 class InstantUI : public content::WebUIController {
  public:
   // Constructs an instance using |web_ui| for its data sources and message
