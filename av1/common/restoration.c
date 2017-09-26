@@ -123,20 +123,17 @@ void extend_frame(uint8_t *data, int width, int height, int stride,
   }
 }
 
-static void loop_copy_tile(uint8_t *data, int tile_idx, int subtile_idx,
-                           int subtile_bits, int width, int height, int stride,
-                           RestorationInternal *rst, uint8_t *dst,
+static void loop_copy_tile(uint8_t *data, int tile_idx, int width, int height,
+                           int stride, RestorationInternal *rst, uint8_t *dst,
                            int dst_stride) {
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int i;
-  int h_start, h_end, v_start, v_end;
-  av1_get_rest_tile_limits(tile_idx, subtile_idx, subtile_bits, rst->nhtiles,
-                           rst->nvtiles, tile_width, tile_height, width, height,
-                           0, 0, &h_start, &h_end, &v_start, &v_end);
-  for (i = v_start; i < v_end; ++i)
-    memcpy(dst + i * dst_stride + h_start, data + i * stride + h_start,
-           h_end - h_start);
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
+  for (int i = limits.v_start; i < limits.v_end; ++i)
+    memcpy(dst + i * dst_stride + limits.h_start,
+           data + i * stride + limits.h_start, limits.h_end - limits.h_start);
 }
 
 static void stepdown_wiener_kernel(const InterpKernel orig, InterpKernel vert,
@@ -179,23 +176,20 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
   const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int i, j;
-  int h_start, h_end, v_start, v_end;
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-    loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
-                   dst_stride);
+    loop_copy_tile(data, tile_idx, width, height, stride, rst, dst, dst_stride);
     return;
   }
   InterpKernel vertical_topbot;
-  av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
-                           tile_width, tile_height, width, height, 0, 0,
-                           &h_start, &h_end, &v_start, &v_end);
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (i = v_start; i < v_end; i += procunit_height)
-    for (j = h_start; j < h_end; j += procunit_width) {
-      int w = AOMMIN(procunit_width, (h_end - j + 15) & ~15);
-      int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+    for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, (limits.h_end - j + 15) & ~15);
+      int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
       // Note h is at least 16
@@ -987,21 +981,17 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
   const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int i, j;
-  int h_start, h_end, v_start, v_end;
-
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-    loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
-                   dst_stride);
+    loop_copy_tile(data, tile_idx, width, height, stride, rst, dst, dst_stride);
     return;
   }
-  av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
-                           tile_width, tile_height, width, height, 0, 0,
-                           &h_start, &h_end, &v_start, &v_end);
-  for (i = v_start; i < v_end; i += procunit_height)
-    for (j = h_start; j < h_end; j += procunit_width) {
-      int w = AOMMIN(procunit_width, h_end - j);
-      int h = AOMMIN(procunit_height, v_end - i);
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+    for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, limits.h_end - j);
+      int h = AOMMIN(procunit_height, limits.v_end - i);
       uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
       apply_selfguided_restoration(
@@ -1030,7 +1020,7 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
                RESTORATION_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-      loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
+      loop_copy_tile(data, tile_idx, width, height, stride, rst, dst,
                      dst_stride);
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_WIENER) {
       loop_wiener_filter_tile(data, tile_idx, width, height, stride, rst, dst,
@@ -1063,20 +1053,19 @@ void extend_frame_highbd(uint16_t *data, int width, int height, int stride,
   }
 }
 
-static void loop_copy_tile_highbd(uint16_t *data, int tile_idx, int subtile_idx,
-                                  int subtile_bits, int width, int height,
-                                  int stride, RestorationInternal *rst,
-                                  uint16_t *dst, int dst_stride) {
+static void loop_copy_tile_highbd(uint16_t *data, int tile_idx, int width,
+                                  int height, int stride,
+                                  RestorationInternal *rst, uint16_t *dst,
+                                  int dst_stride) {
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int i;
-  int h_start, h_end, v_start, v_end;
-  av1_get_rest_tile_limits(tile_idx, subtile_idx, subtile_bits, rst->nhtiles,
-                           rst->nvtiles, tile_width, tile_height, width, height,
-                           0, 0, &h_start, &h_end, &v_start, &v_end);
-  for (i = v_start; i < v_end; ++i)
-    memcpy(dst + i * dst_stride + h_start, data + i * stride + h_start,
-           (h_end - h_start) * sizeof(*dst));
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
+  for (int i = limits.v_start; i < limits.v_end; ++i)
+    memcpy(dst + i * dst_stride + limits.h_start,
+           data + i * stride + limits.h_start,
+           (limits.h_end - limits.h_start) * sizeof(*dst));
 }
 
 static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
@@ -1088,24 +1077,22 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int h_start, h_end, v_start, v_end;
-  int i, j;
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-    loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
+    loop_copy_tile_highbd(data, tile_idx, width, height, stride, rst, dst,
                           dst_stride);
     return;
   }
-  av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
-                           tile_width, tile_height, width, height, 0, 0,
-                           &h_start, &h_end, &v_start, &v_end);
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
   InterpKernel vertical_topbot;
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (i = v_start; i < v_end; i += procunit_height)
-    for (j = h_start; j < h_end; j += procunit_width) {
-      int w = AOMMIN(procunit_width, (h_end - j + 15) & ~15);
-      int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+    for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, (limits.h_end - j + 15) & ~15);
+      int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
       // Note h is at least 16
@@ -1331,21 +1318,19 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
-  int i, j;
-  int h_start, h_end, v_start, v_end;
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-    loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
+    loop_copy_tile_highbd(data, tile_idx, width, height, stride, rst, dst,
                           dst_stride);
     return;
   }
-  av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
-                           tile_width, tile_height, width, height, 0, 0,
-                           &h_start, &h_end, &v_start, &v_end);
-  for (i = v_start; i < v_end; i += procunit_height)
-    for (j = h_start; j < h_end; j += procunit_width) {
-      int w = AOMMIN(procunit_width, h_end - j);
-      int h = AOMMIN(procunit_height, v_end - i);
+  RestorationTileLimits limits =
+      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+                               tile_height, width, height);
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+    for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, limits.h_end - j);
+      int h = AOMMIN(procunit_height, limits.v_end - i);
       uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
       apply_selfguided_restoration_highbd(
@@ -1380,8 +1365,8 @@ static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
                       RESTORATION_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
-      loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst,
-                            dst, dst_stride);
+      loop_copy_tile_highbd(data, tile_idx, width, height, stride, rst, dst,
+                            dst_stride);
     } else if (rst->rsi->restoration_type[tile_idx] == RESTORE_WIENER) {
       loop_wiener_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
                                      bit_depth, dst, dst_stride);

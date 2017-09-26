@@ -124,13 +124,11 @@ static int64_t sse_restoration_frame(AV1_COMMON *const cm,
 static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     AV1_COMP *const cpi, RestorationInfo *rsi,
                                     int components_pattern, int partial_frame,
-                                    int tile_idx, int subtile_idx,
-                                    int subtile_bits,
+                                    int tile_idx,
                                     YV12_BUFFER_CONFIG *dst_frame) {
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
   int tile_width, tile_height, nhtiles, nvtiles;
-  int h_start, h_end, v_start, v_end;
   int ntiles, width, height;
 
   // Y and UV components cannot be mixed
@@ -151,11 +149,11 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
 
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
                              partial_frame, dst_frame);
-  av1_get_rest_tile_limits(tile_idx, subtile_idx, subtile_bits, nhtiles,
-                           nvtiles, tile_width, tile_height, width, height, 0,
-                           0, &h_start, &h_end, &v_start, &v_end);
-  filt_err = sse_restoration_tile(src, dst_frame, cm, h_start, h_end - h_start,
-                                  v_start, v_end - v_start, components_pattern);
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, nhtiles, nvtiles, tile_width, tile_height, width, height);
+  filt_err = sse_restoration_tile(
+      src, dst_frame, cm, limits.h_start, limits.h_end - limits.h_start,
+      limits.v_start, limits.v_end - limits.v_start, components_pattern);
 
   return filt_err;
 }
@@ -513,8 +511,8 @@ static INLINE int init_rest_search_ctxt(
 }
 
 typedef void (*rtile_visitor_t)(const struct rest_search_ctxt *search_ctxt,
-                                int rtile_idx, int h_start, int h_end,
-                                int v_start, int v_end, void *arg);
+                                int rtile_idx,
+                                const RestorationTileLimits *limits, void *arg);
 
 static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
                                   int tile_row, int tile_col,
@@ -550,20 +548,18 @@ static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
   for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
     for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
       const int rtile_idx = rtile_row * ctxt->nrtiles_x + rtile_col;
-      int h_start, h_end, v_start, v_end;
-      av1_get_rest_tile_limits(rtile_idx, 0, 0, ctxt->nrtiles_x,
-                               ctxt->nrtiles_y, rtile_width, rtile_height,
-                               ctxt->plane_width, ctxt->plane_height, 0, 0,
-                               &h_start, &h_end, &v_start, &v_end);
-
-      fun(ctxt, rtile_idx, h_start, h_end, v_start, v_end, arg);
+      RestorationTileLimits limits = av1_get_rest_tile_limits(
+          rtile_idx, ctxt->nrtiles_x, ctxt->nrtiles_y, rtile_width,
+          rtile_height, ctxt->plane_width, ctxt->plane_height);
+      fun(ctxt, rtile_idx, &limits, arg);
     }
   }
 }
 
 static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
-                                     int rtile_idx, int h_start, int h_end,
-                                     int v_start, int v_end, void *arg) {
+                                     int rtile_idx,
+                                     const RestorationTileLimits *limits,
+                                     void *arg) {
   const MACROBLOCK *const x = &ctxt->cpi->td.mb;
   const AV1_COMMON *const cm = &ctxt->cpi->common;
   RestorationInfo *rsi = ctxt->cpi->rst_search;
@@ -571,9 +567,10 @@ static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
 
   SgrprojInfo *ref_sgrproj_info = (SgrprojInfo *)arg;
 
-  int64_t err = sse_restoration_tile(ctxt->src, cm->frame_to_show, cm, h_start,
-                                     h_end - h_start, v_start, v_end - v_start,
-                                     (1 << ctxt->plane));
+  int64_t err =
+      sse_restoration_tile(ctxt->src, cm->frame_to_show, cm, limits->h_start,
+                           limits->h_end - limits->h_start, limits->v_start,
+                           limits->v_end - limits->v_start, (1 << ctxt->plane));
   // #bits when a tile is not restored
   int bits = av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 0);
   double cost_norestore = RDCOST_DBL(x->rdmult, (bits >> 4), err);
@@ -581,12 +578,14 @@ static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
 
   RestorationInfo *plane_rsi = &rsi[ctxt->plane];
   SgrprojInfo *rtile_sgrproj_info = &plane_rsi->sgrproj_info[rtile_idx];
-  uint8_t *dgd_start = ctxt->dgd_buffer + v_start * ctxt->dgd_stride + h_start;
+  uint8_t *dgd_start =
+      ctxt->dgd_buffer + limits->v_start * ctxt->dgd_stride + limits->h_start;
   const uint8_t *src_start =
-      ctxt->src_buffer + v_start * ctxt->src_stride + h_start;
+      ctxt->src_buffer + limits->v_start * ctxt->src_stride + limits->h_start;
 
   search_selfguided_restoration(
-      dgd_start, h_end - h_start, v_end - v_start, ctxt->dgd_stride, src_start,
+      dgd_start, limits->h_end - limits->h_start,
+      limits->v_end - limits->v_start, ctxt->dgd_stride, src_start,
       ctxt->src_stride,
 #if CONFIG_HIGHBITDEPTH
       cm->use_highbitdepth, cm->bit_depth,
@@ -598,8 +597,7 @@ static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
       cm->rst_internal.tmpbuf);
   plane_rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
   err = try_restoration_tile(ctxt->src, ctxt->cpi, rsi, (1 << ctxt->plane),
-                             ctxt->partial_frame, rtile_idx, 0, 0,
-                             ctxt->dst_frame);
+                             ctxt->partial_frame, rtile_idx, ctxt->dst_frame);
   bits =
       count_sgrproj_bits(&plane_rsi->sgrproj_info[rtile_idx], ref_sgrproj_info)
       << AV1_PROB_COST_SHIFT;
@@ -1040,7 +1038,7 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
                                         YV12_BUFFER_CONFIG *dst_frame) {
   const int plane_off = (WIENER_WIN - wiener_win) >> 1;
   int64_t err = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                     tile_idx, 0, 0, dst_frame);
+                                     tile_idx, dst_frame);
   (void)start_step;
 #if USE_WIENER_REFINEMENT_SEARCH
   int64_t err2;
@@ -1058,7 +1056,7 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
           rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= s;
           rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] += 2 * s;
           err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                      tile_idx, 0, 0, dst_frame);
+                                      tile_idx, dst_frame);
           if (err2 > err) {
             rsi[plane].wiener_info[tile_idx].hfilter[p] += s;
             rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += s;
@@ -1079,7 +1077,7 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
           rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] += s;
           rsi[plane].wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -= 2 * s;
           err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                      tile_idx, 0, 0, dst_frame);
+                                      tile_idx, dst_frame);
           if (err2 > err) {
             rsi[plane].wiener_info[tile_idx].hfilter[p] -= s;
             rsi[plane].wiener_info[tile_idx].hfilter[WIENER_WIN - p - 1] -= s;
@@ -1101,7 +1099,7 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
           rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= s;
           rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] += 2 * s;
           err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                      tile_idx, 0, 0, dst_frame);
+                                      tile_idx, dst_frame);
           if (err2 > err) {
             rsi[plane].wiener_info[tile_idx].vfilter[p] += s;
             rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += s;
@@ -1122,7 +1120,7 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
           rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] += s;
           rsi[plane].wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -= 2 * s;
           err2 = try_restoration_tile(src, cpi, rsi, 1 << plane, partial_frame,
-                                      tile_idx, 0, 0, dst_frame);
+                                      tile_idx, dst_frame);
           if (err2 > err) {
             rsi[plane].wiener_info[tile_idx].vfilter[p] -= s;
             rsi[plane].wiener_info[tile_idx].vfilter[WIENER_WIN - p - 1] -= s;
@@ -1143,8 +1141,9 @@ static int64_t finer_tile_search_wiener(const YV12_BUFFER_CONFIG *src,
 }
 
 static void search_wiener_for_rtile(const struct rest_search_ctxt *ctxt,
-                                    int rtile_idx, int h_start, int h_end,
-                                    int v_start, int v_end, void *arg) {
+                                    int rtile_idx,
+                                    const RestorationTileLimits *limits,
+                                    void *arg) {
   const MACROBLOCK *const x = &ctxt->cpi->td.mb;
   const AV1_COMMON *const cm = &ctxt->cpi->common;
   RestorationInfo *rsi = ctxt->cpi->rst_search;
@@ -1158,9 +1157,10 @@ static void search_wiener_for_rtile(const struct rest_search_ctxt *ctxt,
 
   WienerInfo *ref_wiener_info = (WienerInfo *)arg;
 
-  int64_t err = sse_restoration_tile(ctxt->src, cm->frame_to_show, cm, h_start,
-                                     h_end - h_start, v_start, v_end - v_start,
-                                     (1 << ctxt->plane));
+  int64_t err =
+      sse_restoration_tile(ctxt->src, cm->frame_to_show, cm, limits->h_start,
+                           limits->h_end - limits->h_start, limits->v_start,
+                           limits->v_end - limits->v_start, (1 << ctxt->plane));
   // #bits when a tile is not restored
   int bits = av1_cost_bit(RESTORE_NONE_WIENER_PROB, 0);
   double cost_norestore = RDCOST_DBL(x->rdmult, (bits >> 4), err);
@@ -1169,13 +1169,14 @@ static void search_wiener_for_rtile(const struct rest_search_ctxt *ctxt,
 #if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth)
     compute_stats_highbd(wiener_win, ctxt->dgd_buffer, ctxt->src_buffer,
-                         h_start, h_end, v_start, v_end, ctxt->dgd_stride,
-                         ctxt->src_stride, M, H);
+                         limits->h_start, limits->h_end, limits->v_start,
+                         limits->v_end, ctxt->dgd_stride, ctxt->src_stride, M,
+                         H);
   else
 #endif  // CONFIG_HIGHBITDEPTH
-    compute_stats(wiener_win, ctxt->dgd_buffer, ctxt->src_buffer, h_start,
-                  h_end, v_start, v_end, ctxt->dgd_stride, ctxt->src_stride, M,
-                  H);
+    compute_stats(wiener_win, ctxt->dgd_buffer, ctxt->src_buffer,
+                  limits->h_start, limits->h_end, limits->v_start,
+                  limits->v_end, ctxt->dgd_stride, ctxt->src_stride, M, H);
 
   ctxt->type[rtile_idx] = RESTORE_WIENER;
 
@@ -1305,7 +1306,6 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   MACROBLOCK *x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
-  int h_start, h_end, v_start, v_end;
   int width, height;
   if (plane == AOM_PLANE_Y) {
     width = src->y_crop_width;
@@ -1323,12 +1323,11 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 
   info->frame_restoration_type = RESTORE_NONE;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
-                             tile_height, width, height, 0, 0, &h_start, &h_end,
-                             &v_start, &v_end);
-    err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start,
-                               1 << plane);
+    RestorationTileLimits limits = av1_get_rest_tile_limits(
+        tile_idx, nhtiles, nvtiles, tile_width, tile_height, width, height);
+    err = sse_restoration_tile(src, cm->frame_to_show, cm, limits.h_start,
+                               limits.h_end - limits.h_start, limits.v_start,
+                               limits.v_end - limits.v_start, 1 << plane);
     type[tile_idx] = RESTORE_NONE;
     best_tile_cost[tile_idx] = err;
   }
@@ -1348,17 +1347,15 @@ struct switchable_rest_search_ctxt {
 };
 
 static void search_switchable_for_rtile(const struct rest_search_ctxt *ctxt,
-                                        int rtile_idx, int h_start, int h_end,
-                                        int v_start, int v_end, void *arg) {
+                                        int rtile_idx,
+                                        const RestorationTileLimits *limits,
+                                        void *arg) {
   const MACROBLOCK *x = &ctxt->cpi->td.mb;
   RestorationInfo *rsi = &ctxt->cpi->common.rst_info[ctxt->plane];
   struct switchable_rest_search_ctxt *swctxt =
       (struct switchable_rest_search_ctxt *)arg;
 
-  (void)h_start;
-  (void)h_end;
-  (void)v_start;
-  (void)v_end;
+  (void)limits;
 
   double best_cost =
       RDCOST_DBL(x->rdmult, (x->switchable_restore_cost[RESTORE_NONE] >> 4),

@@ -232,37 +232,21 @@ static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
   return (nhtiles_ * nvtiles_);
 }
 
-static INLINE void av1_get_rest_tile_limits(
-    int tile_idx, int subtile_idx, int subtile_bits, int nhtiles, int nvtiles,
-    int tile_width, int tile_height, int im_width, int im_height, int clamp_h,
-    int clamp_v, int *h_start, int *h_end, int *v_start, int *v_end) {
+typedef struct { int h_start, h_end, v_start, v_end; } RestorationTileLimits;
+
+static INLINE RestorationTileLimits
+av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int tile_width,
+                         int tile_height, int im_width, int im_height) {
   const int htile_idx = tile_idx % nhtiles;
   const int vtile_idx = tile_idx / nhtiles;
-  *h_start = htile_idx * tile_width;
-  *v_start = vtile_idx * tile_height;
-  *h_end = (htile_idx < nhtiles - 1) ? *h_start + tile_width : im_width;
-  *v_end = (vtile_idx < nvtiles - 1) ? *v_start + tile_height : im_height;
-  if (subtile_bits) {
-    const int num_subtiles_1d = (1 << subtile_bits);
-    const int subtile_width = (*h_end - *h_start) >> subtile_bits;
-    const int subtile_height = (*v_end - *v_start) >> subtile_bits;
-    const int subtile_idx_h = subtile_idx & (num_subtiles_1d - 1);
-    const int subtile_idx_v = subtile_idx >> subtile_bits;
-    *h_start += subtile_idx_h * subtile_width;
-    *v_start += subtile_idx_v * subtile_height;
-    *h_end = subtile_idx_h == num_subtiles_1d - 1 ? *h_end
-                                                  : *h_start + subtile_width;
-    *v_end = subtile_idx_v == num_subtiles_1d - 1 ? *v_end
-                                                  : *v_start + subtile_height;
-  }
-  if (clamp_h) {
-    *h_start = AOMMAX(*h_start, clamp_h);
-    *h_end = AOMMIN(*h_end, im_width - clamp_h);
-  }
-  if (clamp_v) {
-    *v_start = AOMMAX(*v_start, clamp_v);
-    *v_end = AOMMIN(*v_end, im_height - clamp_v);
-  }
+  RestorationTileLimits limits;
+  limits.h_start = htile_idx * tile_width;
+  limits.v_start = vtile_idx * tile_height;
+  limits.h_end =
+      (htile_idx < nhtiles - 1) ? limits.h_start + tile_width : im_width;
+  limits.v_end =
+      (vtile_idx < nvtiles - 1) ? limits.v_start + tile_height : im_height;
+  return limits;
 }
 
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
