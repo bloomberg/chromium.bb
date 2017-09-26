@@ -15,7 +15,9 @@
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace net {
@@ -150,6 +152,29 @@ bool ParseCertStatus(const der::Input& raw_tlv, OCSPCertStatus* out) {
   }
 
   return !parser.HasMore();
+}
+
+// DER bytes for a SHA1 AlgorithmIdentifier.
+//
+//     SEQUENCE (2 elem)
+//         OBJECT IDENTIFIER  1.3.14.3.2.26
+//         NULL
+const uint8_t kSha1HashAlgorithm[] = {0x30, 0x09, 0x06, 0x05, 0x2B, 0x0E,
+                                      0x03, 0x02, 0x1A, 0x05, 0x00};
+
+// Writes the hash of |value| as an OCTET STRING to |cbb|, using |hash_type| as
+// the algorithm. Returns true on success.
+bool AppendHashAsOctetString(const EVP_MD* hash_type,
+                             CBB* cbb,
+                             const der::Input& value) {
+  CBB octet_string;
+  unsigned hash_len;
+  uint8_t hash_buffer[EVP_MAX_MD_SIZE];
+
+  return CBB_add_asn1(cbb, &octet_string, CBS_ASN1_OCTETSTRING) &&
+         EVP_Digest(value.UnsafeData(), value.Length(), hash_buffer, &hash_len,
+                    hash_type, nullptr) &&
+         CBB_add_bytes(&octet_string, hash_buffer, hash_len) && CBB_flush(cbb);
 }
 
 }  // namespace
@@ -818,6 +843,92 @@ bool CheckOCSPDateValid(const OCSPSingleResponse& response,
   if (response.this_update < earliest_this_update)
     return false;  // Response is too old.
 
+  return true;
+}
+
+bool CreateOCSPRequest(const ParsedCertificate* cert,
+                       const ParsedCertificate* issuer,
+                       std::vector<uint8_t>* request_der) {
+  request_der->clear();
+
+  bssl::ScopedCBB cbb;
+
+  // This initial buffer size is big enough for 20 octet long serial numbers
+  // (upper bound from RFC 5280) and then a handful of extra bytes. This
+  // number doesn't matter for correctness.
+  const size_t kInitialBufferSize = 100;
+
+  if (!CBB_init(cbb.get(), kInitialBufferSize))
+    return false;
+
+  //   OCSPRequest     ::=     SEQUENCE {
+  //       tbsRequest                  TBSRequest,
+  //       optionalSignature   [0]     EXPLICIT Signature OPTIONAL }
+  //
+  //   TBSRequest      ::=     SEQUENCE {
+  //       version             [0]     EXPLICIT Version DEFAULT v1,
+  //       requestorName       [1]     EXPLICIT GeneralName OPTIONAL,
+  //       requestList                 SEQUENCE OF Request,
+  //       requestExtensions   [2]     EXPLICIT Extensions OPTIONAL }
+  CBB ocsp_request;
+  if (!CBB_add_asn1(cbb.get(), &ocsp_request, CBS_ASN1_SEQUENCE))
+    return false;
+
+  CBB tbs_request;
+  if (!CBB_add_asn1(&ocsp_request, &tbs_request, CBS_ASN1_SEQUENCE))
+    return false;
+
+  // "version", "requestorName", and "requestExtensions" are omitted.
+
+  CBB request_list;
+  if (!CBB_add_asn1(&tbs_request, &request_list, CBS_ASN1_SEQUENCE))
+    return false;
+
+  CBB request;
+  if (!CBB_add_asn1(&request_list, &request, CBS_ASN1_SEQUENCE))
+    return false;
+
+  //   Request         ::=     SEQUENCE {
+  //       reqCert                     CertID,
+  //       singleRequestExtensions     [0] EXPLICIT Extensions OPTIONAL }
+  CBB req_cert;
+  if (!CBB_add_asn1(&request, &req_cert, CBS_ASN1_SEQUENCE))
+    return false;
+
+  //   CertID          ::=     SEQUENCE {
+  //       hashAlgorithm       AlgorithmIdentifier,
+  //       issuerNameHash      OCTET STRING, -- Hash of issuer's DN
+  //       issuerKeyHash       OCTET STRING, -- Hash of issuer's public key
+  //       serialNumber        CertificateSerialNumber }
+
+  // TODO(eroman): Don't use SHA1.
+  if (!CBB_add_bytes(&req_cert, kSha1HashAlgorithm,
+                     arraysize(kSha1HashAlgorithm))) {
+    return false;
+  }
+
+  AppendHashAsOctetString(EVP_sha1(), &req_cert, issuer->tbs().issuer_tlv);
+
+  der::Input key_tlv;
+  if (!GetSubjectPublicKeyBytes(issuer->tbs().spki_tlv, &key_tlv))
+    return false;
+  AppendHashAsOctetString(EVP_sha1(), &req_cert, key_tlv);
+
+  CBB serial_number;
+  if (!CBB_add_asn1(&req_cert, &serial_number, CBS_ASN1_INTEGER))
+    return false;
+  if (!CBB_add_bytes(&serial_number, cert->tbs().serial_number.UnsafeData(),
+                     cert->tbs().serial_number.Length())) {
+    return false;
+  }
+
+  uint8_t* result_bytes;
+  size_t result_bytes_length;
+  if (!CBB_finish(cbb.get(), &result_bytes, &result_bytes_length))
+    return false;
+  bssl::UniquePtr<uint8_t> delete_tbs_cert_bytes(result_bytes);
+
+  request_der->assign(result_bytes, result_bytes + result_bytes_length);
   return true;
 }
 

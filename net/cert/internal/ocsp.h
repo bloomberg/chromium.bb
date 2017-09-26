@@ -27,6 +27,8 @@ class TimeDelta;
 
 namespace net {
 
+class ParsedCertificate;
+
 // OCSPCertID contains a representation of a DER-encoded RFC 6960 "CertID".
 //
 // CertID ::= SEQUENCE {
@@ -295,6 +297,17 @@ NET_EXPORT OCSPRevocationStatus CheckOCSP(
 NET_EXPORT_PRIVATE bool CheckOCSPDateValid(const OCSPSingleResponse& response,
                                            const base::Time& verify_time,
                                            const base::TimeDelta& max_age);
+
+// Creates a DER-encoded OCSPRequest for |cert|. The request is fairly basic:
+//  * No signature
+//  * No requestorName
+//  * No extensions
+//  * Uses SHA1 for all hashes.
+//
+// Returns true on success and fills |request_der| with the resulting bytes.
+NET_EXPORT bool CreateOCSPRequest(const ParsedCertificate* cert,
+                                  const ParsedCertificate* issuer,
+                                  std::vector<uint8_t>* request_der);
 
 }  // namespace net
 
