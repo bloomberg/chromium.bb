@@ -525,20 +525,4 @@ public class OfflinePageSavePageLaterEvaluationTest {
         setUpIOAndBridge(mUseTestScheduler);
         processUrls(mUrls);
     }
-
-    /**
-     * Runs testFailureRate with background loader enabled.
-     * We won't be treating svelte devices differently so enable the feature which would let
-     * immediate processing also works on svelte devices. This flag will *not* affect normal
-     * devices.
-     */
-    @Test
-    @Manual
-    @TimeoutScale(4)
-    @CommandLineFlags.Add({"enable-features=BackgroundLoaderOfflinePagesSvelteConcurrentLoading"})
-    @CommandLineFlags.Remove({
-            "disable-features=BackgroundLoaderOfflinePagesSvelteConcurrentLoading"})
-    public void testBackgroundLoaderFailureRate() throws IOException, InterruptedException {
-        testFailureRate();
-    }
 }
