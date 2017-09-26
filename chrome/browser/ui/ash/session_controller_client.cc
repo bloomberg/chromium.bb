@@ -325,12 +325,11 @@ void SessionControllerClient::UserAddedToSession(const User* added_user) {
   SendUserSession(*added_user);
 }
 
-void SessionControllerClient::UserChangedChildStatus(User* user) {
-  SendUserSession(*user);
+void SessionControllerClient::OnUserImageChanged(const User& user) {
+  SendUserSession(user);
 }
 
-void SessionControllerClient::OnUserImageChanged(
-    const user_manager::User& user) {
+void SessionControllerClient::OnChildStatusChanged(const User& user) {
   SendUserSession(user);
 }
 

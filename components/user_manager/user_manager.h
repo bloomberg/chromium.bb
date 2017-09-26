@@ -51,6 +51,9 @@ class USER_MANAGER_EXPORT UserManager {
     virtual void OnUserProfileImageUpdated(const User& user,
                                            const gfx::ImageSkia& profile_image);
 
+    // Called when the child status of the given user has changed.
+    virtual void OnChildStatusChanged(const User& user);
+
    protected:
     virtual ~Observer();
   };
@@ -69,9 +72,6 @@ class USER_MANAGER_EXPORT UserManager {
     // Called right before notifying on user change so that those who rely
     // on account_id hash would be accessing up-to-date value.
     virtual void ActiveUserHashChanged(const std::string& hash);
-
-    // Called when child status has changed.
-    virtual void UserChangedChildStatus(User* user);
 
    protected:
     virtual ~UserSessionStateObserver();

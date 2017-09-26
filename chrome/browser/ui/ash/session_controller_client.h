@@ -80,10 +80,10 @@ class SessionControllerClient
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
   void UserAddedToSession(const user_manager::User* added_user) override;
-  void UserChangedChildStatus(user_manager::User* user) override;
 
   // user_manager::UserManager::Observer
   void OnUserImageChanged(const user_manager::User& user) override;
+  void OnChildStatusChanged(const user_manager::User& user) override;
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
