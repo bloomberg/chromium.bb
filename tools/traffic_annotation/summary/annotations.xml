@@ -175,6 +175,7 @@ Refer to README.md for content description and update process.
  <item id="safe_search_url_reporter" hash_code="119677115" content_hash_code="67393078" os_list="linux,windows"/>
  <item id="save_file_manager" hash_code="56275203" content_hash_code="56692339" os_list="linux,windows"/>
  <item id="sdch_dictionary_fetch" hash_code="47152935" deprecated="2017-09-16" content_hash_code="16764294"/>
+ <item id="service_worker_navigation_preload" hash_code="129872904" content_hash_code="79473248" os_list="linux,windows"/>
  <item id="service_worker_write_to_cache_job" hash_code="117963307" content_hash_code="18065724" os_list="linux,windows"/>
  <item id="signed_in_profile_avatar" hash_code="108903331" content_hash_code="72850619" os_list="linux,windows"/>
  <item id="speech_recognition_downstream" hash_code="26096088" content_hash_code="120733233" os_list="linux,windows"/>
