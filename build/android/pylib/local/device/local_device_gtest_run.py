@@ -7,6 +7,7 @@ import itertools
 import logging
 import os
 import posixpath
+import shutil
 import time
 
 from devil.android import crash_handler
@@ -21,9 +22,11 @@ from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+from pylib.utils import google_storage_helper
 from pylib.utils import logdog_helper
 from py_trace_event import trace_event
 from py_utils import contextlib_ext
+from py_utils import tempfile_ext
 import tombstones
 
 _MAX_INLINE_FLAGS_LENGTH = 50  # Arbitrarily chosen.
@@ -393,6 +396,25 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         self._test_instance.total_external_shards)
     return tests
 
+  def _UploadTestArtifacts(self, device, test_artifacts_dir):
+    # TODO(jbudorick): Reconcile this with the output manager once
+    # https://codereview.chromium.org/2933993002/ lands.
+    if test_artifacts_dir:
+      with tempfile_ext.NamedTemporaryDirectory() as test_artifacts_host_dir:
+        device.PullFile(test_artifacts_dir.name, test_artifacts_host_dir)
+        test_artifacts_zip = shutil.make_archive('test_artifacts', 'zip',
+                                                 test_artifacts_host_dir)
+        link = google_storage_helper.upload(
+            google_storage_helper.unique_name(
+                'test_artifacts', device=device),
+            test_artifacts_zip,
+            bucket='%s/test_artifacts' % (
+                self._test_instance.gs_test_artifacts_bucket))
+        logging.info('Uploading test artifacts to %s.', link)
+        os.remove(test_artifacts_zip)
+        return link
+    return None
+
   #override
   def _RunTest(self, device, test):
     # Run the test.
@@ -404,38 +426,47 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         adb=device.adb,
         dir=self._delegate.ResultsDirectory(device),
         suffix='.xml') as device_tmp_results_file:
+      with contextlib_ext.Optional(
+          device_temp_file.NamedDeviceTemporaryDirectory(
+              adb=device.adb, dir='/sdcard/'),
+          self._test_instance.gs_test_artifacts_bucket) as test_artifacts_dir:
 
-      flags = list(self._test_instance.flags)
-      if self._test_instance.enable_xml_result_parsing:
-        flags.append('--gtest_output=xml:%s' % device_tmp_results_file.name)
+        flags = list(self._test_instance.flags)
+        if self._test_instance.enable_xml_result_parsing:
+          flags.append('--gtest_output=xml:%s' % device_tmp_results_file.name)
 
-      logging.info('flags:')
-      for f in flags:
-        logging.info('  %s', f)
+        if self._test_instance.gs_test_artifacts_bucket:
+          flags.append('--test_artifacts_dir=%s' % test_artifacts_dir.name)
 
-      with local_device_environment.OptionalPerTestLogcat(
-          device, hash(tuple(test)),
-          self._test_instance.should_save_logcat) as logmon:
-        with contextlib_ext.Optional(
-            trace_event.trace(str(test)),
-            self._env.trace_output):
-          output = self._delegate.Run(
-              test, device, flags=' '.join(flags),
-              timeout=timeout, retries=0)
+        logging.info('flags:')
+        for f in flags:
+          logging.info('  %s', f)
 
-      if self._test_instance.enable_xml_result_parsing:
-        try:
-          gtest_xml = device.ReadFile(
-              device_tmp_results_file.name,
-              as_root=True)
-        except device_errors.CommandFailedError as e:
-          logging.warning(
-              'Failed to pull gtest results XML file %s: %s',
-              device_tmp_results_file.name,
-              str(e))
-          gtest_xml = None
+        with local_device_environment.OptionalPerTestLogcat(
+            device, hash(tuple(test)),
+            self._test_instance.should_save_logcat) as logmon:
+          with contextlib_ext.Optional(
+              trace_event.trace(str(test)),
+              self._env.trace_output):
+            output = self._delegate.Run(
+                test, device, flags=' '.join(flags),
+                timeout=timeout, retries=0)
 
-      logcat_url = logmon.GetLogcatURL()
+        if self._test_instance.enable_xml_result_parsing:
+          try:
+            gtest_xml = device.ReadFile(
+                device_tmp_results_file.name,
+                as_root=True)
+          except device_errors.CommandFailedError as e:
+            logging.warning(
+                'Failed to pull gtest results XML file %s: %s',
+                device_tmp_results_file.name,
+                str(e))
+            gtest_xml = None
+
+        logcat_url = logmon.GetLogcatURL()
+        test_artifacts_url = self._UploadTestArtifacts(device,
+                                                       test_artifacts_dir)
 
     for s in self._servers[str(device)]:
       s.Reset()
@@ -460,6 +491,9 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     for r in results:
       if self._test_instance.should_save_logcat:
         r.SetLink('logcat', logcat_url)
+
+      if self._test_instance.gs_test_artifacts_bucket:
+        r.SetLink('test_artifacts', test_artifacts_url)
 
       if r.GetType() == base_test_result.ResultType.CRASH:
         self._crashes.add(r.GetName())

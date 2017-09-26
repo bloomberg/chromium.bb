@@ -346,6 +346,11 @@ def AddGTestOptions(parser):
       help='Path to file that contains googletest-style filter strings. '
            'See also //testing/buildbot/filters/README.md.')
 
+  parser.add_argument(
+      '--gs-test-artifacts-bucket',
+      help=('If present, test artifacts will be uploaded to this Google '
+            'Storage bucket.'))
+
 
 def AddInstrumentationTestOptions(parser):
   """Adds Instrumentation test options to |parser|."""
