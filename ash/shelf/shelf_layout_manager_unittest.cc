@@ -1656,6 +1656,7 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
             test_app_list_presenter.app_list_state());
 
   // Swiping up more than the close threshold but less than peeking threshold
+  // should keep the app list at PEEKING state.
   delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10);
   end = start - delta;
   generator.GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
