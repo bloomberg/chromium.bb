@@ -452,7 +452,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // to a RenderProcess which is instantiated in the same process
   // with the Browser.  All IPC between the Browser and the
   // Renderer is the same, it's just not crossing a process boundary.
-
   static bool run_renderer_in_process();
 
   // This also calls out to ContentBrowserClient::GetApplicationLocale and
