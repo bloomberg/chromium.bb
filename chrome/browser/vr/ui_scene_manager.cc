@@ -34,6 +34,7 @@
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -43,130 +44,6 @@ namespace vr {
 
 using TargetProperty::BOUNDS;
 using TargetProperty::TRANSFORM;
-
-namespace {
-
-static constexpr int kWarningTimeoutSeconds = 30;
-static constexpr float kWarningDistance = 1.0;
-static constexpr float kWarningAngleRadians = 16.3 * M_PI / 180.0;
-static constexpr float kPermanentWarningHeightDMM = 0.049f;
-static constexpr float kPermanentWarningWidthDMM = 0.1568f;
-static constexpr float kTransientWarningHeightDMM = 0.160;
-static constexpr float kTransientWarningWidthDMM = 0.512;
-
-static constexpr float kExitWarningDistance = 0.6;
-static constexpr float kExitWarningHeight = 0.160;
-static constexpr float kExitWarningWidth = 0.512;
-
-static constexpr float kContentDistance = 2.5;
-static constexpr float kContentWidth = 0.96 * kContentDistance;
-static constexpr float kContentHeight = 0.64 * kContentDistance;
-static constexpr float kContentVerticalOffset = -0.1 * kContentDistance;
-static constexpr float kContentCornerRadius = 0.005 * kContentWidth;
-static constexpr float kBackplaneSize = 1000.0;
-static constexpr float kBackgroundDistanceMultiplier = 1.414;
-
-static constexpr float kFullscreenDistance = 3;
-// Make sure that the aspect ratio for fullscreen is 16:9. Otherwise, we may
-// experience visual artefacts for fullscreened videos.
-static constexpr float kFullscreenHeight = 0.64 * kFullscreenDistance;
-static constexpr float kFullscreenWidth = 1.138 * kFullscreenDistance;
-static constexpr float kFullscreenVerticalOffset = -0.1 * kFullscreenDistance;
-
-static constexpr float kExitPromptWidth = 0.672 * kContentDistance;
-static constexpr float kExitPromptHeight = 0.2 * kContentDistance;
-static constexpr float kExitPromptVerticalOffset = -0.09 * kContentDistance;
-static constexpr float kExitPromptBackplaneSize = 1000.0;
-
-// Distance-independent milimeter size of the URL bar.
-static constexpr float kUrlBarWidthDMM = 0.672;
-static constexpr float kUrlBarHeightDMM = 0.088;
-static constexpr float kUrlBarDistance = 2.4;
-static constexpr float kUrlBarWidth = kUrlBarWidthDMM * kUrlBarDistance;
-static constexpr float kUrlBarHeight = kUrlBarHeightDMM * kUrlBarDistance;
-static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
-static constexpr float kUrlBarRotationRad = -0.175;
-
-static constexpr float kIndicatorHeight = 0.08;
-static constexpr float kIndicatorGap = 0.05;
-static constexpr float kIndicatorVerticalOffset = 0.1;
-static constexpr float kIndicatorDistanceOffset = 0.1;
-
-static constexpr float kWebVrUrlToastWidthDMM = 0.472;
-static constexpr float kWebVrUrlToastHeightDMM = 0.064;
-static constexpr float kWebVrUrlToastDistance = 1.0;
-static constexpr float kWebVrUrlToastWidth =
-    kWebVrUrlToastWidthDMM * kWebVrUrlToastDistance;
-static constexpr float kWebVrUrlToastHeight =
-    kWebVrUrlToastHeightDMM * kWebVrUrlToastDistance;
-static constexpr int kWebVrUrlToastTimeoutSeconds = 6;
-static constexpr float kWebVrUrlToastRotationRad = 14 * M_PI / 180.0;
-
-static constexpr float kWebVrToastDistance = 1.0;
-static constexpr float kFullscreenToastDistance = kFullscreenDistance;
-static constexpr float kToastWidthDMM = 0.512;
-static constexpr float kToastHeightDMM = 0.064;
-static constexpr float kToastOffsetDMM = 0.004;
-// When changing the value here, make sure it doesn't collide with
-// kWarningAngleRadians.
-static constexpr float kWebVrAngleRadians = 9.88 * M_PI / 180.0;
-static constexpr int kToastTimeoutSeconds = kWebVrUrlToastTimeoutSeconds;
-
-static constexpr float kSplashScreenTextDistance = 2.5;
-static constexpr float kSplashScreenTextFontHeightM =
-    0.05f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextWidthM =
-    0.9f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextHeightM =
-    0.08f * kSplashScreenTextDistance;
-static constexpr float kSplashScreenTextVerticalOffset = -0.18;
-
-static constexpr float kCloseButtonDistance = 2.4;
-static constexpr float kCloseButtonHeight =
-    kUrlBarHeightDMM * kCloseButtonDistance;
-static constexpr float kCloseButtonWidth =
-    kUrlBarHeightDMM * kCloseButtonDistance;
-static constexpr float kCloseButtonFullscreenDistance = 2.9;
-static constexpr float kCloseButtonFullscreenHeight =
-    kUrlBarHeightDMM * kCloseButtonFullscreenDistance;
-static constexpr float kCloseButtonFullscreenWidth =
-    kUrlBarHeightDMM * kCloseButtonFullscreenDistance;
-
-static constexpr float kLoadingIndicatorWidth = 0.24 * kUrlBarDistance;
-static constexpr float kLoadingIndicatorHeight = 0.008 * kUrlBarDistance;
-static constexpr float kLoadingIndicatorVerticalOffset =
-    (-kUrlBarVerticalOffset + kContentVerticalOffset - kContentHeight / 2 -
-     kUrlBarHeight / 2) /
-    2;
-static constexpr float kLoadingIndicatorDepthOffset =
-    (kUrlBarDistance - kContentDistance) / 2;
-
-static constexpr float kSceneSize = 25.0;
-static constexpr float kSceneHeight = 4.0;
-static constexpr int kFloorGridlineCount = 40;
-
-// Tiny distance to offset textures that should appear in the same plane.
-static constexpr float kTextureOffset = 0.01;
-
-static constexpr float kUnderDevelopmentNoticeFontHeightM =
-    0.02f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeHeightM = 0.1f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeWidthM = 0.44f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
-    0.5f * kUnderDevelopmentNoticeHeightM + kUrlBarHeight;
-static constexpr float kUnderDevelopmentNoticeRotationRad = -0.19;
-
-// If the screen space bounds or the aspect ratio of the content quad change
-// beyond these thresholds we propagate the new content bounds so that the
-// content's resolution can be adjusted.
-static constexpr float kContentBoundsPropagationThreshold = 0.2f;
-// Changes of the aspect ratio lead to a
-// distorted content much more quickly. Thus, have a smaller threshold here.
-static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
-
-static constexpr float kScreenDimmerOpacity = 0.9f;
-
-}  // namespace
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
@@ -375,16 +252,32 @@ void UiSceneManager::CreateSplashScreen() {
   // Create splash screen root.
   auto element = base::MakeUnique<UiElement>();
   element->set_name(kSplashScreenRoot);
-  element->SetVisible(false);
+  element->SetVisible(started_for_autopresentation_);
   element->set_hit_testable(false);
   scene_->AddUiElement(kRoot, std::move(element));
 
-  // Create viewport arare root.
+  // Create viewport aware root.
   element = base::MakeUnique<ViewportAwareRoot>();
   element->set_name(kSplashScreenViewportAwareRoot);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kSplashScreenRoot, std::move(element));
+
+  // Create transient parent.
+  // TODO(crbug.com/762074): We should timeout after some time and show an
+  // error if the user is stuck on the splash screen.
+  auto transient_parent = base::MakeUnique<ShowUntilSignalTransientElement>(
+      base::TimeDelta::FromSeconds(kSplashScreenMinDurationSeconds),
+      base::TimeDelta::Max(),
+      base::Bind(&UiSceneManager::OnSplashScreenHidden,
+                 base::Unretained(this)));
+  transient_parent->set_name(kSplashScreenTransientParent);
+  transient_parent->SetVisible(started_for_autopresentation_);
+  transient_parent->set_hit_testable(false);
+  transient_parent->SetTransitionedProperties({OPACITY});
+  splash_screen_transient_parent_ = transient_parent.get();
+  scene_->AddUiElement(kSplashScreenViewportAwareRoot,
+                       std::move(transient_parent));
 
   // Add "Powered by Chrome" text.
   auto text = base::MakeUnique<Text>(
@@ -400,7 +293,7 @@ void UiSceneManager::CreateSplashScreen() {
   text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
   text->SetTranslate(0, kSplashScreenTextVerticalOffset,
                      -kSplashScreenTextDistance);
-  scene_->AddUiElement(kSplashScreenViewportAwareRoot, std::move(text));
+  scene_->AddUiElement(kSplashScreenTransientParent, std::move(text));
 
   // Add splash screen background.
   auto bg = base::MakeUnique<FullScreenRect>();
@@ -537,7 +430,7 @@ TransientElement* UiSceneManager::AddTransientParent(UiElementName name,
                                                      UiElementName parent_name,
                                                      int timeout_seconds,
                                                      bool animate_opacity) {
-  auto element = base::MakeUnique<TransientElement>(
+  auto element = base::MakeUnique<SimpleTransientElement>(
       base::TimeDelta::FromSeconds(timeout_seconds));
   TransientElement* to_return = element.get();
   element->set_name(name);
@@ -680,12 +573,21 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
 void UiSceneManager::OnWebVrFrameAvailable() {
   if (!showing_web_vr_splash_screen_)
     return;
-  showing_web_vr_splash_screen_ = false;
-  ConfigureScene();
+
+  splash_screen_transient_parent_->Signal();
 }
 
 void UiSceneManager::OnWebVrTimedOut() {
   browser_->ExitPresent();
+}
+
+void UiSceneManager::OnSplashScreenHidden(TransientElementHideReason reason) {
+  showing_web_vr_splash_screen_ = false;
+  if (reason == TransientElementHideReason::kTimeout) {
+    OnWebVrTimedOut();
+    return;
+  }
+  ConfigureScene();
 }
 
 void UiSceneManager::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
@@ -753,8 +655,6 @@ void UiSceneManager::ConfigureScene() {
   bool browsing_mode = !web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->GetUiElementByName(k2dBrowsingRoot)->SetVisible(browsing_mode);
   scene_->GetUiElementByName(kWebVrRoot)->SetVisible(!browsing_mode);
-  scene_->GetUiElementByName(kSplashScreenRoot)
-      ->SetVisible(showing_web_vr_splash_screen_);
 
   // Controls (URL bar, loading progress, etc).
   bool controls_visible = browsing_mode && !fullscreen_ && !prompting_to_exit_;
