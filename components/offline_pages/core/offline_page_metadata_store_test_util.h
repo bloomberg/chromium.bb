@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_METADATA_STORE_TEST_UTIL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -42,6 +43,9 @@ class OfflinePageMetadataStoreTestUtil {
 
   // Gets the total number of pages in the store.
   int64_t GetPageCount();
+
+  // Gets offline page by offline_id.
+  OfflinePageItem GetPageByOfflineId(int64_t offline_id);
 
   OfflinePageMetadataStoreSQL* store() { return store_.get(); }
 
