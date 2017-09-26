@@ -178,6 +178,10 @@ class MockTransactionFactory : public DnsTransactionFactory {
     return std::unique_ptr<DnsTransaction>(transaction);
   }
 
+  void AddEDNSOption(const OptRecordRdata::Opt& opt) override {
+    NOTREACHED() << "Not implemented";
+  }
+
   void CompleteDelayedTransactions() {
     DelayedTransactionList old_delayed_transactions;
     old_delayed_transactions.swap(delayed_transactions_);
