@@ -9,6 +9,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
+#include "bindings/core/v8/ToV8ForTesting.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,11 +17,6 @@
 namespace blink {
 
 namespace {
-
-template <typename T>
-v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
-  return blink::ToV8(value, scope->GetContext()->Global(), scope->GetIsolate());
-}
 
 TEST(V8BindingTest, ToImplArray) {
   V8TestingScope scope;
