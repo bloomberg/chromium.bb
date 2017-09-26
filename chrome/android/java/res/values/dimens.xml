@@ -310,9 +310,11 @@
     <dimen name="tile_view_width_condensed">64dp</dimen>
     <dimen name="tile_view_icon_size">48dp</dimen>
     <dimen name="tile_view_icon_size_modern">24dp</dimen>
+    <dimen name="tile_view_monogram_size_modern">26dp</dimen>
     <dimen name="tile_view_icon_margin_top">12dp</dimen>
     <dimen name="tile_view_icon_margin_top_condensed">8dp</dimen>
     <dimen name="tile_view_icon_margin_top_modern">19dp</dimen>
+    <dimen name="tile_view_monogram_margin_top_modern">18dp</dimen>
     <dimen name="tile_view_icon_background_margin_top_modern">7dp</dimen>
     <dimen name="tile_view_offline_badge_size">24dp</dimen>
     <dimen name="tile_view_offline_badge_size_modern">16dp</dimen>
