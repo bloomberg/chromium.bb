@@ -5,9 +5,12 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -31,12 +34,14 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -83,7 +88,7 @@ class NetworkContextTest : public testing::Test {
     return network_service_.get();
   }
 
- private:
+ protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkServiceImpl> network_service_;
   // Stores the NetworkContextPtr of the most recently created NetworkContext,
@@ -373,6 +378,110 @@ TEST_F(NetworkContextTest, SimpleCache) {
   backend->GetStats(&stats);
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             GetBackendType(backend));
+}
+
+TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("foo");
+  EXPECT_FALSE(base::PathExists(file_path));
+
+  const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
+
+  // Create a context with on-disk storage of HTTP server properties.
+  mojom::NetworkContextParamsPtr context_params =
+      mojom::NetworkContextParams::New();
+  context_params->http_server_properties_path = file_path;
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  // Wait for properties to load from disk, and sanity check initial state.
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->http_server_properties()
+                   ->GetSupportsSpdy(kSchemeHostPort));
+
+  // Set a property.
+  network_context->url_request_context()
+      ->http_server_properties()
+      ->SetSupportsSpdy(kSchemeHostPort, true);
+  network_context->http_server_properties_manager_for_testing()
+      ->UpdatePrefsForTesting();
+  // Wait HttpServerProperties manager to flush to the pref service.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Delete the NetworkContext and wait for its JsonPrefStore to flush to disk.
+  network_context.reset();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(file_path));
+
+  // Create a new NetworkContext using the same path for HTTP server properties.
+  context_params = mojom::NetworkContextParams::New();
+  context_params->http_server_properties_path = file_path;
+  network_context = CreateContextWithParams(std::move(context_params));
+
+  // Wait for properties to load from disk.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Wait for net::HttpServerPropertiesManager to decide to read the prefs again
+  // from the pref file, now that it's been read.
+  base::RunLoop run_loop;
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      net::HttpServerPropertiesManager::GetUpdateCacheDelayForTesting());
+  run_loop.Run();
+
+  // Wait for the net::HttpServerPropertiesManager to actually read the prefs.
+  // TODO(mmenke): All this waiting is rather silly. Fix it.
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->http_server_properties()
+                  ->GetSupportsSpdy(kSchemeHostPort));
+
+  // Now check that ClearNetworkingHistorySince clears the data.
+  base::RunLoop run_loop2;
+  network_context->ClearNetworkingHistorySince(
+      base::Time::Now() - base::TimeDelta::FromHours(1),
+      run_loop2.QuitClosure());
+  run_loop2.Run();
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->http_server_properties()
+                   ->GetSupportsSpdy(kSchemeHostPort));
+
+  // Clear destroy the network context and let any pending writes complete
+  // before destroying |temp_dir|, to avoid leaking any files.
+  network_context.reset();
+  scoped_task_environment_.RunUntilIdle();
+  ASSERT_TRUE(temp_dir.Delete());
+}
+
+// Checks that ClearNetworkingHistorySince() works clears in-memory pref stores,
+// and invokes the closure passed to it.
+TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
+  const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->http_server_properties()
+                   ->GetSupportsSpdy(kSchemeHostPort));
+  network_context->url_request_context()
+      ->http_server_properties()
+      ->SetSupportsSpdy(kSchemeHostPort, true);
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->http_server_properties()
+                  ->GetSupportsSpdy(kSchemeHostPort));
+
+  base::RunLoop run_loop;
+  network_context->ClearNetworkingHistorySince(
+      base::Time::Now() - base::TimeDelta::FromHours(1),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->http_server_properties()
+                   ->GetSupportsSpdy(kSchemeHostPort));
 }
 
 void SetCookieCallback(base::RunLoop* run_loop, bool* result_out, bool result) {

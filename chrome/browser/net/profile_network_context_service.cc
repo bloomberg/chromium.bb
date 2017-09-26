@@ -37,9 +37,10 @@ content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams(
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
 
-  // Configure the HTTP cache path and size for non-OTR profiles. OTR profiles
-  // just use an in-memory cache with the default size.
+  // Configure on-disk storage for non-OTR profiles. OTR profiles just use
+  // default behavior (in memory storage, default sizes).
   if (!profile->IsOffTheRecord()) {
+    // Configure the HTTP cache path and size.
     base::FilePath base_cache_path;
     chrome::GetUserCacheDirectory(profile->GetPath(), &base_cache_path);
     base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
@@ -49,6 +50,11 @@ content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams(
         base_cache_path.Append(chrome::kCacheDirname);
     network_context_params->http_cache_max_size =
         prefs->GetInteger(prefs::kDiskCacheSize);
+
+    // Currently this just contains HttpServerProperties, but that will likely
+    // change.
+    network_context_params->http_server_properties_path =
+        profile->GetPath().Append(chrome::kNetworkPersistentStateFilename);
   }
 
   // NOTE(mmenke): Keep these protocol handlers and

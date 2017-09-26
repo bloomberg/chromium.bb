@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -62,9 +63,13 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
  public:
   URLRequestMultipleWritesJob(net::URLRequest* request,
                               net::NetworkDelegate* network_delegate,
-                              std::list<std::string> packets)
+                              std::list<std::string> packets,
+                              net::Error net_error,
+                              bool async_reads)
       : URLRequestJob(request, network_delegate),
         packets_(std::move(packets)),
+        net_error_(net_error),
+        async_reads_(async_reads),
         weak_factory_(this) {}
 
   // net::URLRequestJob implementation:
@@ -75,14 +80,25 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
   }
 
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {
-    if (packets_.empty())
-      return 0;
+    int result;
+    if (packets_.empty()) {
+      result = net_error_;
+    } else {
+      std::string packet = packets_.front();
+      packets_.pop_front();
+      CHECK_GE(buf_size, static_cast<int>(packet.length()));
+      memcpy(buf->data(), packet.c_str(), packet.length());
+      result = packet.length();
+    }
 
-    std::string packet = packets_.front();
-    packets_.pop_front();
-    CHECK_GE(buf_size, static_cast<int>(packet.length()));
-    memcpy(buf->data(), packet.c_str(), packet.length());
-    return packet.length();
+    if (async_reads_) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&URLRequestMultipleWritesJob::ReadRawDataComplete,
+                         weak_factory_.GetWeakPtr(), result));
+      return net::ERR_IO_PENDING;
+    }
+    return result;
   }
 
  private:
@@ -91,6 +107,8 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
   void StartAsync() { NotifyHeadersComplete(); }
 
   std::list<std::string> packets_;
+  net::Error net_error_;
+  bool async_reads_;
 
   base::WeakPtrFactory<URLRequestMultipleWritesJob> weak_factory_;
 
@@ -99,8 +117,12 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
 
 class MultipleWritesInterceptor : public net::URLRequestInterceptor {
  public:
-  explicit MultipleWritesInterceptor(std::list<std::string> packets)
-      : packets_(std::move(packets)) {}
+  MultipleWritesInterceptor(std::list<std::string> packets,
+                            net::Error net_error,
+                            bool async_reads)
+      : packets_(std::move(packets)),
+        net_error_(net_error),
+        async_reads_(async_reads) {}
   ~MultipleWritesInterceptor() override {}
 
   static GURL GetURL() { return GURL("http://foo"); }
@@ -110,11 +132,14 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return new URLRequestMultipleWritesJob(request, network_delegate,
-                                           std::move(packets_));
+                                           std::move(packets_), net_error_,
+                                           async_reads_);
   }
 
  private:
   std::list<std::string> packets_;
+  net::Error net_error_;
+  bool async_reads_;
 
   DISALLOW_COPY_AND_ASSIGN(MultipleWritesInterceptor);
 };
@@ -139,20 +164,12 @@ class URLLoaderImplTest : public testing::Test {
     ASSERT_TRUE(test_server_.Start());
   }
 
-  void Load(const GURL& url) {
-    EXPECT_EQ(net::OK, LoadWithError(url, nullptr, 0));
-  }
-
-  // Attempts to load |url| and returns the resulting error code. If |data| is
-  // non-NULL, also attempts to read a response body of |expected_body_size|.
-  // The advantage of using |data| instead of calling ReadData() after
-  // LoadWithError is that it will load the response body before the URLLoader
-  // is destroyed, so pipes may still be open.
-  //
-  // TODO(mmenke): Come up with a better test fixture.
-  int LoadWithError(const GURL& url,
-                    std::string* data,
-                    size_t expected_body_size) {
+  // Attempts to load |url| and returns the resulting error code. If |body| is
+  // non-NULL, also attempts to read the response body. The advantage of using
+  // |body| instead of calling ReadBody() after Load is that it will load the
+  // response body before URLLoader is complete, so URLLoader completion won't
+  // block on trying to write the body buffer.
+  int Load(const GURL& url, std::string* body = nullptr) WARN_UNUSED_RESULT {
     DCHECK(!ran_);
     mojom::URLLoaderPtr loader;
 
@@ -168,12 +185,19 @@ class URLLoaderImplTest : public testing::Test {
                               request, false, client_.CreateInterfacePtr(),
                               TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    client_.RunUntilComplete();
-    DCHECK(!ran_);
     ran_ = true;
 
-    if (data)
-      *data = ReadData(expected_body_size);
+    if (body) {
+      client_.RunUntilResponseBodyArrived();
+      *body = ReadBody();
+    }
+
+    client_.RunUntilComplete();
+    if (body) {
+      EXPECT_EQ(body->size(),
+                static_cast<size_t>(
+                    client()->completion_status().decoded_body_length));
+    }
 
     return client_.completion_status().error_code;
   }
@@ -189,8 +213,10 @@ class URLLoaderImplTest : public testing::Test {
       return;
     }
 
-    Load(test_server()->GetURL(std::string("/") + path));
-    EXPECT_EQ(expected, ReadData(expected.size()));
+    std::string body;
+    EXPECT_EQ(net::OK,
+              Load(test_server()->GetURL(std::string("/") + path), &body));
+    EXPECT_EQ(expected, body);
     // The file isn't compressed, so both encoded and decoded body lengths
     // should match the read body length.
     EXPECT_EQ(
@@ -206,13 +232,20 @@ class URLLoaderImplTest : public testing::Test {
         static_cast<size_t>(client()->completion_status().encoded_data_length));
   }
 
-  void LoadPackets(std::list<std::string> packets) {
+  // Adds a MultipleWritesInterceptor for MultipleWritesInterceptor::GetURL()
+  // that results in seeing each element of |packets| read individually, and
+  // then a final read that returns |net_error|. The URLRequestInterceptor is
+  // not removed from URLFilter until the test fixture is torn down.
+  // |async_reads| indicates whether all reads (including those for |packets|
+  // and |net_error|) complete asynchronously or not.
+  void AddMultipleWritesInterceptor(std::list<std::string> packets,
+                                    net::Error net_error,
+                                    bool async_reads) {
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         MultipleWritesInterceptor::GetURL(),
         std::unique_ptr<net::URLRequestInterceptor>(
-            new MultipleWritesInterceptor(std::move(packets))));
-    Load(MultipleWritesInterceptor::GetURL());
-    net::URLRequestFilter::GetInstance()->ClearHandlers();
+            new MultipleWritesInterceptor(std::move(packets), net_error,
+                                          async_reads)));
   }
 
   // If |second| is empty, then it's ignored.
@@ -223,12 +256,14 @@ class URLLoaderImplTest : public testing::Test {
     packets.push_back(first);
     if (!second.empty())
       packets.push_back(second);
-    LoadPackets(std::move(packets));
-    std::string expected = first + second;
-    EXPECT_EQ(expected, ReadData(expected.size()));
-    EXPECT_EQ(
-        expected.size(),
-        static_cast<size_t>(client()->completion_status().decoded_body_length));
+    AddMultipleWritesInterceptor(std::move(packets), net::OK,
+                                 false /* async_reads */);
+
+    std::string expected_body = first + second;
+    std::string actual_body;
+    EXPECT_EQ(net::OK, Load(MultipleWritesInterceptor::GetURL(), &actual_body));
+
+    EXPECT_EQ(actual_body, expected_body);
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -256,32 +291,52 @@ class URLLoaderImplTest : public testing::Test {
     return client_.ssl_info();
   }
 
-  std::string ReadData(size_t size) {
+ private:
+  // Reads the response body from client()->response_body() until the channel is
+  // closed. Expects client()->response_body() to already be populated, and
+  // non-NULL.
+  std::string ReadBody() {
     DCHECK(ran_);
-    MojoHandle consumer = client()->response_body().value();
-    MojoResult rv =
-        mojo::Wait(mojo::Handle(consumer), MOJO_HANDLE_SIGNAL_READABLE);
-    if (!size) {
-      CHECK_EQ(rv, MOJO_RESULT_FAILED_PRECONDITION);
-      return std::string();
+
+    std::string body;
+    while (true) {
+      MojoHandle consumer = client()->response_body().value();
+
+      const void* buffer;
+      uint32_t num_bytes;
+      MojoResult rv = MojoBeginReadData(consumer, &buffer, &num_bytes,
+                                        MOJO_READ_DATA_FLAG_NONE);
+      // If no data has been received yet, spin the message loop until it has.
+      if (rv == MOJO_RESULT_SHOULD_WAIT) {
+        mojo::SimpleWatcher watcher(
+            FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+        base::RunLoop run_loop;
+
+        watcher.Watch(
+            client()->response_body(),
+            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            MOJO_WATCH_CONDITION_SATISFIED,
+            base::BindRepeating(
+                [](base::Closure quit, MojoResult result,
+                   const mojo::HandleSignalsState& state) { quit.Run(); },
+                run_loop.QuitClosure()));
+        run_loop.Run();
+        continue;
+      }
+
+      // The pipe was closed.
+      if (rv == MOJO_RESULT_FAILED_PRECONDITION)
+        return body;
+
+      CHECK_EQ(rv, MOJO_RESULT_OK);
+
+      body.append(static_cast<const char*>(buffer), num_bytes);
+      MojoEndReadData(consumer, num_bytes);
     }
-    CHECK_EQ(rv, MOJO_RESULT_OK);
-    std::vector<char> buffer(size);
-    uint32_t num_bytes = static_cast<uint32_t>(size);
-    CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
-                          MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-             MOJO_RESULT_OK);
-    CHECK_EQ(num_bytes, static_cast<uint32_t>(size));
 
-    // No more data should remain on the pipe.
-    CHECK_EQ(MojoReadData(consumer, buffer.data(), &num_bytes,
-                          MOJO_READ_DATA_FLAG_ALL_OR_NONE),
-             MOJO_RESULT_FAILED_PRECONDITION);
-
-    return std::string(buffer.data(), buffer.size());
+    return body;
   }
 
- private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
@@ -309,7 +364,7 @@ TEST_F(URLLoaderImplTest, BasicSSL) {
 
   GURL url = https_server.GetURL("/simple_page.html");
   set_send_ssl();
-  Load(url);
+  EXPECT_EQ(net::OK, Load(url));
   ASSERT_TRUE(!!ssl_info());
   ASSERT_TRUE(!!ssl_info()->cert);
 
@@ -323,14 +378,15 @@ TEST_F(URLLoaderImplTest, SSLSentOnlyWhenRequested) {
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL("/simple_page.html");
-  Load(url);
+  EXPECT_EQ(net::OK, Load(url));
   ASSERT_FALSE(!!ssl_info());
 }
 
 // Test decoded_body_length / encoded_body_length when they're different.
 TEST_F(URLLoaderImplTest, GzipTest) {
-  Load(test_server()->GetURL("/gzip-body?Body"));
-  EXPECT_EQ("Body", ReadData(4));
+  std::string body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/gzip-body?Body"), &body));
+  EXPECT_EQ("Body", body);
   // Deflating a 4-byte string should result in a longer string - main thing to
   // check here, though, is that the two lengths are of different.
   EXPECT_LT(client()->completion_status().decoded_body_length,
@@ -342,28 +398,52 @@ TEST_F(URLLoaderImplTest, GzipTest) {
 
 TEST_F(URLLoaderImplTest, ErrorBeforeHeaders) {
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
-            LoadWithError(test_server()->GetURL("/close-socket"), nullptr, 0));
+            Load(test_server()->GetURL("/close-socket"), nullptr));
   EXPECT_FALSE(client()->response_body().is_valid());
 }
 
 TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBody) {
   std::string body;
-  EXPECT_EQ(
-      net::ERR_FAILED,
-      LoadWithError(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
-                        net::URLRequestFailedJob::READ_SYNC, net::ERR_FAILED),
-                    &body, 0));
+  EXPECT_EQ(net::ERR_FAILED,
+            Load(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
+                     net::URLRequestFailedJob::READ_SYNC, net::ERR_FAILED),
+                 &body));
   EXPECT_EQ("", body);
 }
 
 TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBody) {
   std::string body;
-  EXPECT_EQ(
-      net::ERR_FAILED,
-      LoadWithError(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
-                        net::URLRequestFailedJob::READ_ASYNC, net::ERR_FAILED),
-                    &body, 0));
+  EXPECT_EQ(net::ERR_FAILED,
+            Load(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
+                     net::URLRequestFailedJob::READ_ASYNC, net::ERR_FAILED),
+                 &body));
   EXPECT_EQ("", body);
+}
+
+TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBodyAfterBytesReceived) {
+  const std::string kBody("Foo.");
+
+  std::list<std::string> packets;
+  packets.push_back(kBody);
+  AddMultipleWritesInterceptor(packets, net::ERR_ACCESS_DENIED,
+                               false /*async_reads*/);
+  std::string body;
+  EXPECT_EQ(net::ERR_ACCESS_DENIED,
+            Load(MultipleWritesInterceptor::GetURL(), &body));
+  EXPECT_EQ(kBody, body);
+}
+
+TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
+  const std::string kBody("Foo.");
+
+  std::list<std::string> packets;
+  packets.push_back(kBody);
+  AddMultipleWritesInterceptor(packets, net::ERR_ACCESS_DENIED,
+                               true /*async_reads*/);
+  std::string body;
+  EXPECT_EQ(net::ERR_ACCESS_DENIED,
+            Load(MultipleWritesInterceptor::GetURL(), &body));
+  EXPECT_EQ(kBody, body);
 }
 
 TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
@@ -398,37 +478,42 @@ TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
 }
 
 TEST_F(URLLoaderImplTest, DoNotSniffUnlessSpecified) {
-  Load(test_server()->GetURL("/content-sniffer-test0.html"));
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test0.html")));
   ASSERT_TRUE(mime_type().empty());
 }
 
 TEST_F(URLLoaderImplTest, SniffMimeType) {
   set_sniff();
-  Load(test_server()->GetURL("/content-sniffer-test0.html"));
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test0.html")));
   ASSERT_EQ(std::string("text/html"), mime_type());
 }
 
 TEST_F(URLLoaderImplTest, RespectNoSniff) {
   set_sniff();
-  Load(test_server()->GetURL("/nosniff-test.html"));
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/nosniff-test.html")));
   ASSERT_TRUE(mime_type().empty());
 }
 
 TEST_F(URLLoaderImplTest, DoNotSniffHTMLFromTextPlain) {
   set_sniff();
-  Load(test_server()->GetURL("/content-sniffer-test1.html"));
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test1.html")));
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
 TEST_F(URLLoaderImplTest, DoNotSniffHTMLFromImageGIF) {
   set_sniff();
-  Load(test_server()->GetURL("/content-sniffer-test2.html"));
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test2.html")));
   ASSERT_EQ(std::string("image/gif"), mime_type());
 }
 
 TEST_F(URLLoaderImplTest, CantSniffEmptyHtml) {
   set_sniff();
-  Load(test_server()->GetURL("/content-sniffer-test4.html"));
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test4.html")));
   ASSERT_TRUE(mime_type().empty());
 }
 

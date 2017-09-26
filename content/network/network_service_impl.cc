@@ -142,6 +142,10 @@ bool NetworkServiceImpl::HasRawHeadersAccess(uint32_t process_id) const {
          processes_with_raw_headers_access_.end();
 }
 
+net::NetLog* NetworkServiceImpl::net_log() const {
+  return net_log_.get();
+}
+
 void NetworkServiceImpl::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,

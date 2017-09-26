@@ -742,8 +742,6 @@ split_static_library("browser") {
     "net/dns_probe_service.h",
     "net/file_downloader.cc",
     "net/file_downloader.h",
-    "net/http_server_properties_manager_factory.cc",
-    "net/http_server_properties_manager_factory.h",
     "net/loading_predictor_observer.cc",
     "net/loading_predictor_observer.h",
     "net/net_error_diagnostics_dialog.h",

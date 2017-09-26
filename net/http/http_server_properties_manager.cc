@@ -190,11 +190,15 @@ void HttpServerPropertiesManager::Clear() {
   Clear(base::Closure());
 }
 
-void HttpServerPropertiesManager::Clear(const base::Closure& completion) {
+void HttpServerPropertiesManager::UpdatePrefsForTesting() {
+  UpdatePrefsFromCacheOnNetworkSequence();
+}
+
+void HttpServerPropertiesManager::Clear(base::OnceClosure completion) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   http_server_properties_impl_->Clear();
-  UpdatePrefsFromCacheOnNetworkSequence(completion);
+  UpdatePrefsFromCacheOnNetworkSequence(std::move(completion));
 }
 
 bool HttpServerPropertiesManager::SupportsRequestPriority(
@@ -1057,11 +1061,11 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefsOnNetworkSequence(
 
 // This is required so we can set this as the callback for a timer.
 void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence() {
-  UpdatePrefsFromCacheOnNetworkSequence(base::Closure());
+  UpdatePrefsFromCacheOnNetworkSequence(base::OnceClosure());
 }
 
 void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   // It is in MRU order.
@@ -1187,7 +1191,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
                  base::Passed(&server_network_stats_map),
                  base::Passed(&quic_server_info_map),
                  base::Passed(&broken_alt_svc_list),
-                 base::Passed(&recently_broken_alt_svcs), completion));
+                 base::Passed(&recently_broken_alt_svcs),
+                 base::Passed(std::move(completion))));
 }
 
 // A local or temporary data structure to hold preferences for a server.
@@ -1210,7 +1215,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
         broken_alternative_service_list,
     std::unique_ptr<RecentlyBrokenAlternativeServices>
         recently_broken_alternative_services,
-    const base::Closure& completion) {
+    base::OnceClosure completion) {
   typedef base::MRUCache<url::SchemeHostPort, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map(ServerPrefMap::NO_AUTO_EVICT);
 
@@ -1320,7 +1325,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
   // This is not a problem though, as JSONPrefStore guarantees that this will
   // happen, pretty soon, and even in the case we shut down immediately.
   if (!completion.is_null())
-    completion.Run();
+    std::move(completion).Run();
 }
 
 void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(

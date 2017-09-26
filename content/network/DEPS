@@ -1,6 +1,7 @@
 # Tight rules since this will move to services/network. See README.
 include_rules = [
   "+components/network_session_configurator",
+  "+components/prefs",
   "-content",
   "+content/common/content_export.h",
   "+content/common/loader_util.h",

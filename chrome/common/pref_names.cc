@@ -430,9 +430,6 @@ const char kDnsPrefetchingHostReferralList[] =
 // Controls if the QUIC protocol is allowed.
 const char kQuicAllowed[] = "net.quic_allowed";
 
-// Prefs for persisting HttpServerProperties.
-const char kHttpServerProperties[] = "net.http_server_properties";
-
 // Prefs for persisting network qualities.
 const char kNetworkQualities[] = "net.network_qualities";
 

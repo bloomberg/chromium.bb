@@ -10,7 +10,9 @@
 #include <memory>
 #include <set>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/network/cookie_manager_impl.h"
@@ -19,9 +21,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 
+class PrefService;
+
 namespace net {
 class URLRequestContext;
 class URLRequestContextBuilder;
+class HttpServerPropertiesManager;
 }
 
 namespace content {
@@ -80,6 +85,9 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   void HandleViewCacheRequest(const GURL& url,
                               mojom::URLLoaderClientPtr client) override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
+  void ClearNetworkingHistorySince(
+      base::Time time,
+      base::OnceClosure completion_callback) override;
 
   // Called when the associated NetworkServiceImpl is going away. Guaranteed to
   // destroy NetworkContext's URLRequestContext.
@@ -88,13 +96,29 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
+  net::HttpServerPropertiesManager* http_server_properties_manager_for_testing()
+      const {
+    return http_server_properties_manager_;
+  }
+
  private:
   NetworkContext();
 
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
 
+  std::unique_ptr<net::URLRequestContext> MakeURLRequestContext(
+      mojom::NetworkContextParams* network_context_params);
+
+  // Applies the values in |network_context_params| to |builder|.
+  void ApplyContextParamsToBuilder(
+      net::URLRequestContextBuilder* builder,
+      mojom::NetworkContextParams* network_context_params);
+
   NetworkServiceImpl* const network_service_;
+
+  // This needs to be destroyed after the URLRequestContext.
+  std::unique_ptr<PrefService> pref_service_;
 
   // Owning pointer to |url_request_context_|. nullptr when the
   // NetworkContextImpl doesn't own its own URLRequestContext.
@@ -117,6 +141,9 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   mojo::Binding<mojom::NetworkContext> binding_;
 
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
+
+  // Owned by |owned_url_request_context_|. May be nullptr.
+  net::HttpServerPropertiesManager* http_server_properties_manager_ = nullptr;
 
   // Temporary class to help diagnose the impact of https://crbug.com/711579.
   // Every 24-hours, measures the size of the network cache and emits an UMA
