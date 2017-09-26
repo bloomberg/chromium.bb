@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "net/base/net_export.h"
 
 // String conversion functions.  By default, they're implemented with ICU, but
 // when building with USE_ICU_ALTERNATIVES, they use platform functions instead.
@@ -36,6 +37,11 @@ bool ConvertToUTF16(const std::string& text, const char* charset,
 bool ConvertToUTF16WithSubstitutions(const std::string& text,
                                      const char* charset,
                                      base::string16* output);
+
+// Converts |str| to uppercase using the default locale, and writes it to
+// |output|. On failure returns false and |output| is cleared.
+NET_EXPORT_PRIVATE bool ToUpper(const base::string16& str,
+                                base::string16* output);
 
 }  // namespace net
 
