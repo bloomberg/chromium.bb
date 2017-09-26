@@ -57,13 +57,6 @@ class WTF_EXPORT RefCountedBase {
     return ref_count_ == 1;
   }
 
-  int RefCount() const {
-#if CHECK_REF_COUNTED_LIFECYCLE
-    SECURITY_DCHECK(verifier_.IsSafeToUse());
-#endif
-    return ref_count_;
-  }
-
  protected:
   RefCountedBase()
       : ref_count_(1)

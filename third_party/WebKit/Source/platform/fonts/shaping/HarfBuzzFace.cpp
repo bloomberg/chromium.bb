@@ -90,9 +90,9 @@ HarfBuzzFace::~HarfBuzzFace() {
   HarfBuzzFontCache::iterator result =
       FontGlobalContext::GetHarfBuzzFontCache().find(unique_id_);
   SECURITY_DCHECK(result != FontGlobalContext::GetHarfBuzzFontCache().end());
-  DCHECK_GT(result.Get()->value->RefCount(), 1);
+  DCHECK(!result.Get()->value->HasOneRef());
   result.Get()->value->Deref();
-  if (result.Get()->value->RefCount() == 1)
+  if (result.Get()->value->HasOneRef())
     FontGlobalContext::GetHarfBuzzFontCache().erase(unique_id_);
 }
 

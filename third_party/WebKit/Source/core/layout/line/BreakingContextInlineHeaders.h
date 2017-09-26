@@ -1528,7 +1528,6 @@ inline void BreakingContext::CommitAndUpdateLineBreakIfNeeded() {
     }
   }
 
-  SECURITY_DCHECK(current_style_->RefCount() > 0);
   if (check_for_break && !width_.FitsOnLine()) {
     // if we have floats, try to get below them.
     if (current_character_is_space_ && !ignoring_spaces_ &&

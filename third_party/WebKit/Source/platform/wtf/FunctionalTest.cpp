@@ -316,7 +316,7 @@ TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
   EXPECT_EQ(10, function1());
 }
 
-class Number : public RefCounted<Number> {
+class Number {
  public:
   static RefPtr<Number> Create(int value) {
     return WTF::AdoptRef(new Number(value));
@@ -325,11 +325,20 @@ class Number : public RefCounted<Number> {
   ~Number() { value_ = 0; }
 
   int Value() const { return value_; }
+  int RefCount() const { return ref_count_; }
+
+  bool HasOneRef() const { return ref_count_ == 1; }
+  void Ref() const { ++ref_count_; }
+  void Deref() const {
+    if (--ref_count_ == 0)
+      delete this;
+  }
 
  private:
   explicit Number(int value) : value_(value) {}
 
   int value_;
+  mutable int ref_count_ = 1;
 };
 
 int MultiplyNumberByTwo(Number* number) {
@@ -338,7 +347,7 @@ int MultiplyNumberByTwo(Number* number) {
 
 TEST(FunctionalTest, RefCountedStorage) {
   RefPtr<Number> five = Number::Create(5);
-  EXPECT_EQ(1, five->RefCount());
+  EXPECT_TRUE(five->HasOneRef());
   Function<int()> multiply_five_by_two_function =
       WTF::Bind(MultiplyNumberByTwo, five);
   EXPECT_EQ(2, five->RefCount());
