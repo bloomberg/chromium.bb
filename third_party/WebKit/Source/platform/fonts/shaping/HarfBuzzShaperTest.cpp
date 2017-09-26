@@ -46,18 +46,17 @@ static inline ShapeResultTestInfo* TestInfo(RefPtr<ShapeResult>& result) {
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
   RefPtr<ShapeResult> result =
       ShapeResult::Create(&font, 0, TextDirection::kLtr);
-  EXPECT_EQ(1, result->RefCount());
+  EXPECT_TRUE(result->HasOneRef());
 
   // At this point, |result| has only one ref count.
   RefPtr<ShapeResult> result2 = result->MutableUnique();
   EXPECT_EQ(result.Get(), result2.Get());
-  EXPECT_EQ(2, result2->RefCount());
+  EXPECT_FALSE(result2->HasOneRef());
 
   // Since |result| has 2 ref counts, it should return a clone.
   RefPtr<ShapeResult> result3 = result->MutableUnique();
   EXPECT_NE(result.Get(), result3.Get());
-  EXPECT_EQ(1, result3->RefCount());
-  EXPECT_EQ(2, result->RefCount());
+  EXPECT_TRUE(result3->HasOneRef());
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
