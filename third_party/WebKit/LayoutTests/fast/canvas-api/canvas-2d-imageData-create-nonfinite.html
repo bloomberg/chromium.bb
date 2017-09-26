@@ -6,12 +6,26 @@ test(function(t) {
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
 
-    assert_throws(null, function() {ctx.createImageData(Infinity, Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(Infinity, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(-Infinity, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(10, Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(10, -Infinity);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(NaN, 10);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
-    assert_throws(null, function() {ctx.createImageData(10, NaN);}, "Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided double value is non-finite..");
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(Infinity, Infinity);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(Infinity, 10);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(-Infinity, 10);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(10, Infinity);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(10, -Infinity);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(NaN, 10);
+    });
+    assert_throws("INDEX_SIZE_ERR", function() {
+      ctx.createImageData(10, NaN);
+    });
 }, 'Test the argument bounds of canvas createImageData.');
-</script> 
+</script>

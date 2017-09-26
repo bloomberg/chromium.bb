@@ -88,31 +88,31 @@ coroutine(function*() {
 
   create_simple_rect_region_with_clip();
   generate_tests(assert_equals, [
-    [ 'null', yield clickOrTouch(10, 10), null ],
-    [ 'clip', yield clickOrTouch(60, 60), 'clip' ]
+    [ 'null1', yield clickOrTouch(10, 10), null ],
+    [ 'clip1', yield clickOrTouch(60, 60), 'clip' ]
   ]);
 
   create_non_rect_region_with_clip();
   generate_tests(assert_equals, [
-    [ 'null', yield clickOrTouch(0, 0), null ],
-    [ 'null', yield clickOrTouch(100, 0), null ],
-    [ 'null', yield clickOrTouch(100, 100), null ],
-    [ 'null', yield clickOrTouch(0, 100), null ],
-    [ 'clip', yield clickOrTouch(50, 50), 'clip' ]
+    [ 'null2', yield clickOrTouch(0, 0), null ],
+    [ 'null3', yield clickOrTouch(100, 0), null ],
+    [ 'null4', yield clickOrTouch(100, 100), null ],
+    [ 'null5', yield clickOrTouch(0, 100), null ],
+    [ 'clip2', yield clickOrTouch(50, 50), 'clip' ]
   ]);
 
   create_non_rect_region_with_multiple_clips();
   generate_tests(assert_equals, [
-    [ 'null', yield clickOrTouch(00, 0), null ],
-    [ 'clip', yield clickOrTouch(100, 0), 'clip' ],
-    [ 'null', yield clickOrTouch(100, 100), null ],
-    [ 'null', yield clickOrTouch(0, 100), null ],
-    [ 'null', yield clickOrTouch(50, 0), null ],
-    [ 'null', yield clickOrTouch(150, 0), null ],
-    [ 'null', yield clickOrTouch(150, 100), null ],
-    [ 'null', yield clickOrTouch(50, 100), null ],
-    [ 'clip', yield clickOrTouch(50, 50), 'clip' ],
-    [ 'clip', yield clickOrTouch(100, 50), 'clip' ],
+    [ 'null6', yield clickOrTouch(00, 0), null ],
+    [ 'clip3', yield clickOrTouch(100, 0), 'clip' ],
+    [ 'null7', yield clickOrTouch(100, 100), null ],
+    [ 'null8', yield clickOrTouch(0, 100), null ],
+    [ 'null9', yield clickOrTouch(50, 0), null ],
+    [ 'null10', yield clickOrTouch(150, 0), null ],
+    [ 'null11', yield clickOrTouch(150, 100), null ],
+    [ 'null12', yield clickOrTouch(50, 100), null ],
+    [ 'clip4', yield clickOrTouch(50, 50), 'clip' ],
+    [ 'clip5', yield clickOrTouch(100, 50), 'clip' ],
   ]);
 
   generate_tests(assert_throws, [

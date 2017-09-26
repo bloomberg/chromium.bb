@@ -23,28 +23,28 @@ coroutine(function*() {
   setup({ explicit_done : true, explicit_timeout : true });
 
   generate_tests(assert_equals, [
-    [ 'devicePixelRatio', devicePixelRatio, 1 ],
-    [ 'face', yield clickOrTouch(100, 100), 'face' ],
-    [ 'nose', yield clickOrTouch(200, 200), 'nose' ],
-    [ 'mouth', yield clickOrTouch(127, 242), 'mouth' ],
-    [ 'eye', yield clickOrTouch(150, 125), 'eye' ],
-    [ 'eye', yield clickOrTouch(250, 125), 'eye' ],
-    [ 'face', yield clickOrTouch(200, 120), 'face' ],
-    [ 'null', yield clickOrTouch(20, 10), null ]
+    [ 'devicePixelRatio1', devicePixelRatio, 1 ],
+    [ 'face1', yield clickOrTouch(100, 100), 'face' ],
+    [ 'nose1', yield clickOrTouch(200, 200), 'nose' ],
+    [ 'mouth1', yield clickOrTouch(127, 242), 'mouth' ],
+    [ 'eye1', yield clickOrTouch(150, 125), 'eye' ],
+    [ 'eye2', yield clickOrTouch(250, 125), 'eye' ],
+    [ 'face2', yield clickOrTouch(200, 120), 'face' ],
+    [ 'null1', yield clickOrTouch(20, 10), null ]
   ]);
 
   if (window.eventSender)
     eventSender.setPageZoomFactor(2.0);
 
   generate_tests(assert_equals, [
-    [ 'devicePixelRatio', devicePixelRatio, 2 ],
-    [ 'face', yield clickOrTouch(200, 200), 'face' ],
-    [ 'nose', yield clickOrTouch(400, 400), 'nose' ],
-    [ 'mouth', yield clickOrTouch(254, 484), 'mouth' ],
-    [ 'eye', yield clickOrTouch(300, 250), 'eye' ],
-    [ 'eye', yield clickOrTouch(500, 250), 'eye' ],
-    [ 'face', yield clickOrTouch(400, 240), 'face' ],
-    [ 'null', yield clickOrTouch(40, 20), null ]
+    [ 'devicePixelRatio2', devicePixelRatio, 2 ],
+    [ 'face3', yield clickOrTouch(200, 200), 'face' ],
+    [ 'nose2', yield clickOrTouch(400, 400), 'nose' ],
+    [ 'mouth2', yield clickOrTouch(254, 484), 'mouth' ],
+    [ 'eye3', yield clickOrTouch(300, 250), 'eye' ],
+    [ 'eye4', yield clickOrTouch(500, 250), 'eye' ],
+    [ 'face4', yield clickOrTouch(400, 240), 'face' ],
+    [ 'null2', yield clickOrTouch(40, 20), null ]
   ]);
 
   done();

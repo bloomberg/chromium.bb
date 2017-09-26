@@ -39,7 +39,7 @@ test(function(t) {
       }
       return array;
     }
-    
+
     var lineDash;
     var inputArray;
     function checkLineDash(testArray, shouldFail) {
@@ -48,7 +48,9 @@ test(function(t) {
         ctx.setLineDash([]);
         // Set line dash.
         if (shouldFail) {
-            assert_throws(null, function() {ctx.setLineDash(inputArray);}, "'TypeError: Failed to execute \\'setLineDash\\' on \\'CanvasRenderingContext2D\\': The 1st argument is neither an array, nor does it have indexed properties.'");
+          assert_throws(new TypeError(), function() {
+            ctx.setLineDash(inputArray);
+          });
         } else {
             ctx.setLineDash(inputArray);
             lineDash = ctx.getLineDash();
@@ -56,15 +58,15 @@ test(function(t) {
                 assert_equals(lineDash[i], arrayValues[i]);
         }
     }
-    
+
     var arrayTypes = [Array, Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Float32Array, Float64Array, Uint8ClampedArray, Object];
-    
+
     // Success cases.
     for (var i = 0; i < arrayTypes.length; ++i) {
         // Test passing a valid array time as input.
         checkLineDash(createTestArray(arrayTypes[i]), false);
     }
-    
+
     // Failure cases.
     // Test passing a Date as input.
     checkLineDash(new Date(), true);
@@ -82,7 +84,7 @@ test(function(t) {
     checkLineDash(null, true);
     // Test passing undefined as input.
     checkLineDash(undefined, true);
-    
+
 }, 'Test that setLineDash converts input argument into a Web IDL sequence');
 </script>
 </body>

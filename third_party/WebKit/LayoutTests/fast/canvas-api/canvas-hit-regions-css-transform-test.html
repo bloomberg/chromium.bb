@@ -60,7 +60,7 @@ function hit_region_with_css_test(test_set) {
       for (var i = 0; i < test_set.length; i++) {
         var x = parseInt(transformX(test_set[i].x, test_set[i].y, test_set[i].rotate));
         var y = parseInt(transformY(test_set[i].x, test_set[i].y, test_set[i].rotate));
-        tests.push([ test_set[i].id, yield clickOrTouch(x, y), test_set[i].id ]);
+        tests.push([ test_set[i].name, yield clickOrTouch(x, y), test_set[i].id ]);
       }
       generate_tests(assert_equals, tests, 'ssss');
       resolve();
@@ -71,35 +71,62 @@ function hit_region_with_css_test(test_set) {
 coroutine(function*() {
   setup({ explicit_done : true, explicit_timeout : true });
 
-  var test_set = [
-      { id : 'face', x : 100, y : 100 },
-      { id : 'nose', x : 200, y : 200 },
-      { id : 'mouth', x : 127, y : 242 },
-      { id : 'eye', x : 150, y : 125 },
-      { id : 'eye', x : 250, y : 125 },
-      { id : 'face', x : 200, y : 120 },
-      { id : null, x : 20, y : 10 }
+  var test_set1 = [
+      { id : 'face', x : 100, y : 100, name : 'face1' },
+      { id : 'nose', x : 200, y : 200, name : 'nose1' },
+      { id : 'mouth', x : 127, y : 242, name : 'mouth1' },
+      { id : 'eye', x : 150, y : 125, name : 'eye1' },
+      { id : 'eye', x : 250, y : 125, name : 'eye2' },
+      { id : 'face', x : 200, y : 120, name : 'face2' },
+      { id : null, x : 20, y : 10, name: 'null1' }
   ];
-  yield hit_region_with_css_test(test_set);
+  yield hit_region_with_css_test(test_set1);
 
   canvas.style.width = '200px';
   canvas.style.height = '200px';
-  yield hit_region_with_css_test(test_set);
+  var test_set2 = [
+      { id : 'face', x : 100, y : 100, name : 'face3' },
+      { id : 'nose', x : 200, y : 200, name : 'nose2' },
+      { id : 'mouth', x : 127, y : 242, name : 'mouth2' },
+      { id : 'eye', x : 150, y : 125, name : 'eye3' },
+      { id : 'eye', x : 250, y : 125, name : 'eye4' },
+      { id : 'face', x : 200, y : 120, name : 'face4' },
+      { id : null, x : 20, y : 10, name: 'null2' }
+  ];
+  yield hit_region_with_css_test(test_set2);
 
   canvas.style.padding = '100px';
-  yield hit_region_with_css_test(test_set);
+  var test_set3 = [
+      { id : 'face', x : 100, y : 100, name : 'face5' },
+      { id : 'nose', x : 200, y : 200, name : 'nose3' },
+      { id : 'mouth', x : 127, y : 242, name : 'mouth3' },
+      { id : 'eye', x : 150, y : 125, name : 'eye5' },
+      { id : 'eye', x : 250, y : 125, name : 'eye6' },
+      { id : 'face', x : 200, y : 120, name : 'face6' },
+      { id : null, x : 20, y : 10, name: 'null3' }
+  ];
+  yield hit_region_with_css_test(test_set3);
 
   canvas.style.border = '100px solid black';
-  yield hit_region_with_css_test(test_set);
+  var test_set4 = [
+      { id : 'face', x : 100, y : 100, name : 'face7' },
+      { id : 'nose', x : 200, y : 200, name : 'nose4' },
+      { id : 'mouth', x : 127, y : 242, name : 'mouth4' },
+      { id : 'eye', x : 150, y : 125, name : 'eye7' },
+      { id : 'eye', x : 250, y : 125, name : 'eye8' },
+      { id : 'face', x : 200, y : 120, name : 'face8' },
+      { id : null, x : 20, y : 10, name: 'null4' }
+  ];
+  yield hit_region_with_css_test(test_set4);
 
   var test_set_with_rotate = [
-      { id : 'face', x : 100, y : 100, rotate : 72 },
-      { id : 'nose', x : 200, y : 200, rotate : 72 },
-      { id : 'mouth', x : 127, y : 242, rotate : 72 },
-      { id : 'eye', x : 150, y : 125, rotate : 72 },
-      { id : 'eye', x : 250, y : 125, rotate : 72 },
-      { id : 'face', x : 200, y : 120, rotate : 72 },
-      { id : null, x : 20, y : 10, rotate : 72 }
+      { id : 'face', x : 100, y : 100, rotate : 72, name : 'face9' },
+      { id : 'nose', x : 200, y : 200, rotate : 72, name : 'nose5' },
+      { id : 'mouth', x : 127, y : 242, rotate : 72, name : 'mouth5' },
+      { id : 'eye', x : 150, y : 125, rotate : 72, name : 'eye9' },
+      { id : 'eye', x : 250, y : 125, rotate : 72, name : 'eye10' },
+      { id : 'face', x : 200, y : 120, rotate : 72, name : 'face10' },
+      { id : null, x : 20, y : 10, rotate : 72, name : 'null5' }
   ];
   canvas.style.transform = 'rotate(72deg)';
   yield hit_region_with_css_test(test_set_with_rotate);
