@@ -24,16 +24,6 @@
 #include "ipc/message_filter.h"
 #include "ipc/message_filter_router.h"
 
-// This is temporary to try to locate a core trampler.
-// TODO(bcwhite):  Remove when crbug/736675 is resolved.
-#if defined(OS_ANDROID)
-#include "base/metrics/statistics_recorder.h"
-#define VALIDATE_ALL_HISTOGRAMS(x) \
-  base::StatisticsRecorder::ValidateAllHistograms(static_cast<int>(x))
-#else
-#define VALIDATE_ALL_HISTOGRAMS(x)
-#endif
-
 namespace IPC {
 
 //------------------------------------------------------------------------------
@@ -314,8 +304,6 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
   if (!listener_)
     return;
 
-  VALIDATE_ALL_HISTOGRAMS(message.type());
-
   OnDispatchConnected();
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -329,11 +317,9 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
     logger->OnPreDispatchMessage(message);
 #endif
 
-  VALIDATE_ALL_HISTOGRAMS(message.type());
   listener_->OnMessageReceived(message);
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);
-  VALIDATE_ALL_HISTOGRAMS(message.type());
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   if (logger->Enabled())
