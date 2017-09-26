@@ -244,6 +244,10 @@ bool WebStateImpl::IsCrashed() const {
   return [web_controller_ isWebProcessCrashed];
 }
 
+bool WebStateImpl::IsVisible() const {
+  return [web_controller_ isVisible];
+}
+
 bool WebStateImpl::IsEvicted() const {
   return ![web_controller_ isViewAlive];
 }

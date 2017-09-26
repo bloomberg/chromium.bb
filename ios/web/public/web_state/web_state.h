@@ -187,6 +187,10 @@ class WebState : public base::SupportsUserData {
   // (nothing loaded) and 1.0 (fully loaded).
   virtual double GetLoadingProgress() const = 0;
 
+  // Whether the WebState is visible. Returns true after WasShown() call and
+  // false after WasHidden() call.
+  virtual bool IsVisible() const = 0;
+
   // Returns true if the web process backing this WebState is believed to
   // currently be crashed.
   virtual bool IsCrashed() const = 0;

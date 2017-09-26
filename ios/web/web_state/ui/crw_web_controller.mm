@@ -923,6 +923,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 @synthesize webProcessCrashed = _webProcessCrashed;
+@synthesize visible = _visible;
 @synthesize nativeProvider = _nativeProvider;
 @synthesize swipeRecognizerProvider = _swipeRecognizerProvider;
 @synthesize webViewProxy = _webViewProxy;
@@ -2769,12 +2770,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)wasShown {
+  self.visible = YES;
   if ([self.nativeController respondsToSelector:@selector(wasShown)]) {
     [self.nativeController wasShown];
   }
 }
 
 - (void)wasHidden {
+  self.visible = NO;
   if (_isHalted)
     return;
   [self recordStateInHistory];

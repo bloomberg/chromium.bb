@@ -31,6 +31,7 @@ TestWebState::TestWebState()
     : browser_state_(nullptr),
       web_usage_enabled_(false),
       is_loading_(false),
+      is_visible_(false),
       is_crashed_(false),
       is_evicted_(false),
       trust_level_(kAbsolute),
@@ -74,11 +75,13 @@ UIView* TestWebState::GetView() {
 }
 
 void TestWebState::WasShown() {
+  is_visible_ = true;
   for (auto& observer : observers_)
     observer.WasShown();
 }
 
 void TestWebState::WasHidden() {
+  is_visible_ = false;
   for (auto& observer : observers_)
     observer.WasHidden();
 }
@@ -184,6 +187,10 @@ bool TestWebState::IsLoading() const {
 
 double TestWebState::GetLoadingProgress() const {
   return 0.0;
+}
+
+bool TestWebState::IsVisible() const {
+  return is_visible_;
 }
 
 bool TestWebState::IsCrashed() const {
