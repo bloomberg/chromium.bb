@@ -336,7 +336,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         @Override
-        protected void onBindViewHolder() {
+        public void onBindViewHolder() {
             super.onBindViewHolder();
             updatePersonalizedSigninPromo();
         }

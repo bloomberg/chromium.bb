@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -47,8 +49,9 @@ public class SuggestionsSection extends InnerNode {
 
     // Children
     private final SectionHeader mHeader;
+    private final @Nullable ContentSuggestionPlaceholder mPlaceholder;
     private final SuggestionsList mSuggestionsList;
-    private final StatusItem mStatus;
+    private final @Nullable StatusItem mStatus;
     private final ActionItem mMoreButton;
 
     /**
@@ -97,17 +100,16 @@ public class SuggestionsSection extends InnerNode {
 
         mHeader = new SectionHeader(info.getTitle());
         mSuggestionsList = new SuggestionsList(mSuggestionsSource, ranker, info);
+        mMoreButton = new ActionItem(this, ranker);
+
         boolean isChromeHomeEnabled = FeatureUtilities.isChromeHomeEnabled();
         if (isChromeHomeEnabled) {
             mStatus = null;
+            mPlaceholder = new ContentSuggestionPlaceholder();
+            addChildren(mHeader, mPlaceholder, mSuggestionsList, mMoreButton);
         } else {
             mStatus = StatusItem.createNoSuggestionsItem(info);
-        }
-        mMoreButton = new ActionItem(this, ranker);
-
-        if (isChromeHomeEnabled) {
-            addChildren(mHeader, mSuggestionsList, mMoreButton);
-        } else {
+            mPlaceholder = null;
             addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton);
         }
 
@@ -252,8 +254,13 @@ public class SuggestionsSection extends InnerNode {
         if ((newSuggestionsCount == 0) == (oldSuggestionsCount == 0)) return;
 
         if (!FeatureUtilities.isChromeHomeEnabled()) {
-            mStatus.setVisible(newSuggestionsCount == 0);
+            mStatus.setVisible(!hasSuggestions());
         }
+
+        // A manual fetch can complete after the placeholder is shown, thus we can have both a
+        // placeholder and some suggestions present with no status change notification. We need to
+        // update its visibility here to avoid that.
+        updatePlaceholderVisibility();
 
         // When the ActionItem stops being dismissable, it is possible that it was being
         // interacted with. We need to reset the view's related property changes.
@@ -359,7 +366,7 @@ public class SuggestionsSection extends InnerNode {
         }
     }
 
-    public boolean hasSuggestions() {
+    private boolean hasSuggestions() {
         return mSuggestionsList.getItemCount() != 0;
     }
 
@@ -379,8 +386,18 @@ public class SuggestionsSection extends InnerNode {
         return mIsDataStale;
     }
 
+    /** Whether the section is waiting for content to be loaded. */
     public boolean isLoading() {
         return mMoreButton.getState() == ActionItem.State.LOADING;
+    }
+
+    /**
+     * @return Whether the section is showing content cards. The placeholder is included in this
+     * check, as it's standing for content, but the status card is not.
+     */
+    public boolean hasCards() {
+        return hasSuggestions()
+                || (FeatureUtilities.isChromeHomeEnabled() && mPlaceholder.isVisible());
     }
 
     /**
@@ -399,6 +416,11 @@ public class SuggestionsSection extends InnerNode {
             suggestionIds[i] = mSuggestionsList.getSuggestionAt(i).mIdWithinCategory;
         }
         return suggestionIds;
+    }
+
+    private void updatePlaceholderVisibility() {
+        if (!FeatureUtilities.isChromeHomeEnabled()) return;
+        mPlaceholder.setVisible(isLoading() && !hasSuggestions());
     }
 
     /**
@@ -540,8 +562,9 @@ public class SuggestionsSection extends InnerNode {
             Log.d(TAG, "setStatus: unavailable status, cleared suggestions.");
         }
 
-        mMoreButton.updateState(SnippetsBridge.isCategoryLoading(status) ? ActionItem.State.LOADING
-                                                                         : ActionItem.State.BUTTON);
+        boolean isLoading = SnippetsBridge.isCategoryLoading(status);
+        mMoreButton.updateState(isLoading ? ActionItem.State.LOADING : ActionItem.State.BUTTON);
+        updatePlaceholderVisibility();
     }
 
     /** Clears the suggestions and related data, resetting the state of the section. */
