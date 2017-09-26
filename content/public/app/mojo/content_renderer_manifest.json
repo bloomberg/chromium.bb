@@ -10,6 +10,7 @@
           "content::mojom::EmbeddedWorkerSetup",
           "content::mojom::FrameFactory",
           "content::mojom::RenderWidgetWindowTreeClientFactory",
+          "content::mojom::SharedWorkerFactory",
           "content::mojom::WebDatabase",
           "IPC::mojom::ChannelBootstrap",
           "visitedlink::mojom::VisitedLinkNotificationSink",
