@@ -284,14 +284,46 @@ stage_install_common() {
   chmod 644 "${STAGEDIR}${INSTALLDIR}/default-app-block"
 
   # documentation
-  install -m 755 "${BUILDDIR}/${PROGNAME}.1" \
+  install -m 644 "${BUILDDIR}/${PROGNAME}.1" \
     "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1"
 
-  # Lastly, check to make sure all the ELF binaries are stripped.
-  UNSTRIPPED=$(find "${STAGEDIR}${INSTALLDIR}/" -type f | xargs file |
+  # Check to make sure all the ELF binaries are stripped.
+  UNSTRIPPED=$(find "${STAGEDIR}/${INSTALLDIR}/" -type f | xargs file |
       grep ELF | grep -c "not stripped" || true)
   if [ "${UNSTRIPPED}" != "0" ]; then
     echo "ERROR: Found ${UNSTRIPPED} unstripped ELF files." 1>&2
     exit 1
   fi
+
+  # Verify file permissions.
+  for file in $(find "${STAGEDIR}" -mindepth 1); do
+    local actual_perms=$(stat -c "%a" "${file}")
+    local file_type="$(file -b "${file}")"
+    local base_name=$(basename "${file}")
+    if [[ "${file_type}" = "directory"* ]]; then
+      local expected_perms=755
+    elif [[ "${file_type}" = *"symbolic link"* ]]; then
+      local expected_perms=777
+    elif [ "${base_name}" = "chrome-sandbox" ]; then
+      local expected_perms=4755
+    elif [[ "${base_name}" = "nacl_irt_"*".nexe" ]]; then
+      local expected_perms=644
+    elif [[ "${file_type}" = *"shell script"* ]]; then
+      local expected_perms=755
+    elif [[ "${file_type}" = ELF* ]]; then
+      if [[ "${base_name}" = *".so" ]]; then
+        local expected_perms=${SHLIB_PERMS}
+      else
+        local expected_perms=755
+      fi
+    else
+      # Regular data file.
+      local expected_perms=644
+    fi
+    if [ ${expected_perms} -ne ${actual_perms} ]; then
+      echo Expected permissions on ${base_name} to be \
+        ${expected_perms}, but they were ${actual_perms} 1>&2
+      exit 1
+    fi
+  done
 }
