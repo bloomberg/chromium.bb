@@ -82,6 +82,21 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
     FULLSCREEN_SEARCH = 4,
   };
 
+  struct InitParams {
+    // Used in classic ash for both bubble and fullscreen style.
+    gfx::NativeView parent = nullptr;
+    // Window container id. Used in mash for both bubble and fullscreen style.
+    // TODO(jamescook): Remove when the app list moves into the ash process.
+    int parent_container_id = -1;
+    // Used for both bubble and fullscreen style.
+    int initial_apps_page = 0;
+    // Used for fullscreen style.
+    bool is_tablet_mode = false;
+    // Whether the shelf alignment is on the side of the display. Used for
+    // fullscreen style.
+    bool is_side_shelf = false;
+  };
+
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
@@ -91,15 +106,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   static void ExcludeWindowFromEventHandling(aura::Window* window);
 
   // Initializes the widget as a bubble or fullscreen view depending on if the
-  // fullscreen app list feature is set. |parent| and |initial_apps_page| are
-  // used for both the bubble and fullscreen initialization. |is_tablet_mode|
-  // is whether the display is in tablet mode and |is_side_shelf| is whether
-  // the shelf is oriented on the side, and both are used for fullscreen
-  // app list initialization.
-  void Initialize(gfx::NativeView parent,
-                  int initial_apps_page,
-                  bool is_tablet_mode,
-                  bool is_side_shelf);
+  // fullscreen app list feature is set.
+  void Initialize(const InitParams& params);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
@@ -224,15 +232,15 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   class FullscreenWidgetObserver;
   friend class test::AppListViewTestApi;
 
-  void InitContents(gfx::NativeView parent, int initial_apps_page);
+  void InitContents(int initial_apps_page);
 
   void InitChildWidgets();
 
   // Initializes the widget for fullscreen mode.
-  void InitializeFullscreen(gfx::NativeView parent, int initial_apps_page);
+  void InitializeFullscreen(gfx::NativeView parent, int parent_container_id);
 
   // Initializes the widget as a bubble.
-  void InitializeBubble(gfx::NativeView parent, int initial_apps_page);
+  void InitializeBubble();
 
   // Closes the AppListView when a click or tap event propogates to the
   // AppListView.

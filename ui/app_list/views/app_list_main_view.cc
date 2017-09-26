@@ -58,8 +58,7 @@ AppListMainView::~AppListMainView() {
   model_->RemoveObserver(this);
 }
 
-void AppListMainView::Init(gfx::NativeView parent,
-                           int initial_apps_page,
+void AppListMainView::Init(int initial_apps_page,
                            SearchBoxView* search_box_view) {
   search_box_view_ = search_box_view;
   AddContentsViews();

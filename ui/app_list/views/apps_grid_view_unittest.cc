@@ -123,8 +123,9 @@ class AppsGridViewTest : public views::ViewsTestBase,
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
     app_list_view_->set_short_animation_for_testing();
-
-    app_list_view_->Initialize(parent, 0, false, false);
+    AppListView::InitParams params;
+    params.parent = parent;
+    app_list_view_->Initialize(params);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
     apps_grid_view_ = contents_view_->apps_container_view()->apps_grid_view();
     // Initialize around a point that ensures the window is wholly shown. It

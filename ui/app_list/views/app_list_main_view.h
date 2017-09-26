@@ -35,9 +35,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   AppListMainView(AppListViewDelegate* delegate, AppListView* app_list_view);
   ~AppListMainView() override;
 
-  void Init(gfx::NativeView parent,
-            int initial_apps_page,
-            SearchBoxView* search_box_view);
+  void Init(int initial_apps_page, SearchBoxView* search_box_view);
 
   void ShowAppListWhenReady();
 

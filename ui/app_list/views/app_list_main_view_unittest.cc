@@ -91,7 +91,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     main_view_->model()->SetFoldersEnabled(true);
 
     search_box_view_ = new SearchBoxView(main_view_, delegate_.get());
-    main_view_->Init(nullptr, 0, search_box_view_);
+    main_view_->Init(0, search_box_view_);
 
     main_widget_ = new views::Widget;
     views::Widget::InitParams main_widget_params =

@@ -3,6 +3,7 @@ include_rules = [
   "+components/sync",
   "+components/wallpaper",
   "+mojo/public/cpp",
+  "+services/ui/public",
   "+skia",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/skia",

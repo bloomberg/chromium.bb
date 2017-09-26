@@ -107,8 +107,9 @@ class AppListViewTest : public views::ViewsTestBase {
     gfx::NativeView parent = GetContext();
     delegate_.reset(new AppListTestViewDelegate);
     view_ = new AppListView(delegate_.get());
-
-    view_->Initialize(parent, 0, false, false);
+    AppListView::InitParams params;
+    params.parent = parent;
+    view_->Initialize(params);
     // Initialize around a point that ensures the window is wholly shown.
     const gfx::Size size = view_->bounds().size();
     view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
@@ -200,11 +201,14 @@ class AppListViewFullscreenTest : public AppListViewTest {
   void Initialize(int initial_apps_page,
                   bool is_tablet_mode,
                   bool is_side_shelf) {
-    gfx::NativeView parent = GetContext();
     delegate_.reset(new AppListTestViewDelegate);
     view_ = new AppListView(delegate_.get());
-
-    view_->Initialize(parent, initial_apps_page, is_tablet_mode, is_side_shelf);
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    params.initial_apps_page = initial_apps_page;
+    params.is_tablet_mode = is_tablet_mode;
+    params.is_side_shelf = is_side_shelf;
+    view_->Initialize(params);
     // Initialize around a point that ensures the window is wholly shown.
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
@@ -321,7 +325,9 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     // Initialize app list view.
     delegate_.reset(new AppListTestViewDelegate);
     view_ = new AppListView(delegate_.get());
-    view_->Initialize(GetContext(), 0, false, false);
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    view_->Initialize(params);
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
 
     // Add suggestion apps and app list items.
@@ -840,7 +846,10 @@ TEST_F(AppListViewFullscreenTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
   view_->GetWidget()->Close();
   // Set it up again with a nonzero initial page.
   view_ = new AppListView(delegate_.get());
-  view_->Initialize(GetContext(), 1, false, false);
+  AppListView::InitParams params;
+  params.parent = GetContext();
+  params.initial_apps_page = 1;
+  view_->Initialize(params);
   const gfx::Size size = view_->bounds().size();
   view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
   Show();
@@ -1305,7 +1314,10 @@ TEST_F(AppListViewTest, MultiplePagesReinitializeOnInputPage) {
   view_->GetWidget()->Close();
   // Set it up again with a nonzero initial page.
   view_ = new AppListView(delegate_.get());
-  view_->Initialize(GetContext(), 1, false, false);
+  AppListView::InitParams params;
+  params.parent = GetContext();
+  params.initial_apps_page = 1;
+  view_->Initialize(params);
   const gfx::Size size = view_->bounds().size();
   view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
   Show();
