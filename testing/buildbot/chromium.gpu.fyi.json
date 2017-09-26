@@ -10597,6 +10597,27 @@
         },
         "test": "angle_deqp_gles2_tests",
         "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles3_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.12.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests",
+        "use_xvfb": false
       }
     ],
     "isolated_scripts": []
@@ -10620,6 +10641,25 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles3_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ],
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests",
         "use_xvfb": false
       }
     ],
