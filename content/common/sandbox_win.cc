@@ -803,7 +803,9 @@ sandbox::ResultCode StartSandboxedProcess(
 
 #if !defined(NACL_WIN64)
   if (type_str == switches::kRendererProcess ||
-      type_str == switches::kPpapiPluginProcess) {
+      type_str == switches::kPpapiPluginProcess ||
+      (type_str == switches::kUtilityProcess &&
+       delegate->GetSandboxType() == SANDBOX_TYPE_PPAPI)) {
     AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
                  sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy.get());
   }
