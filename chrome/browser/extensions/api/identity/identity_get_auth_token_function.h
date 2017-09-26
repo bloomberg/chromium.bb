@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 
+#include "base/callback_list.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -50,7 +51,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
     return token_key_.get();
   }
 
-  void Shutdown();
+  void OnIdentityAPIShutdown();
 
  protected:
   ~IdentityGetAuthTokenFunction() override;
@@ -192,6 +193,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;
   std::unique_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
+
+  // Invoked when IdentityAPI is shut down.
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      identity_api_shutdown_subscription_;
 
   identity::mojom::IdentityManagerPtr identity_manager_;
 };

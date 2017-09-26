@@ -218,15 +218,16 @@ void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
 void IdentityGetAuthTokenFunction::StartAsyncRun() {
   // Balanced in CompleteAsyncRun
   AddRef();
-  extensions::IdentityAPI::GetFactoryInstance()
-      ->Get(GetProfile())
-      ->set_get_auth_token_function(this);
+
+  identity_api_shutdown_subscription_ =
+      extensions::IdentityAPI::GetFactoryInstance()
+          ->Get(GetProfile())
+          ->RegisterOnShutdownCallback(base::Bind(
+              &IdentityGetAuthTokenFunction::OnIdentityAPIShutdown, this));
 }
 
 void IdentityGetAuthTokenFunction::CompleteAsyncRun(bool success) {
-  extensions::IdentityAPI::GetFactoryInstance()
-      ->Get(GetProfile())
-      ->set_get_auth_token_function(nullptr);
+  identity_api_shutdown_subscription_.reset();
 
   SendResponse(success);
   Release();  // Balanced in StartAsyncRun
@@ -595,7 +596,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 }
 #endif
 
-void IdentityGetAuthTokenFunction::Shutdown() {
+void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   gaia_web_auth_flow_.reset();
   login_token_request_.reset();
   identity_manager_.reset();

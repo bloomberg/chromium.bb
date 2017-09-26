@@ -86,13 +86,13 @@ namespace utils = extension_function_test_utils;
 static const char kAccessToken[] = "auth_token";
 static const char kExtensionId[] = "ext_id";
 
-class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
- protected:
-  // Asynchronous function runner allows tests to manipulate the browser window
-  // after the call happens.
-  void RunFunctionAsync(
-      UIThreadExtensionFunction* function,
-      const std::string& args) {
+// Asynchronous function runner allows tests to manipulate the browser window
+// after the call happens.
+class AsyncFunctionRunner {
+ public:
+  void RunFunctionAsync(UIThreadExtensionFunction* function,
+                        const std::string& args,
+                        content::BrowserContext* browser_context) {
     response_delegate_.reset(new api_test_utils::SendResponseHelper(function));
     std::unique_ptr<base::ListValue> parsed_args(utils::ParseList(args));
     EXPECT_TRUE(parsed_args.get()) <<
@@ -105,7 +105,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
       function->set_extension(empty_extension.get());
     }
 
-    function->set_browser_context(browser()->profile());
+    function->set_browser_context(browser_context);
     function->set_has_callback(true);
     function->RunWithValidation()->Execute();
   }
@@ -136,6 +136,28 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
   }
 
   std::unique_ptr<api_test_utils::SendResponseHelper> response_delegate_;
+};
+
+class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
+ protected:
+  // Provide wrappers of AsynchronousFunctionRunner for convenience.
+  void RunFunctionAsync(UIThreadExtensionFunction* function,
+                        const std::string& args) {
+    async_function_runner_ = base::MakeUnique<AsyncFunctionRunner>();
+    async_function_runner_->RunFunctionAsync(function, args,
+                                             browser()->profile());
+  }
+
+  std::string WaitForError(UIThreadExtensionFunction* function) {
+    return async_function_runner_->WaitForError(function);
+  }
+
+  base::Value* WaitForSingleResult(UIThreadExtensionFunction* function) {
+    return async_function_runner_->WaitForSingleResult(function);
+  }
+
+ private:
+  std::unique_ptr<AsyncFunctionRunner> async_function_runner_;
 };
 
 class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
@@ -1300,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueueShutdown) {
   EXPECT_FALSE(func->scope_ui_shown());
 
   // After the request is canceled, the function will complete.
-  func->Shutdown();
+  func->OnIdentityAPIShutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
@@ -1318,7 +1340,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
   RunFunctionAsync(func.get(), "[{\"interactive\": false}]");
 
   // After the request is canceled, the function will complete.
-  func->Shutdown();
+  func->OnIdentityAPIShutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
 }
 
@@ -1478,6 +1500,62 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithNormalClientId) {
       CreateExtension(CLIENT_ID | SCOPES | AS_COMPONENT));
   func->set_extension(extension.get());
   EXPECT_EQ("client1", func->GetOAuth2ClientId());
+}
+
+// Ensure that IdentityAPI shutdown triggers an active function call to return
+// with an error.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, IdentityAPIShutdown) {
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_extension(extension.get());
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+
+  // Have GetAuthTokenFunction actually make the request for the access token to
+  // ensure that the function doesn't immediately succeed.
+  func->set_auto_login_access_token(false);
+  RunFunctionAsync(func.get(), "[{}]");
+
+  id_api()->Shutdown();
+  EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
+}
+
+// Ensure that when there are multiple active function calls, IdentityAPI
+// shutdown triggers them all to return with errors.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       IdentityAPIShutdownWithMultipleActiveTokenRequests) {
+  // Set up two extension functions, having them actually make the request for
+  // the access token to ensure that they don't immediately succeed.
+  scoped_refptr<FakeGetAuthTokenFunction> func1(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension1(
+      CreateExtension(CLIENT_ID | SCOPES));
+  func1->set_extension(extension1.get());
+  func1->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func1->set_auto_login_access_token(false);
+
+  scoped_refptr<FakeGetAuthTokenFunction> func2(new FakeGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension2(
+      CreateExtension(CLIENT_ID | SCOPES));
+  func2->set_extension(extension2.get());
+  func2->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func2->set_auto_login_access_token(false);
+
+  // Run both functions. Note that it's necessary to use AsyncFunctionRunner
+  // directly here rather than the AsyncExtensionBrowserTest instance methods
+  // that wrap it, as each AsyncFunctionRunner instance sets itself as the
+  // delegate of exactly one function.
+  AsyncFunctionRunner func1_runner;
+  func1_runner.RunFunctionAsync(func1.get(), "[{}]", browser()->profile());
+
+  AsyncFunctionRunner func2_runner;
+  func2_runner.RunFunctionAsync(func2.get(), "[{}]", browser()->profile());
+
+  // Shut down IdentityAPI and ensure that both functions complete with an
+  // error.
+  id_api()->Shutdown();
+  EXPECT_EQ(std::string(errors::kCanceled),
+            func1_runner.WaitForError(func1.get()));
+  EXPECT_EQ(std::string(errors::kCanceled),
+            func2_runner.WaitForError(func2.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueToken) {

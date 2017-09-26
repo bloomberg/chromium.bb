@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -38,8 +39,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-
-class IdentityGetAuthTokenFunction;
 
 class IdentityTokenCacheValue {
  public:
@@ -101,9 +100,9 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   void OnAccountSignInChanged(const gaia::AccountIds& ids,
                               bool is_signed_in) override;
 
-  void set_get_auth_token_function(
-      IdentityGetAuthTokenFunction* get_auth_token_function) {
-    get_auth_token_function_ = get_auth_token_function;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  RegisterOnShutdownCallback(const base::Closure& cb) {
+    return on_shutdown_callback_list_.Add(cb);
   }
 
   // TODO(blundell): Eliminate this method once this class is no longer using
@@ -135,8 +134,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 
-  // May be null.
-  IdentityGetAuthTokenFunction* get_auth_token_function_;
+  base::CallbackList<void()> on_shutdown_callback_list_;
 };
 
 template <>
