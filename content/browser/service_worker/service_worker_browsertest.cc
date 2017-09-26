@@ -782,7 +782,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void InstallOnIOThread(const base::Closure& done,
                          ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::INSTALL,
         base::BindOnce(&self::DispatchInstallEventOnIOThread,
@@ -793,6 +792,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void DispatchInstallEventOnIOThread(const base::Closure& done,
                                       ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->SetStatus(ServiceWorkerVersion::INSTALLING);
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
@@ -836,8 +836,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void ActivateOnIOThread(const base::Closure& done,
                           ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
-    registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::ACTIVATE,
         base::BindOnce(&self::DispatchActivateEventOnIOThread,
@@ -848,6 +846,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void DispatchActivateEventOnIOThread(const base::Closure& done,
                                        ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
+    registration_->SetActiveVersion(version_.get());
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
