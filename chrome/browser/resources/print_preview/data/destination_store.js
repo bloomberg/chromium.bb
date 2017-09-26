@@ -1524,10 +1524,16 @@ cr.define('print_preview', function() {
     onPrivetCapabilitiesSet_: function(printerInfo) {
       var destinations =
           print_preview.parsePrivetDestination(printerInfo.printer);
-      destinations.forEach(function(dest) {
+      var updateDestination = dest => {
         dest.capabilities = printerInfo.capabilities;
         this.updateDestination_(dest);
-      }, this);
+      };
+
+      if (Array.isArray(destinations)) {
+        destinations.forEach(updateDestination);
+      } else {
+        updateDestination(destinations);
+      }
     },
 
     /**
