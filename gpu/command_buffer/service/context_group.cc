@@ -46,15 +46,15 @@ DisallowedFeatures AdjustDisallowedFeatures(
   DisallowedFeatures adjusted_disallowed_features = disallowed_features;
   if (context_type == CONTEXT_TYPE_WEBGL1) {
     adjusted_disallowed_features.npot_support = true;
-    adjusted_disallowed_features.oes_texture_half_float_linear = true;
   }
   if (context_type == CONTEXT_TYPE_WEBGL1 ||
       context_type == CONTEXT_TYPE_WEBGL2) {
     adjusted_disallowed_features.chromium_color_buffer_float_rgba = true;
     adjusted_disallowed_features.chromium_color_buffer_float_rgb = true;
     adjusted_disallowed_features.ext_color_buffer_float = true;
-    adjusted_disallowed_features.ext_color_buffer_half_float = true;
     adjusted_disallowed_features.oes_texture_float_linear = true;
+    adjusted_disallowed_features.ext_color_buffer_half_float = true;
+    adjusted_disallowed_features.oes_texture_half_float_linear = true;
   }
   return adjusted_disallowed_features;
 }

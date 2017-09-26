@@ -123,26 +123,30 @@ static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
     }
   }
 
-  if (version->is_es)
+  if (version->is_es2)
     return gl_internal_format;
 
+  // For ES3, use sized float/half_float internal formats whenever posssible.
   if (type == GL_FLOAT) {
     switch (internal_format) {
       // We need to map all the unsized internal formats from ES2 clients.
       case GL_RGBA:
-        gl_internal_format = GL_RGBA32F_ARB;
+        gl_internal_format = GL_RGBA32F;
         break;
       case GL_RGB:
-        gl_internal_format = GL_RGB32F_ARB;
+        gl_internal_format = GL_RGB32F;
         break;
       case GL_LUMINANCE_ALPHA:
-        gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_LUMINANCE_ALPHA32F_ARB;
         break;
       case GL_LUMINANCE:
-        gl_internal_format = GL_LUMINANCE32F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_LUMINANCE32F_ARB;
         break;
       case GL_ALPHA:
-        gl_internal_format = GL_ALPHA32F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_ALPHA32F_ARB;
         break;
       // RED and RG are reached here because on Desktop GL core profile,
       // LUMINANCE/ALPHA formats are emulated through RED and RG in Chrome.
@@ -160,19 +164,22 @@ static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
   } else if (type == GL_HALF_FLOAT_OES) {
     switch (internal_format) {
       case GL_RGBA:
-        gl_internal_format = GL_RGBA16F_ARB;
+        gl_internal_format = GL_RGBA16F;
         break;
       case GL_RGB:
-        gl_internal_format = GL_RGB16F_ARB;
+        gl_internal_format = GL_RGB16F;
         break;
       case GL_LUMINANCE_ALPHA:
-        gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_LUMINANCE_ALPHA16F_ARB;
         break;
       case GL_LUMINANCE:
-        gl_internal_format = GL_LUMINANCE16F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_LUMINANCE16F_ARB;
         break;
       case GL_ALPHA:
-        gl_internal_format = GL_ALPHA16F_ARB;
+        if (!version->is_es)
+          gl_internal_format = GL_ALPHA16F_ARB;
         break;
       // RED and RG are reached here because on Desktop GL core profile,
       // LUMINANCE/ALPHA formats are emulated through RED and RG in Chrome.
@@ -210,10 +217,24 @@ static inline GLenum GetTexFormat(const GLVersionInfo* version, GLenum format) {
   return gl_format;
 }
 
-static inline GLenum GetTexType(const GLVersionInfo* version, GLenum type) {
-  if (!version->is_es) {
-    if (type == GL_HALF_FLOAT_OES)
-      return GL_HALF_FLOAT_ARB;
+static inline GLenum GetPixelType(const GLVersionInfo* version,
+                                  GLenum type,
+                                  GLenum format) {
+  if (!version->is_es2) {
+    if (type == GL_HALF_FLOAT_OES) {
+      if (version->is_es) {
+        // For ES3+, use HALF_FLOAT instead of HALF_FLOAT_OES whenever possible.
+        switch (format) {
+          case GL_LUMINANCE:
+          case GL_LUMINANCE_ALPHA:
+          case GL_ALPHA:
+            return type;
+          default:
+            break;
+        }
+      }
+      return GL_HALF_FLOAT;
+    }
   }
   return type;
 }
@@ -331,7 +352,7 @@ void RealGLApi::glTexImage2DFn(GLenum target,
   GLenum gl_internal_format =
       GetTexInternalFormat(version_.get(), internalformat, format, type);
   GLenum gl_format = GetTexFormat(version_.get(), format);
-  GLenum gl_type = GetTexType(version_.get(), type);
+  GLenum gl_type = GetPixelType(version_.get(), type, format);
 
   // TODO(yizhou): Check if cubemap, 3d texture or texture2d array has the same
   // bug on intel mac.
@@ -361,7 +382,7 @@ void RealGLApi::glTexSubImage2DFn(GLenum target,
                                   GLenum type,
                                   const void* pixels) {
   GLenum gl_format = GetTexFormat(version_.get(), format);
-  GLenum gl_type = GetTexType(version_.get(), type);
+  GLenum gl_type = GetPixelType(version_.get(), type, format);
   GLApiBase::glTexSubImage2DFn(target, level, xoffset, yoffset, width, height,
                                gl_format, gl_type, pixels);
 }
@@ -407,6 +428,35 @@ void RealGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
   GLenum gl_internal_format = GetInternalFormat(version_.get(), internalformat);
   GLApiBase::glRenderbufferStorageMultisampleFn(
       target, samples, gl_internal_format, width, height);
+}
+
+void RealGLApi::glReadPixelsFn(GLint x,
+                               GLint y,
+                               GLsizei width,
+                               GLsizei height,
+                               GLenum format,
+                               GLenum type,
+                               void* pixels) {
+  GLenum gl_type = type;
+  // TODO(zmo): once ANGLE changes its ES3 behavior to always return HALF_FLOAT
+  // to IMPLEMENTATION_COLOR_READ_TYPE as other native ES3 implementations do,
+  // we can simply call GetPixelType() here.
+  if (version_->is_es) {
+    switch (gl_type) {
+      case GL_HALF_FLOAT:
+      case GL_HALF_FLOAT_OES: {
+        GLint param = 0;
+        GLApiBase::glGetIntegervFn(GL_IMPLEMENTATION_COLOR_READ_TYPE, &param);
+        gl_type = static_cast<GLenum>(param);
+      } break;
+      default:
+        break;
+    }
+  } else {
+    if (gl_type == GL_HALF_FLOAT_OES)
+      gl_type = GL_HALF_FLOAT;
+  }
+  GLApiBase::glReadPixelsFn(x, y, width, height, format, gl_type, pixels);
 }
 
 void RealGLApi::glClearFn(GLbitfield mask) {

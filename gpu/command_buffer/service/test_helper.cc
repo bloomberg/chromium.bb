@@ -624,26 +624,9 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     }
     if (!enable_es3 &&
         !gl::HasExtension(extension_set, "GL_EXT_color_buffer_half_float") &&
-        (gl_info.is_es || gl_info.IsAtLeastGL(3, 0))) {
-      EXPECT_CALL(
-          *gl,
-          TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width, 0, GL_RED, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(
-          *gl,
-          TexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, width, 0, GL_RG, _, _))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-          .Times(1)
-          .RetiresOnSaturation();
-      EXPECT_CALL(*gl,
-                  TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width, 0,
-                             GL_RGBA, _, _))
+        (gl_info.IsAtLeastGLES(3, 0) || gl_info.IsAtLeastGL(3, 0))) {
+      EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width, 0,
+                                  GL_RGBA, GL_HALF_FLOAT, nullptr))
           .Times(1)
           .RetiresOnSaturation();
       EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
@@ -1263,4 +1246,3 @@ sh::OutputVariable TestHelper::ConstructOutputVariable(
 
 }  // namespace gles2
 }  // namespace gpu
-
