@@ -138,7 +138,7 @@ class PreconnectManager {
   base::WeakPtr<Delegate> delegate_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   std::list<PreresolveJob> queued_jobs_;
-  std::map<GURL, std::unique_ptr<PreresolveInfo>> preresolve_info_;
+  std::map<std::string, std::unique_ptr<PreresolveInfo>> preresolve_info_;
   size_t inflight_preresolves_count_ = 0;
 
   base::WeakPtrFactory<PreconnectManager> weak_factory_;
