@@ -34,6 +34,8 @@ if (!is_android) {
   import("$_inspector_protocol/inspector_protocol.gni")
 
   _protocol_generated = [
+    "protocol/browser.cc",
+    "protocol/browser.h",
     "protocol/forward.h",
     "protocol/page.cc",
     "protocol/page.h",
@@ -170,6 +172,8 @@ static_library("devtools") {
   if (!is_android) {
     deps += [ ":protocol_generated_sources" ]
     sources += [
+      "protocol/browser_handler.cc",
+      "protocol/browser_handler.h",
       "protocol/page_handler.cc",
       "protocol/page_handler.h",
       "protocol_string.cc",

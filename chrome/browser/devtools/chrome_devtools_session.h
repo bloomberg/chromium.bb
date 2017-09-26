@@ -14,6 +14,7 @@ namespace content {
 class DevToolsAgentHost;
 }
 
+class BrowserHandler;
 class PageHandler;
 
 class ChromeDevToolsSession : public protocol::FrontendChannel {
@@ -36,6 +37,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   const int session_id_;
 
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
+  std::unique_ptr<BrowserHandler> browser_handler_;
   std::unique_ptr<PageHandler> page_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsSession);

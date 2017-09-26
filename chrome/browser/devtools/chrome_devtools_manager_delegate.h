@@ -67,20 +67,6 @@ class ChromeDevToolsManagerDelegate :
       int command_id,
       base::DictionaryValue* params);
 
-  std::unique_ptr<base::DictionaryValue> HandleBrowserCommand(
-      int id,
-      std::string method,
-      base::DictionaryValue* params);
-  static std::unique_ptr<base::DictionaryValue> GetWindowForTarget(
-      int id,
-      base::DictionaryValue* params);
-  static std::unique_ptr<base::DictionaryValue> GetWindowBounds(
-      int id,
-      base::DictionaryValue* params);
-  static std::unique_ptr<base::DictionaryValue> SetWindowBounds(
-      int id,
-      base::DictionaryValue* params);
-
   std::map<content::DevToolsAgentHost*, std::unique_ptr<HostData>> host_data_;
 
   std::map<int, std::unique_ptr<ChromeDevToolsSession>> sessions_;

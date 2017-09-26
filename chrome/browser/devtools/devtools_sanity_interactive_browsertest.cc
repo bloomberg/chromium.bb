@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
+#include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -65,24 +66,23 @@ class CheckWaiter {
 
 class DevToolsManagerDelegateTest : public InProcessBrowserTest {
  public:
-  std::unique_ptr<base::DictionaryValue> SendCommand(std::string state) {
-    auto params = base::MakeUnique<base::DictionaryValue>();
-    auto bounds_object = base::MakeUnique<base::DictionaryValue>();
-    bounds_object->SetString("windowState", state);
-    params->Set("bounds", std::move(bounds_object));
-    params->SetInteger("windowId", browser()->session_id().id());
-    return ChromeDevToolsManagerDelegate::SetWindowBounds(0, params.get());
+  void SendCommand(std::string state) {
+    auto window_bounds =
+        protocol::Browser::Bounds::Create().SetWindowState(state).Build();
+    BrowserHandler handler(nullptr);
+    handler.SetWindowBounds(browser()->session_id().id(),
+                            std::move(window_bounds));
   }
 
-  std::unique_ptr<base::DictionaryValue> UpdateBounds() {
-    auto params = base::MakeUnique<base::DictionaryValue>();
-    auto bounds_object = base::MakeUnique<base::DictionaryValue>();
-    bounds_object->SetString("windowState", "normal");
-    bounds_object->SetInteger("left", 200);
-    bounds_object->SetInteger("height", 400);
-    params->Set("bounds", std::move(bounds_object));
-    params->SetInteger("windowId", browser()->session_id().id());
-    return ChromeDevToolsManagerDelegate::SetWindowBounds(0, params.get());
+  void UpdateBounds() {
+    auto window_bounds = protocol::Browser::Bounds::Create()
+                             .SetWindowState("normal")
+                             .SetLeft(200)
+                             .SetHeight(400)
+                             .Build();
+    BrowserHandler handler(nullptr);
+    handler.SetWindowBounds(browser()->session_id().id(),
+                            std::move(window_bounds));
   }
 
   void CheckIsMaximized(bool maximized) {
