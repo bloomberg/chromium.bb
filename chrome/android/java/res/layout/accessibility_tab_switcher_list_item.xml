@@ -77,6 +77,12 @@
         android:layout_height="match_parent"
         android:visibility="invisible">
 
+        <Space
+            android:id="@+id/undo_start_space"
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
         <Button
             android:id="@+id/undo_button"
             android:layout_height="match_parent"
