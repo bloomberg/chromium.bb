@@ -178,14 +178,14 @@ static const unsigned char kLaserData[] =
 // this purpose. This heuristic will produce worse values when the quad is
 // heavily distorted in perspective, but in practice, the error in smooth-step
 // ramp size is not noticeable, even in those cases.
-float ComputePhysicalPixelWidth(const gfx::Transform& view_proj_matrix,
+float ComputePhysicalPixelWidth(const gfx::Transform& model_view_proj_matrix,
                                 float corner_radius,
                                 const gfx::SizeF element_size,
                                 const gfx::Size surface_texture_size) {
   gfx::Point3F top_left(-0.5, 0.5, 0.0);
   gfx::Point3F top_right(0.5, 0.5, 0.0);
-  view_proj_matrix.TransformPoint(&top_left);
-  view_proj_matrix.TransformPoint(&top_right);
+  model_view_proj_matrix.TransformPoint(&top_left);
+  model_view_proj_matrix.TransformPoint(&top_right);
   gfx::Vector3dF top_vector = top_right - top_left;
   float physical_width = top_vector.Length();
   physical_width *= corner_radius / element_size.width();
@@ -574,7 +574,7 @@ TexturedQuadRenderer::TexturedQuadRenderer(const char* vertex_src,
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 void TexturedQuadRenderer::AddQuad(int texture_data_handle,
-                                   const gfx::Transform& view_proj_matrix,
+                                   const gfx::Transform& model_view_proj_matrix,
                                    const gfx::RectF& copy_rect,
                                    float opacity,
                                    const gfx::Size& surface_texture_size,
@@ -582,7 +582,7 @@ void TexturedQuadRenderer::AddQuad(int texture_data_handle,
                                    float corner_radius) {
   QuadData quad;
   quad.texture_data_handle = texture_data_handle;
-  quad.view_proj_matrix = view_proj_matrix;
+  quad.model_view_proj_matrix = model_view_proj_matrix;
   quad.copy_rect = copy_rect;
   quad.opacity = opacity;
   quad.surface_texture_size = surface_texture_size;
@@ -661,7 +661,7 @@ void TexturedQuadRenderer::Flush() {
       } else {
         glUniform1f(corner_scale_handle_,
                     1.0f / ComputePhysicalPixelWidth(
-                               quad.view_proj_matrix, quad.corner_radius,
+                               quad.model_view_proj_matrix, quad.corner_radius,
                                quad.element_size, quad.surface_texture_size));
         glUniform2f(corner_offset_handle_,
                     quad.corner_radius / quad.element_size.width(),
@@ -671,7 +671,7 @@ void TexturedQuadRenderer::Flush() {
 
     // Pass in model view project matrix.
     glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                       MatrixToGLArray(quad.view_proj_matrix).data());
+                       MatrixToGLArray(quad.model_view_proj_matrix).data());
 
     if (last_copy_rect != quad.copy_rect) {
       last_copy_rect = quad.copy_rect;
@@ -951,7 +951,7 @@ GradientQuadRenderer::GradientQuadRenderer()
 
 GradientGridRenderer::~GradientGridRenderer() = default;
 
-void GradientQuadRenderer::Draw(const gfx::Transform& view_proj_matrix,
+void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
                                 float opacity,
@@ -989,7 +989,7 @@ void GradientQuadRenderer::Draw(const gfx::Transform& view_proj_matrix,
   } else {
     glUniform1f(
         corner_scale_handle_,
-        1.0f / ComputePhysicalPixelWidth(view_proj_matrix, corner_radius,
+        1.0f / ComputePhysicalPixelWidth(model_view_proj_matrix, corner_radius,
                                          element_size, surface_texture_size));
 
     glUniform2f(corner_offset_handle_, corner_radius / element_size.width(),
@@ -1003,7 +1003,7 @@ void GradientQuadRenderer::Draw(const gfx::Transform& view_proj_matrix,
 
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                     MatrixToGLArray(view_proj_matrix).data());
+                     MatrixToGLArray(model_view_proj_matrix).data());
 
   if (corner_radius == 0.0f) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
@@ -1032,13 +1032,13 @@ GradientGridRenderer::GradientGridRenderer()
   lines_count_handle_ = glGetUniformLocation(program_handle_, "u_LinesCount");
 }
 
-void GradientGridRenderer::Draw(const gfx::Transform& view_proj_matrix,
+void GradientGridRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
                                 SkColor grid_color,
                                 int gridline_count,
                                 float opacity) {
-  PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
+  PrepareToDraw(model_view_proj_matrix_handle_, model_view_proj_matrix);
 
   // Tell shader the grid size so that it can calculate the fading.
   glUniform1f(scene_radius_handle_, kHalfSize);
@@ -1092,40 +1092,44 @@ VrShellRenderer::VrShellRenderer()
 
 VrShellRenderer::~VrShellRenderer() = default;
 
-void VrShellRenderer::DrawTexturedQuad(int texture_data_handle,
-                                       TextureLocation texture_location,
-                                       const gfx::Transform& view_proj_matrix,
-                                       const gfx::RectF& copy_rect,
-                                       float opacity,
-                                       gfx::SizeF element_size,
-                                       float corner_radius) {
+void VrShellRenderer::DrawTexturedQuad(
+    int texture_data_handle,
+    TextureLocation texture_location,
+    const gfx::Transform& model_view_proj_matrix,
+    const gfx::RectF& copy_rect,
+    float opacity,
+    gfx::SizeF element_size,
+    float corner_radius) {
   TexturedQuadRenderer* renderer = texture_location == kTextureLocationExternal
                                        ? GetExternalTexturedQuadRenderer()
                                        : GetTexturedQuadRenderer();
-  renderer->AddQuad(texture_data_handle, view_proj_matrix, copy_rect, opacity,
-                    surface_texture_size_, element_size, corner_radius);
+  renderer->AddQuad(texture_data_handle, model_view_proj_matrix, copy_rect,
+                    opacity, surface_texture_size_, element_size,
+                    corner_radius);
 }
 
-void VrShellRenderer::DrawGradientQuad(const gfx::Transform& view_proj_matrix,
-                                       const SkColor edge_color,
-                                       const SkColor center_color,
-                                       float opacity,
-                                       gfx::SizeF element_size,
-                                       float corner_radius) {
-  GetGradientQuadRenderer()->Draw(view_proj_matrix, edge_color, center_color,
-                                  opacity, surface_texture_size_, element_size,
-                                  corner_radius);
+void VrShellRenderer::DrawGradientQuad(
+    const gfx::Transform& model_view_proj_matrix,
+    const SkColor edge_color,
+    const SkColor center_color,
+    float opacity,
+    gfx::SizeF element_size,
+    float corner_radius) {
+  GetGradientQuadRenderer()->Draw(model_view_proj_matrix, edge_color,
+                                  center_color, opacity, surface_texture_size_,
+                                  element_size, corner_radius);
 }
 
 void VrShellRenderer::DrawGradientGridQuad(
-    const gfx::Transform& view_proj_matrix,
+    const gfx::Transform& model_view_proj_matrix,
     const SkColor edge_color,
     const SkColor center_color,
     const SkColor grid_color,
     int gridline_count,
     float opacity) {
-  GetGradientGridRenderer()->Draw(view_proj_matrix, edge_color, center_color,
-                                  grid_color, gridline_count, opacity);
+  GetGradientGridRenderer()->Draw(model_view_proj_matrix, edge_color,
+                                  center_color, grid_color, gridline_count,
+                                  opacity);
 }
 
 ExternalTexturedQuadRenderer*

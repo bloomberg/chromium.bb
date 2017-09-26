@@ -51,7 +51,7 @@ UiElement::~UiElement() {
 }
 
 void UiElement::Render(UiElementRenderer* renderer,
-                       const gfx::Transform& view_proj_matrix) const {
+                       const gfx::Transform& model_view_proj_matrix) const {
   // Elements without an overridden implementation of Render should have their
   // draw phase set to kPhaseNone and should, consequently, be filtered out when
   // the UiRenderer collects elements to draw. Therefore, if we invoke this

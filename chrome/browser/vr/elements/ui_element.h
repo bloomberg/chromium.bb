@@ -70,7 +70,7 @@ class UiElement : public cc::AnimationTarget {
   bool IsHitTestable() const;
 
   virtual void Render(UiElementRenderer* renderer,
-                      const gfx::Transform& view_proj_matrix) const;
+                      const gfx::Transform& model_view_proj_matrix) const;
 
   virtual void Initialize();
 

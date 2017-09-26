@@ -18,14 +18,16 @@ ContentElement::ContentElement(ContentInputDelegate* delegate)
 
 ContentElement::~ContentElement() = default;
 
-void ContentElement::Render(UiElementRenderer* renderer,
-                            const gfx::Transform& view_proj_matrix) const {
+void ContentElement::Render(
+    UiElementRenderer* renderer,
+    const gfx::Transform& model_view_proj_matrix) const {
   if (!texture_id_)
     return;
   gfx::RectF copy_rect(0, 0, 1, 1);
-  renderer->DrawTexturedQuad(
-      texture_id_, UiElementRenderer::kTextureLocationExternal,
-      view_proj_matrix, copy_rect, computed_opacity(), size(), corner_radius());
+  renderer->DrawTexturedQuad(texture_id_,
+                             UiElementRenderer::kTextureLocationExternal,
+                             model_view_proj_matrix, copy_rect,
+                             computed_opacity(), size(), corner_radius());
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {

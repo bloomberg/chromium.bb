@@ -35,7 +35,7 @@ class ContentElement : public UiElement {
                    const gfx::PointF& position) override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& view_proj_matrix) const final;
+              const gfx::Transform& model_view_proj_matrix) const final;
 
   void set_texture_id(unsigned int texture_id) { texture_id_ = texture_id; }
 
