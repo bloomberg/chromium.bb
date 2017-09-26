@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.TitleUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -88,6 +90,24 @@ public class TileView extends FrameLayout {
      */
     public void renderIcon(Tile tile) {
         mIconView.setImageDrawable(tile.getIcon());
+        if (!FeatureUtilities.isChromeHomeEnabled()) return;
+
+        // Slightly enlarge the monogram.
+        MarginLayoutParams params = (MarginLayoutParams) mIconView.getLayoutParams();
+        Resources resources = getResources();
+        if (tile.getType() == TileVisualType.ICON_COLOR
+                || tile.getType() == TileVisualType.ICON_DEFAULT) {
+            params.width = resources.getDimensionPixelSize(R.dimen.tile_view_monogram_size_modern);
+            params.height = resources.getDimensionPixelSize(R.dimen.tile_view_monogram_size_modern);
+            params.topMargin =
+                    resources.getDimensionPixelSize(R.dimen.tile_view_monogram_margin_top_modern);
+        } else {
+            params.width = resources.getDimensionPixelSize(R.dimen.tile_view_icon_size_modern);
+            params.height = resources.getDimensionPixelSize(R.dimen.tile_view_icon_size_modern);
+            params.topMargin =
+                    resources.getDimensionPixelSize(R.dimen.tile_view_icon_margin_top_modern);
+        }
+        mIconView.setLayoutParams(params);
     }
 
     /** Shows or hides the offline badge to reflect the offline availability of the {@link Tile}. */
