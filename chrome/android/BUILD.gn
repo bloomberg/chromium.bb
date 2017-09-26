@@ -702,13 +702,6 @@ jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   variables = chrome_sync_shell_jinja_variables
 }
 
-# TODO(agrieve): Delete target once downstream references are removed.
-group("chrome") {
-  public_deps = [
-    ":libchrome",
-  ]
-}
-
 shared_library("libchrome") {
   sources = [
     "../app/android/chrome_main_delegate_android_initializer.cc",
