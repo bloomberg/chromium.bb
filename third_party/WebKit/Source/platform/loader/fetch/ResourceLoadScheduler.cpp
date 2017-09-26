@@ -78,9 +78,7 @@ void ResourceLoadScheduler::Shutdown() {
   if (!is_enabled_)
     return;
   auto* scheduler = context_->GetFrameScheduler();
-  // TODO(toyoshim): Replace SECURITY_CHECK below with DCHECK before the next
-  // branch-cut.
-  SECURITY_CHECK(scheduler);
+  DCHECK(scheduler);
   scheduler->RemoveThrottlingObserver(WebFrameScheduler::ObserverType::kLoader,
                                       this);
 }
