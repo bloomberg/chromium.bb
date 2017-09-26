@@ -16,6 +16,12 @@
 
 namespace base {
 
+uint64_t RandUint64() {
+  uint64_t number;
+  RandBytes(&number, sizeof(number));
+  return number;
+}
+
 int RandInt(int min, int max) {
   DCHECK_LE(min, max);
 

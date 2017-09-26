@@ -41,7 +41,10 @@ bool IsValidGUIDInternal(const base::StringPiece& guid, bool strict) {
 }  // namespace
 
 std::string GenerateGUID() {
-  uint64_t sixteen_bytes[2] = {base::RandUint64(), base::RandUint64()};
+  uint64_t sixteen_bytes[2];
+  // Use base::RandBytes instead of crypto::RandBytes, because crypto calls the
+  // base version directly, and to prevent the dependency from base/ to crypto/.
+  base::RandBytes(&sixteen_bytes, sizeof(sixteen_bytes));
 
   // Set the GUID to version 4 as described in RFC 4122, section 4.4.
   // The format of GUID version 4 must be xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx,

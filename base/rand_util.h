@@ -35,22 +35,22 @@ BASE_EXPORT double RandDouble();
 // the range [0, 1). Thread-safe.
 BASE_EXPORT double BitsToOpenEndedUnitInterval(uint64_t bits);
 
-// Fills |output_length| bytes of |output| with random data.
+// Fills |output_length| bytes of |output| with random data. Thread-safe.
 //
-// WARNING:
-// Do not use for security-sensitive purposes.
-// See crypto/ for cryptographically secure random number generation APIs.
+// Although implementations are required to use a cryptographically secure
+// random number source, code outside of base/ that relies on this should use
+// crypto::RandBytes instead to ensure the requirement is easily discoverable.
 BASE_EXPORT void RandBytes(void* output, size_t output_length);
 
 // Fills a string of length |length| with random data and returns it.
-// |length| should be nonzero.
+// |length| should be nonzero. Thread-safe.
 //
 // Note that this is a variation of |RandBytes| with a different return type.
 // The returned string is likely not ASCII/UTF-8. Use with care.
 //
-// WARNING:
-// Do not use for security-sensitive purposes.
-// See crypto/ for cryptographically secure random number generation APIs.
+// Although implementations are required to use a cryptographically secure
+// random number source, code outside of base/ that relies on this should use
+// crypto::RandBytes instead to ensure the requirement is easily discoverable.
 BASE_EXPORT std::string RandBytesAsString(size_t length);
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
