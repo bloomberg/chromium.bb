@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.DOMUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -130,6 +131,26 @@ public class VrShellTransitionTest {
     @MediumTest
     public void test2dtoVrShellto2dUnsupported() {
         enterExitVrShell(false /* supported */);
+    }
+
+    /**
+     * Tests that we exit fullscreen mode after exiting VR from cinema mode.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testExitFullscreenAfterExitingVrFromCinemaMode()
+            throws InterruptedException, TimeoutException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen");
+        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+
+        Assert.assertTrue(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
+        VrTransitionUtils.forceExitVr();
+        Assert.assertFalse(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
     }
 
     /**
