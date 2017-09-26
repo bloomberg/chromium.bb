@@ -1243,7 +1243,18 @@ COMMON_GTESTS = {
           {
             'gpu': '10de:104a',
             'os': 'Ubuntu'
-          }
+          },
+          # Mac Intel
+          {
+            'gpu': '8086:0a2e',
+            'os': 'Mac-10.12.6'
+          },
+          # Mac AMD
+          {
+            'gpu': '1002:6821',
+            'hidpi': '1',
+            'os': 'Mac-10.12.6'
+          },
         ],
       }
     ],
