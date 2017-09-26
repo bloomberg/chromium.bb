@@ -129,6 +129,9 @@ class WizardController : public BaseScreenDelegate,
   // |screen_manager_|.
   BaseScreen* CreateScreen(OobeScreen screen);
 
+  // Set the current screen. For Test use only.
+  void SetCurrentScreenForTesting(BaseScreen* screen);
+
  private:
   // Show specific screen.
   void ShowNetworkScreen();

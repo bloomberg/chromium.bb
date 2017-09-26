@@ -266,10 +266,12 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
       session_manager::SessionManager::Get()->IsSessionStarted();
   if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-    CHECK(accessibility_manager);
-    accessibility_subscription_ = accessibility_manager->RegisterCallback(
-        base::Bind(&WizardController::OnAccessibilityStatusChanged,
-                   base::Unretained(this)));
+    if (accessibility_manager) {
+      // accessibility_manager could be null in Tests.
+      accessibility_subscription_ = accessibility_manager->RegisterCallback(
+          base::Bind(&WizardController::OnAccessibilityStatusChanged,
+                     base::Unretained(this)));
+    }
   } else {
     NOTIMPLEMENTED();
   }
@@ -446,6 +448,10 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   }
 
   return nullptr;
+}
+
+void WizardController::SetCurrentScreenForTesting(BaseScreen* screen) {
+  current_screen_ = screen;
 }
 
 void WizardController::ShowNetworkScreen() {

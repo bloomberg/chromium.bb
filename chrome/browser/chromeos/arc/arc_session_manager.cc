@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -163,17 +164,22 @@ ArcSessionManager* ArcSessionManager::Get() {
 
 // static
 bool ArcSessionManager::IsOobeOptInActive() {
-  // ARC OOBE OptIn is optional for now. Test if it exists and login host is
-  // active.
-  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
+  // Check if ARC ToS screen for OOBE or OPA OptIn flow is currently showing.
+  // TODO(b/65861628): Rename the method since it is no longer accurate.
+  // Redesign the OptIn flow since there is no longer reason to have two
+  // different OptIn flows.
+  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
+  if (!host)
     return false;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOOBEOptIn)) {
+  const chromeos::WizardController* wizard_controller =
+      host->GetWizardController();
+  if (!wizard_controller)
     return false;
-  }
-  if (!chromeos::LoginDisplayHost::default_host())
+  const chromeos::BaseScreen* screen = wizard_controller->current_screen();
+  if (!screen)
     return false;
-  return true;
+  return screen->screen_id() ==
+         chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
 }
 
 // static
