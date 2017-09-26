@@ -14,6 +14,7 @@ source_set("main") {
     "main_view_controller.mm",
   ]
   deps = [
+    ":feature_flags",
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -54,13 +55,16 @@ source_set("unit_tests") {
     "main_view_controller_unittest.mm",
   ]
   deps = [
+    ":feature_flags",
     ":main",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/test",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
     "//testing/gtest",
   ]

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/main/main_view_controller.h"
 
 #import "base/logging.h"
+#include "ios/chrome/browser/ui/main/main_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,10 +14,15 @@
 @implementation MainViewController
 
 - (UIViewController*)activeViewController {
-  return [self.childViewControllers firstObject];
+  if (TabSwitcherPresentsBVCEnabled()) {
+    return self.presentedViewController;
+  } else {
+    return [self.childViewControllers firstObject];
+  }
 }
 
-- (void)setActiveViewController:(UIViewController*)activeViewController {
+- (void)setActiveViewController:(UIViewController*)activeViewController
+                     completion:(void (^)())completion {
   DCHECK(activeViewController);
   if (self.activeViewController == activeViewController)
     return;
@@ -24,27 +30,54 @@
   // TODO(crbug.com/546189): DCHECK here that there isn't a modal view
   // controller showing once the known violations of that are fixed.
 
-  // Remove the current active view controller, if any.
-  if (self.activeViewController) {
-    [self.activeViewController willMoveToParentViewController:nil];
-    [self.activeViewController.view removeFromSuperview];
-    [self.activeViewController removeFromParentViewController];
+  if (TabSwitcherPresentsBVCEnabled()) {
+    if (self.activeViewController) {
+      // This call must be to super, as the override of
+      // dismissViewControllerAnimated:completion: below tries to dismiss using
+      // self.activeViewController, but this call explicitly needs to present
+      // using the MainViewController itself.
+      [super dismissViewControllerAnimated:NO completion:nil];
+    }
+
+    // This call must be to super, as the override of
+    // presentViewController:animated:completion: below tries to present using
+    // self.activeViewController, but this call explicitly needs to present
+    // using the MainViewController itself.
+    [super
+        presentViewController:activeViewController
+                     animated:NO
+                   completion:^{
+                     DCHECK(self.activeViewController == activeViewController);
+                     if (completion) {
+                       completion();
+                     }
+                   }];
+  } else {
+    // Remove the current active view controller, if any.
+    if (self.activeViewController) {
+      [self.activeViewController willMoveToParentViewController:nil];
+      [self.activeViewController.view removeFromSuperview];
+      [self.activeViewController removeFromParentViewController];
+    }
+
+    DCHECK(self.activeViewController == nil);
+    DCHECK(self.view.subviews.count == 0);
+
+    // Add the new active view controller.
+    [self addChildViewController:activeViewController];
+    self.activeViewController.view.frame = self.view.bounds;
+    [self.view addSubview:self.activeViewController.view];
+    [activeViewController didMoveToParentViewController:self];
+
+    // Let the system know that the child has changed so appearance updates can
+    // be made.
+    [self setNeedsStatusBarAppearanceUpdate];
+
+    DCHECK(self.activeViewController == activeViewController);
+    if (completion) {
+      completion();
+    }
   }
-
-  DCHECK(self.activeViewController == nil);
-  DCHECK(self.view.subviews.count == 0);
-
-  // Add the new active view controller.
-  [self addChildViewController:activeViewController];
-  self.activeViewController.view.frame = self.view.bounds;
-  [self.view addSubview:self.activeViewController.view];
-  [activeViewController didMoveToParentViewController:self];
-
-  // Let the system know that the child has changed so appearance updates can
-  // be made.
-  [self setNeedsStatusBarAppearanceUpdate];
-
-  DCHECK(self.activeViewController == activeViewController);
 }
 
 #pragma mark - UIViewController methods
