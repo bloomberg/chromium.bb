@@ -56,7 +56,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
 
   VideoCaptureImplManager* const manager_;
 
-  const base::Closure release_device_cb_;
+  base::Closure release_device_cb_;
 
   // These two are valid between StartCapture() and StopCapture().
   // |running_call_back_| is run when capture is successfully started, and when
@@ -128,7 +128,6 @@ void LocalVideoCapturerSource::StopCapture() {
   // Immediately make sure we don't provide more frames.
   if (!stop_capture_cb_.is_null())
     base::ResetAndReturn(&stop_capture_cb_).Run();
-  running_callback_.Reset();
 }
 
 void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
@@ -144,7 +143,9 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
     case VIDEO_CAPTURE_STATE_STOPPED:
     case VIDEO_CAPTURE_STATE_ERROR:
     case VIDEO_CAPTURE_STATE_ENDED:
-      base::ResetAndReturn(&running_callback_).Run(false);
+      release_device_cb_.Run();
+      release_device_cb_ = manager_->UseDevice(session_id_);
+      running_callback_.Run(false);
       break;
 
     case VIDEO_CAPTURE_STATE_STARTING:
@@ -209,16 +210,38 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_capture_starting_ = true;
+  state_ = STARTING;
+  frame_callback_ = frame_callback;
   source_->StartCapture(
-      capture_params_, frame_callback,
+      capture_params_, frame_callback_,
       base::Bind(&MediaStreamVideoCapturerSource::OnRunStateChanged,
-                 base::Unretained(this)));
+                 base::Unretained(this), capture_params_));
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_->StopCapture();
+}
+
+void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
+  if (state_ != STARTED) {
+    OnStopForRestartDone(false);
+    return;
+  }
+  state_ = STOPPING_FOR_RESTART;
+  source_->StopCapture();
+}
+
+void MediaStreamVideoCapturerSource::RestartSourceImpl(
+    const media::VideoCaptureFormat& new_format) {
+  DCHECK(new_format.IsValid());
+  media::VideoCaptureParams new_capture_params = capture_params_;
+  new_capture_params.requested_format = new_format;
+  state_ = RESTARTING;
+  source_->StartCapture(
+      new_capture_params, frame_callback_,
+      base::Bind(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                 base::Unretained(this), new_capture_params));
 }
 
 base::Optional<media::VideoCaptureFormat>
@@ -233,14 +256,42 @@ MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
   return capture_params_;
 }
 
-void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
+void MediaStreamVideoCapturerSource::OnRunStateChanged(
+    const media::VideoCaptureParams& new_capture_params,
+    bool is_running) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_capture_starting_) {
-    OnStartDone(is_running ? MEDIA_DEVICE_OK
-                           : MEDIA_DEVICE_TRACK_START_FAILURE);
-    is_capture_starting_ = false;
-  } else if (!is_running) {
-    StopSource();
+  switch (state_) {
+    case STARTING:
+      if (is_running) {
+        state_ = STARTED;
+        DCHECK(capture_params_ == new_capture_params);
+        OnStartDone(MEDIA_DEVICE_OK);
+      } else {
+        state_ = STOPPED;
+        OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE);
+      }
+      break;
+    case STARTED:
+      if (!is_running) {
+        state_ = STOPPED;
+        StopSource();
+      }
+      break;
+    case STOPPING_FOR_RESTART:
+      state_ = is_running ? STARTED : STOPPED;
+      OnStopForRestartDone(!is_running);
+      break;
+    case RESTARTING:
+      if (is_running) {
+        state_ = STARTED;
+        capture_params_ = new_capture_params;
+      } else {
+        state_ = STOPPED;
+      }
+      OnRestartDone(is_running);
+      break;
+    case STOPPED:
+      break;
   }
 }
 

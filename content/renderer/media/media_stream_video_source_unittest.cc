@@ -503,4 +503,41 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
   EXPECT_EQ(stopped_settings.aspect_ratio, -1);
 }
 
+// Test that restart fails on a source without restart support.
+TEST_F(MediaStreamVideoSourceTest, FailedRestart) {
+  blink::WebMediaStreamTrack track = CreateTrack("123");
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+
+  // The source does not support Restart/StopForRestart.
+  mock_source()->StopForRestart(
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::IS_RUNNING);
+      }));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+
+  // Verify that Restart() fails with INVALID_STATE when not called after a
+  // successful StopForRestart().
+  mock_source()->Restart(
+      media::VideoCaptureFormat(),
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      }));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+
+  mock_source()->StopSource();
+  // Verify that StopForRestart() fails with INVALID_STATE when called when the
+  // source is not running.
+  mock_source()->StopForRestart(
+      base::BindOnce([](MediaStreamVideoSource::RestartResult result) {
+        EXPECT_EQ(result, MediaStreamVideoSource::RestartResult::INVALID_STATE);
+      }));
+}
+
 }  // namespace content
