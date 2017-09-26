@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -25,7 +23,6 @@
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
@@ -40,9 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -115,8 +110,8 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
 
     waiting_for_state_ = true;
     login_manager->AddObserver(this);
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
     login_manager->RemoveObserver(this);
   }
 
@@ -135,14 +130,14 @@ class OAuth2LoginManagerStateWaiter : public OAuth2LoginManager::Observer {
 
     final_state_ = state;
     waiting_for_state_ = false;
-    run_loop_->Quit();
+    runner_->Quit();
   }
 
   Profile* profile_;
   std::set<OAuth2LoginManager::SessionRestoreState> states_;
   bool waiting_for_state_;
   OAuth2LoginManager::SessionRestoreState final_state_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManagerStateWaiter);
 };
@@ -171,67 +166,18 @@ class ThreadBlocker {
   DISALLOW_COPY_AND_ASSIGN(ThreadBlocker);
 };
 
-// Helper class that is added as a RequestMonitor of embedded test server to
-// wait for a request to happen and defer it until Unblock is called.
-class RequestDeferrer {
- public:
-  RequestDeferrer()
-      : blocking_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED),
-        start_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-
-  void UnblockRequest() { blocking_event_.Signal(); }
-
-  void WaitForRequestToStart() {
-    // If we have already served the request, bail out.
-    if (start_event_.IsSignaled())
-      return;
-
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-  }
-
-  void InterceptRequest(const HttpRequest& request) {
-    start_event_.Signal();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
-                       base::Unretained(this)));
-    blocking_event_.Wait();
-  }
-
- private:
-  void QuitRunnerOnUIThread() {
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  base::WaitableEvent blocking_event_;
-  base::WaitableEvent start_event_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestDeferrer);
-};
-
 }  // namespace
 
 class OAuth2Test : public OobeBaseTest {
  protected:
   OAuth2Test() {}
 
-  // OobeBaseTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
 
     // Disable sync sinc we don't really need this for these tests and it also
     // makes OAuth2Test.MergeSession test flaky http://crbug.com/408867.
     command_line->AppendSwitch(switches::kDisableSync);
-  }
-
-  void RegisterAdditionalRequestHandlers() override {
-    embedded_test_server()->RegisterRequestMonitor(
-        base::Bind(&OAuth2Test::InterceptRequest, base::Unretained(this)));
   }
 
   void SetupGaiaServerForNewAccount() {
@@ -450,25 +396,7 @@ class OAuth2Test : public OobeBaseTest {
     return login_manager->restore_strategy_;
   }
 
-  void InterceptRequest(const HttpRequest& request) {
-    const GURL request_url =
-        GURL("http://localhost").Resolve(request.relative_url);
-    auto it = request_deferers_.find(request_url.path());
-    if (it == request_deferers_.end())
-      return;
-
-    it->second->InterceptRequest(request);
-  }
-
-  void AddRequestDeferer(const std::string& path,
-                         RequestDeferrer* request_deferer) {
-    DCHECK(request_deferers_.find(path) == request_deferers_.end());
-    request_deferers_[path] = request_deferer;
-  }
-
  private:
-  std::map<std::string, RequestDeferrer*> request_deferers_;
-
   DISALLOW_COPY_AND_ASSIGN(OAuth2Test);
 };
 
@@ -482,8 +410,8 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&CookieReader::ReadCookiesOnIOThread, this));
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
   }
 
   std::string GetCookieValue(const std::string& name) {
@@ -516,11 +444,13 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
         base::BindOnce(&CookieReader::OnCookiesReadyOnUIThread, this));
   }
 
-  void OnCookiesReadyOnUIThread() { run_loop_->Quit(); }
+  void OnCookiesReadyOnUIThread() {
+    runner_->Quit();
+  }
 
   scoped_refptr<net::URLRequestContextGetter> context_;
   net::CookieList cookie_list_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieReader);
 };
@@ -686,72 +616,14 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
-// Sets up a new user with stored refresh token.
-IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_SetInvalidTokenStatus) {
-  StartNewUserSession(true);
-}
-
-// Tests that an auth error reported by SigninErrorController marks invalid auth
-// token status despite OAuth2LoginManager thinks merge session is done
-// successfully
-IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
-  RequestDeferrer list_accounts_request_deferer;
-  AddRequestDeferer("/ListAccounts", &list_accounts_request_deferer);
-
-  SetupGaiaServerForUnexpiredAccount();
-  SimulateNetworkOnline();
-
-  // Waits for login screen to be ready.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources())
-      .Wait();
-
-  // Signs in as the existing user created in pre test.
-  ExistingUserController* const controller =
-      ExistingUserController::current_controller();
-  UserContext user_context(
-      AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId));
-  user_context.SetKey(Key(kTestAccountPassword));
-  controller->Login(user_context, SigninSpecifics());
-
-  // Wait until /ListAccounts request happens so that an auth error can be
-  // generated after user profile is available but before merge session
-  // finishes.
-  list_accounts_request_deferer.WaitForRequestToStart();
-
-  // Make sure that merge session is not finished.
-  OAuth2LoginManager* const login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile());
-  ASSERT_NE(OAuth2LoginManager::SESSION_RESTORE_DONE, login_manager->state());
-
-  // Generate an auth error.
-  SigninErrorController* const error_controller =
-      SigninErrorControllerFactory::GetForProfile(profile());
-  FakeAuthStatusProvider auth_provider(error_controller);
-  auth_provider.SetAuthError(
-      kTestEmail, GoogleServiceAuthError(
-                      GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
-
-  // Let go /ListAccounts request.
-  list_accounts_request_deferer.UnblockRequest();
-
-  // Wait for the session merge to finish with success.
-  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
-
-  // User oauth2 token status should be marked as invalid because of auth error
-  // and regardless of the merge session outcome.
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestEmail),
-            user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-}
-
-constexpr char kGooglePageContent[] =
+const char kGooglePageContent[] =
     "<html><title>Hello!</title><script>alert('hello');</script>"
     "<body>Hello Google!</body></html>";
-constexpr char kRandomPageContent[] =
+const char kRandomPageContent[] =
     "<html><title>SomthingElse</title><body>I am SomethingElse</body></html>";
-constexpr char kHelloPagePath[] = "/hello_google";
-constexpr char kRandomPagePath[] = "/non_google_page";
+const char kHelloPagePath[] = "/hello_google";
+const char kRandomPagePath[] = "/non_google_page";
+
 
 // FakeGoogle serves content of http://www.google.com/hello_google page for
 // merge session tests.
@@ -800,29 +672,78 @@ class FakeGoogle {
     if (start_event_.IsSignaled())
       return;
 
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
   }
 
  private:
   void QuitRunnerOnUIThread() {
-    if (run_loop_)
-      run_loop_->Quit();
+    if (runner_.get())
+      runner_->Quit();
   }
   // This event will tell us when we actually see HTTP request on the server
   // side. It should be signalled only after the page/XHR throttle had been
   // removed (after merge session completes).
   base::WaitableEvent start_event_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGoogle);
 };
 
+// FakeGaia specialization that can delay /MergeSession handler until
+// we explicitly call DelayedFakeGaia::UnblockMergeSession().
+class DelayedFakeGaia : public FakeGaia {
+ public:
+  DelayedFakeGaia()
+      : blocking_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        start_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+  void UnblockMergeSession() {
+    blocking_event_.Signal();
+  }
+
+  void WaitForMergeSessionToStart() {
+    // If we have already served the request, bail out.
+    if (start_event_.IsSignaled())
+      return;
+
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+  }
+
+ private:
+  // FakeGaia overrides.
+  void HandleMergeSession(const HttpRequest& request,
+                          BasicHttpResponse* http_response) override {
+    start_event_.Signal();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&DelayedFakeGaia::QuitRunnerOnUIThread,
+                       base::Unretained(this)));
+    blocking_event_.Wait();
+    FakeGaia::HandleMergeSession(request, http_response);
+  }
+
+  void QuitRunnerOnUIThread() {
+    if (runner_.get())
+      runner_->Quit();
+  }
+
+  base::WaitableEvent blocking_event_;
+  base::WaitableEvent start_event_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedFakeGaia);
+};
+
 class MergeSessionTest : public OAuth2Test {
  protected:
-  MergeSessionTest() = default;
+  MergeSessionTest() : delayed_fake_gaia_(new DelayedFakeGaia()) {
+    fake_gaia_.reset(delayed_fake_gaia_);
+  }
 
-  // OAuth2Test overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OAuth2Test::SetUpCommandLine(command_line);
 
@@ -839,19 +760,19 @@ class MergeSessionTest : public OAuth2Test {
     non_google_page_url_ = non_google_url.Resolve(kRandomPagePath);
   }
 
-  void RegisterAdditionalRequestHandlers() override {
-    OAuth2Test::RegisterAdditionalRequestHandlers();
-    AddRequestDeferer("/MergeSession", &merge_session_deferer_);
-
+  void SetUp() override {
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &FakeGoogle::HandleRequest, base::Unretained(&fake_google_)));
+    OAuth2Test::SetUp();
   }
 
  protected:
-  void UnblockMergeSession() { merge_session_deferer_.UnblockRequest(); }
+  void UnblockMergeSession() {
+    delayed_fake_gaia_->UnblockMergeSession();
+  }
 
   void WaitForMergeSessionToStart() {
-    merge_session_deferer_.WaitForRequestToStart();
+    delayed_fake_gaia_->WaitForMergeSessionToStart();
   }
 
   void JsExpect(content::WebContents* contents,
@@ -888,7 +809,7 @@ class MergeSessionTest : public OAuth2Test {
   }
 
   FakeGoogle fake_google_;
-  RequestDeferrer merge_session_deferer_;
+  DelayedFakeGaia* delayed_fake_gaia_;
   GURL fake_google_page_url_;
   GURL non_google_page_url_;
 

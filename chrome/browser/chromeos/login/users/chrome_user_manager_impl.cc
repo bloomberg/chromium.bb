@@ -496,11 +496,9 @@ void ChromeUserManagerImpl::Observe(
           ManagerPasswordServiceFactory::GetForProfile(profile);
 
         if (!profile->IsOffTheRecord()) {
-          if (AuthSyncObserver::ShouldObserve(profile)) {
-            AuthSyncObserver* sync_observer =
-                AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
-            sync_observer->StartObserving();
-          }
+          AuthSyncObserver* sync_observer =
+              AuthSyncObserverFactory::GetInstance()->GetForProfile(profile);
+          sync_observer->StartObserving();
           multi_profile_user_controller_->StartObserving(profile);
         }
       }
