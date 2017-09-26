@@ -3,10 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Prints the size of each given file and optionally computes the size of
-   libchrome.so without the dependencies added for building with android NDK.
-   Also breaks down the contents of the APK to determine the installed size
-   and assign size contributions to different classes of file.
+"""Reports binary size and static initializer metrics for an APK.
+
+More information at //docs/speed/binary_size/metrics.md.
 """
 
 import argparse
@@ -850,6 +849,9 @@ def main():
   if args.dump_sis and not out_dir:
     argparser.error(
         '--dump-static-initializers requires --chromium-output-directory')
+
+  # Do not add any new metrics without also documenting them in:
+  # //docs/speed/binary_size/metrics.md.
 
   PrintApkAnalysis(args.apk, tool_prefix, out_dir, chartjson=chartjson)
   _PrintDexAnalysis(args.apk, chartjson=chartjson)
