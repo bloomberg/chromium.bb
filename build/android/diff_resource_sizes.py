@@ -143,7 +143,7 @@ def main():
 
     diff_args = shared_args + ['--output-dir', diff_dir, args.diff_apk]
     if args.out_dir_diff:
-      base_args += ['--chromium-output-directory', args.out_dir_diff]
+      diff_args += ['--chromium-output-directory', args.out_dir_diff]
     try:
       subprocess.check_output(diff_args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
