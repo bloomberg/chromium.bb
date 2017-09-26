@@ -187,11 +187,18 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         final String baseUrl = "http://base.com/";
         TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =
                 mContentsClient.getOnPageStartedHelper();
-        final int callCount = onPageStartedHelper.getCallCount();
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        final int pageStartedCount = onPageStartedHelper.getCallCount();
+        final int pageFinishedCount = onPageFinishedHelper.getCallCount();
         loadDataWithBaseUrlAsync(mAwContents, CommonResources.ABOUT_HTML, "text/html", false,
                 baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        onPageStartedHelper.waitForCallback(callCount);
+        onPageStartedHelper.waitForCallback(pageStartedCount);
         assertEquals(baseUrl, onPageStartedHelper.getUrl());
+
+        onPageFinishedHelper.waitForCallback(pageFinishedCount);
+        assertEquals("onPageStarted should only be called once", pageStartedCount + 1,
+                onPageStartedHelper.getCallCount());
     }
 
     @SmallTest
