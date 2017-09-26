@@ -1392,9 +1392,7 @@ public class LocationBarLayout extends FrameLayout
 
         changeLocationBarIcon();
         updateLocationBarIconContainerVisibility();
-        // Since we emphasize the scheme of the URL based on the security type, we need to
-        // refresh the emphasis.
-        mUrlBar.deEmphasizeUrl();
+
         emphasizeUrl();
         mIsEmphasizingHttpsScheme = shouldEmphasizeHttpsScheme;
     }
@@ -2147,7 +2145,6 @@ public class LocationBarLayout extends FrameLayout
             setUrlBarText("", null);
         } else {
             if (setUrlBarText(url, displayText)) {
-                mUrlBar.deEmphasizeUrl();
                 emphasizeUrl();
             }
         }
