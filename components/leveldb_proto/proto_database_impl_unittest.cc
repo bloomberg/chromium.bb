@@ -27,7 +27,6 @@
 using base::MessageLoop;
 using base::ScopedTempDir;
 using leveldb_env::Options;
-using leveldb_env::SharedReadCache;
 using testing::Invoke;
 using testing::MakeMatcher;
 using testing::MatchResultListener;

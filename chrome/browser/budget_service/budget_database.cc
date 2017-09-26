@@ -19,7 +19,6 @@
 #include "url/origin.h"
 
 using content::BrowserThread;
-using leveldb_env::SharedReadCache;
 
 namespace {
 
