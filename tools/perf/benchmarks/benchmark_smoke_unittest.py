@@ -22,7 +22,6 @@ from telemetry.testing import progress_reporter
 from py_utils import discover
 
 from benchmarks import battor
-from benchmarks import indexeddb_perf
 from benchmarks import jetstream
 from benchmarks import kraken
 from benchmarks import octane
@@ -88,7 +87,6 @@ def SmokeTestGenerator(benchmark, num_pages=1):
 
 # The list of benchmark modules to be excluded from our smoke tests.
 _BLACK_LIST_TEST_MODULES = {
-    indexeddb_perf,  # Always fails on Win7 & Android Tests builder.
     octane,  # Often fails & take long time to timeout on cq bot.
     rasterize_and_record_micro,  # Always fails on cq bot.
     speedometer,  # Takes 101 seconds.
