@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/ToV8ForTesting.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Internals.h"
 #include "bindings/core/v8/v8_test_sequence_callback.h"
