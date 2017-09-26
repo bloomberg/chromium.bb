@@ -361,7 +361,7 @@ void PaintLayerClipper::CalculateRects(
     // FIXME: Does not do the right thing with columns yet, since we don't yet
     // factor in the individual column boxes as overflow.
 
-    LayoutRect layer_bounds_with_visual_overflow = LocalVisualRect();
+    LayoutRect layer_bounds_with_visual_overflow = LocalVisualRect(context);
     layer_bounds_with_visual_overflow.MoveBy(offset);
     background_rect.Intersect(layer_bounds_with_visual_overflow);
   }
@@ -466,7 +466,7 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // rects, so we should add methods to GeometryMapper that guarantee there
   // are tight results, or else signal an error.
   if (HasOverflowClip(layer_)) {
-    FloatClipRect clip_rect((FloatRect(LocalVisualRect())));
+    FloatClipRect clip_rect((FloatRect(LocalVisualRect(context))));
     if (layer_.ShouldFragmentCompositedBounds(context.root_layer))
       clip_rect.MoveBy(FloatPoint(fragment_data.PaintOffset()));
     else
@@ -523,7 +523,8 @@ void PaintLayerClipper::InitializeCommonClipRectState(
   }
 }
 
-LayoutRect PaintLayerClipper::LocalVisualRect() const {
+LayoutRect PaintLayerClipper::LocalVisualRect(
+    const ClipRectsContext& context) const {
   const LayoutObject& layout_object = layer_.GetLayoutObject();
   // The LayoutView is special since its overflow clipping rect may be larger
   // than its box rect (crbug.com/492871).
@@ -539,7 +540,10 @@ LayoutRect PaintLayerClipper::LocalVisualRect() const {
   // At this point layer_bounds_with_visual_overflow only includes the visual
   // overflow induced by paint, prior to applying filters. This function is
   // expected the return the final visual rect after filtering.
-  if (layer_.PaintsWithFilters()) {
+  if (layer_.PaintsWithFilters() &&
+      // If we use GeometryMapper to map to an ancestor layer, GeometryMapper
+      // will handle filter effects.
+      (!use_geometry_mapper_ || context.root_layer == &layer_)) {
     layer_bounds_with_visual_overflow =
         layer_.MapLayoutRectForFilter(layer_bounds_with_visual_overflow);
   }

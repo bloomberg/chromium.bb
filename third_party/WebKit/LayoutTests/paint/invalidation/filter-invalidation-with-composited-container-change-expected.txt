@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='box' class='green box blurry'",
-          "rect": [8, 8, 329, 329],
+          "rect": [8, 8, 330, 330],
           "reason": "subtree"
         }
       ]

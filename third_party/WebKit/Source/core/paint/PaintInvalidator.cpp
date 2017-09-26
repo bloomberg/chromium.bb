@@ -114,7 +114,9 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     if (context.tree_builder_context_->current.transform ==
             container_contents_properties.Transform() &&
         context.tree_builder_context_->current.clip ==
-            container_contents_properties.Clip()) {
+            container_contents_properties.Clip() &&
+        context.tree_builder_context_->current_effect ==
+            container_contents_properties.Effect()) {
       result = LayoutRect(rect);
     } else {
       // Use enclosingIntRect to ensure the final visual rect will cover the
@@ -128,7 +130,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
 
       PropertyTreeState current_tree_state(
           context.tree_builder_context_->current.transform,
-          context.tree_builder_context_->current.clip, nullptr);
+          context.tree_builder_context_->current.clip,
+          context.tree_builder_context_->current_effect);
 
       FloatClipRect float_rect((FloatRect(rect)));
       GeometryMapper::LocalToAncestorVisualRect(
@@ -493,12 +496,9 @@ void PaintInvalidator::InvalidatePaint(
       !RuntimeEnabledFeatures::PrintBrowserEnabled())
     return;  // Don't invalidate paints if we're printing.
 
-  // TODO(crbug.com/637313): Use GeometryMapper which now supports filter
-  // geometry effects, after skia optimizes filter's mapRect operation.
   // TODO(crbug.com/648274): implement fast path for fragmented content.
-  if (object.HasFilterInducingProperty() || object.IsLayoutFlowThread()) {
+  if (object.IsLayoutFlowThread())
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
-  }
 
   UpdatePaintInvalidationContainer(object, context);
   UpdateEmptyVisualRectFlag(object, context);

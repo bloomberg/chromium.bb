@@ -3282,6 +3282,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
   EXPECT_EQ(FrameScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(FrameContentClip(), filter_properties->Filter()->OutputClip());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
@@ -3294,6 +3295,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
   EXPECT_EQ(FrameScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(FrameContentClip(), filter_properties->Filter()->OutputClip());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
@@ -3312,6 +3314,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(clip_properties->OverflowClip(),
             filter_properties->Filter()->OutputClip());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
 
   const PropertyTreeState& child_paint_state =
       *GetLayoutObjectByElementId("child")

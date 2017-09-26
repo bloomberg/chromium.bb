@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='box'",
-          "rect": [58, -7, 200, 314],
+          "rect": [58, -10, 200, 320],
           "reason": "style change"
         }
       ]
