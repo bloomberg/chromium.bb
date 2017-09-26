@@ -12,8 +12,9 @@ namespace vr {
 FullScreenRect::FullScreenRect() = default;
 FullScreenRect::~FullScreenRect() = default;
 
-void FullScreenRect::Render(UiElementRenderer* renderer,
-                            const gfx::Transform& view_proj_matrix) const {
+void FullScreenRect::Render(
+    UiElementRenderer* renderer,
+    const gfx::Transform& model_view_proj_matrix) const {
   gfx::Transform m;
   m.Scale3d(2.0f, 2.0f, 1.0f);
   renderer->DrawGradientQuad(m, edge_color(), center_color(),
