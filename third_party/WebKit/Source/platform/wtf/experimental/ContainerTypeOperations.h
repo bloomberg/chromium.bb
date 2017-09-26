@@ -186,12 +186,11 @@ struct ContainerTypeOperations : GenericContainerTypeOperations<T> {};
 // TODO(yutak): More specializations for POD types and smart pointers.
 
 //
-// CompletedContainerTypeOperations
+// CompleteContainerTypeOperations
 //
 
-// CompletedContainerTypeOperations supplements missing functions as defined
-// above. Normally, the users of containers don't have to care about this
-// class template.
+// CompleteContainerTypeOperations supplements missing functions as defined
+// above and creates a class template that has every function listed above.
 
 namespace internal {
 // This internal block contains all the implementation detail needed to
@@ -538,20 +537,31 @@ struct EqualSupplement<TypeOperations, T, false, true> {
 
 }  // namespace internal
 
-// Finally, CompletedContainerTypeOperations is defined by concerting all the
-// supplement classes.
+// Finally, CompleteContainerTypeOperations is defined by concerting all the
+// supplement classes. This can be applied to any ContainerTypeOperations
+// conforming to the requirements above.
+template <typename TypeOperations, typename T>
+struct CompleteContainerTypeOperations
+    : TypeOperations,
+      internal::DefaultInitializeSupplement<TypeOperations, T>,
+      internal::DestructSupplement<TypeOperations, T>,
+      internal::CopyRangeSupplement<TypeOperations, T>,
+      internal::MoveRangeSupplement<TypeOperations, T>,
+      internal::CopyOverlappingRangeSupplement<TypeOperations, T>,
+      internal::MoveOverlappingRangeSupplement<TypeOperations, T>,
+      internal::UninitializedCopySupplement<TypeOperations, T>,
+      internal::UninitializedFillSupplement<TypeOperations, T>,
+      internal::EqualSupplement<TypeOperations, T> {};
+
+//
+// CompletedContainerTypeOperations
+//
+
+// Complete*d*ContainerTypeOperations is ContainerTypeOperations<T> with
+// supplemented functions.
 template <typename T>
 struct CompletedContainerTypeOperations
-    : ContainerTypeOperations<T>,
-      internal::DefaultInitializeSupplement<ContainerTypeOperations<T>, T>,
-      internal::DestructSupplement<ContainerTypeOperations<T>, T>,
-      internal::CopyRangeSupplement<ContainerTypeOperations<T>, T>,
-      internal::MoveRangeSupplement<ContainerTypeOperations<T>, T>,
-      internal::CopyOverlappingRangeSupplement<ContainerTypeOperations<T>, T>,
-      internal::MoveOverlappingRangeSupplement<ContainerTypeOperations<T>, T>,
-      internal::UninitializedCopySupplement<ContainerTypeOperations<T>, T>,
-      internal::UninitializedFillSupplement<ContainerTypeOperations<T>, T>,
-      internal::EqualSupplement<ContainerTypeOperations<T>, T> {};
+    : CompleteContainerTypeOperations<ContainerTypeOperations<T>, T> {};
 
 //
 // GenericContainerTypeOperations<T> definitions
