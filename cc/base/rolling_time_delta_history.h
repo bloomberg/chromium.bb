@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <set>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
@@ -36,7 +36,7 @@ class CC_BASE_EXPORT RollingTimeDeltaHistory {
   typedef std::multiset<base::TimeDelta> TimeDeltaMultiset;
 
   TimeDeltaMultiset sample_set_;
-  std::deque<TimeDeltaMultiset::iterator> chronological_sample_deque_;
+  base::circular_deque<TimeDeltaMultiset::iterator> chronological_sample_deque_;
   size_t max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(RollingTimeDeltaHistory);

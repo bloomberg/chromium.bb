@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <queue>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -525,7 +526,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // SetOutputVolumePercentWithoutNotifyingObservers() for which we're still
   // waiting for OutputNodeVolumeChanged() calls. These are used to suppress
   // notifications for those changes.
-  std::deque<AutomatedVolumeChangeReason> automated_volume_change_reasons_;
+  base::circular_deque<AutomatedVolumeChangeReason>
+      automated_volume_change_reasons_;
 
   bool initializing_audio_state_ = false;
   int init_volume_;

@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -107,10 +107,10 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
   }
 
  private:
-  std::deque<net::MockRead> reads_;
+  base::circular_deque<net::MockRead> reads_;
   bool has_pending_read_;
 
-  std::deque<net::MockWrite> writes_;
+  base::circular_deque<net::MockWrite> writes_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncSocketDataProvider);
 };
@@ -438,7 +438,7 @@ class ChromeAsyncSocketTest
   net::SSLSocketDataProvider ssl_socket_data_provider_;
 
   std::unique_ptr<ChromeAsyncSocket> chrome_async_socket_;
-  std::deque<SignalSocketState> signal_socket_states_;
+  base::circular_deque<SignalSocketState> signal_socket_states_;
   const rtc::SocketAddress addr_;
 
  private:

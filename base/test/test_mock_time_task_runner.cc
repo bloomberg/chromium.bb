@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -251,9 +252,10 @@ std::unique_ptr<TickClock> TestMockTimeTaskRunner::GetMockTickClock() const {
   return std::make_unique<MockTickClock>(this);
 }
 
-std::deque<TestPendingTask> TestMockTimeTaskRunner::TakePendingTasks() {
+base::circular_deque<TestPendingTask>
+TestMockTimeTaskRunner::TakePendingTasks() {
   AutoLock scoped_lock(tasks_lock_);
-  std::deque<TestPendingTask> tasks;
+  base::circular_deque<TestPendingTask> tasks;
   while (!tasks_.empty()) {
     // It's safe to remove const and consume |task| here, since |task| is not
     // used for ordering the item.

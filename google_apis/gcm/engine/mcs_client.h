@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -262,8 +262,8 @@ class GCM_EXPORT MCSClient {
   // most recent (back/end).
 
   // Send/acknowledge queues.
-  std::deque<MCSPacketInternal> to_send_;
-  std::deque<MCSPacketInternal> to_resend_;
+  base::circular_deque<MCSPacketInternal> to_send_;
+  base::circular_deque<MCSPacketInternal> to_resend_;
 
   // Map of collapse keys to their pending messages.
   std::map<CollapseKey, ReliablePacketInfo*> collapse_key_map_;

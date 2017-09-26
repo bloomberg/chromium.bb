@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_MODEL_IMPL_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 #define COMPONENTS_SYNC_MODEL_IMPL_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"

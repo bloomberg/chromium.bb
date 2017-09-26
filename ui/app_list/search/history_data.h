@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -35,7 +35,7 @@ class HistoryDataStore;
 // secondary.
 class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
  public:
-  typedef std::deque<std::string> SecondaryDeque;
+  using SecondaryDeque = base::circular_deque<std::string>;
 
   // Defines data to be associated with a query.
   struct APP_LIST_EXPORT Data {

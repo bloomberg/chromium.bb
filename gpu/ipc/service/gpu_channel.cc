@@ -11,13 +11,13 @@
 #endif
 
 #include <algorithm>
-#include <deque>
 #include <set>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -168,7 +168,7 @@ class GpuChannelMessageQueue
   // |channel_lock_|.
   bool scheduled_ = true;
   GpuChannel* channel_ = nullptr;  // set to nullptr on Destroy
-  std::deque<std::unique_ptr<GpuChannelMessage>> channel_messages_;
+  base::circular_deque<std::unique_ptr<GpuChannelMessage>> channel_messages_;
   bool handle_message_post_task_pending_ = false;
   mutable base::Lock channel_lock_;
 

@@ -5,7 +5,6 @@
 #include "ui/message_center/message_center_impl.h"
 
 #include <algorithm>
-#include <deque>
 #include <memory>
 #include <utility>
 #include <vector>

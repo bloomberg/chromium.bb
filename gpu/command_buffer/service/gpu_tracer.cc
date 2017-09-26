@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

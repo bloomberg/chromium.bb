@@ -7,8 +7,7 @@
 #include <d3d11_1.h>
 #include <dcomptypes.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -82,7 +81,7 @@ class PresentationHistory {
   int composed_count() const { return composed_count_; }
 
  private:
-  std::deque<DXGI_FRAME_PRESENTATION_MODE> presents_;
+  base::circular_deque<DXGI_FRAME_PRESENTATION_MODE> presents_;
   int composed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationHistory);

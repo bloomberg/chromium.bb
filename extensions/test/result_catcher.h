@@ -5,11 +5,11 @@
 #ifndef EXTENSIONS_TEST_RESULT_CATCHER_H_
 #define EXTENSIONS_TEST_RESULT_CATCHER_H_
 
-#include <deque>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -48,10 +48,10 @@ class ResultCatcher : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
   // A sequential list of pass/fail notifications from the test extension(s).
-  std::deque<bool> results_;
+  base::circular_deque<bool> results_;
 
   // If it failed, what was the error message?
-  std::deque<std::string> messages_;
+  base::circular_deque<std::string> messages_;
   std::string message_;
 
   // If non-NULL, we will listen to events from this BrowserContext only.

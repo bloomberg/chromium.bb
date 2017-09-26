@@ -5,11 +5,11 @@
 #ifndef IPC_IPC_SYNC_CHANNEL_H_
 #define IPC_IPC_SYNC_CHANNEL_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -199,7 +199,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
 
     void OnShutdownEventSignaled(base::WaitableEvent* event);
 
-    typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
+    using PendingSyncMessageQueue = base::circular_deque<PendingSyncMsg>;
     PendingSyncMessageQueue deserializers_;
     bool reject_new_deserializers_ = false;
     base::Lock deserializers_lock_;

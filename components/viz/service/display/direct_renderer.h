@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "cc/resources/display_resource_provider.h"
@@ -134,9 +135,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   static cc::ResourceProvider::TextureHint RenderPassTextureHint(
       const RenderPass* render_pass);
 
-  void FlushPolygons(std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
-                     const gfx::Rect& render_pass_scissor,
-                     bool use_render_pass_scissor);
+  void FlushPolygons(
+      base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,
+      const gfx::Rect& render_pass_scissor,
+      bool use_render_pass_scissor);
   void DrawRenderPassAndExecuteCopyRequests(RenderPass* render_pass);
   void DrawRenderPass(const RenderPass* render_pass);
   bool UseRenderPass(const RenderPass* render_pass);

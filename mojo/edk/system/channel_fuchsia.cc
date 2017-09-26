@@ -10,9 +10,9 @@
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
 #include <algorithm>
-#include <deque>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -69,7 +69,7 @@ bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
 
 ScopedPlatformHandle WrapPlatformHandles(
     Channel::Message::HandleInfoEntry info,
-    std::deque<base::ScopedZxHandle>* handles) {
+    base::circular_deque<base::ScopedZxHandle>* handles) {
   ScopedPlatformHandle out_handle;
   if (!info.type) {
     out_handle.reset(PlatformHandle::ForHandle(handles->front().release()));
@@ -416,7 +416,7 @@ class ChannelFuchsia : public Channel,
 
   // These members are only used on the IO thread.
   std::unique_ptr<base::MessageLoopForIO::ZxHandleWatchController> read_watch_;
-  std::deque<base::ScopedZxHandle> incoming_handles_;
+  base::circular_deque<base::ScopedZxHandle> incoming_handles_;
   bool leak_handle_ = false;
 
   base::Lock write_lock_;

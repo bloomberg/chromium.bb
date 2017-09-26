@@ -8,12 +8,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <stack>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -94,7 +94,7 @@ class GPU_EXPORT GPUTracer {
 
   Outputter* outputter_ = nullptr;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
-  std::deque<scoped_refptr<GPUTrace> > finished_traces_;
+  base::circular_deque<scoped_refptr<GPUTrace>> finished_traces_;
   GLES2Decoder* decoder_;
   int64_t disjoint_time_ = 0;
   bool gpu_executing_ = false;

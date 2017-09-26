@@ -5,9 +5,9 @@
 #ifndef UI_EVENTS_BLINK_COMPOSITOR_THREAD_EVENT_QUEUE_H_
 #define UI_EVENTS_BLINK_COMPOSITOR_THREAD_EVENT_QUEUE_H_
 
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "ui/events/blink/event_with_callback.h"
 
 namespace ui {
@@ -36,7 +36,7 @@ class CompositorThreadEventQueue {
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;
-  using EventQueue = std::deque<std::unique_ptr<EventWithCallback>>;
+  using EventQueue = base::circular_deque<std::unique_ptr<EventWithCallback>>;
   EventQueue queue_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorThreadEventQueue);

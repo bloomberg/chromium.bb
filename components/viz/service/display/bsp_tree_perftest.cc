@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <sstream>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -87,7 +87,7 @@ class BspTreePerfTest : public cc::LayerTreeTest {
 
     timer_.Reset();
     do {
-      std::deque<std::unique_ptr<DrawPolygon>> test_list;
+      base::circular_deque<std::unique_ptr<DrawPolygon>> test_list;
       for (int i = 0; i < num_duplicates_; i++) {
         for (size_t i = 0; i < polygon_list.size(); i++) {
           test_list.push_back(polygon_list[i]->CreateCopy());

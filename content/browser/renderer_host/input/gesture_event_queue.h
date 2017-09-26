@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/containers/circular_deque.h"

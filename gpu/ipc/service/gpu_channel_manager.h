@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <unordered_map>

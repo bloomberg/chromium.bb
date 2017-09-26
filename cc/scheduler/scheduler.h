@@ -5,7 +5,6 @@
 #ifndef CC_SCHEDULER_SCHEDULER_H_
 #define CC_SCHEDULER_SCHEDULER_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 

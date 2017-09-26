@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_H_
 #define EXTENSIONS_BROWSER_UPDATER_EXTENSION_DOWNLOADER_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>

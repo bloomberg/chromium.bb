@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/containers/circular_deque.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -483,7 +484,7 @@ const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
 }
 
 void DirectRenderer::FlushPolygons(
-    std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
+    base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,
     const gfx::Rect& render_pass_scissor,
     bool use_render_pass_scissor) {
   if (poly_list->empty()) {
@@ -575,7 +576,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
       mode, MoveFromDrawToWindowSpace(render_pass_scissor_in_draw_space));
 
   const QuadList& quad_list = render_pass->quad_list;
-  std::deque<std::unique_ptr<DrawPolygon>> poly_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> poly_list;
 
   int next_polygon_id = 0;
   int last_sorting_context_id = 0;

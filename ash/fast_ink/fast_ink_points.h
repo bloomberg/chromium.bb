@@ -5,10 +5,10 @@
 #ifndef ASH_FAST_INK_FAST_INK_POINTS_H_
 #define ASH_FAST_INK_FAST_INK_POINTS_H_
 
-#include <deque>
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
@@ -56,7 +56,7 @@ class ASH_EXPORT FastInkPoints {
   // Whether there are any points or not.
   bool IsEmpty() const;
   // Expose the collection so callers can work with the points.
-  const std::deque<FastInkPoint>& points() const;
+  const base::circular_deque<FastInkPoint>& points() const;
   // Returns the fadeout factor for a point. This is a value between 0.0 and
   // 1.0, where 0.0 corresponds to a recently  added point, and 1.0 to a point
   // that is about to expire. Do not call this method if |life_duration_| is 0.
@@ -69,7 +69,7 @@ class ASH_EXPORT FastInkPoints {
 
  private:
   const base::TimeDelta life_duration_;
-  std::deque<FastInkPoint> points_;
+  base::circular_deque<FastInkPoint> points_;
   // The latest time of the collection of points. This gets updated when new
   // points are added or when MoveForwardToTime is called.
   base::TimeTicks collection_latest_time_;

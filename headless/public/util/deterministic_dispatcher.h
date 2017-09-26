@@ -5,9 +5,9 @@
 #ifndef HEADLESS_PUBLIC_UTIL_DETERMINISTIC_DISPATCHER_H_
 #define HEADLESS_PUBLIC_UTIL_DETERMINISTIC_DISPATCHER_H_
 
-#include <deque>
 #include <map>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -56,15 +56,16 @@ class HEADLESS_EXPORT DeterministicDispatcher : public URLRequestDispatcher {
     Request();
     explicit Request(ManagedDispatchURLRequestJob* url_request);
     explicit Request(std::unique_ptr<NavigationRequest> navigation_request);
+    Request(Request&&);
     ~Request();
 
     Request& operator=(Request&& other);
 
-    ManagedDispatchURLRequestJob* url_request;  // NOT OWNED
+    ManagedDispatchURLRequestJob* url_request = nullptr;  // NOT OWNED
     std::unique_ptr<NavigationRequest> navigation_request;
   };
 
-  std::deque<Request> pending_requests_;
+  base::circular_deque<Request> pending_requests_;
 
   using StatusMap = std::map<ManagedDispatchURLRequestJob*, net::Error>;
   StatusMap ready_status_map_;

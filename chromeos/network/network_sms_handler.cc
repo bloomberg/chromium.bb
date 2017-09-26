@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <deque>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -197,7 +197,7 @@ class NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler
   bool deleting_messages_;
   bool retrieving_messages_;
   std::vector<dbus::ObjectPath> delete_queue_;
-  std::deque<dbus::ObjectPath> retrieval_queue_;
+  base::circular_deque<dbus::ObjectPath> retrieval_queue_;
   base::WeakPtrFactory<ModemManager1NetworkSmsDeviceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModemManager1NetworkSmsDeviceHandler);

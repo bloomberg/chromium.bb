@@ -56,7 +56,7 @@ class FakeX11Keyboard : public X11Keyboard {
 
  private:
   std::unordered_map<uint32_t, MappingInfo> keycode_mapping_;
-  std::deque<uint32_t> expected_code_point_sequence_;
+  base::circular_deque<uint32_t> expected_code_point_sequence_;
   base::Closure keypress_finished_callback_;
 };
 

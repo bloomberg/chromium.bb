@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <xf86drmMode.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <unordered_map>

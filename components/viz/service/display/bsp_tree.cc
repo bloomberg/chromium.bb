@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/container_util.h"
 #include "components/viz/service/display/bsp_compare_result.h"
@@ -19,7 +20,7 @@ BspNode::BspNode(std::unique_ptr<DrawPolygon> data)
 
 BspNode::~BspNode() = default;
 
-BspTree::BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list) {
+BspTree::BspTree(base::circular_deque<std::unique_ptr<DrawPolygon>>* list) {
   if (list->size() == 0)
     return;
 
@@ -37,9 +38,9 @@ BspTree::~BspTree() = default;
 // data.
 void BspTree::BuildTree(
     BspNode* node,
-    std::deque<std::unique_ptr<DrawPolygon>>* polygon_list) {
-  std::deque<std::unique_ptr<DrawPolygon>> front_list;
-  std::deque<std::unique_ptr<DrawPolygon>> back_list;
+    base::circular_deque<std::unique_ptr<DrawPolygon>>* polygon_list) {
+  base::circular_deque<std::unique_ptr<DrawPolygon>> front_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> back_list;
 
   // We take in a list of polygons at this level of the tree, and have to
   // find a splitting plane, then classify polygons as either in front of

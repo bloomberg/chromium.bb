@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "base/atomicops.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -111,7 +112,7 @@ void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
 }
 
 void QuerySyncManager::Shrink(CommandBufferHelper* helper) {
-  std::deque<std::unique_ptr<Bucket>> new_buckets;
+  base::circular_deque<std::unique_ptr<Bucket>> new_buckets;
   uint32_t token = 0;
   while (!buckets_.empty()) {
     std::unique_ptr<Bucket>& bucket = buckets_.front();

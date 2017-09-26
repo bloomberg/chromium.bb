@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

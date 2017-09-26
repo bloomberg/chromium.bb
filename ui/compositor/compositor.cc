@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <deque>
 #include <utility>
 
 #include "base/bind.h"

@@ -5,6 +5,7 @@
 #include "device/bluetooth/test/bluetooth_test_win.h"
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -475,7 +476,7 @@ win::GattCharacteristic* BluetoothTestWin::GetSimulatedCharacteristic(
 }
 
 void BluetoothTestWin::RunPendingTasksUntilCallback() {
-  std::deque<base::TestPendingTask> tasks =
+  base::circular_deque<base::TestPendingTask> tasks =
       bluetooth_task_runner_->TakePendingTasks();
   int original_callback_count = callback_count_;
   int original_error_callback_count = error_callback_count_;

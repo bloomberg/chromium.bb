@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 
-#include <deque>
 #include <map>
 
+#include "base/containers/circular_deque.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
@@ -34,7 +34,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @interface DialogPresenter () {
   // Queue of WebStates which correspond to the keys in
   // |_dialogCoordinatorsForWebStates|.
-  std::deque<web::WebState*> _queuedWebStates;
+  base::circular_deque<web::WebState*> _queuedWebStates;
   // A map associating queued webStates with their coordinators.
   std::map<web::WebState*, base::scoped_nsobject<AlertCoordinator>>
       _dialogCoordinatorsForWebStates;

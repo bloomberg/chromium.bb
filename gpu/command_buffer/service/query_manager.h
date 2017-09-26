@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -298,18 +298,18 @@ class GPU_EXPORT QueryManager {
   unsigned query_count_;
 
   // Info for each query in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Query> > QueryMap;
+  using QueryMap = base::hash_map<GLuint, scoped_refptr<Query>>;
   QueryMap queries_;
 
-  typedef base::hash_set<GLuint> GeneratedQueryIds;
+  using GeneratedQueryIds = base::hash_set<GLuint>;
   GeneratedQueryIds generated_query_ids_;
 
   // A map of targets -> Query for current active queries.
-  typedef std::map<GLenum, scoped_refptr<Query> > ActiveQueryMap;
+  using ActiveQueryMap = std::map<GLenum, scoped_refptr<Query>>;
   ActiveQueryMap active_queries_;
 
   // Queries waiting for completion.
-  typedef std::deque<scoped_refptr<Query> > QueryQueue;
+  using QueryQueue = base::circular_deque<scoped_refptr<Query>>;
   QueryQueue pending_queries_;
 
   scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;

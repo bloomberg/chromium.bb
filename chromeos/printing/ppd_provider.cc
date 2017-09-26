@@ -5,7 +5,6 @@
 #include "chromeos/printing/ppd_provider.h"
 
 #include <algorithm>
-#include <deque>
 #include <set>
 #include <unordered_map>
 #include <utility>
@@ -13,6 +12,7 @@
 
 #include "base/base64.h"
 #include "base/bind_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
@@ -794,7 +794,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   // any user-based ppd resolutions intact, as they don't depend on the data
   // we're missing.
   void FailQueuedServerPpdResolutions(PpdProvider::CallbackResultCode code) {
-    std::deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
+    base::circular_deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
         filtered_queue;
     for (const auto& entry : ppd_resolution_queue_) {
       if (!entry.first.user_supplied_ppd_url.empty()) {
@@ -1090,14 +1090,15 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   std::vector<ResolveManufacturersCallback> manufacturers_resolution_queue_;
 
   // Queued ResolvePrinters() calls.
-  std::deque<PrinterResolutionQueueEntry> printers_resolution_queue_;
+  base::circular_deque<PrinterResolutionQueueEntry> printers_resolution_queue_;
 
   // Queued ResolvePpd() requests.
-  std::deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
+  base::circular_deque<std::pair<Printer::PpdReference, ResolvePpdCallback>>
       ppd_resolution_queue_;
 
   // Queued ResolvePpdReference() requests.
-  std::deque<std::pair<PrinterSearchData, ResolvePpdReferenceCallback>>
+  base::circular_deque<
+      std::pair<PrinterSearchData, ResolvePpdReferenceCallback>>
       ppd_reference_resolution_queue_;
 
   // Locale we're using for grabbing stuff from the server.  Empty if we haven't

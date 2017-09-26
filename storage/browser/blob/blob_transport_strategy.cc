@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_transport_strategy.h"
 
+#include "base/containers/circular_deque.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/public/interfaces/blobs.mojom.h"
@@ -228,7 +229,7 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
   }
 
   const BlobStorageLimits& limits_;
-  std::deque<base::OnceClosure> requests_;
+  base::circular_deque<base::OnceClosure> requests_;
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher watcher_;

@@ -8,7 +8,6 @@
 #include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 

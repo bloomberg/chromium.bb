@@ -7,18 +7,18 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "extensions/browser/extension_error.h"
 
 namespace extensions {
 
-using ErrorList = std::deque<std::unique_ptr<ExtensionError>>;
+using ErrorList = base::circular_deque<std::unique_ptr<ExtensionError>>;
 
 // An ErrorMap is responsible for storing Extension-related errors, keyed by
 // Extension ID.

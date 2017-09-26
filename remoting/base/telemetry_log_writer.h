@@ -5,10 +5,10 @@
 #ifndef REMOTING_BASE_TELEMETRY_LOG_WRITER_H_
 #define REMOTING_BASE_TELEMETRY_LOG_WRITER_H_
 
-#include <deque>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
@@ -57,11 +57,11 @@ class TelemetryLogWriter : public ChromotingEventLogWriter {
   std::unique_ptr<UrlRequest> request_;
 
   // Entries to be sent.
-  std::deque<ChromotingEvent> pending_entries_;
+  base::circular_deque<ChromotingEvent> pending_entries_;
 
   // Entries being sent.
   // These will be pushed back to pending_entries if error occurs.
-  std::deque<ChromotingEvent> sending_entries_;
+  base::circular_deque<ChromotingEvent> sending_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(TelemetryLogWriter);
 };

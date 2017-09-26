@@ -5,10 +5,10 @@
 #ifndef UI_COMPOSITOR_LAYER_ANIMATOR_H_
 #define UI_COMPOSITOR_LAYER_ANIMATOR_H_
 
-#include <deque>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -260,8 +260,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
     // Copy and assign are allowed.
   };
 
-  typedef std::vector<RunningAnimation> RunningAnimations;
-  typedef std::deque<linked_ptr<LayerAnimationSequence> > AnimationQueue;
+  using RunningAnimations = std::vector<RunningAnimation>;
+  using AnimationQueue =
+      base::circular_deque<linked_ptr<LayerAnimationSequence>>;
 
   // Finishes all animations by either advancing them to their final state or by
   // aborting them.

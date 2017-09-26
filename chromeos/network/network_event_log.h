@@ -5,7 +5,6 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_EVENT_LOG_H_
 #define CHROMEOS_NETWORK_NETWORK_EVENT_LOG_H_
 
-#include <deque>
 #include <string>
 
 #include "base/strings/stringprintf.h"

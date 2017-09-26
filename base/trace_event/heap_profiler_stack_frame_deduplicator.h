@@ -5,11 +5,11 @@
 #ifndef BASE_TRACE_EVENT_HEAP_PROFILER_STACK_FRAME_DEDUPLICATOR_H_
 #define BASE_TRACE_EVENT_HEAP_PROFILER_STACK_FRAME_DEDUPLICATOR_H_
 
-#include <deque>
 #include <string>
 #include <unordered_map>
 
 #include "base/base_export.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
@@ -48,7 +48,7 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
     base::flat_map<StackFrame, int> children;
   };
 
-  using ConstIterator = std::deque<FrameNode>::const_iterator;
+  using ConstIterator = base::circular_deque<FrameNode>::const_iterator;
 
   StackFrameDeduplicator();
   ~StackFrameDeduplicator() override;
@@ -78,7 +78,7 @@ class BASE_EXPORT StackFrameDeduplicator : public ConvertableToTraceFormat {
              const StackFrame* end_frame) const;
 
   base::flat_map<StackFrame, int> roots_;
-  std::deque<FrameNode> frames_;
+  base::circular_deque<FrameNode> frames_;
 
   // {backtrace_hash -> frame_index} map for finding backtraces that are
   // already added. Backtraces themselves are not stored in the map, instead

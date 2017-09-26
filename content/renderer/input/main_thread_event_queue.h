@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_H_
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_H_
 
-#include <deque>
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
