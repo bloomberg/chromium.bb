@@ -331,7 +331,6 @@ EXPERIMENT_LIST="
     ext_comp_refs
     smooth_hv
     var_refs
-    rect_intra_pred
     lgt
     sbl_symbol
     ncobmc_adapt_weight
@@ -528,7 +527,6 @@ post_process_cmdline() {
     soft_enable ext_comp_refs
     soft_enable smooth_hv
     soft_enable parallel_deblocking
-    soft_enable rect_intra_pred
     soft_enable convolve_round
     soft_enable aom_qm
     soft_enable dist_8x8
