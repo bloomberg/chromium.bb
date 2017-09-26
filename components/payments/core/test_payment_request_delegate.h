@@ -73,6 +73,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
+  bool IsBrowserWindowActive() const override;
 
   TestAddressNormalizer* test_address_normalizer();
   void DelayFullCardRequestCompletion();

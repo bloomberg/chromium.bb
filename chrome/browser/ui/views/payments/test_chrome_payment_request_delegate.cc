@@ -12,12 +12,14 @@ TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
     content::WebContents* web_contents,
     PaymentRequestDialogView::ObserverForTest* observer,
     bool is_incognito,
-    bool is_valid_ssl)
+    bool is_valid_ssl,
+    bool is_browser_window_active)
     : ChromePaymentRequestDelegate(web_contents),
       region_data_loader_(nullptr),
       observer_(observer),
       is_incognito_(is_incognito),
-      is_valid_ssl_(is_valid_ssl) {}
+      is_valid_ssl_(is_valid_ssl),
+      is_browser_window_active_(is_browser_window_active) {}
 
 void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   PaymentRequestDialogView* dialog_view =
@@ -40,4 +42,9 @@ TestChromePaymentRequestDelegate::GetRegionDataLoader() {
     return region_data_loader_;
   return ChromePaymentRequestDelegate::GetRegionDataLoader();
 }
+
+bool TestChromePaymentRequestDelegate::IsBrowserWindowActive() const {
+  return is_browser_window_active_;
+}
+
 }  // namespace payments

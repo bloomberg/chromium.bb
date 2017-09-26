@@ -161,6 +161,14 @@ void PaymentRequest::Show() {
     return;
   }
 
+  if (!delegate_->IsBrowserWindowActive()) {
+    LOG(ERROR) << "Cannot show PaymentRequest UI in a background tab";
+    journey_logger_.SetNotShown(JourneyLogger::NOT_SHOWN_REASON_OTHER);
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    OnConnectionTerminated();
+    return;
+  }
+
   if (!state_->AreRequestedMethodsSupported()) {
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);

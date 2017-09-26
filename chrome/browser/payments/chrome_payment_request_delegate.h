@@ -43,6 +43,7 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
+  bool IsBrowserWindowActive() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This
