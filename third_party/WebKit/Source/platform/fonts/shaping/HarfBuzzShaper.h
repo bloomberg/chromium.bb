@@ -34,7 +34,6 @@
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Deque.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -42,7 +41,9 @@ namespace blink {
 class Font;
 class SimpleFontData;
 class HarfBuzzShaper;
-struct HolesQueueItem;
+struct ReshapeQueueItem;
+struct RangeData;
+struct BufferSlice;
 
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
@@ -70,7 +71,6 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   ~HarfBuzzShaper() {}
 
  private:
-  struct RangeData;
 
   // Shapes a single seqment, as identified by the RunSegmenterRange parameter,
   // one or more times taking font fallback into account. The start and end
@@ -82,14 +82,21 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
 
   void ExtractShapeResults(RangeData*,
                            bool& font_cycle_queued,
-                           const HolesQueueItem&,
+                           const ReshapeQueueItem&,
                            const SimpleFontData*,
                            UScriptCode,
                            bool is_last_resort,
                            ShapeResult*) const;
 
-  bool CollectFallbackHintChars(const Deque<HolesQueueItem>&,
+  bool CollectFallbackHintChars(const Deque<ReshapeQueueItem>&,
                                 Vector<UChar32>& hint) const;
+
+  void CommitGlyphs(RangeData*,
+                    const SimpleFontData* current_font,
+                    UScriptCode current_run_script,
+                    bool is_last_resort,
+                    const BufferSlice&,
+                    ShapeResult*) const;
 
   const UChar* text_;
   unsigned text_length_;
