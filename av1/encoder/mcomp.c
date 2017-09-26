@@ -2594,7 +2594,7 @@ static void add_to_sort_table(block_hash block_hashes[MAX_HASH_MV_TABLE_SIZE],
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           MV *mvp_full, int step_param, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
-                          int x_pos, int y_pos) {
+                          int x_pos, int y_pos, int intra) {
 #else
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           MV *mvp_full, int step_param, int error_per_bit,
@@ -2696,13 +2696,16 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         // for the hashMap
         hash_table *ref_frame_hash =
-            get_ref_frame_hash_map(cpi, x->e_mbd.mi[0]->mbmi.ref_frame[0]);
+            intra ? &cpi->common.cur_frame->hash_table
+                  : get_ref_frame_hash_map(cpi,
+                                           x->e_mbd.mi[0]->mbmi.ref_frame[0]);
 
         av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
                                  &hash_value2);
 
         const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
-        if (count == 0) {
+        // for intra, at lest one matching can be found, itself.
+        if (count == (intra ? 1 : 0)) {
           break;
         }
 
@@ -2711,6 +2714,16 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         for (i = 0; i < count; i++, iterator_increment(&iterator)) {
           block_hash ref_block_hash = *(block_hash *)(iterator_get(&iterator));
           if (hash_value2 == ref_block_hash.hash_value2) {
+            // for intra, make sure the prediction is from valid area
+            // not predict from current block.
+            // TODO(roger): check if the constrain is necessary
+            if (intra &&
+                ref_block_hash.y + block_height >
+                    ((y_pos >> MAX_SB_SIZE_LOG2) << MAX_SB_SIZE_LOG2) &&
+                ref_block_hash.x + block_width >
+                    ((x_pos >> MAX_SB_SIZE_LOG2) << MAX_SB_SIZE_LOG2)) {
+              continue;
+            }
             int refCost =
                 abs(ref_block_hash.x - x_pos) + abs(ref_block_hash.y - y_pos);
             add_to_sort_table(block_hashes, costs, &existing,
