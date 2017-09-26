@@ -918,7 +918,8 @@ class HostResolverImpl::ProcTask
                                        std::abs(os_error),
                                        GetAllGetAddrinfoOSErrors());
     }
-    DCHECK_LT(category, static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
+    DCHECK_LT(static_cast<int>(category),
+              static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
 
     UMA_HISTOGRAM_ENUMERATION("DNS.ResolveCategory", category, RESOLVE_MAX);
   }
