@@ -29,8 +29,6 @@ namespace content {
 namespace {
 
 const char kNormalScriptURL[] = "https://example.com/normal.js";
-const char kEmptyScriptURL[] = "https://example.com/empty.js";
-const char kNonExistentScriptURL[] = "https://example.com/nonexistent.js";
 
 // MockHTTPServer is a utility to provide mocked responses for
 // ServiceWorkerScriptURLLoader.
@@ -139,14 +137,9 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
     InitializeStorage();
 
     mock_server_->AddResponse(GURL(kNormalScriptURL),
-                              std::string("HTTP/1.1 200 OK\n\n"),
+                              std::string("HTTP/1.1 200 OK\n"
+                                          "CONTENT-TYPE: text/javascript\n\n"),
                               std::string("this body came from the network"));
-    mock_server_->AddResponse(GURL(kEmptyScriptURL),
-                              std::string("HTTP/1.1 200 OK\n\n"),
-                              std::string());
-    mock_server_->AddResponse(GURL(kNonExistentScriptURL),
-                              std::string("HTTP/1.1 404 Not Found\n\n"),
-                              std::string());
 
     // Initialize URLLoaderFactory.
     mojom::URLLoaderFactoryPtr test_loader_factory;
@@ -275,9 +268,13 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
-  GURL script_url(kEmptyScriptURL);
-  SetUpRegistration(script_url);
-  DoRequest(script_url);
+  const GURL kEmptyScriptURL("https://example.com/empty.js");
+  mock_server_->AddResponse(kEmptyScriptURL,
+                            std::string("HTTP/1.1 200 OK\n"
+                                        "CONTENT-TYPE: text/javascript\n\n"),
+                            std::string());
+  SetUpRegistration(kEmptyScriptURL);
+  DoRequest(kEmptyScriptURL);
   client_.RunUntilComplete();
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
 
@@ -290,21 +287,60 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   EXPECT_TRUE(response.empty());
 
   // The response should also be stored in the storage.
-  EXPECT_TRUE(VerifyStoredResponse(script_url));
+  EXPECT_TRUE(VerifyStoredResponse(kEmptyScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
-  GURL script_url(kNonExistentScriptURL);
-  SetUpRegistration(script_url);
-  DoRequest(script_url);
+  const GURL kNonExistentScriptURL("https://example.com/nonexistent.js");
+  mock_server_->AddResponse(kNonExistentScriptURL,
+                            std::string("HTTP/1.1 404 Not Found\n\n"),
+                            std::string());
+  SetUpRegistration(kNonExistentScriptURL);
+  DoRequest(kNonExistentScriptURL);
   client_.RunUntilComplete();
 
-  // The request should be failed because of 404 response.
+  // The request should be failed because of the 404 response.
   EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.completion_status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(script_url));
+  EXPECT_FALSE(VerifyStoredResponse(kNonExistentScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
+  const GURL kNoMimeTypeScriptURL("https://example.com/no-mime-type.js");
+  mock_server_->AddResponse(kNoMimeTypeScriptURL,
+                            std::string("HTTP/1.1 200 OK\n\n"),
+                            std::string("body with no MIME type"));
+  SetUpRegistration(kNoMimeTypeScriptURL);
+  DoRequest(kNoMimeTypeScriptURL);
+  client_.RunUntilComplete();
+
+  // The request should be failed because of the response with no MIME type.
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kNoMimeTypeScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
+  const GURL kBadMimeTypeScriptURL("https://example.com/bad-mime-type.js");
+  mock_server_->AddResponse(kBadMimeTypeScriptURL,
+                            std::string("HTTP/1.1 200 OK\n"
+                                        "CONTENT-TYPE: text/css\n\n"),
+                            std::string("body with bad MIME type"));
+  SetUpRegistration(kBadMimeTypeScriptURL);
+  DoRequest(kBadMimeTypeScriptURL);
+  client_.RunUntilComplete();
+
+  // The request should be failed because of the response with the bad MIME
+  // type.
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kBadMimeTypeScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
