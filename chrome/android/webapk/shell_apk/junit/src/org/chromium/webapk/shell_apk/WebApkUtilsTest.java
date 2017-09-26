@@ -91,7 +91,7 @@ public class WebApkUtilsTest {
         final String manifestStartUrl = "https://www.google.com/maps";
         final String manifestScope = "https://www.google.com";
         final String expectedRewrittenStartUrl =
-                "https://www.google.com/maps?originalUrl=https%253A%252F%252Fmaps.google.com%252Fpage%253Fa%253DA";
+                "https://www.google.com/maps?originalUrl=https%3A%2F%2Fmaps.google.com%2Fpage%3Fa%3DA";
         final String browserPackageName = "browser.support.webapks";
 
         Bundle bundle = new Bundle();

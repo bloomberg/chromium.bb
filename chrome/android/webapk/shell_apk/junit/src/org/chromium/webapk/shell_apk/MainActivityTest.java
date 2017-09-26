@@ -42,7 +42,7 @@ public final class MainActivityTest {
         final String manifestStartUrl = "https://www.google.com/index.html";
         final String manifestScope = "https://www.google.com/";
         final String expectedStartUrl =
-                "https://www.google.com/index.html?originalUrl=http%253A%252F%252Fwww.google.com%252Fsearch_results%253Fq%253Deh%2523cr%253DcountryCA";
+                "https://www.google.com/index.html?originalUrl=http%3A%2F%2Fwww.google.com%2Fsearch_results%3Fq%3Deh%23cr%3DcountryCA";
         final String browserPackageName = "com.android.chrome";
 
         Bundle bundle = new Bundle();
@@ -73,7 +73,7 @@ public final class MainActivityTest {
         final String manifestStartUrl = "https://www.google.com/maps/contrib/startUrl";
         final String manifestScope = "https://www.google.com/maps/contrib/";
         final String expectedStartUrl =
-                "https://www.google.com/maps/contrib/startUrl?originalUrl=https%253A%252F%252Fwww.google.com%252Fmaps%252F";
+                "https://www.google.com/maps/contrib/startUrl?originalUrl=https%3A%2F%2Fwww.google.com%2Fmaps%2F";
         final String browserPackageName = "com.android.chrome";
 
         Bundle bundle = new Bundle();
@@ -135,7 +135,7 @@ public final class MainActivityTest {
         final String manifestStartUrl = "https://www.☺.com/";
         final String scope = "https://www.☺.com/";
         final String expectedStartUrl =
-                "https://www.☺.com/?originalUrl=https%253A%252F%252Fwww.google.com%252F";
+                "https://www.☺.com/?originalUrl=https%3A%2F%2Fwww.google.com%2F";
         final String browserPackageName = "com.android.chrome";
 
         Bundle bundle = new Bundle();

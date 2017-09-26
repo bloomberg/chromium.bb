@@ -147,8 +147,7 @@ public class WebApkUtils {
 
         if (!isUrlInScope(intentStartUrl, scopeUrl)) {
             Uri.Builder returnUrlBuilder = Uri.parse(startUrl).buildUpon();
-            returnUrlBuilder.appendQueryParameter(
-                    loggedIntentUrlParam, Uri.encode(intentStartUrl).toString());
+            returnUrlBuilder.appendQueryParameter(loggedIntentUrlParam, intentStartUrl);
             return returnUrlBuilder.toString();
         }
 
