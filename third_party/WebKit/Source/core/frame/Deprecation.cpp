@@ -9,6 +9,7 @@
 #include "core/frame/DeprecationReport.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Report.h"
 #include "core/frame/ReportingContext.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -16,6 +17,8 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/runtime_enabled_features.h"
 #include "public/platform/WebFeaturePolicyFeature.h"
+#include "public/platform/reporting.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
 
@@ -271,14 +274,22 @@ void Deprecation::GenerateReport(const LocalFrame* frame,
     return;
 
   Document* document = frame->GetDocument();
-  ReportingContext* reporting_context = ReportingContext::From(document);
-  if (!reporting_context->ObserverExists())
-    return;
 
-  // Send a deprecation report to any ReportingObservers.
-  ReportBody* body = new DeprecationReport(message, SourceLocation::Capture());
+  // Construct the deprecation report.
+  DeprecationReport* body =
+      new DeprecationReport(message, SourceLocation::Capture());
   Report* report = new Report("deprecation", document->Url().GetString(), body);
-  reporting_context->QueueReport(report);
+
+  // Send the deprecation report to any ReportingObservers.
+  ReportingContext* reporting_context = ReportingContext::From(document);
+  if (reporting_context->ObserverExists())
+    reporting_context->QueueReport(report);
+
+  // Send the deprecation report to the Reporting API.
+  mojom::blink::ReportingServiceProxyPtr service;
+  frame->Client()->GetInterfaceProvider()->GetInterface(&service);
+  service->QueueDeprecationReport(document->Url(), body->message(),
+                                  body->sourceFile(), body->lineNumber());
 }
 
 String Deprecation::DeprecationMessage(WebFeature feature) {
