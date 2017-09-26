@@ -1007,23 +1007,26 @@ extern const char kEnableAndroidPayIntegrationV1Description[];
 extern const char kEnableAndroidPayIntegrationV2Name[];
 extern const char kEnableAndroidPayIntegrationV2Description[];
 
-extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableAndroidSpellcheckerName[];
-
-extern const char kEnableContentSuggestionsNewFaviconServerName[];
-extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
+extern const char kEnableAndroidSpellcheckerDescription[];
 
 extern const char kEnableContentSuggestionsLargeThumbnailName[];
 extern const char kEnableContentSuggestionsLargeThumbnailDescription[];
 
-extern const char kEnableContentSuggestionsVideoOverlayName[];
-extern const char kEnableContentSuggestionsVideoOverlayDescription[];
+extern const char kEnableContentSuggestionsNewFaviconServerName[];
+extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 
 extern const char kEnableContentSuggestionsSettingsName[];
 extern const char kEnableContentSuggestionsSettingsDescription[];
 
 extern const char kEnableContentSuggestionsShowSummaryName[];
 extern const char kEnableContentSuggestionsShowSummaryDescription[];
+
+extern const char kEnableContentSuggestionsThumbnailDominantColorName[];
+extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
+
+extern const char kEnableContentSuggestionsVideoOverlayName[];
+extern const char kEnableContentSuggestionsVideoOverlayDescription[];
 
 extern const char kEnableCopylessPasteName[];
 extern const char kEnableCopylessPasteDescription[];

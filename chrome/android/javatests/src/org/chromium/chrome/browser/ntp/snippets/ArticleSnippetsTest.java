@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
@@ -213,7 +214,7 @@ public class ArticleSnippetsTest {
                 20f, // Score
                 mTimestamp, // Fetch timestamp
                 false, // Is video suggestion
-                null); // Thumbnail dominant color
+                Color.GREEN); // Thumbnail dominant color
         renderSuggestion(longSnippet, fullCategoryInfo, "long_snippet");
 
         SuggestionsCategoryInfo minimalCategory = new SuggestionsCategoryInfo(MINIMAL_CATEGORY,

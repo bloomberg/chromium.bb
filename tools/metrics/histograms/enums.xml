@@ -23824,6 +23824,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-55944747" label="disable-child-account-detection"/>
   <int value="-52483823" label="disable-new-video-renderer"/>
   <int value="-52241456" label="enable-single-click-autofill"/>
+  <int value="-50628385"
+      label="ContentSuggestionsThumbnailDominantColor:enabled"/>
   <int value="-50021298" label="ash-adjustable-large-cursor"/>
   <int value="-48920737" label="enable-smooth-scrolling"/>
   <int value="-45532639" label="enable-default-media-session"/>
@@ -24159,6 +24161,8 @@ from previous Chrome versions.
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1003002105" label="MaterialDesignBookmarks:disabled"/>
+  <int value="1004909189"
+      label="ContentSuggestionsThumbnailDominantColor:disabled"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1015895665" label="drop-sync-credential:enabled"/>
   <int value="1018998019" label="memlog"/>
