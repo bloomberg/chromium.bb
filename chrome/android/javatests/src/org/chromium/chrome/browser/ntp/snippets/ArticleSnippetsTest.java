@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninPromoController;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
@@ -462,6 +463,11 @@ public class ArticleSnippetsTest {
         @Override
         public ImageFetcher getImageFetcher() {
             return mImageFetcher;
+        }
+
+        @Override
+        public SnackbarManager getSnackbarManager() {
+            return mActivityTestRule.getActivity().getSnackbarManager();
         }
     }
 

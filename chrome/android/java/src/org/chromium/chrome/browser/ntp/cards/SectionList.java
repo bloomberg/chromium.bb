@@ -244,7 +244,10 @@ public class SectionList
         } else if (supportingSections.get(0).isLoading()) {
             Log.d(TAG, "SectionList.fetchMore - Supporting section is already loading.");
         } else {
-            supportingSections.get(0).fetchSuggestions();
+            // Fetch more is called when the user does not explicitly trigger a fetch (eg, the user
+            // scrolls down). In this case we don't inform the user of a failure, hence the null
+            // parameter.
+            supportingSections.get(0).fetchSuggestions(null);
         }
     }
 

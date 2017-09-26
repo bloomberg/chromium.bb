@@ -339,7 +339,7 @@ public class TileGridLayoutTest {
         SuggestionsUiDelegate uiDelegate = new SuggestionsUiDelegateImpl(
                 mSuggestionsDeps.getFactory().createSuggestionSource(null),
                 mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,
-                activity.getChromeApplication().getReferencePool());
+                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
 
         OfflinePageBridge opb = OfflinePageBridge.getForProfile(profile);
         TileGroup.Delegate delegate = new TileGroupDelegateImpl(activity, profile, null, null);

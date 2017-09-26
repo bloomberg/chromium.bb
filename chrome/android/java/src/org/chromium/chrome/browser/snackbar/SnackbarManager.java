@@ -48,13 +48,13 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
          * Called when the user clicks the action button on the snackbar.
          * @param actionData Data object passed when showing this specific snackbar.
          */
-        void onAction(Object actionData);
+        default void onAction(Object actionData) { }
 
         /**
          * Called when the snackbar is dismissed by tiemout or UI enviroment change.
          * @param actionData Data object associated with the dismissed snackbar entry.
          */
-        void onDismissNoAction(Object actionData);
+        default void onDismissNoAction(Object actionData) { }
     }
 
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
