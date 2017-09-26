@@ -1777,7 +1777,7 @@ if (is_android) {
 if (enable_resource_whitelist_generation) {
   generate_resource_whitelist("resource_whitelist") {
     deps = [
-      "//chrome/android:chrome",
+      "//chrome/android:libchrome",
     ]
     input = "$root_out_dir/libchrome$shlib_extension.whitelist"
     output = chrome_resource_whitelist
