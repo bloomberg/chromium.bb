@@ -173,7 +173,7 @@ void SyncPrefs::SetLastSyncedTime(base::Time time) {
 base::Time SyncPrefs::GetLastPollTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Time::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSyncLastSyncedTime));
+      pref_service_->GetInt64(prefs::kSyncLastPollTime));
 }
 
 void SyncPrefs::SetLastPollTime(base::Time time) {
