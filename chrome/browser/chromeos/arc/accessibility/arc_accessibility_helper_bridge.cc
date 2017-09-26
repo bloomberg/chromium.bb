@@ -86,6 +86,11 @@ arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile) {
   if (accessibility_manager->profile() != profile)
     return arc::mojom::AccessibilityFilterType::OFF;
 
+  if (accessibility_manager->IsSelectToSpeakEnabled() ||
+      accessibility_manager->IsSwitchAccessEnabled()) {
+    return arc::mojom::AccessibilityFilterType::ALL;
+  }
+
   if (accessibility_manager->IsSpokenFeedbackEnabled())
     return arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME;
 

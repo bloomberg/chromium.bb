@@ -261,8 +261,15 @@ SelectToSpeak.prototype = {
         this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
         this.mouseEnd_.y);
     var nodes = [];
-    this.findAllMatching_(root, rect, nodes);
-    this.startSpeechQueue_(nodes);
+    chrome.automation.getFocus(function(focusedNode) {
+      // In some cases, e.g. ARC++, the window received in the hit test request,
+      // which is computed based on which window is the event handler for the
+      // hit point, isn't the part of the tree that contains the actual
+      // content. In such cases, use focus to get the root.
+      if (!this.findAllMatching_(root, rect, nodes) && focusedNode)
+        this.findAllMatching_(focusedNode.root, rect, nodes);
+      this.startSpeechQueue_(nodes);
+    }.bind(this));
   },
 
   /**
