@@ -46,6 +46,7 @@
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/wtf/Compiler.h"
+#include "platform/wtf/Deque.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -105,14 +106,14 @@ void CheckShapeResultRange(const ShapeResult* result,
 
 }  // namespace
 
-enum HolesQueueItemAction { kHolesQueueNextFont, kHolesQueueRange };
+enum ReshapeQueueItemAction { kReshapeQueueNextFont, kReshapeQueueRange };
 
-struct HolesQueueItem {
+struct ReshapeQueueItem {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  HolesQueueItemAction action_;
+  ReshapeQueueItemAction action_;
   unsigned start_index_;
   unsigned num_characters_;
-  HolesQueueItem(HolesQueueItemAction action, unsigned start, unsigned num)
+  ReshapeQueueItem(ReshapeQueueItemAction action, unsigned start, unsigned num)
       : action_(action), start_index_(start), num_characters_(num){};
 };
 
@@ -145,14 +146,14 @@ HarfBuzzShaper::HarfBuzzShaper(const UChar* text, unsigned length)
     : text_(text), text_length_(length) {}
 
 using FeaturesVector = Vector<hb_feature_t, 6>;
-struct HarfBuzzShaper::RangeData {
+struct RangeData {
   hb_buffer_t* buffer;
   const Font* font;
   TextDirection text_direction;
   unsigned start;
   unsigned end;
   FeaturesVector font_features;
-  Deque<HolesQueueItem> holes_queue;
+  Deque<ReshapeQueueItem> reshape_queue;
 
   hb_direction_t HarfBuzzDirection(const SimpleFontData* font_data) {
     FontOrientation orientation = font->GetFontDescription().Orientation();
@@ -164,6 +165,13 @@ struct HarfBuzzShaper::RangeData {
                ? HB_DIRECTION_REVERSE(direction)
                : direction;
   }
+};
+
+struct BufferSlice {
+  unsigned start_character_index;
+  unsigned num_characters;
+  unsigned start_glyph_index;
+  unsigned num_glyphs;
 };
 
 namespace {
@@ -202,12 +210,89 @@ inline bool ShapeRange(hb_buffer_t* buffer,
   return true;
 }
 
+BufferSlice ComputeSlice(RangeData* range_data,
+                         const ReshapeQueueItem& current_queue_item,
+                         const hb_glyph_info_t* glyph_info,
+                         unsigned num_glyphs,
+                         unsigned old_glyph_index,
+                         unsigned new_glyph_index) {
+  // Compute the range indices of consecutive shaped or .notdef glyphs.
+  // Cluster information for RTL runs becomes reversed, e.g. glyph 0
+  // has cluster index 5 in a run of 6 characters.
+  BufferSlice result;
+  result.start_glyph_index = old_glyph_index;
+  result.num_glyphs = new_glyph_index - old_glyph_index;
+
+  if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(range_data->buffer))) {
+    result.start_character_index = glyph_info[old_glyph_index].cluster;
+    if (new_glyph_index == num_glyphs) {
+      // Clamp the end offsets of the queue item to the offsets representing
+      // the shaping window.
+      unsigned shape_end =
+          std::min(range_data->end, current_queue_item.start_index_ +
+                                        current_queue_item.num_characters_);
+      result.num_characters = shape_end - result.start_character_index;
+    } else {
+      result.num_characters =
+          glyph_info[new_glyph_index].cluster - result.start_character_index;
+    }
+  } else {
+    // Direction Backwards
+    result.start_character_index = glyph_info[new_glyph_index - 1].cluster;
+    if (old_glyph_index == 0) {
+      // Clamp the end offsets of the queue item to the offsets representing
+      // the shaping window.
+      unsigned shape_end =
+          std::min(range_data->end, current_queue_item.start_index_ +
+                                        current_queue_item.num_characters_);
+      result.num_characters = shape_end - result.start_character_index;
+    } else {
+      result.num_characters = glyph_info[old_glyph_index - 1].cluster -
+                              glyph_info[new_glyph_index - 1].cluster;
+    }
+  }
+
+  return result;
+}
+
+void QueueCharacters(RangeData* range_data,
+                     const SimpleFontData* current_font,
+                     bool& font_cycle_queued,
+                     const BufferSlice& slice) {
+  if (!font_cycle_queued) {
+    range_data->reshape_queue.push_back(
+        ReshapeQueueItem(kReshapeQueueNextFont, 0, 0));
+    font_cycle_queued = true;
+  }
+
+  DCHECK(slice.num_characters);
+  range_data->reshape_queue.push_back(ReshapeQueueItem(
+      kReshapeQueueRange, slice.start_character_index, slice.num_characters));
+}
+
 }  // namespace
+
+void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
+                                  const SimpleFontData* current_font,
+                                  UScriptCode current_run_script,
+                                  bool is_last_resort,
+                                  const BufferSlice& slice,
+                                  ShapeResult* shape_result) const {
+  hb_direction_t direction = range_data->HarfBuzzDirection(current_font);
+  // Here we need to specify glyph positions.
+  ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
+      current_font, direction, ICUScriptToHBScript(current_run_script),
+      slice.start_character_index, slice.num_glyphs, slice.num_characters);
+  shape_result->InsertRun(WTF::WrapUnique(run), slice.start_glyph_index,
+                          slice.num_glyphs, range_data->buffer);
+  if (is_last_resort)
+    range_data->font->ReportNotDefGlyph();
+}
 
 void HarfBuzzShaper::ExtractShapeResults(
     RangeData* range_data,
     bool& font_cycle_queued,
-    const HolesQueueItem& current_queue_item,
+    const ReshapeQueueItem& current_queue_item,
     const SimpleFontData* current_font,
     UScriptCode current_run_script,
     bool is_last_resort,
@@ -223,124 +308,100 @@ void HarfBuzzShaper::ExtractShapeResults(
   hb_glyph_info_t* glyph_info =
       hb_buffer_get_glyph_infos(range_data->buffer, 0);
 
-  unsigned last_change_position = 0;
+  unsigned last_change_glyph_index = 0;
+  unsigned previous_cluster_start_glyph_index = 0;
 
   if (!num_glyphs)
     return;
 
-  for (unsigned glyph_index = 0; glyph_index <= num_glyphs; ++glyph_index) {
-    // Iterating by clusters, check for when the state switches from shaped
-    // to non-shaped and vice versa. Taking into account the edge cases of
-    // beginning of the run and end of the run.
+  for (unsigned glyph_index = 0; glyph_index < num_glyphs; ++glyph_index) {
+    // We proceed by full clusters and determine a shaping result - either
+    // kShaped or kNotDef for each cluster.
+    ClusterResult glyph_result =
+        glyph_info[glyph_index].codepoint == 0 ? kNotDef : kShaped;
     previous_cluster = current_cluster;
     current_cluster = glyph_info[glyph_index].cluster;
 
-    if (glyph_index < num_glyphs) {
-      // Still the same cluster, merge shaping status.
-      if (previous_cluster == current_cluster && glyph_index != 0) {
-        if (glyph_info[glyph_index].codepoint == 0) {
-          current_cluster_result = kNotDef;
+    if (current_cluster != previous_cluster) {
+      // We are transitioning to a new cluster (whose shaping result state we
+      // have not looked at yet). This means the cluster we just looked at is
+      // completely analysed and we can determine whether it was fully shaped
+      // and whether that means a state change to the cluster before that one.
+      if ((previous_cluster_result != current_cluster_result) &&
+          previous_cluster_result != kUnknown) {
+        BufferSlice slice = ComputeSlice(
+            range_data, current_queue_item, glyph_info, num_glyphs,
+            last_change_glyph_index, previous_cluster_start_glyph_index);
+        // If the most recent cluster is shaped and there is a state change,
+        // it means the previous ones were unshaped, so we queue them, unless
+        // we're using the last resort font.
+        if (current_cluster_result == kShaped && !is_last_resort) {
+          QueueCharacters(range_data, current_font, font_cycle_queued, slice);
         } else {
-          // We can only call the current cluster fully shapped, if
-          // all characters that are part of it are shaped, so update
-          // currentClusterResult to kShaped only if the previous
-          // characters have been shaped, too.
-          current_cluster_result =
-              current_cluster_result == kShaped ? kShaped : kNotDef;
+          // If the most recent cluster is unshaped and there is a state
+          // change, it means the previous one(s) were shaped, so we commit
+          // the glyphs. We also commit when we've reached the last resort
+          // font.
+          CommitGlyphs(range_data, current_font, current_run_script,
+                       is_last_resort, slice, shape_result);
         }
-        continue;
+        last_change_glyph_index = previous_cluster_start_glyph_index;
       }
-      // We've moved to a new cluster.
+
+      // No state change happened, continue.
       previous_cluster_result = current_cluster_result;
-      current_cluster_result =
-          glyph_info[glyph_index].codepoint == 0 ? kNotDef : kShaped;
+      previous_cluster_start_glyph_index = glyph_index;
+      // Reset current cluster result.
+      current_cluster_result = glyph_result;
     } else {
-      // The code below operates on the "flanks"/changes between kNotDef
-      // and kShaped. In order to keep the code below from explictly
-      // dealing with character indices and run end, we explicitly
-      // terminate the cluster/run here by setting the result value to the
-      // opposite of what it was, leading to atChange turning true.
-      previous_cluster_result = current_cluster_result;
+      // Update and merge current cluster result.
       current_cluster_result =
-          current_cluster_result == kNotDef ? kShaped : kNotDef;
+          glyph_result == kShaped && (current_cluster_result == kShaped ||
+                                      current_cluster_result == kUnknown)
+              ? kShaped
+              : kNotDef;
     }
+  }
 
-    bool at_change = (previous_cluster_result != current_cluster_result) &&
-                     previous_cluster_result != kUnknown;
-    if (!at_change)
-      continue;
-
-    // Compute the range indices of consecutive shaped or .notdef glyphs.
-    // Cluster information for RTL runs becomes reversed, e.g. character 0
-    // has cluster index 5 in a run of 6 characters.
-    unsigned num_characters = 0;
-    unsigned num_glyphs_to_insert = 0;
-    unsigned start_index = 0;
-    if (HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(range_data->buffer))) {
-      start_index = glyph_info[last_change_position].cluster;
-      if (glyph_index == num_glyphs) {
-        // Clamp the end offsets of the queue item to the offsets representing
-        // the shaping window.
-        unsigned shape_end =
-            std::min(range_data->end, current_queue_item.start_index_ +
-                                          current_queue_item.num_characters_);
-        num_characters = shape_end - glyph_info[last_change_position].cluster;
-        num_glyphs_to_insert = num_glyphs - last_change_position;
-      } else {
-        num_characters = glyph_info[glyph_index].cluster -
-                         glyph_info[last_change_position].cluster;
-        num_glyphs_to_insert = glyph_index - last_change_position;
-      }
+  // End of the run.
+  if (current_cluster_result != previous_cluster_result &&
+      previous_cluster_result != kUnknown && !is_last_resort) {
+    // The last cluster in the run still had shaping status different from
+    // the cluster(s) before it, we need to submit one shaped and one
+    // unshaped segment.
+    if (current_cluster_result == kShaped) {
+      BufferSlice slice = ComputeSlice(
+          range_data, current_queue_item, glyph_info, num_glyphs,
+          last_change_glyph_index, previous_cluster_start_glyph_index);
+      QueueCharacters(range_data, current_font, font_cycle_queued, slice);
+      slice =
+          ComputeSlice(range_data, current_queue_item, glyph_info, num_glyphs,
+                       previous_cluster_start_glyph_index, num_glyphs);
+      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
+                   slice, shape_result);
     } else {
-      // Direction Backwards
-      start_index = glyph_info[glyph_index - 1].cluster;
-      if (last_change_position == 0) {
-        // Clamp the end offsets of the queue item to the offsets representing
-        // the shaping window.
-        unsigned shape_end =
-            std::min(range_data->end, current_queue_item.start_index_ +
-                                          current_queue_item.num_characters_);
-        num_characters = shape_end - glyph_info[glyph_index - 1].cluster;
-      } else {
-        num_characters = glyph_info[last_change_position - 1].cluster -
-                         glyph_info[glyph_index - 1].cluster;
-      }
-      num_glyphs_to_insert = glyph_index - last_change_position;
+      BufferSlice slice = ComputeSlice(
+          range_data, current_queue_item, glyph_info, num_glyphs,
+          last_change_glyph_index, previous_cluster_start_glyph_index);
+      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
+                   slice, shape_result);
+      slice =
+          ComputeSlice(range_data, current_queue_item, glyph_info, num_glyphs,
+                       previous_cluster_start_glyph_index, num_glyphs);
+      QueueCharacters(range_data, current_font, font_cycle_queued, slice);
     }
-
-    if (current_cluster_result == kShaped && !is_last_resort) {
-      // Now it's clear that we need to continue processing.
-      if (!font_cycle_queued) {
-        range_data->holes_queue.push_back(
-            HolesQueueItem(kHolesQueueNextFont, 0, 0));
-        font_cycle_queued = true;
-      }
-
-      // Here we need to put character positions.
-      DCHECK(num_characters);
-      range_data->holes_queue.push_back(
-          HolesQueueItem(kHolesQueueRange, start_index, num_characters));
+  } else {
+    // There hasn't been a state change for the last cluster, so we can just
+    // either commit or queue what we have up until here.
+    BufferSlice slice =
+        ComputeSlice(range_data, current_queue_item, glyph_info, num_glyphs,
+                     last_change_glyph_index, num_glyphs);
+    if (current_cluster_result == kNotDef && !is_last_resort) {
+      QueueCharacters(range_data, current_font, font_cycle_queued, slice);
+    } else {
+      CommitGlyphs(range_data, current_font, current_run_script, is_last_resort,
+                   slice, shape_result);
     }
-
-    // If numCharacters is 0, that means we hit a NotDef before shaping the
-    // whole grapheme. We do not append it here. For the next glyph we
-    // encounter, atChange will be true, and the characters corresponding to
-    // the grapheme will be added to the TODO queue again, attempting to
-    // shape the whole grapheme with the next font.
-    // When we're getting here with the last resort font, we have no other
-    // choice than adding boxes to the ShapeResult.
-    if ((current_cluster_result == kNotDef && num_characters) ||
-        is_last_resort) {
-      hb_direction_t direction = range_data->HarfBuzzDirection(current_font);
-      // Here we need to specify glyph positions.
-      ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
-          current_font, direction, ICUScriptToHBScript(current_run_script),
-          start_index, num_glyphs_to_insert, num_characters);
-      shape_result->InsertRun(WTF::WrapUnique(run), last_change_position,
-                              num_glyphs_to_insert, range_data->buffer);
-      range_data->font->ReportNotDefGlyph();
-    }
-    last_change_position = glyph_index;
   }
 }
 
@@ -360,16 +421,16 @@ static inline const SimpleFontData* FontDataAdjustedForOrientation(
 }
 
 bool HarfBuzzShaper::CollectFallbackHintChars(
-    const Deque<HolesQueueItem>& holes_queue,
+    const Deque<ReshapeQueueItem>& reshape_queue,
     Vector<UChar32>& hint) const {
-  if (!holes_queue.size())
+  if (!reshape_queue.size())
     return false;
 
   hint.clear();
 
   size_t num_chars_added = 0;
-  for (auto it = holes_queue.begin(); it != holes_queue.end(); ++it) {
-    if (it->action_ == kHolesQueueNextFont)
+  for (auto it = reshape_queue.begin(); it != reshape_queue.end(); ++it) {
+    if (it->action_ == kReshapeQueueNextFont)
       break;
 
     UChar32 hint_char;
@@ -388,8 +449,8 @@ namespace {
 
 void SplitUntilNextCaseChange(
     const UChar* normalized_buffer,
-    Deque<blink::HolesQueueItem>* queue,
-    blink::HolesQueueItem& current_queue_item,
+    Deque<blink::ReshapeQueueItem>* queue,
+    blink::ReshapeQueueItem& current_queue_item,
     SmallCapsIterator::SmallCapsBehavior& small_caps_behavior) {
   unsigned num_characters_until_case_change = 0;
   SmallCapsIterator small_caps_iterator(
@@ -399,8 +460,8 @@ void SplitUntilNextCaseChange(
                               &small_caps_behavior);
   if (num_characters_until_case_change > 0 &&
       num_characters_until_case_change < current_queue_item.num_characters_) {
-    queue->push_front(blink::HolesQueueItem(
-        blink::HolesQueueItemAction::kHolesQueueRange,
+    queue->push_front(blink::ReshapeQueueItem(
+        blink::ReshapeQueueItemAction::kReshapeQueueRange,
         current_queue_item.start_index_ + num_characters_until_case_change,
         current_queue_item.num_characters_ - num_characters_until_case_change));
     current_queue_item.num_characters_ = num_characters_until_case_change;
@@ -686,35 +747,36 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
   RefPtr<FontFallbackIterator> fallback_iterator =
       font->CreateFontFallbackIterator(segment.font_fallback_priority);
 
-  range_data->holes_queue.push_back(HolesQueueItem(kHolesQueueNextFont, 0, 0));
-  range_data->holes_queue.push_back(HolesQueueItem(
-      kHolesQueueRange, segment.start, segment.end - segment.start));
+  range_data->reshape_queue.push_back(
+      ReshapeQueueItem(kReshapeQueueNextFont, 0, 0));
+  range_data->reshape_queue.push_back(ReshapeQueueItem(
+      kReshapeQueueRange, segment.start, segment.end - segment.start));
 
   bool font_cycle_queued = false;
   Vector<UChar32> fallback_chars_hint;
   RefPtr<FontDataForRangeSet> current_font_data_for_range_set;
-  while (range_data->holes_queue.size()) {
-    HolesQueueItem current_queue_item = range_data->holes_queue.TakeFirst();
+  while (range_data->reshape_queue.size()) {
+    ReshapeQueueItem current_queue_item = range_data->reshape_queue.TakeFirst();
 
-    if (current_queue_item.action_ == kHolesQueueNextFont) {
+    if (current_queue_item.action_ == kReshapeQueueNextFont) {
       // For now, we're building a character list with which we probe
       // for needed fonts depending on the declared unicode-range of a
       // segmented CSS font. Alternatively, we can build a fake font
       // for the shaper and check whether any glyphs were found, or
       // define a new API on the shaper which will give us coverage
       // information?
-      if (!CollectFallbackHintChars(range_data->holes_queue,
+      if (!CollectFallbackHintChars(range_data->reshape_queue,
                                     fallback_chars_hint)) {
         // Give up shaping since we cannot retrieve a font fallback
         // font without a hintlist.
-        range_data->holes_queue.clear();
+        range_data->reshape_queue.clear();
         break;
       }
 
       current_font_data_for_range_set =
           fallback_iterator->Next(fallback_chars_hint);
       if (!current_font_data_for_range_set->FontData()) {
-        DCHECK(!range_data->holes_queue.size());
+        DCHECK(!range_data->reshape_queue.size());
         break;
       }
       font_cycle_queued = false;
@@ -730,7 +792,7 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
           font_data->PlatformData().GetHarfBuzzFace(),
           font_description.VariantCaps(), ICUScriptToHBScript(segment.script));
       if (caps_support.NeedsRunCaseSplitting()) {
-        SplitUntilNextCaseChange(text_, &range_data->holes_queue,
+        SplitUntilNextCaseChange(text_, &range_data->reshape_queue,
                                  current_queue_item, small_caps_behavior);
       }
     }

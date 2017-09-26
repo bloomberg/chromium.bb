@@ -407,6 +407,15 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetArabic) {
   ASSERT_NEAR(result->Width(), result->PositionForOffset(0), 0.1);
 }
 
+TEST_F(HarfBuzzShaperTest, EmojiZWJSequence) {
+  UChar emoji_zwj_sequence[] = {0x270C, 0x200D, 0xD83C, 0xDFFF,
+                                0x270C, 0x200D, 0xD83C, 0xDFFC};
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(emoji_zwj_sequence, arraysize(emoji_zwj_sequence));
+  RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
+}
+
 // A Value-Parameterized Test class to test OffsetForPosition() with
 // |include_partial_glyphs| parameter.
 class IncludePartialGlyphs : public HarfBuzzShaperTest,
