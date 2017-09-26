@@ -78,10 +78,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabReloader);
 // BrowserInstantController ---------------------------------------------------
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
-    : browser_(browser),
-      instant_(this) {
-  browser_->search_model()->AddObserver(this);
-
+    : browser_(browser), search_delegate_(&search_model_), instant_(this) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
   // TemplateURLService can be null in tests.
@@ -95,9 +92,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   }
 }
 
-BrowserInstantController::~BrowserInstantController() {
-  browser_->search_model()->RemoveObserver(this);
-}
+BrowserInstantController::~BrowserInstantController() = default;
 
 Profile* BrowserInstantController::profile() const {
   return browser_->profile();
@@ -107,13 +102,21 @@ content::WebContents* BrowserInstantController::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-void BrowserInstantController::ActiveTabChanged() {
+void BrowserInstantController::OnTabActivated(
+    content::WebContents* web_contents) {
+  // Note: Order matters, |search_delegate_| must be notified first.
+  search_delegate_.OnTabActivated(web_contents);
   instant_.ActiveTabChanged();
 }
 
-void BrowserInstantController::ModelChanged(SearchModel::Origin old_origin,
-                                            SearchModel::Origin new_origin) {
-  instant_.SearchModeChanged(old_origin, new_origin);
+void BrowserInstantController::OnTabDeactivated(
+    content::WebContents* web_contents) {
+  search_delegate_.OnTabDeactivated(web_contents);
+}
+
+void BrowserInstantController::OnTabDetached(
+    content::WebContents* web_contents) {
+  search_delegate_.OnTabDetached(web_contents);
 }
 
 void BrowserInstantController::OnSearchEngineBaseURLChanged(

@@ -15,6 +15,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,17 +41,26 @@ class InstantController::TabObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TabObserver);
 };
 
-InstantController::InstantController(BrowserInstantController* browser)
-    : browser_(browser), search_origin_(SearchModel::Origin::DEFAULT) {}
+InstantController::InstantController(
+    BrowserInstantController* browser_instant_controller)
+    : browser_instant_controller_(browser_instant_controller) {
+  browser_instant_controller_->search_model()->AddObserver(this);
+}
 
-InstantController::~InstantController() = default;
+InstantController::~InstantController() {
+  browser_instant_controller_->search_model()->RemoveObserver(this);
+}
 
-void InstantController::SearchModeChanged(SearchModel::Origin old_origin,
-                                          SearchModel::Origin new_origin) {
-  LogDebugEvent(base::StringPrintf("SearchModeChanged: %d to %d", old_origin,
-                                   new_origin));
+void InstantController::ModelChanged(SearchModel::Origin old_origin,
+                                     SearchModel::Origin new_origin) {
+  // The search mode in the active tab has changed. Bind |instant_tab_observer_|
+  // if the |new_origin| reflects an Instant NTP.
+  // Note: This can be called either because the SearchMode changed within the
+  // current tab, or because the active tab changed. In the latter case, this
+  // gets called before ActiveTabChanged().
+  LogDebugEvent(
+      base::StringPrintf("ModelChanged: %d to %d", old_origin, new_origin));
 
-  search_origin_ = new_origin;
   ResetInstantTab();
 }
 
@@ -85,8 +95,13 @@ void InstantController::InstantTabAboutToNavigateMainFrame() {
 }
 
 void InstantController::ResetInstantTab() {
-  if (search_origin_ == SearchModel::Origin::NTP) {
-    content::WebContents* active_tab = browser_->GetActiveWebContents();
+  content::WebContents* active_tab =
+      browser_instant_controller_->GetActiveWebContents();
+  if (active_tab &&
+      SearchTabHelper::FromWebContents(active_tab)->model()->origin() ==
+          SearchModel::Origin::NTP) {
+    // The active tab is an NTP. If we're not already tracking it, do so and
+    // also update the required info.
     if (!instant_tab_observer_ ||
         active_tab != instant_tab_observer_->web_contents()) {
       instant_tab_observer_ = base::MakeUnique<TabObserver>(
@@ -96,14 +111,14 @@ void InstantController::ResetInstantTab() {
       UpdateInfoForInstantTab();
     }
   } else {
-    instant_tab_observer_.reset();
+    instant_tab_observer_ = nullptr;
   }
 }
 
 void InstantController::UpdateInfoForInstantTab() {
   DCHECK(instant_tab_observer_);
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_->profile());
+  InstantService* instant_service = InstantServiceFactory::GetForProfile(
+      browser_instant_controller_->profile());
   if (instant_service) {
     instant_service->UpdateThemeInfo();
     instant_service->UpdateMostVisitedItemsInfo();
