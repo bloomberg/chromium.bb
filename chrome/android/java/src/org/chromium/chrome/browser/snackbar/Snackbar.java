@@ -58,6 +58,7 @@ public class Snackbar {
     public static final int UMA_TRANSLATE_ALWAYS = 18;
     public static final int UMA_TRANSLATE_NEVER = 19;
     public static final int UMA_TRANSLATE_NEVER_SITE = 20;
+    public static final int UMA_SNIPPET_FETCH_FAILED = 21;
 
     private SnackbarController mController;
     private CharSequence mText;

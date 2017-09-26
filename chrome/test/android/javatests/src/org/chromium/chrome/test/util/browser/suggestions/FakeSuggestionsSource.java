@@ -243,7 +243,8 @@ public class FakeSuggestionsSource implements SuggestionsSource {
 
     @Override
     public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds,
-            Callback<List<SnippetArticle>> callback) {}
+            Callback<List<SnippetArticle>> successCallback, Runnable failureRunnable) {
+    }
 
     @Override
     public void fetchContextualSuggestions(String url, Callback<List<SnippetArticle>> callback) {

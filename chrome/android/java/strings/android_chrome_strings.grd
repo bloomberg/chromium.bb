@@ -2406,6 +2406,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_NTP_ALL_DISMISSED_BODY_TEXT_MODERN" desc="Body text shown on the New Tab Page when all suggested content has been dismissed. The message refers to the &quot;More&quot; button to fetch more suggestions.">
         Tap More to get articles
       </message>
+      <message name="IDS_NTP_SUGGESTIONS_FETCH_FAILED" desc="Snackbar text shown when the user presses the More button to get more suggestions, but this fails (eg, no internet connectivity).">
+        Unable to get suggestions
+      </message>
       <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
         Refresh
       </message>

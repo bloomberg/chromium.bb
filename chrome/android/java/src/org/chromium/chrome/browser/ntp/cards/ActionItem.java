@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
 
@@ -14,6 +15,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -114,8 +117,14 @@ public class ActionItem extends OptionalLeaf {
         return mState;
     }
 
+    /**
+     * Perform the Action associated with this ActionItem.
+     * @param uiDelegate A {@link SuggestionsUiDelegate} to provide context.
+     * @param onFailure A {@link Runnable} that will be run if the action was to fetch more
+     *                  suggestions but that action failed.
+     */
     @VisibleForTesting
-    void performAction(SuggestionsUiDelegate uiDelegate) {
+    void performAction(SuggestionsUiDelegate uiDelegate, @Nullable Runnable onFailure) {
         assert mState == State.BUTTON;
 
         uiDelegate.getEventReporter().onMoreButtonClicked(this);
@@ -127,7 +136,7 @@ public class ActionItem extends OptionalLeaf {
                 mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
             case ContentSuggestionsAdditionalAction.FETCH:
-                mParentSection.fetchSuggestions();
+                mParentSection.fetchSuggestions(onFailure);
                 return;
             case ContentSuggestionsAdditionalAction.NONE:
             default:
@@ -141,15 +150,18 @@ public class ActionItem extends OptionalLeaf {
         private ActionItem mActionListItem;
         private final ProgressIndicatorView mProgressIndicator;
         private final Button mButton;
+        private final SuggestionsUiDelegate mUiDelegate;
 
         public ViewHolder(SuggestionsRecyclerView recyclerView,
-                ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
+                ContextMenuManager contextMenuManager, final SuggestionsUiDelegate uiDelegate,
                 UiConfig uiConfig) {
             super(getLayout(), recyclerView, uiConfig, contextMenuManager);
 
             mProgressIndicator = itemView.findViewById(R.id.progress_indicator);
             mButton = itemView.findViewById(R.id.action_button);
-            mButton.setOnClickListener(v -> mActionListItem.performAction(uiDelegate));
+            mUiDelegate = uiDelegate;
+            mButton.setOnClickListener(v -> mActionListItem.performAction(uiDelegate,
+                    this::showFetchFailureSnackbar));
 
             new ImpressionTracker(itemView, () -> {
                 if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
@@ -157,6 +169,15 @@ public class ActionItem extends OptionalLeaf {
                     uiDelegate.getEventReporter().onMoreButtonShown(mActionListItem);
                 }
             });
+        }
+
+        private void showFetchFailureSnackbar() {
+            mUiDelegate.getSnackbarManager().showSnackbar(Snackbar.make(
+                    itemView.getResources().getString(R.string.ntp_suggestions_fetch_failed),
+                    new SnackbarManager.SnackbarController() { },
+                    Snackbar.TYPE_ACTION,
+                    Snackbar.UMA_SNIPPET_FETCH_FAILED)
+            );
         }
 
         public void onBindViewHolder(ActionItem item) {

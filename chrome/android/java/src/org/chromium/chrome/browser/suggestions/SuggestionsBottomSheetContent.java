@@ -89,7 +89,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                 new TileGroupDelegateImpl(activity, profile, navigationDelegate, snackbarManager);
         mSuggestionsUiDelegate = new SuggestionsUiDelegateImpl(
                 depsFactory.createSuggestionSource(profile), depsFactory.createEventReporter(),
-                navigationDelegate, profile, sheet, activity.getReferencePool());
+                navigationDelegate, profile, sheet, activity.getReferencePool(), snackbarManager);
 
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.suggestions_bottom_sheet_content, null);

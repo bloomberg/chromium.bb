@@ -35729,6 +35729,7 @@ from previous Chrome versions.
   <int value="18" label="TRANSLATE_ALWAYS"/>
   <int value="19" label="TRANSLATE_NEVER"/>
   <int value="20" label="TRANSLATE_NEVER_SITE"/>
+  <int value="21" label="SNIPPET_FETCH_FAILED"/>
 </enum>
 
 <enum name="SnippetOpenMethod">
