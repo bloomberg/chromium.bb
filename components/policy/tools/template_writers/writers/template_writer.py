@@ -91,21 +91,44 @@ class TemplateWriter(object):
     '''Checks if the given policy can be mandatory.'''
     return policy.get('features', {}).get('can_be_mandatory', True)
 
-  def IsPolicySupportedOnPlatform(self, policy, platform, product=None):
-    '''Checks if |policy| is supported on |product| for |platform|. If not
-    specified, only the platform support is checked.
+  def IsPolicySupportedOnPlatform(
+      self, policy, platform, product=None, management=None):
+    '''Checks if |policy| is supported on |product| for |platform|. If
+    |platform| is not specified, only the platform support is checked.
+    If |management| is specified, also checks for support for Chrome OS
+    management type.
 
     Args:
       policy: The dictionary of the policy.
-      platform: The platform to check; one of 'win', 'mac', 'linux' or
-        'chrome_os'.
-      product: Optional product to check; one of 'chrome', 'chrome_frame',
-        'chrome_os', 'webview'
+      platform: The platform to check; one of
+        'win', 'mac', 'linux', 'chrome_os', 'android'.
+      product: Optional product to check; one of
+        'chrome', 'chrome_frame', 'chrome_os', 'webview'.
+      management: Optional Chrome OS management type to check; one of
+        'active_directory', 'google_cloud'.
     '''
-    is_supported = lambda x: (platform in x['platforms'] and
-                             (not product or product in x['product']))
+    if management and not self.IsCrOSManagementSupported(policy, management):
+      return False
 
-    return any(filter(is_supported, policy['supported_on']))
+    for supported_on in policy['supported_on']:
+      if platform in supported_on['platforms'] and \
+          (not product or product in supported_on['product']):
+        return True
+
+    return False
+
+  def IsCrOSManagementSupported(self, policy, management):
+    '''Checks whether |policy| supports the Chrome OS |management| type.
+
+    Args:
+      policy: The dictionary of the policy.
+      management: Chrome OS management type to check; one of
+        'active_directory', 'google_cloud'.
+    '''
+    # By default, i.e. if supported_chrome_os_management is not set, all
+    # management types are supported.
+    return management in policy.get('supported_chrome_os_management',
+                                    ['active_directory', 'google_cloud'])
 
   def _GetChromiumVersionString(self):
     '''Returns the Chromium version string stored in the environment variable

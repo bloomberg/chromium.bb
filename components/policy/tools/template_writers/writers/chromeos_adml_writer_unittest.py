@@ -47,6 +47,25 @@ class ChromeOsAdmlWriterUnittest(
       ]
     }))
 
+  def testOnlySupportsAdPolicies(self):
+    # Tests whether only Active Directory managed policies are supported (Google
+    # cloud only managed polices are not put in the ADMX file).
+    policy = {
+      'name': 'PolicyName',
+      'supported_on': [{
+        'product': 'chrome_os',
+        'platforms': ['chrome_os'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+    }
+    self.assertTrue(self.writer.IsPolicySupported(policy))
+
+    policy['supported_chrome_os_management'] = ['google_cloud']
+    self.assertFalse(self.writer.IsPolicySupported(policy))
+
+    policy['supported_chrome_os_management'] = ['active_directory']
+    self.assertTrue(self.writer.IsPolicySupported(policy))
 
 if __name__ == '__main__':
   unittest.main()

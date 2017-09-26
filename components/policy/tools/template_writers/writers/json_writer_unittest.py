@@ -46,7 +46,7 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     '''Compares the output of the json_writer with its expected output.
 
     Args:
-      output: The output of the json writer as returned by grit.
+      output: The output of the json writer.
       expected_output: The expected output.
 
     Raises:

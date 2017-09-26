@@ -26,7 +26,7 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     '''Compares the output of the reg_writer with its expected output.
 
     Args:
-      output: The output of the reg writer as returned by grit.
+      output: The output of the reg writer.
       expected_output: The expected output.
 
     Raises:

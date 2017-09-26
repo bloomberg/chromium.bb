@@ -77,7 +77,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       'doc_note': {'text': '_test_note'},
       'doc_name_column_title': {'text': '_test_name_column_title'},
       'doc_not_supported': {'text': '_test_not_supported'},
-      'doc_since_version': {'text': '_test_since_version'},
+      'doc_since_version': {'text': '..$6..'},
       'doc_supported': {'text': '_test_supported'},
       'doc_supported_features': {'text': '_test_supported_features'},
       'doc_supported_on': {'text': '_test_supported_on'},
@@ -454,7 +454,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'example_value': False,
       'arc_support': 'TestArcSupportNote'
     }
-    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -474,10 +473,10 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
-          '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
-          '<li>Chrome (Android) ...30...</li>'
-          '<li>WebView (Android) ...47...</li>'
-          '<li>Chrome (Chrome OS) ...55...</li>'
+          '<li>Chrome (Windows, Mac, Linux) ..8..</li>'
+          '<li>Chrome (Android) ..30..</li>'
+          '<li>WebView (Android) ..47..</li>'
+          '<li>Chrome (Chrome OS) ..55..</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -507,7 +506,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': False
     }
-    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -519,7 +517,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
-          '<li>Chrome (Linux) ...8...</li>'
+          '<li>Chrome (Linux) ..8..</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -547,7 +545,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': { 'foo': 123 }
     }
-    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -563,7 +560,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
-          '<li>Chrome (Windows, Mac, Linux, Chrome OS) ...8...</li>'
+          '<li>Chrome (Windows, Mac, Linux, Chrome OS) ..8..</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -691,7 +688,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       },
       'example_value': False
     }
-    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
     self.writer._AddPolicyDetails(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -709,9 +705,9 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
-          '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
-          '<li>Chrome (Android) ...30...</li>'
-          '<li>Chrome (Chrome OS) ...53...</li>'
+          '<li>Chrome (Windows, Mac, Linux) ..8..</li>'
+          '<li>Chrome (Android) ..30..</li>'
+          '<li>Chrome (Chrome OS) ..53..</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -788,7 +784,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': 'False'
     }
-    self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -850,7 +845,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': 123
     }
-    self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -895,7 +889,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': 123
     }
-    self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -940,7 +933,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': 123
     }
-    self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
@@ -985,7 +977,6 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'features': {'dynamic_refresh': False},
       'example_value': 123
     }
-    self.writer.messages['doc_since_version'] = {'text': '..$6..'}
     self.writer._AddPolicySection(self.doc_root, policy)
     self.assertTrue(self.writer.IsPolicySupportedOnPlatform(policy, 'android'))
     self.assertEquals(
@@ -1144,6 +1135,97 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.assertEquals(
         self.doc_root.toxml(),
         '<root><p>Paragraph 1</p><p>Paragraph 2</p><p>Paragraph 3</p></root>')
+
+  def testGoogleCloudChromeOsPolicies(self):
+    # Tests whether Chrome OS policies with management type 'google_cloud'
+    # don't print example values etc. since they are managed through Google's
+    # CPanel/DPanel, not Active Directory GPO.
+    policy = {
+      'name': 'PolicyName',
+      'caption': 'PolicyCaption',
+      'desc': 'PolicyDesc',
+      'type': 'int',
+      'features': {},
+      'example_value': 42,
+      'supported_on': [{
+        'product': 'chrome_os',
+        'platforms': ['chrome_os'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+      'supported_chrome_os_management': ['google_cloud']
+    }
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root>'
+        '<div style="margin-left: 0px">'
+          '<h3><a name="PolicyName"/>PolicyName</h3>'
+          '<span>PolicyCaption</span>'
+          '<dl>'
+            '<dt style="style_dt;">_test_data_type</dt>'
+            '<dd>Integer</dd>'
+            '<dt style="style_dt;">_test_supported_on</dt>'
+            '<dd>'
+              '<ul style="style_ul;">'
+                '<li>Chrome OS (Chrome OS) ..8..</li>'
+              '</ul>'
+            '</dd>'
+            '<dt style="style_dt;">_test_supported_features</dt>'
+            '<dd></dd>'
+            '<dt style="style_dt;">_test_description</dt>'
+            '<dd><p>PolicyDesc</p></dd>'
+          '</dl>'
+          '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+      '</root>')
+
+  def testActiveDirectoryChromeOsPolicies(self):
+    # Tests whether Chrome OS policies with management type 'active_directory'
+    # print example values etc.
+    policy = {
+      'name': 'PolicyName',
+      'caption': 'PolicyCaption',
+      'desc': 'PolicyDesc',
+      'type': 'int',
+      'features': {},
+      'example_value': 42,
+      'supported_on': [{
+        'product': 'chrome_os',
+        'platforms': ['chrome_os'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+      'supported_chrome_os_management': ['active_directory']
+    }
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root>'
+        '<div style="margin-left: 0px">'
+          '<h3><a name="PolicyName"/>PolicyName</h3>'
+          '<span>PolicyCaption</span>'
+          '<dl>'
+            '<dt style="style_dt;">_test_data_type</dt>'
+            '<dd>Integer [Windows:REG_DWORD]</dd>'
+            '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+            '<dd style="style_.monospace;">MockKeyCrOS\\PolicyName</dd>'
+            '<dt style="style_dt;">_test_supported_on</dt>'
+            '<dd>'
+              '<ul style="style_ul;">'
+                '<li>Chrome OS (Chrome OS) ..8..</li>'
+              '</ul>'
+            '</dd>'
+            '<dt style="style_dt;">_test_supported_features</dt>'
+            '<dd></dd>'
+            '<dt style="style_dt;">_test_description</dt>'
+            '<dd><p>PolicyDesc</p></dd>'
+            '<dt style="style_dt;">_test_example_value</dt>'
+            '<dd>0x0000002a (Windows)</dd>'
+          '</dl>'
+          '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+      '</root>')
 
 if __name__ == '__main__':
   unittest.main()
