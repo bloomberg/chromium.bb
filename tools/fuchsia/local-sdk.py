@@ -43,7 +43,7 @@ def main(args):
   os.chdir(fuchsia_root)
   Run('scripts/build-zircon.sh', '-t', 'x86_64')
   Run('scripts/build-zircon.sh', '-t', 'aarch64')
-  Run('packages/gn/gen.py', '--target_cpu=x86-64', '--modules=sdk',
+  Run('packages/gn/gen.py', '--target_cpu=x86-64', '--modules=packages/gn/sdk',
       '--ignore-skia', '--release')
   Run('packages/gn/build.py', '--release')
   tempdir = tempfile.mkdtemp()
