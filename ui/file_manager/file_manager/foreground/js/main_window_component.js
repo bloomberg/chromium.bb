@@ -137,6 +137,7 @@ function MainWindowComponent(
   this.onDriveConnectionChanged_();
   document.addEventListener('keydown', this.onKeyDown_.bind(this));
   document.addEventListener('keyup', this.onKeyUp_.bind(this));
+  window.addEventListener('focus', this.onWindowFocus_.bind(this));
 
   /**
    * Whether to allow touch-specific interaction.
@@ -478,4 +479,17 @@ MainWindowComponent.prototype.onDriveConnectionChanged_ = function() {
   this.ui_.dialogContainer.setAttribute('connection', connection.type);
   this.ui_.shareDialog.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
   this.ui_.suggestAppsDialog.onDriveConnectionChanged(connection.type);
+};
+
+/**
+ * @private
+ */
+MainWindowComponent.prototype.onWindowFocus_ = function() {
+  // When the window have got a focus while the current directory is Recent
+  // root, refresh the contents.
+  if (this.directoryModel_.getCurrentRootType() ===
+      VolumeManagerCommon.RootType.RECENT) {
+    this.directoryModel_.rescan(true /* refresh */);
+    // Do not start the spinner here to silently refresh the contents.
+  }
 };
