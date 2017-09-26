@@ -2251,6 +2251,7 @@ void Document::UpdateStyle() {
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
 
+  View()->UpdateCountersAfterStyleChange();
   View()->RecalcOverflowAfterStyleChange();
 
   ClearChildNeedsStyleRecalc();

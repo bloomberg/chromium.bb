@@ -30,6 +30,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/ViewFragmentationContext.h"
@@ -951,6 +952,23 @@ void LayoutView::StyleWillChange(StyleDifference diff,
         Compositor()->SetNeedsUpdateFixedBackground();
       }
     }
+  }
+}
+
+void LayoutView::UpdateCounters() {
+  if (!needs_counter_update_)
+    return;
+
+  needs_counter_update_ = false;
+  if (!HasLayoutCounters())
+    return;
+
+  for (LayoutObject* layout_object = this; layout_object;
+       layout_object = layout_object->NextInPreOrder()) {
+    if (!layout_object->IsCounter())
+      continue;
+
+    ToLayoutCounter(layout_object)->UpdateCounter();
   }
 }
 

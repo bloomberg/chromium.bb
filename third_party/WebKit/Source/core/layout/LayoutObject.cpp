@@ -1541,14 +1541,14 @@ void LayoutObject::SetStyle(RefPtr<ComputedStyle> style) {
   RefPtr<ComputedStyle> old_style = std::move(style_);
   SetStyleInternal(std::move(style));
 
-  UpdateFillImages(old_style ? &old_style->BackgroundLayers() : 0,
+  UpdateFillImages(old_style ? &old_style->BackgroundLayers() : nullptr,
                    style_->BackgroundLayers());
-  UpdateFillImages(old_style ? &old_style->MaskLayers() : 0,
+  UpdateFillImages(old_style ? &old_style->MaskLayers() : nullptr,
                    style_->MaskLayers());
 
-  UpdateImage(old_style ? old_style->BorderImage().GetImage() : 0,
+  UpdateImage(old_style ? old_style->BorderImage().GetImage() : nullptr,
               style_->BorderImage().GetImage());
-  UpdateImage(old_style ? old_style->MaskBoxImage().GetImage() : 0,
+  UpdateImage(old_style ? old_style->MaskBoxImage().GetImage() : nullptr,
               style_->MaskBoxImage().GetImage());
 
   StyleImage* new_content_image =
@@ -1570,10 +1570,12 @@ void LayoutObject::SetStyle(RefPtr<ComputedStyle> style) {
           : nullptr;
   UpdateImage(old_box_reflect_mask_image, new_box_reflect_mask_image);
 
-  UpdateShapeImage(old_style ? old_style->ShapeOutside() : 0,
+  UpdateShapeImage(old_style ? old_style->ShapeOutside() : nullptr,
                    style_->ShapeOutside());
   UpdateCursorImages(old_style ? old_style->Cursors() : nullptr,
                      style_->Cursors());
+
+  CheckCounterChanges(old_style.Get(), style_.Get());
 
   bool does_not_need_layout_or_paint_invalidation = !parent_;
 
@@ -1773,8 +1775,6 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     return;
 
   if (diff.NeedsFullLayout()) {
-    LayoutCounter::LayoutObjectStyleChanged(*this, old_style, *style_);
-
     // If the in-flow state of an element is changed, disable scroll
     // anchoring on the containing scroller.
     if (old_style->HasOutOfFlowPosition() != style_->HasOutOfFlowPosition())
@@ -1958,6 +1958,20 @@ void LayoutObject::UpdateShapeImage(const ShapeValue* old_shape_value,
   if (old_shape_value || new_shape_value)
     UpdateImage(old_shape_value ? old_shape_value->GetImage() : 0,
                 new_shape_value ? new_shape_value->GetImage() : 0);
+}
+
+void LayoutObject::CheckCounterChanges(const ComputedStyle* old_style,
+                                       const ComputedStyle* new_style) {
+  DCHECK(new_style);
+  if (old_style) {
+    if (old_style->CounterDirectivesEqual(*new_style))
+      return;
+  } else {
+    if (!new_style->GetCounterDirectives())
+      return;
+  }
+  LayoutCounter::LayoutObjectStyleChanged(*this, old_style, *new_style);
+  View()->SetNeedsCounterUpdate();
 }
 
 LayoutRect LayoutObject::ViewRect() const {

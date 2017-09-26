@@ -1562,6 +1562,7 @@ jumbo_source_set("unit_tests") {
     "layout/LayoutTestHelper.h",
     "layout/LayoutTextTest.cpp",
     "layout/LayoutThemeTest.cpp",
+    "layout/LayoutViewTest.cpp",
     "layout/MapCoordinatesTest.cpp",
     "layout/MinMaxSizeTest.cpp",
     "layout/MultiColumnFragmentainerGroupTest.cpp",

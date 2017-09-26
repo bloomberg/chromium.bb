@@ -75,6 +75,8 @@ class LayoutViewItem : public LayoutBlockItem {
     return ToView()->ViewportSizeForViewportUnits();
   }
 
+  void UpdateCounters() { ToView()->UpdateCounters(); }
+
  private:
   LayoutView* ToView() { return ToLayoutView(GetLayoutObject()); }
   const LayoutView* ToView() const { return ToLayoutView(GetLayoutObject()); }
