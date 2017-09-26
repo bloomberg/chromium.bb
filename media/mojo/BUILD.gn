@@ -87,6 +87,7 @@ source_set("unit_tests") {
     "interfaces/video_frame_struct_traits_unittest.cc",
     "mojo_video_encode_accelerator_integration_test.cc",
     "services/mojo_audio_output_stream_unittest.cc",
+    "services/video_decode_perf_history_unittest.cc",
     "services/watch_time_recorder_unittest.cc",
   ]
 
