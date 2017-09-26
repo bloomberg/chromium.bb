@@ -600,24 +600,31 @@ typedef enum aom_scaling_mode_1d {
   AOME_ONETWO = 3
 } AOM_SCALING_MODE;
 
+/*!\brief Max number of segments
+ *
+ * This is the limit of number of segments allowed within a frame.
+ *
+ * Currently same as "MAX_SEGMENTS" in AV1, the maximum that AV1 supports.
+ *
+ */
+#define AOM_MAX_SEGMENTS 8
+
 /*!\brief  aom region of interest map
  *
  * These defines the data structures for the region of interest map
  *
+ * TODO(yaowu): create a unit test for ROI map related APIs
+ *
  */
-
 typedef struct aom_roi_map {
-  /*! An id between 0 and 3 for each 16x16 region within a frame. */
+  /*! An id between 0 and 7 for each 8x8 region within a frame. */
   unsigned char *roi_map;
-  unsigned int rows; /**< Number of rows. */
-  unsigned int cols; /**< Number of columns. */
-  // TODO(paulwilkins): broken for AV1 which has 8 segments
-  // q and loop filter deltas for each segment
-  // (see MAX_MB_SEGMENTS)
-  int delta_q[4];  /**< Quantizer deltas. */
-  int delta_lf[4]; /**< Loop filter deltas. */
+  unsigned int rows;              /**< Number of rows. */
+  unsigned int cols;              /**< Number of columns. */
+  int delta_q[AOM_MAX_SEGMENTS];  /**< Quantizer deltas. */
+  int delta_lf[AOM_MAX_SEGMENTS]; /**< Loop filter deltas. */
   /*! Static breakout threshold for each segment. */
-  unsigned int static_threshold[4];
+  unsigned int static_threshold[AOM_MAX_SEGMENTS];
 } aom_roi_map_t;
 
 /*!\brief  aom active region map
