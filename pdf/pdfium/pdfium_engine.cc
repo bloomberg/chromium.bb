@@ -1038,16 +1038,14 @@ int PDFiumEngine::GetBlock(void* param,
 FPDF_BOOL PDFiumEngine::IsDataAvail(FX_FILEAVAIL* param,
                                     size_t offset,
                                     size_t size) {
-  PDFiumEngine::FileAvail* file_avail =
-      static_cast<PDFiumEngine::FileAvail*>(param);
+  auto* file_avail = static_cast<FileAvail*>(param);
   return file_avail->engine->doc_loader_->IsDataAvailable(offset, size);
 }
 
 void PDFiumEngine::AddSegment(FX_DOWNLOADHINTS* param,
                               size_t offset,
                               size_t size) {
-  PDFiumEngine::DownloadHints* download_hints =
-      static_cast<PDFiumEngine::DownloadHints*>(param);
+  auto* download_hints = static_cast<DownloadHints*>(param);
   return download_hints->engine->doc_loader_->RequestData(offset, size);
 }
 
@@ -1105,7 +1103,6 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
   pp::Rect leftover = rect;
   for (size_t i = 0; i < visible_pages_.size(); ++i) {
     int index = visible_pages_[i];
-    pp::Rect page_rect = pages_[index]->rect();
     // Convert the current page's rectangle to screen rectangle.  We do this
     // instead of the reverse (converting the dirty rectangle from screen to
     // page coordinates) because then we'd have to convert back to screen
@@ -1444,9 +1441,9 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
 }
 
 uint32_t PDFiumEngine::QuerySupportedPrintOutputFormats() {
-  if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
+  if (HasPermission(PERMISSION_PRINT_HIGH_QUALITY))
     return PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_RASTER;
-  if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY))
     return PP_PRINTOUTPUTFORMAT_RASTER;
   return 0;
 }
@@ -1460,11 +1457,11 @@ pp::Resource PDFiumEngine::PrintPages(
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings) {
   ScopedSubstFont scoped_subst_font(this);
-  if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY) &&
-      (print_settings.format & PP_PRINTOUTPUTFORMAT_PDF)) {
+  if ((print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
+      HasPermission(PERMISSION_PRINT_HIGH_QUALITY)) {
     return PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
   }
-  if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY))
     return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
   return pp::Resource();
 }
@@ -1643,12 +1640,10 @@ pp::Buffer_Dev PDFiumEngine::GetFlattenedPrintData(FPDF_DOCUMENT doc) {
 
   PDFiumMemBufferFileWrite output_file_write;
   if (FPDF_SaveAsCopy(doc, &output_file_write, 0)) {
-    buffer =
-        pp::Buffer_Dev(client_->GetPluginInstance(), output_file_write.size());
-    if (!buffer.is_null()) {
-      memcpy(buffer.data(), output_file_write.buffer().c_str(),
-             output_file_write.size());
-    }
+    size_t size = output_file_write.size();
+    buffer = pp::Buffer_Dev(client_->GetPluginInstance(), size);
+    if (!buffer.is_null())
+      memcpy(buffer.data(), output_file_write.buffer().c_str(), size);
   }
   return buffer;
 }
@@ -1671,13 +1666,11 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
   for (uint32_t index = 0; index < page_range_count; ++index) {
     if (!page_number_str.empty())
       page_number_str.append(",");
-    page_number_str.append(
-        base::UintToString(page_ranges[index].first_page_number + 1));
-    if (page_ranges[index].first_page_number !=
-        page_ranges[index].last_page_number) {
+    const PP_PrintPageNumberRange_Dev& range = page_ranges[index];
+    page_number_str.append(base::UintToString(range.first_page_number + 1));
+    if (range.first_page_number != range.last_page_number) {
       page_number_str.append("-");
-      page_number_str.append(
-          base::UintToString(page_ranges[index].last_page_number + 1));
+      page_number_str.append(base::UintToString(range.last_page_number + 1));
     }
   }
 
@@ -2665,9 +2658,8 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
     FPDF_WIDESTRING destination_pdf_wide =
         reinterpret_cast<FPDF_WIDESTRING>(destination_wide.c_str());
     FPDF_BOOKMARK bookmark = FPDFBookmark_Find(doc_, destination_pdf_wide);
-    if (!bookmark)
-      return -1;
-    dest = FPDFBookmark_GetDest(doc_, bookmark);
+    if (bookmark)
+      dest = FPDFBookmark_GetDest(doc_, bookmark);
   }
   return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
 }
