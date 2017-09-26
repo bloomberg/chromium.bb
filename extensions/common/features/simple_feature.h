@@ -29,8 +29,6 @@ namespace extensions {
 
 class FeatureProviderTest;
 class ExtensionAPITest;
-class ManifestUnitTest;
-class SimpleFeatureTest;
 
 class SimpleFeature : public Feature {
  public:
@@ -173,34 +171,10 @@ class SimpleFeature : public Feature {
 
  private:
   friend struct FeatureComparator;
-  friend class SimpleFeatureTest;
   FRIEND_TEST_ALL_PREFIXES(FeatureProviderTest, ManifestFeatureTypes);
   FRIEND_TEST_ALL_PREFIXES(FeatureProviderTest, PermissionFeatureTypes);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
   FRIEND_TEST_ALL_PREFIXES(FeaturesGenerationTest, FeaturesTest);
-  FRIEND_TEST_ALL_PREFIXES(ManifestUnitTest, Extension);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Blacklist);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, CommandLineSwitch);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ComplexFeatureAvailability);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Context);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, SessionType);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, FeatureValidation);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdBlacklist);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, HashedIdWhitelist);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Inheritance);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Location);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ManifestVersion);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, PackageType);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseContexts);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseLocation);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseManifestVersion);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseNull);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParsePackageTypes);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParsePlatforms);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, ParseWhitelist);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Platform);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, SimpleFeatureAvailability);
-  FRIEND_TEST_ALL_PREFIXES(SimpleFeatureTest, Whitelist);
 
   // Holds String to Enum value mappings.
   struct Mappings;

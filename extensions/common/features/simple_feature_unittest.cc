@@ -115,8 +115,7 @@ TEST_F(SimpleFeatureTest, Whitelist) {
   const HashedExtensionId kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.whitelist_.push_back(kIdFoo.value());
-  feature.whitelist_.push_back(kIdBar.value());
+  feature.set_whitelist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -148,7 +147,7 @@ TEST_F(SimpleFeatureTest, Whitelist) {
                                  Feature::UNSPECIFIED_PLATFORM)
           .result());
 
-  feature.extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
   EXPECT_EQ(
       Feature::NOT_FOUND_IN_WHITELIST,
       feature.IsAvailableToManifest(kIdBaz,
@@ -165,7 +164,7 @@ TEST_F(SimpleFeatureTest, HashedIdWhitelist) {
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.whitelist_.push_back(kIdFooHashed);
+  feature.set_whitelist({kIdFooHashed.c_str()});
 
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
@@ -202,8 +201,7 @@ TEST_F(SimpleFeatureTest, Blacklist) {
   const HashedExtensionId kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.blacklist_.push_back(kIdFoo.value());
-  feature.blacklist_.push_back(kIdBar.value());
+  feature.set_blacklist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
 
   EXPECT_EQ(
       Feature::FOUND_IN_BLACKLIST,
@@ -243,7 +241,7 @@ TEST_F(SimpleFeatureTest, HashedIdBlacklist) {
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.blacklist_.push_back(kIdFooHashed);
+  feature.set_blacklist({kIdFooHashed.c_str()});
 
   EXPECT_EQ(Feature::FOUND_IN_BLACKLIST,
             feature
@@ -277,8 +275,8 @@ TEST_F(SimpleFeatureTest, HashedIdBlacklist) {
 
 TEST_F(SimpleFeatureTest, PackageType) {
   SimpleFeature feature;
-  feature.extension_types_.push_back(Manifest::TYPE_EXTENSION);
-  feature.extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+  feature.set_extension_types(
+      {Manifest::TYPE_EXTENSION, Manifest::TYPE_LEGACY_PACKAGED_APP});
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -314,9 +312,9 @@ TEST_F(SimpleFeatureTest, PackageType) {
 TEST_F(SimpleFeatureTest, Context) {
   SimpleFeature feature;
   feature.set_name("somefeature");
-  feature.contexts_.push_back(Feature::BLESSED_EXTENSION_CONTEXT);
-  feature.extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
-  feature.platforms_.push_back(Feature::CHROMEOS_PLATFORM);
+  feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
+  feature.set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
+  feature.set_platforms({Feature::CHROMEOS_PLATFORM});
   feature.set_min_manifest_version(21);
   feature.set_max_manifest_version(25);
 
@@ -333,14 +331,13 @@ TEST_F(SimpleFeatureTest, Context) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(extension.get());
 
-  feature.whitelist_.push_back("monkey");
+  feature.set_whitelist({"monkey"});
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::CHROMEOS_PLATFORM).result());
-  feature.whitelist_.clear();
+  feature.set_whitelist({});
 
-  feature.extension_types_.clear();
-  feature.extension_types_.push_back(Manifest::TYPE_THEME);
+  feature.set_extension_types({Manifest::TYPE_THEME});
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -351,11 +348,9 @@ TEST_F(SimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.extension_types_.clear();
-  feature.extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
-  feature.contexts_.clear();
-  feature.contexts_.push_back(Feature::UNBLESSED_EXTENSION_CONTEXT);
-  feature.contexts_.push_back(Feature::CONTENT_SCRIPT_CONTEXT);
+  feature.set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
+  feature.set_contexts(
+      {Feature::UNBLESSED_EXTENSION_CONTEXT, Feature::CONTENT_SCRIPT_CONTEXT});
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -366,7 +361,9 @@ TEST_F(SimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.contexts_.push_back(Feature::WEB_PAGE_CONTEXT);
+  feature.set_contexts({Feature::UNBLESSED_EXTENSION_CONTEXT,
+                        Feature::CONTENT_SCRIPT_CONTEXT,
+                        Feature::WEB_PAGE_CONTEXT});
   {
     Feature::Availability availability = feature.IsAvailableToContext(
         extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -377,8 +374,7 @@ TEST_F(SimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.contexts_.clear();
-  feature.contexts_.push_back(Feature::BLESSED_EXTENSION_CONTEXT);
+  feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
   feature.set_location(SimpleFeature::COMPONENT_LOCATION);
   EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
@@ -388,9 +384,6 @@ TEST_F(SimpleFeatureTest, Context) {
   EXPECT_EQ(Feature::INVALID_PLATFORM, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::UNSPECIFIED_PLATFORM).result());
-
-  feature.contexts_.clear();
-  feature.contexts_.push_back(Feature::BLESSED_EXTENSION_CONTEXT);
 
   {
     Feature::Availability availability = feature.IsAvailableToContext(
@@ -403,8 +396,7 @@ TEST_F(SimpleFeatureTest, Context) {
         availability.message());
   }
 
-  feature.contexts_.clear();
-  feature.contexts_.push_back(Feature::LOCK_SCREEN_EXTENSION_CONTEXT);
+  feature.set_contexts({Feature::LOCK_SCREEN_EXTENSION_CONTEXT});
 
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
@@ -589,7 +581,7 @@ TEST_F(SimpleFeatureTest, Location) {
 
 TEST_F(SimpleFeatureTest, Platform) {
   SimpleFeature feature;
-  feature.platforms_.push_back(Feature::CHROMEOS_PLATFORM);
+  feature.set_platforms({Feature::CHROMEOS_PLATFORM});
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
                 .IsAvailableToManifest(
@@ -793,11 +785,11 @@ TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
   std::unique_ptr<ComplexFeature> complex_feature;
   {
     std::unique_ptr<SimpleFeature> feature1(new SimpleFeature());
-    feature1->channel_.reset(new Channel(Channel::BETA));
-    feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    feature1->set_channel(Channel::BETA);
+    feature1->set_extension_types({Manifest::TYPE_EXTENSION});
     std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
-    feature2->channel_.reset(new Channel(Channel::BETA));
-    feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+    feature2->set_channel(Channel::BETA);
+    feature2->set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
     std::vector<Feature*> list;
     list.push_back(feature1.release());
     list.push_back(feature2.release());
@@ -847,12 +839,12 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
   {
     // Rule: "extension", channel trunk.
     std::unique_ptr<SimpleFeature> feature1(new SimpleFeature());
-    feature1->channel_.reset(new Channel(Channel::UNKNOWN));
-    feature1->extension_types_.push_back(Manifest::TYPE_EXTENSION);
+    feature1->set_channel(Channel::UNKNOWN);
+    feature1->set_extension_types({Manifest::TYPE_EXTENSION});
     std::unique_ptr<SimpleFeature> feature2(new SimpleFeature());
     // Rule: "legacy_packaged_app", channel stable.
-    feature2->channel_.reset(new Channel(Channel::STABLE));
-    feature2->extension_types_.push_back(Manifest::TYPE_LEGACY_PACKAGED_APP);
+    feature2->set_channel(Channel::STABLE);
+    feature2->set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
     std::vector<Feature*> list;
     list.push_back(feature1.release());
     list.push_back(feature2.release());
