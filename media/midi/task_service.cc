@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 
 namespace midi {
 
@@ -139,10 +140,13 @@ scoped_refptr<base::SingleThreadTaskRunner> TaskService::GetTaskRunner(
   if (!threads_[thread]) {
     threads_[thread] = base::MakeUnique<base::Thread>(
         base::StringPrintf("MidiService_TaskService_Thread(%zu)", runner_id));
+    base::Thread::Options options;
 #if defined(OS_WIN)
     threads_[thread]->init_com_with_mta(true);
+#elif defined(OS_MACOSX)
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
 #endif
-    threads_[thread]->Start();
+    threads_[thread]->StartWithOptions(options);
   }
   return threads_[thread]->task_runner();
 }
