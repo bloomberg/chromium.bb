@@ -150,4 +150,34 @@ void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
           entries)));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateImportPasswordsFunction
+
+PasswordsPrivateImportPasswordsFunction::
+    ~PasswordsPrivateImportPasswordsFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateImportPasswordsFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  delegate->ImportPasswords(GetAssociatedWebContents());
+  return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateExportPasswordsFunction
+
+PasswordsPrivateExportPasswordsFunction::
+    ~PasswordsPrivateExportPasswordsFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateExportPasswordsFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  delegate->ExportPasswords(GetAssociatedWebContents());
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

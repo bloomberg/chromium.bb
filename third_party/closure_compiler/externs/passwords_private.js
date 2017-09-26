@@ -108,6 +108,16 @@ chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
 chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 
 /**
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-importPasswords
+ */
+chrome.passwordsPrivate.importPasswords = function() {};
+
+/**
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-exportPasswords
+ */
+chrome.passwordsPrivate.exportPasswords = function() {};
+
+/**
  * Fired when the saved passwords list has changed, meaning that an entry has
  * been added or removed.
  * @type {!ChromeEvent}

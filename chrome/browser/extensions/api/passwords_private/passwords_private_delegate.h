@@ -67,6 +67,14 @@ class PasswordsPrivateDelegate : public KeyedService {
   //     an OS-level authentication dialog if necessary.
   virtual void RequestShowPassword(size_t index,
                                    content::WebContents* web_contents) = 0;
+
+  // Trigger the password import procedure, allowing the user to select a file
+  // containing passwords to import.
+  virtual void ImportPasswords(content::WebContents* web_contents) = 0;
+
+  // Trigger the password export procedure, allowing the user to save a file
+  // containing their passwords.
+  virtual void ExportPasswords(content::WebContents* web_contents) = 0;
 };
 
 }  // namespace extensions

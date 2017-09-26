@@ -104,6 +104,16 @@ var availableTests = [
 
     chrome.passwordsPrivate.getPasswordExceptionList(callback);
   },
+
+  function importPasswords() {
+    chrome.passwordsPrivate.importPasswords();
+    chrome.test.succeed();
+  },
+
+  function exportPasswords() {
+    chrome.passwordsPrivate.exportPasswords();
+    chrome.test.succeed();
+  },
 ];
 
 var testToRun = window.location.search.substring(1);

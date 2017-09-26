@@ -126,6 +126,22 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
   void SetProfile(Profile* profile) { profile_ = profile; }
 
+  void ImportPasswords(content::WebContents* web_contents) override {
+    // The testing of password importing itself should be handled via
+    // |PasswordManagerPorter|.
+    importPasswordsTriggered = true;
+  }
+
+  void ExportPasswords(content::WebContents* web_contents) override {
+    // The testing of password exporting itself should be handled via
+    // |PasswordManagerPorter|.
+    exportPasswordsTriggered = true;
+  }
+
+  // Flags for detecting whether import/export operations have been invoked.
+  bool importPasswordsTriggered = false;
+  bool exportPasswordsTriggered = false;
+
  private:
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without
@@ -173,6 +189,14 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
                                kFlagLoadAsComponent);
   }
 
+  bool importPasswordsWasTriggered() {
+    return s_test_delegate_->importPasswordsTriggered;
+  }
+
+  bool exportPasswordsWasTriggered() {
+    return s_test_delegate_->exportPasswordsTriggered;
+  }
+
  private:
   static TestDelegate* s_test_delegate_;
 
@@ -202,6 +226,18 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetSavedPasswordList) {
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordExceptionList) {
   EXPECT_TRUE(RunPasswordsSubtest("getPasswordExceptionList")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ImportPasswords) {
+  EXPECT_FALSE(importPasswordsWasTriggered());
+  EXPECT_TRUE(RunPasswordsSubtest("importPasswords")) << message_;
+  EXPECT_TRUE(importPasswordsWasTriggered());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExportPasswords) {
+  EXPECT_FALSE(exportPasswordsWasTriggered());
+  EXPECT_TRUE(RunPasswordsSubtest("exportPasswords")) << message_;
+  EXPECT_TRUE(exportPasswordsWasTriggered());
 }
 
 }  // namespace extensions
