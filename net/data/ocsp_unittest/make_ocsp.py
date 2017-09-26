@@ -339,6 +339,13 @@ Store(
     'Uses byName to identify the signer',
     CA,
     Create(responder=GetName(CA)))
+
+# TODO(eroman): pyasn1 module has a bug in rfc2560.ResponderID() that will use
+# IMPLICIT rather than EXPLICIT tagging for byKey
+# (https://github.com/etingof/pyasn1-modules/issues/8). If using an affected
+# version of the library you will need to patch pyasn1_modules/rfc2560.py and
+# replace "implicitTag" with "explicitTag" in ResponderID to generate this
+# test data correctly.
 Store(
     'responder_id',
     'Uses byKey to identify the signer',
