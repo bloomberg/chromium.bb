@@ -38,36 +38,6 @@ def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
     return results
 
 
-def _CheckWatchlist(input_api, output_api):
-    """Check that the WATCHLIST file parses correctly."""
-    errors = []
-    for f in input_api.AffectedFiles():
-        if f.LocalPath() != 'WATCHLISTS':
-            continue
-        import StringIO
-        import logging
-        import watchlists
-
-        log_buffer = StringIO.StringIO()
-        log_handler = logging.StreamHandler(log_buffer)
-        log_handler.setFormatter(
-            logging.Formatter('%(levelname)s: %(message)s'))
-        logger = logging.getLogger()
-        logger.addHandler(log_handler)
-
-        wl = watchlists.Watchlists(input_api.change.RepositoryRoot())
-
-        logger.removeHandler(log_handler)
-        log_handler.flush()
-        log_buffer.flush()
-
-        if log_buffer.getvalue():
-            errors.append(output_api.PresubmitError(
-                'Cannot parse WATCHLISTS file, please resolve.',
-                log_buffer.getvalue().splitlines()))
-    return errors
-
-
 def _CommonChecks(input_api, output_api):
     """Checks common to both upload and commit."""
     # We should figure out what license checks we actually want to use.
@@ -78,27 +48,7 @@ def _CommonChecks(input_api, output_api):
         input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
         maxlen=800, license_header=license_header))
     results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
-    results.extend(_CheckTestExpectations(input_api, output_api))
-    results.extend(_CheckWatchlist(input_api, output_api))
     return results
-
-
-def _CheckTestExpectations(input_api, output_api):
-    local_paths = [f.LocalPath() for f in input_api.AffectedFiles()]
-    if any('LayoutTests' in path for path in local_paths):
-        lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-            'Tools', 'Scripts', 'lint-test-expectations')
-        _, errs = input_api.subprocess.Popen(
-            [input_api.python_executable, lint_path],
-            stdout=input_api.subprocess.PIPE,
-            stderr=input_api.subprocess.PIPE).communicate()
-        if not errs:
-            return [output_api.PresubmitError(
-                "lint-test-expectations failed "
-                "to produce output; check by hand. ")]
-        if errs.strip() != 'Lint succeeded.':
-            return [output_api.PresubmitError(errs)]
-    return []
 
 
 def _CheckStyle(input_api, output_api):
@@ -146,51 +96,6 @@ def _CheckForPrintfDebugging(input_api, output_api):
                     'be a good idea to drop the following occurances from '
                     'your patch before uploading:\n%s' % '\n'.join(errors))]
     return []
-
-
-def _CheckForJSTest(input_api, output_api):
-    """'js-test.js' is the past, 'testharness.js' is our glorious future"""
-    jstest_re = input_api.re.compile(r'resources/js-test.js')
-
-    def source_file_filter(path):
-        return input_api.FilterSourceFile(path,
-                                          white_list=[r'third_party/WebKit/LayoutTests/.*\.(html|js|php|pl|svg)$'])
-
-    errors = input_api.canned_checks._FindNewViolationsOfRule(
-        lambda _, x: not jstest_re.search(x), input_api, source_file_filter)
-    errors = ['  * %s' % violation for violation in errors]
-    if errors:
-        return [output_api.PresubmitPromptOrNotify(
-            '"resources/js-test.js" is deprecated; please write new layout '
-            'tests using the assertions in "resources/testharness.js" '
-            'instead, as these can be more easily upstreamed to Web Platform '
-            'Tests for cross-vendor compatibility testing. If you\'re not '
-            'already familiar with this framework, a tutorial is available at '
-            'https://darobin.github.io/test-harness-tutorial/docs/using-testharness.html'
-            '\n\n%s' % '\n'.join(errors))]
-    return []
-
-def _CheckForFailInFile(input_api, f):
-    pattern = input_api.re.compile('^FAIL')
-    errors = []
-    for line_num, line in f.ChangedContents():
-        if pattern.match(line):
-            errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
-    return errors
-
-
-def _CheckForInvalidPreferenceError(input_api, output_api):
-    pattern = input_api.re.compile('Invalid name for preference: (.+)')
-    results = []
-
-    for f in input_api.AffectedFiles():
-        if not f.LocalPath().endswith('-expected.txt'):
-            continue
-        for line_num, line in f.ChangedContents():
-            error = pattern.search(line)
-            if error:
-                results.append(output_api.PresubmitError('Found an invalid preference %s in expected result %s:%s' % (error.group(1), f, line_num)))
-    return results
 
 
 def _CheckForForbiddenNamespace(input_api, output_api):
@@ -245,8 +150,6 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
-    results.extend(_CheckForJSTest(input_api, output_api))
-    results.extend(_CheckForInvalidPreferenceError(input_api, output_api))
     results.extend(_CheckForForbiddenNamespace(input_api, output_api))
     return results
 
