@@ -187,4 +187,10 @@ using ::AutofillTypeFromAutofillUIType;
   self.countrySelectionCoordinator = nil;
 }
 
+- (void)countrySelectionCoordinatorDidReturn:
+    (CountrySelectionCoordinator*)coordinator {
+  [self.countrySelectionCoordinator stop];
+  self.countrySelectionCoordinator = nil;
+}
+
 @end

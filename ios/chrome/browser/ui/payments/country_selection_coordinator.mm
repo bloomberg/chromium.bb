@@ -7,8 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
 #include "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,7 +53,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   self.viewController =
       [[PaymentRequestPickerViewController alloc] initWithRows:rows
                                                       selected:selectedRow];
-  self.viewController.title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_COUNTRY);
   self.viewController.delegate = self;
 
   DCHECK(self.baseViewController.navigationController);
@@ -75,6 +72,11 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
             (PaymentRequestPickerViewController*)controller
                               didSelectRow:(PickerRow*)row {
   [self delayedNotifyDelegateOfSelection:row.value];
+}
+
+- (void)paymentRequestPickerViewControllerDidFinish:
+    (PaymentRequestPickerViewController*)controller {
+  [self.delegate countrySelectionCoordinatorDidReturn:self];
 }
 
 #pragma mark - Helper methods
