@@ -27,13 +27,6 @@ namespace chrome {
 namespace {
 
 class BrowserInstantControllerTest : public InstantUnitTestBase {
- public:
-  void SetUp() override {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-    InstantUnitTestBase::SetUp();
-  }
-
  protected:
   friend class FakeWebContentsObserver;
 };

@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "chrome/browser/search/search_engine_base_url_tracker.h"
 #include "chrome/browser/ui/search/instant_controller.h"
-#include "chrome/browser/ui/search/search_delegate.h"
-#include "chrome/browser/ui/search/search_model.h"
 
 class Browser;
 class Profile;
@@ -36,11 +34,6 @@ class BrowserInstantController {
 
   InstantController* instant() { return &instant_; }
 
-  SearchModel* search_model() { return &search_model_; }
-
-  // Invoked by |instant_| to get the currently active tab.
-  content::WebContents* GetActiveWebContents() const;
-
   // Invoked by |browser_| when the active tab changes.
   // TODO(treib): Implement TabStripModelObserver instead of relying on custom
   // callbacks from Browser.
@@ -53,17 +46,6 @@ class BrowserInstantController {
       SearchEngineBaseURLTracker::ChangeReason change_reason);
 
   Browser* const browser_;
-
-  // The model for the "active" search state.  There are per-tab search models
-  // as well.  When a tab is active its model is kept in sync with this one.
-  // When a new tab is activated its model state is propagated to this active
-  // model.  This way, observers only have to attach to this single model for
-  // updates, and don't have to worry about active tab changes directly.
-  SearchModel search_model_;
-
-  // A delegate that handles the details of updating the "active"
-  // |search_model_| state with the tab's state.
-  SearchDelegate search_delegate_;
 
   InstantController instant_;
 
