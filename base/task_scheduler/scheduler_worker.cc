@@ -203,7 +203,7 @@ bool SchedulerWorker::Start() {
   if (should_exit_.IsSet())
     return true;
 
-  thread_ = Thread::Create(make_scoped_refptr(this));
+  thread_ = Thread::Create(WrapRefCounted(this));
   return !!thread_;
 }
 

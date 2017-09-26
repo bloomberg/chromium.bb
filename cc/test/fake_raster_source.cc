@@ -38,7 +38,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
 
   recording_source->Rerecord();
 
-  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledWithImages(
@@ -53,7 +53,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledWithImages(
     }
   }
   recording_source->Rerecord();
-  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
@@ -73,7 +73,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
 
   recording_source->Rerecord();
 
-  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
@@ -86,7 +86,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
   recording_source->add_draw_rect_with_flags(gfx::Rect(size), red_flags);
   recording_source->Rerecord();
   auto raster_source =
-      make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+      base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
   if (!raster_source->IsSolidColor())
     ADD_FAILURE() << "Not solid color!";
   return raster_source;
@@ -113,26 +113,26 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreatePartiallyFilled(
   recording_source->Rerecord();
   recording_source->SetRecordedViewport(recorded_viewport);
 
-  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateEmpty(
     const gfx::Size& size) {
   auto recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(size);
-  return make_scoped_refptr(new FakeRasterSource(recording_source.get()));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source.get()));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFromRecordingSource(
     const RecordingSource* recording_source) {
-  return make_scoped_refptr(new FakeRasterSource(recording_source));
+  return base::WrapRefCounted(new FakeRasterSource(recording_source));
 }
 
 scoped_refptr<FakeRasterSource>
 FakeRasterSource::CreateFromRecordingSourceWithWaitable(
     const RecordingSource* recording_source,
     base::WaitableEvent* playback_allowed_event) {
-  return make_scoped_refptr(
+  return base::WrapRefCounted(
       new FakeRasterSource(recording_source, playback_allowed_event));
 }
 

@@ -53,7 +53,7 @@ class SatisfySwapPromise : public SwapPromise {
 
 scoped_refptr<SurfaceLayer> SurfaceLayer::Create(
     scoped_refptr<viz::SurfaceReferenceFactory> ref_factory) {
-  return make_scoped_refptr(new SurfaceLayer(std::move(ref_factory)));
+  return base::WrapRefCounted(new SurfaceLayer(std::move(ref_factory)));
 }
 
 SurfaceLayer::SurfaceLayer(

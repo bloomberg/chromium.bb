@@ -1267,7 +1267,7 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
 class DrawsContentChangeLayer : public Layer {
  public:
   static scoped_refptr<DrawsContentChangeLayer> Create() {
-    return make_scoped_refptr(new DrawsContentChangeLayer());
+    return base::WrapRefCounted(new DrawsContentChangeLayer());
   }
 
   void SetLayerTreeHost(LayerTreeHost* host) override {

@@ -25,7 +25,7 @@ TEST(BindHelpersTest, UnwrapConstRef) {
 }
 
 TEST(BindHelpersTest, UnwrapRetainedRef) {
-  auto p = make_scoped_refptr(new RefCountedData<int>);
+  auto p = MakeRefCounted<RefCountedData<int>>();
   auto retained_ref = RetainedRef(p);
   EXPECT_EQ(p.get(), internal::Unwrap(retained_ref));
   EXPECT_EQ(p.get(), internal::Unwrap(std::move(retained_ref)));

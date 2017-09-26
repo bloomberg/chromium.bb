@@ -28,7 +28,7 @@ namespace {
 class TestUIResourceLayer : public UIResourceLayer {
  public:
   static scoped_refptr<TestUIResourceLayer> Create() {
-    return make_scoped_refptr(new TestUIResourceLayer());
+    return base::WrapRefCounted(new TestUIResourceLayer());
   }
 
   using UIResourceLayer::resource_id;

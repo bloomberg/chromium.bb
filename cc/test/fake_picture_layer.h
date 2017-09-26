@@ -17,13 +17,14 @@ namespace cc {
 class FakePictureLayer : public PictureLayer {
  public:
   static scoped_refptr<FakePictureLayer> Create(ContentLayerClient* client) {
-    return make_scoped_refptr(new FakePictureLayer(client));
+    return base::WrapRefCounted(new FakePictureLayer(client));
   }
 
   static scoped_refptr<FakePictureLayer> CreateWithRecordingSource(
       ContentLayerClient* client,
       std::unique_ptr<RecordingSource> source) {
-    return make_scoped_refptr(new FakePictureLayer(client, std::move(source)));
+    return base::WrapRefCounted(
+        new FakePictureLayer(client, std::move(source)));
   }
 
   // Layer implementation.

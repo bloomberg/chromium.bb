@@ -24,7 +24,7 @@
 namespace cc {
 
 scoped_refptr<ElementAnimations> ElementAnimations::Create() {
-  return make_scoped_refptr(new ElementAnimations());
+  return base::WrapRefCounted(new ElementAnimations());
 }
 
 ElementAnimations::ElementAnimations()

@@ -318,7 +318,7 @@ class GLRenderer::SyncQuery {
     // Note: In case the set of drawing commands issued before End() do not
     // depend on the query, defer BeginQueryEXT call until Set() is called and
     // query is required.
-    return make_scoped_refptr<cc::ResourceProvider::Fence>(
+    return base::WrapRefCounted<cc::ResourceProvider::Fence>(
         new Fence(weak_ptr_factory_.GetWeakPtr()));
   }
 

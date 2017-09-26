@@ -803,8 +803,8 @@ TYPED_TEST(BindVariantsTest, FunctionTypeSupport) {
   EXPECT_EQ(&no_ref, std::move(normal_non_refcounted_cb).Run());
 
   ClosureType method_cb = TypeParam::Bind(&HasRef::VoidMethod0, &has_ref);
-  ClosureType method_refptr_cb = TypeParam::Bind(&HasRef::VoidMethod0,
-                                                 make_scoped_refptr(&has_ref));
+  ClosureType method_refptr_cb =
+      TypeParam::Bind(&HasRef::VoidMethod0, WrapRefCounted(&has_ref));
   ClosureType const_method_nonconst_obj_cb =
       TypeParam::Bind(&HasRef::VoidConstMethod0, &has_ref);
   ClosureType const_method_const_obj_cb =

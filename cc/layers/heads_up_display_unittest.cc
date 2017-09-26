@@ -21,7 +21,7 @@ class HeadsUpDisplayTest : public LayerTreeTest {
 class DrawsContentLayer : public Layer {
  public:
   static scoped_refptr<DrawsContentLayer> Create() {
-    return make_scoped_refptr(new DrawsContentLayer());
+    return base::WrapRefCounted(new DrawsContentLayer());
   }
   bool DrawsContent() const override { return true; }
 

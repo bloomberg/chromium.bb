@@ -28,7 +28,7 @@ scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
   FakeScrollbar* fake_scrollbar =
       new FakeScrollbar(paint_during_update, has_thumb, orientation,
                         is_left_side_vertical_scrollbar, is_overlay);
-  return make_scoped_refptr(
+  return base::WrapRefCounted(
       new FakePaintedScrollbarLayer(fake_scrollbar, scrolling_element_id));
 }
 

@@ -13,7 +13,7 @@
 namespace cc {
 
 scoped_refptr<NinePatchLayer> NinePatchLayer::Create() {
-  return make_scoped_refptr(new NinePatchLayer());
+  return base::WrapRefCounted(new NinePatchLayer());
 }
 
 NinePatchLayer::NinePatchLayer()
