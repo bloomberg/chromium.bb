@@ -591,6 +591,8 @@ TEST(StringUtilTest, ReplaceSubstringsAfterOffset) {
     StringPiece replace_with;
     StringPiece expected;
   } cases[] = {
+      {"aaa", 0, "", "b", "aaa"},
+      {"aaa", 1, "", "b", "aaa"},
       {"aaa", 0, "a", "b", "bbb"},
       {"aaa", 0, "aa", "b", "ba"},
       {"aaa", 0, "aa", "bbb", "bbba"},
@@ -616,6 +618,8 @@ TEST(StringUtilTest, ReplaceSubstringsAfterOffset) {
       {"Invalid offset", 9999, "t", "foobar", "Invalid offset"},
       {"Replace me only me once", 9, "me ", "", "Replace me only once"},
       {"abababab", 2, "ab", "c", "abccc"},
+      {"abababab", 1, "ab", "c", "abccc"},
+      {"abababab", 1, "aba", "c", "abcbab"},
   };
 
   // base::string16 variant
@@ -1142,29 +1146,66 @@ TEST(StringUtilTest, ReplaceChars) {
     const char* output;
     bool result;
   } cases[] = {
-    { "", "", "", "", false },
-    { "test", "", "", "test", false },
-    { "test", "", "!", "test", false },
-    { "test", "z", "!", "test", false },
-    { "test", "e", "!", "t!st", true },
-    { "test", "e", "!?", "t!?st", true },
-    { "test", "ez", "!", "t!st", true },
-    { "test", "zed", "!?", "t!?st", true },
-    { "test", "t", "!?", "!?es!?", true },
-    { "test", "et", "!>", "!>!>s!>", true },
-    { "test", "zest", "!", "!!!!", true },
-    { "test", "szt", "!", "!e!!", true },
-    { "test", "t", "test", "testestest", true },
+      {"", "", "", "", false},
+      {"t", "t", "t", "t", true},
+      {"a", "b", "c", "a", false},
+      {"b", "b", "c", "c", true},
+      {"bob", "b", "p", "pop", true},
+      {"bob", "o", "i", "bib", true},
+      {"test", "", "", "test", false},
+      {"test", "", "!", "test", false},
+      {"test", "z", "!", "test", false},
+      {"test", "e", "!", "t!st", true},
+      {"test", "e", "!?", "t!?st", true},
+      {"test", "ez", "!", "t!st", true},
+      {"test", "zed", "!?", "t!?st", true},
+      {"test", "t", "!?", "!?es!?", true},
+      {"test", "et", "!>", "!>!>s!>", true},
+      {"test", "zest", "!", "!!!!", true},
+      {"test", "szt", "!", "!e!!", true},
+      {"test", "t", "test", "testestest", true},
+      {"tetst", "t", "test", "testeteststest", true},
+      {"ttttttt", "t", "-", "-------", true},
+      {"aAaAaAAaAAa", "A", "", "aaaaa", true},
+      {"xxxxxxxxxx", "x", "", "", true},
+      {"xxxxxxxxxx", "x", "x", "xxxxxxxxxx", true},
+      {"xxxxxxxxxx", "x", "y-", "y-y-y-y-y-y-y-y-y-y-", true},
+      {"xxxxxxxxxx", "x", "xy", "xyxyxyxyxyxyxyxyxyxy", true},
+      {"xxxxxxxxxx", "x", "zyx", "zyxzyxzyxzyxzyxzyxzyxzyxzyxzyx", true},
+      {"xaxxaxxxaxxxax", "x", "xy", "xyaxyxyaxyxyxyaxyxyxyaxy", true},
+      {"-xaxxaxxxaxxxax-", "x", "xy", "-xyaxyxyaxyxyxyaxyxyxyaxy-", true},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (const TestData& scenario : cases) {
+    // Test with separate output and input vars.
     std::string output;
-    bool result = ReplaceChars(cases[i].input,
-                               cases[i].replace_chars,
-                               cases[i].replace_with,
-                               &output);
-    EXPECT_EQ(cases[i].result, result);
-    EXPECT_EQ(cases[i].output, output);
+    bool result = ReplaceChars(scenario.input, scenario.replace_chars,
+                               scenario.replace_with, &output);
+    EXPECT_EQ(scenario.result, result) << scenario.input;
+    EXPECT_EQ(scenario.output, output);
+  }
+
+  for (const TestData& scenario : cases) {
+    // Test with an input/output var of limited capacity.
+    std::string input_output = scenario.input;
+    input_output.shrink_to_fit();
+    bool result = ReplaceChars(input_output, scenario.replace_chars,
+                               scenario.replace_with, &input_output);
+    EXPECT_EQ(scenario.result, result) << scenario.input;
+    EXPECT_EQ(scenario.output, input_output);
+  }
+
+  for (const TestData& scenario : cases) {
+    // Test with an input/output var of ample capacity; should
+    // not realloc.
+    std::string input_output = scenario.input;
+    input_output.reserve(strlen(scenario.output) * 2);
+    const void* original_buffer = input_output.data();
+    bool result = ReplaceChars(input_output, scenario.replace_chars,
+                               scenario.replace_with, &input_output);
+    EXPECT_EQ(scenario.result, result) << scenario.input;
+    EXPECT_EQ(scenario.output, input_output);
+    EXPECT_EQ(original_buffer, input_output.data());
   }
 }
 

@@ -245,50 +245,37 @@ const string16& EmptyString16() {
   return EmptyStrings::GetInstance()->s16;
 }
 
-template<typename STR>
-bool ReplaceCharsT(const STR& input,
-                   const STR& replace_chars,
-                   const STR& replace_with,
-                   STR* output) {
-  bool removed = false;
-  size_t replace_length = replace_with.length();
-
-  *output = input;
-
-  size_t found = output->find_first_of(replace_chars);
-  while (found != STR::npos) {
-    removed = true;
-    output->replace(found, 1, replace_with);
-    found = output->find_first_of(replace_chars, found + replace_length);
-  }
-
-  return removed;
-}
+template <class StringType>
+bool ReplaceCharsT(const StringType& input,
+                   BasicStringPiece<StringType> find_any_of_these,
+                   BasicStringPiece<StringType> replace_with,
+                   StringType* output);
 
 bool ReplaceChars(const string16& input,
                   const StringPiece16& replace_chars,
                   const string16& replace_with,
                   string16* output) {
-  return ReplaceCharsT(input, replace_chars.as_string(), replace_with, output);
+  return ReplaceCharsT(input, replace_chars, StringPiece16(replace_with),
+                       output);
 }
 
 bool ReplaceChars(const std::string& input,
                   const StringPiece& replace_chars,
                   const std::string& replace_with,
                   std::string* output) {
-  return ReplaceCharsT(input, replace_chars.as_string(), replace_with, output);
+  return ReplaceCharsT(input, replace_chars, StringPiece(replace_with), output);
 }
 
 bool RemoveChars(const string16& input,
                  const StringPiece16& remove_chars,
                  string16* output) {
-  return ReplaceChars(input, remove_chars.as_string(), string16(), output);
+  return ReplaceCharsT(input, remove_chars, StringPiece16(), output);
 }
 
 bool RemoveChars(const std::string& input,
                  const StringPiece& remove_chars,
                  std::string* output) {
-  return ReplaceChars(input, remove_chars.as_string(), std::string(), output);
+  return ReplaceCharsT(input, remove_chars, StringPiece(), output);
 }
 
 template<typename Str>
@@ -711,28 +698,59 @@ string16 FormatBytesUnlocalized(int64_t bytes) {
   return ASCIIToUTF16(buf);
 }
 
-// Runs in O(n) time in the length of |str|.
+// A Matcher for DoReplaceMatchesAfterOffset() that matches substrings.
 template <class StringType>
-void DoReplaceSubstringsAfterOffset(StringType* str,
-                                    size_t initial_offset,
-                                    BasicStringPiece<StringType> find_this,
-                                    BasicStringPiece<StringType> replace_with,
-                                    bool replace_all) {
+struct SubstringMatcher {
+  BasicStringPiece<StringType> find_this;
+
+  size_t Find(const StringType& input, size_t pos) {
+    return input.find(find_this.data(), pos, find_this.length());
+  }
+  size_t MatchSize() { return find_this.length(); }
+};
+
+// A Matcher for DoReplaceMatchesAfterOffset() that matches single characters.
+template <class StringType>
+struct CharacterMatcher {
+  BasicStringPiece<StringType> find_any_of_these;
+
+  size_t Find(const StringType& input, size_t pos) {
+    return input.find_first_of(find_any_of_these.data(), pos,
+                               find_any_of_these.length());
+  }
+  constexpr size_t MatchSize() { return 1; }
+};
+
+enum class ReplaceType { REPLACE_ALL, REPLACE_FIRST };
+
+// Runs in O(n) time in the length of |str|, and transforms the string without
+// reallocating when possible. Returns |true| if any matches were found.
+//
+// This is parameterized on a |Matcher| traits type, so that it can be the
+// implementation for both ReplaceChars() and ReplaceSubstringsAfterOffset().
+template <class StringType, class Matcher>
+bool DoReplaceMatchesAfterOffset(StringType* str,
+                                 size_t initial_offset,
+                                 Matcher matcher,
+                                 BasicStringPiece<StringType> replace_with,
+                                 ReplaceType replace_type) {
   using CharTraits = typename StringType::traits_type;
-  DCHECK(!find_this.empty());
+
+  const size_t find_length = matcher.MatchSize();
+  if (!find_length)
+    return false;
 
   // If the find string doesn't appear, there's nothing to do.
-  const size_t find_length = find_this.length();
-  size_t first_match = str->find(find_this.data(), initial_offset, find_length);
+  size_t first_match = matcher.Find(*str, initial_offset);
   if (first_match == StringType::npos)
-    return;
+    return false;
 
   // If we're only replacing one instance, there's no need to do anything
   // complicated.
   const size_t replace_length = replace_with.length();
-  if (!replace_all) {
+  if (replace_type == ReplaceType::REPLACE_FIRST) {
     str->replace(first_match, find_length, replace_with.data(), replace_length);
-    return;
+    return true;
   }
 
   // If the find and replace strings are the same length, we can simply use
@@ -740,11 +758,10 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
   if (find_length == replace_length) {
     auto* buffer = &((*str)[0]);
     for (size_t offset = first_match; offset != StringType::npos;
-         offset = str->find(find_this.data(), offset + replace_length,
-                            find_length)) {
+         offset = matcher.Find(*str, offset + replace_length)) {
       CharTraits::copy(buffer + offset, replace_with.data(), replace_length);
     }
-    return;
+    return true;
   }
 
   // Since the find and replace strings aren't the same length, a loop like the
@@ -771,8 +788,7 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
     const size_t expansion_per_match = (replace_length - find_length);
     size_t num_matches = 0;
     for (size_t match = first_match; match != StringType::npos;
-         match =
-             str->find(find_this.data(), match + find_length, find_length)) {
+         match = matcher.Find(*str, match + find_length)) {
       expansion += expansion_per_match;
       ++num_matches;
     }
@@ -786,13 +802,12 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
       str->reserve(final_length);
 
       size_t pos = 0;
-      for (size_t match = first_match;;
-           match = src.find(find_this.data(), pos, find_length)) {
+      for (size_t match = first_match;; match = matcher.Find(src, pos)) {
         str->append(src, pos, match - pos);
         str->append(replace_with.data(), replace_length);
         pos = match + find_length;
 
-        // A mid-loop test/break enables skipping the final find() call; the
+        // A mid-loop test/break enables skipping the final Find() call; the
         // number of matches is known, so don't search past the last one.
         if (!--num_matches)
           break;
@@ -800,7 +815,7 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
 
       // Handle substring after the final match.
       str->append(src, pos, str_length - pos);
-      return;
+      return true;
     }
 
     // Prepare for the copy/move loop below -- expand the string to its final
@@ -841,8 +856,7 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
     read_offset += find_length;
 
     // min() clamps StringType::npos (the largest unsigned value) to str_length.
-    size_t match = std::min(
-        str->find(find_this.data(), read_offset, find_length), str_length);
+    size_t match = std::min(matcher.Find(*str, read_offset), str_length);
 
     size_t length = match - read_offset;
     if (length) {
@@ -854,38 +868,57 @@ void DoReplaceSubstringsAfterOffset(StringType* str,
 
   // If we're shortening the string, truncate it now.
   str->resize(write_offset);
+  return true;
+}
+
+template <class StringType>
+bool ReplaceCharsT(const StringType& input,
+                   BasicStringPiece<StringType> find_any_of_these,
+                   BasicStringPiece<StringType> replace_with,
+                   StringType* output) {
+  // Commonly, this is called with output and input being the same string; in
+  // that case, this assignment is inexpensive.
+  *output = input;
+
+  return DoReplaceMatchesAfterOffset(
+      output, 0, CharacterMatcher<StringType>{find_any_of_these}, replace_with,
+      ReplaceType::REPLACE_ALL);
 }
 
 void ReplaceFirstSubstringAfterOffset(string16* str,
                                       size_t start_offset,
                                       StringPiece16 find_this,
                                       StringPiece16 replace_with) {
-  DoReplaceSubstringsAfterOffset<string16>(
-      str, start_offset, find_this, replace_with, false);  // Replace first.
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<string16>{find_this},
+                              replace_with, ReplaceType::REPLACE_FIRST);
 }
 
 void ReplaceFirstSubstringAfterOffset(std::string* str,
                                       size_t start_offset,
                                       StringPiece find_this,
                                       StringPiece replace_with) {
-  DoReplaceSubstringsAfterOffset<std::string>(
-      str, start_offset, find_this, replace_with, false);  // Replace first.
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<std::string>{find_this},
+                              replace_with, ReplaceType::REPLACE_FIRST);
 }
 
 void ReplaceSubstringsAfterOffset(string16* str,
                                   size_t start_offset,
                                   StringPiece16 find_this,
                                   StringPiece16 replace_with) {
-  DoReplaceSubstringsAfterOffset<string16>(
-      str, start_offset, find_this, replace_with, true);  // Replace all.
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<string16>{find_this},
+                              replace_with, ReplaceType::REPLACE_ALL);
 }
 
 void ReplaceSubstringsAfterOffset(std::string* str,
                                   size_t start_offset,
                                   StringPiece find_this,
                                   StringPiece replace_with) {
-  DoReplaceSubstringsAfterOffset<std::string>(
-      str, start_offset, find_this, replace_with, true);  // Replace all.
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<std::string>{find_this},
+                              replace_with, ReplaceType::REPLACE_ALL);
 }
 
 template <class string_type>
