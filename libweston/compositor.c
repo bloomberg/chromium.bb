@@ -1954,8 +1954,7 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
 		ref->buffer->busy_count--;
 		if (ref->buffer->busy_count == 0) {
 			assert(wl_resource_get_client(ref->buffer->resource));
-			wl_resource_queue_event(ref->buffer->resource,
-						WL_BUFFER_RELEASE);
+			wl_buffer_send_release(ref->buffer->resource);
 		}
 		wl_list_remove(&ref->destroy_listener.link);
 	}
