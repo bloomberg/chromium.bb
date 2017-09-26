@@ -205,6 +205,7 @@ class CORE_EXPORT LocalFrameView final
   void UpdateAcceleratedCompositingSettings();
 
   void RecalcOverflowAfterStyleChange();
+  void UpdateCountersAfterStyleChange();
 
   bool IsEnclosedInCompositingLayer() const;
 
@@ -964,7 +965,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool ContentsInCompositedLayer() const;
 
-  void UpdateCounters();
   void ForceLayoutParentViewIfNeeded();
   void PerformPreLayoutTasks();
   bool PerformLayout(bool in_subtree_layout);

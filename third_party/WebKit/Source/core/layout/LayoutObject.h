@@ -2097,6 +2097,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                         const FillLayer& new_layers);
   void UpdateCursorImages(const CursorList* old_cursors,
                           const CursorList* new_cursors);
+  void CheckCounterChanges(const ComputedStyle* old_style,
+                           const ComputedStyle* new_style);
 
   void SetNeedsOverflowRecalcAfterStyleChange();
 

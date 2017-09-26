@@ -825,6 +825,12 @@ void LocalFrameView::RecalcOverflowAfterStyleChange() {
     SetNeedsLayout();
 }
 
+void LocalFrameView::UpdateCountersAfterStyleChange() {
+  LayoutViewItem layout_view_item = this->GetLayoutViewItem();
+  DCHECK(!layout_view_item.IsNull());
+  layout_view_item.UpdateCounters();
+}
+
 bool LocalFrameView::UsesCompositedScrolling() const {
   LayoutViewItem layout_view = this->GetLayoutViewItem();
   if (layout_view.IsNull())
@@ -1168,8 +1174,6 @@ void LocalFrameView::UpdateLayout() {
     AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                               false);
     nested_layout_count_++;
-
-    UpdateCounters();
 
     // If the layout view was marked as needing layout after we added items in
     // the subtree roots we need to clear the roots and do the layout from the
@@ -2636,20 +2640,6 @@ void LocalFrameView::SendResizeEventIfNeeded() {
 
 void LocalFrameView::PostLayoutTimerFired(TimerBase*) {
   PerformPostLayoutTasks();
-}
-
-void LocalFrameView::UpdateCounters() {
-  LayoutView* view = GetLayoutView();
-  if (!view->HasLayoutCounters())
-    return;
-
-  for (LayoutObject* layout_object = view; layout_object;
-       layout_object = layout_object->NextInPreOrder()) {
-    if (!layout_object->IsCounter())
-      continue;
-
-    ToLayoutCounter(layout_object)->UpdateCounter();
-  }
 }
 
 bool LocalFrameView::ShouldUseIntegerScrollOffset() const {

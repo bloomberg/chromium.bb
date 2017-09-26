@@ -172,10 +172,6 @@
             predicate: "a.OpacityChangedStackingContext(b)",
             field_dependencies: ["IsStackingContext", "opacity"]
           },
-          {
-            predicate: "a.CounterDirectivesEqual(b)",
-            field_dependencies: ["CounterDirectives"]
-          },
         ]
     },
     {
