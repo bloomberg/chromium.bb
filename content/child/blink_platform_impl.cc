@@ -559,7 +559,7 @@ const DataResource kDataResources[] = {
     {"svg.css", IDR_UASTYLE_SVG_CSS, ui::SCALE_FACTOR_NONE, true},
     {"mathml.css", IDR_UASTYLE_MATHML_CSS, ui::SCALE_FACTOR_NONE, true},
     {"mediaControls.css", IDR_UASTYLE_MEDIA_CONTROLS_CSS, ui::SCALE_FACTOR_NONE,
-     false},
+     true},
     {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS, ui::SCALE_FACTOR_NONE, true},
     {"xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS, ui::SCALE_FACTOR_NONE, true},
     {"viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS,
