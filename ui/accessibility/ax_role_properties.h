@@ -14,6 +14,9 @@ namespace ui {
 // clicks.
 AX_EXPORT bool IsRoleClickable(AXRole role);
 
+// Returns true if this node is a document
+AX_EXPORT bool IsDocument(ui::AXRole role);
+
 // Returns true if this node is a cell or a table header.
 AX_EXPORT bool IsCellOrTableHeaderRole(AXRole role);
 

@@ -31,6 +31,16 @@ bool IsRoleClickable(AXRole role) {
   }
 }
 
+bool IsDocument(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsCellOrTableHeaderRole(ui::AXRole role) {
   switch (role) {
     case ui::AX_ROLE_CELL:
