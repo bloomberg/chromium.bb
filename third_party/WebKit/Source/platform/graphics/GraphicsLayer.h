@@ -183,6 +183,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetIsRootForIsolatedGroup(bool);
 
   void SetShouldHitTest(bool);
+  bool GetShouldHitTestForTesting() { return should_hit_test_; }
 
   void SetFilters(CompositorFilterOperations);
   void SetBackdropFilters(CompositorFilterOperations);
