@@ -14,6 +14,8 @@
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
 
 namespace net {
 
@@ -151,45 +153,6 @@ const uint8_t kOidDsaWithSha1[] = {0x2a, 0x86, 0x48, 0xce, 0x38, 0x04, 0x03};
 // In dotted notation: 2.16.840.1.101.3.4.3.2
 const uint8_t kOidDsaWithSha256[] = {0x60, 0x86, 0x48, 0x01, 0x65,
                                      0x03, 0x04, 0x03, 0x02};
-
-// From RFC 5912:
-//
-//     id-sha1 OBJECT IDENTIFIER ::= {
-//      iso(1) identified-organization(3) oiw(14) secsig(3)
-//      algorithm(2) 26 }
-//
-// In dotted notation: 1.3.14.3.2.26
-const uint8_t kOidSha1[] = {0x2B, 0x0E, 0x03, 0x02, 0x1A};
-
-// From RFC 5912:
-//
-//     id-sha256  OBJECT IDENTIFIER  ::=
-//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
-//         csor(3) nistAlgorithms(4) hashalgs(2) 1 }
-//
-// In dotted notation: 2.16.840.1.101.3.4.2.1
-const uint8_t kOidSha256[] = {0x60, 0x86, 0x48, 0x01, 0x65,
-                              0x03, 0x04, 0x02, 0x01};
-
-// From RFC 5912:
-//
-//     id-sha384  OBJECT IDENTIFIER  ::=
-//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
-//         csor(3) nistAlgorithms(4) hashalgs(2) 2 }
-//
-// In dotted notation: 2.16.840.1.101.3.4.2.2
-const uint8_t kOidSha384[] = {0x60, 0x86, 0x48, 0x01, 0x65,
-                              0x03, 0x04, 0x02, 0x02};
-
-// From RFC 5912:
-//
-//     id-sha512  OBJECT IDENTIFIER  ::=
-//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
-//         csor(3) nistAlgorithms(4) hashalgs(2) 3 }
-//
-// In dotted notation: 2.16.840.1.101.3.4.2.3
-const uint8_t kOidSha512[] = {0x60, 0x86, 0x48, 0x01, 0x65,
-                              0x03, 0x04, 0x02, 0x03};
 
 // From RFC 5912:
 //
@@ -554,33 +517,24 @@ DEFINE_CERT_ERROR_ID(kUnknownAlgorithmIdentifierOid,
 
 WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input& input,
                                            DigestAlgorithm* out) {
-  der::Input oid;
-  der::Input params;
-  if (!ParseAlgorithmIdentifier(input, &oid, &params))
-    return false;
+  CBS cbs;
+  CBS_init(&cbs, input.UnsafeData(), input.Length());
+  const EVP_MD* md = EVP_parse_digest_algorithm(&cbs);
 
-  DigestAlgorithm hash;
-
-  if (oid == der::Input(kOidSha1)) {
-    hash = DigestAlgorithm::Sha1;
-  } else if (oid == der::Input(kOidSha256)) {
-    hash = DigestAlgorithm::Sha256;
-  } else if (oid == der::Input(kOidSha384)) {
-    hash = DigestAlgorithm::Sha384;
-  } else if (oid == der::Input(kOidSha512)) {
-    hash = DigestAlgorithm::Sha512;
+  if (md == EVP_sha1()) {
+    *out = DigestAlgorithm::Sha1;
+  } else if (md == EVP_sha256()) {
+    *out = DigestAlgorithm::Sha256;
+  } else if (md == EVP_sha384()) {
+    *out = DigestAlgorithm::Sha384;
+  } else if (md == EVP_sha512()) {
+    *out = DigestAlgorithm::Sha512;
   } else {
     // TODO(eroman): Support MD2, MD4, MD5 for completeness?
     // Unsupported digest algorithm.
     return false;
   }
 
-  // From RFC 5912: "PARAMS TYPE NULL ARE preferredPresent". Which is to say
-  // the can either be absent, or NULL.
-  if (!IsEmpty(params) && !IsNull(params))
-    return false;
-
-  *out = hash;
   return true;
 }
 
