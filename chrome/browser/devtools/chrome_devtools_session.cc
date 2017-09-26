@@ -4,6 +4,7 @@
 
 #include "chrome/browser/devtools/chrome_devtools_session.h"
 
+#include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/devtools/protocol/page_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 
@@ -18,6 +19,7 @@ ChromeDevToolsSession::ChromeDevToolsSession(
     page_handler_ = std::make_unique<PageHandler>(agent_host->GetWebContents(),
                                                   dispatcher_.get());
   }
+  browser_handler_ = std::make_unique<BrowserHandler>(dispatcher_.get());
 }
 
 ChromeDevToolsSession::~ChromeDevToolsSession() = default;

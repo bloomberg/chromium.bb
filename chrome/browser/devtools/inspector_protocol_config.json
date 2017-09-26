@@ -11,6 +11,12 @@
                 "include": [ "enable", "disable", "setAdBlockingEnabled" ],
                 "include_types": [],
                 "include_events": []
+            },
+            {
+                "domain": "Browser",
+                "include": [ "getWindowForTarget", "getWindowBounds", "setWindowBounds" ],
+                "include_types": [ "Bounds" ],
+                "include_events": []
             }
         ]
     },
