@@ -33,7 +33,7 @@ def Transform(file_data):
     # with the block, output it immediately before the block.
     user_comment = GetUserComment(block.comment)
     if user_comment:
-      result += user_comment + '\n'
+      result += user_comment
 
     generated_comment = GenerateCommentForBlock(block.name, block.data)
     result += generated_comment + '\n'
@@ -45,7 +45,48 @@ def Transform(file_data):
 
 
 def GenerateCommentForBlock(block_name, block_data):
-  """Returns a string describing the ASN.1 structure of block_data"""
+  """Returns a string describing |block_data|. The format of |block_data| is
+  inferred from |block_name|, and is pretty-printed accordingly. For
+  instance CERTIFICATE is understood to be an X.509 certificate and pretty
+  printed using OpenSSL's x509 command. If there is no specific pretty-printer
+  for the data type, it is annotated using "openssl asn1parse"."""
+
+  # Try to pretty printing as X.509 certificate.
+  if "CERTIFICATE" in block_name:
+    p = subprocess.Popen(["openssl", "x509", "-text", "-noout",
+                          "-inform", "DER"],
+                          stdin=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
+    stdout_data, stderr_data = p.communicate(block_data)
+
+    # If pretty printing succeeded, return it.
+    if p.returncode == 0:
+      stdout_data = stdout_data.strip()
+      return '$ openssl x509 -text < [%s]\n%s' % (block_name, stdout_data)
+
+  # Try pretty printing as OCSP Response.
+  if block_name == "OCSP RESPONSE":
+    tmp_file_path = "tmp_ocsp.der"
+    WriteStringToFile(block_data, tmp_file_path)
+    p = subprocess.Popen(["openssl", "ocsp", "-resp_text", "-respin",
+                          tmp_file_path],
+                          stdin=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
+    stdout_data, stderr_data = p.communicate(block_data)
+    os.remove(tmp_file_path)
+
+    # If pretty printing succeeded, return it.
+    if p.returncode == 0:
+      stdout_data = stdout_data.strip()
+      # May contain embedded CERTIFICATE pem blocks. Escape these since
+      # CERTIFICATE already has meanining in the test file.
+      stdout_data = stdout_data.replace("-----", "~~~~~")
+      return '$ openssl ocsp -resp_text -respin <([%s])\n%s' % (block_name,
+                                                                stdout_data)
+
+  # Otherwise try pretty printing using asn1parse.
 
   p = subprocess.Popen(['openssl', 'asn1parse', '-i', '-inform', 'DER'],
                        stdout=subprocess.PIPE, stdin=subprocess.PIPE,
@@ -74,7 +115,7 @@ def GetUserComment(comment):
   """Removes any script-generated lines (everything after the $ openssl line)"""
 
   # Consider everything after "$ openssl" to be a generated comment.
-  comment = comment.split('$ openssl asn1parse -i', 1)[0]
+  comment = comment.split('$ openssl', 1)[0]
   if IsEntirelyWhiteSpace(comment):
     comment = ''
   return comment
