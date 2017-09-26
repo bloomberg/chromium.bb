@@ -69,26 +69,43 @@ bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
   if (!context_ || !provider_host_)
     return false;
 
-  // We only use the script cache for main script loading and
-  // importScripts(), even if a cached script is xhr'd, we don't
-  // retrieve it from the script cache.
-  if (resource_request.resource_type != RESOURCE_TYPE_SERVICE_WORKER &&
-      resource_request.resource_type != RESOURCE_TYPE_SCRIPT) {
-    // TODO: Record bad message, we shouldn't come here for other
-    // request types.
-    return false;
-  }
-
   scoped_refptr<ServiceWorkerVersion> version =
       provider_host_->running_hosted_version();
-
-  // This could happen if browser-side has set the status to redundant but
-  // the worker has not yet stopped. The worker is already doomed so just
-  // reject the request. Handle it specially here because otherwise it'd be
-  // unclear whether "REDUNDANT" should count as installed or not installed
-  // when making decisions about how to handle the request and logging UMA.
-  if (!version || version->status() == ServiceWorkerVersion::REDUNDANT)
+  if (!version)
     return false;
+
+  // We use ServiceWorkerScriptURLLoader only for fetching the service worker
+  // main script (RESOURCE_TYPE_SERVICE_WORKER) or importScripts()
+  // (RESOURCE_TYPE_SCRIPT).
+  switch (resource_request.resource_type) {
+    case RESOURCE_TYPE_SERVICE_WORKER:
+      // The main script should be fetched only when we start a new service
+      // worker.
+      if (version->status() != ServiceWorkerVersion::NEW)
+        return false;
+      break;
+    case RESOURCE_TYPE_SCRIPT:
+      // TODO(nhiroki): In the current implementation, importScripts() can be
+      // called in any ServiceWorkerVersion::Status except for REDUNDANT, but
+      // the spec defines importScripts() works only on the initial script
+      // evaluation and the install event. Update this check once
+      // importScripts() is fixed (https://crbug.com/719052).
+      if (version->status() == ServiceWorkerVersion::REDUNDANT) {
+        // This could happen if browser-side has set the status to redundant but
+        // the worker has not yet stopped. The worker is already doomed so just
+        // reject the request. Handle it specially here because otherwise it'd
+        // be unclear whether "REDUNDANT" should count as installed or not
+        // installed when making decisions about how to handle the request and
+        // logging UMA.
+        return false;
+      }
+      break;
+    default:
+      // TODO(nhiroki): Record bad message, we shouldn't come here for other
+      // request types.
+      NOTREACHED();
+      return false;
+  }
 
   // TODO: Make sure we don't handle the redirected request.
 

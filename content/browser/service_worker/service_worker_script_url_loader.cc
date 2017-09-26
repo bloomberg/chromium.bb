@@ -45,9 +45,19 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
       network_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       client_(std::move(client)),
       weak_factory_(this) {
-  DCHECK_EQ(ServiceWorkerVersion::NEW, version->status());
-  DCHECK(resource_type_ == RESOURCE_TYPE_SERVICE_WORKER ||
-         resource_type_ == RESOURCE_TYPE_SCRIPT);
+  // ServiceWorkerScriptURLLoader is used for fetching the service worker main
+  // script (RESOURCE_TYPE_SERVICE_WORKER) during worker startup or
+  // importScripts() (RESOURCE_TYPE_SCRIPT).
+  // TODO(nhiroki): In the current implementation, importScripts() can be called
+  // in any ServiceWorkerVersion::Status except for REDUNDANT, but the spec
+  // defines importScripts() works only on the initial script evaluation and the
+  // install event. Update this check once importScripts() is fixed.
+  // (https://crbug.com/719052)
+  DCHECK((resource_type_ == RESOURCE_TYPE_SERVICE_WORKER &&
+          version->status() == ServiceWorkerVersion::NEW) ||
+         (resource_type_ == RESOURCE_TYPE_SCRIPT &&
+          version->status() != ServiceWorkerVersion::REDUNDANT));
+
   // TODO(nhiroki): Handle the case where |cache_resource_id| is invalid.
   int64_t cache_resource_id = version->context()->storage()->NewResourceId();
 
