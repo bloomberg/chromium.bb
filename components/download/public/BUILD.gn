@@ -19,6 +19,7 @@ source_set("public") {
     "download_task_types.h",
     "features.cc",
     "features.h",
+    "logger.h",
     "navigation_monitor.h",
     "service_config.h",
     "task_scheduler.h",

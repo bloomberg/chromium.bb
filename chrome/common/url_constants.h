@@ -182,6 +182,7 @@ extern const char kChromeUIDevToolsCustomPath[];
 extern const char kChromeUIDNSHost[];
 extern const char kChromeUIDomainReliabilityInternalsHost[];
 extern const char kChromeUIDownloadsHost[];
+extern const char kChromeUIDownloadInternalsHost[];
 extern const char kChromeUIDriveInternalsHost[];
 extern const char kChromeUIExtensionIconHost[];
 extern const char kChromeUIExtensionsFrameHost[];

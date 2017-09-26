@@ -24,6 +24,7 @@
 #include "components/download/internal/navigation_monitor_impl.h"
 #include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/stats.h"
+#include "components/download/internal/test/black_hole_log_sink.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/internal/test/test_device_status_listener.h"
 #include "components/download/internal/test/test_download_driver.h"
@@ -153,6 +154,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
     config_->max_concurrent_downloads = 5;
     config_->max_running_downloads = 5;
 
+    log_sink_ = base::MakeUnique<test::BlackHoleLogSink>();
+
     client_ = client.get();
     driver_ = driver.get();
     store_ = store.get();
@@ -178,8 +181,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
     file_monitor_ = file_monitor.get();
 
     controller_ = base::MakeUnique<ControllerImpl>(
-        config_.get(), std::move(client_set), std::move(driver),
-        std::move(model), std::move(device_status_listener),
+        config_.get(), log_sink_.get(), std::move(client_set),
+        std::move(driver), std::move(model), std::move(device_status_listener),
         &navigation_monitor, std::move(scheduler), std::move(task_scheduler),
         std::move(file_monitor), download_file_dir);
   }
@@ -213,6 +216,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
   std::unique_ptr<ControllerImpl> controller_;
   std::unique_ptr<Configuration> config_;
+  std::unique_ptr<LogSink> log_sink_;
   NavigationMonitorImpl navigation_monitor;
   test::MockClient* client_;
   test::TestDownloadDriver* driver_;

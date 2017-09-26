@@ -11,6 +11,7 @@
 #include "components/download/public/download_params.h"
 #include "components/download/public/download_service.h"
 #include "components/download/public/service_config.h"
+#include "components/download/public/test/empty_logger.h"
 
 namespace download {
 namespace test {
@@ -23,6 +24,7 @@ class TestServiceConfig : public ServiceConfig {
   TestServiceConfig() = default;
   ~TestServiceConfig() override = default;
 
+  // ServiceConfig implementation.
   uint32_t GetMaxScheduledDownloadsPerClient() const override { return 0; }
   const base::TimeDelta& GetFileKeepAliveTime() const override {
     return time_delta_;
@@ -30,14 +32,17 @@ class TestServiceConfig : public ServiceConfig {
 
  private:
   base::TimeDelta time_delta_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestServiceConfig);
 };
 
 }  // namespace
 
 TestDownloadService::TestDownloadService()
-    : is_ready_(false),
+    : service_config_(base::MakeUnique<TestServiceConfig>()),
+      logger_(base::MakeUnique<EmptyLogger>()),
+      is_ready_(false),
       fail_at_start_(false),
-      service_config_(base::MakeUnique<TestServiceConfig>()),
       file_size_(123456789u),
       client_(nullptr) {}
 
@@ -95,6 +100,10 @@ void TestDownloadService::CancelDownload(const std::string& guid) {
 void TestDownloadService::ChangeDownloadCriteria(
     const std::string& guid,
     const SchedulingParams& params) {}
+
+Logger* TestDownloadService::GetLogger() {
+  return logger_.get();
+}
 
 base::Optional<DownloadParams> TestDownloadService::GetDownload(
     const std::string& guid) const {

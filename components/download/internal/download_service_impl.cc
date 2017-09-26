@@ -7,14 +7,17 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "components/download/internal/controller.h"
+#include "components/download/internal/logger_impl.h"
 #include "components/download/internal/startup_status.h"
 #include "components/download/internal/stats.h"
 
 namespace download {
 
 DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config,
+                                         std::unique_ptr<Logger> logger,
                                          std::unique_ptr<Controller> controller)
     : config_(std::move(config)),
+      logger_(std::move(logger)),
       controller_(std::move(controller)),
       service_config_(config_.get()),
       startup_completed_(false) {
@@ -131,6 +134,10 @@ void DownloadServiceImpl::ChangeDownloadCriteria(
                                           base::Unretained(controller_.get()),
                                           guid, params));
   }
+}
+
+Logger* DownloadServiceImpl::GetLogger() {
+  return logger_.get();
 }
 
 void DownloadServiceImpl::OnControllerInitialized() {

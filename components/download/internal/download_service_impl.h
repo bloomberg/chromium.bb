@@ -18,6 +18,8 @@
 namespace download {
 
 class Controller;
+class Logger;
+
 struct DownloadParams;
 struct SchedulingParams;
 
@@ -25,6 +27,7 @@ struct SchedulingParams;
 class DownloadServiceImpl : public DownloadService {
  public:
   DownloadServiceImpl(std::unique_ptr<Configuration> config,
+                      std::unique_ptr<Logger> logger,
                       std::unique_ptr<Controller> controller);
   ~DownloadServiceImpl() override;
 
@@ -40,6 +43,7 @@ class DownloadServiceImpl : public DownloadService {
   void CancelDownload(const std::string& guid) override;
   void ChangeDownloadCriteria(const std::string& guid,
                               const SchedulingParams& params) override;
+  Logger* GetLogger() override;
 
  private:
   void OnControllerInitialized();
@@ -48,6 +52,7 @@ class DownloadServiceImpl : public DownloadService {
   // hold onto references to it.
   std::unique_ptr<Configuration> config_;
 
+  std::unique_ptr<Logger> logger_;
   std::unique_ptr<Controller> controller_;
   ServiceConfigImpl service_config_;
 
