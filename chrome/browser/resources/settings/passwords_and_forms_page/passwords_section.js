@@ -70,6 +70,16 @@ class PasswordManager {
    * @param {function(!PasswordManager.PlaintextPasswordEvent):void} callback
    */
   getPlaintextPassword(index, callback) {}
+
+  /**
+   * Triggers the dialogue for importing passwords.
+   */
+  importPasswords() {}
+
+  /**
+   * Triggers the dialogue for exporting passwords.
+   */
+  exportPasswords() {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -145,6 +155,16 @@ class PasswordManagerImpl {
     chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(listener);
     chrome.passwordsPrivate.requestPlaintextPassword(index);
   }
+
+  /** @override */
+  importPasswords() {
+    chrome.passwordsPrivate.importPasswords();
+  }
+
+  /** @override */
+  exportPasswords() {
+    chrome.passwordsPrivate.exportPasswords();
+  }
 }
 
 cr.addSingletonGetter(PasswordManagerImpl);
@@ -193,6 +213,15 @@ Polymer({
      * @private {?chrome.passwordsPrivate.PasswordUiEntry}
      */
     activePassword: Object,
+
+    /** @private */
+    showImportExportPasswords_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showImportExportPasswords') &&
+            loadTimeData.getBoolean('showImportExportPasswords');
+      }
+    },
 
     /** @private */
     showPasswordEditDialog_: Boolean,
@@ -352,6 +381,22 @@ Polymer({
             event.detail.item);
     menu.showAt(target);
     this.activeDialogAnchor_ = target;
+  },
+
+  /**
+   * Fires an event that should trigger the password import process.
+   * @private
+   */
+  onImportTap_: function() {
+    this.passwordManager_.importPasswords();
+  },
+
+  /**
+   * Fires an event that should trigger the password export process.
+   * @private
+   */
+  onExportTap_: function() {
+    this.passwordManager_.exportPasswords();
   },
 
   /**

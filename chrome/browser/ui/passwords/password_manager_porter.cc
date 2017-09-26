@@ -134,11 +134,7 @@ void PasswordManagerPorter::PresentFileSelector(
 void PasswordManagerPorter::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
-  // We are unable to cast directly from void* to Type: reinterpret_cast will
-  // only convert between pointers and static_cast only from integral types to
-  // enums (for those types that are relevant to this example), which
-  // necessitates the use of two casts.
-  switch (static_cast<Type>(reinterpret_cast<uintptr_t>(params))) {
+  switch (reinterpret_cast<uintptr_t>(params)) {
     case PASSWORD_IMPORT:
       ImportPasswordsFromPath(path);
       break;

@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -194,6 +195,16 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   for (const auto& callback : get_password_exception_list_callbacks_)
     callback.Run(current_exceptions_);
   get_password_exception_list_callbacks_.clear();
+}
+
+void PasswordsPrivateDelegateImpl::ImportPasswords(
+    content::WebContents* web_contents) {
+  password_manager_presenter_->ImportPasswords(web_contents);
+}
+
+void PasswordsPrivateDelegateImpl::ExportPasswords(
+    content::WebContents* web_contents) {
+  password_manager_presenter_->ExportPasswords(web_contents);
 }
 
 #if !defined(OS_ANDROID)

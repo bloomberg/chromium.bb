@@ -40,6 +40,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -264,6 +265,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
         profile->GetPrefs()));
   }
 #endif
+
+  html_source->AddBoolean(
+      "showImportExportPasswords",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordImportExport));
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));
