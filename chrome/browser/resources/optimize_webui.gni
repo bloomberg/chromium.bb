@@ -110,7 +110,7 @@ template("unpak") {
     ]
 
     outputs = [
-      "$target_gen_dir/${invoker.out_folder}",
+      "$target_gen_dir/${invoker.out_folder}/unpack.stamp",
     ]
 
     deps = invoker.deps
