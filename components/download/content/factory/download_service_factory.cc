@@ -12,6 +12,7 @@
 #include "components/download/internal/download_service_impl.h"
 #include "components/download/internal/download_store.h"
 #include "components/download/internal/file_monitor_impl.h"
+#include "components/download/internal/logger_impl.h"
 #include "components/download/internal/model_impl.h"
 #include "components/download/internal/proto/entry.pb.h"
 #include "components/download/internal/scheduler/scheduler_impl.h"
@@ -52,12 +53,16 @@ DownloadService* CreateDownloadService(
       task_scheduler.get(), config.get(), client_set.get());
   auto file_monitor = base::MakeUnique<FileMonitorImpl>(
       files_storage_dir, background_task_runner, config->file_keep_alive_time);
+  auto logger = base::MakeUnique<LoggerImpl>();
   auto controller = base::MakeUnique<ControllerImpl>(
-      config.get(), std::move(client_set), std::move(driver), std::move(model),
-      std::move(device_status_listener), navigation_monitor,
+      config.get(), logger.get(), std::move(client_set), std::move(driver),
+      std::move(model), std::move(device_status_listener), navigation_monitor,
       std::move(scheduler), std::move(task_scheduler), std::move(file_monitor),
       files_storage_dir);
-  return new DownloadServiceImpl(std::move(config), std::move(controller));
+  logger->SetLogSource(controller.get());
+
+  return new DownloadServiceImpl(std::move(config), std::move(logger),
+                                 std::move(controller));
 }
 
 }  // namespace download

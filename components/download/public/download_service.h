@@ -20,9 +20,11 @@
 namespace download {
 
 class Client;
+class Logger;
+class ServiceConfig;
+
 struct DownloadParams;
 struct SchedulingParams;
-class ServiceConfig;
 
 using TaskFinishedCallback = base::Callback<void(bool)>;
 
@@ -93,6 +95,10 @@ class DownloadService : public KeyedService {
   // download can run.
   virtual void ChangeDownloadCriteria(const std::string& guid,
                                       const SchedulingParams& params) = 0;
+
+  // Returns a Logger instance that is meant to be used by logging and debug UI
+  // components in the larger system.
+  virtual Logger* GetLogger() = 0;
 
  protected:
   DownloadService() = default;

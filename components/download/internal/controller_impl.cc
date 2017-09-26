@@ -16,6 +16,7 @@
 #include "components/download/internal/entry.h"
 #include "components/download/internal/entry_utils.h"
 #include "components/download/internal/file_monitor.h"
+#include "components/download/internal/log_sink.h"
 #include "components/download/internal/model.h"
 #include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/stats.h"
@@ -75,6 +76,7 @@ bool CanActivateMoreDownloads(Configuration* config,
 
 ControllerImpl::ControllerImpl(
     Configuration* config,
+    LogSink* log_sink,
     std::unique_ptr<ClientSet> clients,
     std::unique_ptr<DownloadDriver> driver,
     std::unique_ptr<Model> model,
@@ -85,6 +87,7 @@ ControllerImpl::ControllerImpl(
     std::unique_ptr<FileMonitor> file_monitor,
     const base::FilePath& download_file_dir)
     : config_(config),
+      log_sink_(log_sink),
       download_file_dir_(download_file_dir),
       clients_(std::move(clients)),
       driver_(std::move(driver)),
@@ -95,7 +98,10 @@ ControllerImpl::ControllerImpl(
       task_scheduler_(std::move(task_scheduler)),
       file_monitor_(std::move(file_monitor)),
       controller_state_(State::CREATED),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(config_);
+  DCHECK(log_sink_);
+}
 
 ControllerImpl::~ControllerImpl() = default;
 
@@ -522,6 +528,14 @@ void ControllerImpl::OnItemRemoved(bool success,
   // TODO(dtrainor): If failed, clean up any download state accordingly.
 }
 
+Controller::State ControllerImpl::GetControllerState() {
+  return controller_state_;
+}
+
+const StartupStatus& ControllerImpl::GetStartupStatus() {
+  return startup_status_;
+}
+
 void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
   if (controller_state_ != State::READY)
     return;
@@ -533,6 +547,10 @@ void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
 void ControllerImpl::AttemptToFinalizeSetup() {
   DCHECK(controller_state_ == State::INITIALIZING ||
          controller_state_ == State::RECOVERING);
+
+  // Always notify the LogSink no matter what path this function takes.
+  base::ScopedClosureRunner state_notifier(base::BindOnce(
+      &LogSink::OnServiceStatusChanged, base::Unretained(log_sink_)));
 
   if (!startup_status_.Complete())
     return;

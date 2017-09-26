@@ -36,6 +36,7 @@ class TestDownloadService : public DownloadService {
   void CancelDownload(const std::string& guid) override;
   void ChangeDownloadCriteria(const std::string& guid,
                               const SchedulingParams& params) override;
+  Logger* GetLogger() override;
 
   base::Optional<DownloadParams> GetDownload(const std::string& guid) const;
 
@@ -59,10 +60,12 @@ class TestDownloadService : public DownloadService {
   void OnDownloadFailed(const std::string& guid,
                         Client::FailureReason failure_reason);
 
+  std::unique_ptr<ServiceConfig> service_config_;
+  std::unique_ptr<Logger> logger_;
+
   bool is_ready_;
   std::string failed_download_id_;
   bool fail_at_start_;
-  std::unique_ptr<ServiceConfig> service_config_;
   uint64_t file_size_;
 
   Client* client_;

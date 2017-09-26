@@ -22,6 +22,7 @@
         '<(DEPTH)/chrome/browser/resources/chromeos/quick_unlock/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/select_to_speak/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/switch_access/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/download_internals/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/extensions/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_bookmarks/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/md_downloads/compiled_resources2.gyp:*',

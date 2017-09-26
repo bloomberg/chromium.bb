@@ -13,6 +13,8 @@ source_set("test_support") {
   sources = [
     "empty_client.cc",
     "empty_client.h",
+    "empty_logger.cc",
+    "empty_logger.h",
     "mock_client.cc",
     "mock_client.h",
     "mock_download_service.cc",
