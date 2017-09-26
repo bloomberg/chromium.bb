@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 
 class InterstitialUITest : public InProcessBrowserTest {
  public:
@@ -121,13 +122,27 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitialWifi) {
                    "Connect to Wi-Fi");
 }
 
+// Tests that back button works after opening an interstitial from
+// chrome://interstitials.
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, InterstitialBackButton) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://interstitials"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://interstitials/ssl"));
+  content::TestNavigationObserver navigation_observer(web_contents);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  navigation_observer.Wait();
+  base::string16 title;
+  ui_test_utils::GetCurrentTabTitle(browser(), &title);
+  EXPECT_EQ(title, base::ASCIIToUTF16("Interstitials"));
+}
+
 // Checks that the interstitial page uses correct web contents. If not, closing
 // the tab might result in a freed web contents pointer and cause a crash.
 // See https://crbug.com/611706 for details.
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, UseCorrectWebContents) {
   int current_tab = browser()->tab_strip_model()->active_index();
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://interstitials/ssl"));
-
   // Duplicate the tab and close it.
   chrome::DuplicateTab(browser());
   EXPECT_NE(current_tab, browser()->tab_strip_model()->active_index());
