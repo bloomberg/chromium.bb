@@ -55,6 +55,9 @@ const base::Feature kArcMemoryManagement{
 
 // If enabled, the list of content suggestions on the New Tab page will contain
 // assets (e.g. books, pictures, audio) that the user downloaded for later use.
+// DO NOT check directly whether this feature is enabled (i.e. do not use
+// base::FeatureList::IsEnabled()). It is enabled conditionally. Use
+// |AreAssetDownloadsEnabled| instead.
 const base::Feature kAssetDownloadSuggestionsFeature{
     "NTPAssetDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -303,6 +306,9 @@ const base::Feature kNetworkPrediction{"NetworkPrediction",
 
 // If enabled, the list of content suggestions on the New Tab page will contain
 // pages that the user downloaded for later use.
+// DO NOT check directly whether this feature is enabled (i.e. do not use
+// base::FeatureList::IsEnabled()). It is enabled conditionally. Use
+// |AreOfflinePageDownloadsEnabled| instead.
 const base::Feature kOfflinePageDownloadSuggestionsFeature{
     "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 

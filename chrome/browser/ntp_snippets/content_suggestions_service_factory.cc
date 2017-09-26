@@ -22,6 +22,7 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -101,12 +102,19 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using language::UrlLanguageHistogram;
+using ntp_snippets::AreAssetDownloadsEnabled;
+using ntp_snippets::AreOfflinePageDownloadsEnabled;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::BreakingNewsListener;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
+using ntp_snippets::IsBookmarkProviderEnabled;
+using ntp_snippets::IsDownloadsProviderEnabled;
+using ntp_snippets::IsForeignSessionsProviderEnabled;
+using ntp_snippets::IsPhysicalWebPageProviderEnabled;
+using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
 using ntp_snippets::RemoteSuggestionsDatabase;
@@ -155,13 +163,6 @@ namespace {
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-bool IsRecentTabProviderEnabled() {
-  return base::FeatureList::IsEnabled(
-             ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
-         base::FeatureList::IsEnabled(
-             offline_pages::kOffliningRecentPagesFeature);
-}
-
 void RegisterRecentTabProviderIfEnabled(ContentSuggestionsService* service,
                                         Profile* profile,
                                         OfflinePageModel* offline_page_model) {
@@ -193,22 +194,6 @@ void RegisterPrefetchingObserver(ContentSuggestionsService* service,
 
 #if defined(OS_ANDROID)
 
-bool AreAssetDownloadsEnabled() {
-  return !GetIsChromeHomeEnabled() &&
-         base::FeatureList::IsEnabled(
-             features::kAssetDownloadSuggestionsFeature);
-}
-
-bool AreOfflinePageDownloadsEnabled() {
-  return !GetIsChromeHomeEnabled() &&
-         base::FeatureList::IsEnabled(
-             features::kOfflinePageDownloadSuggestionsFeature);
-}
-
-bool IsDownloadsProviderEnabled() {
-  return AreAssetDownloadsEnabled() || AreOfflinePageDownloadsEnabled();
-}
-
 void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
                                         Profile* profile,
                                         OfflinePageModel* offline_page_model) {
@@ -235,18 +220,12 @@ void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
 
 #endif  // OS_ANDROID
 
-bool IsBookmarkProviderEnabled(BookmarkModel* bookmark_model) {
-  return base::FeatureList::IsEnabled(
-             ntp_snippets::kBookmarkSuggestionsFeature) &&
-         bookmark_model &&  // |bookmark_model| can be null in tests.
-         !GetIsChromeHomeEnabled();
-}
-
 void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
                                        Profile* profile) {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
-  if (!IsBookmarkProviderEnabled(bookmark_model)) {
+  if (!bookmark_model || !IsBookmarkProviderEnabled()) {
+    // bookmark_model may be null in tests.
     return;
   }
 
@@ -256,12 +235,6 @@ void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
 }
 
 #if defined(OS_ANDROID)
-
-bool IsPhysicalWebPageProviderEnabled() {
-  return base::FeatureList::IsEnabled(
-             ntp_snippets::kPhysicalWebPageSuggestionsFeature) &&
-         base::FeatureList::IsEnabled(chrome::android::kPhysicalWebFeature);
-}
 
 void RegisterPhysicalWebPageProviderIfEnabled(
     ContentSuggestionsService* service,
@@ -425,11 +398,6 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());
   service->RegisterProvider(std::move(provider));
-}
-
-bool IsForeignSessionsProviderEnabled() {
-  return base::FeatureList::IsEnabled(
-      ntp_snippets::kForeignSessionsSuggestionsFeature);
 }
 
 void RegisterForeignSessionsProviderIfEnabled(

@@ -26,13 +26,22 @@ namespace ntp_snippets {
 //
 extern const base::Feature* const kAllFeatures[];
 
-// Features to turn individual providers/categories on/off.
-// TODO(jkrcal): Rename to kRemoteSuggestionsFeature.
-extern const base::Feature kArticleSuggestionsFeature;
+////////////////////////////////////////////////////////////////////////////////
+// Dependent features.
+// DO NOT check directly whether these features are enabled (i.e. do
+// not use base::FeatureList::IsEnabled()). They are enabled conditionally. Use
+// helpers in chrome/browser/ntp_snippets/dependent_features.h instead.
+
 extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
 extern const base::Feature kPhysicalWebPageSuggestionsFeature;
 extern const base::Feature kForeignSessionsSuggestionsFeature;
+
+////////////////////////////////////////////////////////////////////////////////
+// Independent features. Treat as normal
+
+// TODO(jkrcal): Rename to kRemoteSuggestionsFeature.
+extern const base::Feature kArticleSuggestionsFeature;
 
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;
