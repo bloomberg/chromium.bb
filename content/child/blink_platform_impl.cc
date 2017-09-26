@@ -617,7 +617,7 @@ WebData BlinkPlatformImpl::GetDataResource(const char* name) {
     if (!strcmp(name, kDataResources[i].name)) {
       base::StringPiece resource = GetContentClient()->GetDataResource(
           kDataResources[i].id, kDataResources[i].scale_factor);
-      if (kDataResources[i].is_gzipped) {
+      if (!resource.empty() && kDataResources[i].is_gzipped) {
         std::string uncompressed;
         CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
         return WebData(uncompressed.data(), uncompressed.size());
