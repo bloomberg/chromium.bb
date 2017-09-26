@@ -21,8 +21,6 @@ enum class HighContrastImagePolicy {
   kFilterAll,
   // Never apply high-contrast filter to any images.
   kFilterNone,
-  // Apply high-contrast based on image content.
-  kFilterSmart,
 };
 
 struct HighContrastSettings {
