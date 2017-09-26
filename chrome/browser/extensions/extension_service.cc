@@ -2062,6 +2062,9 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
       registry_->terminated_extensions().GetByID(lowercase_id);
   registry_->RemoveTerminated(lowercase_id);
   if (extension) {
+    // TODO: This notification was already sent when the extension was
+    // unloaded as part of being terminated. But we send it again as observers
+    // may be tracking the terminated extension. See crbug.com/708230.
     content::NotificationService::current()->Notify(
         extensions::NOTIFICATION_EXTENSION_REMOVED,
         content::Source<Profile>(profile_),
