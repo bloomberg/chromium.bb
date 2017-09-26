@@ -60,6 +60,34 @@ Polymer({
     },
 
     /**
+     * Used to populate the 'Server CA certificate' dropdown.
+     * @private {!Array<!chrome.networkingPrivate.Certificate>}
+     */
+    serverCaCerts_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
+    },
+
+    /** @private {!chrome.networkingPrivate.Certificate|undefined} */
+    selectedServerCa_: Object,
+
+    /**
+     * Used to populate the 'User certificate' dropdown.
+     * @private {!Array<!chrome.networkingPrivate.Certificate>}
+     */
+    userCerts_: {
+      type: Array,
+      value: function() {
+        return [];
+      },
+    },
+
+    /** @private {!chrome.networkingPrivate.Certificate|undefined} */
+    selectedUserCert_: Object,
+
+    /**
      * The title to display (network name or type).
      * @private
      */
@@ -181,11 +209,33 @@ Polymer({
     'updateConfigProperties_(networkProperties_)',
     'updateWiFiSecurity_(configProperties_.WiFi.Security)',
     'updateEapOuter_(eapProperties_.Outer)',
-    'updateShowEap_(eapProperties_.*)',
+    'updateEapCerts_(eapProperties_.*, serverCaCerts_, userCerts_)',
+    'updateShowEap_(configProperties_.*, eapProperties_.*)',
   ],
 
   /** @const */
   MIN_PASSPHRASE_LENGTH: 5,
+
+  /**
+   * Listener function for chrome.networkingPrivate.onCertificateListsChanged.
+   * @type {function()}
+   * @private
+   */
+  certificateListsChangedListener_: function() {},
+
+  /** @override */
+  attached: function() {
+    this.certificateListsChangedListener_ =
+        this.onCertificateListsChanged_.bind(this);
+    this.networkingPrivate.onCertificateListsChanged.addListener(
+        this.certificateListsChangedListener_);
+  },
+
+  /** @override */
+  detached: function() {
+    this.networkingPrivate.onNetworksChanged.removeListener(
+        this.certificateListsChangedListener_);
+  },
 
   /**
    * settings.RouteObserverBehavior
@@ -218,12 +268,42 @@ Polymer({
       this.networkingPrivate.getProperties(
           this.guid_, this.getPropertiesCallback_.bind(this));
     }
+
+    this.onCertificateListsChanged_();
   },
 
   /** @private */
   close_: function() {
     if (settings.getCurrentRoute() == settings.routes.NETWORK_CONFIG)
       settings.navigateToPreviousRoute();
+  },
+
+  /** @private */
+  onCertificateListsChanged_: function() {
+    this.networkingPrivate.getCertificateLists(function(certificateLists) {
+      this.set(
+          'serverCaCerts_',
+          this.getCertificateList_(certificateLists.serverCaCertificates));
+      this.set(
+          'userCerts_',
+          this.getCertificateList_(certificateLists.userCertificates));
+    }.bind(this));
+  },
+
+  /**
+   * @param {!Array<!chrome.networkingPrivate.Certificate>} certs
+   * @return {!Array<!chrome.networkingPrivate.Certificate>}
+   * @private
+   */
+  getCertificateList_: function(certs) {
+    if (certs.length > 0)
+      return certs;
+    return [{
+      hardwareBacked: false,
+      hash: '',
+      issuedBy: this.i18n('networkCertificateNoneInstalled'),
+      issuedTo: ''
+    }];
   },
 
   /**
@@ -367,8 +447,28 @@ Polymer({
   },
 
   /** @private */
+  updateEapCerts_: function() {
+    var eap = this.eapProperties_;
+
+    var pem = eap && eap.ServerCAPEMs && eap.ServerCAPEMs[0];
+    this.selectedServerCa_ = (!!pem && this.serverCaCerts_.find(function(cert) {
+                               return cert.pem == pem;
+                             })) ||
+        this.serverCaCerts_[0];
+
+    var certId =
+        eap && eap.ClientCertType == 'PKCS11Id' && eap.ClientCertPKCS11Id;
+    this.selectedUserCert_ = (!!certId && this.userCerts_.find(function(cert) {
+                               return cert.PKCS11Id == certId;
+                             })) ||
+        this.userCerts_[0];
+  },
+
+  /** @private */
   updateShowEap_: function() {
-    if (!this.eapProperties_) {
+    if (!this.eapProperties_ ||
+        this.configProperties_.WiFi &&
+            this.configProperties_.WiFi.Security == CrOnc.Security.NONE) {
       this.showEap_ = null;
       return;
     }
@@ -472,8 +572,35 @@ Polymer({
     this.propertiesSent_ = true;
     var propertiesToSet = Object.assign({}, this.configProperties_);
     propertiesToSet.GUID = this.guid_;
+    var eap = this.getEap_(propertiesToSet);
+    if (eap)
+      this.setEapProperties_(eap);
     this.networkingPrivate.setProperties(
         this.guid_, propertiesToSet, this.setPropertiesCallback_.bind(this));
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.EAPProperties} eap
+   * @private
+   */
+  setEapProperties_: function(eap) {
+    var caHash = this.selectedServerCa_ && this.selectedServerCa_.hash || '';
+
+    eap.UseSystemCAs = caHash == 'do-not-check';
+
+    var serverCa = this.serverCaCerts_ && caHash && caHash != 'do-not-check' &&
+        caHash != 'default' && this.serverCaCerts_.find(function(cert) {
+          return cert.hash == caHash;
+        });
+    eap.ServerCAPEMs = serverCa ? [serverCa.pem] : [];
+
+    var userHash = this.selectedUserCert_ && this.selectedUserCert_.hash;
+    var userCert = userHash && this.userCerts_.find(function(cert) {
+      return cert.hash == userHash;
+    });
+    var pkcs11Id = userCert && userCert.PKCS11Id;
+    eap.ClientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
+    eap.ClientCertPKCS11Id = pkcs11Id || '';
   },
 
   /** @private */
