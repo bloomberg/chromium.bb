@@ -214,6 +214,7 @@ branding_dir_100 =
 copy("common_packaging_files") {
   visibility = [ ":*" ]
   sources = [
+    "//chrome/app/resources/manpage.1.in",
     "common/apt.include",
     "common/default-app-block.template",
     "common/default-app.template",
