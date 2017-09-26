@@ -390,6 +390,10 @@ cr.define('print_preview', function() {
           this.printIfReady_.bind(this));
       this.tracker.add(
           this.destinationStore_,
+          print_preview.DestinationStore.EventType.SELECTED_DESTINATION_INVALID,
+          this.onSelectedDestinationInvalid_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
 
@@ -919,6 +923,17 @@ cr.define('print_preview', function() {
 
       // Pass certain directional keyboard events to the PDF viewer.
       this.previewArea_.handleDirectionalKeyEvent(e);
+    },
+
+    /**
+     * Called when the destination store fails to fetch capabilities for the
+     * selected printer.
+     * @private
+     */
+    onSelectedDestinationInvalid_: function() {
+      this.previewArea_.showCustomMessage(
+          loadTimeData.getString('invalidPrinterSettings'));
+      this.onSettingsInvalid_();
     },
 
     /**
