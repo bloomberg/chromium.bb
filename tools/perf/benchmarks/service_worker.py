@@ -204,4 +204,7 @@ class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
         self.DisableStory('http://localhost:8091/index.html',
                           [story.expectations.ANDROID_WEBVIEW],
                           'crbug.com/653924')
+        self.DisableStory('http://localhost:8091/index.html',
+                          [story.expectations.ALL],
+                          'crbug.com/767086')
     return StoryExpectations()
