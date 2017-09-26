@@ -46,6 +46,7 @@ class CompositeEditCommand;
 class DragData;
 class EditorClient;
 class EditorInternalCommand;
+class FrameSelection;
 class LocalFrame;
 class HitTestResult;
 class KillRing;
@@ -355,6 +356,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                                    const SetSelectionOptions&);
 
   SpellChecker& GetSpellChecker() const;
+  FrameSelection& GetFrameSelection() const;
 
   bool HandleEditingKeyboardEvent(KeyboardEvent*);
 };
