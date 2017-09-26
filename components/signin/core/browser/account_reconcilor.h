@@ -180,6 +180,8 @@ class AccountReconcilor : public KeyedService,
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
+  // Revokes tokens for all accounts in chrome_accounts_ but primary_account_.
+  void RevokeAllSecondaryTokens();
 
   void ValidateAccountsFromTokenService();
   // Note internally that this |account_id| is added to the cookie jar.
@@ -189,6 +191,8 @@ class AccountReconcilor : public KeyedService,
   bool IsTokenServiceReady();
 
   // Returns the first account to add in the Gaia cookie.
+  // If this returns an empty string, the user must be logged out of all
+  // accounts.
   std::string GetFirstGaiaAccountForReconcile() const;
 
   // Overriden from content_settings::Observer.

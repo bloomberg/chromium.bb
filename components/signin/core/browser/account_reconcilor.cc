@@ -375,7 +375,8 @@ void AccountReconcilor::ValidateAccountsFromTokenService() {
   // accounts.
   for (auto i = chrome_accounts_.begin(); i != chrome_accounts_.end(); ++i) {
     if (token_service_->GetDelegate()->RefreshTokenHasError(*i)) {
-      if (primary_account_ == *i) {
+      if ((primary_account_ == *i) &&
+          !signin::IsAccountConsistencyDiceEnabled()) {
         primary_account_.clear();
         chrome_accounts_.clear();
         break;
@@ -416,19 +417,64 @@ void AccountReconcilor::OnReceivedManageAccountsResponse(
   }
 }
 
+// There are several cases, depending on the account consistency method and
+// whether this is the first execution. The logic can be summarized below:
+// * With Mirror, always use the primary account as first Gaia account.
+// * With Dice,
+//   - On first execution, the candidates are examined in this order:
+//     1. The primary account
+//     2. The current first Gaia account
+//     3. The last known first Gaia account
+//     4. The first account in the token service
+//   - On subsequent executions, the order is:
+//     1. The current first Gaia account
+//        * If the Gaia account has a token error, logout everything.
+//     2. The primary account
+//     3. The last known first Gaia account
+//     4. The first account in the token service
 std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
-  // The first account in the cookie should be the primary account if there is
-  // one.
-  if (!primary_account_.empty())
+  if (!signin::IsAccountConsistencyDiceEnabled()) {
+    // Mirror only uses the primary account, and it is never empty.
+    DCHECK(!primary_account_.empty());
+    DCHECK(base::ContainsValue(chrome_accounts_, primary_account_));
     return primary_account_;
+  }
 
+  DCHECK(signin::IsAccountConsistencyDiceEnabled());
   if (chrome_accounts_.empty())
     return std::string();  // No Chrome account, log out.
 
-  // Use the current first Gaia account, if we have a token for it.
-  if (!gaia_accounts_.empty() &&
-      base::ContainsValue(chrome_accounts_, gaia_accounts_[0].id)) {
-    return gaia_accounts_[0].id;
+  // Dice can only change the first Gaia account on the first execution.
+  if (first_execution_) {
+    if (!primary_account_.empty()) {
+      if (base::ContainsValue(chrome_accounts_, primary_account_)) {
+        return primary_account_;
+      } else if (!gaia_accounts_.empty() && gaia_accounts_[0].valid &&
+                 (primary_account_ == gaia_accounts_[0].id)) {
+        // Currently signed-in on Gaia with the primary account, but the token
+        // is lost. Signout.
+        // Note: if there is a Sync account without a valid token, and the user
+        // is currently signed into Gaia with a different account, we don't log
+        // the user out of Gaia.
+        return std::string();
+      }
+    }
+    if (!gaia_accounts_.empty() && gaia_accounts_[0].valid &&
+        base::ContainsValue(chrome_accounts_, gaia_accounts_[0].id)) {
+      return gaia_accounts_[0].id;
+    }
+  } else {
+    // When this is not the first execution, and there is a valid Gaia account,
+    // it must be used. If its token is invalid, perform full logout.
+    if (!gaia_accounts_.empty() && gaia_accounts_[0].valid) {
+      return base::ContainsValue(chrome_accounts_, gaia_accounts_[0].id)
+                 ? gaia_accounts_[0].id
+                 : std::string();  // Main token lost: log out.
+    }
+    if (!primary_account_.empty() &&
+        base::ContainsValue(chrome_accounts_, primary_account_)) {
+      return primary_account_;
+    }
   }
 
   // If Sync is disabled, and there is no Gaia cookie, try the last known
@@ -444,20 +490,20 @@ std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
 void AccountReconcilor::FinishReconcile() {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
-  int number_gaia_accounts = gaia_accounts_.size();
   std::string first_account = GetFirstGaiaAccountForReconcile();
-  // |first_account| is either empty or an element of |chrome_accounts_|.
+  // |first_account| must be in |chrome_accounts_|.
   DCHECK(first_account.empty() ||
          (std::find(chrome_accounts_.begin(), chrome_accounts_.end(),
                     first_account) != chrome_accounts_.end()));
-  bool primary_account_mismatch =
+  size_t number_gaia_accounts = gaia_accounts_.size();
+  bool first_account_mismatch =
       (number_gaia_accounts > 0) && (first_account != gaia_accounts_[0].id);
 
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need
   // to blow the cookie away.
   int removed_from_cookie = 0;
-  for (size_t i = 0; i < gaia_accounts_.size(); ++i) {
+  for (size_t i = 0; i < number_gaia_accounts; ++i) {
     if (gaia_accounts_[i].valid &&
         chrome_accounts_.end() == std::find(chrome_accounts_.begin(),
                                             chrome_accounts_.end(),
@@ -466,7 +512,7 @@ void AccountReconcilor::FinishReconcile() {
     }
   }
 
-  bool rebuild_cookie = primary_account_mismatch || removed_from_cookie > 0;
+  bool rebuild_cookie = first_account_mismatch || (removed_from_cookie > 0);
   std::vector<gaia::ListedAccount> original_gaia_accounts =
       gaia_accounts_;
   if (rebuild_cookie) {
@@ -478,12 +524,19 @@ void AccountReconcilor::FinishReconcile() {
     gaia_accounts_.clear();
   }
 
-  // Create a list of accounts that need to be added to the gaia cookie.
-  if (!first_account.empty())
+  if (first_account.empty()) {
+    DCHECK(signin::IsAccountConsistencyDiceEnabled());
+    // Gaia cookie has been cleared or was already empty.
+    DCHECK((first_account_mismatch && rebuild_cookie) ||
+           (number_gaia_accounts == 0));
+    RevokeAllSecondaryTokens();
+  } else {
+    // Create a list of accounts that need to be added to the Gaia cookie.
     add_to_cookie_.push_back(first_account);
-  for (size_t i = 0; i < chrome_accounts_.size(); ++i) {
-    if (chrome_accounts_[i] != first_account)
-      add_to_cookie_.push_back(chrome_accounts_[i]);
+    for (size_t i = 0; i < chrome_accounts_.size(); ++i) {
+      if (chrome_accounts_[i] != first_account)
+        add_to_cookie_.push_back(chrome_accounts_[i]);
+    }
   }
 
   // For each account known to chrome, PerformMergeAction() if the account is
@@ -512,7 +565,7 @@ void AccountReconcilor::FinishReconcile() {
 
   signin_metrics::LogSigninAccountReconciliation(
       chrome_accounts_.size(), added_to_cookie, removed_from_cookie,
-      !primary_account_mismatch, first_execution_, number_gaia_accounts);
+      !first_account_mismatch, first_execution_, number_gaia_accounts);
   first_execution_ = false;
   CalculateIfReconcileIsDone();
   if (!is_reconcile_started_)
@@ -550,6 +603,15 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&AccountReconcilor::StartReconcile, base::Unretained(this)));
+  }
+}
+
+void AccountReconcilor::RevokeAllSecondaryTokens() {
+  for (const std::string& account : chrome_accounts_) {
+    if (account != primary_account_) {
+      VLOG(1) << "Revoking token for " << account;
+      token_service_->RevokeCredentials(account);
+    }
   }
 }
 
