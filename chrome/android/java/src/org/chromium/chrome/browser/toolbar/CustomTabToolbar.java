@@ -254,9 +254,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
-        int securityLevel = getSecurityLevel();
-        return securityLevel == ConnectionSecurityLevel.DANGEROUS
-                || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT;
+        return ColorUtils.isUsingDefaultToolbarColor(
+                getResources(), getToolbarDataProvider().getPrimaryColor());
     }
 
     @Override
