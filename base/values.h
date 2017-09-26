@@ -13,6 +13,10 @@
 // numbers. Writing JSON with such types would violate the spec. If you need
 // something like this, either use a double or make a string value containing
 // the number you want.
+//
+// NOTE: A Value parameter that is always a Value::STRING should just be passed
+// as a std::string. Similarly for Values that are always Value::DICTIONARY
+// (should be flat_map), Value::LIST (should be std::vector), et cetera.
 
 #ifndef BASE_VALUES_H_
 #define BASE_VALUES_H_
