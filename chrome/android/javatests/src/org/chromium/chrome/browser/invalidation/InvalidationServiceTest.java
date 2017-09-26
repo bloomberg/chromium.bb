@@ -53,7 +53,7 @@ public class InvalidationServiceTest {
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();
         // Android master sync can safely always be on.
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mAppContext, delegate);
+        AndroidSyncSettings.overrideForTests(mAppContext, delegate, null);
         ContextUtils.initApplicationContextForTests(mAppContext);
     }
 

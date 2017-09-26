@@ -103,7 +103,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private void setUpMockAndroidSyncSettings() {
         mSyncContentResolver = new MockSyncContentResolverDelegate();
         mSyncContentResolver.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver);
+        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver, null);
     }
 
     public Account setUpTestAccount() {
