@@ -41,6 +41,9 @@ class NotificationHeaderView : public views::Button {
   void ClearTimestamp();
   bool IsExpandButtonEnabled();
 
+  // Button override:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+
   views::ImageView* expand_button() { return expand_button_; }
 
   SkColor accent_color_for_testing() { return accent_color_; }
