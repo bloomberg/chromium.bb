@@ -34,6 +34,7 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(ccameron): Re-enable this after baseline. This is caused by changing
     # the way we interpret BT709 color spaces.
     self.Fail('Pixel_Video_VP9', bug=763260)
+    self.Fail('Pixel_Video_MP4', bug=763260)
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
