@@ -83,6 +83,8 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
 
   bool voice_interaction_context_enabled_ = false;
 
+  base::TimeTicks previous_stroke_end_;
+
   base::WeakPtrFactory<MetalayerMode> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetalayerMode);
