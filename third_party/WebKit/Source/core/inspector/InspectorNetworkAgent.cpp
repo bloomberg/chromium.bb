@@ -386,7 +386,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   if (response.IsNull())
     return nullptr;
 
-  double status;
+  int status;
   String status_text;
   if (response.GetResourceLoadInfo() &&
       response.GetResourceLoadInfo()->http_status_code) {
