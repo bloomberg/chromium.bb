@@ -80,6 +80,7 @@ component("blink") {
     "//media:shared_memory_support",
     "//media/mojo/interfaces",
     "//net",
+    "//services/service_manager/public/cpp:cpp",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//ui/gfx",
