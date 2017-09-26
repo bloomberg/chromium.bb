@@ -92,7 +92,5 @@ template("midl") {
     public_deps = [
       ":$action_name",
     ]
-
-    configs += [ "//build/config/win:midl_warnings" ]
   }
 }

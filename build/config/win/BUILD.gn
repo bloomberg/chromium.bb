@@ -427,13 +427,3 @@ config("target_winrt") {
     "/EHsc",
   ]
 }
-
-# Internal stuff --------------------------------------------------------------
-
-# Config used by the MIDL template to disable warnings.
-config("midl_warnings") {
-  if (is_clang) {
-    # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_".
-    cflags = [ "-Wno-extra-tokens" ]
-  }
-}

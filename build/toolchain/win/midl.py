@@ -36,6 +36,16 @@ def ZapTimestamp(filename):
         'target_arch=(AMD64|X86) 8\.\d\d\.\d{4}',
         '    Oicf, W1, Zp8, env=\\1 (32b run), target_arch=\\2 8.xx.xxxx',
         contents)
+    # TODO(thakis): If we need more hacks than these, try to verify checked-in
+    # outputs when we're using the hermetic toolchain.
+    # midl.exe older than 8.1.622 omit '//' after #endif, fix that:
+    contents = contents.replace('#endif !_MIDL_USE_GUIDDEF_',
+                                '#endif // !_MIDL_USE_GUIDDEF_')
+    # midl.exe puts the midl version into code in one place.  To have
+    # predictable output, lie about the midl version if it's not 8.1.622.
+    # This is unfortunate, but remember that there's beauty too in imperfection.
+    contents = contents.replace('0x801026c, /* MIDL Version 8.1.620 */',
+                                '0x801026e, /* MIDL Version 8.1.622 */')
   open(filename, 'wb').write(contents)
 
 
