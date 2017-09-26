@@ -37,7 +37,6 @@ class LogdogLogcatMonitor(logcat_monitor.LogcatMonitor):
     try:
       super(LogdogLogcatMonitor, self)._StopRecording()
       if self._logdog_stream:
-        self._logcat_url = logdog_helper.get_viewer_url(self._stream_name)
         self._logdog_stream.close()
     except Exception as e: # pylint: disable=broad-except
       logging.exception('Unknown Error: %s.', e)
@@ -51,6 +50,8 @@ class LogdogLogcatMonitor(logcat_monitor.LogcatMonitor):
       self._adb.Logcat(clear=True)
 
     self._logdog_stream = logdog_helper.open_text(self._stream_name)
+    self._logcat_url = logdog_helper.get_viewer_url(self._stream_name)
+    logging.info('Logcat will be saved to %s', self._logcat_url)
     self._StartRecording()
 
   def _StartRecording(self):
