@@ -59,6 +59,8 @@ void ServiceWorkerSubresourceLoader::DeleteSoon() {
 
 void ServiceWorkerSubresourceLoader::StartRequest(
     const ResourceRequest& resource_request) {
+  // TODO(kinuko): Implement request.request_body handling.
+  DCHECK(!resource_request.request_body);
   std::unique_ptr<ServiceWorkerFetchRequest> request =
       ServiceWorkerLoaderHelpers::CreateFetchRequest(resource_request);
   DCHECK_EQ(Status::kNotStarted, status_);
