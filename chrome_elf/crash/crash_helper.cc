@@ -118,29 +118,11 @@ void DumpWithoutCrashing() {
   crash_reporter::DumpWithoutCrashing();
 }
 
-}  // namespace elf_crash
-
-//------------------------------------------------------------------------------
-// Exported crash APIs for the rest of the process.
-//------------------------------------------------------------------------------
-
-// This helper is invoked by code in chrome.dll to retrieve the crash reports.
-// See CrashUploadListCrashpad. Note that we do not pass a std::vector here,
-// because we do not want to allocate/free in different modules. The returned
-// pointer is read-only.
-//
-// NOTE: Since the returned pointer references read-only memory that will be
-// cleaned up when this DLL unloads, be careful not to reference the memory
-// beyond that point (e.g. during tests).
-extern "C" {
-
-// This helper is invoked by debugging code in chrome to register the client
-// id.
-void SetMetricsClientId(const char* client_id) {
+void SetMetricsClientIdImpl(const char* client_id) {
   if (!g_crash_helper_enabled)
     return;
   if (client_id)
     crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-}  // extern "C"
+}  // namespace elf_crash

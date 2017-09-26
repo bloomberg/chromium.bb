@@ -6,7 +6,7 @@
 #define CHROME_ELF_CHROME_ELF_MAIN_H_
 
 // These functions are the cross-module import interface to chrome_elf.dll.
-// It is used chrome.exe, chrome.dll and other clients of chrome_elf.
+// It is used by chrome.exe, chrome.dll and other clients of chrome_elf.
 // In tests, these functions are stubbed by implementations in
 // chrome_elf_test_stubs.cc.
 extern "C" {
@@ -24,6 +24,9 @@ bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
 // happen inside DllMain().
 void SignalInitializeCrashReporting();
 void SignalChromeElf();
+
+// Sets the metrics client ID in crash keys.
+void SetMetricsClientId(const char* client_id);
 
 }  // extern "C"
 
