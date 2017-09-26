@@ -78,6 +78,7 @@ NotificationDatabaseData CreateDatabaseData(
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag = kPushMessagingForcedNotificationTag;
   notification_data.icon = GURL();
+  notification_data.timestamp = base::Time::Now();
   notification_data.silent = true;
 
   NotificationDatabaseData database_data;
