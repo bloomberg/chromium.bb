@@ -99,6 +99,13 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void SetDecoderForTesting(std::unique_ptr<DeferredImageDecoder> decoder) {
     decoder_ = std::move(decoder);
   }
+  void SetTaskRunnerForTesting(RefPtr<WebTaskRunner> task_runner) {
+    task_runner_ = task_runner;
+  }
+
+  size_t last_num_frames_skipped_for_testing() const {
+    return last_num_frames_skipped_;
+  }
 
  private:
   enum RepetitionCountStatus : uint8_t {
@@ -154,16 +161,10 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   int RepetitionCount();
 
   bool ShouldAnimate();
-  void StartAnimation(CatchUpAnimation = kCatchUp) override;
+  void StartAnimation() override;
+  void StartAnimationInternal(const double time);
   void StopAnimation();
   void AdvanceAnimation(TimerBase*);
-
-  // Advance the animation and let the next frame get scheduled without
-  // catch-up logic. For large images with slow or heavily-loaded systems,
-  // throwing away data as we go (see destroyDecodedData()) means we can spend
-  // so much time re-decoding data that we are always behind. To prevent this,
-  // we force the next animation to skip the catch up logic.
-  void AdvanceAnimationWithoutCatchUp(TimerBase*);
 
   // This function does the real work of advancing the animation. When
   // skipping frames to catch up, we're in the middle of a loop trying to skip
@@ -213,9 +214,13 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   double desired_frame_start_time_;  // The system time at which we hope to see
                                      // the next call to startAnimation().
 
+  size_t last_num_frames_skipped_ = 0u;
+
   size_t frame_count_;
 
   RefPtr<WebTaskRunner> task_runner_;
+
+  WTF::WeakPtrFactory<BitmapImage> weak_factory_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(BitmapImage);

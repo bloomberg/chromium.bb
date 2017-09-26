@@ -564,8 +564,7 @@ void SVGImage::FlushPendingTimelineRewind() {
   has_pending_timeline_rewind_ = false;
 }
 
-// FIXME: support CatchUpAnimation = CatchUp.
-void SVGImage::StartAnimation(CatchUpAnimation) {
+void SVGImage::StartAnimation() {
   SVGSVGElement* root_element = SvgRootElement(page_.Get());
   if (!root_element)
     return;

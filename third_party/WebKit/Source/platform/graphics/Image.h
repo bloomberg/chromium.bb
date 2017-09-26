@@ -140,8 +140,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Animation begins whenever someone draws the image, so startAnimation() is
   // not normally called. It will automatically pause once all observers no
   // longer want to render the image anywhere.
-  enum CatchUpAnimation { kDoNotCatchUp, kCatchUp };
-  virtual void StartAnimation(CatchUpAnimation = kCatchUp) {}
+  virtual void StartAnimation() {}
   virtual void ResetAnimation() {}
 
   // True if this image can potentially animate.

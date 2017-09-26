@@ -84,7 +84,8 @@ BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
       task_runner_(Platform::Current()
                        ->CurrentThread()
                        ->Scheduler()
-                       ->CompositorTaskRunner()) {}
+                       ->CompositorTaskRunner()),
+      weak_factory_(this) {}
 
 BitmapImage::~BitmapImage() {
   StopAnimation();
@@ -484,12 +485,18 @@ bool BitmapImage::ShouldAnimate() {
   return animated;
 }
 
-void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
+void BitmapImage::StartAnimation() {
+  StartAnimationInternal(MonotonicallyIncreasingTime());
+}
+
+void BitmapImage::StartAnimationInternal(const double time) {
+  // If the |frame_timer_| is set, it indicates that a task is already pending
+  // to advance the current frame of the animation. We don't need to schedule
+  // a task to advance the animation in that case.
   if (frame_timer_ || !ShouldAnimate() || FrameCount() <= 1)
     return;
 
   // If we aren't already animating, set now as the animation start time.
-  const double time = MonotonicallyIncreasingTime();
   if (!desired_frame_start_time_)
     desired_frame_start_time_ = time;
 
@@ -538,8 +545,7 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
       desired_frame_start_time_ < time)
     desired_frame_start_time_ = time;
 
-  if (catch_up_if_necessary == kDoNotCatchUp ||
-      time < desired_frame_start_time_) {
+  if (time < desired_frame_start_time_) {
     // Haven't yet reached time for next frame to start; delay until then.
     frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
         task_runner_, this, &BitmapImage::AdvanceAnimation));
@@ -550,6 +556,18 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
     // See if we've also passed the time for frames after that to start, in
     // case we need to skip some frames entirely.  Remember not to advance
     // to an incomplete frame.
+
+    // Skip the next frame by advancing the animation forward one frame.
+    if (!InternalAdvanceAnimation(kSkipFramesToCatchUp)) {
+      DCHECK(animation_finished_);
+      return;
+    }
+
+    // We have already realized that we need to skip the |next_frame| since
+    // |desired_frame_start_time_| is when |next_frame| should have been
+    // displayed, which is in the past. The rest of the loop determines if more
+    // frames need to be skipped to catch up.
+    last_num_frames_skipped_ = 1u;
     for (size_t frame_after_next = (next_frame + 1) % FrameCount();
          FrameIsReceivedAtIndex(frame_after_next);
          frame_after_next = (next_frame + 1) % FrameCount()) {
@@ -567,17 +585,27 @@ void BitmapImage::StartAnimation(CatchUpAnimation catch_up_if_necessary) {
         DCHECK(animation_finished_);
         return;
       }
+      last_num_frames_skipped_++;
       desired_frame_start_time_ = frame_after_next_start_time;
       next_frame = frame_after_next;
     }
 
-    // Post a task to advance the frame immediately. m_desiredFrameStartTime
-    // may be in the past, meaning the next time through this function we'll
-    // kick off the next advancement sooner than this frame's duration would
-    // suggest.
-    frame_timer_ = WTF::WrapUnique(new TaskRunnerTimer<BitmapImage>(
-        task_runner_, this, &BitmapImage::AdvanceAnimationWithoutCatchUp));
-    frame_timer_->StartOneShot(0, BLINK_FROM_HERE);
+    // Since we just advanced a bunch of frames during catch up, post a
+    // notification to the observers. Note this has to be async because
+    // animation can happen during painting and this invalidation is required
+    // after the current paint.
+    task_runner_->PostTask(
+        BLINK_FROM_HERE,
+        WTF::Bind(&BitmapImage::NotifyObserversOfAnimationAdvance,
+                  weak_factory_.CreateWeakPtr(), nullptr));
+
+    // Set up the timer for the next frame if required. Note that we have
+    // already advanced to the current_frame_index_ after catching up. And in
+    // the loop above, we either could not advance the animation further or we
+    // advanced it up till the desired time for the current frame. This ensures
+    // that calling StartAnimationInternal here with the same |time| will not
+    // need to perform any catch up skipping.
+    StartAnimationInternal(time);
   }
 }
 
@@ -618,11 +646,6 @@ void BitmapImage::AdvanceAnimation(TimerBase*) {
   // At this point the image region has been marked dirty, and if it's
   // onscreen, we'll soon make a call to draw(), which will call
   // startAnimation() again to keep the animation moving.
-}
-
-void BitmapImage::AdvanceAnimationWithoutCatchUp(TimerBase*) {
-  if (InternalAdvanceAnimation())
-    StartAnimation(kDoNotCatchUp);
 }
 
 bool BitmapImage::InternalAdvanceAnimation(AnimationAdvancement advancement) {
