@@ -325,6 +325,8 @@ class PLATFORM_EXPORT FontDescription {
 
   SkFontStyle SkiaFontStyle() const;
 
+  String ToString() const;
+
  private:
   FontFamily family_list_;  // The list of font families to be used.
   RefPtr<FontFeatureSettings> feature_settings_;

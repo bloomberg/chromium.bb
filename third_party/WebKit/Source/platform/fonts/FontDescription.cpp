@@ -347,4 +347,29 @@ SkFontStyle FontDescription::SkiaFontStyle() const {
   return SkFontStyle(skia_weight, skia_width, slant);
 }
 
+String FontDescription::ToString() const {
+  // TODO(wkorman): Incorporate BitFields.
+  return String::Format(
+      "family_list=[%s], feature_settings=[%s], variation_settings=[%s], "
+      "locale=%s, "
+      "specified_size=%f, computed_size=%f, adjusted_size=%f, "
+      "size_adjust=%f, letter_spacing=%f, word_spacing=%f, "
+      "font_selection_request=[%s], "
+      "typesetting_features=[%s]",
+      family_list_.ToString().Ascii().data(),
+      (feature_settings_ ? feature_settings_->ToString().Ascii().data() : ""),
+      (variation_settings_ ? variation_settings_->ToString().Ascii().data()
+                           : ""),
+      // TODO(wkorman): Locale has additional internal fields such as
+      // hyphenation and script. Consider adding a more detailed
+      // string method.
+      (locale_ ? locale_->LocaleString().Ascii().data() : ""), specified_size_,
+      computed_size_, adjusted_size_, size_adjust_, letter_spacing_,
+      word_spacing_, font_selection_request_.ToString().Ascii().data(),
+      blink::ToString(
+          static_cast<TypesettingFeatures>(fields_.typesetting_features_))
+          .Ascii()
+          .data());
+}
+
 }  // namespace blink

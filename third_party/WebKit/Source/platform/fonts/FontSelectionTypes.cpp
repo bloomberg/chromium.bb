@@ -71,4 +71,14 @@ unsigned FontSelectionCapabilitiesHash::GetHash(
   return hasher.hash();
 }
 
+String FontSelectionValue::ToString() const {
+  return String::Format("%f", (float)*this);
+}
+
+String FontSelectionRequest::ToString() const {
+  return String::Format(
+      "weight=%s, width=%s, slope=%s", weight.ToString().Ascii().data(),
+      width.ToString().Ascii().data(), slope.ToString().Ascii().data());
+}
+
 }  // namespace blink
