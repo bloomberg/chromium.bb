@@ -1020,6 +1020,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         break;
       return true;
     }
+    case CSSSelector::kPseudoFullscreen:
+    // fall through
     case CSSSelector::kPseudoFullScreen:
       // While a Document is in the fullscreen state, and the document's current
       // fullscreen element is an element in the document, the 'full-screen'
