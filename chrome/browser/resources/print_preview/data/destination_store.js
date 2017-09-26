@@ -185,6 +185,8 @@ cr.define('print_preview', function() {
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
+    SELECTED_DESTINATION_INVALID:
+        'print_preview.DestinationStore.SELECTED_DESTINATION_INVALID',
   };
 
   /**
@@ -1412,6 +1414,13 @@ cr.define('print_preview', function() {
     onGetCapabilitiesFail_: function(origin, destinationId) {
       console.warn(
           'Failed to get print capabilities for printer ' + destinationId);
+      if (this.selectedDestination_ &&
+          this.selectedDestination_.id == destinationId) {
+        var event =
+            new Event(DestinationStore.EventType.SELECTED_DESTINATION_INVALID);
+        event.destinationId = destinationId;
+        this.dispatchEvent(event);
+      }
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
               destinationId, origin)) {

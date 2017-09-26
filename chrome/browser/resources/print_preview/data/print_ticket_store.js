@@ -514,11 +514,6 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       this.tracker_.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
-          this.onDestinationSelect_.bind(this));
-
-      this.tracker_.add(
-          this.destinationStore_,
           print_preview.DestinationStore.EventType
               .SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onSelectedDestinationCapabilitiesReady_.bind(this));
@@ -539,11 +534,10 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the destination selected.
+     * Called when the capabilities of the selected destination are ready.
      * @private
      */
-    onDestinationSelect_: function() {
-      // Reset user selection for certain ticket items.
+    onSelectedDestinationCapabilitiesReady_: function() {
       if (this.capabilitiesHolder_.get() != null) {
         this.customMargins_.updateValue(null);
         if (this.marginsType_.getValue() ==
@@ -553,13 +547,6 @@ cr.define('print_preview', function() {
         }
         this.vendorItems_.updateValue({});
       }
-    },
-
-    /**
-     * Called when the capabilities of the selected destination are ready.
-     * @private
-     */
-    onSelectedDestinationCapabilitiesReady_: function() {
       var caps =
           assert(this.destinationStore_.selectedDestination.capabilities);
       var isFirstUpdate = this.capabilitiesHolder_.get() == null;
