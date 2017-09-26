@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/android/vr_shell/gvr_util.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
@@ -1122,6 +1123,21 @@ void VrShellGl::SetControllerModel(
 }
 
 void VrShellGl::OnVSync(base::TimeTicks frame_time) {
+  TRACE_EVENT0("gpu", "VrShellGl::OnVSync");
+  // Create a synthetic VSync trace event for the reported last-VSync time. Use
+  // this specific type since it appears to be the only one which supports
+  // supplying a timestamp different from the current time, which is useful
+  // since we seem to be >1ms behind the vsync time when we receive this call.
+  //
+  // See third_party/catapult/tracing/tracing/extras/vsync/vsync_auditor.html
+  std::unique_ptr<base::trace_event::TracedValue> args =
+      base::MakeUnique<base::trace_event::TracedValue>();
+  args->SetDouble(
+      "frame_time_us",
+      static_cast<double>((frame_time - base::TimeTicks()).InMicroseconds()));
+  TRACE_EVENT_INSTANT1("viz", "DisplayScheduler::BeginFrame",
+                       TRACE_EVENT_SCOPE_THREAD, "args", std::move(args));
+
   while (premature_received_frames_ > 0) {
     TRACE_EVENT0("gpu", "VrShellGl::OnWebVRFrameAvailableRetry");
     --premature_received_frames_;
