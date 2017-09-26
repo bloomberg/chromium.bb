@@ -109,7 +109,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   }
 
   void UpdatePrefsFromCacheOnNetworkSequenceConcrete(
-      const base::Closure& callback) {
+      base::RepeatingClosure callback) {
     TestMockTimeTaskRunner::ScopedContext scoped_context(net_task_runner_);
     HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
         callback);
@@ -127,9 +127,25 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
         DETECTED_CORRUPTED_PREFS);
   }
 
+  MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkSequenceRepeatingCallback,
+               void(base::RepeatingClosure callback));
+
+  static void RunCallback(base::OnceClosure callback) {
+    std::move(callback).Run();
+  }
+
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefSequence, void());
-  MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkSequence,
-               void(const base::Closure&));
+  // Gmock doesn't support move-only types, so wrap a OnceCallback with a
+  // RepeatingCallback, which is then passed to a MOCK_METHOD.
+  void UpdatePrefsFromCacheOnNetworkSequence(base::OnceClosure callback) {
+    if (callback) {
+      UpdatePrefsFromCacheOnNetworkSequenceRepeatingCallback(
+          base::BindRepeating(&TestingHttpServerPropertiesManager::RunCallback,
+                              base::Passed(std::move(callback))));
+    } else {
+      UpdatePrefsFromCacheOnNetworkSequenceRepeatingCallback(base::Closure());
+    }
+  }
   MOCK_METHOD1(ScheduleUpdatePrefsOnNetworkSequence, void(Location location));
   MOCK_METHOD6(UpdateCacheFromPrefsOnNetworkSequence,
                void(std::vector<std::string>* spdy_servers,
@@ -226,7 +242,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
 
   void ExpectPrefsUpdate(int times) {
     EXPECT_CALL(*http_server_props_manager_,
-                UpdatePrefsFromCacheOnNetworkSequence(_))
+                UpdatePrefsFromCacheOnNetworkSequenceRepeatingCallback(_))
         .Times(times)
         .WillRepeatedly(
             Invoke(http_server_props_manager_.get(),

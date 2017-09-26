@@ -6,6 +6,7 @@ module content.mojom;
 
 import "cookie_manager.mojom";
 import "mojo/common/file_path.mojom";
+import "mojo/common/time.mojom";
 import "url_loader.mojom";
 import "url_loader_factory.mojom";
 import "url/mojo/url.mojom";
@@ -28,6 +29,11 @@ struct NetworkContextParams {
   // Points to the HTTP cache directory. Ignored if the cache is disabled.
   // If null and the cache is enabled, an in-memory database is used.
   mojo.common.mojom.FilePath? http_cache_path;
+
+  // The file to store cached server properties (Like HTTP2 and QUIC support).
+  // This information is used as a performance optimization in connection
+  // logic. If null, an in-memory cache will be used instead.
+  mojo.common.mojom.FilePath? http_server_properties_path;
 
   // Enabled protocols. Note that these apply to all fetches, including those
   // used to fetch PAC scripts.
@@ -60,6 +66,15 @@ interface NetworkContext {
 
   // Get the CookieManager associated with this network context.
   GetCookieManager(CookieManager& cookie_manager);
+
+  // Clears network objects with implicit URL history information. Data related
+  // to events that happened prior to |start_time| may be retained. Only applies
+  // to network objects without more specific methods (Channel ID, Cookies,
+  // and the cache have, or will have, their own clearing APIs). This currently
+  // only covers server properties and transport security state.
+  //
+  // The callback will be invoked once the data has been deleted.
+  ClearNetworkingHistorySince(mojo.common.mojom.Time start_time) => ();
 };
 
 // Browser interface to the network service.

@@ -54,6 +54,8 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
 
+  net::NetLog* net_log() const;
+
  private:
   class MojoNetLog;
 
