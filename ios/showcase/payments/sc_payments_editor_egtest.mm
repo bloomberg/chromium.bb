@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,6 +78,13 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
                            @"didSelectField:%@",
                            argument]),
       grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for the return key on the keyboard.
+id<GREYMatcher> KeyboardReturnKey(NSString* label) {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(label),
+                    grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey),
+                    grey_sufficientlyVisible(), nil);
 }
 
 }  // namespace
@@ -286,11 +294,6 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 // get focus except for the last textfield in which case causes the focus to go
 // away from the textfield.
 - (void)testNavigationByTappingReturn {
-  // TODO(crbug.com/759904): Reenable on iOS11 iPad when working on iPad iOS 11
-  // devices.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
-  }
   // Tap the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_tap()];
@@ -298,9 +301,9 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   // Assert the name textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Name_textField");
 
-  // Press the return key on the name textfield.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
-      performAction:grey_typeText(@"\n")];
+  // Press the return key.
+  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+      performAction:grey_tap()];
 
   // Assert the province textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(
@@ -321,18 +324,24 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   // Assert the address textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Address_textField");
 
-  // Press the return key on the address textfield.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Address_textField")]
-      performAction:grey_typeText(@"\n")];
+  // Press the return key.
+  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+      performAction:grey_tap()];
+
+  if (IsIPadIdiom()) {
+    // Disable EarlGrey's synchronization.
+    // TODO(crbug.com/768864): Investigate why synchronization gets blocked.
+    [[GREYConfiguration sharedInstance]
+            setValue:@NO
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 
   // Assert the postal code textfield is focused.
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Postal Code_textField");
 
-  // Press the return key on the postal code textfield.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Postal Code_textField")]
-      performAction:grey_typeText(@"\n")];
+  // Press the return key.
+  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+      performAction:grey_tap()];
 
   // Expect non of the textfields to be focused.
   UIResponder* firstResponder =
@@ -340,6 +349,13 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   GREYAssertFalse([firstResponder isKindOfClass:[UITextField class]],
                   @"Expected first responder not to be of kind %@.",
                   [UITextField class]);
+
+  if (IsIPadIdiom()) {
+    // Reenable synchronization.
+    [[GREYConfiguration sharedInstance]
+            setValue:@YES
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 }
 
 @end
