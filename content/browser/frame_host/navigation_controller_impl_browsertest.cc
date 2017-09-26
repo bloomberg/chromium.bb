@@ -682,6 +682,57 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
+// Test that going back in a subframe on a loadDataWithBaseURL page doesn't
+// crash.  See https://crbug.com/768575.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigateBackInChildOfLoadDataWithBaseURL) {
+  GURL iframe_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+
+  const GURL base_url("http://baseurl");
+  const GURL history_url("http://historyurl");
+  std::string data =
+      "<html><body>"
+      "  <p>"
+      "    <iframe src=\"";
+  data += iframe_url.spec();
+  data +=
+      "\" />"
+      "  </p>"
+      "</body></html>";
+
+  // Load data and commit.
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+#if defined(OS_ANDROID)
+  shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
+#else
+  shell()->LoadDataWithBaseURL(history_url, data, base_url);
+#endif
+  same_tab_observer.Wait();
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0u);
+
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    std::string script = "document.getElementById('thelink').click()";
+    EXPECT_TRUE(ExecuteScript(child, script));
+    observer.Wait();
+  }
+
+  {
+    TestNavigationObserver observer(shell()->web_contents(), 1);
+    shell()->web_contents()->GetController().GoBack();
+    observer.Wait();
+  }
+
+  // Passes if renderer is still alive.
+  EXPECT_TRUE(ExecuteScript(shell(), "console.log('Success');"));
+}
+
 class LoadCommittedCapturer : public WebContentsObserver {
  public:
   // Observes the load commit for the specified |node|.

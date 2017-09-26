@@ -6275,13 +6275,13 @@ void RenderFrameImpl::NavigateInternal(
             ? !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
             : false;
 
-    // Perform a navigation to a data url if needed.
+    // Perform a navigation for loadDataWithBaseURL if needed (for main frames).
     // Note: the base URL might be invalid, so also check the data URL string.
     bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
 #if defined(OS_ANDROID)
     should_load_data_url |= !request_params.data_url_as_string.empty();
 #endif
-    if (should_load_data_url) {
+    if (is_main_frame_ && should_load_data_url) {
       LoadDataURL(common_params, request_params, frame_, load_type,
                   item_for_history_navigation, history_load_type,
                   is_client_redirect);
