@@ -120,6 +120,14 @@ CrOnc.IPConfigType = chrome.networkingPrivate.IPConfigType;
 CrOnc.ProxySettingsType = chrome.networkingPrivate.ProxySettingsType;
 
 /** @enum {string} */
+CrOnc.VPNType = {
+  L2TP_IPSEC: 'L2TP-IPsec',
+  OPEN_VPN: 'OpenVPN',
+  THIRD_PARTY_VPN: 'ThirdPartyVPN',
+  ARCVPN: 'ARCVPN',
+};
+
+/** @enum {string} */
 CrOnc.Type = chrome.networkingPrivate.NetworkType;
 
 /** @enum {string} */

@@ -600,6 +600,7 @@ namespace networkingPrivate {
     L2TPProperties? L2TP;
     OpenVPNProperties? OpenVPN;
     ThirdPartyVPNProperties? ThirdPartyVPN;
+    // 'Type' can not be an enum because of 'L2TP-IPSec'.
     DOMString? Type;
   };
 
