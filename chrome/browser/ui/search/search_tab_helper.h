@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
@@ -46,10 +45,6 @@ class SearchTabHelper : public content::WebContentsObserver,
                         public SearchIPCRouter::Delegate {
  public:
   ~SearchTabHelper() override;
-
-  SearchModel* model() {
-    return &model_;
-  }
 
   // Invoked when the omnibox input state is changed in some way that might
   // affect the search mode.
@@ -123,9 +118,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
 
-  // Sets the mode of the model based on the current URL of web_contents().
-  void UpdateMode();
-
   OmniboxView* GetOmniboxView();
   const OmniboxView* GetOmniboxView() const;
 
@@ -136,9 +128,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   bool IsInputInProgress() const;
 
   const bool is_search_enabled_;
-
-  // Model object for UI that cares about search state.
-  SearchModel model_;
 
   content::WebContents* web_contents_;
 

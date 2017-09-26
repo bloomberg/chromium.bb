@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/search/search_model.h"
 
 class GURL;
 class Profile;

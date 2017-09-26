@@ -58,17 +58,6 @@ bool IsCacheableNTP(const content::WebContents* contents) {
          entry->GetURL() != chrome::kChromeSearchLocalNtpUrl;
 }
 
-bool IsNTP(const content::WebContents* contents) {
-  // We can't use WebContents::GetURL() because that uses the active entry,
-  // whereas we want the visible entry.
-  const content::NavigationEntry* entry =
-      contents->GetController().GetVisibleEntry();
-  if (entry && entry->GetVirtualURL() == chrome::kChromeUINewTabURL)
-    return true;
-
-  return search::IsInstantNTP(contents);
-}
-
 // Returns true if |contents| are rendered inside an Instant process.
 bool InInstantProcess(Profile* profile,
                       const content::WebContents* contents) {
@@ -278,7 +267,8 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  UpdateMode();
+  if (search::IsInstantNTP(web_contents_))
+    ipc_router_.SetInputInProgress(IsInputInProgress());
 
   if (InInstantProcess(profile(), web_contents_))
     ipc_router_.OnNavigationEntryCommitted();
@@ -423,16 +413,6 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
 
 void SearchTabHelper::OnHistorySyncCheck() {
   ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
-}
-
-void SearchTabHelper::UpdateMode() {
-  bool is_ntp = IsNTP(web_contents_);
-
-  model_.SetOrigin(is_ntp ? SearchModel::Origin::NTP
-                          : SearchModel::Origin::DEFAULT);
-
-  if (is_ntp)
-    ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 
 const OmniboxView* SearchTabHelper::GetOmniboxView() const {
