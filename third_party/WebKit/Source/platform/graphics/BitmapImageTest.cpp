@@ -466,7 +466,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
 
   RefPtr<scheduler::FakeWebTaskRunner> task_runner =
-      AdoptRef(new scheduler::FakeWebTaskRunner);
+      WTF::AdoptRef(new scheduler::FakeWebTaskRunner);
   image_->SetTaskRunnerForTesting(task_runner);
   task_runner->SetTime(10);
 

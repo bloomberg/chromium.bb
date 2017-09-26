@@ -199,8 +199,8 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
       // To ensure that the rendering step eventually happens, repost.
       GetRenderingThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
-          Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-               WrapRefPtr(this)));
+          WTF::Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
+                    WrapRefPtr(this)));
       return;
     }
 
