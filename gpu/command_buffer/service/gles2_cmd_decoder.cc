@@ -11809,9 +11809,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         "format and type incompatible with the current read framebuffer");
     return error::kNoError;
   }
-  if (type == GL_HALF_FLOAT_OES && !gl_version_info().is_es) {
-    type = GL_HALF_FLOAT;
-  }
   if (width == 0 || height == 0) {
     return error::kNoError;
   }

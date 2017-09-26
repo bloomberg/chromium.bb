@@ -4041,8 +4041,10 @@ TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES3) {
   init.gl_version = "opengl es 3.0";
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0, GL_RGBA, GL_FLOAT, 0, 0);
-  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 16, 17, 0, GL_RGB, GL_FLOAT, 0, 0);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_RGBA, 16, 17, 0,
+                                    GL_RGBA, GL_FLOAT, 0, 0, GL_RGBA32F);
+  DoTexImage2DConvertInternalFormat(GL_TEXTURE_2D, 0, GL_RGB, 16, 17, 0, GL_RGB,
+                                    GL_FLOAT, 0, 0, GL_RGB32F);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA32F, 16, 17, 0, GL_RGBA, GL_FLOAT, 0, 0);
   DoTexImage2D(

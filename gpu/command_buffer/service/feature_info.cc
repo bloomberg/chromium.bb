@@ -1444,8 +1444,14 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
   // rendered to via framebuffer objects.
   if (gl::HasExtension(extensions, "GL_EXT_color_buffer_float"))
     enable_ext_color_buffer_float = true;
-  if (gl::HasExtension(extensions, "GL_EXT_color_buffer_half_float"))
+  if (gl::HasExtension(extensions, "GL_EXT_color_buffer_half_float")) {
+    // TODO(zmo): even if the underlying driver reports the extension, WebGL
+    // version of the extension requires RGBA16F to be color-renderable,
+    // whereas the OpenGL ES extension only requires one of the format to be
+    // color-renderable. So we still need to do some verification before
+    // exposing the extension.
     enable_ext_color_buffer_half_float = true;
+  }
 
   if (gl::HasExtension(extensions, "GL_ARB_texture_float") ||
       gl_version_info_->is_desktop_core_profile) {
@@ -1579,28 +1585,20 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     // Likewise for EXT_color_buffer_half_float on ES2 contexts. On desktop,
     // require at least GL 3.0, to ensure that all formats are defined.
     if (IsWebGL1OrES2Context() && !enable_ext_color_buffer_half_float &&
-        (gl_version_info_->is_es || gl_version_info_->IsAtLeastGL(3, 0))) {
-      bool full_half_float_support = true;
-      GLenum internal_formats[] = {
-          GL_R16F, GL_RG16F, GL_RGBA16F,
-      };
-      GLenum formats[] = {
-          GL_RED, GL_RG, GL_RGBA,
-      };
-      GLenum data_type = GL_FLOAT;
-      if (gl_version_info_->is_es2)
-        data_type = GL_HALF_FLOAT_OES;
-      if (gl_version_info_->is_es3)
-        data_type = GL_HALF_FLOAT;
-      DCHECK_EQ(arraysize(internal_formats), arraysize(formats));
-      for (size_t i = 0; i < arraysize(formats); ++i) {
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, width, 0,
-                     formats[i], data_type, NULL);
-        full_half_float_support &=
-            glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-            GL_FRAMEBUFFER_COMPLETE;
-      }
-      enable_ext_color_buffer_half_float = full_half_float_support;
+        (gl_version_info_->IsAtLeastGLES(3, 0) ||
+         gl_version_info_->IsAtLeastGL(3, 0))) {
+      // EXT_color_buffer_half_float requires at least one of the formats is
+      // supported to be color-renderable. WebGL's extension requires RGBA16F
+      // to be the supported effective format. Here we only expose the extension
+      // if RGBA16F is color-renderable.
+      GLenum internal_format = GL_RGBA16F;
+      GLenum format = GL_RGBA;
+      GLenum data_type = GL_HALF_FLOAT;
+      glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, width, 0, format,
+                   data_type, nullptr);
+      enable_ext_color_buffer_half_float =
+          (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
+           GL_FRAMEBUFFER_COMPLETE);
     }
 
     glDeleteFramebuffersEXT(1, &fb_id);

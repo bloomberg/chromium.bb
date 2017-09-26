@@ -98,6 +98,14 @@ class GL_EXPORT RealGLApi : public GLApiBase {
                                           GLsizei width,
                                           GLsizei height) override;
 
+  void glReadPixelsFn(GLint x,
+                      GLint y,
+                      GLsizei width,
+                      GLsizei height,
+                      GLenum format,
+                      GLenum type,
+                      void* pixels) override;
+
   void glClearFn(GLbitfield mask) override;
   void glClearColorFn(GLclampf red,
                       GLclampf green,
