@@ -56,10 +56,10 @@ class ChromeOsAdmxWriterUnittest(
     }))
 
   def testUserPolicy(self):
-    self.doTestUserOrDevicePolicy(False);
+    self.doTestUserOrDevicePolicy(False)
 
   def testDevicePolicy(self):
-    self.doTestUserOrDevicePolicy(True);
+    self.doTestUserOrDevicePolicy(True)
 
   def doTestUserOrDevicePolicy(self, is_device_only):
     # Tests whether CLASS attribute is 'User' for user policies and 'Machine'
@@ -96,6 +96,25 @@ class ChromeOsAdmxWriterUnittest(
 
     self.AssertXMLEquals(output, expected_output)
 
+  def testOnlySupportsAdPolicies(self):
+    # Tests whether only Active Directory managed policies are supported (Google
+    # cloud only managed polices are not put in the ADMX file).
+    policy = {
+      'name': 'PolicyName',
+      'supported_on': [{
+        'product': 'chrome_os',
+        'platforms': ['chrome_os'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+    }
+    self.assertTrue(self.writer.IsPolicySupported(policy))
+
+    policy['supported_chrome_os_management'] = ['google_cloud']
+    self.assertFalse(self.writer.IsPolicySupported(policy))
+
+    policy['supported_chrome_os_management'] = ['active_directory']
+    self.assertTrue(self.writer.IsPolicySupported(policy))
 
 if __name__ == '__main__':
   unittest.main()

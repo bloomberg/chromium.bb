@@ -25,3 +25,10 @@ class ChromeOSADMXWriter(admx_writer.ADMXWriter):
   def GetClass(self, policy):
     is_device_only = 'device_only' in policy and policy['device_only']
     return 'Machine' if is_device_only else 'User'
+
+  # Overridden.
+  # These ADMX templates are used to generate GPO for Active Directory managed
+  # Chrome OS devices.
+  def IsPolicySupported(self, policy):
+    return self.IsCrOSManagementSupported(policy, 'active_directory') and \
+           super(ChromeOSADMXWriter, self).IsPolicySupported(policy)

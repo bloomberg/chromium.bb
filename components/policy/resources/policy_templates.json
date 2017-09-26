@@ -158,8 +158,19 @@
 #   An additional flag 'device_only' (optional, defaults to False) indicates
 #   that this policy is only supported as a device-level Cloud Policy. In that
 #   case no entry in the UserPolicy Protobuf is generated and it is assumed that
-#   it will be added to the DevicePolicy Protobuf manually.  Device policy only
+#   it will be added to the DevicePolicy Protobuf manually. Device policy only
 #   exists on Chrome OS.
+#
+# Management Type:
+#   Chrome OS devices can either be managed through the Google cloud or through
+#   Active Directory. Most policies are supported for both management types, but
+#   some are not. To indicate supported management types, use
+#     'supported_chrome_os_management': ['google_cloud', 'active_directory'],
+#   where
+#     'google_cloud' = Policy is supported for Google cloud management.
+#     'active_directory' = Policy is supported for Active Directory management.
+#   This setting applies to Chrome OS only. If the setting is missing, both
+#   types are assumed. The array must not be empty.
 #
 # Enterprise defaults:
 #   For managed users on Chrome OS (i.e. users receiving user policy from the
@@ -2143,8 +2154,7 @@
           'type': 'string',
           'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2164,8 +2174,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2185,8 +2194,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:9-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2206,8 +2214,7 @@
           'type': 'string',
           'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-','android:46-','webview_android:49-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2227,8 +2234,7 @@
           'type': 'string',
           'schema': { 'type': 'string' },
           'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': False,
             'per_profile': False,
@@ -2282,8 +2288,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome.*:13-','chrome_os:62-'],
-          # TODO(ljusten): Uncomment, once that property is in:
-          # 'supported_cros_management': ['ad'],
+          'supported_chrome_os_management': ['active_directory'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': False,
@@ -5032,6 +5037,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:18-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5050,6 +5056,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:18-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5068,6 +5075,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:18-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5086,6 +5094,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:20-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5105,6 +5114,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:29-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5123,6 +5133,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:32-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5141,6 +5152,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:42-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5160,6 +5172,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:42-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5181,6 +5194,7 @@
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 60000 },
       'supported_on': ['chrome_os:42-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5200,6 +5214,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:55-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5221,6 +5236,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:43-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5241,6 +5257,7 @@
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 30000 },
       'supported_on': ['chrome_os:43-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5261,6 +5278,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:46-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5685,6 +5703,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome_os:25-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5702,6 +5721,7 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:26-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5721,6 +5741,7 @@
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:26-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5744,6 +5765,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:28-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -5763,6 +5785,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:33-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -7528,6 +7551,7 @@
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:29-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -7624,6 +7648,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:28-'],
+          'supported_chrome_os_management': ['google_cloud'],
           'features': {
             'dynamic_refresh': True,
           },
@@ -7678,6 +7703,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:31-'],
+          'supported_chrome_os_management': ['google_cloud'],
           'features': {
             'dynamic_refresh': True,
           },
@@ -7810,6 +7836,7 @@
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:29-'],
+          'supported_chrome_os_management': ['google_cloud'],
           'device_only': True,
           'features': {
             'dynamic_refresh': False,
@@ -8077,6 +8104,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:38-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -8465,6 +8493,7 @@
       'type': 'int',
       'schema': { 'type': 'integer' },
       'supported_on': ['chrome_os:43-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
@@ -8482,6 +8511,7 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': [ 'chrome_os:44-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -8776,6 +8806,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:51-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -8815,6 +8846,7 @@
         },
       ],
       'supported_on': ['chrome_os:51-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -9029,6 +9061,7 @@
         'required': ['enabled', 'upload_rate_kbits', 'download_rate_kbits']
       },
       'supported_on': ['chrome_os:56-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9045,6 +9078,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome_os:52-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -10030,6 +10064,7 @@
         },
       ],
       'supported_on': ['chrome_os:61-'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
@@ -10093,6 +10128,7 @@
         },
       ],
       'supported_on': ['chrome_os:60-60'],
+      'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,

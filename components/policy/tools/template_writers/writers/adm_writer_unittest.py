@@ -31,7 +31,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     '''Compares the output of the adm_writer with its expected output.
 
     Args:
-      output: The output of the adm writer as returned by grit.
+      output: The output of the adm writer.
       expected_output: The expected output.
 
     Raises:

@@ -212,10 +212,10 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   def _GetRegistryKeyName(self, policy, is_win):
     use_recommended_key = self.CanBeRecommended(policy) and not \
                           self.CanBeMandatory(policy)
-    platform = 'win' if is_win else 'chrome_os';
+    platform = 'win' if is_win else 'chrome_os'
     key = 'reg_recommended_key_name' if use_recommended_key else \
           'reg_mandatory_key_name'
-    return self.config['win_config'][platform][key];
+    return self.config['win_config'][platform][key]
 
   def _AddListExampleAndroidLinux(self, parent, policy):
     '''Adds an example value for Android/Linux of a 'list' policy to a DOM node.
@@ -264,7 +264,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     examples = self._AddStyledElement(parent, 'dl', ['dd dl'])
     if self.IsPolicySupportedOnPlatform(policy, 'win'):
       self._AddListExampleWindowsChromeOS(examples, policy, True)
-    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                        management='active_directory'):
       self._AddListExampleWindowsChromeOS(examples, policy, False)
     if (self.IsPolicySupportedOnPlatform(policy, 'android') or
         self.IsPolicySupportedOnPlatform(policy, 'linux')):
@@ -381,7 +382,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     examples = self._AddStyledElement(parent, 'dl', ['dd dl'])
     if self.IsPolicySupportedOnPlatform(policy, 'win'):
       self._AddDictionaryExampleWindowsChromeOS(examples, policy, True)
-    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                        management='active_directory'):
       self._AddDictionaryExampleWindowsChromeOS(examples, policy, False)
     if (self.IsPolicySupportedOnPlatform(policy, 'android') or
         self.IsPolicySupportedOnPlatform(policy, 'linux')):
@@ -409,7 +411,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     if policy_type == 'main':
       pieces = []
       if self.IsPolicySupportedOnPlatform(policy, 'win') or \
-         self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+         self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                          management='active_directory'):
         value = '0x00000001' if example_value else '0x00000000'
         pieces.append(value + ' (Windows)')
       if self.IsPolicySupportedOnPlatform(policy, 'linux'):
@@ -427,7 +430,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     elif policy_type in ('int', 'int-enum'):
       pieces = []
       if self.IsPolicySupportedOnPlatform(policy, 'win') or \
-         self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+         self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                          management='active_directory'):
         pieces.append('0x%08x (Windows)' % example_value)
       if self.IsPolicySupportedOnPlatform(policy, 'linux'):
         pieces.append('%d (Linux)' % example_value)
@@ -519,7 +523,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       if policy['type'] in ('dict', 'external', 'list'):
         is_complex_policy = True
     if ((self.IsPolicySupportedOnPlatform(policy, 'win') or
-         self.IsPolicySupportedOnPlatform(policy, 'chrome_os')) and
+        self.IsPolicySupportedOnPlatform(
+            policy, 'chrome_os', management='active_directory')) and
         self._REG_TYPE_MAP.get(policy['type'], None)):
       qualified_types.append('Windows:%s' % self._REG_TYPE_MAP[policy['type']])
       if policy['type'] in ('dict', 'external'):
@@ -537,7 +542,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
           'win_reg_loc',
           key_name + '\\' + policy['name'],
           ['.monospace'])
-    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                        management='active_directory'):
       key_name = self._GetRegistryKeyName(policy, False)
       self._AddPolicyAttribute(
           dl,
@@ -551,13 +557,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
           'mac_linux_pref_name',
           policy['name'],
           ['.monospace'])
-    if self.IsPolicySupportedOnPlatform(policy, 'android', 'chrome'):
+    if self.IsPolicySupportedOnPlatform(policy, 'android', product='chrome'):
       self._AddPolicyAttribute(
           dl,
           'android_restriction_name',
           policy['name'],
           ['.monospace'])
-    if self.IsPolicySupportedOnPlatform(policy, 'android', 'webview'):
+    if self.IsPolicySupportedOnPlatform(policy, 'android', product='webview'):
       restriction_prefix = self.config['android_webview_restriction_prefix']
       self._AddPolicyAttribute(
           dl,
@@ -576,8 +582,10 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     if (self.IsPolicySupportedOnPlatform(policy, 'win') or
         self.IsPolicySupportedOnPlatform(policy, 'linux') or
         self.IsPolicySupportedOnPlatform(policy, 'android') or
-        self.IsPolicySupportedOnPlatform(policy, 'mac')):
-      # Don't add an example for ChromeOS-only policies.
+        self.IsPolicySupportedOnPlatform(policy, 'mac') or
+        self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
+                                         management='active_directory')):
+      # Don't add an example for Google cloud managed ChromeOS policies.
       dd = self._AddPolicyAttribute(dl, 'example_value')
       self._AddExample(dd, policy)
 
