@@ -85,6 +85,11 @@ bool SVGImageElement::CurrentFrameHasSingleSecurityOrigin() const {
   return true;
 }
 
+ScriptPromise SVGImageElement::decode(ScriptState* script_state,
+                                      ExceptionState& exception_state) {
+  return GetImageLoader().Decode(script_state, exception_state);
+}
+
 void SVGImageElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
