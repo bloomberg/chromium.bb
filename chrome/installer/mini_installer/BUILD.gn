@@ -176,7 +176,7 @@ template("generate_mini_installer") {
       "//chrome/browser/extensions/default_extensions",
       "//chrome/installer/setup",
       "//third_party/icu:icudata",
-      "//tools/v8_context_snapshot:v8_context_snapshot",
+      "//tools/v8_context_snapshot",
       chrome_dll_target,
     ]
 

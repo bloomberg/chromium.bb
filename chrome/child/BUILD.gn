@@ -18,6 +18,7 @@ static_library("child") {
     "//base",
     "//content/public/child",
     "//gin",
+    "//tools/v8_context_snapshot",
     "//v8",
   ]
 
