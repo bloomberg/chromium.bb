@@ -186,6 +186,9 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
                                                 kUrlTemplate);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
                                                 kUrlTemplate);
+  // Expect this invalid URL to be ignored (not crash);
+  // https://crbug.com/762388.
+  share_service_helper()->AddShareTargetToPrefs("", kTargetName, kUrlTemplate);
 
   base::Callback<void(blink::mojom::ShareError)> callback =
       base::Bind(&DidShare, blink::mojom::ShareError::OK);
