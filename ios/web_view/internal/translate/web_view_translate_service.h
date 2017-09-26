@@ -38,7 +38,7 @@ class WebViewTranslateService {
       : public web_resource::ResourceRequestAllowedNotifier::Observer {
    public:
     TranslateRequestsAllowedListener();
-    ~TranslateRequestsAllowedListener();
+    ~TranslateRequestsAllowedListener() override;
 
     // ResourceRequestAllowedNotifier::Observer methods.
     void OnResourceRequestsAllowed() override;
