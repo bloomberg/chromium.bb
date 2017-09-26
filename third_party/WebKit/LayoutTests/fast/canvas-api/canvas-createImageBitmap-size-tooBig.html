@@ -68,7 +68,7 @@ function loadVideo(url)
 
 // Blob
 promise_test(function() {
-    return getBlobWithXhr('resources/pattern.png').then(testImageBitmap);
+    return getBlobWithXhr('../canvas/resources/pattern.png').then(testImageBitmap);
 }, 'createImageBitmap from a Blob with a big cropRect.');
 
 // HTMLCanvasElement
@@ -79,7 +79,7 @@ promise_test(function() {
 
 // HTMLImageElement
 promise_test(function() {
-    return loadImage('resources/pattern.png').then(testImageBitmap);
+    return loadImage('../canvas/resources/pattern.png').then(testImageBitmap);
 }, 'createImageBitmap from a HTMLImageElement with a big cropRect.');
 
 // ImageBitmap

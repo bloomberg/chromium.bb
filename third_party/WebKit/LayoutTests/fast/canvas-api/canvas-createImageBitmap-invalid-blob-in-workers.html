@@ -8,7 +8,7 @@
 var worker = startWorker('./resources/canvas-createImageBitmap-invalid-blob-in-workers.js');
 
 var xhr = new XMLHttpRequest();
-xhr.open("GET", 'resources/empty.svg');
+xhr.open("GET", '../canvas/resources/empty.svg');
 xhr.responseType = 'blob';
 xhr.send();
 xhr.onload = function() {
