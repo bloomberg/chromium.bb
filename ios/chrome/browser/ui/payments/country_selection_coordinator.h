@@ -20,6 +20,11 @@
 - (void)countrySelectionCoordinator:(CountrySelectionCoordinator*)coordinator
            didSelectCountryWithCode:(NSString*)countryCode;
 
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
+- (void)countrySelectionCoordinatorDidReturn:
+    (CountrySelectionCoordinator*)coordinator;
+
 @end
 
 // Coordinator responsible for creating and presenting the country selection
