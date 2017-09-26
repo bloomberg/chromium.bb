@@ -35,8 +35,9 @@ cr.define('settings', function() {
     };
 
     /** @override */
-    TestLifetimeBrowserProxy.prototype.factoryReset = function() {
-      this.methodCalled('factoryReset');
+    TestLifetimeBrowserProxy.prototype.factoryReset = function(
+        requestTpmFirmwareUpdate) {
+      this.methodCalled('factoryReset', requestTpmFirmwareUpdate);
     };
   }
 
