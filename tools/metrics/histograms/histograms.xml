@@ -72334,6 +72334,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchTranslateCondition" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+        For each contextual search that is triggered by tap, records whether the
+    translation conditions are met. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.DefaultSearchChangeOrigin"
     enum="DefaultSearchChangeOrigin">
   <owner>mathp@chromium.org</owner>
