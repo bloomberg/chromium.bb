@@ -29853,7 +29853,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -29885,7 +29885,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -29915,7 +29915,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -29947,7 +29947,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -29977,7 +29977,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30009,7 +30009,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30039,7 +30039,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30071,7 +30071,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30101,7 +30101,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30133,7 +30133,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30163,7 +30163,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30195,7 +30195,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30225,7 +30225,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30257,7 +30257,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30287,7 +30287,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30319,7 +30319,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30349,7 +30349,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30381,7 +30381,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30411,7 +30411,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30443,7 +30443,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30473,7 +30473,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30505,7 +30505,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30535,7 +30535,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30567,7 +30567,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30597,7 +30597,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30629,7 +30629,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30659,7 +30659,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30691,7 +30691,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30721,7 +30721,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30753,7 +30753,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30783,7 +30783,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30815,7 +30815,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30845,7 +30845,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30877,7 +30877,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30907,7 +30907,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30939,7 +30939,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -30969,7 +30969,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31001,7 +31001,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31031,7 +31031,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31063,7 +31063,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31093,7 +31093,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31125,7 +31125,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31146,7 +31146,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31176,7 +31176,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31206,7 +31206,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31238,7 +31238,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31268,7 +31268,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31300,7 +31300,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31330,7 +31330,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31362,7 +31362,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31392,7 +31392,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31424,7 +31424,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31445,7 +31445,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31475,7 +31475,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31507,7 +31507,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31537,7 +31537,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31569,7 +31569,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31599,7 +31599,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31631,7 +31631,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31652,7 +31652,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31682,7 +31682,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31714,7 +31714,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31744,7 +31744,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31776,7 +31776,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31806,7 +31806,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31838,7 +31838,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31868,7 +31868,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31898,7 +31898,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31930,7 +31930,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31960,7 +31960,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -31992,7 +31992,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32022,7 +32022,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32054,7 +32054,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32084,7 +32084,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32116,7 +32116,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32146,7 +32146,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32178,7 +32178,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32208,7 +32208,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32240,7 +32240,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32270,7 +32270,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32302,7 +32302,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32332,7 +32332,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32364,7 +32364,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32394,7 +32394,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32426,7 +32426,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32456,7 +32456,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32488,7 +32488,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32518,7 +32518,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32550,7 +32550,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32580,7 +32580,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32612,7 +32612,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32642,7 +32642,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32674,7 +32674,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32704,7 +32704,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32736,7 +32736,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32766,7 +32766,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32798,7 +32798,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32828,7 +32828,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32860,7 +32860,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32890,7 +32890,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32922,7 +32922,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32952,7 +32952,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -32984,7 +32984,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33014,7 +33014,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33046,7 +33046,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33076,7 +33076,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33108,7 +33108,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33138,7 +33138,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33170,7 +33170,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33200,7 +33200,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33232,7 +33232,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33262,7 +33262,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33294,7 +33294,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33324,7 +33324,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33356,7 +33356,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33386,7 +33386,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33418,7 +33418,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33448,7 +33448,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33480,7 +33480,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33510,7 +33510,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33542,7 +33542,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build31-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33572,7 +33572,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33604,7 +33604,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build27-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33634,7 +33634,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33666,7 +33666,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33696,7 +33696,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33728,7 +33728,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33758,7 +33758,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33790,7 +33790,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33820,7 +33820,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33852,7 +33852,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33882,7 +33882,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33914,7 +33914,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33935,7 +33935,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build29-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33965,7 +33965,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -33997,7 +33997,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34027,7 +34027,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34059,7 +34059,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34089,7 +34089,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34119,7 +34119,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34151,7 +34151,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build30-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34181,7 +34181,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
@@ -34213,7 +34213,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0534",
+              "gpu": "10de:1cb3",
               "id": "build28-a9",
               "os": "Ubuntu-14.04",
               "pool": "Chrome-perf"
