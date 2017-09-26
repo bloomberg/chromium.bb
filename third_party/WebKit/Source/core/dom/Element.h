@@ -74,6 +74,7 @@ class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
+class StringOrTrustedScriptURL;
 class StylePropertySet;
 class StylePropertyMap;
 class V0CustomElementDefinition;
@@ -197,6 +198,12 @@ class CORE_EXPORT Element : public ContainerNode {
                     const AtomicString& value,
                     ExceptionState&);
   void setAttribute(const AtomicString& name, const AtomicString& value);
+
+  // Trusted Type variant of the above.
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedScriptURL&,
+                    ExceptionState&);
+
   static bool ParseAttributeName(QualifiedName&,
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
@@ -553,6 +560,8 @@ class CORE_EXPORT Element : public ContainerNode {
   KURL HrefURL() const;
 
   KURL GetURLAttribute(const QualifiedName&) const;
+  void GetURLAttribute(const QualifiedName&, StringOrTrustedScriptURL&) const;
+
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
   virtual const AtomicString ImageSourceURL() const;

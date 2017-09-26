@@ -33,6 +33,7 @@
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "bindings/core/v8/string_or_trusted_html.h"
+#include "bindings/core/v8/string_or_trusted_script_url.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
@@ -81,6 +82,7 @@
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/dom/events/EventDispatcher.h"
 #include "core/dom/trustedtypes/TrustedHTML.h"
+#include "core/dom/trustedtypes/TrustedScriptURL.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -1364,6 +1366,24 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
                      ? GetElementData()->Attributes().FindIndex(name)
                      : kNotFound;
   SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
+}
+
+void Element::setAttribute(const QualifiedName& name,
+                           const StringOrTrustedScriptURL& stringOrURL,
+                           ExceptionState& exception_state) {
+  DCHECK(stringOrURL.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  if (stringOrURL.isString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedScriptURL` assignment.");
+    return;
+  }
+
+  String valueString = stringOrURL.isString()
+                           ? stringOrURL.getAsString()
+                           : stringOrURL.getAsTrustedScriptURL()->toString();
+
+  setAttribute(name, AtomicString(valueString));
 }
 
 ALWAYS_INLINE void Element::SetAttributeInternal(
@@ -3787,6 +3807,12 @@ KURL Element::GetURLAttribute(const QualifiedName& name) const {
 #endif
   return GetDocument().CompleteURL(
       StripLeadingAndTrailingHTMLSpaces(getAttribute(name)));
+}
+
+void Element::GetURLAttribute(const QualifiedName& name,
+                              StringOrTrustedScriptURL& result) const {
+  KURL url = GetURLAttribute(name);
+  result.setString(url.GetString());
 }
 
 KURL Element::GetNonEmptyURLAttribute(const QualifiedName& name) const {

@@ -337,6 +337,8 @@ blink_core_sources("dom") {
     "events/WindowEventContext.h",
     "trustedtypes/TrustedHTML.cpp",
     "trustedtypes/TrustedHTML.h",
+    "trustedtypes/TrustedScriptURL.cpp",
+    "trustedtypes/TrustedScriptURL.h",
     "trustedtypes/TrustedURL.cpp",
     "trustedtypes/TrustedURL.h",
   ]

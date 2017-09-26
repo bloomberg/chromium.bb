@@ -7002,6 +7002,11 @@ interface TrustedHTML
     attribute @@toStringTag
     method constructor
     method toString
+interface TrustedScriptURL
+    static method unsafelyCreate
+    attribute @@toStringTag
+    method constructor
+    method toString
 interface TrustedURL
     static method create
     static method unsafelyCreate
