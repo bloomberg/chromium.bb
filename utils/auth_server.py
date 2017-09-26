@@ -42,6 +42,10 @@ class RPCError(Exception):
     self.code = code
 
 
+# Account describes one logical account.
+Account = collections.namedtuple('Account', ['id', 'email'])
+
+
 class TokenProvider(object):
   """Interface for an object that can create OAuth tokens on demand.
 
@@ -81,9 +85,9 @@ class LocalAuthServer(object):
   def __init__(self):
     self._lock = threading.Lock() # guards everything below
     self._accept_thread = None
-    self._cache = {} # dict ((account_id, scopes) => AccessToken | TokenError).
+    self._cache = {}  # dict ((account_id, scopes) => AccessToken | TokenError).
     self._token_provider = None
-    self._accounts = frozenset()
+    self._accounts = frozenset()  # set of Account tuples
     self._rpc_secret = None
     self._server = None
 
@@ -92,15 +96,19 @@ class LocalAuthServer(object):
 
     Args:
       token_provider: instance of TokenProvider to use for making tokens.
-      accounts: a list of logical account IDs to allow getting a token for.
+      accounts: a list of Account tuples to allow getting a token for.
       default_account_id: goes directly into LUCI_CONTEXT['local_auth'].
       port: local TCP port to bind to, or 0 to bind to any available port.
 
     Returns:
       A dict to put into 'local_auth' section of LUCI_CONTEXT.
     """
+    assert all(isinstance(acc, Account) for acc in accounts), accounts
+
     # 'default_account_id' is either not set, or one of the supported accounts.
-    assert not default_account_id or default_account_id in accounts
+    assert (
+        not default_account_id or
+        any(default_account_id == acc.id for acc in accounts))
 
     server = _HTTPServer(self, ('127.0.0.1', port))
 
@@ -121,7 +129,8 @@ class LocalAuthServer(object):
       local_auth = {
         'rpc_port': self._server.server_port,
         'secret': self._rpc_secret,
-        'accounts': [{'id': acc} for acc in accounts],
+        'accounts': sorted(
+            {'id': acc.id, 'email': acc.email} for acc in accounts),
       }
       # TODO(vadimsh): Some clients don't understand 'null' value for
       # default_account_id, so just omit it completely for now.
@@ -228,7 +237,7 @@ class LocalAuthServer(object):
       raise RPCError(403, 'Invalid "secret".')
 
     # Make sure we know about the requested account.
-    if account_id not in accounts:
+    if not any(account_id == acc.id for acc in accounts):
       raise RPCError(404, 'Unrecognized account ID %r.' % account_id)
 
     # Grab the token (or a fatal error) from the memory cache, checks token
@@ -414,7 +423,11 @@ def testing_main():
   server = LocalAuthServer()
   ctx = server.start(
       token_provider=DumbProvider(),
-      accounts=['a', 'b', 'c'],
+      accounts=[
+          Account('a', 'a@example.com'),
+          Account('b', 'b@example.com'),
+          Account('c', 'c@example.com'),
+      ],
       default_account_id='a',
       port=11111)
   try:

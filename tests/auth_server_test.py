@@ -57,11 +57,13 @@ def local_auth_server(token_cb, default_account_id, **overrides):
     def generate_token(self, account_id, scopes):
       return token_cb(account_id, scopes)
 
+  acc = lambda aid: auth_server.Account(id=aid, email=aid+'@example.com')
+
   s = auth_server.LocalAuthServer()
   try:
     local_auth = s.start(
         token_provider=MockedProvider(),
-        accounts=('acc_1', 'acc_2', 'acc_3'),
+        accounts=(acc('acc_1'), acc('acc_2'), acc('acc_3')),
         default_account_id=default_account_id)
     local_auth.update(overrides)
     with luci_context.write(local_auth=local_auth):
@@ -87,6 +89,19 @@ class LocalAuthServerTest(auto_stub.TestCase):
       return auth_server.AccessToken('tok_%s' % account_id, time.time() + 300)
 
     with local_auth_server(token_gen, 'acc_1'):
+      # Accounts are set correctly.
+      ctx = luci_context.read('local_auth')
+      ctx.pop('rpc_port')
+      ctx.pop('secret')
+      self.assertEqual({
+          'accounts': [
+              {'email': 'acc_1@example.com', 'id': 'acc_1'},
+              {'email': 'acc_2@example.com', 'id': 'acc_2'},
+              {'email': 'acc_3@example.com', 'id': 'acc_3'},
+          ],
+         'default_account_id': 'acc_1',
+      }, ctx)
+
       # Grab initial token.
       resp = call_rpc('acc_1', ['B', 'B', 'A', 'C'])
       self.assertEqual(
