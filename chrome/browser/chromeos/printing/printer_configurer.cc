@@ -211,8 +211,10 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
         cb.Run(PrinterSetupResult::kPpdUnretrievable);
         break;
       case PpdProvider::CallbackResultCode::INTERNAL_ERROR:
-        // TODO(skau): Add kPpdTooLarge when it's reported by the PpdProvider.
         cb.Run(PrinterSetupResult::kFatalError);
+        break;
+      case PpdProvider::CallbackResultCode::PPD_TOO_LARGE:
+        cb.Run(PrinterSetupResult::kPpdTooLarge);
         break;
     }
   }
