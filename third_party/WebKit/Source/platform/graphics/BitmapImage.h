@@ -218,6 +218,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   size_t frame_count_;
 
+  PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;
+
   RefPtr<WebTaskRunner> task_runner_;
 
   WTF::WeakPtrFactory<BitmapImage> weak_factory_;
