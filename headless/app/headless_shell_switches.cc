@@ -12,8 +12,12 @@ namespace switches {
 // transparent.
 const char kDefaultBackgroundColor[] = "default-background-color";
 
-// Enable chrash reporter for headless.
+// Enable crash reporter for headless.
 const char kEnableCrashReporter[] = "enable-crash-reporter";
+
+// Disable crash reporter for headless. It is enabled by default in official
+// builds.
+const char kDisableCrashReporter[] = "disable-crash-reporter";
 
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
