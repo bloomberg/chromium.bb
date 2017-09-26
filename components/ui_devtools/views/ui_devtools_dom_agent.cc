@@ -302,6 +302,22 @@ void DrawR1BottomFullLeftR2(const gfx::RectF& pinned_rect_f,
                         render_text);
 }
 
+void DrawR1TopPartialLeftR2(const gfx::RectF& pinned_rect_f,
+                            const gfx::RectF& hovered_rect_f,
+                            const cc::PaintFlags& flags,
+                            gfx::Canvas* canvas,
+                            gfx::RenderText* render_text) {
+  float x1 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
+  float y1 = hovered_rect_f.bottom();
+  float x2 = x1;
+  float y2 = pinned_rect_f.y();
+
+  // Vertical left dotted line.
+  canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
+  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas,
+                        render_text);
+}
+
 }  // namespace
 
 UIDevToolsDOMAgent::UIDevToolsDOMAgent()
@@ -618,7 +634,16 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
                        flags);
       return;
     case HighlightRectsConfiguration::R1_TOP_PARTIAL_LEFT_R2:
-      NOTIMPLEMENTED();
+      DrawR1TopPartialLeftR2(pinned_rect_f, hovered_rect_f, flags, canvas,
+                             render_text_.get());
+
+      // Draw 1 guide line along distance lines.
+      flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+
+      // Top horizontal dotted line from left to right.
+      canvas->DrawLine(gfx::PointF(0.0f, pinned_rect_f.y()),
+                       gfx::PointF(screen_bounds.right(), pinned_rect_f.y()),
+                       flags);
       return;
     case HighlightRectsConfiguration::R1_BOTTOM_PARTIAL_LEFT_R2:
       NOTIMPLEMENTED();
