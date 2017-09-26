@@ -99,6 +99,7 @@ class PaymentRequestBrowserTestBase
 
   void SetIncognito();
   void SetInvalidSsl();
+  void SetBrowserWindowInactive();
 
   // PaymentRequest::ObserverForTest:
   void OnCanMakePaymentCalled() override;
@@ -285,6 +286,7 @@ class PaymentRequestBrowserTestBase
   TestChromePaymentRequestDelegate* delegate_;
   bool is_incognito_;
   bool is_valid_ssl_;
+  bool is_browser_window_active_;
 
   service_manager::BinderRegistryWithArgs<content::RenderFrameHost*> registry_;
 

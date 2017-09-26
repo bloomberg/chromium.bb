@@ -52,6 +52,20 @@ class PaymentRequestNoShippingTest : public PaymentRequestBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestNoShippingTest);
 };
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InactiveBrowserWindow) {
+  SetBrowserWindowInactive();
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  EXPECT_TRUE(content::ExecuteScript(
+      GetActiveWebContents(),
+      "(function() { document.getElementById('buy').click(); })();"));
+
+  WaitForObservedEvent();
+
+  ExpectBodyContains({"AbortError"});
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
   InvokePaymentRequestUI();
 

@@ -26,7 +26,8 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
       content::WebContents* web_contents,
       PaymentRequestDialogView::ObserverForTest* observer,
       bool is_incognito,
-      bool is_valid_ssl);
+      bool is_valid_ssl,
+      bool is_browser_window_active);
 
   void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
     region_data_loader_ = region_data_loader;
@@ -37,6 +38,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   bool IsIncognito() const override;
   bool IsSslCertificateValid() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
+  bool IsBrowserWindowActive() const override;
 
   PaymentRequestDialogView* dialog_view() {
     return static_cast<PaymentRequestDialogView*>(dialog_);
@@ -47,8 +49,9 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   autofill::RegionDataLoader* region_data_loader_;
 
   PaymentRequestDialogView::ObserverForTest* observer_;
-  bool is_incognito_;
-  bool is_valid_ssl_;
+  const bool is_incognito_;
+  const bool is_valid_ssl_;
+  const bool is_browser_window_active_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromePaymentRequestDelegate);
 };

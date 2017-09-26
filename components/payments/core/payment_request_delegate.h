@@ -13,6 +13,8 @@ class PaymentRequest;
 
 class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
  public:
+  ~PaymentRequestDelegate() override {}
+
   // Shows the Payment Request dialog for the given |request|.
   virtual void ShowDialog(PaymentRequest* request) = 0;
 
@@ -23,6 +25,9 @@ class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
   // Disables the dialog and shows an error message that the transaction has
   // failed.
   virtual void ShowErrorMessage() = 0;
+
+  // Returns whether the browser window is active.
+  virtual bool IsBrowserWindowActive() const = 0;
 };
 
 }  // namespace payments

@@ -90,6 +90,10 @@ PrefService* TestPaymentRequestDelegate::GetPrefService() {
   return nullptr;
 }
 
+bool TestPaymentRequestDelegate::IsBrowserWindowActive() const {
+  return true;
+}
+
 TestPaymentsClientDelegate::TestPaymentsClientDelegate() {}
 
 TestPaymentsClientDelegate::~TestPaymentsClientDelegate() {}
