@@ -151,19 +151,57 @@ LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   if (page_view->HorizontalScrollbarMode() != kScrollbarAlwaysOff)
     return media_rect.Width();
 
+  // TODO(steimel): This code assumes the video is in the main frame.
   // On desktop, this will include scrollbars when they stay visible.
   const LayoutUnit visible_width(page->GetVisualViewport().VisibleWidth());
-  const LayoutUnit absolute_x_offset(
-      LocalToAbsolute(
-          FloatPoint(media_rect.Location()),
-          kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries)
-          .X());
-  const LayoutUnit new_width = visible_width - absolute_x_offset;
+  // The bottom left corner of the video.
+  const FloatPoint bottom_left_point(LocalToAbsolute(
+      FloatPoint(media_rect.X(), media_rect.MaxY()),
+      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries));
+  // The bottom right corner of the video.
+  const FloatPoint bottom_right_point(LocalToAbsolute(
+      FloatPoint(media_rect.MaxX(), media_rect.MaxY()),
+      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries));
 
-  if (new_width < 0)
+  const bool bottom_left_corner_visible = bottom_left_point.X() < visible_width;
+  const bool bottom_right_corner_visible =
+      bottom_right_point.X() < visible_width;
+
+  // If both corners are visible, then we can see the whole panel.
+  if (bottom_left_corner_visible && bottom_right_corner_visible)
     return media_rect.Width();
 
-  return std::min(media_rect.Width(), visible_width - absolute_x_offset);
+  // TODO(steimel): Should we return zero here?
+  // If neither corner is visible, use the whole length.
+  if (!bottom_left_corner_visible && !bottom_right_corner_visible)
+    return media_rect.Width();
+
+  // TODO(steimel): Right now, LayoutMedia will assume that the panel will start
+  // at the bottom left corner, so if the bottom right corner is showing, we'll
+  // need to set the panel width to the width of the video. However, in an ideal
+  // world, if the bottom right corner is showing and the bottom left corner is
+  // not, we'd shorten the panel *and* shift it towards the bottom right corner
+  // (this can happen when the video has been rotated).
+  if (bottom_right_corner_visible)
+    return media_rect.Width();
+
+  // One corner is within the visible viewport, while the other is outside of
+  // it, so we know that the panel will cross the right edge of the page, so
+  // we'll calculate the point where the panel intersects the right edge of the
+  // page and then calculate the visible width of the panel from the distance
+  // between the visible point and the edge intersection point.
+  const float slope = (bottom_right_point.Y() - bottom_left_point.Y()) /
+                      (bottom_right_point.X() - bottom_left_point.X());
+  const float edge_intersection_y =
+      bottom_left_point.Y() + ((visible_width - bottom_left_point.X()) * slope);
+
+  const FloatPoint edge_intersection_point(visible_width, edge_intersection_y);
+
+  // Calculate difference.
+  FloatPoint difference_vector = edge_intersection_point;
+  difference_vector.Move(-bottom_left_point.X(), -bottom_left_point.Y());
+
+  return LayoutUnit(difference_vector.length());
 }
 
 }  // namespace blink
