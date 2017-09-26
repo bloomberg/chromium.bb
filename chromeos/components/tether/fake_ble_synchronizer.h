@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
-#define CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
+#ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_
+#define CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chromeos/components/tether/ble_advertisement_synchronizer.h"
+#include "chromeos/components/tether/ble_synchronizer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -15,11 +15,11 @@ namespace chromeos {
 
 namespace tether {
 
-// Test double for BleAdvertisementSynchronizer.
-class FakeBleAdvertisementSynchronizer : public BleAdvertisementSynchronizer {
+// Test double for BleSynchronizer.
+class FakeBleSynchronizer : public BleSynchronizer {
  public:
-  FakeBleAdvertisementSynchronizer();
-  ~FakeBleAdvertisementSynchronizer() override;
+  FakeBleSynchronizer();
+  ~FakeBleSynchronizer() override;
 
   size_t GetNumCommands();
 
@@ -34,15 +34,25 @@ class FakeBleAdvertisementSynchronizer : public BleAdvertisementSynchronizer {
   const device::BluetoothAdvertisement::ErrorCallback&
   GetUnregisterErrorCallback(size_t index);
 
+  const device::BluetoothAdapter::DiscoverySessionCallback&
+  GetStartDiscoveryCallback(size_t index);
+  const device::BluetoothAdapter::ErrorCallback& GetStartDiscoveryErrorCallback(
+      size_t index);
+
+  const base::Closure& GetStopDiscoveryCallback(size_t index);
+  const device::BluetoothDiscoverySession::ErrorCallback&
+  GetStopDiscoveryErrorCallback(size_t index);
+
  protected:
+  // BleSynchronizer:
   void ProcessQueue() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeBleAdvertisementSynchronizer);
+  DISALLOW_COPY_AND_ASSIGN(FakeBleSynchronizer);
 };
 
 }  // namespace tether
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_ADVERTISEMENT_SYNCHRONIZER_H_
+#endif  // CHROMEOS_COMPONENTS_TETHER_FAKE_BLE_SYNCHRONIZER_H_

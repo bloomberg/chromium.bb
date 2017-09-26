@@ -15,34 +15,49 @@
 #include "base/timer/timer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 
 namespace chromeos {
 
 namespace tether {
 
-// Ensures that BLE advertisement registration/unregistration commands are not
-// sent back-to-back. Because Bluetooth race conditions exist in the kernel,
-// this strategy is necessary to work around potential bugs. Essentially, this
-// class is a synchronization wrapper around the Bluetooth API.
-class BleAdvertisementSynchronizer {
+// Ensures that BLE advertisement registration/unregistration commands and
+// discovery start/stop are not sent too close to each other. Because Bluetooth
+// race conditions exist in the kernel, this strategy is necessary to work
+// around potential bugs. Essentially, this class is a synchronization wrapper
+// around the Bluetooth API.
+class BleSynchronizer {
  public:
-  BleAdvertisementSynchronizer(
-      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
-  virtual ~BleAdvertisementSynchronizer();
+  BleSynchronizer(scoped_refptr<device::BluetoothAdapter> bluetooth_adapter);
+  virtual ~BleSynchronizer();
 
+  // Advertisement wrappers.
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
       const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
       const device::BluetoothAdapter::AdvertisementErrorCallback&
           error_callback);
-
   void UnregisterAdvertisement(
       scoped_refptr<device::BluetoothAdvertisement> advertisement,
       const device::BluetoothAdvertisement::SuccessCallback& success_callback,
       const device::BluetoothAdvertisement::ErrorCallback& error_callback);
 
+  // Discovery session wrappers.
+  void StartDiscoverySession(
+      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
+      const device::BluetoothAdapter::ErrorCallback& error_callback);
+  void StopDiscoverySession(
+      base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
+      const base::Closure& callback,
+      const device::BluetoothDiscoverySession::ErrorCallback& error_callback);
+
  protected:
-  enum class CommandType { REGISTER_ADVERTISEMENT, UNREGISTER_ADVERTISEMENT };
+  enum class CommandType {
+    REGISTER_ADVERTISEMENT,
+    UNREGISTER_ADVERTISEMENT,
+    START_DISCOVERY,
+    STOP_DISCOVERY
+  };
 
   struct RegisterArgs {
     RegisterArgs(
@@ -70,14 +85,40 @@ class BleAdvertisementSynchronizer {
     device::BluetoothAdvertisement::ErrorCallback error_callback;
   };
 
+  struct StartDiscoveryArgs {
+    StartDiscoveryArgs(
+        const device::BluetoothAdapter::DiscoverySessionCallback& callback,
+        const device::BluetoothAdapter::ErrorCallback& error_callback);
+    virtual ~StartDiscoveryArgs();
+
+    device::BluetoothAdapter::DiscoverySessionCallback callback;
+    device::BluetoothAdapter::ErrorCallback error_callback;
+  };
+
+  struct StopDiscoveryArgs {
+    StopDiscoveryArgs(
+        base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
+        const base::Closure& callback,
+        const device::BluetoothDiscoverySession::ErrorCallback& error_callback);
+    virtual ~StopDiscoveryArgs();
+
+    base::WeakPtr<device::BluetoothDiscoverySession> discovery_session;
+    base::Closure callback;
+    device::BluetoothDiscoverySession::ErrorCallback error_callback;
+  };
+
   struct Command {
     explicit Command(std::unique_ptr<RegisterArgs> register_args);
     explicit Command(std::unique_ptr<UnregisterArgs> unregister_args);
+    explicit Command(std::unique_ptr<StartDiscoveryArgs> start_discovery_args);
+    explicit Command(std::unique_ptr<StopDiscoveryArgs> stop_discovery_args);
     virtual ~Command();
 
     CommandType command_type;
     std::unique_ptr<RegisterArgs> register_args;
     std::unique_ptr<UnregisterArgs> unregister_args;
+    std::unique_ptr<StartDiscoveryArgs> start_discovery_args;
+    std::unique_ptr<StopDiscoveryArgs> stop_discovery_args;
   };
 
   virtual void ProcessQueue();
@@ -85,7 +126,7 @@ class BleAdvertisementSynchronizer {
   const std::deque<Command>& command_queue() { return command_queue_; }
 
  private:
-  friend class BleAdvertisementSynchronizerTest;
+  friend class BleSynchronizerTest;
 
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
                       std::unique_ptr<base::Clock> test_clock);
@@ -96,9 +137,9 @@ class BleAdvertisementSynchronizer {
   std::unique_ptr<base::Timer> timer_;
   std::unique_ptr<base::Clock> clock_;
   base::Time last_command_timestamp_;
-  base::WeakPtrFactory<BleAdvertisementSynchronizer> weak_ptr_factory_;
+  base::WeakPtrFactory<BleSynchronizer> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BleAdvertisementSynchronizer);
+  DISALLOW_COPY_AND_ASSIGN(BleSynchronizer);
 };
 
 }  // namespace tether

@@ -8,8 +8,8 @@
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/active_host_network_state_updater.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
-#include "chromeos/components/tether/ble_advertisement_synchronizer.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
+#include "chromeos/components/tether/ble_synchronizer.h"
 #include "chromeos/components/tether/crash_recovery_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
@@ -193,13 +193,12 @@ void InitializerImpl::CreateComponent() {
           cryptauth_service_->GetCryptAuthDeviceManager());
   ble_advertisement_device_queue_ =
       base::MakeUnique<BleAdvertisementDeviceQueue>();
-  ble_advertisement_synchronizer_ =
-      base::MakeUnique<BleAdvertisementSynchronizer>(adapter_);
+  ble_synchronizer_ = base::MakeUnique<BleSynchronizer>(adapter_);
   ble_advertiser_ = base::MakeUnique<BleAdvertiser>(
       local_device_data_provider_.get(), remote_beacon_seed_fetcher_.get(),
-      ble_advertisement_synchronizer_.get());
-  ble_scanner_ =
-      base::MakeUnique<BleScanner>(adapter_, local_device_data_provider_.get());
+      ble_synchronizer_.get());
+  ble_scanner_ = base::MakeUnique<BleScanner>(
+      adapter_, local_device_data_provider_.get(), ble_synchronizer_.get());
   ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
       cryptauth_service_, adapter_, ble_advertisement_device_queue_.get(),
       ble_advertiser_.get(), ble_scanner_.get());
@@ -373,7 +372,7 @@ void InitializerImpl::FinishAsynchronousShutdownIfPossible() {
   ble_connection_manager_.reset();
   ble_scanner_.reset();
   ble_advertiser_.reset();
-  ble_advertisement_synchronizer_.reset();
+  ble_synchronizer_.reset();
   ble_advertisement_device_queue_.reset();
   remote_beacon_seed_fetcher_.reset();
   local_device_data_provider_.reset();

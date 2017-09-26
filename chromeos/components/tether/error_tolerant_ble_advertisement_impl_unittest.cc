@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/ble_constants.h"
-#include "chromeos/components/tether/fake_ble_advertisement_synchronizer.h"
+#include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +38,7 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
     fake_advertisement_ = nullptr;
     stopped_callback_called_ = false;
 
-    fake_synchronizer_ = base::MakeUnique<FakeBleAdvertisementSynchronizer>();
+    fake_synchronizer_ = base::MakeUnique<FakeBleSynchronizer>();
 
     advertisement_ = base::MakeUnique<ErrorTolerantBleAdvertisementImpl>(
         kDeviceId,
@@ -110,7 +110,7 @@ class ErrorTolerantBleAdvertisementImplTest : public testing::Test {
 
   const std::unique_ptr<cryptauth::DataWithTimestamp> fake_advertisement_data_;
 
-  std::unique_ptr<FakeBleAdvertisementSynchronizer> fake_synchronizer_;
+  std::unique_ptr<FakeBleSynchronizer> fake_synchronizer_;
 
   device::MockBluetoothAdvertisement* fake_advertisement_;
 

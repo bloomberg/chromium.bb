@@ -25,6 +25,9 @@ namespace chromeos {
 
 namespace tether {
 
+class BleSynchronizer;
+
+// Performs BLE scans for devices which are advertising to this device.
 class BleScanner : public device::BluetoothAdapter::Observer {
  public:
   class Observer {
@@ -36,9 +39,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
     }
   };
 
-  BleScanner(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      const cryptauth::LocalDeviceDataProvider* local_device_data_provider);
+  BleScanner(scoped_refptr<device::BluetoothAdapter> adapter,
+             cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+             BleSynchronizer* ble_synchronizer);
   ~BleScanner() override;
 
   virtual bool RegisterScanFilterForDevice(
@@ -87,11 +90,9 @@ class BleScanner : public device::BluetoothAdapter::Observer {
         device::BluetoothDevice* bluetooth_device) override;
   };
 
-  BleScanner(
+  void SetTestDoubles(
       std::unique_ptr<ServiceDataProvider> service_data_provider,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
-      const cryptauth::LocalDeviceDataProvider* local_device_data_provider);
+      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator);
 
   bool IsDeviceRegistered(const std::string& device_id);
 
@@ -116,22 +117,22 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   void CheckForMatchingScanFilters(device::BluetoothDevice* bluetooth_device,
                                    std::string& service_data);
 
-  base::ObserverList<Observer> observer_list_;
-
-  std::unique_ptr<ServiceDataProvider> service_data_provider_;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
+  cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
+  BleSynchronizer* ble_synchronizer_;
 
+  std::unique_ptr<ServiceDataProvider> service_data_provider_;
   std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
-  // |local_device_data_provider_| is not owned by this instance and must
-  // outlive it.
-  const cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
+
+  std::vector<cryptauth::RemoteDevice> registered_remote_devices_;
+  base::ObserverList<Observer> observer_list_;
 
   bool is_initializing_discovery_session_ = false;
   bool is_stopping_discovery_session_ = false;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
-
-  std::vector<cryptauth::RemoteDevice> registered_remote_devices_;
+  std::unique_ptr<base::WeakPtrFactory<device::BluetoothDiscoverySession>>
+      discovery_session_weak_ptr_factory_;
 
   base::WeakPtrFactory<BleScanner> weak_ptr_factory_;
 

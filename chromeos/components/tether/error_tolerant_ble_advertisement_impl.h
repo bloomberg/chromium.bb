@@ -18,7 +18,7 @@ namespace chromeos {
 
 namespace tether {
 
-class BleAdvertisementSynchronizer;
+class BleSynchronizer;
 
 // Concrete ErrorTolerantBleAdvertisement implementation.
 class ErrorTolerantBleAdvertisementImpl
@@ -30,7 +30,7 @@ class ErrorTolerantBleAdvertisementImpl
     static std::unique_ptr<ErrorTolerantBleAdvertisement> NewInstance(
         const std::string& device_id,
         std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-        BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
+        BleSynchronizer* ble_synchronizer);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -38,7 +38,7 @@ class ErrorTolerantBleAdvertisementImpl
     virtual std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
         const std::string& device_id,
         std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-        BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
+        BleSynchronizer* ble_synchronizer);
 
     virtual ~Factory();
 
@@ -49,7 +49,7 @@ class ErrorTolerantBleAdvertisementImpl
   ErrorTolerantBleAdvertisementImpl(
       const std::string& device_id,
       std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-      BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
+      BleSynchronizer* ble_synchronizer);
   ~ErrorTolerantBleAdvertisementImpl() override;
 
   // ErrorTolerantBleAdvertisement:
@@ -88,7 +88,7 @@ class ErrorTolerantBleAdvertisementImpl
 
   std::string device_id_;
   std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
-  BleAdvertisementSynchronizer* ble_advertisement_synchronizer_;
+  BleSynchronizer* ble_synchronizer_;
 
   bool registration_in_progress_ = false;
   bool unregistration_in_progress_ = false;
