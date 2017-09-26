@@ -114,14 +114,16 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       ->UpdateAutoHideState();
   view_ = view;
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
-  aura::Window* container = RootWindowController::ForWindow(root_window)
-                                ->GetContainer(kShellWindowId_AppListContainer);
 
-  view->Initialize(container, current_apps_page,
-                   Shell::Get()
-                       ->tablet_mode_controller()
-                       ->IsTabletModeWindowManagerEnabled(),
-                   IsSideShelf(root_window));
+  app_list::AppListView::InitParams params;
+  params.parent = RootWindowController::ForWindow(root_window)
+                      ->GetContainer(kShellWindowId_AppListContainer);
+  params.initial_apps_page = current_apps_page;
+  params.is_tablet_mode = Shell::Get()
+                              ->tablet_mode_controller()
+                              ->IsTabletModeWindowManagerEnabled();
+  params.is_side_shelf = IsSideShelf(root_window);
+  view->Initialize(params);
 
   if (!is_fullscreen_app_list_enabled_) {
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(

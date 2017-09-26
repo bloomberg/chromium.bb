@@ -5,13 +5,15 @@
 #include "ui/app_list/views/app_list_view.h"
 
 #include <algorithm>
+#include <vector>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
@@ -258,22 +260,19 @@ void AppListView::ExcludeWindowFromEventHandling(aura::Window* window) {
   window->SetProperty(kExcludeWindowFromEventHandling, true);
 }
 
-void AppListView::Initialize(gfx::NativeView parent,
-                             int initial_apps_page,
-                             bool is_tablet_mode,
-                             bool is_side_shelf) {
+void AppListView::Initialize(const InitParams& params) {
   base::Time start_time = base::Time::Now();
-  is_tablet_mode_ = is_tablet_mode;
-  is_side_shelf_ = is_side_shelf;
-  InitContents(parent, initial_apps_page);
+  is_tablet_mode_ = params.is_tablet_mode;
+  is_side_shelf_ = params.is_side_shelf;
+  InitContents(params.initial_apps_page);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   set_color(kContentsBackgroundColor);
-  set_parent_window(parent);
+  set_parent_window(params.parent);
 
   if (is_fullscreen_app_list_enabled_)
-    InitializeFullscreen(parent, initial_apps_page);
+    InitializeFullscreen(params.parent, params.parent_container_id);
   else
-    InitializeBubble(parent, initial_apps_page);
+    InitializeBubble();
 
   InitChildWidgets();
   AddChildView(overlay_view_);
@@ -403,7 +402,7 @@ class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(FullscreenWidgetObserver);
 };
 
-void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
+void AppListView::InitContents(int initial_apps_page) {
   if (is_fullscreen_app_list_enabled_) {
     // The shield view that colors/blurs the background of the app list and
     // makes it transparent.
@@ -432,7 +431,7 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   search_box_view_->layer()->SetMasksToBounds(true);
 
   app_list_main_view_->Init(
-      parent, is_fullscreen_app_list_enabled_ ? 0 : initial_apps_page,
+      is_fullscreen_app_list_enabled_ ? 0 : initial_apps_page,
       search_box_view_);
 
   // Speech recognition is available only when the start page exists.
@@ -477,7 +476,7 @@ void AppListView::InitChildWidgets() {
 }
 
 void AppListView::InitializeFullscreen(gfx::NativeView parent,
-                                       int initial_apps_page) {
+                                       int parent_container_id) {
   const display::Display display_nearest_view = GetDisplayNearestView();
   const gfx::Rect display_work_area_bounds = display_nearest_view.work_area();
 
@@ -492,12 +491,30 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
       display_nearest_view.bounds().width(),
       display_nearest_view.bounds().height());
 
+  // The app list container fills the screen, so convert to local coordinates.
+  gfx::Rect local_bounds = app_list_overlay_view_bounds;
+  local_bounds -= display_nearest_view.bounds().OffsetFromOrigin();
+
   fullscreen_widget_ = new views::Widget;
   views::Widget::InitParams app_list_overlay_view_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
   app_list_overlay_view_params.name = "AppList";
-  app_list_overlay_view_params.parent = parent;
+  if (parent) {
+    app_list_overlay_view_params.parent = parent;
+  } else {
+    // Under mash, the app list is owned by the browser process, which cannot
+    // directly access the ash window container hierarchy to set |parent|.
+    // TODO(jamescook): Remove this when app_list moves into //ash as |parent|
+    // will not be null.
+    app_list_overlay_view_params
+        .mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(parent_container_id);
+    app_list_overlay_view_params
+        .mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(display_nearest_view.id());
+    app_list_overlay_view_params.bounds = local_bounds;
+  }
   app_list_overlay_view_params.delegate = this;
   app_list_overlay_view_params.opacity =
       views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -506,15 +523,13 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   fullscreen_widget_->GetNativeWindow()->SetEventTargeter(
       base::MakeUnique<AppListEventTargeter>());
 
+  // The widget's initial position will be off the bottom of the display.
   // Set native view's bounds directly to avoid screen position controller
   // setting bounds in the display where the widget has the largest
-  // intersection. Also, we should not set native view's bounds in screen
-  // coordinates as it causes crash in DesktopScreenPositionClient::SetBounds()
-  // when '--mash' flag is enabled for desktop build (See crbug.com/757573).
-  gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
-  ::wm::ConvertRectFromScreen(native_view->parent(),
-                              &app_list_overlay_view_bounds);
-  native_view->SetBounds(app_list_overlay_view_bounds);
+  // intersection.
+  // TODO(mash): Redesign this animation to position the widget to cover the
+  // entire screen, then animate the layer up into position. crbug.com/768437
+  fullscreen_widget_->GetNativeView()->SetBounds(local_bounds);
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
@@ -522,8 +537,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
       new FullscreenWidgetObserver(this));
 }
 
-void AppListView::InitializeBubble(gfx::NativeView parent,
-                                   int initial_apps_page) {
+void AppListView::InitializeBubble() {
   set_margins(gfx::Insets());
   set_close_on_deactivate(false);
   set_shadow(views::BubbleBorder::NO_ASSETS);

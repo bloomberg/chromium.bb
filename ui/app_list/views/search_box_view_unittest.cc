@@ -73,9 +73,10 @@ class SearchBoxViewTest : public views::test::WidgetTest,
       }
     }
 
-    gfx::NativeView parent = GetContext();
     app_list_view_ = new AppListView(&view_delegate_);
-    app_list_view()->Initialize(parent, 0, false, false);
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    app_list_view()->Initialize(params);
 
     widget_ = CreateTopLevelPlatformWidget();
     view_.reset(new SearchBoxView(this, &view_delegate_, app_list_view()));
@@ -173,9 +174,10 @@ class SearchBoxViewFullscreenTest : public views::test::WidgetTest,
     scoped_feature_list_.InitAndEnableFeature(
         app_list::features::kEnableFullscreenAppList);
 
-    gfx::NativeView parent = GetContext();
     app_list_view_ = new AppListView(&view_delegate_);
-    app_list_view_->Initialize(parent, 0, false, false);
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    app_list_view_->Initialize(params);
 
     widget_ = CreateTopLevelPlatformWidget();
     view_.reset(new SearchBoxView(this, &view_delegate_, app_list_view()));

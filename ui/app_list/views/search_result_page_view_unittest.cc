@@ -89,12 +89,13 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     // Setting up views.
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
-    gfx::NativeView parent = GetContext();
-    app_list_view_->Initialize(parent, 0, false, false);
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    app_list_view_->Initialize(params);
     // TODO(warx): remove MaybeSetAnchorPoint setup when bubble launcher is
     // removed from code base.
     app_list_view_->MaybeSetAnchorPoint(
-        parent->GetBoundsInRootWindow().CenterPoint());
+        params.parent->GetBoundsInRootWindow().CenterPoint());
     app_list_view_->GetWidget()->Show();
 
     ContentsView* contents_view =
