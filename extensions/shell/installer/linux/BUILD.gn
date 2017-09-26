@@ -38,7 +38,7 @@ action("strip_app_shell_binary") {
   deps = [
     "//extensions/shell:app_shell",
   ]
-  script = "//chrome/installer/linux/strip_chrome_binary.py"
+  script = "//build/gn_run_binary.py"
   sources = [
     prog_name,
   ]
@@ -48,9 +48,11 @@ action("strip_app_shell_binary") {
   ]
   args = [
     rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir),
-    rebase_path(prog_name, root_build_dir),
-    rebase_path(debug_file, root_build_dir),
+    "-o",
     rebase_path(stripped_file, root_build_dir),
+    "-f",
+    rebase_path(debug_file, root_build_dir),
+    rebase_path(prog_name, root_build_dir),
   ]
 }
 
@@ -176,7 +178,7 @@ template("linux_package") {
   deb_target_name = "${target_name}_deb"
   action(deb_target_name) {
     visibility = [ ":*" ]
-    script = "//chrome/installer/linux/make_package.py"
+    script = "//build/gn_run_binary.py"
     deb_arch = "amd64"
 
     inputs = packaging_files_binaries

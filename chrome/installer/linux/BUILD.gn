@@ -156,7 +156,7 @@ action("strip_chrome_binary") {
   deps = [
     "//chrome",
   ]
-  script = "strip_chrome_binary.py"
+  script = "//build/gn_run_binary.py"
   sources = [
     prog_name,
   ]
@@ -166,9 +166,11 @@ action("strip_chrome_binary") {
   ]
   args = [
     rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir),
-    rebase_path(prog_name, root_build_dir),
-    rebase_path(debug_file, root_build_dir),
+    "-o",
     rebase_path(stripped_file, root_build_dir),
+    "-f",
+    rebase_path(debug_file, root_build_dir),
+    rebase_path(prog_name, root_build_dir),
   ]
 }
 
@@ -365,7 +367,7 @@ template("linux_package") {
   deb_target_name = "${target_name}_deb"
   action(deb_target_name) {
     visibility = [ ":*" ]
-    script = "make_package.py"
+    script = "//build/gn_run_binary.py"
 
     if (current_cpu == "x86") {
       deb_arch = "i386"
@@ -415,7 +417,7 @@ template("linux_package") {
     rpm_target_name = "${target_name}_rpm"
     action(rpm_target_name) {
       visibility = [ ":*" ]
-      script = "make_package.py"
+      script = "//build/gn_run_binary.py"
 
       if (current_cpu == "x86") {
         rpm_arch = "i386"
