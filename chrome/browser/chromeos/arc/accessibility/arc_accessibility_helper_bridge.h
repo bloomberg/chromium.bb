@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_host_delegate.h"
+#include "ui/arc/notification/arc_notification_surface_manager.h"
 
 class Profile;
 
@@ -39,7 +40,8 @@ class ArcAccessibilityHelperBridge
       public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
       public exo::WMHelper::ActivationObserver,
       public AXTreeSourceArc::Delegate,
-      public ArcAppListPrefs::Observer {
+      public ArcAppListPrefs::Observer,
+      public ArcNotificationSurfaceManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -74,6 +76,10 @@ class ArcAccessibilityHelperBridge
   void OnTaskDestroyed(int32_t task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
+  // ArcNotificationSurfaceManager::Observer overrides.
+  void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
+  void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override;
+
   const std::map<std::string, std::unique_ptr<AXTreeSourceArc>>&
   package_name_to_tree_for_test() {
     return package_name_to_tree_;
@@ -90,10 +96,20 @@ class ArcAccessibilityHelperBridge
 
   void OnActionResult(const ui::AXActionData& data, bool result) const;
 
+  AXTreeSourceArc* GetOrCreateFromPackageName(const std::string& package_name);
+  AXTreeSourceArc* CreateFromNotificationKey(
+      const std::string& notification_key);
+  AXTreeSourceArc* GetFromNotificationKey(
+      const std::string& notification_key) const;
+  AXTreeSourceArc* GetFromTreeId(int32_t tree_id) const;
+
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
+  ArcNotificationSurfaceManager* arc_notification_surface_manager_;
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>> package_name_to_tree_;
+  std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
+      notification_key_to_tree_;
   std::map<std::string, std::set<int32_t>> package_name_to_task_ids_;
   int32_t current_task_id_;
   std::unique_ptr<AXTreeSourceArc> fallback_tree_;

@@ -54,6 +54,8 @@ class AXTreeSourceArc
 
   void Focus(aura::Window* window);
 
+  int32_t window_id() const { return window_id_; }
+
  private:
   class FocusStealer;
 
@@ -84,6 +86,7 @@ class AXTreeSourceArc
   std::map<int32_t, int32_t> parent_map_;
   std::unique_ptr<AXTreeArcSerializer> current_tree_serializer_;
   int32_t root_id_;
+  int32_t window_id_;
   int32_t focused_node_id_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
