@@ -4155,10 +4155,48 @@ TEST_P(CrasAudioHandlerTest,
   cras_audio_handler_->GetAudioDevices(&audio_devices);
   EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
 
-  // Verify the active input device is unchanged.
-  EXPECT_EQ(0, test_observer_->active_input_node_changed_count());
-  EXPECT_EQ(kUSBMicId1, cras_audio_handler_->GetPrimaryActiveInputNode());
+  // Verify the active input device is changed to usb mic 2.
+  EXPECT_EQ(1, test_observer_->active_input_node_changed_count());
+  EXPECT_EQ(kUSBMicId2, cras_audio_handler_->GetPrimaryActiveInputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_input());
+}
+
+TEST_P(CrasAudioHandlerTest, PlugInUSBHeadphoneAfterLastUnplugNotActive) {
+  // Set up initial audio devices.
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kInternalSpeaker, kHeadphone, kUSBHeadphone1});
+  SetUpCrasAudioHandler(audio_nodes);
+
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(3u, audio_devices.size());
+  // 35mm Headphone is active, but USB headphone is not.
+  EXPECT_EQ(kHeadphone->id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Unplug both 35mm headphone and USB headphone.
+  audio_nodes.clear();
+  audio_nodes.push_back(GenerateAudioNode(kInternalSpeaker));
+  ChangeAudioNodes(audio_nodes);
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(1u, audio_devices.size());
+  // Internal speaker is active.
+  EXPECT_EQ(kInternalSpeaker->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Plug in USB headphone.
+  audio_nodes.clear();
+  AudioNode internal_speaker = GenerateAudioNode(kInternalSpeaker);
+  internal_speaker.active = true;
+  audio_nodes.push_back(internal_speaker);
+  AudioNode usb_headphone = GenerateAudioNode(kUSBHeadphone1);
+  usb_headphone.plugged_time = 80000000;
+  audio_nodes.push_back(usb_headphone);
+  ChangeAudioNodes(audio_nodes);
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(2u, audio_devices.size());
+  // USB headphone is active.
+  EXPECT_EQ(kUSBHeadphone1->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
 }
 
 }  // namespace chromeos
