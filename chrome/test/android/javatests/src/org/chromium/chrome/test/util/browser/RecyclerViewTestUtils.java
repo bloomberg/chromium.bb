@@ -39,6 +39,11 @@ public final class RecyclerViewTestUtils {
                     return false;
                 }
 
+                if (!viewHolder.itemView.isShown()) {
+                    updateFailureReason("The view is not visible for position " + position + ".");
+                    return false;
+                }
+
                 return true;
             }
         });
@@ -86,6 +91,16 @@ public final class RecyclerViewTestUtils {
 
                 if (recyclerView.isAnimating()) {
                     updateFailureReason("The recycler view is animating.");
+                    return false;
+                }
+
+                if (recyclerView.isDirty()) {
+                    updateFailureReason("The recycler view is dirty.");
+                    return false;
+                }
+
+                if (recyclerView.isLayoutRequested()) {
+                    updateFailureReason("The recycler view has layout requested.");
                     return false;
                 }
 
