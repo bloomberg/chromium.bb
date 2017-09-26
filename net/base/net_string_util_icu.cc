@@ -4,6 +4,7 @@
 
 #include "net/base/net_string_util.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/strings/string_util.h"
@@ -57,6 +58,11 @@ bool ConvertToUTF16WithSubstitutions(const std::string& text,
   return base::CodepageToUTF16(text, charset,
                                base::OnStringConversionError::SUBSTITUTE,
                                output);
+}
+
+bool ToUpper(const base::string16& str, base::string16* output) {
+  *output = base::i18n::ToUpper(str);
+  return true;
 }
 
 }  // namespace net

@@ -113,4 +113,19 @@ bool ConvertToUTF16WithSubstitutions(const std::string& text,
   return true;
 }
 
+bool ToUpper(const base::string16& str, base::string16* output) {
+  output->clear();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_new_str(
+      env, env->NewString(str.data(), str.length()));
+  if (java_new_str.is_null())
+    return false;
+  ScopedJavaLocalRef<jstring> java_result =
+      android::Java_NetStringUtil_toUpperCase(env, java_new_str);
+  if (java_result.is_null())
+    return false;
+  *output = base::android::ConvertJavaStringToUTF16(java_result);
+  return true;
+}
+
 }  // namespace net
