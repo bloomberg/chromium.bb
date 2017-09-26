@@ -19,6 +19,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
@@ -70,7 +71,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     base::FilePath cookie_path;
     bool cookie_path_found = PathService::Get(base::DIR_APP_DATA, &cookie_path);
     DCHECK(cookie_path_found);
-    cookie_path = cookie_path.Append("WebShell").Append("Cookies");
+    cookie_path = cookie_path.Append("ChromeWebView").Append("Cookies");
     scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =
         new net::SQLitePersistentCookieStore(
             cookie_path, network_task_runner_,
@@ -104,8 +105,19 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND}),
         false));
+
+    // Setup channel id store.
+    base::FilePath channel_id_path;
+    PathService::Get(base::DIR_APP_DATA, &channel_id_path);
+    channel_id_path =
+        channel_id_path.Append("ChromeWebView").Append("Channel ID");
+    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
+        new net::SQLiteChannelIDStore(
+            channel_id_path,
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
     storage_->set_channel_id_service(base::MakeUnique<net::ChannelIDService>(
-        new net::DefaultChannelIDStore(nullptr)));
+        new net::DefaultChannelIDStore(channel_id_db.get())));
     storage_->set_http_server_properties(
         std::unique_ptr<net::HttpServerProperties>(
             new net::HttpServerPropertiesImpl()));

@@ -1,5 +1,6 @@
 include_rules = [
   "+base",
+  "+components/content_settings/core",
   "+components/flags_ui",
   "+components/infobars/core",
   "+components/keyed_service/core",
@@ -8,6 +9,8 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/proxy_config",
+  "+components/signin/core",
+  "+components/signin/ios",
   "+components/ssl_config",
   "+components/translate/core",
   "+components/translate/ios",

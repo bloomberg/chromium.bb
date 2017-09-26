@@ -48,6 +48,11 @@ ProfileOAuth2TokenServiceFactory*
   return base::Singleton<ProfileOAuth2TokenServiceFactory>::get();
 }
 
+void ProfileOAuth2TokenServiceFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
+}
+
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);

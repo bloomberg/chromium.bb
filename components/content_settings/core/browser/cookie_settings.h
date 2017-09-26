@@ -22,6 +22,9 @@ class PrefService;
 
 namespace content_settings {
 
+// Default value for |extension_scheme|.
+const char kDummyExtensionScheme[] = ":no-extension-scheme:";
+
 // A frontend to the cookie settings of |HostContentSettingsMap|. Handles
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
 // thread and read on any thread.
@@ -32,7 +35,7 @@ class CookieSettings : public RefcountedKeyedService {
   // the whole lifetime of this instance.
   CookieSettings(HostContentSettingsMap* host_content_settings_map,
                  PrefService* prefs,
-                 const char* extension_scheme);
+                 const char* extension_scheme = kDummyExtensionScheme);
 
   // Returns the default content setting (CONTENT_SETTING_ALLOW,
   // CONTENT_SETTING_BLOCK, or CONTENT_SETTING_SESSION_ONLY) for cookies. If
