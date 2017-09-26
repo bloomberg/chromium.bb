@@ -31,6 +31,7 @@
 #include "platform/wtf/HashTraits.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ namespace blink {
 // font variations. Sixteen bits in total, one sign bit, two fractional bits,
 // means the smallest positive representable value is 0.25, the maximum
 // representable value is 8191.75, and the minimum representable value is -8192.
-class FontSelectionValue {
+class PLATFORM_EXPORT FontSelectionValue {
  public:
   FontSelectionValue() = default;
 
@@ -70,6 +71,8 @@ class FontSelectionValue {
   bool operator>=(const FontSelectionValue other) const;
 
   int16_t RawValue() const { return backing_; }
+
+  String ToString() const;
 
   static const FontSelectionValue& MaximumValue() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -334,6 +337,8 @@ struct PLATFORM_EXPORT FontSelectionRequest {
   bool operator!=(const FontSelectionRequest& other) const {
     return !operator==(other);
   }
+
+  String ToString() const;
 
   FontSelectionValue weight;
   FontSelectionValue width;

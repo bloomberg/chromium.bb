@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/Font.h"
-
 #include "platform/fonts/FontSelectionTypes.h"
+
 #include "platform/wtf/HashSet.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +28,28 @@ TEST(FontSelectionTypesTest, HashCollisions) {
     }
   }
   ASSERT_EQ(hashes.size(), weights.size() * slopes.size() * widths.size());
+}
+
+TEST(FontSelectionTypesTest, ValueToString) {
+  {
+    FontSelectionValue value(42);
+    EXPECT_EQ("42.000000", value.ToString());
+  }
+  {
+    FontSelectionValue value(42.81f);
+    EXPECT_EQ("42.750000", value.ToString());
+  }
+  {
+    FontSelectionValue value(42.923456789123456789);
+    EXPECT_EQ("42.750000", value.ToString());
+  }
+}
+
+TEST(FontSelectionTypesTest, RequestToString) {
+  FontSelectionRequest request(FontSelectionValue(42), FontSelectionValue(43),
+                               FontSelectionValue(44));
+  EXPECT_EQ("weight=42.000000, width=43.000000, slope=44.000000",
+            request.ToString());
 }
 
 }  // namespace blink

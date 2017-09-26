@@ -62,4 +62,50 @@ TEST(FontDescriptionTest, TestHashCollision) {
   }
 }
 
+TEST(FontDescriptionTest, ToString) {
+  FontDescription description;
+
+  FontFamily family;
+  family.SetFamily("A");
+  RefPtr<SharedFontFamily> b_family = SharedFontFamily::Create();
+  b_family->SetFamily("B");
+  family.AppendFamily(b_family);
+  description.SetFamily(family);
+
+  description.SetLocale(LayoutLocale::Get("no"));
+
+  RefPtr<FontVariationSettings> variation_settings =
+      FontVariationSettings::Create();
+  variation_settings->Append(FontVariationAxis{"a", 42});
+  variation_settings->Append(FontVariationAxis{"b", 8118});
+  description.SetVariationSettings(variation_settings);
+
+  RefPtr<FontFeatureSettings> feature_settings = FontFeatureSettings::Create();
+  feature_settings->Append(FontFeature{"c", 76});
+  feature_settings->Append(FontFeature{"d", 94});
+  description.SetFeatureSettings(feature_settings);
+
+  description.SetSpecifiedSize(1.1f);
+  description.SetComputedSize(2.2f);
+  description.SetAdjustedSize(3.3f);
+  description.SetSizeAdjust(4.4f);
+  description.SetLetterSpacing(5.5f);
+  description.SetWordSpacing(6.6f);
+
+  description.SetStyle(FontSelectionValue(31.5));
+  description.SetWeight(FontSelectionValue(32.6));
+  description.SetStretch(FontSelectionValue(33.7));
+
+  description.SetTextRendering(kOptimizeLegibility);
+
+  EXPECT_EQ(
+      "family_list=[A,B], feature_settings=[c=76,d=94], "
+      "variation_settings=[a=42,b=8118], locale=no, specified_size=1.100000, "
+      "computed_size=2.200000, adjusted_size=3.300000, size_adjust=4.400000, "
+      "letter_spacing=5.500000, word_spacing=6.600000, "
+      "font_selection_request=[weight=32.500000, width=33.500000, "
+      "slope=31.500000], typesetting_features=[Kerning,Ligatures]",
+      description.ToString());
+}
+
 }  // namespace blink

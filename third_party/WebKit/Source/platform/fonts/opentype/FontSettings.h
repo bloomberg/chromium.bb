@@ -11,6 +11,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -47,6 +48,19 @@ class FontSettings {
   bool operator==(const FontSettings& other) const {
     return list_ == other.list_;
   };
+  String ToString() const {
+    StringBuilder builder;
+    size_t num_features = size();
+    for (size_t i = 0; i < num_features; ++i) {
+      if (i > 0)
+        builder.Append(",");
+      const AtomicString& tag = at(i).Tag();
+      builder.Append(tag);
+      builder.Append("=");
+      builder.AppendNumber(at(i).Value());
+    }
+    return builder.ToString();
+  }
 
  protected:
   FontSettings(){};

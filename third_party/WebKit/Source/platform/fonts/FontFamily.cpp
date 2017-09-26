@@ -25,6 +25,8 @@
 
 #include "platform/fonts/FontFamily.h"
 
+#include "platform/wtf/text/StringBuilder.h"
+
 namespace blink {
 
 bool operator==(const FontFamily& a, const FontFamily& b) {
@@ -40,6 +42,18 @@ bool operator==(const FontFamily& a, const FontFamily& b) {
       return false;
   }
   return true;
+}
+
+String FontFamily::ToString() const {
+  StringBuilder builder;
+  builder.Append(family_);
+  const FontFamily* current = Next();
+  while (current) {
+    builder.Append(",");
+    builder.Append(current->Family());
+    current = current->Next();
+  }
+  return builder.ToString();
 }
 
 }  // namespace blink

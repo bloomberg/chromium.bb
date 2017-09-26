@@ -51,6 +51,10 @@ class PLATFORM_EXPORT FontFamily {
   void AppendFamily(RefPtr<SharedFontFamily>);
   RefPtr<SharedFontFamily> ReleaseNext();
 
+  // Returns this font family's name followed by all subsequent linked
+  // families delimited by commas.
+  String ToString() const;
+
  private:
   AtomicString family_;
   RefPtr<SharedFontFamily> next_;

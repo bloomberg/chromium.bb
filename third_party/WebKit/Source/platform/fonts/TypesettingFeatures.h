@@ -26,15 +26,23 @@
 #ifndef TypesettingFeatures_h
 #define TypesettingFeatures_h
 
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Forward.h"
+
 namespace blink {
 
+constexpr int kMaxTypesettingFeatureIndex = 2;
 enum TypesettingFeature {
   kKerning = 1 << 0,
   kLigatures = 1 << 1,
-  kCaps = 1 << 2
+  kCaps = 1 << kMaxTypesettingFeatureIndex
+  // When adding new features be sure to increment kMaxFeatureIndex
+  // and update kFeatureNames.
 };
 
 typedef unsigned TypesettingFeatures;
+
+PLATFORM_EXPORT String ToString(TypesettingFeatures);
 
 }  // namespace blink
 
