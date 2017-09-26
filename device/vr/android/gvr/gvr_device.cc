@@ -22,6 +22,8 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
+using base::android::JavaRef;
+
 namespace device {
 
 namespace {
@@ -126,7 +128,8 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
 GvrDevice::GvrDevice() : VRDevice() {
   GetGvrDelegateProvider();
   JNIEnv* env = base::android::AttachCurrentThread();
-  non_presenting_context_.Reset(Java_NonPresentingGvrContext_create(env));
+  non_presenting_context_.Reset(
+      Java_NonPresentingGvrContext_create(env, reinterpret_cast<jlong>(this)));
   if (!non_presenting_context_.obj())
     return;
   jlong context = Java_NonPresentingGvrContext_getNativeGvrContext(
@@ -216,6 +219,12 @@ GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
   if (delegate_provider)
     delegate_provider->SetDeviceId(id());
   return delegate_provider;
+}
+
+void GvrDevice::OnDIPScaleChanged(JNIEnv* env, const JavaRef<jobject>& obj) {
+  display_info_ = CreateVRDisplayInfo(
+      gvr_api_.get(), GetRecommendedWebVrSize(gvr_api_.get()), id());
+  OnChanged();
 }
 
 }  // namespace device

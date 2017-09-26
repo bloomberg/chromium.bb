@@ -47,6 +47,9 @@ shared_library("libcontent_shell_content_view") {
       "//device/sensors",
       "//media/midi",
     ]
+    if (enable_vr) {
+      deps += [ "//device/vr" ]
+    }
   }
   sources = [
     "shell_library_loader.cc",
@@ -297,6 +300,9 @@ if (current_cpu != "x64") {
         "//device/sensors",
         "//media/midi",
       ]
+      if (enable_vr) {
+        deps += [ "//device/vr" ]
+      }
     }
   }
 

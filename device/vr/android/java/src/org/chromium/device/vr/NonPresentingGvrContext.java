@@ -15,6 +15,7 @@ import com.google.vr.ndk.base.GvrApi;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * Creates an active GvrContext from a GvrApi created from the Application Context. This GvrContext
@@ -22,10 +23,14 @@ import org.chromium.base.annotations.JNINamespace;
  * parameters.
  */
 @JNINamespace("device")
-public class NonPresentingGvrContext {
+public class NonPresentingGvrContext implements DisplayAndroid.DisplayAndroidObserver {
     private GvrApi mGvrApi;
+    private DisplayAndroid mDisplayAndroid;
 
-    private NonPresentingGvrContext() {
+    private long mNativeGvrDevice;
+
+    private NonPresentingGvrContext(long nativeGvrDevice) {
+        mNativeGvrDevice = nativeGvrDevice;
         Context context = ContextUtils.getApplicationContext();
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -39,12 +44,14 @@ public class NonPresentingGvrContext {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+        mDisplayAndroid = DisplayAndroid.getNonMultiDisplay(context);
+        mDisplayAndroid.addObserver(this);
     }
 
     @CalledByNative
-    private static NonPresentingGvrContext create() {
+    private static NonPresentingGvrContext create(long nativeNonPresentingGvrContext) {
         try {
-            return new NonPresentingGvrContext();
+            return new NonPresentingGvrContext(nativeNonPresentingGvrContext);
         } catch (IllegalStateException | UnsatisfiedLinkError e) {
             return null;
         }
@@ -58,5 +65,18 @@ public class NonPresentingGvrContext {
     @CalledByNative
     private void shutdown() {
         mGvrApi.shutdown();
+        mDisplayAndroid.removeObserver(this);
+        mNativeGvrDevice = 0;
     }
+
+    public void onRotationChanged(int rotation) {}
+
+    public void onDIPScaleChanged(float dipScale) {
+        mGvrApi.refreshDisplayMetrics();
+        if (mNativeGvrDevice != 0) {
+            nativeOnDIPScaleChanged(mNativeGvrDevice);
+        }
+    }
+
+    private native void nativeOnDIPScaleChanged(long nativeGvrDevice);
 }

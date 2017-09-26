@@ -131,6 +131,7 @@ if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
     deps = [
       "//base:base_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
+      "//ui/android:ui_java",
     ]
   }
 }
