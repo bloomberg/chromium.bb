@@ -1088,20 +1088,26 @@ def PanProjectChecks(input_api, output_api,
 
 def CheckPatchFormatted(input_api, output_api, check_js=False):
   import git_cl
-  cmd = ['cl', 'format', '--dry-run', '--presubmit']
+  cmd = ['-C', input_api.change.RepositoryRoot(),
+         'cl', 'format', '--dry-run', '--presubmit']
   if check_js:
     cmd.append('--js')
-  cmd.append(input_api.PresubmitLocalPath())
-
+  presubmit_subdir = input_api.os_path.relpath(
+      input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot())
+  if presubmit_subdir.startswith('..') or presubmit_subdir == '.':
+    presubmit_subdir = ''
+  # If the PRESUBMIT.py is in a parent repository, then format the entire
+  # subrepository. Otherwise, format only the code in the directory that
+  # contains the PRESUBMIT.py.
+  if presubmit_subdir:
+    cmd.append(input_api.PresubmitLocalPath())
   code, _ = git_cl.RunGitWithCode(cmd, suppress_stderr=True)
   if code == 2:
     short_path = input_api.basename(input_api.PresubmitLocalPath())
-    full_path = input_api.os_path.relpath(input_api.PresubmitLocalPath(),
-                                          input_api.change.RepositoryRoot())
     return [output_api.PresubmitPromptWarning(
       'The %s directory requires source formatting. '
-      'Please run git cl format %s%s' %
-      (short_path, '--js ' if check_js else '', full_path))]
+      'Please run: git cl format %s%s' %
+      (short_path, '--js ' if check_js else '', presubmit_subdir))]
   # As this is just a warning, ignore all other errors if the user
   # happens to have a broken clang-format, doesn't use git, etc etc.
   return []
