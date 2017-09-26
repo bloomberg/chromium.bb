@@ -5,9 +5,11 @@
 #include "content/child/service_worker/service_worker_subresource_loader.h"
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/child/child_url_loader_factory_getter_impl.h"
 #include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -102,6 +104,8 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   ~ServiceWorkerSubresourceLoaderTest() override = default;
 
   void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kNetworkService);
+
     loader_factory_getter_ =
         base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>();
     controller_connector_ =
@@ -135,12 +139,14 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
   }
 
+ protected:
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
 
   FakeServiceWorkerContainerHost fake_container_host_;
   FakeControllerServiceWorker fake_controller_;
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderTest);
 };

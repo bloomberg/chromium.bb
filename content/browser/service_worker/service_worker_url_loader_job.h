@@ -95,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
 
   // For FORWARD_TO_SERVICE_WORKER case.
   void StartRequest();
+  scoped_refptr<storage::BlobHandle> CreateRequestBodyBlob();
   void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
   void DidDispatchFetchEvent(
       ServiceWorkerStatusCode status,

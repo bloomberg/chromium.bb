@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/http/http_util.h"
@@ -15,10 +16,6 @@ namespace content {
 // static
 std::unique_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
-  std::string blob_uuid;
-  uint64_t blob_size = 0;
-  // TODO(kinuko): Implement request.request_body handling.
-  DCHECK(!request.request_body);
   std::unique_ptr<ServiceWorkerFetchRequest> new_request =
       base::MakeUnique<ServiceWorkerFetchRequest>();
   new_request->mode = request.fetch_request_mode;
@@ -28,8 +25,11 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   new_request->frame_type = request.fetch_frame_type;
   new_request->url = request.url;
   new_request->method = request.method;
-  new_request->blob_uuid = blob_uuid;
-  new_request->blob_size = blob_size;
+  // |blob_uuid| and |blob_size| aren't used in MojoBlobs, so just clear them.
+  // The caller is responsible for setting the MojoBlob field |blob| if needed.
+  DCHECK(features::IsMojoBlobsEnabled());
+  new_request->blob_uuid.clear();
+  new_request->blob_size = 0;
   new_request->credentials_mode = request.fetch_credentials_mode;
   new_request->redirect_mode = request.fetch_redirect_mode;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
