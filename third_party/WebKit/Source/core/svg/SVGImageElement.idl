@@ -33,6 +33,8 @@
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength height;
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+
+    [RuntimeEnabled=JSImageDecode, CallWith=ScriptState, RaisesException] Promise decode();
 };
 
 SVGImageElement implements SVGURIReference;

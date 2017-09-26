@@ -6069,6 +6069,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter x
     getter y
     method constructor
+    method decode
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM

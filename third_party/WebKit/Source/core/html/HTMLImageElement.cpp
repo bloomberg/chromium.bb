@@ -95,7 +95,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
       layout_disposition_(LayoutDisposition::kPrimaryContent),
-      decode_sequence_id_(0),
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
@@ -119,7 +118,6 @@ DEFINE_TRACE(HTMLImageElement) {
   visitor->Trace(listener_);
   visitor->Trace(form_);
   visitor->Trace(source_);
-  visitor->Trace(decode_promise_resolvers_);
   HTMLElement::Trace(visitor);
 }
 
@@ -128,45 +126,6 @@ void HTMLImageElement::NotifyViewportChanged() {
   // And update the image's intrinsic dimensions when the viewport changes.
   // Picking of a better fitting resource is UA dependant, not spec required.
   SelectSourceURL(ImageLoader::kUpdateSizeChanged);
-}
-
-void HTMLImageElement::RequestDecode() {
-  DCHECK(!decode_promise_resolvers_.IsEmpty());
-  LocalFrame* frame = GetDocument().GetFrame();
-  // If we don't have the image, or the document doesn't have a frame, then
-  // reject the decode, since we can't plumb the request to the correct place.
-  if (!GetImageLoader().GetImage() ||
-      !GetImageLoader().GetImage()->GetImage() || !frame) {
-    DecodeRequestFinished(decode_sequence_id_, false);
-    return;
-  }
-  Image* image = GetImageLoader().GetImage()->GetImage();
-  frame->GetChromeClient().RequestDecode(
-      frame, image->PaintImageForCurrentFrame(),
-      WTF::Bind(&HTMLImageElement::DecodeRequestFinished,
-                WrapWeakPersistent(this), decode_sequence_id_));
-}
-
-void HTMLImageElement::DecodeRequestFinished(uint32_t sequence_id,
-                                             bool success) {
-  // If the sequence id attached with this callback doesn't match our current
-  // sequence id, then the source of the image has changed. In other words, the
-  // decode resolved/rejected by this callback was already rejected. Since we
-  // could have had a new decode request, we have to make sure not to
-  // resolve/reject those using the stale callback.
-  if (sequence_id != decode_sequence_id_)
-    return;
-
-  if (success) {
-    for (auto& resolver : decode_promise_resolvers_)
-      resolver->Resolve();
-  } else {
-    for (auto& resolver : decode_promise_resolvers_) {
-      resolver->Reject(DOMException::Create(
-          kEncodingError, "The source image cannot be decoded"));
-    }
-  }
-  decode_promise_resolvers_.clear();
 }
 
 HTMLImageElement* HTMLImageElement::CreateForJSConstructor(Document& document) {
@@ -304,14 +263,6 @@ void HTMLImageElement::ParseAttribute(
     }
   } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
     SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
-    // Ensure to fail any pending decodes on possible source changes.
-    if (!decode_promise_resolvers_.IsEmpty() &&
-        params.old_value != params.new_value) {
-      DecodeRequestFinished(decode_sequence_id_, false);
-      // Increment the sequence id so that any in flight decode completion tasks
-      // will not trigger promise resolution for new decode requests.
-      ++decode_sequence_id_;
-    }
   } else if (name == usemapAttr) {
     SetIsLink(!params.new_value.IsNull());
   } else if (name == referrerpolicyAttr) {
@@ -653,18 +604,7 @@ int HTMLImageElement::y() const {
 
 ScriptPromise HTMLImageElement::decode(ScriptState* script_state,
                                        ExceptionState& exception_state) {
-  if (!script_state->ContextIsValid()) {
-    exception_state.ThrowDOMException(kEncodingError,
-                                      "The source image cannot be decoded");
-    return ScriptPromise();
-  }
-  exception_state.ClearException();
-  decode_promise_resolvers_.push_back(
-      ScriptPromiseResolver::Create(script_state));
-  ScriptPromise promise = decode_promise_resolvers_.back()->Promise();
-  if (complete())
-    RequestDecode();
-  return promise;
+  return GetImageLoader().Decode(script_state, exception_state);
 }
 
 bool HTMLImageElement::complete() const {
@@ -880,15 +820,6 @@ RefPtr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
       NOTREACHED();
       return nullptr;
   }
-}
-
-void HTMLImageElement::ImageNotifyFinished(bool success) {
-  if (decode_promise_resolvers_.IsEmpty())
-    return;
-  if (success)
-    RequestDecode();
-  else
-    DecodeRequestFinished(decode_sequence_id_, false);
 }
 
 void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
