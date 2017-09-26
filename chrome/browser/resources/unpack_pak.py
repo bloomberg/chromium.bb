@@ -11,6 +11,10 @@ import sys
 
 _HERE_PATH = os.path.join(os.path.dirname(__file__))
 
+# The name of a dummy file to be updated always after all other files have been
+# written. This file is declared as the "output" for GN's purposes
+_TIMESTAMP_FILENAME = os.path.join('unpack.stamp')
+
 
 _SRC_PATH = os.path.normpath(os.path.join(_HERE_PATH, '..', '..', '..'))
 sys.path.insert(1, os.path.join(_SRC_PATH, 'tools', 'grit'))
@@ -61,6 +65,10 @@ def main():
   args = parser.parse_args()
 
   unpack(args.pak_file, args.out_folder)
+
+  timestamp_file_path = os.path.join(args.out_folder, _TIMESTAMP_FILENAME)
+  with open(timestamp_file_path, 'a'):
+    os.utime(timestamp_file_path, None)
 
 
 if __name__ == '__main__':
