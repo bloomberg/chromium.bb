@@ -350,9 +350,15 @@ void FileReader::abort() {
                  WTF::Bind(&FileReader::Terminate, WrapPersistent(this)));
 }
 
-void FileReader::result(StringOrArrayBuffer& result_attribute) const {
+void FileReader::result(ScriptState* state,
+                        StringOrArrayBuffer& result_attribute) const {
   if (error_ || !loader_)
     return;
+
+  if (!loader_->HasFinishedLoading()) {
+    UseCounter::Count(ExecutionContext::From(state),
+                      WebFeature::kFileReaderResultBeforeCompletion);
+  }
 
   if (read_type_ == FileReaderLoader::kReadAsArrayBuffer)
     result_attribute.setArrayBuffer(loader_->ArrayBufferResult());

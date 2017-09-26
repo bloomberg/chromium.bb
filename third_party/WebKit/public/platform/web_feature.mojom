@@ -1690,6 +1690,7 @@ enum WebFeature {
   kWebAudioDezipperBiquadFilterNodeQ = 2155,
   kWebAudioDezipperBiquadFilterNodeGain = 2156,
   kPerformanceServerTiming = 2157,
+  kFileReaderResultBeforeCompletion = 2158,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

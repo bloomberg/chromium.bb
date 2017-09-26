@@ -108,6 +108,8 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   void SetEncoding(const String&);
   void SetDataType(const String& data_type) { data_type_ = data_type; }
 
+  bool HasFinishedLoading() const { return finished_loading_; }
+
  private:
   FileReaderLoader(ReadType, FileReaderLoaderClient*);
 
