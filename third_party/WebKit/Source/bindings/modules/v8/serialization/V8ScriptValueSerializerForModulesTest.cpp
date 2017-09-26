@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8DOMException.h"
+#include "bindings/core/v8/serialization/V8ScriptValueSerializerTest.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
@@ -31,16 +32,8 @@ using ::testing::UnorderedElementsAre;
 namespace blink {
 namespace {
 
-RefPtr<SerializedScriptValue> SerializedValue(const Vector<uint8_t>& bytes) {
-  // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
-  // endianness swapping.
-  DCHECK_EQ(bytes.size() % 2, 0u);
-  return SerializedScriptValue::Create(
-      String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
-}
-
-v8::Local<v8::Value> RoundTrip(v8::Local<v8::Value> value,
-                               V8TestingScope& scope) {
+v8::Local<v8::Value> RoundTripForModules(v8::Local<v8::Value> value,
+                                         V8TestingScope& scope) {
   RefPtr<ScriptState> script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
   RefPtr<SerializedScriptValue> serialized_script_value =
@@ -54,23 +47,6 @@ v8::Local<v8::Value> RoundTrip(v8::Local<v8::Value> value,
   return V8ScriptValueDeserializerForModules(script_state,
                                              serialized_script_value)
       .Deserialize();
-}
-
-// Checks for a DOM exception, including a rethrown one.
-::testing::AssertionResult HadDOMException(const StringView& name,
-                                           ScriptState* script_state,
-                                           ExceptionState& exception_state) {
-  if (!exception_state.HadException())
-    return ::testing::AssertionFailure() << "no exception thrown";
-  DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
-      script_state->GetIsolate(), exception_state.GetException());
-  if (!dom_exception) {
-    return ::testing::AssertionFailure()
-           << "exception thrown was not a DOMException";
-  }
-  if (dom_exception->name() != name)
-    return ::testing::AssertionFailure() << "was " << dom_exception->name();
-  return ::testing::AssertionSuccess();
 }
 
 static const char kEcdsaPrivateKey[] =
@@ -166,7 +142,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
   // Round trip test.
   v8::Local<v8::Value> wrapper =
       ToV8(certificate, scope.GetContext()->Global(), scope.GetIsolate());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.GetIsolate()));
   RTCCertificate* new_certificate =
       V8RTCCertificate::ToImpl(result.As<v8::Object>());
@@ -394,7 +370,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
 
   // Round trip it and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
@@ -466,7 +442,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
 
   // Round trip it and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
@@ -541,7 +517,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
 
   // Round trip the private key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(private_key, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
   CryptoKey* new_private_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
@@ -632,7 +608,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
 
   // Round trip the private key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(private_key, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
   CryptoKey* new_private_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
@@ -708,7 +684,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
 
   // Round trip the key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
@@ -870,7 +846,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
   // At time of writing, this can only happen for filesystems from PPAPI.
   fs->MakeClonable();
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
-  v8::Local<v8::Value> result = RoundTrip(wrapper, scope);
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_FALSE(result.IsEmpty());
   ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.GetIsolate()));
   DOMFileSystem* new_fs = V8DOMFileSystem::ToImpl(result.As<v8::Object>());
