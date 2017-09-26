@@ -210,7 +210,6 @@ VideoResourceUpdater::RecycleOrAllocateResource(
     viz::ResourceFormat resource_format,
     const gfx::ColorSpace& color_space,
     bool software_resource,
-    bool immutable_hint,
     int unique_id,
     int plane_index) {
   ResourceList::iterator recyclable_resource = all_resources_.end();
@@ -240,8 +239,7 @@ VideoResourceUpdater::RecycleOrAllocateResource(
 
     if (!in_use && it->resource_size() == resource_size &&
         it->resource_format() == resource_format &&
-        it->mailbox().IsZero() == software_resource &&
-        resource_provider_->IsImmutable(it->resource_id()) == immutable_hint) {
+        it->mailbox().IsZero() == software_resource) {
       recyclable_resource = it;
     }
   }
@@ -251,22 +249,19 @@ VideoResourceUpdater::RecycleOrAllocateResource(
 
   // There was nothing available to reuse or recycle. Allocate a new resource.
   return AllocateResource(resource_size, resource_format, color_space,
-                          !software_resource, immutable_hint);
+                          !software_resource);
 }
 
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        viz::ResourceFormat format,
                                        const gfx::ColorSpace& color_space,
-                                       bool has_mailbox,
-                                       bool immutable_hint) {
+                                       bool has_mailbox) {
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
   const viz::ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size,
-      immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
-                     : ResourceProvider::TEXTURE_HINT_DEFAULT,
-      format, color_space);
+      plane_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      color_space);
   DCHECK_NE(resource_id, 0u);
 
   gpu::Mailbox mailbox;
@@ -389,10 +384,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       return VideoFrameExternalResources();
     }
 
-    const bool is_immutable = true;
     ResourceList::iterator resource_it = RecycleOrAllocateResource(
         output_plane_resource_size, output_resource_format, output_color_space,
-        software_compositor, is_immutable, video_frame->unique_id(), i);
+        software_compositor, video_frame->unique_id(), i);
 
     resource_it->add_ref();
     plane_resources.push_back(resource_it);
@@ -623,13 +617,12 @@ void VideoResourceUpdater::CopyPlaneTexture(
   // target to avoid loss of precision or dropping any alpha component.
   const viz::ResourceFormat copy_target_format = viz::ResourceFormat::RGBA_8888;
 
-  const bool is_immutable = false;
   const int no_unique_id = 0;
   const int no_plane_index = -1;  // Do not recycle referenced textures.
   VideoResourceUpdater::ResourceList::iterator resource =
       RecycleOrAllocateResource(output_plane_resource_size, copy_target_format,
-                                resource_color_space, false, is_immutable,
-                                no_unique_id, no_plane_index);
+                                resource_color_space, false, no_unique_id,
+                                no_plane_index);
   resource->add_ref();
 
   ResourceProvider::ScopedWriteLockGL lock(resource_provider_,

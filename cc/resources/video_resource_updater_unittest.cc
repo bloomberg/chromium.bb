@@ -41,7 +41,6 @@ class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
                        GLuint internalformat,
                        GLint width,
                        GLint height) override {
-    immutable_texture_created_ = true;
   }
 
   GLuint createTexture() override {
@@ -65,13 +64,9 @@ class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
   int TextureCreationCount() { return created_texture_count_; }
   void ResetTextureCreationCount() { created_texture_count_ = 0; }
 
-  bool WasImmutableTextureCreated() { return immutable_texture_created_; }
-  void ResetImmutableTextureCreated() { immutable_texture_created_ = false; }
-
  private:
   int upload_count_;
   int created_texture_count_;
-  bool immutable_texture_created_;
 };
 
 class SharedBitmapManagerAllocationCounter : public TestSharedBitmapManager {
@@ -575,7 +570,6 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   // GL_TEXTURE_2D texture.
   context3d_->ResetTextureCreationCount();
   video_frame = CreateTestStreamTextureHardwareVideoFrame(true);
-  context3d_->ResetImmutableTextureCreated();
   resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE,
             resources.type);
@@ -584,13 +578,6 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ(1u, resources.release_callbacks.size());
   EXPECT_EQ(0u, resources.software_resources.size());
   EXPECT_EQ(1, context3d_->TextureCreationCount());
-
-  // The texture copy path requires the use of CopyTextureCHROMIUM, which
-  // enforces that the target texture not be immutable, as it may need
-  // to alter the storage of the texture. Therefore, this test asserts
-  // that an immutable texture wasn't created by glTexStorage2DEXT, when
-  // that extension is supported.
-  EXPECT_FALSE(context3d_->WasImmutableTextureCreated());
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
