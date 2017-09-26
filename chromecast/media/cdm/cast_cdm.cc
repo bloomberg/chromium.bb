@@ -12,8 +12,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
+#include "chromecast/media/base/media_caps.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/decryptor.h"
 #include "media/cdm/player_tracker_impl.h"
 #include "url/gurl.h"
@@ -62,6 +64,34 @@ class CastCdmContextImpl : public CastCdmContext {
   DISALLOW_COPY_AND_ASSIGN(CastCdmContextImpl);
 };
 
+// Returns the HDCP version multiplied by ten.
+int HdcpVersionX10(::media::HdcpVersion hdcp_version) {
+  switch (hdcp_version) {
+    case ::media::HdcpVersion::kHdcpVersionNone:
+      return 0;
+    case ::media::HdcpVersion::kHdcpVersion1_0:
+      return 10;
+    case ::media::HdcpVersion::kHdcpVersion1_1:
+      return 11;
+    case ::media::HdcpVersion::kHdcpVersion1_2:
+      return 12;
+    case ::media::HdcpVersion::kHdcpVersion1_3:
+      return 13;
+    case ::media::HdcpVersion::kHdcpVersion1_4:
+      return 14;
+    case ::media::HdcpVersion::kHdcpVersion2_0:
+      return 20;
+    case ::media::HdcpVersion::kHdcpVersion2_1:
+      return 21;
+    case ::media::HdcpVersion::kHdcpVersion2_2:
+      return 22;
+
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 }  // namespace
 
 CastCdm::CastCdm(MediaResourceTracker* media_resource_tracker)
@@ -109,6 +139,17 @@ void CastCdm::UnregisterPlayer(int registration_id) {
 
 ::media::CdmContext* CastCdm::GetCdmContext() {
   return cast_cdm_context_.get();
+}
+
+void CastCdm::GetStatusForPolicy(
+    ::media::HdcpVersion min_hdcp_version,
+    std::unique_ptr<::media::KeyStatusCdmPromise> promise) {
+  int min_hdcp_x10 = HdcpVersionX10(min_hdcp_version);
+  int cur_hdcp_x10 = MediaCapabilities::GetHdcpVersion();
+  promise->resolve(
+      cur_hdcp_x10 >= min_hdcp_x10
+          ? ::media::CdmKeyInformation::KeyStatus::USABLE
+          : ::media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
 }
 
 void CastCdm::OnSessionMessage(const std::string& session_id,

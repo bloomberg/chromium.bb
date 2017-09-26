@@ -72,6 +72,11 @@ class CastCdm : public ::media::ContentDecryptionModule {
   // ::media::ContentDecryptionModule implementation.
   ::media::CdmContext* GetCdmContext() override;
 
+  // Cast video products always provide HDCP or equivalent content protection.
+  void GetStatusForPolicy(
+      ::media::HdcpVersion min_hdcp_version,
+      std::unique_ptr<::media::KeyStatusCdmPromise> promise) final;
+
  protected:
   ~CastCdm() override;
 
