@@ -121,7 +121,10 @@ config("runtime_library") {
                     root_build_dir),
   ]
 
-  defines = [ "__GNU_SOURCE=1" ]  # Necessary for clone().
+  defines = [
+    "__GNU_SOURCE=1",  # Necessary for clone().
+    "CHROMIUM_CXX_TWEAK_INLINES",  # Saves binary size.
+  ]
   ldflags = [ "-nostdlib" ]
   lib_dirs = [ android_libcpp_lib_dir ]
 
