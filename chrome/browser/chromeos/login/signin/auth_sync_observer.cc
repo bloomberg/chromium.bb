@@ -10,65 +10,97 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-
-class Profile;
-
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
 
 namespace chromeos {
 
-AuthSyncObserver::AuthSyncObserver(Profile* profile)
-    : profile_(profile) {
+// static
+bool AuthSyncObserver::ShouldObserve(Profile* profile) {
+  const user_manager::User* const user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
+  return user && (user->HasGaiaAccount() ||
+                  user->GetType() == user_manager::USER_TYPE_SUPERVISED);
 }
 
-AuthSyncObserver::~AuthSyncObserver() {
+AuthSyncObserver::AuthSyncObserver(Profile* profile) : profile_(profile) {
+  DCHECK(ShouldObserve(profile));
 }
+
+AuthSyncObserver::~AuthSyncObserver() {}
 
 void AuthSyncObserver::StartObserving() {
-  browser_sync::ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->AddObserver(this);
+
+  SigninErrorController* const error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile_);
+  if (error_controller) {
+    error_controller->AddObserver(this);
+    OnErrorChanged();
+  }
 }
 
 void AuthSyncObserver::Shutdown() {
-  browser_sync::ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* const sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->RemoveObserver(this);
+
+  SigninErrorController* const error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile_);
+  if (error_controller)
+    error_controller->RemoveObserver(this);
 }
 
 void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
-  DCHECK(user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() ||
-         user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
-  const user_manager::User* user =
+  HandleAuthError(sync->GetAuthError());
+}
+
+void AuthSyncObserver::OnErrorChanged() {
+  SigninErrorController* const error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile_);
+  const std::string error_account_id = error_controller->error_account_id();
+
+  const std::string primary_account_id =
+      SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountId();
+
+  // Bail if there is an error account id and it is not the primary account id.
+  if (!error_account_id.empty() && error_account_id != primary_account_id)
+    return;
+
+  HandleAuthError(error_controller->auth_error());
+}
+
+void AuthSyncObserver::HandleAuthError(
+    const GoogleServiceAuthError& auth_error) {
+  const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile_);
-  GoogleServiceAuthError::State state = sync->GetAuthError().state();
-  if (state != GoogleServiceAuthError::NONE &&
-      state != GoogleServiceAuthError::CONNECTION_FAILED &&
-      state != GoogleServiceAuthError::SERVICE_UNAVAILABLE &&
-      state != GoogleServiceAuthError::REQUEST_CANCELED) {
+  DCHECK(user->HasGaiaAccount() ||
+         user->GetType() == user_manager::USER_TYPE_SUPERVISED);
+
+  if (auth_error.IsPersistentError()) {
     // Invalidate OAuth2 refresh token to force Gaia sign-in flow. This is
     // needed because sign-out/sign-in solution is suggested to the user.
-    // TODO(nkostylev): Remove after crosbug.com/25978 is implemented.
-    LOG(WARNING) << "Invalidate OAuth token because of a sync error: "
-                 << sync->GetAuthError().ToString();
+    LOG(WARNING) << "Invalidate OAuth token because of an auth error: "
+                 << auth_error.ToString();
     const AccountId& account_id = user->GetAccountId();
     DCHECK(account_id.is_valid());
-    // TODO(nkostyelv): Change observer after active user has changed.
+
     user_manager::User::OAuthTokenStatus old_status =
         user->oauth_token_status();
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         account_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
     RecordReauthReason(account_id, ReauthReason::SYNC_FAILED);
+
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         old_status != user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
        // Attempt to restore token from file.
@@ -81,7 +113,7 @@ void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
       base::RecordAction(
           base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
     }
-  } else if (state == GoogleServiceAuthError::NONE) {
+  } else if (auth_error.state() == GoogleServiceAuthError::NONE) {
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         user->oauth_token_status() ==
             user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
