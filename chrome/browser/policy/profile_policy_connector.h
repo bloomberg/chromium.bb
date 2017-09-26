@@ -83,6 +83,9 @@ class ProfilePolicyConnector : public KeyedService {
   bool is_primary_user_ = false;
 
   std::unique_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
+
+  // Management realm for Active Directory users. Empty for other users.
+  std::string management_realm_;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ConfigurationPolicyProvider>
