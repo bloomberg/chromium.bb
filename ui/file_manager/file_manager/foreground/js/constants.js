@@ -49,6 +49,7 @@ constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES = [
   'customIconUrl',
   'hosted',
   'modificationTime',
+  'modificationByMeTime',
   'shared',
   'size',
 ];

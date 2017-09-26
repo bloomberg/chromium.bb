@@ -178,6 +178,7 @@
         'folder_shortcuts_data_model',
         'gear_menu_controller',
         'import_controller',
+        'last_modified_controller',
         'launch_param',
         'main_window_component',
         'metadata_update_controller',
@@ -328,6 +329,14 @@
         'task_controller',
         'ui/compiled_resources2.gyp:directory_tree',
         'ui/compiled_resources2.gyp:file_manager_ui',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'last_modified_controller',
+      'dependencies': [
+        'directory_model',
+        'ui/compiled_resources2.gyp:file_table',
       ],
       'includes': ['../../../compile_js2.gypi'],
     },

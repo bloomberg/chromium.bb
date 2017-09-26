@@ -265,6 +265,12 @@ function FileManager() {
   this.metadataUpdateController_ = null;
 
   /**
+   * Last modified controller.
+   * @private {LastModifiedController}
+   */
+  this.lastModifiedController_ = null;
+
+  /**
    * Component for main window and its misc UI parts.
    * @type {MainWindowComponent}
    * @private
@@ -586,6 +592,8 @@ FileManager.prototype = /** @struct */ {
         assert(this.folderShortcutsModel_),
         this.fileBrowserBackground_.driveSyncHandler,
         this.selectionHandler_, assert(this.ui_));
+    this.lastModifiedController_ = new LastModifiedController(
+        this.ui_.listContainer.table, this.directoryModel_);
 
     this.quickViewModel_ = new QuickViewModel();
     var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (

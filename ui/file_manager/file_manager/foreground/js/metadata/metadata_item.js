@@ -29,6 +29,11 @@ function MetadataItem() {
   this.modificationTime;
 
   /**
+   * @public {!Date|undefined}
+   */
+  this.modificationByMeTime;
+
+  /**
    * Thumbnail URL obtained from external provider.
    * @public {string|undefined}
    */

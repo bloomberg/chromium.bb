@@ -125,6 +125,7 @@
 // <include src="sort_menu_controller.js">
 // <include src="gear_menu_controller.js">
 // <include src="import_controller.js">
+// <include src="last_modified_controller.js">
 // <include src="launch_param.js">
 // <include src="metadata/content_metadata_provider.js">
 // <include src="metadata/external_metadata_provider.js">

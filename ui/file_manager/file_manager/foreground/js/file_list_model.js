@@ -51,6 +51,12 @@ function FileListModel(metadataModel) {
    * @private {number}
    */
   this.numImageFiles_ = 0;
+
+  /**
+   * Whether to use modificationByMeTime as "Last Modified" time.
+   * @private {boolean}
+   */
+  this.useModificationByMeTime_ = false;
 }
 
 /**
@@ -264,6 +270,15 @@ FileListModel.prototype.isImageDominant = function() {
 };
 
 /**
+ * Sets whether to use modificationByMeTime as "Last Modified" time.
+ * @param {boolean} useModificationByMeTime
+ */
+FileListModel.prototype.setUseModificationByMeTime = function(
+    useModificationByMeTime) {
+  this.useModificationByMeTime_ = useModificationByMeTime;
+};
+
+/**
  * Updates the statistics about contents when new entry is about to be added.
  * @param {Entry} entry Entry of the new item.
  * @private
@@ -324,10 +339,10 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var properties =
-      this.metadataModel_.getCache([a, b], ['modificationTime']);
-  var aTime = properties[0].modificationTime || 0;
-  var bTime = properties[1].modificationTime || 0;
+  var properties = this.metadataModel_.getCache(
+      [a, b], ['modificationTime', 'modificationByMeTime']);
+  var aTime = this.getMtime_(properties[0]);
+  var bTime = this.getMtime_(properties[1]);
 
   if (aTime > bTime)
     return 1;
@@ -336,6 +351,20 @@ FileListModel.prototype.compareMtime_ = function(a, b) {
     return -1;
 
   return util.compareName(a, b);
+};
+
+/**
+ * Returns the modification time from a properties object.
+ * "Modification time" can be modificationTime or modificationByMeTime
+ * depending on this.useModificationByMeTime_.
+ * @param {!Object} properties Properties object.
+ * @return {number} Modification time.
+ * @private
+ */
+FileListModel.prototype.getMtime_ = function(properties) {
+  if (this.useModificationByMeTime_)
+    return properties.modificationByMeTime || properties.modificationTime || 0;
+  return properties.modificationTime || 0;
 };
 
 /**

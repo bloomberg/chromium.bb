@@ -18,23 +18,10 @@ function ExternalMetadataProvider() {
  * @const {!Array<string>}
  */
 ExternalMetadataProvider.PROPERTY_NAMES = [
-  'availableOffline',
-  'availableWhenMetered',
-  'contentMimeType',
-  'croppedThumbnailUrl',
-  'customIconUrl',
-  'dirty',
-  'externalFileUrl',
-  'hosted',
-  'imageHeight',
-  'imageRotation',
-  'imageWidth',
-  'modificationTime',
-  'pinned',
-  'present',
-  'shared',
-  'sharedWithMe',
-  'size',
+  'availableOffline', 'availableWhenMetered', 'contentMimeType',
+  'croppedThumbnailUrl', 'customIconUrl', 'dirty', 'externalFileUrl', 'hosted',
+  'imageHeight', 'imageRotation', 'imageWidth', 'modificationTime',
+  'modificationByMeTime', 'pinned', 'present', 'shared', 'sharedWithMe', 'size',
   'thumbnailUrl'
 ];
 
@@ -106,6 +93,9 @@ ExternalMetadataProvider.prototype.convertResults_ =
       item.imageWidth = prop.imageWidth;
     if (prop.modificationTime !== undefined || nameMap['modificationTime'])
       item.modificationTime = new Date(prop.modificationTime);
+    if (prop.modificationByMeTime !== undefined ||
+        nameMap['modificationByMeTime'])
+      item.modificationByMeTime = new Date(prop.modificationByMeTime);
     if (prop.pinned !== undefined || nameMap['pinned'])
       item.pinned = prop.pinned;
     if (prop.present !== undefined || nameMap['present'])

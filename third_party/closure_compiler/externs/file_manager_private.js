@@ -18,6 +18,7 @@ var FileTask;
  * @typedef {{
  *   size: (number|undefined),
  *   modificationTime: (number|undefined),
+ *   modificationByMeTime: (number|undefined),
  *   thumbnailUrl: (string|undefined),
  *   croppedThumbnailUrl: (string|undefined),
  *   externalFileUrl: (string|undefined),
