@@ -154,14 +154,6 @@ bool ParseCertStatus(const der::Input& raw_tlv, OCSPCertStatus* out) {
   return !parser.HasMore();
 }
 
-// DER bytes for a SHA1 AlgorithmIdentifier.
-//
-//     SEQUENCE (2 elem)
-//         OBJECT IDENTIFIER  1.3.14.3.2.26
-//         NULL
-const uint8_t kSha1HashAlgorithm[] = {0x30, 0x09, 0x06, 0x05, 0x2B, 0x0E,
-                                      0x03, 0x02, 0x1A, 0x05, 0x00};
-
 // Writes the hash of |value| as an OCTET STRING to |cbb|, using |hash_type| as
 // the algorithm. Returns true on success.
 bool AppendHashAsOctetString(const EVP_MD* hash_type,
@@ -902,17 +894,16 @@ bool CreateOCSPRequest(const ParsedCertificate* cert,
   //       serialNumber        CertificateSerialNumber }
 
   // TODO(eroman): Don't use SHA1.
-  if (!CBB_add_bytes(&req_cert, kSha1HashAlgorithm,
-                     arraysize(kSha1HashAlgorithm))) {
+  const EVP_MD* md = EVP_sha1();
+  if (!EVP_marshal_digest_algorithm(&req_cert, md))
     return false;
-  }
 
-  AppendHashAsOctetString(EVP_sha1(), &req_cert, issuer->tbs().issuer_tlv);
+  AppendHashAsOctetString(md, &req_cert, issuer->tbs().issuer_tlv);
 
   der::Input key_tlv;
   if (!GetSubjectPublicKeyBytes(issuer->tbs().spki_tlv, &key_tlv))
     return false;
-  AppendHashAsOctetString(EVP_sha1(), &req_cert, key_tlv);
+  AppendHashAsOctetString(md, &req_cert, key_tlv);
 
   CBB serial_number;
   if (!CBB_add_asn1(&req_cert, &serial_number, CBS_ASN1_INTEGER))
