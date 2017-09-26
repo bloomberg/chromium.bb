@@ -27,6 +27,7 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
+#include "bindings/core/v8/serialization/V8ScriptValueSerializerTest.h"
 #include "build/build_config.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
@@ -57,14 +58,6 @@
 
 namespace blink {
 namespace {
-
-RefPtr<SerializedScriptValue> SerializedValue(const Vector<uint8_t>& bytes) {
-  // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
-  // endianness swapping.
-  DCHECK_EQ(bytes.size() % 2, 0u);
-  return SerializedScriptValue::Create(
-      String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
-}
 
 v8::Local<v8::Value> RoundTrip(
     v8::Local<v8::Value> value,
@@ -121,6 +114,15 @@ String ToJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {
       v8::JSON::Stringify(scope.GetContext(), object).ToLocalChecked(),
       kDoNotExternalize);
 }
+}  // namespace
+
+RefPtr<SerializedScriptValue> SerializedValue(const Vector<uint8_t>& bytes) {
+  // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
+  // endianness swapping.
+  DCHECK_EQ(bytes.size() % 2, 0u);
+  return SerializedScriptValue::Create(
+      String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
+}
 
 // Checks for a DOM exception, including a rethrown one.
 ::testing::AssertionResult HadDOMException(const StringView& name,
@@ -137,6 +139,8 @@ String ToJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {
     return ::testing::AssertionFailure() << "was " << dom_exception->name();
   return ::testing::AssertionSuccess();
 }
+
+namespace {
 
 TEST(V8ScriptValueSerializerTest, RoundTripJSONLikeValue) {
   // Ensure that simple JavaScript objects work.
