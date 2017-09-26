@@ -475,4 +475,16 @@ public class EmbeddedTestServer {
         }
         destroy();
     }
+
+    /** Get the path of the PEM file of the root cert. */
+    public String getRootCertPemPath() {
+        try {
+            synchronized (mImplMonitor) {
+                checkServiceLocked();
+                return mImpl.getRootCertPemPath();
+            }
+        } catch (RemoteException e) {
+            throw new EmbeddedTestServerFailure("Failed to get root cert's path", e);
+        }
+    }
 }

@@ -16,10 +16,6 @@
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
-#if !BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#error This file must be built with ENABLE_CAPTIVE_PORTAL_DETECTION flag.
-#endif
-
 namespace content {
 class NavigationEntry;
 class WebContents;
@@ -77,6 +73,8 @@ class CaptivePortalBlockingPage
 
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
+  // If empty, the default captive portal detection URL for the platform will be
+  // used.
   const GURL login_url_;
   std::unique_ptr<CertReportHelper> cert_report_helper_;
   const net::SSLInfo ssl_info_;
