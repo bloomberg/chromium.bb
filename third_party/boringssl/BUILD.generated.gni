@@ -89,7 +89,6 @@ crypto_sources = [
   "src/crypto/dh/dh_asn1.c",
   "src/crypto/dh/params.c",
   "src/crypto/digest_extra/digest_extra.c",
-  "src/crypto/digest_extra/internal.h",
   "src/crypto/dsa/dsa.c",
   "src/crypto/dsa/dsa_asn1.c",
   "src/crypto/ec_extra/ec_asn1.c",
