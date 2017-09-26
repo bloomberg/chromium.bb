@@ -64,23 +64,22 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     if (test_with_fullscreen_) {
       if (test_with_answer_card) {
         scoped_feature_list_.InitWithFeatures(
-            {features::kEnableFullscreenAppList,
-             features::kEnableAnswerCardDefaultOff},
+            {features::kEnableFullscreenAppList, features::kEnableAnswerCard},
             {});
       } else {
         scoped_feature_list_.InitWithFeatures(
             {features::kEnableFullscreenAppList},
-            {features::kEnableAnswerCardDefaultOff});
+            {features::kEnableAnswerCard});
       }
     } else {
       if (test_with_answer_card) {
         scoped_feature_list_.InitWithFeatures(
-            {features::kEnableAnswerCardDefaultOff},
+            {features::kEnableAnswerCard},
             {features::kEnableFullscreenAppList});
       } else {
         scoped_feature_list_.InitWithFeatures(
-            {}, {features::kEnableFullscreenAppList,
-                 features::kEnableAnswerCardDefaultOff});
+            {},
+            {features::kEnableFullscreenAppList, features::kEnableAnswerCard});
       }
     }
     ASSERT_EQ(test_with_fullscreen_, features::IsFullscreenAppListEnabled());
