@@ -367,7 +367,7 @@ HTMLSpanElement* CreateTabSpanElement(Document&, const String& tab_text);
 
 // Boolean functions on Element
 
-bool CanMergeLists(Element* first_list, Element* second_list);
+bool CanMergeLists(const Element& first_list, const Element& second_list);
 
 CORE_EXPORT bool ElementCannotHaveEndTag(const Node&);
 
