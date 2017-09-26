@@ -76,10 +76,11 @@ std::unique_ptr<AuraInit> AuraInit::Create(
     const std::string& resource_file,
     const std::string& resource_file_200,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    Mode mode) {
+    Mode mode,
+    bool register_path_provider) {
   std::unique_ptr<AuraInit> aura_init = base::WrapUnique(new AuraInit());
   if (!aura_init->Init(connector, identity, resource_file, resource_file_200,
-                       io_task_runner, mode)) {
+                       io_task_runner, mode, register_path_provider)) {
     aura_init.reset();
   }
   return aura_init;
@@ -90,7 +91,8 @@ bool AuraInit::Init(service_manager::Connector* connector,
                     const std::string& resource_file,
                     const std::string& resource_file_200,
                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                    Mode mode) {
+                    Mode mode,
+                    bool register_path_provider) {
   env_ = aura::Env::CreateInstance(
       (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
           ? aura::Env::Mode::MUS
@@ -101,8 +103,10 @@ bool AuraInit::Init(service_manager::Connector* connector,
         base::WrapUnique(new MusClient(connector, identity, io_task_runner));
   }
   ui::MaterialDesignController::Initialize();
-  if (!InitializeResources(connector, resource_file, resource_file_200))
+  if (!InitializeResources(connector, resource_file, resource_file_200,
+                           register_path_provider)) {
     return false;
+  }
 
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX)
@@ -124,7 +128,8 @@ bool AuraInit::Init(service_manager::Connector* connector,
 
 bool AuraInit::InitializeResources(service_manager::Connector* connector,
                                    const std::string& resource_file,
-                                   const std::string& resource_file_200) {
+                                   const std::string& resource_file_200,
+                                   bool register_path_provider) {
   // Resources may have already been initialized (e.g. when 'chrome --mash' is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
@@ -146,7 +151,8 @@ bool AuraInit::InitializeResources(service_manager::Connector* connector,
   // Calling services will shutdown ServiceContext as appropriate.
   if (!loader.OpenFiles(std::move(directory), resource_paths))
     return false;
-  ui::RegisterPathProvider();
+  if (register_path_provider)
+    ui::RegisterPathProvider();
   base::File pak_file = loader.TakeFile(resource_file);
   base::File pak_file_2 = pak_file.Duplicate();
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(

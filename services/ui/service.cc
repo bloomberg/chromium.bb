@@ -186,7 +186,8 @@ bool Service::InitializeResources(service_manager::Connector* connector) {
     return false;
   }
 
-  ui::RegisterPathProvider();
+  if (running_standalone_)
+    ui::RegisterPathProvider();
 
   // Initialize resource bundle with 1x and 2x cursor bitmaps.
   ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(

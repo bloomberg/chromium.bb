@@ -65,7 +65,8 @@ class VIEWS_MUS_EXPORT AuraInit {
       const std::string& resource_file,
       const std::string& resource_file_200 = std::string(),
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Mode mode = Mode::UI);
+      Mode mode = Mode::UI,
+      bool register_path_provider = true);
 
   // Only valid if Mode::AURA_MUS was passed to constructor.
   MusClient* mus_client() { return mus_client_.get(); }
@@ -76,17 +77,18 @@ class VIEWS_MUS_EXPORT AuraInit {
   // Returns true if AuraInit was able to successfully complete initialization.
   // If this returns false, then Aura is in an unusable state, and calling
   // services should shutdown.
-  bool Init(
-      service_manager::Connector* connector,
-      const service_manager::Identity& identity,
-      const std::string& resource_file,
-      const std::string& resource_file_200 = std::string(),
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Mode mode = Mode::UI);
+  bool Init(service_manager::Connector* connector,
+            const service_manager::Identity& identity,
+            const std::string& resource_file,
+            const std::string& resource_file_200,
+            scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+            Mode mode,
+            bool register_path_provider);
 
   bool InitializeResources(service_manager::Connector* connector,
                            const std::string& resource_file,
-                           const std::string& resource_file_200);
+                           const std::string& resource_file_200,
+                           bool register_path_provider);
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;

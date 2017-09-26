@@ -93,6 +93,9 @@ class Service : public service_manager::Service,
   explicit Service(const InProcessConfig* config = nullptr);
   ~Service() override;
 
+  // Call if the ui::Service is being run as a standalone process.
+  void set_running_standalone(bool value) { running_standalone_ = value; }
+
  private:
   // Holds InterfaceRequests received before the first WindowTreeHost Display
   // has been established.
@@ -226,6 +229,8 @@ class Service : public service_manager::Service,
   bool is_gpu_ready_ = false;
 
   bool in_destructor_ = false;
+
+  bool running_standalone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

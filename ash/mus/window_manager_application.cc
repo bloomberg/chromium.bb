@@ -129,10 +129,11 @@ void WindowManagerApplication::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
 
+  const bool register_path_provider = running_standalone_;
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak", nullptr,
-      views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER);
+      views::AuraInit::Mode::AURA_MUS_WINDOW_MANAGER, register_path_provider);
   if (!aura_init_) {
     context()->QuitNow();
     return;

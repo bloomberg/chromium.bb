@@ -1,3 +1,4 @@
+
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -61,6 +62,8 @@ class WindowManagerApplication : public service_manager::Service {
 
   service_manager::Connector* GetConnector();
 
+  void set_running_standalone(bool value) { running_standalone_ = value; }
+
  private:
   friend class ash::AshTestHelper;
 
@@ -80,6 +83,7 @@ class WindowManagerApplication : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   const bool show_primary_host_on_connect_;
+  bool running_standalone_ = false;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 
