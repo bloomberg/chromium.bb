@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -146,7 +147,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     std::unique_ptr<base::FeatureList> feature_list =
         base::MakeUnique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
-        features::kEnableAnswerCardDefaultOff.name,
+        features::kEnableAnswerCard.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
