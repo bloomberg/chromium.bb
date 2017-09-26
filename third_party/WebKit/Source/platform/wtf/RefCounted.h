@@ -128,7 +128,17 @@ inline void Adopted(RefCountedBase* object) {
 }
 #endif
 
+template <typename T, typename Traits>
+class RefCounted;
+
 template <typename T>
+struct DefaultRefCountedTraits {
+  static void Destruct(const T* x) {
+    WTF::RefCounted<T, DefaultRefCountedTraits>::DeleteInternal(x);
+  }
+};
+
+template <typename T, typename Traits = DefaultRefCountedTraits<T>>
 class RefCounted : public RefCountedBase {
   WTF_MAKE_NONCOPYABLE(RefCounted);
 
@@ -140,11 +150,15 @@ class RefCounted : public RefCountedBase {
  public:
   void Deref() const {
     if (DerefBase())
-      delete static_cast<const T*>(this);
+      Traits::Destruct(static_cast<const T*>(this));
   }
 
  protected:
   RefCounted() {}
+
+ private:
+  friend struct DefaultRefCountedTraits<T>;
+  static void DeleteInternal(const T* x) { delete x; }
 };
 
 // Allows subclasses to use the default copy constructor.
