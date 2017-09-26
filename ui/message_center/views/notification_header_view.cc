@@ -18,6 +18,7 @@
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -341,6 +342,10 @@ void NotificationHeaderView::SetAccentColor(SkColor color) {
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {
   return expand_button_->visible();
+}
+
+std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
+  return base::MakeUnique<views::InkDropStub>();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
