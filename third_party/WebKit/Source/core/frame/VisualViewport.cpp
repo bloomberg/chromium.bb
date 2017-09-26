@@ -608,7 +608,11 @@ IntPoint VisualViewport::ClampDocumentOffsetAtScale(const IntPoint& offset,
 }
 
 void VisualViewport::SetBrowserControlsAdjustment(float adjustment) {
+  if (browser_controls_adjustment_ == adjustment)
+    return;
+
   browser_controls_adjustment_ = adjustment;
+  EnqueueResizeEvent();
 }
 
 float VisualViewport::BrowserControlsAdjustment() const {
