@@ -138,7 +138,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     mock_server_->AddResponse(GURL(kNormalScriptURL),
                               std::string("HTTP/1.1 200 OK\n"
-                                          "CONTENT-TYPE: text/javascript\n\n"),
+                                          "Content-Type: text/javascript\n\n"),
                               std::string("this body came from the network"));
 
     // Initialize URLLoaderFactory.
@@ -159,14 +159,19 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
   // called before DoRequest().
-  void SetUpRegistration(const GURL& script_url) {
-    GURL scope = script_url;
+  void SetUpRegistration(const GURL& script_url, const GURL& scope) {
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
         helper_->context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());
     version_->SetStatus(ServiceWorkerVersion::NEW);
+  }
+
+  // Sets up ServiceWorkerRegistration and ServiceWorkerVersion with the default
+  // scope.
+  void SetUpRegistration(const GURL& script_url) {
+    SetUpRegistration(script_url, script_url.GetWithoutFilename());
   }
 
   void DoRequest(const GURL& request_url) {
@@ -271,7 +276,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   const GURL kEmptyScriptURL("https://example.com/empty.js");
   mock_server_->AddResponse(kEmptyScriptURL,
                             std::string("HTTP/1.1 200 OK\n"
-                                        "CONTENT-TYPE: text/javascript\n\n"),
+                                        "Content-Type: text/javascript\n\n"),
                             std::string());
   SetUpRegistration(kEmptyScriptURL);
   DoRequest(kEmptyScriptURL);
@@ -328,7 +333,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
   const GURL kBadMimeTypeScriptURL("https://example.com/bad-mime-type.js");
   mock_server_->AddResponse(kBadMimeTypeScriptURL,
                             std::string("HTTP/1.1 200 OK\n"
-                                        "CONTENT-TYPE: text/css\n\n"),
+                                        "Content-Type: text/css\n\n"),
                             std::string("body with bad MIME type"));
   SetUpRegistration(kBadMimeTypeScriptURL);
   DoRequest(kBadMimeTypeScriptURL);
@@ -341,6 +346,55 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
 
   // The response shouldn't be stored in the storage.
   EXPECT_FALSE(VerifyStoredResponse(kBadMimeTypeScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
+  // |kScope| is not under the default scope ("/out-of-scope/"), but the
+  // Service-Worker-Allowed header allows it.
+  const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
+  const GURL kScope("https://example.com/in-scope/");
+  mock_server_->AddResponse(
+      kScriptURL,
+      std::string("HTTP/1.1 200 OK\n"
+                  "Content-Type: text/javascript\n"
+                  "Service-Worker-Allowed: /in-scope/\n\n"),
+      std::string());
+  SetUpRegistration(kScriptURL, kScope);
+  DoRequest(kScriptURL);
+  client_.RunUntilComplete();
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+
+  // The client should have received the response.
+  EXPECT_TRUE(client_.has_received_response());
+  EXPECT_TRUE(client_.response_body().is_valid());
+  std::string response;
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client_.response_body_release(), &response));
+  EXPECT_EQ(mock_server_->GetBody(kScriptURL), response);
+
+  // The response should also be stored in the storage.
+  EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
+  // |kScope| is not under the default scope ("/out-of-scope/") and the
+  // Service-Worker-Allowed header is not specified.
+  const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
+  const GURL kScope("https://example.com/in-scope/");
+  mock_server_->AddResponse(kScriptURL,
+                            std::string("HTTP/1.1 200 OK\n"
+                                        "Content-Type: text/javascript\n\n"),
+                            std::string());
+  SetUpRegistration(kScriptURL, kScope);
+  DoRequest(kScriptURL);
+  client_.RunUntilComplete();
+
+  // The request should be failed because the scope is not allowed.
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
