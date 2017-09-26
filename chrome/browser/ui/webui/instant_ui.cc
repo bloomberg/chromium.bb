@@ -13,13 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -28,10 +24,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser.h"
-#endif
 
 namespace {
 
@@ -44,16 +36,6 @@ content::WebUIDataSource* CreateInstantHTMLSource() {
   source->SetDefaultResource(IDR_INSTANT_HTML);
   return source;
 }
-
-#if !defined(OS_ANDROID)
-std::string FormatTime(int64_t time) {
-  base::Time::Exploded exploded;
-  base::Time::FromInternalValue(time).UTCExplode(&exploded);
-  return base::StringPrintf("%04d-%02d-%02d %02d:%02d:%02d.%03d",
-      exploded.year, exploded.month, exploded.day_of_month,
-      exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
-}
-#endif  // !defined(OS_ANDROID)
 
 // This class receives JavaScript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
@@ -71,8 +53,6 @@ class InstantUIMessageHandler
  private:
   void GetPreferenceValue(const base::ListValue* args);
   void SetPreferenceValue(const base::ListValue* args);
-  void GetDebugInfo(const base::ListValue* value);
-  void ClearDebugInfo(const base::ListValue* value);
 
   DISALLOW_COPY_AND_ASSIGN(InstantUIMessageHandler);
 };
@@ -89,14 +69,6 @@ void InstantUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setPreferenceValue",
       base::Bind(&InstantUIMessageHandler::SetPreferenceValue,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getDebugInfo",
-      base::Bind(&InstantUIMessageHandler::GetDebugInfo,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "clearDebugInfo",
-      base::Bind(&InstantUIMessageHandler::ClearDebugInfo,
                  base::Unretained(this)));
 }
 
@@ -124,49 +96,6 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
     PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
     prefs->SetString(pref_name, value);
   }
-}
-
-void InstantUIMessageHandler::GetDebugInfo(const base::ListValue* args) {
-#if !defined(OS_ANDROID)
-  typedef std::pair<int64_t, std::string> DebugEvent;
-
-  if (!web_ui()->GetWebContents())
-    return;
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
-  if (!browser || !browser->instant_controller())
-    return;
-
-  InstantController* instant = browser->instant_controller()->instant();
-  const std::list<DebugEvent>& events = instant->debug_events();
-
-  base::DictionaryValue data;
-  auto entries = base::MakeUnique<base::ListValue>();
-  for (std::list<DebugEvent>::const_iterator it = events.begin();
-       it != events.end(); ++it) {
-    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
-    entry->SetString("time", FormatTime(it->first));
-    entry->SetString("text", it->second);
-    entries->Append(std::move(entry));
-  }
-  data.Set("entries", std::move(entries));
-
-  web_ui()->CallJavascriptFunctionUnsafe("instantConfig.getDebugInfoResult",
-                                         data);
-#endif
-}
-
-void InstantUIMessageHandler::ClearDebugInfo(const base::ListValue* args) {
-#if !defined(OS_ANDROID)
-  if (!web_ui()->GetWebContents())
-    return;
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
-  if (!browser || !browser->instant_controller())
-    return;
-
-  browser->instant_controller()->instant()->ClearDebugEvents();
-#endif
 }
 
 }  // namespace

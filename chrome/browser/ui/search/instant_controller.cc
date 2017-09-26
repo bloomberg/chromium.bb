@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 
 #include <stddef.h>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -77,20 +76,6 @@ void InstantController::OnTabDeactivated(content::WebContents* web_contents) {
 
 void InstantController::OnTabDetached(content::WebContents* web_contents) {
   OnTabDeactivated(web_contents);
-}
-
-void InstantController::LogDebugEvent(const std::string& info) const {
-  DVLOG(1) << info;
-
-  debug_events_.push_front(std::make_pair(
-      base::Time::Now().ToInternalValue(), info));
-  static const size_t kMaxDebugEventSize = 2000;
-  if (debug_events_.size() > kMaxDebugEventSize)
-    debug_events_.pop_back();
-}
-
-void InstantController::ClearDebugEvents() {
-  debug_events_.clear();
 }
 
 void InstantController::UpdateInfoForInstantTab() {
