@@ -9,7 +9,6 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/ToV8ForTesting.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
