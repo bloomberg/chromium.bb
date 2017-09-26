@@ -292,6 +292,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._total_external_shards = args.test_launcher_total_shards
     self._suite = args.suite_name[0]
     self._symbolizer = stack_symbolizer.Symbolizer(None, False)
+    self._gs_test_artifacts_bucket = args.gs_test_artifacts_bucket
 
     # GYP:
     if args.executable_dist_dir:
@@ -417,6 +418,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def flags(self):
     return self._flags
+
+  @property
+  def gs_test_artifacts_bucket(self):
+    return self._gs_test_artifacts_bucket
 
   @property
   def gtest_filter(self):
