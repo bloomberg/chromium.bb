@@ -7,6 +7,7 @@
 import json
 import re
 from xml.dom import minidom
+from xml.sax.saxutils import escape
 from writers import xml_formatted_writer
 
 
@@ -281,7 +282,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     elif obj_type == int:
       return [ '%s<integer>%s</integer>' % (indent, obj) ]
     elif obj_type == str:
-      return [ '%s<string>%s</string>' % (indent, obj) ]
+      return [ '%s<string>%s</string>' % (indent, escape(obj)) ]
     elif obj_type == list:
       result = [ '%s<array>' % indent ]
       for item in obj:
