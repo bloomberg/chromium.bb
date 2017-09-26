@@ -34,6 +34,7 @@
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextState.h"
+#include "platform/graphics/HighContrastImageClassifier.h"
 #include "platform/graphics/HighContrastSettings.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/PaintRecord.h"
@@ -452,7 +453,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   const SkMetaData& MetaData() const { return meta_data_; }
 
-  bool ShouldApplyHighContrastFilterToImage(const Image&) const;
+  bool ShouldApplyHighContrastFilterToImage(Image&);
   Color ApplyHighContrastFilter(const Color& input) const;
   PaintFlags ApplyHighContrastFilter(const PaintFlags* input) const;
 
@@ -488,6 +489,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   HighContrastSettings high_contrast_settings_;
   sk_sp<SkColorFilter> high_contrast_filter_;
+  HighContrastImageClassifier high_contrast_image_classifier_;
 
   unsigned printing_ : 1;
   unsigned has_meta_data_ : 1;

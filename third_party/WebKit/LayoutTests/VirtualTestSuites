@@ -487,6 +487,11 @@
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
   },
   {
+    "prefix": "high-contrast-mode",
+    "base": "paint/high-contrast-mode/image-filter-smart",
+    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=2"]
+  },
+  {
     "prefix": "outofblink-cors",
     "base": "external/wpt/fetch",
     "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
