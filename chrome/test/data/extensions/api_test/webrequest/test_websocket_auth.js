@@ -15,6 +15,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onBeforeSendHeaders',
@@ -22,6 +23,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -29,6 +31,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onHeadersReceived',
@@ -39,6 +42,7 @@ chrome.tabs.getCurrent(function(tab) {
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
               responseHeadersExist: true,
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onAuthRequired',
@@ -53,6 +57,7 @@ chrome.tabs.getCurrent(function(tab) {
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
               responseHeadersExist: true,
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onResponseStarted',
@@ -65,6 +70,7 @@ chrome.tabs.getCurrent(function(tab) {
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
               responseHeadersExist: true,
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onErrorOccurred',
@@ -74,6 +80,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               fromCache: false,
               error: 'net::ERR_ABORTED',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
         ],
@@ -99,6 +106,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onBeforeSendHeaders',
@@ -106,6 +114,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -113,6 +122,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onHeadersReceived',
@@ -122,6 +132,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onAuthRequired',
@@ -135,6 +146,7 @@ chrome.tabs.getCurrent(function(tab) {
               challenger: {host: 'localhost', port: testWebSocketPort},
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onResponseStarted',
@@ -146,6 +158,7 @@ chrome.tabs.getCurrent(function(tab) {
               ip: '127.0.0.1',
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onErrorOccurred',
@@ -155,6 +168,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               fromCache: false,
               error: 'net::ERR_ABORTED',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
         ],
@@ -178,6 +192,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onBeforeSendHeaders',
@@ -185,6 +200,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -192,6 +208,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onHeadersReceived',
@@ -201,6 +218,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onAuthRequired',
@@ -214,6 +232,7 @@ chrome.tabs.getCurrent(function(tab) {
               challenger: {host: 'localhost', port: testWebSocketPort},
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
             retval: {cancel: true}
           },
@@ -226,6 +245,7 @@ chrome.tabs.getCurrent(function(tab) {
               ip: '127.0.0.1',
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onErrorOccurred',
@@ -235,6 +255,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               fromCache: false,
               error: 'net::ERR_ABORTED',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
         ],
@@ -258,6 +279,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onBeforeSendHeaders',
@@ -265,6 +287,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -272,6 +295,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onHeadersReceived',
@@ -281,6 +305,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
           { label: 'onAuthRequired',
@@ -294,6 +319,7 @@ chrome.tabs.getCurrent(function(tab) {
               challenger: {host: 'localhost', port: testWebSocketPort},
               statusCode: 401,
               statusLine: 'HTTP/1.0 401 Unauthorized',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
             // Note: The test WebSocket server accepts only these credentials.
             retval: {authCredentials: {username: 'test', password: 'test'}}
@@ -307,6 +333,7 @@ chrome.tabs.getCurrent(function(tab) {
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onCompleted',
@@ -317,6 +344,7 @@ chrome.tabs.getCurrent(function(tab) {
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
         ],

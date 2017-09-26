@@ -13,6 +13,7 @@ var tabIdMap;
 var frameIdMap;
 var testWebSocketPort;
 var testServerPort;
+var usingBrowserSideNavigation = false;
 var testServer = "www.a.com";
 var defaultScheme = "http";
 var eventsCaptured;
@@ -26,6 +27,13 @@ var listeners = {
   'onBeforeRedirect': [],
   'onCompleted': [],
   'onErrorOccurred': []
+};
+// Requests initiated by an extension or user interaction with the browser is a
+// BROWSER_INITIATED action. If the request was instead initiated by a website
+// or code run in the context of a website then it's WEB_INITIATED.
+const initiators = {
+  BROWSER_INITIATED: 2,
+  WEB_INITIATED: 3
 };
 
 // If true, don't bark on events that were not registered via expect().
@@ -45,6 +53,7 @@ function runTestsForTab(tests, tab) {
   chrome.test.getConfig(function(config) {
     testServerPort = config.testServer.port;
     testWebSocketPort = config.testWebSocketPort;
+    usingBrowserSideNavigation = config.browserSideNavigationEnabled;
     chrome.test.runTests(tests);
   });
 }
@@ -63,12 +72,47 @@ function runTests(tests) {
 
 // Returns an URL from the test server, fixing up the port. Must be called
 // from within a test case passed to runTests.
-function getServerURL(path, opt_host, opt_scheme) {
+function getServerURL(opt_path, opt_host, opt_scheme) {
   if (!testServerPort)
     throw new Error("Called getServerURL outside of runTests.");
   var host = opt_host || testServer;
   var scheme = opt_scheme || defaultScheme;
+  var path = opt_path || '';
   return scheme + "://" + host + ":" + testServerPort + "/" + path;
+}
+
+// Throws error if an invalid navigation type was presented.
+function validateNavigationType(navigationType) {
+  if (navigationType == undefined)
+    throw new Error("A navigation type must be defined.");
+  if(Object.values(initiators).indexOf(navigationType) === -1)
+    throw new Error("Unknown navigation type.");
+}
+
+// Similar to getURL without the path. If tests are run with
+// --enable-browser-side-navigation (PlzNavigate) browser initiated navigation
+// will have no initiator. The |navigationType| specifies if the navigation was
+// performed by the browser or the renderer.
+function getDomain(navigationType) {
+  validateNavigationType(navigationType);
+  if (navigationType == initiators.BROWSER_INITIATED &&
+      usingBrowserSideNavigation)
+    return undefined;
+  else
+    return getURL('').slice(0,-1);
+}
+
+// Similar to getServerURL without the path. If tests are run with
+// --enable-browser-side-navigation (PlzNavigate) browser initiated navigation
+// will have no initiator. The |navigationType| specifies if the navigation was
+// performed by the browser or the renderer.
+function getServerDomain(navigationType, opt_host, opt_scheme) {
+  validateNavigationType(navigationType);
+  if (navigationType == initiators.BROWSER_INITIATED &&
+      usingBrowserSideNavigation)
+    return undefined;
+  else
+    return getServerURL(undefined, opt_host, opt_scheme).slice(0, -1);
 }
 
 // Helper to advance to the next test only when the tab has finished loading.
@@ -126,6 +170,10 @@ function expect(data, order, filter, extraInfoSpec) {
     }
     if (!('type' in expectedEventData[i].details)) {
       expectedEventData[i].details.type = "main_frame";
+    }
+    if ('initiator' in expectedEventData[i].details &&
+        expectedEventData[i].details.initiator == undefined) {
+      delete expectedEventData[i].details.initiator;
     }
   }
 }

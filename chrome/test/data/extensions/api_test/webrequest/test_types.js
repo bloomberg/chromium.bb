@@ -70,6 +70,7 @@ runTests([
           // tabId 0 = tab opened by test runner;
           // tabId 1 = this tab.
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -78,6 +79,7 @@ runTests([
           type: 'stylesheet',
           url: getStyleURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -86,6 +88,7 @@ runTests([
           type: 'stylesheet',
           url: getStyleURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -96,6 +99,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -108,6 +112,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -120,6 +125,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -228,6 +234,7 @@ runTests([
           // tabId 0 = tab opened by test runner;
           // tabId 1 = this tab.
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -236,6 +243,7 @@ runTests([
           type: 'font',
           url: getFontURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -244,6 +252,7 @@ runTests([
           type: 'font',
           url: getFontURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -254,6 +263,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -266,6 +276,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -278,6 +289,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -297,6 +309,7 @@ runTests([
           // tabId 0 = tab opened by test runner;
           // tabId 1 = this tab.
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -305,6 +318,7 @@ runTests([
           type: 'script',
           url: getWorkerURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -313,6 +327,7 @@ runTests([
           type: 'script',
           url: getWorkerURL(),
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -323,6 +338,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -335,6 +351,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -347,6 +364,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -372,6 +390,7 @@ runTests([
           frameUrl: 'unknown frame URL',
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -382,6 +401,7 @@ runTests([
           url: getPingURL(),
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -392,6 +412,7 @@ runTests([
           url: getPingURL(),
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -404,6 +425,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -418,6 +440,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -432,6 +455,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -454,6 +478,7 @@ runTests([
           frameUrl: 'unknown frame URL',
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -464,6 +489,7 @@ runTests([
           url: getBeaconURL(),
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -474,6 +500,7 @@ runTests([
           url: getBeaconURL(),
           frameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -486,6 +513,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -500,6 +528,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -514,6 +543,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -534,6 +564,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -545,6 +576,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -556,6 +588,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -572,6 +605,7 @@ runTests([
           tabId: -1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -587,6 +621,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -602,6 +637,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: getDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -629,6 +665,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -640,6 +677,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -651,6 +689,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -664,6 +703,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -679,6 +719,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -694,6 +735,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',

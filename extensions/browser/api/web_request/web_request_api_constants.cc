@@ -43,6 +43,7 @@ const char kRealmKey[] = "realm";
 const char kAuthCredentialsKey[] = "authCredentials";
 const char kUsernameKey[] = "username";
 const char kPasswordKey[] = "password";
+const char kInitiatorKey[] = "initiator";
 
 const char kOnBeforeRedirectEvent[] = "webRequest.onBeforeRedirect";
 const char kOnBeforeSendHeadersEvent[] = "webRequest.onBeforeSendHeaders";

@@ -1102,6 +1102,51 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   }
 }
 
+// Test that initiator is only included as part of event details when the
+// extension has a permission matching the initiator.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("webrequest_permissions/initiator"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  struct TestCase {
+    std::string navigate_before_start;
+    std::string xhr_domain;
+    std::string expected_initiator;
+  } testcases[] = {{"example.com", "example.com", "example.com"},
+                   {"example2.com", "example3.com", "example2.com"},
+                   {"no-permission.com", "example4.com", ""}};
+
+  int port = embedded_test_server()->port();
+  for (const auto& testcase : testcases) {
+    SCOPED_TRACE(testcase.navigate_before_start + ":" + testcase.xhr_domain +
+                 ":" + testcase.expected_initiator);
+    ExtensionTestMessageListener initiator_listener(false);
+    initiator_listener.set_extension_id(extension->id());
+    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                                testcase.navigate_before_start,
+                                                "/extensions/body1.html"));
+    PerformXhrInFrame(web_contents->GetMainFrame(), testcase.xhr_domain, port,
+                      "extensions/api_test/webrequest/xhr/data.json");
+    EXPECT_TRUE(initiator_listener.WaitUntilSatisfied());
+    if (testcase.expected_initiator.empty()) {
+      ASSERT_EQ("NO_INITIATOR", initiator_listener.message());
+    } else {
+      ASSERT_EQ(
+          "http://" + testcase.expected_initiator + ":" + std::to_string(port),
+          initiator_listener.message());
+    }
+  }
+}
+
 // Tests that the webRequest events aren't dispatched when the request initiator
 // is protected by policy.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,

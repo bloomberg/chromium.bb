@@ -59,6 +59,13 @@ class WebRequestPermissions {
       HostPermissionsCheck host_permissions_check,
       const base::Optional<url::Origin>& initiator);
 
+  static bool CanExtensionAccessInitiator(
+      const extensions::InfoMap* extension_info_map,
+      const extensions::ExtensionId extension_id,
+      const base::Optional<url::Origin>& initiator,
+      int tab_id,
+      bool crosses_incognito);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRequestPermissions);
 };

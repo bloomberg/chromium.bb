@@ -28,6 +28,7 @@ runTests([
           // of type "other".
           frameUrl: 'unknown frame URL',
           tabId: 0,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -36,6 +37,7 @@ runTests([
           type: 'other',
           url: getOSDDURL(),
           tabId: 0,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -44,6 +46,7 @@ runTests([
           type: 'other',
           url: getOSDDURL(),
           tabId: 0,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onHeadersReceived',
@@ -54,6 +57,7 @@ runTests([
           tabId: 0,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onResponseStarted',
@@ -66,6 +70,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       },
       { label: 'onCompleted',
@@ -78,6 +83,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 404 Not Found',
           statusCode: 404,
+          initiator: getServerDomain(initiators.WEB_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',

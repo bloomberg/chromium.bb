@@ -12,7 +12,8 @@ runTests([
           event: "onBeforeRequest",
           details: {
             url: getURL("newTab/a.html"),
-            frameUrl: getURL("newTab/a.html")
+            frameUrl: getURL("newTab/a.html"),
+            initiator: getDomain(initiators.BROWSER_INITIATED)
           }
         },
         { label: "a-onResponseStarted",
@@ -22,6 +23,7 @@ runTests([
             statusCode: 200,
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED)
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -32,7 +34,8 @@ runTests([
             statusCode: 200,
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
-            // Request to chrome-extension:// url has no IP.
+            initiator: getDomain(initiators.BROWSER_INITIATED)
+           // Request to chrome-extension:// url has no IP.
           }
         },
         { label: "b-onBeforeRequest",
@@ -41,6 +44,7 @@ runTests([
             url: getURL("newTab/b.html"),
             frameUrl: getURL("newTab/b.html"),
             tabId: 1,
+            initiator: getDomain(initiators.WEB_INITIATED)
           }
         },
         { label: "b-onResponseStarted",
@@ -52,6 +56,7 @@ runTests([
             statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
             tabId: 1,
+            initiator: getDomain(initiators.WEB_INITIATED)
           }
         },
         { label: "b-onCompleted",
@@ -63,6 +68,7 @@ runTests([
             statusLine: "HTTP/1.1 200 OK",
             // Request to chrome-extension:// url has no IP.
             tabId: 1,
+            initiator: getDomain(initiators.WEB_INITIATED)
           }
         },
       ],
