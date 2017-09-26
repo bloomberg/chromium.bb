@@ -284,8 +284,9 @@ stage_install_common() {
   chmod 644 "${STAGEDIR}${INSTALLDIR}/default-app-block"
 
   # documentation
-  install -m 644 "${BUILDDIR}/${PROGNAME}.1" \
+  process_template "${BUILDDIR}/installer/common/manpage.1.in" \
     "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1"
+  chmod 644 "${STAGEDIR}/usr/share/man/man1/${PACKAGE}.1"
 
   # Check to make sure all the ELF binaries are stripped.
   UNSTRIPPED=$(find "${STAGEDIR}/${INSTALLDIR}/" -type f | xargs file |

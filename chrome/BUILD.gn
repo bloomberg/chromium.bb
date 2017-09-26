@@ -260,7 +260,6 @@ if (!is_android && !is_mac) {
           # Chromium functionality directly into the executable.
           ":browser_dependencies",
           ":child_dependencies",
-          ":manpage",
 
           # Needed to use the master_preferences functions
           "//chrome/installer/util:with_no_strings",
@@ -1786,37 +1785,6 @@ if (enable_resource_whitelist_generation) {
 }
 
 if (is_linux) {
-  action("manpage") {
-    if (is_chrome_branded) {
-      name = "Google Chrome"
-      filename = "google-chrome"
-      confdir = "google-chrome"
-    } else {
-      name = "Chromium"
-      filename = "chromium-browser"
-      confdir = "chromium"
-    }
-
-    script = "//chrome/tools/build/linux/sed.py"
-    infile = "app/resources/manpage.1.in"
-    inputs = [
-      infile,
-    ]
-
-    outfile = "$root_out_dir/chrome.1"
-    outputs = [
-      outfile,
-    ]
-
-    args = [
-      rebase_path(infile, root_build_dir),
-      rebase_path(outfile, root_build_dir),
-      "-e s/@@NAME@@/$name/",
-      "-e s/@@FILENAME@@/$filename/",
-      "-e s/@@CONFDIR@@/$confdir/",
-    ]
-  }
-
   if (is_official_build) {
     action("linux_symbols") {
       script = "//build/linux/dump_app_syms.py"

@@ -399,7 +399,6 @@ group("gn_all") {
   if (is_linux) {
     # The following are definitely linux-only.
     deps += [
-      "//chrome:manpage",
       "//chrome:xdg_mime",
       "//net:disk_cache_memory_test",
       "//net:quic_client",
