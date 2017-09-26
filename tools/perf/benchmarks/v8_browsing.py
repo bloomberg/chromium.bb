@@ -207,6 +207,14 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
             'browse:shopping:lazada',
             [story.expectations.ANDROID_ONE],
             'crbug.com/768472')
+        self.DisableStory(
+            'browse:shopping:flipkart',
+            [story.expectations.ALL_MOBILE],
+            'crbug.com/767970')
+        self.DisableStory(
+            'browse:news:cnn',
+            [story.expectations.ALL_MOBILE],
+            'crbug.com/767970')
     return StoryExpectations()
 
   @classmethod
