@@ -5,9 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_READING_LIST_URL_DOWNLOADER_H_
 #define IOS_CHROME_BROWSER_READING_LIST_URL_DOWNLOADER_H_
 
-#include <queue>
-
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page.h"
@@ -181,7 +180,7 @@ class URLDownloader : public net::URLFetcherDelegate,
   const DownloadCompletion download_completion_;
   const SuccessCompletion delete_completion_;
 
-  std::deque<Task> tasks_;
+  base::circular_deque<Task> tasks_;
   bool working_;
   base::FilePath base_directory_;
   GURL original_url_;

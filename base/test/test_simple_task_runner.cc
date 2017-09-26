@@ -43,7 +43,7 @@ bool TestSimpleTaskRunner::RunsTasksInCurrentSequence() const {
   return thread_ref_ == PlatformThread::CurrentRef();
 }
 
-std::deque<TestPendingTask> TestSimpleTaskRunner::TakePendingTasks() {
+base::circular_deque<TestPendingTask> TestSimpleTaskRunner::TakePendingTasks() {
   AutoLock auto_lock(lock_);
   return std::move(pending_tasks_);
 }
@@ -77,7 +77,7 @@ void TestSimpleTaskRunner::RunPendingTasks() {
   DCHECK(RunsTasksInCurrentSequence());
 
   // Swap with a local variable to avoid re-entrancy problems.
-  std::deque<TestPendingTask> tasks_to_run;
+  base::circular_deque<TestPendingTask> tasks_to_run;
   {
     AutoLock auto_lock(lock_);
     tasks_to_run.swap(pending_tasks_);

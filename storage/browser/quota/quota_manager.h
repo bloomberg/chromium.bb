@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <list>
 #include <map>
 #include <memory>

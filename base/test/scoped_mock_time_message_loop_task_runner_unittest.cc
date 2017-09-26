@@ -4,12 +4,12 @@
 
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -31,7 +31,7 @@ void AssignTrue(bool* out) {
 }
 
 // Pops a task from the front of |pending_tasks| and returns it.
-TestPendingTask PopFront(std::deque<TestPendingTask>* pending_tasks) {
+TestPendingTask PopFront(base::circular_deque<TestPendingTask>* pending_tasks) {
   TestPendingTask task = std::move(pending_tasks->front());
   pending_tasks->pop_front();
   return task;
@@ -97,7 +97,7 @@ TEST_F(ScopedMockTimeMessageLoopTaskRunnerTest,
 
   scoped_task_runner_.reset();
 
-  std::deque<TestPendingTask> pending_tasks =
+  base::circular_deque<TestPendingTask> pending_tasks =
       original_task_runner()->TakePendingTasks();
 
   EXPECT_EQ(2U, pending_tasks.size());

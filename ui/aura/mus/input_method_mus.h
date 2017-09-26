@@ -5,8 +5,7 @@
 #ifndef UI_AURA_MUS_INPUT_METHOD_MUS_H_
 #define UI_AURA_MUS_INPUT_METHOD_MUS_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -90,7 +89,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // Callbacks supplied to DispatchKeyEvent() are added here while awaiting
   // the response from the server. These are removed when the response is
   // received (ProcessKeyEventCallback()).
-  std::deque<std::unique_ptr<EventResultCallback>> pending_callbacks_;
+  base::circular_deque<std::unique_ptr<EventResultCallback>> pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };

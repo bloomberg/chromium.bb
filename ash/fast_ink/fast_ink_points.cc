@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/containers/adapters.h"
+#include "base/containers/circular_deque.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -87,7 +88,8 @@ int FastInkPoints::GetNumberOfPoints() const {
   return points_.size();
 }
 
-const std::deque<FastInkPoints::FastInkPoint>& FastInkPoints::points() const {
+const base::circular_deque<FastInkPoints::FastInkPoint>& FastInkPoints::points()
+    const {
   return points_;
 }
 

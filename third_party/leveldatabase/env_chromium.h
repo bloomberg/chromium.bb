@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/linked_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -241,7 +241,7 @@ class ChromiumEnv : public leveldb::Env,
     void* arg;
     void (*function)(void*);
   };
-  typedef std::deque<BGItem> BGQueue;
+  using BGQueue = base::circular_deque<BGItem>;
   BGQueue queue_;
   LockTable locks_;
   std::unique_ptr<Semaphore> file_semaphore_;

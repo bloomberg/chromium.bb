@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <deque>
 #include <map>
 #include <set>
 #include <unordered_map>
@@ -392,7 +391,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   };
   ContextSharedData* shared_data_;
   gpu::SyncToken last_waited_sync_token_;
-  std::deque<std::unique_ptr<PendingProduceTexture>> pending_produce_textures_;
+  std::vector<std::unique_ptr<PendingProduceTexture>> pending_produce_textures_;
 };
 
 void GetResourcePixels(DisplayResourceProvider* resource_provider,

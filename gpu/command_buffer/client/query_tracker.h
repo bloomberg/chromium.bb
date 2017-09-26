@@ -11,11 +11,11 @@
 #include <stdint.h>
 
 #include <bitset>
-#include <deque>
 #include <list>
 #include <memory>
 
 #include "base/atomicops.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
@@ -78,7 +78,7 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
   FRIEND_TEST_ALL_PREFIXES(QuerySyncManagerTest, Shrink);
 
   MappedMemoryManager* mapped_memory_;
-  std::deque<std::unique_ptr<Bucket>> buckets_;
+  base::circular_deque<std::unique_ptr<Bucket>> buckets_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
 };

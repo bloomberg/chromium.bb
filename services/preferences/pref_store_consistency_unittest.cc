@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -182,9 +183,9 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
   size_t expected_writes_ = 0;
   size_t expected_updates_ = 0;
 
-  std::deque<UpdateOrRequest> writes_;
-  std::deque<UpdateOrAck> updates_;
-  std::deque<size_t> acks_;
+  base::circular_deque<UpdateOrRequest> writes_;
+  base::circular_deque<UpdateOrAck> updates_;
+  base::circular_deque<size_t> acks_;
 };
 
 class PersistentPrefStoreConsistencyTest : public testing::Test {

@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/draw_polygon.h"
@@ -33,8 +33,9 @@ namespace {
 
 class BspTreeTest {
  public:
-  static void RunTest(std::deque<std::unique_ptr<DrawPolygon>>* test_polygons,
-                      const std::vector<int>& compare_list) {
+  static void RunTest(
+      base::circular_deque<std::unique_ptr<DrawPolygon>>* test_polygons,
+      const std::vector<int>& compare_list) {
     BspTree bsp_tree(test_polygons);
 
     std::vector<DrawPolygon*> sorted_list;
@@ -142,7 +143,7 @@ TEST(BspTreeTest, NoSplit) {
   std::unique_ptr<DrawPolygon> polygon_c(
       CREATE_DRAW_POLYGON(vertices_c, gfx::Vector3dF(0.0f, 0.0f, 1.0f), 2));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_a));
   polygon_list.push_back(std::move(polygon_b));
   polygon_list.push_back(std::move(polygon_c));
@@ -170,7 +171,7 @@ TEST(BspTreeTest, BasicSplit) {
   std::unique_ptr<DrawPolygon> polygon_b(
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_a));
   polygon_list.push_back(std::move(polygon_b));
 
@@ -199,7 +200,7 @@ TEST(BspTreeTest, QuadOffset) {
   std::unique_ptr<DrawPolygon> polygon_b(
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_a));
   polygon_list.push_back(std::move(polygon_b));
 
@@ -228,7 +229,7 @@ TEST(BspTreeTest, QuadOffsetSplit) {
   std::unique_ptr<DrawPolygon> polygon_b(
       CREATE_DRAW_POLYGON(vertices_b, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 1));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_b));
   polygon_list.push_back(std::move(polygon_a));
 
@@ -264,7 +265,7 @@ TEST(BspTreeTest, ThreeWaySplit) {
   std::unique_ptr<DrawPolygon> polygon_c(
       CREATE_DRAW_POLYGON(vertices_c, gfx::Vector3dF(0.0f, 1.0f, 0.0f), 2));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_a));
   polygon_list.push_back(std::move(polygon_b));
   polygon_list.push_back(std::move(polygon_c));
@@ -305,7 +306,7 @@ TEST(BspTreeTest, Coplanar) {
   std::unique_ptr<DrawPolygon> polygon_f = polygon_c->CreateCopy();
 
   {
-    std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+    base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
     polygon_list.push_back(std::move(polygon_a));
     polygon_list.push_back(std::move(polygon_b));
     polygon_list.push_back(std::move(polygon_c));
@@ -317,7 +318,7 @@ TEST(BspTreeTest, Coplanar) {
 
   // Now check a different order and ensure we get that back as well
   {
-    std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+    base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
     polygon_list.push_back(std::move(polygon_f));
     polygon_list.push_back(std::move(polygon_d));
     polygon_list.push_back(std::move(polygon_e));
@@ -362,7 +363,7 @@ TEST(BspTreeTest, CoplanarSplit) {
   std::unique_ptr<DrawPolygon> polygon_d(
       CREATE_DRAW_POLYGON(vertices_d, gfx::Vector3dF(-1.0f, 0.0f, 0.0f), 3));
 
-  std::deque<std::unique_ptr<DrawPolygon>> polygon_list;
+  base::circular_deque<std::unique_ptr<DrawPolygon>> polygon_list;
   polygon_list.push_back(std::move(polygon_a));
   polygon_list.push_back(std::move(polygon_b));
   polygon_list.push_back(std::move(polygon_c));

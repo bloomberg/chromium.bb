@@ -8,9 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -127,7 +126,7 @@ class PPAPI_PROXY_EXPORT URLLoaderResource : public PluginResource,
 
   PP_URLLoaderTrusted_StatusCallback status_callback_;
 
-  std::deque<char> buffer_;
+  base::circular_deque<char> buffer_;
   int64_t bytes_sent_;
   int64_t total_bytes_to_be_sent_;
   int64_t bytes_received_;

@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_H_
 #define IOS_CHROME_BROWSER_METRICS_TAB_USAGE_RECORDER_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -235,7 +235,7 @@ class TabUsageRecorder : public WebStateListObserver {
 
   // Keep track of the timestamps of renderer terminations in order to find the
   // number of recently alive tabs when a renderer termination occurs.
-  std::deque<base::TimeTicks> termination_timestamps_;
+  base::circular_deque<base::TimeTicks> termination_timestamps_;
 
   // Number of page loads since the last evicted tab was seen.
   unsigned int page_loads_ = 0;

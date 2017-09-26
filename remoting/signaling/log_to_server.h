@@ -5,10 +5,10 @@
 #ifndef REMOTING_SIGNALING_LOG_TO_SERVER_H_
 #define REMOTING_SIGNALING_LOG_TO_SERVER_H_
 
-#include <deque>
 #include <map>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "remoting/signaling/server_log_entry.h"
@@ -48,7 +48,7 @@ class LogToServer : public SignalStrategy::Listener {
   std::unique_ptr<IqSender> iq_sender_;
   std::string directory_bot_jid_;
 
-  std::deque<ServerLogEntry> pending_entries_;
+  base::circular_deque<ServerLogEntry> pending_entries_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

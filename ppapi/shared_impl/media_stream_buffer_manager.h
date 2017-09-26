@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -83,7 +83,7 @@ class PPAPI_SHARED_EXPORT MediaStreamBufferManager {
   Delegate* delegate_;
 
   // A queue of buffer indices.
-  std::deque<int32_t> buffer_queue_;
+  base::circular_deque<int32_t> buffer_queue_;
 
   // A vector of buffer pointers. It is used for index to pointer converting.
   std::vector<MediaStreamBuffer*> buffers_;

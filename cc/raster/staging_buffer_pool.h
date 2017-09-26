@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/weak_ptr.h"
@@ -101,7 +101,8 @@ class CC_EXPORT StagingBufferPool
   // |lock_| must be acquired when accessing the following members.
   using StagingBufferSet = std::set<const StagingBuffer*>;
   StagingBufferSet buffers_;
-  using StagingBufferDeque = std::deque<std::unique_ptr<StagingBuffer>>;
+  using StagingBufferDeque =
+      base::circular_deque<std::unique_ptr<StagingBuffer>>;
   StagingBufferDeque free_buffers_;
   StagingBufferDeque busy_buffers_;
   const int max_staging_buffer_usage_in_bytes_;

@@ -4,7 +4,6 @@
 
 #include "components/favicon/core/large_icon_service.h"
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"

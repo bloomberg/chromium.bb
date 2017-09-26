@@ -5,7 +5,6 @@
 #include "base/task/cancelable_task_tracker.h"
 
 #include <cstddef>
-#include <deque>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

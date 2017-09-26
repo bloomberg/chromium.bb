@@ -5,9 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 #define EXTENSIONS_BROWSER_API_WEBCAM_PRIVATE_VISCA_WEBCAM_H_
 
-#include <deque>
-
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/serial/serial_connection.h"
@@ -130,7 +129,8 @@ class ViscaWebcam : public Webcam {
   std::vector<char> data_buffer_;
 
   // Queues commands till the current command completes.
-  std::deque<std::pair<std::vector<char>, CommandCompleteCallback>> commands_;
+  base::circular_deque<std::pair<std::vector<char>, CommandCompleteCallback>>
+      commands_;
 
   // Visca webcam always get/set pan-tilt together. |pan| and |tilt| are used to
   // store the current value of pan and tilt positions.

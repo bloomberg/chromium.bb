@@ -7,8 +7,7 @@
 
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -49,7 +48,7 @@ class GCM_EXPORT ConnectionEventTracker {
 
  private:
   // Storage for all the events which have completed.
-  std::deque<mcs_proto::ClientEvent> completed_events_;
+  base::circular_deque<mcs_proto::ClientEvent> completed_events_;
 
   // Current connection attempt.
   mcs_proto::ClientEvent current_event_;

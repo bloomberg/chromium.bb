@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
@@ -103,7 +103,7 @@ class RequestQueue {
 
   // Priority queue of pending requests. Not using std::priority_queue since
   // the code needs to be able to iterate over all pending requests.
-  std::deque<Request> pending_requests_;
+  base::circular_deque<Request> pending_requests_;
 
   // Active request and its associated backoff entry.
   std::unique_ptr<T> active_request_;
@@ -114,8 +114,8 @@ class RequestQueue {
   base::Timer timer_;
 };
 
-// Iterator class that wraps a std::deque<> iterator, only giving access to the
-// actual request part of each item.
+// Iterator class that wraps a base::circular_deque<> iterator, only giving
+// access to the actual request part of each item.
 template <typename T>
 class RequestQueue<T>::iterator {
  public:
@@ -131,7 +131,7 @@ class RequestQueue<T>::iterator {
 
  private:
   friend class RequestQueue<T>;
-  typedef std::deque<typename RequestQueue<T>::Request> Container;
+  typedef base::circular_deque<typename RequestQueue<T>::Request> Container;
 
   explicit iterator(const typename Container::iterator& it) : it_(it) {}
 

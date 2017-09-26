@@ -9,8 +9,7 @@
 
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/gpu_export.h"
@@ -114,8 +113,8 @@ class GPU_EXPORT RingBuffer {
     State state;
   };
 
-  typedef std::deque<Block> Container;
-  typedef unsigned int BlockIndex;
+  using Container = base::circular_deque<Block>;
+  using BlockIndex = unsigned int;
 
   void FreeOldestBlock();
 

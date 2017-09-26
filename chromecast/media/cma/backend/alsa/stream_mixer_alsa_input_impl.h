@@ -5,11 +5,11 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -177,7 +177,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
 
   base::Lock queue_lock_;  // Lock for the following queue-related members.
   scoped_refptr<DecoderBufferBase> pending_data_;
-  std::deque<scoped_refptr<DecoderBufferBase>> queue_;
+  base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_;
   int queued_frames_;
   double queued_frames_including_resampler_;
   MediaPipelineBackendAlsa::RenderingDelay mixer_rendering_delay_;

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -122,7 +123,7 @@ class Scheduler::Sequence {
   // Deque of tasks. Tasks are inserted at the back with increasing order number
   // generated from SyncPointOrderData. If a running task needs to be continued,
   // it is inserted at the front with the same order number.
-  std::deque<Task> tasks_;
+  base::circular_deque<Task> tasks_;
 
   // List of fences that this sequence is waiting on. Fences are inserted in
   // increasing order number but may be removed out of order. Tasks are blocked

@@ -4,9 +4,9 @@
 
 #include "remoting/client/client_telemetry_logger.h"
 
-#include <deque>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/ptr_util.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,7 @@ class FakeLogWriter : public ChromotingEventLogWriter {
   const base::Closure& auth_closure() const { return auth_closure_; }
 
  private:
-  std::deque<ChromotingEvent> expected_events_;
+  base::circular_deque<ChromotingEvent> expected_events_;
   std::string auth_token_;
   base::Closure auth_closure_;
 };

@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_PRESENTATION_PRESENTATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PRESENTATION_PRESENTATION_SERVICE_IMPL_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>

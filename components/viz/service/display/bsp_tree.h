@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "components/viz/service/display/bsp_compare_result.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/viz_service_export.h"
@@ -33,7 +33,7 @@ struct BspNode {
 
 class VIZ_SERVICE_EXPORT BspTree {
  public:
-  explicit BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list);
+  explicit BspTree(base::circular_deque<std::unique_ptr<DrawPolygon>>* list);
   std::unique_ptr<BspNode>& root() { return root_; }
 
   template <typename ActionHandlerType>
@@ -49,7 +49,8 @@ class VIZ_SERVICE_EXPORT BspTree {
   std::unique_ptr<BspNode> root_;
 
   void FromList(std::vector<std::unique_ptr<DrawPolygon>>* list);
-  void BuildTree(BspNode* node, std::deque<std::unique_ptr<DrawPolygon>>* data);
+  void BuildTree(BspNode* node,
+                 base::circular_deque<std::unique_ptr<DrawPolygon>>* data);
 
   template <typename ActionHandlerType>
   void WalkInOrderAction(ActionHandlerType* action_handler,

@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
 

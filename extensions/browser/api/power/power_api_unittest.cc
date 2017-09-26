@@ -4,10 +4,10 @@
 
 #include "extensions/browser/api/power/power_api.h"
 
-#include <deque>
 #include <memory>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -129,7 +129,7 @@ class FakeWakeLockManager {
   bool is_active_;
 
   // Requests in chronological order.
-  std::deque<Request> requests_;
+  base::circular_deque<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWakeLockManager);
 };

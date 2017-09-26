@@ -4,7 +4,6 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_H_
 
-#include <deque>
 #include <functional>
 #include <memory>
 #include <set>

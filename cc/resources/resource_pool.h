@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/ptr_util.h"
@@ -187,7 +187,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   size_t total_resource_count_ = 0;
 
   // Holds most recently used resources at the front of the queue.
-  using ResourceDeque = std::deque<std::unique_ptr<PoolResource>>;
+  using ResourceDeque = base::circular_deque<std::unique_ptr<PoolResource>>;
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 

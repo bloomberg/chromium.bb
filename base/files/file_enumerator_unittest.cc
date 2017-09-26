@@ -4,10 +4,10 @@
 
 #include "base/files/file_enumerator.h"
 
-#include <deque>
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -27,13 +27,13 @@ const std::vector<FileEnumerator::FolderSearchPolicy> kFolderSearchPolicies{
     FileEnumerator::FolderSearchPolicy::MATCH_ONLY,
     FileEnumerator::FolderSearchPolicy::ALL};
 
-std::deque<FilePath> RunEnumerator(
+circular_deque<FilePath> RunEnumerator(
     const FilePath& root_path,
     bool recursive,
     int file_type,
     const FilePath::StringType& pattern,
     FileEnumerator::FolderSearchPolicy folder_search_policy) {
-  std::deque<FilePath> rv;
+  circular_deque<FilePath> rv;
   FileEnumerator enumerator(root_path, recursive, file_type, pattern,
                             folder_search_policy);
   for (auto file = enumerator.Next(); !file.empty(); file = enumerator.Next())

@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/proxy/connection.h"
@@ -143,8 +143,8 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
 
   std::vector<std::unique_ptr<ShmBuffer>> shm_buffers_;
 
-  std::deque<BitstreamBuffer> available_bitstream_buffers_;
-  typedef std::map<void*, uint32_t> BitstreamBufferMap;
+  base::circular_deque<BitstreamBuffer> available_bitstream_buffers_;
+  using BitstreamBufferMap = std::map<void*, uint32_t>;
   BitstreamBufferMap bitstream_buffer_map_;
 
   scoped_refptr<TrackedCallback> get_supported_profiles_callback_;
@@ -152,7 +152,7 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
   scoped_refptr<TrackedCallback> get_video_frame_callback_;
   PP_Resource* get_video_frame_data_;
 
-  typedef std::map<PP_Resource, scoped_refptr<TrackedCallback> > EncodeMap;
+  using EncodeMap = std::map<PP_Resource, scoped_refptr<TrackedCallback>>;
   EncodeMap encode_callbacks_;
 
   scoped_refptr<TrackedCallback> get_bitstream_buffer_callback_;

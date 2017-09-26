@@ -5,10 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ANDROID_AUDIO_DECODER_ANDROID_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ANDROID_AUDIO_DECODER_ANDROID_H_
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "chromecast/media/cma/backend/android/audio_sink_android.h"
 #include "chromecast/media/cma/backend/android/audio_sink_manager.h"
@@ -104,7 +104,7 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
   std::unique_ptr<CastAudioDecoder> decoder_;
 
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_;
-  std::deque<RateShifterInfo> rate_shifter_info_;
+  base::circular_deque<RateShifterInfo> rate_shifter_info_;
   std::unique_ptr<::media::AudioBus> rate_shifter_output_;
 
   int64_t current_pts_;

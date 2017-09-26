@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <limits>
 
 #include "base/memory/ptr_util.h"

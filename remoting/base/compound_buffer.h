@@ -21,8 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -93,7 +92,7 @@ class CompoundBuffer {
     const char* start;
     int size;
   };
-  typedef std::deque<DataChunk> DataChunkList;
+  using DataChunkList = base::circular_deque<DataChunk>;
 
   DataChunkList chunks_;
   int total_bytes_;

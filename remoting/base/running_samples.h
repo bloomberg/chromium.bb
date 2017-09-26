@@ -8,8 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
@@ -42,7 +41,7 @@ class RunningSamples {
   const size_t window_size_;
 
   // Stores the |window_size| most recently recorded samples.
-  std::deque<int64_t> data_points_;
+  base::circular_deque<int64_t> data_points_;
 
   // Holds the sum of the samples in |data_points_|.
   int64_t sum_ = 0;

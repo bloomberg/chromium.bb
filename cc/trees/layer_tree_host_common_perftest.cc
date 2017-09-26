@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <sstream>
 

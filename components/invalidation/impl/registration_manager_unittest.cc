@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <deque>
 #include <vector>
 
 #include "base/macros.h"

@@ -7,6 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -449,7 +450,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     QuerySync* sync = nullptr;
     base::subtle::Atomic32 submit_count = 0;
   };
-  std::deque<PendingQuery> pending_queries_;
+  base::circular_deque<PendingQuery> pending_queries_;
 
   // Currently active queries
   struct ActiveQuery {
