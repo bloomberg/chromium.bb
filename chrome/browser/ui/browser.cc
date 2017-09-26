@@ -126,8 +126,6 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
-#include "chrome/browser/ui/search/search_delegate.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -409,8 +407,6 @@ Browser::Browser(const CreateParams& params)
 
   toolbar_model_.reset(new ToolbarModelImpl(toolbar_model_delegate_.get(),
                                             content::kMaxURLDisplayChars));
-  search_model_.reset(new SearchModel());
-  search_delegate_.reset(new SearchDelegate(search_model_.get()));
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
@@ -1027,7 +1023,8 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
 
 void Browser::TabDeactivated(WebContents* contents) {
   exclusive_access_manager_->OnTabDeactivated(contents);
-  search_delegate_->OnTabDeactivated(contents);
+  if (instant_controller_)
+    instant_controller_->OnTabDeactivated(contents);
   SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
 
   // Save what the user's currently typing, so it can be restored when we
@@ -1082,8 +1079,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   // Propagate the profile to the location bar.
   UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
 
-  if (search::IsInstantExtendedAPIEnabled())
-    search_delegate_->OnTabActivated(new_contents);
+  if (instant_controller_)
+    instant_controller_->OnTabActivated(new_contents);
 
   // Update reload/stop state.
   command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
@@ -1120,10 +1117,6 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
                                        session_tab_helper->session_id(),
                                        base::TimeTicks::Now());
   }
-
-  // This needs to be called after notifying SearchDelegate.
-  if (instant_controller_)
-    instant_controller_->ActiveTabChanged();
 
   SearchTabHelper::FromWebContents(new_contents)->OnTabActivated();
 }
@@ -2392,8 +2385,8 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
     find_bar_controller_->ChangeWebContents(NULL);
   }
 
-  // Stop observing search model changes for this tab.
-  search_delegate_->OnTabDetached(contents);
+  if (instant_controller_)
+    instant_controller_->OnTabDetached(contents);
 
   for (size_t i = 0; i < interstitial_observers_.size(); i++) {
     if (interstitial_observers_[i]->web_contents() != contents)

@@ -14,7 +14,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 
 class BrowserInstantController;
 
@@ -24,15 +24,15 @@ class BrowserInstantController;
 // * an open tab navigates to an NTP.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController {
+class InstantController : public SearchModelObserver {
  public:
-  explicit InstantController(BrowserInstantController* browser);
-  ~InstantController();
+  explicit InstantController(
+      BrowserInstantController* browser_instant_controller);
+  ~InstantController() override;
 
-  // The search mode in the active tab has changed. Bind |instant_tab_observer_|
-  // if the |new_origin| reflects an Instant NTP.
-  void SearchModeChanged(SearchModel::Origin old_origin,
-                         SearchModel::Origin new_origin);
+  // SearchModelObserver:
+  void ModelChanged(SearchModel::Origin old_origin,
+                    SearchModel::Origin new_origin) override;
 
   // The user switched tabs. Bind |instant_tab_observer_| if the newly active
   // tab is an Instant NTP.
@@ -69,13 +69,10 @@ class InstantController {
   // Sends theme info and most visited items to the Instant renderer process.
   void UpdateInfoForInstantTab();
 
-  BrowserInstantController* const browser_;
+  BrowserInstantController* const browser_instant_controller_;
 
   // Only non-null if the current tab is an Instant tab, i.e. an NTP.
   std::unique_ptr<TabObserver> instant_tab_observer_;
-
-  // The search model mode for the active tab.
-  SearchModel::Origin search_origin_;
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
   mutable std::list<std::pair<int64_t, std::string>> debug_events_;

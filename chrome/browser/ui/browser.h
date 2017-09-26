@@ -70,8 +70,6 @@ class BrowserWindow;
 class FindBarController;
 class Profile;
 class ScopedKeepAlive;
-class SearchDelegate;
-class SearchModel;
 class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
@@ -263,13 +261,6 @@ class Browser : public TabStripModelObserver,
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
   chrome::BrowserCommandController* command_controller() {
     return command_controller_.get();
-  }
-  SearchModel* search_model() { return search_model_.get(); }
-  const SearchModel* search_model() const {
-      return search_model_.get();
-  }
-  SearchDelegate* search_delegate() {
-    return search_delegate_.get();
   }
   const SessionID& session_id() const { return session_id_; }
   BrowserContentSettingBubbleModelDelegate*
@@ -918,13 +909,6 @@ class Browser : public TabStripModelObserver,
   // The model for the toolbar view.
   std::unique_ptr<ToolbarModel> toolbar_model_;
 
-  // The model for the "active" search state.  There are per-tab search models
-  // as well.  When a tab is active its model is kept in sync with this one.
-  // When a new tab is activated its model state is propagated to this active
-  // model.  This way, observers only have to attach to this single model for
-  // updates, and don't have to worry about active tab changes directly.
-  std::unique_ptr<SearchModel> search_model_;
-
   // UI update coalescing and handling ////////////////////////////////////////
 
   typedef std::map<const content::WebContents*, int> UpdateMap;
@@ -981,10 +965,6 @@ class Browser : public TabStripModelObserver,
 
   // Helper which implements the ToolbarModelDelegate interface.
   std::unique_ptr<BrowserToolbarModelDelegate> toolbar_model_delegate_;
-
-  // A delegate that handles the details of updating the "active"
-  // |search_model_| state with the tab's state.
-  std::unique_ptr<SearchDelegate> search_delegate_;
 
   // Helper which implements the LiveTabContext interface.
   std::unique_ptr<BrowserLiveTabContext> live_tab_context_;
