@@ -149,6 +149,53 @@ public class TextSuggestionMenuTest {
 
     @Test
     @LargeTest
+    public void testApplyMisspellingSuggestion()
+            throws InterruptedException, Throwable, TimeoutException {
+        final ContentViewCore cvc = mRule.getContentViewCore();
+        WebContents webContents = cvc.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString textToCommit = new SpannableString("word");
+
+        SuggestionSpan suggestionSpan = new SuggestionSpan(mRule.getContentViewCore().getContext(),
+                new String[] {"replacement"},
+                SuggestionSpan.FLAG_EASY_CORRECT | SuggestionSpan.FLAG_MISSPELLED);
+        textToCommit.setSpan(suggestionSpan, 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        mRule.commitText(textToCommit, 1);
+
+        DOMUtils.clickNode(cvc, "span");
+        waitForMenuToShow(cvc);
+
+        // There should be 2 child views: 1 suggestion plus the list footer.
+        Assert.assertEquals(2, getSuggestionList(cvc).getChildCount());
+
+        Assert.assertEquals(
+                "replacement", ((TextView) getSuggestionButton(cvc, 0)).getText().toString());
+
+        TouchCommon.singleClickView(getSuggestionButton(cvc, 0));
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.getNodeContents(cvc.getWebContents(), "div")
+                            .equals("replacement");
+                } catch (InterruptedException | TimeoutException e) {
+                    return false;
+                }
+            }
+        });
+
+        waitForMenuToHide(cvc);
+
+        // TODO(rlanday): Verify that the suggestion marker was removed once we have a way to do
+        // this in a content test (crbug.com/767507).
+    }
+
+    @Test
+    @LargeTest
     public void menuDismissal() throws InterruptedException, Throwable, TimeoutException {
         final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = cvc.getWebContents();
