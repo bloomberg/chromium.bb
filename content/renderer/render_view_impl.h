@@ -627,10 +627,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // false, but set to true by some tests.
   bool send_content_state_immediately_;
 
-  // Bitwise-ORed set of extra bindings that have been enabled.  See
-  // BindingsPolicy for details.
-  int enabled_bindings_;
-
   // If true, we send IPC messages when |preferred_size_| changes.
   bool send_preferred_size_changes_;
 
