@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/profile_network_context_service.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -32,13 +34,15 @@ content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams(
   // TODO(mmenke): Set up parameters here.
   content::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
-  PrefService* prefs = profile->GetPrefs();
+
+  network_context_params->context_name = std::string("main");
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
 
   // Configure on-disk storage for non-OTR profiles. OTR profiles just use
   // default behavior (in memory storage, default sizes).
+  PrefService* prefs = profile->GetPrefs();
   if (!profile->IsOffTheRecord()) {
     // Configure the HTTP cache path and size.
     base::FilePath base_cache_path;

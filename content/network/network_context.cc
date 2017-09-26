@@ -41,10 +41,6 @@
 
 namespace content {
 
-namespace {
-
-}  // namespace
-
 NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
@@ -229,6 +225,10 @@ void NetworkContext::ApplyContextParamsToBuilder(
   // |network_service_| may be nullptr in tests.
   if (!builder->net_log() && network_service_)
     builder->set_net_log(network_service_->net_log());
+
+  builder->set_enable_brotli(network_context_params->enable_brotli);
+  if (network_context_params->context_name)
+    builder->set_name(*network_context_params->context_name);
 
   if (!network_context_params->http_cache_enabled) {
     builder->DisableHttpCache();

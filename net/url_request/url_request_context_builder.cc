@@ -188,8 +188,7 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() {}
 
 URLRequestContextBuilder::URLRequestContextBuilder()
-    : name_(nullptr),
-      enable_brotli_(false),
+    : enable_brotli_(false),
       network_quality_estimator_(nullptr),
       shared_http_user_agent_settings_(nullptr),
       data_enabled_(false),
@@ -387,7 +386,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       new ContainerURLRequestContext());
   URLRequestContextStorage* storage = context->storage();
 
-  context->set_name(name_);
+  if (!name_.empty())
+    context->set_name(name_);
   context->set_enable_brotli(enable_brotli_);
   context->set_network_quality_estimator(network_quality_estimator_);
 

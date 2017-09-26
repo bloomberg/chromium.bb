@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -137,6 +138,28 @@ TEST_F(NetworkContextTest, DisableQuic) {
                    ->GetSession()
                    ->params()
                    .enable_quic);
+}
+
+TEST_F(NetworkContextTest, EnableBrotli) {
+  for (bool enable_brotli : {true, false}) {
+    mojom::NetworkContextParamsPtr context_params =
+        mojom::NetworkContextParams::New();
+    context_params->enable_brotli = enable_brotli;
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(context_params));
+    EXPECT_EQ(enable_brotli,
+              network_context->url_request_context()->enable_brotli());
+  }
+}
+
+TEST_F(NetworkContextTest, ContextName) {
+  const char kContextName[] = "Jim";
+  mojom::NetworkContextParamsPtr context_params =
+      mojom::NetworkContextParams::New();
+  context_params->context_name = std::string(kContextName);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  EXPECT_EQ(kContextName, network_context->url_request_context()->name());
 }
 
 TEST_F(NetworkContextTest, QuicUserAgentId) {

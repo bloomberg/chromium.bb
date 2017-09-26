@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -14,11 +15,15 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/version_info/version_info.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/user_agent.h"
 
 content::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
   content::mojom::NetworkContextParamsPtr network_context_params =
       content::mojom::NetworkContextParams::New();
+
+  network_context_params->enable_brotli =
+      base::FeatureList::IsEnabled(features::kBrotliEncoding);
 
   std::string quic_user_agent_id = chrome::GetChannelString();
   if (!quic_user_agent_id.empty())
