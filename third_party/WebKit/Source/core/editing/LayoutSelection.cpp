@@ -243,7 +243,7 @@ class SelectionMarkingRange {
     invalidation_set_ = std::move(other.invalidation_set_);
   }
 
-  SelectionPaintRange PaintRange() const { return paint_range_; };
+  SelectionPaintRange PaintRange() const { return paint_range_; }
 
   const PaintInvalidationSet& InvalidationSet() const {
     return invalidation_set_;
