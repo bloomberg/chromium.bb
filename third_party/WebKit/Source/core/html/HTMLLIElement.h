@@ -27,6 +27,8 @@
 
 namespace blink {
 
+class ListItemOrdinal;
+
 class HTMLLIElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -44,7 +46,7 @@ class HTMLLIElement final : public HTMLElement {
 
   void AttachLayoutTree(AttachContext&) override;
 
-  void ParseValue(const AtomicString&);
+  void ParseValue(const AtomicString&, ListItemOrdinal*);
 };
 
 }  // namespace blink

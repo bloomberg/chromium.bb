@@ -23,9 +23,7 @@ class LayoutLIItem : public LayoutBoxItem {
 
   LayoutLIItem() {}
 
-  void SetNotInList(bool not_in_list) {
-    return ToListItem()->SetNotInList(not_in_list);
-  }
+  ListItemOrdinal& Ordinal() { return ToListItem()->Ordinal(); }
 
  private:
   LayoutListItem* ToListItem() { return ToLayoutListItem(GetLayoutObject()); }

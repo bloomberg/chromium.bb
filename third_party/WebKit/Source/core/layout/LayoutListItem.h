@@ -24,42 +24,27 @@
 #ifndef LayoutListItem_h
 #define LayoutListItem_h
 
+#include "core/html/ListItemOrdinal.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
-class HTMLOListElement;
 class LayoutListMarker;
 
 class LayoutListItem final : public LayoutBlockFlow {
  public:
   explicit LayoutListItem(Element*);
 
-  int Value() const {
-    if (!is_value_up_to_date_)
-      UpdateValueNow();
-    return value_;
-  }
-  void UpdateValue();
-
-  bool HasExplicitValue() const { return has_explicit_value_; }
-  int ExplicitValue() const { return explicit_value_; }
-  void SetExplicitValue(int);
-  void ClearExplicitValue();
-
-  void SetNotInList(bool);
-  bool NotInList() const { return not_in_list_; }
+  int Value() const;
 
   const String& MarkerText() const;
-
-  void UpdateListMarkerNumbers();
-
-  static void UpdateItemValuesForOrderedList(const HTMLOListElement*);
-  static unsigned ItemCountForOrderedList(const HTMLOListElement*);
 
   bool IsEmpty() const;
 
   LayoutListMarker* Marker() const { return marker_; }
+
+  ListItemOrdinal& Ordinal() { return ordinal_; }
+  void OrdinalValueChanged();
 
   const char* GetName() const override { return "LayoutListItem"; }
 
@@ -86,17 +71,9 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void AddOverflowFromChildren() override;
 
-  inline int CalcValue() const;
-  void UpdateValueNow() const;
-  void ExplicitValueChanged();
-
-  int explicit_value_;
+  ListItemOrdinal ordinal_;
   LayoutListMarker* marker_;
-  mutable int value_;
 
-  bool has_explicit_value_ : 1;
-  mutable bool is_value_up_to_date_ : 1;
-  bool not_in_list_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListItem, IsListItem());

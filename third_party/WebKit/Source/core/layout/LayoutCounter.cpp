@@ -27,6 +27,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLOListElement.h"
+#include "core/html/ListItemOrdinal.h"
 #include "core/layout/CounterNode.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutView.h"
@@ -178,17 +179,17 @@ static bool PlanCounter(LayoutObject& object,
   }
 
   if (identifier == "list-item") {
-    if (object.IsListItem()) {
-      if (ToLayoutListItem(object).HasExplicitValue()) {
-        value = ToLayoutListItem(object).ExplicitValue();
-        is_reset = true;
+    if (Node* e = object.GetNode()) {
+      if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*e)) {
+        if (const auto& explicit_value = ordinal->ExplicitValue()) {
+          value = explicit_value.value();
+          is_reset = true;
+          return true;
+        }
+        value = 1;
+        is_reset = false;
         return true;
       }
-      value = 1;
-      is_reset = false;
-      return true;
-    }
-    if (Node* e = object.GetNode()) {
       if (isHTMLOListElement(*e)) {
         value = toHTMLOListElement(e)->StartConsideringItemCount();
         is_reset = true;
