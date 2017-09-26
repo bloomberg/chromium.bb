@@ -486,7 +486,7 @@ class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest() : LayerImplScrollTest(LayerTreeSettings()) {}
 
-  LayerImplScrollTest(const LayerTreeSettings& settings)
+  explicit LayerImplScrollTest(const LayerTreeSettings& settings)
       : host_impl_(settings, &task_runner_provider_, &task_graph_runner_),
         root_id_(7) {
     host_impl_.active_tree()->SetRootLayerForTesting(
