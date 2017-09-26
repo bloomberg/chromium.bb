@@ -431,6 +431,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void AddCacheRenderSurfaceRequest();
   void RemoveCacheRenderSurfaceRequest();
 
+  // Request deferring painting for layer.
+  void AddDeferredPaintRequest();
+  void RemoveDeferredPaintRequest();
+
   // Request trilinear filtering for layer.
   void SetTrilinearFiltering(bool trilinear_filtering);
 
@@ -609,6 +613,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // the value > 0, means we need to cache the render surface. If the value
   // == 0, means we should not cache the render surface.
   unsigned cache_render_surface_requests_;
+
+  // The counter to maintain how many deferred paint requests we have. If the
+  // value > 0, means we need to defer painting the layer. If the value == 0,
+  // means we should paint the layer.
+  unsigned deferred_paint_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

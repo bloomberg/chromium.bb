@@ -368,9 +368,15 @@ class NullLayerDelegate : public LayerDelegate {
   NullLayerDelegate() {}
   ~NullLayerDelegate() override {}
 
+  gfx::Rect invalidation() const { return invalidation_; }
+
  private:
+  gfx::Rect invalidation_;
+
   // Overridden from LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {}
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    invalidation_ = context.InvalidationForTesting();
+  }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
@@ -918,6 +924,10 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
     return layer;
   }
 
+  gfx::Rect LastInvalidation() const {
+    return default_layer_delegate_->invalidation();
+  }
+
  private:
   std::unique_ptr<NullLayerDelegate> default_layer_delegate_;
 
@@ -1175,6 +1185,53 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
 
   // Wait for texture mailbox release to avoid DCHECKs.
   run_loop.Run();
+}
+
+// Tests that in deferred paint request, the layer damage will be accumulated.
+TEST_F(LayerWithNullDelegateTest, UpdateDamageInDeferredPaint) {
+  gfx::Rect bound(gfx::Rect(500, 500));
+  std::unique_ptr<Layer> root(CreateTextureRootLayer(bound));
+  EXPECT_EQ(bound, root->damaged_region_for_testing());
+  WaitForCommit();
+  EXPECT_EQ(gfx::Rect(), root->damaged_region_for_testing());
+  EXPECT_EQ(bound, LastInvalidation());
+
+  // Deferring paint.
+  root->AddDeferredPaintRequest();
+
+  // During deferring paint request, invalid_rect will not be set to
+  // cc_layer_->inputs_->update_rect, and the paint_region is empty.
+  gfx::Rect bound1(gfx::Rect(100, 100));
+  root->SchedulePaint(bound1);
+  EXPECT_EQ(bound1, root->damaged_region_for_testing());
+  root->SendDamagedRects();
+  EXPECT_EQ(gfx::Rect(), root->cc_layer_for_testing()->update_rect());
+  root->PaintContentsToDisplayList(
+      cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  EXPECT_EQ(gfx::Rect(), LastInvalidation());
+
+  // During deferring paint request, a new invalid_rect will be accumulated.
+  gfx::Rect bound2(gfx::Rect(100, 200, 100, 100));
+  gfx::Rect bound_union(bound1);
+  bound_union.Union(bound2);
+  root->SchedulePaint(bound2);
+  EXPECT_EQ(bound_union, root->damaged_region_for_testing().bounds());
+  root->SendDamagedRects();
+  EXPECT_EQ(gfx::Rect(), root->cc_layer_for_testing()->update_rect());
+  root->PaintContentsToDisplayList(
+      cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  EXPECT_EQ(gfx::Rect(), LastInvalidation());
+
+  // Remove deferring paint request.
+  root->RemoveDeferredPaintRequest();
+
+  // The invalidation region should be accumulated invalid_rect during deferred
+  // paint, i.e. union of bound1 and bound2.
+  root->SendDamagedRects();
+  EXPECT_EQ(bound_union, root->cc_layer_for_testing()->update_rect());
+  root->PaintContentsToDisplayList(
+      cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  EXPECT_EQ(bound_union, LastInvalidation());
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {

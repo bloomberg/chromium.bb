@@ -114,7 +114,8 @@ Layer::Layer()
       owner_(NULL),
       cc_layer_(NULL),
       device_scale_factor_(1.0f),
-      cache_render_surface_requests_(0) {
+      cache_render_surface_requests_(0),
+      deferred_paint_requests_(0) {
   CreateCcLayer();
 }
 
@@ -142,7 +143,8 @@ Layer::Layer(LayerType type)
       owner_(NULL),
       cc_layer_(NULL),
       device_scale_factor_(1.0f),
-      cache_render_surface_requests_(0) {
+      cache_render_surface_requests_(0),
+      deferred_paint_requests_(0) {
   CreateCcLayer();
 }
 
@@ -685,6 +687,25 @@ void Layer::RemoveCacheRenderSurfaceRequest() {
     cc_layer_->SetCacheRenderSurface(false);
 }
 
+void Layer::AddDeferredPaintRequest() {
+  ++deferred_paint_requests_;
+  TRACE_COUNTER_ID1("ui", "DeferredPaintRequests", this,
+                    deferred_paint_requests_);
+}
+
+void Layer::RemoveDeferredPaintRequest() {
+  DCHECK_GT(deferred_paint_requests_, 0u);
+
+  --deferred_paint_requests_;
+  TRACE_COUNTER_ID1("ui", "DeferredPaintRequests", this,
+                    deferred_paint_requests_);
+  if (!deferred_paint_requests_ && !damaged_region_.IsEmpty()) {
+    ScheduleDraw();
+    if (layer_mask_)
+      layer_mask_->ScheduleDraw();
+  }
+}
+
 void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
   cc_layer_->SetTrilinearFiltering(trilinear_filtering);
 }
@@ -843,16 +864,16 @@ SkColor Layer::background_color() const {
 
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   if ((type_ == LAYER_SOLID_COLOR && !texture_layer_.get()) ||
-      type_ == LAYER_NINE_PATCH || (!delegate_ && !mailbox_.IsValid()))
+      type_ == LAYER_NINE_PATCH || (!delegate_ && !mailbox_.IsValid())) {
     return false;
+  }
 
   damaged_region_.Union(invalid_rect);
-  ScheduleDraw();
-
-  if (layer_mask_) {
+  if (layer_mask_)
     layer_mask_->damaged_region_.Union(invalid_rect);
-    layer_mask_->ScheduleDraw();
-  }
+
+  if (!content_layer_ || !deferred_paint_requests_)
+    ScheduleDraw();
   return true;
 }
 
@@ -866,6 +887,8 @@ void Layer::SendDamagedRects() {
   if (damaged_region_.IsEmpty())
     return;
   if (!delegate_ && !mailbox_.IsValid())
+    return;
+  if (content_layer_ && deferred_paint_requests_)
     return;
 
   for (cc::Region::Iterator iter(damaged_region_); iter.has_rect(); iter.next())
