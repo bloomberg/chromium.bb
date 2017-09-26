@@ -461,7 +461,6 @@ wet_shell_init(struct weston_compositor *compositor,
 	       int *argc, char *argv[])
 {
 	struct ivi_shell *shell;
-	int retval = -1;
 
 	shell = zalloc(sizeof *shell);
 	if (shell == NULL)
@@ -478,13 +477,15 @@ wet_shell_init(struct weston_compositor *compositor,
 	if (wl_global_create(compositor->wl_display,
 			     &ivi_application_interface, 1,
 			     shell, bind_ivi_application) == NULL)
-		goto out;
+		goto err_shell;
 
 	ivi_layout_init_with_compositor(compositor);
 	shell_add_bindings(compositor, shell);
 
-	retval = 0;
+	return IVI_SUCCEEDED;
 
-out:
-	return retval;
+err_shell:
+	free(shell);
+
+	return IVI_FAILED;
 }
