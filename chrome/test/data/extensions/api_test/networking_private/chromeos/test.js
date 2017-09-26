@@ -776,8 +776,10 @@ var availableTests = [
           assertEq(network_guid, result.GUID);
           var new_properties = {
             Priority: 1,
+            Type: 'VPN',
             VPN: {
-              Host: 'vpn.host1'
+              Host: 'vpn.host1',
+              Type: 'OpenVPN',
             }
           };
           chrome.networkingPrivate.setProperties(

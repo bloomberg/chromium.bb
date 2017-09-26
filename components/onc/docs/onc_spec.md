@@ -510,10 +510,7 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
 
 * **Type**
     * (required) - **string**
-    * `Allowed values are` *IPsec*,
-        *L2TP-IPsec*,
-        *OpenVPN*, and
-        *ThirdPartyVPN*.
+    * `Allowed values are` *L2TP-IPsec*, *OpenVPN*, *ThirdPartyVPN*, *ARCVPN*
     * Type of the VPN.
 
 ## IPsec-based VPN types

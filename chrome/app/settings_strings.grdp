@@ -1783,7 +1783,7 @@
       Unknown carrier
     </message>
     <message name="IDS_ONC_VPN_HOST" desc="ONC Property label for VPN.Host">
-      Host
+      Server hostname
     </message>
     <message name="IDS_ONC_VPN_L2TP_USERNAME" desc="ONC Property label for VPN.L2TP.Username">
       Username
@@ -1796,6 +1796,15 @@
     </message>
     <message name="IDS_ONC_VPN_TYPE" desc="ONC Property label for VPN.Type">
       Provider type
+    </message>
+    <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC" desc="ONC Property label for VPN.Type.L2TP-IPSec">
+      L2TP/IPsec
+    </message>
+    <message name="IDS_ONC_VPN_TYPE_OPENVPN" desc="ONC Property label for VPN.Type.OpenVPN">
+      Open VPN
+    </message>
+    <message name="IDS_ONC_VPN_TYPE_ARCVPN" desc="ONC Property label for VPN.Type.ARCVPN">
+      Android VPN
     </message>
     <message name="IDS_ONC_WIFI_FREQUENCY" desc="ONC Property label for WiFi.Frequency">
       Frequency

@@ -48,7 +48,7 @@ namespace networking.onc {
   };
 
   enum NetworkType {
-    All, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
+    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi, WiMAX
   };
 
   enum ProxySettingsType {
@@ -559,7 +559,7 @@ namespace networking.onc {
     boolean? AutoConnect;
     // The VPN host.
     DOMString? Host;
-    // The VPN type.
+    // The VPN type. This can not be an enum because of 'L2TP-IPSec'.
     DOMString? Type;
   };
 
