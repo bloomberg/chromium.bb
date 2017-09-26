@@ -731,13 +731,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, AppCacheHtmlInitialized) {
 
 // If a page has been cached by another AppCache, the prefetch should be
 // canceled.
-// Flaky on mac crbug.com/733504
-#if defined(OS_MACOSX)
-#define MAYBE_AppCacheRegistered DISABLED_AppCacheRegistered
-#else
-#define MAYBE_AppCacheRegistered AppCacheRegistered
-#endif
-IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, MAYBE_AppCacheRegistered) {
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, AppCacheRegistered) {
   base::TimeTicks current_time = GetPrerenderManager()->GetCurrentTimeTicks();
   auto* clock = OverridePrerenderManagerTimeTicks();
   // Some navigations have already occurred in test setup. In order to track
