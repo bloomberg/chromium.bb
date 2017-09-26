@@ -351,6 +351,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     signinPromoCell.closeButtonAction = ^() {
       [weakSelf signinPromoCloseButtonAction];
     };
+    signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
     return signinPromoCell;
   }
 
