@@ -39122,6 +39122,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="125596241" label="component_updater_utils"/>
   <int value="126122632" label="web_history_expire_between_dates"/>
   <int value="129652775" label="devtools_network_resource"/>
+  <int value="129872904" label="service_worker_navigation_preload"/>
   <int value="131180348" label="indexed_db_internals_handler"/>
   <int value="131236802" label="data_reduction_proxy_secure_proxy_check"/>
   <int value="131741641" label="permission_reporting"/>
