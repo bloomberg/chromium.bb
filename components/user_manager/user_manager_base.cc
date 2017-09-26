@@ -1028,8 +1028,8 @@ void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
   SaveUserType(user->GetAccountId(), is_child
                                          ? user_manager::USER_TYPE_CHILD
                                          : user_manager::USER_TYPE_REGULAR);
-  for (auto& observer : session_state_observer_list_)
-    observer.UserChangedChildStatus(user);
+  for (auto& observer : observer_list_)
+    observer.OnChildStatusChanged(*user);
 }
 
 void UserManagerBase::ResetProfileEverInitialized(const AccountId& account_id) {
