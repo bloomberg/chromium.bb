@@ -522,6 +522,9 @@ extern const char kAndroidAppsLearnMoreURL[];
 
 // The URL for the "learn more" link for Instant Tethering.
 extern const char kInstantTetheringLearnMoreURL[];
+
+// The URL for the "learn more" link for TPM firmware update.
+extern const char kTPMFirmwareUpdateLearnMoreURL[];
 #endif
 
 // The URL for the Learn More link of the non-CWS bubble.

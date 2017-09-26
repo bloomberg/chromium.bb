@@ -96,6 +96,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    showTPMFirmwareUpdateLineItem_: Boolean,
+
+    /** @private */
+    showTPMFirmwareUpdateDialog_: Boolean,
+
     /** @private {!AboutPageUpdateInfo|undefined} */
     updateInfo_: Object,
     // </if>
@@ -168,6 +174,12 @@ Polymer({
         this.onPromoteUpdaterStatusChanged_.bind(this));
     // </if>
     this.aboutBrowserProxy_.refreshUpdateStatus();
+    // <if expr="chromeos">
+    this.addWebUIListener(
+        'tpm-firmware-update-status-changed',
+        this.onTPMFirmwareUpdateStatusChanged_.bind(this));
+    this.aboutBrowserProxy_.refreshTPMFirmwareUpdateStatus();
+    // </if>
   },
 
   /**
@@ -206,6 +218,7 @@ Polymer({
       return;
     this.aboutBrowserProxy_.promoteUpdater();
   },
+  // </if>
 
   /**
    * @param {!Event} event
@@ -216,7 +229,6 @@ Polymer({
     // actionable items won't trigger action.
     event.stopPropagation();
   },
-  // </if>
 
   /** @private */
   onHelpTap_: function() {
@@ -442,6 +454,24 @@ Polymer({
     // Shows 'check for updates' button in case that the user cancels the
     // dialog and then intends to check for update again.
     this.hasCheckedForUpdates_ = false;
+  },
+
+  /**
+   * @param {!TPMFirmwareUpdateStatusChangedEvent} event
+   * @private
+   */
+  onTPMFirmwareUpdateStatusChanged_: function(event) {
+    this.showTPMFirmwareUpdateLineItem_ = event.updateAvailable;
+  },
+
+  /** @private */
+  onTPMFirmwareUpdateTap_: function() {
+    this.showTPMFirmwareUpdateDialog_ = true;
+  },
+
+  /** @private */
+  onPowerwashDialogClose_: function() {
+    this.showTPMFirmwareUpdateDialog_ = false;
   },
   // </if>
 

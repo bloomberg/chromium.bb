@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -374,6 +375,10 @@ void AboutHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getChannelInfo", base::Bind(&AboutHandler::HandleGetChannelInfo,
                                    base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "refreshTPMFirmwareUpdateStatus",
+      base::Bind(&AboutHandler::HandleRefreshTPMFirmwareUpdateStatus,
+                 base::Unretained(this)));
 #endif
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback(
@@ -586,6 +591,18 @@ void AboutHandler::RequestUpdateOverCellular(const std::string& update_version,
       update_version, update_size);
 }
 
+void AboutHandler::HandleRefreshTPMFirmwareUpdateStatus(
+    const base::ListValue* args) {
+  chromeos::tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+      base::Bind(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void AboutHandler::RefreshTPMFirmwareUpdateStatus(bool update_available) {
+  std::unique_ptr<base::DictionaryValue> event(new base::DictionaryValue);
+  event->SetBoolean("updateAvailable", update_available);
+  FireWebUIListener("tpm-firmware-update-status-changed", *event);
+}
 #endif  // defined(OS_CHROMEOS)
 
 void AboutHandler::RequestUpdate() {
