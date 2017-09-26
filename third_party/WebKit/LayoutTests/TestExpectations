@@ -3031,11 +3031,9 @@ crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
 # dynamic module import is under development
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports.html [ Failure ]
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-external-classic.html [ Failure ]
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-external-module.html [ Failure ]
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-inline-classic.html [ Failure ]
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-inline-module.html [ Failure ]
+crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import [ Failure ]
+crbug.com/711706 virtual/dynamic-import/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-external-classic.html [ Failure ]
+crbug.com/711706 virtual/dynamic-import/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/propagate-nonce-inline-classic.html [ Failure ]
 
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
