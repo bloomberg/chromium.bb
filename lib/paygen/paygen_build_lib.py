@@ -66,9 +66,6 @@ PAYGEN_LOG_TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S-UTC'
 # Board and device information published by goldeneye.
 PAYGEN_URI = 'gs://chromeos-build-release-console/paygen.json'
 
-# Max number of attempts to download and parse a JSON file.
-JSON_PARSE_RETRY_COUNT = 2
-
 # Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
 BUILD_DISCOVER_RETRY_SLEEP = 90
 
@@ -1001,12 +998,8 @@ def ScheduleAutotestTests(suite_name, board, build, skip_duts_check,
 
 # If the downloaded JSON is bad, a ValueError exception will be rasied.
 # This appears to be a sporadic GS flake that a retry can fix.
-@retry_util.WithRetry(max_retry=JSON_PARSE_RETRY_COUNT, exception=ValueError)
 def _GetJson(uri):
-  """Downloads JSON from URI and tries to parse it.
-
-  This function will attempt to retry if the downloaded JSON is bad
-  JSON_PARSE_RETRY_COUNT times.
+  """Downloads JSON from URI and parses it.
 
   Args:
     uri: The URI of a JSON file at the given GS URI.
@@ -1014,11 +1007,5 @@ def _GetJson(uri):
   Returns:
     Valid JSON retrieved from given uri.
   """
-  try:
-    downloaded_json = gslib.Cat(uri)
-    return json.loads(downloaded_json)
-  except ValueError as e:
-    logging.error('Failed to parse JSON downloaded from %s.\n'
-                  'Here\'s what we got:\n%r\n'
-                  'Error: %s', uri, downloaded_json, e)
-    raise
+  downloaded_json = gslib.Cat(uri)
+  return json.loads(downloaded_json)
