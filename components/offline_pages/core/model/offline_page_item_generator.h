@@ -34,7 +34,7 @@ class OfflinePageItemGenerator {
   std::string request_origin_;
   GURL url_;
   GURL original_url_;
-  int64_t file_size_;
+  int64_t file_size_ = 0;
   base::Time last_access_time_;
 };
 }  // namespace offline_pages
