@@ -29,7 +29,7 @@ TEST(CompleteTest, CannotCallCompleteTwice) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 }
 
-TEST(CompleteTest, RejectCompletePromiseOnError) {
+TEST(CompleteTest, ResolveCompletePromiseOnUnknownError) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
@@ -41,15 +41,30 @@ TEST(CompleteTest, RejectCompletePromiseOnError) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
-  String error_message;
   request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
-      .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
+      .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
       payments::mojom::blink::PaymentErrorReason::UNKNOWN);
+}
 
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
-  EXPECT_EQ("UnknownError: Request failed", error_message);
+TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
+  MakePaymentRequestOriginSecure(scope.GetDocument());
+  PaymentRequest* request = PaymentRequest::Create(
+      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),
+      BuildPaymentDetailsInitForTest(), scope.GetExceptionState());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  request->show(scope.GetScriptState());
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnPaymentResponse(BuildPaymentResponseForTest());
+
+  request->Complete(scope.GetScriptState(), PaymentCompleter::kSuccess)
+      .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
+
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
+      payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
 }
 
 // If user cancels the transaction during processing, the complete() promise

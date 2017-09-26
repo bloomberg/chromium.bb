@@ -1226,8 +1226,14 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
 
   DCHECK(!message.IsEmpty());
 
-  if (complete_resolver_)
-    complete_resolver_->Reject(DOMException::Create(ec, message));
+  // If the user closes PaymentRequest UI after PaymentResponse.complete() has
+  // been called, the PaymentResponse.complete() promise should be resolved with
+  // undefined instead of rejecting.
+  if (complete_resolver_) {
+    DCHECK(error == PaymentErrorReason::USER_CANCEL ||
+           error == PaymentErrorReason::UNKNOWN);
+    complete_resolver_->Resolve();
+  }
 
   if (show_resolver_)
     show_resolver_->Reject(DOMException::Create(ec, message));
