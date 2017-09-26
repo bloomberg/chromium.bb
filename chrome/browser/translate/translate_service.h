@@ -45,7 +45,7 @@ class TranslateService
 
  private:
   TranslateService();
-  ~TranslateService();
+  ~TranslateService() override;
 
   // ResourceRequestAllowedNotifier::Observer methods.
   void OnResourceRequestsAllowed() override;

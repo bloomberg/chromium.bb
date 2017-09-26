@@ -25,7 +25,7 @@ class TranslateServiceIOS
 
  private:
   TranslateServiceIOS();
-  ~TranslateServiceIOS();
+  ~TranslateServiceIOS() override;
 
   // ResourceRequestAllowedNotifier::Observer methods.
   void OnResourceRequestsAllowed() override;
