@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
+import("//build/config/freetype/freetype.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -231,9 +232,15 @@ if (use_system_harfbuzz) {
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
     ]
 
-    deps = [
-      "//third_party/freetype:bootstrap_freetype_for_harfbuzz",
-    ]
+    if (use_system_freetype) {
+      deps = [
+        "//build/config/freetype:freetype",
+      ]
+    } else {
+      deps = [
+        "//third_party/freetype:bootstrap_freetype_for_harfbuzz",
+      ]
+    }
   }
 }
 
