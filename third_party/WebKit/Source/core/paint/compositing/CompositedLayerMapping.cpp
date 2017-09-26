@@ -1663,6 +1663,7 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry(
     foreground_layer_->SetNeedsDisplay();
   }
   foreground_layer_->SetOffsetFromLayoutObject(foreground_offset);
+  foreground_layer_->SetShouldHitTest(true);
 
   // NOTE: there is some more configuring going on in
   // updateScrollingLayerGeometry().
