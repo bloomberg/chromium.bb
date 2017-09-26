@@ -75,7 +75,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
@@ -106,7 +105,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -847,15 +845,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   bool connection_error = false;
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
-      // Session restore done does not always mean valid token because the
-      // merge session operation could be skipped when the first account in
-      // Gaia cookies matches the primary account in TokenService. However
-      // the token could still be invalid in some edge cases. See
-      // http://crbug.com/760610
-      user_status =
-          SigninErrorControllerFactory::GetForProfile(user_profile)->HasError()
-              ? user_manager::User::OAUTH2_TOKEN_STATUS_INVALID
-              : user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
+      user_status = user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
       break;
     case OAuth2LoginManager::SESSION_RESTORE_FAILED:
       user_status = user_manager::User::OAUTH2_TOKEN_STATUS_INVALID;
