@@ -23,12 +23,12 @@ coroutine(function*() {
   setup({ explicit_done : true, explicit_timeout : true });
 
   generate_tests(assert_equals, [
-    [ 'face', yield clickOrTouch(100, 100), 'face' ],
+    [ 'face1', yield clickOrTouch(100, 100), 'face' ],
     [ 'nose', yield clickOrTouch(200, 200), 'nose' ],
     [ 'mouth', yield clickOrTouch(127, 242), 'mouth' ],
-    [ 'eye', yield clickOrTouch(150, 125), 'eye' ],
-    [ 'eye', yield clickOrTouch(250, 125), 'eye' ],
-    [ 'face', yield clickOrTouch(200, 120), 'face' ],
+    [ 'eye1', yield clickOrTouch(150, 125), 'eye' ],
+    [ 'eye2', yield clickOrTouch(250, 125), 'eye' ],
+    [ 'face2', yield clickOrTouch(200, 120), 'face' ],
     [ 'null', yield clickOrTouch(20, 10), null ]
   ]);
 

@@ -4,14 +4,16 @@
 <script>
 var ctx = document.createElement('canvas').getContext('2d');
 
-function ExpectedMessage(num) {
-    return "\"TypeError: Failed to execute 'strokeText' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
-}
-
 test(function(t) {
-    assert_throws(null, function() {ctx.strokeText();}, ExpectedMessage(0));
-    assert_throws(null, function() {ctx.strokeText('moo');}, ExpectedMessage(1));
-    assert_throws(null, function() {ctx.strokeText('moo',0);}, ExpectedMessage(2));
+    assert_throws(new TypeError(), function() {
+      ctx.strokeText();
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.strokeText('moo');
+    });
+    assert_throws(new TypeError(), function() {
+      ctx.strokeText('moo', 0);
+    });
     assert_equals(ctx.strokeText('moo',0,0), undefined);
     assert_equals(ctx.strokeText('moo',0,0,0), undefined);
     assert_equals(ctx.strokeText('moo',0,0,0,0), undefined);

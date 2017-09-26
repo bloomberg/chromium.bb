@@ -9,7 +9,9 @@ function testcreateRadialGradient(params)
 {
     x0 = params[0]; y0 = params[1]; r0 = params[2];
     x1 = params[3]; y1 = params[4]; r1 = params[5];
-    assert_throws(null, function(){ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);});
+    assert_throws(new TypeError(), function() {
+      ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+    });
 }
 
 var testScenarios = [

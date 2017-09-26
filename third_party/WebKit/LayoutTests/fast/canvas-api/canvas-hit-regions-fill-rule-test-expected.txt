@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Canvas Hit Regions: fillRule test Test bug: need to pass exception to assert_throws()
-Harness: the test ran to completion.
-
