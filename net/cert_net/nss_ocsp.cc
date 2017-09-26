@@ -32,6 +32,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
@@ -48,6 +49,13 @@
 #include "url/gurl.h"
 
 namespace net {
+
+// OSCPScopedAllowBaseSyncPrimitives is a friend and derived class of
+// base::ScopedAllowBaseSyncPrimitives which can be instantiated by
+// OCSPRequestSession. OCSPRequestSession can't itself be a friend of
+// base::ScopedAllowBaseSyncPrimitives because it is in the anonymous namespace.
+class OSCPScopedAllowBaseSyncPrimitives
+    : public base::ScopedAllowBaseSyncPrimitives {};
 
 namespace {
 
@@ -240,6 +248,9 @@ class OCSPRequestSession
   }
 
   bool Wait() {
+    // This method waits on a ConditionVariable from a base::MayBlock task.
+    OSCPScopedAllowBaseSyncPrimitives scoped_allow_base_sync_primitives;
+
     base::TimeDelta timeout = timeout_;
     base::AutoLock autolock(lock_);
     while (!finished_) {
