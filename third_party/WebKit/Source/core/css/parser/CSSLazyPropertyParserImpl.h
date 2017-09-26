@@ -21,6 +21,7 @@ class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
 
   // CSSLazyPropertyParser:
   StylePropertySet* ParseProperties() override;
+  CSSLazyParsingState* LazyState() const override { return lazy_state_.Get(); }
 
   DEFINE_INLINE_TRACE() {
     visitor->Trace(lazy_state_);

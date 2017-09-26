@@ -37,9 +37,9 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/RuleSet.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/invalidation/InvalidationSet.h"
+#include "core/css/parser/CSSLazyParsingState.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -477,8 +477,12 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
     features.force_subtree = true;
   if (features.has_nth_pseudo)
     AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
-  if (features.has_before_or_after)
-    UpdateInvalidationSetsForContentAttribute(rule_data);
+  if (features.has_before_or_after) {
+    if (rule_data.Rule()->LazyParser())
+      rule_data.Rule()->LazyParser()->LazyState()->SetHasBeforeOrAfter();
+    UpdateInvalidationSetsForContentAttribute(
+        rule_data.Rule()->ParsedProperties());
+  }
 
   const CSSSelector* next_compound =
       last_in_compound ? last_in_compound->TagHistory() : &rule_data.Selector();
@@ -516,20 +520,20 @@ void RuleFeatureSet::UpdateRuleSetInvalidation(
 }
 
 void RuleFeatureSet::UpdateInvalidationSetsForContentAttribute(
-    const RuleData& rule_data) {
+    const StylePropertySet* property_set) {
   // If any ::before and ::after rules specify 'content: attr(...)', we
   // need to create invalidation sets for those attributes to have content
   // changes applied through style recalc.
+  if (!property_set)
+    return;
 
-  const StylePropertySet& property_set = rule_data.Rule()->Properties();
-
-  int property_index = property_set.FindPropertyIndex(CSSPropertyContent);
+  int property_index = property_set->FindPropertyIndex(CSSPropertyContent);
 
   if (property_index == -1)
     return;
 
   StylePropertySet::PropertyReference content_property =
-      property_set.PropertyAt(property_index);
+      property_set->PropertyAt(property_index);
   const CSSValue& content_value = content_property.Value();
 
   if (!content_value.IsValueList())

@@ -62,16 +62,22 @@ TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
 
 // Avoid parsing rules with ::before or ::after to avoid causing
 // collectFeatures() when we trigger parsing for attr();
-TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
+TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
   CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
   String sheet_text =
-      "p::before { content: 'foo' } p .class::after { content: 'bar' } ";
+      "p::before { content: 'foo' } p .class::after { content: attr(pass) } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
                         true /* lazy parse */);
 
+  EXPECT_FALSE(HasParsedProperties(RuleAt(style_sheet, 0)));
+  EXPECT_FALSE(HasParsedProperties(RuleAt(style_sheet, 1)));
+
+  RuleAt(style_sheet, 0)->Properties();
   EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 0)));
+
+  RuleAt(style_sheet, 1)->Properties();
   EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 1)));
 }
 
@@ -98,22 +104,6 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
   // Now, we should still consider this for matching rules even if it is empty.
   EXPECT_TRUE(HasParsedProperties(rule));
   EXPECT_TRUE(
-      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
-}
-
-// Test the same thing as above, with a property that does not get lazy parsed,
-// to ensure that we perform the optimization where possible.
-TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
-
-  String sheet_text = "p::before { ,badness, } ";
-  CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
-
-  StyleRule* rule = RuleAt(style_sheet, 0);
-  EXPECT_TRUE(HasParsedProperties(rule));
-  EXPECT_FALSE(
       rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
