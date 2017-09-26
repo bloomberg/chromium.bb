@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -215,62 +211,15 @@ void UserSwitchAnimatorChromeOS::TransitionWallpaper(
 
 void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     AnimationStep animation_step) {
+  if (animation_step != ANIMATION_STEP_SHOW_NEW_USER)
+    return;
+
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
-  // The shelf animation duration override.
-  int duration_override = animation_speed_ms_;
-  // Handle the shelf order of items. This is done once the old user is hidden.
-  if (animation_step == ANIMATION_STEP_SHOW_NEW_USER) {
-    // Some unit tests have no ChromeLauncherController.
-    if (chrome_launcher_controller)
-      chrome_launcher_controller->ActiveUserChanged(
-          new_account_id_.GetUserEmail());
-    // Hide the black rectangle on top of each shelf again.
-    for (aura::Window* window : ash::Shell::GetAllRootWindows()) {
-      ash::ShelfWidget* shelf = ash::Shelf::ForWindow(window)->shelf_widget();
-      shelf->HideShelfBehindBlackBar(false, duration_override);
-    }
-    // We kicked off the shelf animation above and the override can be
-    // removed.
-    duration_override = 0;
-  }
-
-  if (!animation_speed_ms_ || animation_step == ANIMATION_STEP_FINALIZE)
-    return;
-
-  // Note: The animation duration override will be set before the old user gets
-  // hidden and reset after the animations for the new user got kicked off.
-  ash::Shell::RootWindowControllerList controller =
-      ash::Shell::Get()->GetAllRootWindowControllers();
-  for (ash::Shell::RootWindowControllerList::iterator iter = controller.begin();
-       iter != controller.end(); ++iter) {
-    (*iter)->GetShelfLayoutManager()->SetAnimationDurationOverride(
-        duration_override);
-  }
-
-  if (animation_step != ANIMATION_STEP_HIDE_OLD_USER)
-    return;
-
-  // For each root window hide the shelf.
-  for (aura::Window* window : ash::Shell::GetAllRootWindows()) {
-    // Hiding the shelf will cause a resize on a maximized window.
-    // If the shelf is then shown for the following user in the same location,
-    // the window gets resized again. Since each resize can cause a considerable
-    // CPU usage and therefore effect jank, we should avoid hiding the shelf if
-    // the start and end location are the same and cover the shelf instead with
-    // a black rectangle on top.
-    ash::Shelf* shelf = ash::Shelf::ForWindow(window);
-    if (GetScreenCover(window) != NO_USER_COVERS_SCREEN &&
-        (!chrome_launcher_controller ||
-         !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(
-             shelf, new_account_id_))) {
-      shelf->shelf_widget()->HideShelfBehindBlackBar(true, duration_override);
-    } else {
-      // This shelf change is only part of the animation and will be updated by
-      // ChromeLauncherController::ActiveUserChanged() to the new users value.
-      // Note that the user preference will not be changed.
-      shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
-    }
+  // Some unit tests have no ChromeLauncherController.
+  if (chrome_launcher_controller) {
+    chrome_launcher_controller->ActiveUserChanged(
+        new_account_id_.GetUserEmail());
   }
 }
 

@@ -160,7 +160,7 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
     case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
       // This should not be a valid preference option for now. We only want to
       // completely hide it when we run in app mode - or while we temporarily
-      // hide the shelf as part of an animation (e.g. the multi user change).
+      // hide the shelf (e.g. SessionAbortedDialog).
       return nullptr;
   }
   NOTREACHED();

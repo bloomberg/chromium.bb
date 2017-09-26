@@ -392,11 +392,6 @@ bool ShelfLayoutManager::ProcessGestureEvent(
   return false;
 }
 
-void ShelfLayoutManager::SetAnimationDurationOverride(
-    int duration_override_in_ms) {
-  duration_override_in_ms_ = duration_override_in_ms;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, wm::WmSnapToPixelLayoutManager implementation:
 
@@ -613,15 +608,12 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     ui::ScopedLayerAnimationSettings status_animation_setter(
         GetLayer(status_widget)->GetAnimator());
     if (animate) {
-      int duration = duration_override_in_ms_ ? duration_override_in_ms_
-                                              : kAnimationDurationMS;
-      shelf_animation_setter.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(duration));
+      auto duration = base::TimeDelta::FromMilliseconds(kAnimationDurationMS);
+      shelf_animation_setter.SetTransitionDuration(duration);
       shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       shelf_animation_setter.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      status_animation_setter.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(duration));
+      status_animation_setter.SetTransitionDuration(duration);
       status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       status_animation_setter.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

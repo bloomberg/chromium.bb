@@ -140,10 +140,6 @@ class ASH_EXPORT ShelfLayoutManager
   // be processed any further, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event_in_screen);
 
-  // Set an animation duration override for the show / hide animation of the
-  // shelf. Specifying 0 leads to use the default.
-  void SetAnimationDurationOverride(int duration_override_in_ms);
-
   // Overridden from wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
@@ -391,9 +387,6 @@ class ASH_EXPORT ShelfLayoutManager
   // The height of the ChromeVox panel at the top of the screen, which
   // needs to be removed from the available work area.
   int chromevox_panel_height_ = 0;
-
-  // The show hide animation duration override or 0 for default.
-  int duration_override_in_ms_ = 0;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
