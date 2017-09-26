@@ -425,6 +425,17 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // Expose for LayoutTableCol::LocalVisualRectIgnoringVisibility().
   using LayoutBlock::LocalVisualRectIgnoringVisibility;
 
+  class DisableUpdatingCollapsedBorders {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(DisableUpdatingCollapsedBorders);
+
+   public:
+    DisableUpdatingCollapsedBorders();
+
+   private:
+    AutoReset<bool> disabler_;
+  };
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SimplifiedNormalFlowLayout() override;
