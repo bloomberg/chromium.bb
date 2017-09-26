@@ -526,6 +526,7 @@ public class VrShellImpl
     @Override
     public void shutdown() {
         mActivity.getFullscreenManager().removeListener(this);
+        mActivity.getFullscreenManager().setPersistentFullscreenMode(false);
         reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
