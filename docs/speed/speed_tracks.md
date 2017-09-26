@@ -71,6 +71,7 @@ are not necessary for users.
  * [Mailing List](://groups.google.com/a/chromium.org/forum/#!forum/binary-size)
  * Performance-Size [Bug
    Queue](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Performance%3DSize)
+ * Description of [metrics](binary_size/metrics.md)
 
 ### Data Usage
 
