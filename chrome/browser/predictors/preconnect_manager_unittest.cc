@@ -200,6 +200,31 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Checks that the PreconnectManager handles no more than one URL per host
+// simultaneously.
+TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
+  GURL main_frame_url1("http://google.com/search?query=cats");
+  GURL url_to_preconnect1("http://cats.google.com");
+  net::CompletionCallback callback1;
+  GURL main_frame_url2("http://google.com/search?query=dogs");
+  GURL url_to_preconnect2("http://dogs.google.com");
+
+  EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preconnect1, _))
+      .WillOnce(DoAll(SaveArg<1>(&callback1), Return(net::ERR_IO_PENDING)));
+  preconnect_manager_->Start(main_frame_url1, {url_to_preconnect1},
+                             std::vector<GURL>());
+  // This suggestion should be dropped because the PreconnectManager already has
+  // a job for the "google.com" host.
+  preconnect_manager_->Start(main_frame_url2, {url_to_preconnect2},
+                             std::vector<GURL>());
+
+  EXPECT_CALL(*preconnect_manager_,
+              PreconnectUrl(url_to_preconnect1, main_frame_url1, true));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
+  callback1.Run(net::OK);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(PreconnectManagerTest, TestStartPreresolveOneHost) {
   GURL url_to_preresolve("http://cdn.google.com");
 
