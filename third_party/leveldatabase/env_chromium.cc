@@ -92,7 +92,6 @@ class Semaphore {
 
 namespace {
 
-const FilePath::CharType backup_table_extension[] = FILE_PATH_LITERAL(".bak");
 const FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 
 static const FilePath::CharType kLevelDBTestDirectoryPrefix[] =
@@ -392,7 +391,7 @@ Status ChromiumWritableFile::Append(const Slice& data) {
   DCHECK(file_.IsValid());
   DCHECK(uma_logger_);
   int bytes_written = file_.WriteAtCurrentPos(data.data(), data.size());
-  if (bytes_written != data.size()) {
+  if (static_cast<size_t>(bytes_written) != data.size()) {
     base::File::Error error = LastFileError();
     uma_logger_->RecordOSError(kWritableFileAppend, error);
     return MakeIOError(filename_, base::File::ErrorToString(error),
