@@ -1310,9 +1310,42 @@ void CrasAudioHandler::HandleHotPlugDevice(
 
     SwitchToDevice(hotplug_device, true, ACTIVATE_BY_RESTORE_PREVIOUS_STATE);
   } else {
-    // Do not active the device if its previous state is inactive.
-    VLOG(1) << "Hotplug device remains inactive as its previous state:"
-            << hotplug_device.ToString();
+    // The hot plugged device was not active last time it was plugged in.
+    // Let's check how the current active device is activated, if it is not
+    // activated by user choice, then select the hot plugged device it is of
+    // higher priority.
+    uint64_t& active_node_id = hotplug_device.is_input ? active_input_node_id_
+                                                       : active_output_node_id_;
+    const AudioDevice* active_device = GetDeviceFromId(active_node_id);
+    if (!active_device) {
+      // Can't find any current active device.
+      // This is an odd case, but if it happens, switch to hotplug device.
+      LOG(ERROR) << "Can not find current active device when the device is"
+                 << " hot plugged: " << hotplug_device.ToString();
+      SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
+      return;
+    }
+
+    bool activate_by_user = false;
+    bool state_active = false;
+    bool found_active_state = audio_pref_handler_->GetDeviceActive(
+        *active_device, &state_active, &activate_by_user);
+    DCHECK(found_active_state && state_active);
+    if (!found_active_state || !state_active) {
+      LOG(ERROR) << "Cannot retrieve current active device's state in prefs: "
+                 << active_device->ToString();
+      return;
+    }
+    if (!activate_by_user &&
+        device_priority_queue.top().id == hotplug_device.id) {
+      SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
+    } else {
+      // Do not active the hotplug device. Either the current device is
+      // expliciltly activated by user, or the hotplug device is of lower
+      // priority.
+      VLOG(1) << "Hotplug device remains inactive as its previous state:"
+              << hotplug_device.ToString();
+    }
   }
 }
 
