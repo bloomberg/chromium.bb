@@ -242,4 +242,14 @@ INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,
 
 #endif  // HAVE_SSE2
 
+#if HAVE_SSSE3
+const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
+  lowbd_intrapred(paeth, ssse3),
+};
+
+INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,
+                        ::testing::ValuesIn(LowbdIntraPredTestVectorSsse3));
+
+#endif  // HAVE_SSSE3
+
 }  // namespace

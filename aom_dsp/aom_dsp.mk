@@ -76,6 +76,7 @@ DSP_SRCS-$(HAVE_SSSE3) += x86/intrapred_ssse3.asm
 DSP_SRCS-$(HAVE_SSSE3) += x86/aom_subpixel_8t_ssse3.asm
 
 DSP_SRCS-$(HAVE_SSE2) += x86/intrapred_sse2.c
+DSP_SRCS-$(HAVE_SSSE3) += x86/intrapred_ssse3.c
 DSP_SRCS-$(HAVE_AVX2) += x86/intrapred_avx2.c
 
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
