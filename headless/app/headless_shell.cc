@@ -613,8 +613,15 @@ int HeadlessShellMain(int argc, const char** argv) {
   if (!ValidateCommandLine(command_line))
     return EXIT_FAILURE;
 
+// Crash reporting in headless mode is enabled by default in official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+  builder.SetCrashReporterEnabled(true);
+#endif
+
   if (command_line.HasSwitch(switches::kEnableCrashReporter))
     builder.SetCrashReporterEnabled(true);
+  if (command_line.HasSwitch(switches::kDisableCrashReporter))
+    builder.SetCrashReporterEnabled(false);
   if (command_line.HasSwitch(switches::kCrashDumpsDir)) {
     builder.SetCrashDumpsDir(
         command_line.GetSwitchValuePath(switches::kCrashDumpsDir));
