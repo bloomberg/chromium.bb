@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/ble_advertisement_synchronizer.h"
+#include "chromeos/components/tether/ble_synchronizer.h"
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/ble_constants.h"
@@ -14,6 +15,7 @@
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"
+#include "device/bluetooth/test/mock_bluetooth_discovery_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Invoke;
@@ -57,6 +59,26 @@ struct UnregisterAdvertisementArgs {
   const device::BluetoothAdvertisement::ErrorCallback error_callback;
 };
 
+struct StartDiscoverySessionArgs {
+  StartDiscoverySessionArgs(
+      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
+      const device::BluetoothAdapter::ErrorCallback& error_callback)
+      : callback(callback), error_callback(error_callback) {}
+
+  const device::BluetoothAdapter::DiscoverySessionCallback callback;
+  const device::BluetoothAdapter::ErrorCallback error_callback;
+};
+
+struct StopDiscoverySessionArgs {
+  StopDiscoverySessionArgs(
+      const base::Closure& callback,
+      const device::BluetoothDiscoverySession::ErrorCallback& error_callback)
+      : callback(callback), error_callback(error_callback) {}
+
+  const base::Closure callback;
+  const device::BluetoothDiscoverySession::ErrorCallback error_callback;
+};
+
 class MockBluetoothAdapterWithAdvertisements
     : public device::MockBluetoothAdapter {
  public:
@@ -80,7 +102,7 @@ class MockBluetoothAdapterWithAdvertisements
 
 class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
  public:
-  // |unregister_callback| should be called with the success callback passed to
+  // |unregister_callback| should be called with the callbacks passed to
   // Unregister() whenever an Unregister() call occurs.
   FakeBluetoothAdvertisement(
       const base::Callback<
@@ -107,6 +129,33 @@ class FakeBluetoothAdvertisement : public device::BluetoothAdvertisement {
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothAdvertisement);
 };
 
+class FakeDiscoverySession : public device::MockBluetoothDiscoverySession {
+ public:
+  // |stop_callback| should be called with the callbacks passed to
+  // Stop() whenever a Stop() call occurs.
+  FakeDiscoverySession(
+      const base::Callback<
+          void(const base::Closure&,
+               const device::BluetoothDiscoverySession::ErrorCallback&)>&
+          stop_callback)
+      : stop_callback_(stop_callback) {}
+  ~FakeDiscoverySession() override {}
+
+  // BluetoothDiscoverySession:
+  void Stop(const base::Closure& callback,
+            const device::BluetoothDiscoverySession::ErrorCallback&
+                error_callback) override {
+    stop_callback_.Run(callback, error_callback);
+  }
+
+ private:
+  base::Callback<void(const base::Closure&,
+                      const device::BluetoothDiscoverySession::ErrorCallback&)>
+      stop_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDiscoverySession);
+};
+
 // Creates a UUIDList with one element of value |id|.
 std::unique_ptr<device::BluetoothAdvertisement::UUIDList> CreateUUIDList(
     const std::string& id) {
@@ -125,26 +174,37 @@ std::unique_ptr<device::BluetoothAdvertisement::Data> GenerateAdvertisementData(
 
 }  // namespace
 
-class BleAdvertisementSynchronizerTest : public testing::Test {
+class BleSynchronizerTest : public testing::Test {
  protected:
-  BleAdvertisementSynchronizerTest()
+  BleSynchronizerTest()
       : fake_advertisement_(base::MakeRefCounted<FakeBluetoothAdvertisement>(
-            base::Bind(&BleAdvertisementSynchronizerTest::OnUnregisterCalled,
-                       base::Unretained(this)))) {}
+            base::Bind(&BleSynchronizerTest::OnUnregisterCalled,
+                       base::Unretained(this)))),
+        fake_discovery_session_(base::WrapUnique(new FakeDiscoverySession(
+            base::Bind(&BleSynchronizerTest::OnStopCalled,
+                       base::Unretained(this))))),
+        fake_discovery_session_weak_ptr_factory_(
+            fake_discovery_session_.get()) {}
 
   void SetUp() override {
     num_register_success_ = 0;
     num_register_error_ = 0;
     num_unregister_success_ = 0;
     num_unregister_error_ = 0;
+    num_start_success_ = 0;
+    num_start_error_ = 0;
+    num_stop_success_ = 0;
+    num_stop_error_ = 0;
     register_args_list_.clear();
 
     mock_adapter_ = make_scoped_refptr(
         new NiceMock<MockBluetoothAdapterWithAdvertisements>());
     ON_CALL(*mock_adapter_, RegisterAdvertisementWithArgsStruct(_))
-        .WillByDefault(Invoke(
-            this,
-            &BleAdvertisementSynchronizerTest::OnAdapterRegisterAdvertisement));
+        .WillByDefault(
+            Invoke(this, &BleSynchronizerTest::OnAdapterRegisterAdvertisement));
+    ON_CALL(*mock_adapter_, StartDiscoverySession(_, _))
+        .WillByDefault(
+            Invoke(this, &BleSynchronizerTest::OnAdapterStartDiscoverySession));
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
@@ -152,8 +212,7 @@ class BleAdvertisementSynchronizerTest : public testing::Test {
     test_clock_ = new base::SimpleTestClock();
     test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
 
-    synchronizer_ =
-        base::MakeUnique<BleAdvertisementSynchronizer>(mock_adapter_);
+    synchronizer_ = base::MakeUnique<BleSynchronizer>(mock_adapter_);
     synchronizer_->SetTestDoubles(base::WrapUnique(mock_timer_),
                                   base::WrapUnique(test_clock_));
   }
@@ -166,14 +225,20 @@ class BleAdvertisementSynchronizerTest : public testing::Test {
     register_args_list_.emplace_back(base::WrapUnique(args));
   }
 
+  void OnAdapterStartDiscoverySession(
+      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
+      const device::BluetoothAdapter::ErrorCallback& error_callback) {
+    start_discovery_args_list_.emplace_back(base::WrapUnique(
+        new StartDiscoverySessionArgs(callback, error_callback)));
+  }
+
   void RegisterAdvertisement(const std::string& id) {
     synchronizer_->RegisterAdvertisement(
         GenerateAdvertisementData(id),
-        base::Bind(&BleAdvertisementSynchronizerTest::OnAdvertisementRegistered,
+        base::Bind(&BleSynchronizerTest::OnAdvertisementRegistered,
                    base::Unretained(this)),
-        base::Bind(
-            &BleAdvertisementSynchronizerTest::OnErrorRegisteringAdvertisement,
-            base::Unretained(this)));
+        base::Bind(&BleSynchronizerTest::OnErrorRegisteringAdvertisement,
+                   base::Unretained(this)));
   }
 
   void InvokeRegisterCallback(bool success,
@@ -209,11 +274,9 @@ class BleAdvertisementSynchronizerTest : public testing::Test {
   void UnregisterAdvertisement() {
     synchronizer_->UnregisterAdvertisement(
         fake_advertisement_,
-        base::Bind(
-            &BleAdvertisementSynchronizerTest::OnAdvertisementUnregistered,
-            base::Unretained(this)),
-        base::Bind(&BleAdvertisementSynchronizerTest::
-                       OnErrorUnregisteringAdvertisement,
+        base::Bind(&BleSynchronizerTest::OnAdvertisementUnregistered,
+                   base::Unretained(this)),
+        base::Bind(&BleSynchronizerTest::OnErrorUnregisteringAdvertisement,
                    base::Unretained(this)));
   }
 
@@ -239,19 +302,85 @@ class BleAdvertisementSynchronizerTest : public testing::Test {
     ++num_unregister_error_;
   }
 
+  void StartDiscoverySession() {
+    synchronizer_->StartDiscoverySession(
+        base::Bind(&BleSynchronizerTest::OnDiscoverySessionStarted,
+                   base::Unretained(this)),
+        base::Bind(&BleSynchronizerTest::OnErrorStartingDiscoverySession,
+                   base::Unretained(this)));
+  }
+
+  void InvokeStartDiscoveryCallback(bool success, size_t start_arg_index) {
+    EXPECT_TRUE(start_discovery_args_list_.size() >= start_arg_index);
+
+    if (success) {
+      start_discovery_args_list_[start_arg_index]->callback.Run(
+          base::MakeUnique<device::MockBluetoothDiscoverySession>());
+    } else {
+      start_discovery_args_list_[start_arg_index]->error_callback.Run();
+    }
+
+    // Reset to make sure that this callback is never double-invoked.
+    start_discovery_args_list_[start_arg_index].reset();
+  }
+
+  void OnDiscoverySessionStarted(
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
+    ++num_start_success_;
+  }
+
+  void OnErrorStartingDiscoverySession() { ++num_start_error_; }
+
+  void StopDiscoverySession(
+      base::WeakPtr<device::BluetoothDiscoverySession> discovery_session) {
+    synchronizer_->StopDiscoverySession(
+        discovery_session,
+        base::Bind(&BleSynchronizerTest::OnDiscoverySessionStopped,
+                   base::Unretained(this)),
+        base::Bind(&BleSynchronizerTest::OnErrorStoppingDiscoverySession,
+                   base::Unretained(this)));
+  }
+
+  void InvokeStopDiscoveryCallback(bool success, size_t stop_arg_index) {
+    EXPECT_TRUE(stop_discovery_args_list_.size() >= stop_arg_index);
+
+    if (success)
+      stop_discovery_args_list_[stop_arg_index]->callback.Run();
+    else
+      stop_discovery_args_list_[stop_arg_index]->error_callback.Run();
+
+    // Reset to make sure that this callback is never double-invoked.
+    stop_discovery_args_list_[stop_arg_index].reset();
+  }
+
+  void OnDiscoverySessionStopped() { ++num_stop_success_; }
+
+  void OnErrorStoppingDiscoverySession() { ++num_stop_error_; }
+
   void FireTimer() {
     EXPECT_TRUE(mock_timer_->IsRunning());
     mock_timer_->Fire();
   }
 
   void OnUnregisterCalled(
-      const device::BluetoothAdvertisement::SuccessCallback& success_callback,
+      const device::BluetoothAdvertisement::SuccessCallback& callback,
       const device::BluetoothAdvertisement::ErrorCallback& error_callback) {
     unregister_args_list_.emplace_back(base::WrapUnique(
-        new UnregisterAdvertisementArgs(success_callback, error_callback)));
+        new UnregisterAdvertisementArgs(callback, error_callback)));
+  }
+
+  void OnStopCalled(
+      const base::Closure& callback,
+      const device::BluetoothDiscoverySession::ErrorCallback& error_callback) {
+    stop_discovery_args_list_.emplace_back(base::WrapUnique(
+        new StopDiscoverySessionArgs(callback, error_callback)));
   }
 
   const scoped_refptr<FakeBluetoothAdvertisement> fake_advertisement_;
+  const std::unique_ptr<device::MockBluetoothDiscoverySession>
+      fake_discovery_session_;
+  base::WeakPtrFactory<device::MockBluetoothDiscoverySession>
+      fake_discovery_session_weak_ptr_factory_;
 
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;
 
@@ -261,45 +390,85 @@ class BleAdvertisementSynchronizerTest : public testing::Test {
   std::vector<std::unique_ptr<RegisterAdvertisementArgs>> register_args_list_;
   std::vector<std::unique_ptr<UnregisterAdvertisementArgs>>
       unregister_args_list_;
+  std::vector<std::unique_ptr<StartDiscoverySessionArgs>>
+      start_discovery_args_list_;
+  std::vector<std::unique_ptr<StopDiscoverySessionArgs>>
+      stop_discovery_args_list_;
 
   int num_register_success_;
   int num_register_error_;
   int num_unregister_success_;
   int num_unregister_error_;
+  int num_start_success_;
+  int num_start_error_;
+  int num_stop_success_;
+  int num_stop_error_;
 
   bool stopped_callback_called_;
 
-  std::unique_ptr<BleAdvertisementSynchronizer> synchronizer_;
+  std::unique_ptr<BleSynchronizer> synchronizer_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BleAdvertisementSynchronizerTest);
+  DISALLOW_COPY_AND_ASSIGN(BleSynchronizerTest);
 };
 
-TEST_F(BleAdvertisementSynchronizerTest, TestRegisterSuccess) {
+TEST_F(BleSynchronizerTest, TestRegisterSuccess) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(true /* success */, kId1, 0u /* reg_arg_index */);
   EXPECT_EQ(1, num_register_success_);
 }
 
-TEST_F(BleAdvertisementSynchronizerTest, TestRegisterError) {
+TEST_F(BleSynchronizerTest, TestRegisterError) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(false /* success */, kId1, 0u /* reg_arg_index */);
   EXPECT_EQ(1, num_register_error_);
 }
 
-TEST_F(BleAdvertisementSynchronizerTest, TestUnregisterSuccess) {
+TEST_F(BleSynchronizerTest, TestUnregisterSuccess) {
   UnregisterAdvertisement();
-  InvokeUnregisterCallback(true /* success */, 0u /* unreg_arg_index */);
+  InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */);
   EXPECT_EQ(1, num_unregister_success_);
 }
 
-TEST_F(BleAdvertisementSynchronizerTest, TestUnregisterError) {
+TEST_F(BleSynchronizerTest, TestUnregisterError) {
   UnregisterAdvertisement();
-  InvokeUnregisterCallback(false /* success */, 0u /* unreg_arg_index */);
+  InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */);
   EXPECT_EQ(1, num_unregister_error_);
 }
 
-TEST_F(BleAdvertisementSynchronizerTest, TestThrottling) {
+TEST_F(BleSynchronizerTest, TestStartSuccess) {
+  StartDiscoverySession();
+  InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */);
+  EXPECT_EQ(1, num_start_success_);
+}
+
+TEST_F(BleSynchronizerTest, TestStartError) {
+  StartDiscoverySession();
+  InvokeStartDiscoveryCallback(false /* success */, 0u /* reg_arg_index */);
+  EXPECT_EQ(1, num_start_error_);
+}
+
+TEST_F(BleSynchronizerTest, TestStopSuccess) {
+  StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
+  InvokeStopDiscoveryCallback(true /* success */, 0u /* unreg_arg_index */);
+  EXPECT_EQ(1, num_stop_success_);
+}
+
+TEST_F(BleSynchronizerTest, TestStopError) {
+  StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
+  InvokeStopDiscoveryCallback(false /* success */, 0u /* unreg_arg_index */);
+  EXPECT_EQ(1, num_stop_error_);
+}
+
+TEST_F(BleSynchronizerTest, TestStop_DeletedDiscoverySession) {
+  // Simulate an invalidated WeakPtr being processed.
+  StopDiscoverySession(base::WeakPtr<device::MockBluetoothDiscoverySession>());
+
+  // Stop() should not have been called.
+  EXPECT_TRUE(stop_discovery_args_list_.empty());
+}
+
+TEST_F(BleSynchronizerTest, TestThrottling) {
   RegisterAdvertisement(kId1);
   InvokeRegisterCallback(true /* success */, kId1, 0u /* reg_arg_index */);
   EXPECT_EQ(1, num_register_success_);

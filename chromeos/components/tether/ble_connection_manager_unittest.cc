@@ -148,7 +148,7 @@ class UnregisteringObserver : public BleConnectionManager::Observer {
 class MockBleScanner : public BleScanner {
  public:
   explicit MockBleScanner(scoped_refptr<device::BluetoothAdapter> adapter)
-      : BleScanner(adapter, nullptr) {}
+      : BleScanner(adapter, nullptr, nullptr) {}
   ~MockBleScanner() override {}
 
   MOCK_METHOD1(RegisterScanFilterForDevice,

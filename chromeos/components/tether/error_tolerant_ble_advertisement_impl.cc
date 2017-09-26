@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/components/tether/ble_advertisement_synchronizer.h"
 #include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/components/tether/ble_synchronizer.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 
@@ -32,12 +32,12 @@ std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleAdvertisementSynchronizer* ble_advertisement_synchronizer) {
+    BleSynchronizer* ble_synchronizer) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      device_id, std::move(advertisement_data), ble_advertisement_synchronizer);
+      device_id, std::move(advertisement_data), ble_synchronizer);
 }
 
 // static
@@ -50,9 +50,9 @@ std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleAdvertisementSynchronizer* ble_advertisement_synchronizer) {
+    BleSynchronizer* ble_synchronizer) {
   return base::MakeUnique<ErrorTolerantBleAdvertisementImpl>(
-      device_id, std::move(advertisement_data), ble_advertisement_synchronizer);
+      device_id, std::move(advertisement_data), ble_synchronizer);
 }
 
 ErrorTolerantBleAdvertisementImpl::Factory::~Factory() {}
@@ -60,10 +60,10 @@ ErrorTolerantBleAdvertisementImpl::Factory::~Factory() {}
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const std::string& device_id,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
-    BleAdvertisementSynchronizer* ble_advertisement_synchronizer)
+    BleSynchronizer* ble_synchronizer)
     : ErrorTolerantBleAdvertisement(device_id),
       advertisement_data_(std::move(advertisement_data)),
-      ble_advertisement_synchronizer_(ble_advertisement_synchronizer),
+      ble_synchronizer_(ble_synchronizer),
       weak_ptr_factory_(this) {
   UpdateRegistrationStatus();
 }
@@ -124,7 +124,7 @@ void ErrorTolerantBleAdvertisementImpl::AttemptRegistration() {
   advertisement_data->set_service_uuids(CreateServiceUuids());
   advertisement_data->set_service_data(CreateServiceData());
 
-  ble_advertisement_synchronizer_->RegisterAdvertisement(
+  ble_synchronizer_->RegisterAdvertisement(
       std::move(advertisement_data),
       base::Bind(&ErrorTolerantBleAdvertisementImpl::OnAdvertisementRegistered,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -145,7 +145,7 @@ void ErrorTolerantBleAdvertisementImpl::AttemptUnregistration() {
 
   unregistration_in_progress_ = true;
 
-  ble_advertisement_synchronizer_->UnregisterAdvertisement(
+  ble_synchronizer_->UnregisterAdvertisement(
       advertisement_,
       base::Bind(
           &ErrorTolerantBleAdvertisementImpl::OnAdvertisementUnregistered,

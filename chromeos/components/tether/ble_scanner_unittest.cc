@@ -6,6 +6,7 @@
 
 #include "base/callback_forward.h"
 #include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -16,11 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::DoAll;
 using testing::Eq;
 using testing::Invoke;
 using testing::NiceMock;
-using testing::SaveArg;
 using testing::Return;
 
 namespace chromeos {
@@ -177,23 +176,19 @@ class BleScannerTest : public testing::Test {
         base::MakeUnique<std::vector<cryptauth::BeaconSeed>>(
             test_beacon_seeds_));
 
-    last_discovery_callback_.Reset();
-    last_discovery_error_callback_.Reset();
-    last_stop_callback_.Reset();
-    last_discovery_error_callback_.Reset();
+    fake_ble_synchronizer_ = base::MakeUnique<FakeBleSynchronizer>();
 
     mock_adapter_ =
         base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
-    ON_CALL(*mock_adapter_, StartDiscoverySession(_, _))
-        .WillByDefault(
-            Invoke(this, &BleScannerTest::SaveStartDiscoverySessionArgs));
     ON_CALL(*mock_adapter_, IsPowered()).WillByDefault(Return(true));
 
     mock_discovery_session_ = nullptr;
 
-    ble_scanner_ = base::WrapUnique(new BleScanner(
-        base::WrapUnique(test_service_data_provider_), mock_adapter_,
-        std::move(eid_generator), mock_local_device_data_provider_.get()));
+    ble_scanner_ = base::MakeUnique<BleScanner>(
+        mock_adapter_, mock_local_device_data_provider_.get(),
+        fake_ble_synchronizer_.get());
+    ble_scanner_->SetTestDoubles(base::WrapUnique(test_service_data_provider_),
+                                 std::move(eid_generator));
 
     test_observer_ = base::MakeUnique<TestBleScannerObserver>();
     ble_scanner_->AddObserver(test_observer_.get());
@@ -204,39 +199,19 @@ class BleScannerTest : public testing::Test {
               test_observer_->discovery_session_state_changes());
   }
 
-  void SaveStartDiscoverySessionArgs(
-      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-      const device::BluetoothAdapter::ErrorCallback& errback) {
-    last_discovery_callback_ = callback;
-    last_discovery_error_callback_ = errback;
-  }
-
-  void InvokeDiscoveryStartedCallback(bool success) {
-    EXPECT_FALSE(last_discovery_callback_.is_null());
-    EXPECT_FALSE(last_discovery_error_callback_.is_null());
-
-    // Make a copy of the callbacks and clear the instance fields. Invoke the
-    // copy below to ensure that if the callback results in another discovery
-    // attempt, the instance fields are not overwritten incorrectly.
-    device::BluetoothAdapter::DiscoverySessionCallback callback_copy =
-        last_discovery_callback_;
-    device::BluetoothAdapter::ErrorCallback error_callback_copy =
-        last_discovery_error_callback_;
-    last_discovery_callback_.Reset();
-    last_discovery_error_callback_.Reset();
-
+  void InvokeDiscoveryStartedCallback(bool success, size_t command_index) {
     if (success) {
       mock_discovery_session_ = new device::MockBluetoothDiscoverySession();
       ON_CALL(*mock_discovery_session_, IsActive())
           .WillByDefault(Invoke(this, &BleScannerTest::MockDiscoveryIsActive));
-      ON_CALL(*mock_discovery_session_, Stop(_, _))
-          .WillByDefault(Invoke(this, &BleScannerTest::MockDiscoveryStop));
 
-      callback_copy.Run(base::WrapUnique(mock_discovery_session_));
+      fake_ble_synchronizer_->GetStartDiscoveryCallback(command_index)
+          .Run(base::WrapUnique(mock_discovery_session_));
       VerifyDiscoveryStatusChange(true /* discovery_session_active */);
-    } else {
-      error_callback_copy.Run();
+      return;
     }
+
+    fake_ble_synchronizer_->GetStartDiscoveryErrorCallback(command_index).Run();
   }
 
   bool IsDeviceRegistered(const std::string& device_id) {
@@ -249,34 +224,16 @@ class BleScannerTest : public testing::Test {
               test_observer_->discovery_session_state_changes());
   }
 
-  void MockDiscoveryStop(
-      const base::Closure& callback,
-      const device::BluetoothDiscoverySession::ErrorCallback& error_callback) {
-    last_stop_callback_ = callback;
-    last_stop_error_callback_ = error_callback;
-  }
-
   bool MockDiscoveryIsActive() { return should_discovery_session_be_active_; }
 
-  void InvokeStopDiscoveryCallback(bool success) {
-    EXPECT_FALSE(last_stop_callback_.is_null());
-    EXPECT_FALSE(last_stop_error_callback_.is_null());
-
-    // Make a copy of the callbacks and clear the instance fields. Invoke the
-    // copy below to ensure that if the callback results in another stop
-    // attempt, the instance fields are not overwritten incorrectly.
-    base::Closure callback_copy = last_stop_callback_;
-    device::BluetoothDiscoverySession::ErrorCallback error_callback_copy =
-        last_stop_error_callback_;
-    last_stop_callback_.Reset();
-    last_stop_error_callback_.Reset();
-
+  void InvokeStopDiscoveryCallback(bool success, size_t command_index) {
     if (success) {
-      callback_copy.Run();
+      fake_ble_synchronizer_->GetStopDiscoveryCallback(command_index).Run();
       VerifyDiscoveryStatusChange(false /* discovery_session_active */);
-    } else {
-      error_callback_copy.Run();
+      return;
     }
+
+    fake_ble_synchronizer_->GetStopDiscoveryErrorCallback(command_index).Run();
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
@@ -288,15 +245,10 @@ class BleScannerTest : public testing::Test {
   cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_device_data_provider_;
+  std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   device::MockBluetoothDiscoverySession* mock_discovery_session_;
-
-  device::BluetoothAdapter::DiscoverySessionCallback last_discovery_callback_;
-  device::BluetoothAdapter::ErrorCallback last_discovery_error_callback_;
-
-  base::Closure last_stop_callback_;
-  device::BluetoothDiscoverySession::ErrorCallback last_stop_error_callback_;
 
   bool should_discovery_session_be_active_;
 
@@ -326,7 +278,7 @@ TEST_F(BleScannerTest, TestDiscoverySessionFailsToStart) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(false /* success */);
+  InvokeDiscoveryStartedCallback(false /* success */, 0u /* command_index */);
 
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
   EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]));
@@ -337,7 +289,7 @@ TEST_F(BleScannerTest, TestDiscoveryStartsButNoDevicesFound) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // No devices found.
 
@@ -345,7 +297,7 @@ TEST_F(BleScannerTest, TestDiscoveryStartsButNoDevicesFound) {
   EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_EQ(0u, test_observer_->device_addresses().size());
 
-  InvokeStopDiscoveryCallback(true /* success */);
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
 }
 
 TEST_F(BleScannerTest, TestDiscovery_NoServiceData) {
@@ -354,7 +306,7 @@ TEST_F(BleScannerTest, TestDiscovery_NoServiceData) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // Device with no service data connected. Service data is required to identify
   // the advertising device.
@@ -372,7 +324,7 @@ TEST_F(BleScannerTest, TestDiscovery_ServiceDataTooShort) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // Device with short service data connected. Service data of at least 4 bytes
   // is required to identify the advertising device.
@@ -391,7 +343,7 @@ TEST_F(BleScannerTest, TestDiscovery_LocalDeviceDataCannotBeFetched) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // Device with valid service data connected, but the local device data
   // cannot be fetched.
@@ -413,7 +365,7 @@ TEST_F(BleScannerTest, TestDiscovery_ScanSuccessfulButNoRegisteredDevice) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // Device with valid service data connected, but there was no registered
   // device corresponding to the one that just connected.
@@ -437,7 +389,7 @@ TEST_F(BleScannerTest, TestDiscovery_Success) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   // Registered device connects.
   MockBluetoothDeviceWithServiceData device(
@@ -455,7 +407,7 @@ TEST_F(BleScannerTest, TestDiscovery_Success) {
   EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_EQ(1, mock_eid_generator_->num_identify_calls());
   EXPECT_EQ(1u, test_observer_->device_addresses().size());
-  InvokeStopDiscoveryCallback(true /* success */);
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
 }
 
 TEST_F(BleScannerTest, TestDiscovery_MultipleObservers) {
@@ -465,7 +417,7 @@ TEST_F(BleScannerTest, TestDiscovery_MultipleObservers) {
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0].GetDeviceId()));
 
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
 
   MockBluetoothDeviceWithServiceData mock_bluetooth_device(
       mock_adapter_.get(), kDefaultBluetoothAddress, "fakeServiceData");
@@ -501,8 +453,8 @@ TEST_F(BleScannerTest, TestDiscovery_MultipleObservers) {
   // Note: Cannot use InvokeStopDiscoveryCallback() since that function
   // internally verifies observer callbacks, but the observers have been
   // unregistered in this case.
-  EXPECT_FALSE(last_stop_callback_.is_null());
-  last_stop_callback_.Run();
+  fake_ble_synchronizer_->GetStopDiscoveryCallback(1u /* command_index */)
+      .Run();
 }
 
 TEST_F(BleScannerTest, TestRegistrationLimit) {
@@ -545,14 +497,14 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_Success) {
   EXPECT_TRUE(ble_scanner_->ShouldDiscoverySessionBeActive());
 
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   EXPECT_TRUE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[1]));
 
   // Registering device 1 should not have triggered a new discovery session from
   // being created since one already existed.
-  EXPECT_TRUE(last_discovery_callback_.is_null());
+  EXPECT_EQ(1u, fake_ble_synchronizer_->GetNumCommands());
   EXPECT_TRUE(ble_scanner_->ShouldDiscoverySessionBeActive());
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
@@ -560,7 +512,7 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_Success) {
 
   // Unregistering device 0 should not have triggered a stopped session since
   // a device is still registered.
-  EXPECT_TRUE(last_discovery_callback_.is_null());
+  EXPECT_EQ(1u, fake_ble_synchronizer_->GetNumCommands());
   EXPECT_TRUE(ble_scanner_->ShouldDiscoverySessionBeActive());
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
@@ -570,7 +522,7 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_Success) {
   EXPECT_FALSE(ble_scanner_->ShouldDiscoverySessionBeActive());
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
-  InvokeStopDiscoveryCallback(true /* success */);
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 }
 
@@ -580,31 +532,31 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_Errors) {
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Fail to start discovery session.
-  InvokeDiscoveryStartedCallback(false /* success */);
+  InvokeDiscoveryStartedCallback(false /* success */, 0u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Since the previous try failed, a new one should have been attempted. Let
   // that one fail as well.
-  InvokeDiscoveryStartedCallback(false /* success */);
+  InvokeDiscoveryStartedCallback(false /* success */, 1u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Now, let it succeed.
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 2u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Now, unregister it, but fail to stop the discovery session.
   EXPECT_TRUE(ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_FALSE(ble_scanner_->ShouldDiscoverySessionBeActive());
-  InvokeStopDiscoveryCallback(false /* success */);
+  InvokeStopDiscoveryCallback(false /* success */, 3u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Since the previous try failed, a new stop should have been attempted. Let
   // that one fail as well.
-  InvokeStopDiscoveryCallback(false /* success */);
+  InvokeStopDiscoveryCallback(false /* success */, 4u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Now, let it succeed.
-  InvokeStopDiscoveryCallback(true /* success */);
+  InvokeStopDiscoveryCallback(true /* success */, 5u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 }
 
@@ -618,12 +570,12 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_UnregisterBeforeStarted) {
   EXPECT_FALSE(ble_scanner_->ShouldDiscoverySessionBeActive());
 
   // Complete the start discovery successfully.
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Because the session should not be active (i.e., there are no registered
   // devices), a stop should be triggered.
-  InvokeStopDiscoveryCallback(true /* success */);
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 }
 
@@ -637,13 +589,12 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_UnregisterBeforeStartFails) {
   EXPECT_FALSE(ble_scanner_->ShouldDiscoverySessionBeActive());
 
   // Fail to start discovery session.
-  InvokeDiscoveryStartedCallback(false /* success */);
+  InvokeDiscoveryStartedCallback(false /* success */, 0u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Because the session should not be active (i.e., there are no registered
   // devices), a new attempt should not have occurred.
-  EXPECT_TRUE(last_discovery_callback_.is_null());
-  EXPECT_TRUE(last_discovery_error_callback_.is_null());
+  EXPECT_EQ(1u, fake_ble_synchronizer_->GetNumCommands());
 }
 
 TEST_F(BleScannerTest, TestStartAndStopCallbacks_RegisterBeforeStopFails) {
@@ -652,7 +603,7 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_RegisterBeforeStopFails) {
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Start discovery session.
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Unregister device to attempt a stop.
@@ -666,13 +617,12 @@ TEST_F(BleScannerTest, TestStartAndStopCallbacks_RegisterBeforeStopFails) {
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Fail to stop.
-  InvokeStopDiscoveryCallback(false /* success */);
+  InvokeStopDiscoveryCallback(false /* success */, 1u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Since there is a device registered again, there should not be another
   // attempt to stop.
-  EXPECT_TRUE(last_stop_callback_.is_null());
-  EXPECT_TRUE(last_stop_error_callback_.is_null());
+  EXPECT_EQ(2u, fake_ble_synchronizer_->GetNumCommands());
 }
 
 // Regression test for crbug.com/768521.
@@ -682,7 +632,7 @@ TEST_F(BleScannerTest, TestStopCallback_DiscoverySessionInactiveButNotStopped) {
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
 
   // Start discovery session.
-  InvokeDiscoveryStartedCallback(true /* success */);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Unregister device to attempt a stop.
@@ -696,14 +646,13 @@ TEST_F(BleScannerTest, TestStopCallback_DiscoverySessionInactiveButNotStopped) {
 
   // Fail to stop. Even though stopping failed, IsActive() will still return
   // false. In this case, the discovery session should no longer be active.
-  InvokeStopDiscoveryCallback(false /* success */);
+  InvokeStopDiscoveryCallback(false /* success */, 1u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
   VerifyDiscoveryStatusChange(false /* discovery_session_active */);
 
   // Since the discovery session was not active, there should not have been an
   // additional call to Stop().
-  EXPECT_TRUE(last_stop_callback_.is_null());
-  EXPECT_TRUE(last_stop_error_callback_.is_null());
+  EXPECT_EQ(2u, fake_ble_synchronizer_->GetNumCommands());
 }
 
 }  // namespace tether
