@@ -203,6 +203,24 @@ class AX_EXPORT IAccessible2UsageObserver {
   virtual void OnIAccessible2Used() = 0;
 };
 
+struct AX_EXPORT AXHypertext {
+  AXHypertext();
+  AXHypertext(const AXHypertext& other);
+  ~AXHypertext();
+
+  // Maps an embedded character offset in |hypertext| to an index in
+  // |hyperlinks|.
+  std::map<int32_t, int32_t> hyperlink_offset_to_index;
+
+  // The unique id of a AXPlatformNodes for each hyperlink.
+  // TODO(nektar): Replace object IDs with child indices if we decide that
+  // we are not implementing IA2 hyperlinks for anything other than IA2
+  // Hypertext.
+  std::vector<int32_t> hyperlinks;
+
+  base::string16 hypertext;
+};
+
 // Get an observer list that allows modules across the codebase to
 // listen to when usage of IAccessible2 is detected.
 extern AX_EXPORT base::ObserverList<IAccessible2UsageObserver>&
@@ -292,6 +310,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Destroy() override;
   int GetIndexInParent() override;
   base::string16 GetText() override;
+  base::string16 GetValue() override;
 
   //
   // IAccessible methods.
@@ -650,27 +669,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   std::vector<base::string16> ComputeIA2Attributes();
 
+  AXHypertext ComputeHypertext();
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 
   // Relationships between this node and other nodes.
   std::vector<AXPlatformNodeRelationWin*> relations_;
 
-  // Maps an embedded character offset in |hypertext_| to an index in
-  // |hyperlinks_|.
-  std::map<int32_t, int32_t> old_hyperlink_offset_to_index_;
-  std::map<int32_t, int32_t> hyperlink_offset_to_index_;
-
-  // The unique id of a AXPlatformNodes for each hyperlink.
-  // TODO(nektar): Replace object IDs with child indices if we decide that
-  // we are not implementing IA2 hyperlinks for anything other than IA2
-  // Hypertext.
-  std::vector<int32_t> old_hyperlinks_;
-  std::vector<int32_t> hyperlinks_;
-
-  // Hypertext.
-  base::string16 old_hypertext_;
-  base::string16 hypertext_;
+  AXHypertext old_hypertext_;
+  AXHypertext hypertext_;
 
   // These protected methods are still used by BrowserAccessibilityComWin. At
   // some point post conversion, we can probably move these to be private
