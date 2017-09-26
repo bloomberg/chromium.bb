@@ -115,7 +115,7 @@ const base::Feature kGamepadExtensions{"GamepadExtensions",
 // Causes the implementations of guests (inner WebContents) to use
 // out-of-process iframes.
 const base::Feature kGuestViewCrossProcessFrames{
-    "GuestViewCrossProcessFrames", base::FEATURE_DISABLED_BY_DEFAULT};
+    "GuestViewCrossProcessFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables BlinkGC heap compaction.
 const base::Feature kHeapCompaction{"HeapCompaction",
