@@ -85,4 +85,9 @@ public interface VrShell {
      *  Triggers VrShell to navigate backward.
      */
     void navigateBack();
+
+    /**
+     * Should be called when the density changes. Updates UI in response to the new density.
+     */
+    void onDensityChanged(float oldDpi, float newDpi);
 }
