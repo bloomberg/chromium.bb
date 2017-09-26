@@ -59,11 +59,19 @@ class MockDelegate : public LevelDBWrapperImpl::Delegate {
   void OnMapLoaded(leveldb::mojom::DatabaseError error) override {
     map_load_count_++;
   }
+  std::vector<LevelDBWrapperImpl::Change> FixUpData(
+      const LevelDBWrapperImpl::ValueMap& data) override {
+    return mock_changes_;
+  }
 
   int map_load_count() const { return map_load_count_; }
+  void set_mock_changes(std::vector<LevelDBWrapperImpl::Change> changes) {
+    mock_changes_ = std::move(changes);
+  }
 
  private:
   int map_load_count_ = 0;
+  std::vector<LevelDBWrapperImpl::Change> mock_changes_;
 };
 
 void GetCallback(const base::Closure& callback,
@@ -524,6 +532,28 @@ TEST_F(LevelDBWrapperImplTest, PurgeMemoryWithPendingChanges) {
   EXPECT_TRUE(GetSync(key, &result));
   EXPECT_EQ(value, result);
   EXPECT_EQ(delegate()->map_load_count(), 1);
+}
+
+TEST_F(LevelDBWrapperImplTest, FixUpData) {
+  std::vector<LevelDBWrapperImpl::Change> changes;
+  changes.push_back(std::make_pair(StdStringToUint8Vector("def"),
+                                   StdStringToUint8Vector("foo")));
+  changes.push_back(
+      std::make_pair(StdStringToUint8Vector("123"), base::nullopt));
+  changes.push_back(std::make_pair(StdStringToUint8Vector("abc"),
+                                   StdStringToUint8Vector("bla")));
+  delegate()->set_mock_changes(std::move(changes));
+
+  std::vector<uint8_t> result;
+  EXPECT_FALSE(GetSync(StdStringToUint8Vector("123"), &result));
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("def"), &result));
+  EXPECT_EQ(StdStringToUint8Vector("foo"), result);
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("abc"), &result));
+  EXPECT_EQ(StdStringToUint8Vector("bla"), result);
+
+  EXPECT_FALSE(has_mock_data(kTestPrefix + std::string("123")));
+  EXPECT_EQ("foo", get_mock_data(kTestPrefix + std::string("def")));
+  EXPECT_EQ("bla", get_mock_data(kTestPrefix + std::string("abc")));
 }
 
 }  // namespace content

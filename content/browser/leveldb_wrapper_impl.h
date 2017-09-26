@@ -40,6 +40,8 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
+  using Change =
+      std::pair<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
 
   class CONTENT_EXPORT Delegate {
    public:
@@ -49,6 +51,9 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     virtual void DidCommit(leveldb::mojom::DatabaseError error) = 0;
     // Called during loading if no data was found. Needs to call |callback|.
     virtual void MigrateData(ValueMapCallback callback);
+    // Called during loading to give delegate a chance to modify the data as
+    // stored in the database.
+    virtual std::vector<Change> FixUpData(const ValueMap& data);
     virtual void OnMapLoaded(leveldb::mojom::DatabaseError error);
   };
 

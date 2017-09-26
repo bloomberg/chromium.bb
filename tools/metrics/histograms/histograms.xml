@@ -29832,6 +29832,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LocalStorageContext.MigrationFixUpNeeded" enum="Boolean">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Whether or not any fixes needed to be made to localstorage data, as a result
+    of bugs in the migration code in M61/M62. Recorded every time the browser
+    loads an initial snapshot of the localstorage data for an origin.
+  </summary>
+</histogram>
+
 <histogram name="LocalStorageContext.OpenError" enum="LocalStorageOpenError">
   <owner>mek@chromium.org</owner>
   <summary>
