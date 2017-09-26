@@ -1,7 +1,5 @@
 async_test(function(test) {
   var observer = new ReportingObserver(function(reports, observer) {
-    test.done();
-  window.console.log("************************************** IN OBSERVER");
     test.step(function() {
       assert_equals(reports.length, 1);
 
@@ -26,7 +24,6 @@ async_test(function(test) {
   var targetX = rect.left + rect.width / 2;
   var targetY = rect.top + rect.height / 2;
   document.body.addEventListener('touchstart', function(e) {
-    window.console.log("************************************** TOUCH " + e.type);
     e.preventDefault();
     test.done();
   });
