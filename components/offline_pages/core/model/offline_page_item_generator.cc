@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 
+#include "base/files/file_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/offline_pages/core/model/offline_store_utils.h"
@@ -23,6 +24,17 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.request_origin = request_origin_;
   item.url = url_;
   item.original_url = original_url_;
+  item.file_size = file_size_;
+  item.last_access_time = last_access_time_;
+  return item;
+}
+
+OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFileInDir(
+    const base::FilePath& temp_dir) {
+  OfflinePageItem item = CreateItem();
+  base::FilePath path;
+  base::CreateTemporaryFileInDir(temp_dir, &path);
+  item.file_path = path;
   return item;
 }
 
@@ -41,6 +53,15 @@ void OfflinePageItemGenerator::SetUrl(const GURL& url) {
 
 void OfflinePageItemGenerator::SetOriginalUrl(const GURL& url) {
   original_url_ = url;
+}
+
+void OfflinePageItemGenerator::SetFileSize(int64_t file_size) {
+  file_size_ = file_size;
+}
+
+void OfflinePageItemGenerator::SetLastAccessTime(
+    const base::Time& last_access_time) {
+  last_access_time_ = last_access_time;
 }
 
 }  // namespace offline_pages

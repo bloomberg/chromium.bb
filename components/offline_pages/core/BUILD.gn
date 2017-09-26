@@ -18,6 +18,8 @@ static_library("core") {
     "client_policy_controller.h",
     "model/add_page_task.cc",
     "model/add_page_task.h",
+    "model/clear_storage_task.cc",
+    "model/clear_storage_task.h",
     "model/create_archive_task.cc",
     "model/create_archive_task.h",
     "model/delete_page_task.cc",
@@ -98,6 +100,7 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/keyed_service/core",
+    "//sql:sql",
     "//testing/gtest",
     "//url",
   ]
@@ -120,6 +123,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
+    "model/clear_storage_task_unittest.cc",
     "model/create_archive_task_unittest.cc",
     "model/delete_page_task_unittest.cc",
     "model/get_pages_task_unittest.cc",

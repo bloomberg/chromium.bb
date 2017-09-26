@@ -40,6 +40,9 @@ class OfflinePageMetadataStoreTestUtil {
   // Inserts an offline page item into the store.
   void InsertItem(const OfflinePageItem& item);
 
+  // Gets the total number of pages in the store.
+  int64_t GetPageCount();
+
   OfflinePageMetadataStoreSQL* store() { return store_.get(); }
 
   base::SimpleTestClock* clock() { return &clock_; }

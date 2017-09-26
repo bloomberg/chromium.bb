@@ -20,17 +20,22 @@ class OfflinePageItemGenerator {
   ~OfflinePageItemGenerator();
 
   OfflinePageItem CreateItem();
+  OfflinePageItem CreateItemWithTempFileInDir(const base::FilePath& temp_dir);
 
   void SetNamespace(const std::string& name_space);
   void SetRequestOrigin(const std::string& request_origin);
   void SetUrl(const GURL& url);
   void SetOriginalUrl(const GURL& url);
+  void SetFileSize(int64_t);
+  void SetLastAccessTime(const base::Time& time);
 
  private:
   std::string namespace_;
   std::string request_origin_;
   GURL url_;
   GURL original_url_;
+  int64_t file_size_;
+  base::Time last_access_time_;
 };
 }  // namespace offline_pages
 

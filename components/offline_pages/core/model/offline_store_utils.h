@@ -12,6 +12,10 @@
 
 namespace offline_pages {
 
+#define OFFLINE_CACHED_NAMESPACES                                       \
+  "(\"bookmark\", \"last_n\", \"custom_tabs\", \"suggested_articles\"," \
+  " \"default\")"
+
 class OfflineStoreUtils {
  public:
   // Converts an ItemActionStatus to AddPageResult.
