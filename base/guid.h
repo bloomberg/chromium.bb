@@ -15,12 +15,14 @@
 
 namespace base {
 
-// Generate a 128-bit (pseudo) random GUID in the form of version 4 as described
-// in RFC 4122, section 4.4.
+// Generate a 128-bit random GUID in the form of version 4 as described in
+// RFC 4122, section 4.4.
 // The format of GUID version 4 must be xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx,
 // where y is one of [8, 9, A, B].
 // The hexadecimal values "a" through "f" are output as lower case characters.
-// If GUID generation fails an empty string is returned.
+//
+// A cryptographically secure random source will be used, but consider using
+// UnguessableToken for greater type-safety if GUID format is unnecessary.
 BASE_EXPORT std::string GenerateGUID();
 
 // Returns true if the input string conforms to the version 4 GUID format.
