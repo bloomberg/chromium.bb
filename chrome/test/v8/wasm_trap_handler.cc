@@ -15,6 +15,17 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 
+namespace {
+// kIsTrapHandlerSupported indicates whether the trap handler is supported
+// (i.e. allowed to be enabled) on the currently platform. Currently we only
+// support non-Android, Linux x64. In the future more platforms will be
+// supported.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
+constexpr bool kIsTrapHandlerSupported = true;
+#else
+constexpr bool kIsTrapHandlerSupported = false;
+#endif
+
 class WasmTrapHandler : public InProcessBrowserTest {
  public:
   WasmTrapHandler() {}
@@ -29,13 +40,7 @@ class WasmTrapHandler : public InProcessBrowserTest {
   }
 
   void RunJSTestAndEnsureTrapHandlerRan(const std::string& js) const {
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
-    const bool is_trap_handler_supported = true;
-#else
-    const bool is_trap_handler_supported = false;
-#endif
-
-    if (is_trap_handler_supported &&
+    if (kIsTrapHandlerSupported &&
         base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
       const auto* get_fault_count =
           "domAutomationController.send(%GetWasmRecoveredTrapCount())";
@@ -95,3 +100,16 @@ IN_PROC_BROWSER_TEST_F(WasmTrapHandler, OutOfBounds) {
   ASSERT_NO_FATAL_FAILURE(RunJSTestAndEnsureTrapHandlerRan(
       "poke_out_of_bounds_grow_memory_wasm()"));
 }
+
+IN_PROC_BROWSER_TEST_F(WasmTrapHandler, TrapHandlerCorrectlyConfigured) {
+  const char* script =
+      "domAutomationController.send(%IsWasmTrapHandlerEnabled())";
+  bool is_trap_handler_enabled = false;
+  auto* const tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(tab, script,
+                                                   &is_trap_handler_enabled));
+  ASSERT_EQ(is_trap_handler_enabled,
+            kIsTrapHandlerSupported && base::FeatureList::IsEnabled(
+                                           features::kWebAssemblyTrapHandler));
+}
+}  // namespace
