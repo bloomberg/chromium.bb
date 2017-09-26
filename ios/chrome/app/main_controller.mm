@@ -1742,7 +1742,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)displayCurrentBVC {
-  self.mainViewController.activeViewController = self.currentBVC;
+  [self.mainViewController setActiveViewController:self.currentBVC
+                                        completion:nil];
 }
 
 - (TabModel*)currentTabModel {
@@ -1806,12 +1807,14 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                             mainBVC:self.mainBVC
                                              otrBVC:self.otrBVC];
     [_tabSwitcherController setTransitionContext:transitionContext];
-    self.mainViewController.activeViewController = _tabSwitcherController;
+    [self.mainViewController setActiveViewController:_tabSwitcherController
+                                          completion:nil];
     [_tabSwitcherController showWithSelectedTabAnimation];
   } else {
     // User interaction is disabled when the stack controller is dismissed.
     [[_tabSwitcherController view] setUserInteractionEnabled:YES];
-    self.mainViewController.activeViewController = _tabSwitcherController;
+    [self.mainViewController setActiveViewController:_tabSwitcherController
+                                          completion:nil];
     [_tabSwitcherController showWithSelectedTabAnimation];
   }
 }

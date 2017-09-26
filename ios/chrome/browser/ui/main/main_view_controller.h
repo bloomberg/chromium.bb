@@ -7,12 +7,21 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/ios/block_types.h"
+
 // A UIViewController that provides a property to maintain a single child view
 // controller.
 @interface MainViewController : UIViewController
-// The child view controller, if any, that is active. Assigning to
-// |activeViewController| will remove any previous active view controller.
-@property(nonatomic, strong) UIViewController* activeViewController;
+
+// The view controller, if any, that is active.
+@property(nonatomic, readonly, strong) UIViewController* activeViewController;
+
+// Sets the active view controller, replacing any previously-active view
+// controller.  The |completion| block is invoked once the new view controller
+// is presented or added as a child.
+- (void)setActiveViewController:(UIViewController*)activeViewController
+                     completion:(ProceduralBlock)completion;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_MAIN_VIEW_CONTROLLER_H_
