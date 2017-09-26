@@ -31,6 +31,7 @@
 #include "public/web/WebHeap.h"
 
 #include "platform/heap/Handle.h"
+#include "platform/heap/Heap.h"
 
 namespace blink {
 
@@ -41,6 +42,14 @@ void WebHeap::CollectGarbageForTesting() {
 
 void WebHeap::CollectAllGarbageForTesting() {
   ThreadState::Current()->CollectAllGarbage();
+}
+
+void WebHeap::SetAllocationHook(AllocationHook alloc_hook) {
+  HeapAllocHooks::SetAllocationHook(alloc_hook);
+}
+
+void WebHeap::SetFreeHook(FreeHook free_hook) {
+  HeapAllocHooks::SetFreeHook(free_hook);
 }
 
 }  // namespace blink

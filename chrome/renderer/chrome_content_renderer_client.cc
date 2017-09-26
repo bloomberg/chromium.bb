@@ -35,6 +35,7 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/common/prerender_types.h"
+#include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
@@ -128,6 +129,7 @@
 #include "third_party/WebKit/public/platform/scheduler/renderer_process_type.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -377,15 +379,17 @@ ChromeContentRendererClient::ChromeContentRendererClient()
       ChromeExtensionsRendererClient::GetInstance());
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedCameraDeviceOrigins); ++i)
-    allowed_camera_device_origins_.insert(
-        kPredefinedAllowedCameraDeviceOrigins[i]);
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedCompositorOrigins); ++i)
-    allowed_compositor_origins_.insert(kPredefinedAllowedCompositorOrigins[i]);
+  for (const char* origin : kPredefinedAllowedCameraDeviceOrigins)
+    allowed_camera_device_origins_.insert(origin);
+  for (const char* origin : kPredefinedAllowedCompositorOrigins)
+    allowed_compositor_origins_.insert(origin);
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::SetAgent(GetUserAgent());
 #endif
+
+  profiling::SetGCHeapAllocationHookFunctions(
+      &blink::WebHeap::SetAllocationHook, &blink::WebHeap::SetFreeHook);
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() = default;
