@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_LEVELDB_STRUCT_TRAITS_H_
-#define COMPONENTS_LEVELDB_PROTO_LEVELDB_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_LEVELDB_LEVELDB_STRUCT_TRAITS_H_
+#define COMPONENTS_LEVELDB_LEVELDB_STRUCT_TRAITS_H_
 
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 
@@ -24,4 +24,4 @@ struct StructTraits<leveldb::mojom::OpenOptionsDataView, leveldb_env::Options> {
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_LEVELDB_PROTO_LEVELDB_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_LEVELDB_LEVELDB_STRUCT_TRAITS_H_
