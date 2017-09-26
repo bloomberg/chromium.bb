@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
+namespace {
 
 // Test helper. Reads a consumer handle, accumulating data into a string. Reads
 // until encountering an error (e.g. peer closure), at which point it invokes an
@@ -185,4 +186,5 @@ TEST_F(DataPipeStringWriterTest, MultipleWrites) {
             reader.data());
 }
 
+}  // namespace
 }  // namespace mojo
