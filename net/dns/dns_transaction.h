@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
+#include "net/dns/record_rdata.h"
 
 namespace net {
 
@@ -67,6 +68,10 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       uint16_t qtype,
       const CallbackType& callback,
       const NetLogWithSource& net_log) WARN_UNUSED_RESULT = 0;
+
+  // The given EDNS0 option will be included in all DNS queries performed by
+  // transactions from this factory.
+  virtual void AddEDNSOption(const OptRecordRdata::Opt& opt) = 0;
 
   // Creates a DnsTransactionFactory which creates DnsTransactionImpl using the
   // |session|.
