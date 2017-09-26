@@ -36,17 +36,6 @@ import name_utilities
 import template_expander
 
 
-HEADER_TEMPLATE = """%(license)s
-
-#ifndef Event%(suffix)sHeaders_h
-#define Event%(suffix)sHeaders_h
-%(base_header_for_suffix)s
-%(includes)s
-
-#endif // Event%(suffix)sHeaders_h
-"""
-
-
 # All events on the following whitelist are matched case-insensitively
 # in createEvent.
 #
@@ -124,9 +113,7 @@ class EventFactoryWriter(json5_generator.Writer):
         assert self.namespace == 'Event', 'namespace field should be "Event".'
         self.suffix = self.json5_file.metadata['suffix'].strip('"')
         snake_suffix = (self.suffix.lower() + '_') if self.suffix else ''
-        self._headers_header_basename = 'event_%sheaders.h' % snake_suffix
         self._outputs = {
-            self._headers_header_basename: self.generate_headers_header,
             ('event_%sfactory.cc' % snake_suffix): self.generate_implementation,
         }
 
@@ -151,26 +138,14 @@ class EventFactoryWriter(json5_generator.Writer):
             # Avoid duplicate includes.
             if cpp_name in includes:
                 continue
-            includes[cpp_name] = ('#include "%s"' %
-                                  self._headers_header_include_path(entry))
-        return includes.values()
-
-    def generate_headers_header(self):
-        base_header_for_suffix = ''
-        if self.suffix:
-            base_header_for_suffix = '\n#include "core/event_headers.h"\n'
-        return HEADER_TEMPLATE % {
-            'input_files': self._input_files,
-            'license': license.license_for_generated_cpp(),
-            'suffix': self.suffix,
-            'base_header_for_suffix': base_header_for_suffix,
-            'includes': '\n'.join(self._headers_header_includes(self.json5_file.name_dictionaries)),
-        }
+            includes[cpp_name] = self._headers_header_include_path(entry)
+        return sorted(includes.values())
 
     @template_expander.use_jinja('templates/EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
-            'headers_header_basename': self._headers_header_basename,
+            'include_header_paths': self._headers_header_includes(
+                self.json5_file.name_dictionaries),
             'input_files': self._input_files,
             'suffix': self.suffix,
             'events': self.json5_file.name_dictionaries,

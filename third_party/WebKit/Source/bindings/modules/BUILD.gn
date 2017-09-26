@@ -72,7 +72,6 @@ make_event_factory("event_modules") {
   in_files = [ "$root_gen_dir/blink/EventModulesInterfaces.json5" ]
   outputs = [
     "$blink_modules_output_dir/event_modules_factory.cc",
-    "$blink_modules_output_dir/event_modules_headers.h",
   ]
   deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
   deps += [

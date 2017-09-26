@@ -10,7 +10,9 @@
 {% endif %}
 
 #include "core/frame/Deprecation.h"
-#include "{{headers_header_basename}}"
+{% for header_path in include_header_paths %}
+#include "{{header_path}}"
+{% endfor %}
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
