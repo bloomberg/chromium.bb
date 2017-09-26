@@ -518,6 +518,50 @@ TEST_F(UIDevToolsTest, OneUIElementStaysFullyTopLeftOfAnother) {
             HighlightRectsConfiguration::R1_TOP_FULL_LEFT_R2);
 }
 
+// Test case R1_BOTTOM_FULL_LEFT_R2.
+TEST_F(UIDevToolsTest, OneUIElementStaysFullyBottomLeftOfAnother) {
+  const gfx::Rect bottom_left_rect(100, 100, 50, 50);
+  std::unique_ptr<views::Widget> widget_bottom_left(
+      CreateTestWidget(bottom_left_rect));
+
+  const gfx::Rect top_right_rect(200, 50, 40, 40);
+  std::unique_ptr<views::Widget> widget_top_right(
+      CreateTestWidget(top_right_rect));
+
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  int bottom_left_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      bottom_left_rect.origin(), GetPrimaryRootWindow());
+  int top_right_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      top_right_rect.origin(), GetPrimaryRootWindow());
+  dom_agent()->ShowDistancesInHighlightOverlay(bottom_left_rect_id,
+                                               top_right_rect_id);
+
+  HighlightRectsConfiguration highlight_rect_config =
+      dom_agent()->highlight_rect_config();
+
+  // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
+  dom_agent()->ShowDistancesInHighlightOverlay(top_right_rect_id,
+                                               bottom_left_rect_id);
+  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+
+  const std::pair<aura::Window*, gfx::Rect> element_top_left(
+      dom_agent()
+          ->GetElementFromNodeId(bottom_left_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  const std::pair<aura::Window*, gfx::Rect> element_bottom_right(
+      dom_agent()
+          ->GetElementFromNodeId(top_right_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  EXPECT_EQ(element_top_left.second, bottom_left_rect);
+  EXPECT_EQ(element_bottom_right.second, top_right_rect);
+  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+            HighlightRectsConfiguration::R1_BOTTOM_FULL_LEFT_R2);
+}
+
 // Tests that the correct Overlay events are dispatched to the frontend when
 // hovering and clicking over a UI element in inspect mode.
 TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
