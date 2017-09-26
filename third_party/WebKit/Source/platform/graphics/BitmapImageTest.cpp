@@ -36,6 +36,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -85,6 +86,7 @@ class BitmapImageTest : public ::testing::Test {
     return image_->frames_[frame].frame_bytes_;
   }
   size_t DecodedFramesCount() const { return image_->frames_.size(); }
+  void StartAnimation() { image_->StartAnimation(); }
 
   void SetFirstFrameNotComplete() { image_->frames_[0].is_complete_ = false; }
 
@@ -347,11 +349,17 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
                                        public MockImageDecoderClient {
  public:
   void SetUp() override {
+    original_time_function_ = SetTimeFunctionsForTesting([] { return now_; });
+
     BitmapImageTest::SetUp();
     auto decoder = MockImageDecoder::Create(this);
     decoder->SetSize(10, 10);
     image_->SetDecoderForTesting(
         DeferredImageDecoder::CreateForTesting(std::move(decoder)));
+  }
+
+  void TearDown() override {
+    SetTimeFunctionsForTesting(original_time_function_);
   }
 
   void DecoderBeingDestroyed() override {}
@@ -371,7 +379,12 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
   size_t frame_count_;
   ImageFrame::Status status_;
   bool last_frame_complete_;
+
+  static double now_;
+  TimeFunction original_time_function_;
 };
+
+double BitmapImageTestWithMockDecoder::now_ = 0;
 
 TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
   // For a zero duration, we should make it non-zero when creating a PaintImage.
@@ -440,6 +453,58 @@ TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
   image_->SetAnimationPolicy(kImageAnimationPolicyAllowed);
   image = image_->PaintImageForCurrentFrame();
   EXPECT_EQ(image.repetition_count(), repetition_count_);
+}
+
+TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
+  RuntimeEnabledFeatures::SetCompositorImageAnimationsEnabled(false);
+
+  repetition_count_ = kAnimationLoopInfinite;
+  frame_count_ = 5u;
+  last_frame_complete_ = true;
+  duration_ = TimeDelta::FromSeconds(10);
+  now_ = 10;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
+
+  RefPtr<scheduler::FakeWebTaskRunner> task_runner =
+      AdoptRef(new scheduler::FakeWebTaskRunner);
+  image_->SetTaskRunnerForTesting(task_runner);
+  task_runner->SetTime(10);
+
+  // Start the animation at 10s. This should schedule a timer for the next frame
+  // after 10 seconds.
+  StartAnimation();
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 0u);
+
+  // No frames skipped since we just started the animation.
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing(), 0u);
+
+  // Advance the time to 15s. The frame is still at 0u because the posted task
+  // should run at 20s.
+  task_runner->AdvanceTimeAndRun(5);
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 0u);
+
+  // Advance the time to 20s. The task runs and advances the animation forward
+  // to 1u.
+  task_runner->AdvanceTimeAndRun(5);
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 1u);
+
+  // Set now_ to 41 seconds. Since the animation started at 10s, and each frame
+  // has a duration of 10s, we should see the fourth frame at 41 seconds.
+  now_ = 41;
+  task_runner->SetTime(41);
+  StartAnimation();
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing(), 2u);
+
+  // We should have scheduled a task to move to the last frame in
+  // StartAnimation above, at 50s.
+  // Advance by 5s, not time for the next frame yet.
+  task_runner->AdvanceTimeAndRun(5);
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
+
+  task_runner->SetTime(50);
+  task_runner->AdvanceTimeAndRun(0);
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 4u);
 }
 
 template <typename HistogramEnumType>

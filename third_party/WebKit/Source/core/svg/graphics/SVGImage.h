@@ -72,7 +72,7 @@ class CORE_EXPORT SVGImage final : public Image {
   void CheckLoaded() const;
   bool CurrentFrameHasSingleSecurityOrigin() const override;
 
-  void StartAnimation(CatchUpAnimation = kCatchUp) override;
+  void StartAnimation() override;
   void ResetAnimation() override;
 
   PaintImage::CompletionState completion_state() const {
