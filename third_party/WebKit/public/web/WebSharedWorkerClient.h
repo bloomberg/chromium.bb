@@ -34,6 +34,7 @@
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebWorkerFetchContext.h"
+#include "public/platform/web_feature.mojom-shared.h"
 #include "public/web/WebDevToolsAgentClient.h"
 
 namespace blink {
@@ -52,7 +53,7 @@ class WebString;
 // or workerContextDestroyed() is called).
 class WebSharedWorkerClient {
  public:
-  virtual void CountFeature(uint32_t) = 0;
+  virtual void CountFeature(mojom::WebFeature) = 0;
   virtual void WorkerContextClosed() = 0;
   virtual void WorkerContextDestroyed() = 0;
   virtual void WorkerReadyForInspection() {}

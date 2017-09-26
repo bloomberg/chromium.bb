@@ -40,6 +40,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/worker_service.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
@@ -724,6 +725,21 @@ void BlinkTestController::OnTestFinished() {
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
+  // TODO(darin): Eliminate this thread hopping once WorkerService runs on the
+  // UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::BindOnce([]() {
+        WorkerService::GetInstance()->TerminateAllWorkersForTesting(
+            base::BindOnce([]() {
+              BrowserThread::PostTask(
+                  BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
+                    BlinkTestController::Get()->OnAllSharedWorkersDestroyed();
+                  }));
+            }));
+      }));
+}
+
+void BlinkTestController::OnAllSharedWorkersDestroyed() {
   if (main_window_) {
     RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
     rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));

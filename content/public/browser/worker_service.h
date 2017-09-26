@@ -19,15 +19,20 @@ class WorkerServiceObserver;
 // separate process, since multiple renderer processes can be talking to a
 // single shared worker. All the methods below can only be called on the IO
 // thread.
-class WorkerService {
+class CONTENT_EXPORT WorkerService {
  public:
   virtual ~WorkerService() {}
 
   // Returns the WorkerService singleton.
-  CONTENT_EXPORT static WorkerService* GetInstance();
+  static WorkerService* GetInstance();
 
   // Terminates the given worker. Returns true if the process was found.
   virtual bool TerminateWorker(int process_id, int route_id) = 0;
+
+  // Terminates all workers and notifies when complete. This is used for
+  // testing when it is important to make sure that all shared worker activity
+  // has stopped.
+  virtual void TerminateAllWorkersForTesting(base::OnceClosure callback) = 0;
 
   struct WorkerInfo {
     GURL url;

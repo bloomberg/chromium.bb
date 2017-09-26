@@ -36,14 +36,14 @@ void SharedWorkerRepository::Connect(
   mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
       url, name.Utf8(), content_security_policy.Utf8(),
       content_security_policy_type, creation_address_space,
-      creation_context_type, data_saver_enabled));
+      data_saver_enabled));
 
   mojom::SharedWorkerClientPtr client;
   AddWorker(document_id,
             std::make_unique<SharedWorkerClientImpl>(std::move(listener)),
             mojo::MakeRequest(&client));
 
-  connector_->Connect(std::move(info), std::move(client),
+  connector_->Connect(std::move(info), std::move(client), creation_context_type,
                       static_cast<WebMessagePortChannelImpl*>(channel.get())
                           ->ReleaseMessagePort()
                           .ReleaseHandle());

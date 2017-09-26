@@ -369,7 +369,6 @@ source_set("common") {
     "user_agent.cc",
     "view_message_enums.h",
     "view_messages.h",
-    "worker_messages.h",
     "zygote_commands_linux.h",
   ]
 
@@ -664,8 +663,12 @@ mojom("mojo_bindings") {
     "service_worker/service_worker_installed_scripts_manager.mojom",
     "service_worker/service_worker_provider.mojom",
     "service_worker/service_worker_types.mojom",
+    "shared_worker/shared_worker.mojom",
     "shared_worker/shared_worker_client.mojom",
     "shared_worker/shared_worker_connector.mojom",
+    "shared_worker/shared_worker_factory.mojom",
+    "shared_worker/shared_worker_host.mojom",
+    "shared_worker/shared_worker_info.mojom",
     "storage_partition_service.mojom",
     "video_capture.mojom",
     "web_database.mojom",

@@ -229,6 +229,7 @@ class BlinkTestController : public WebContentsObserver,
   void HandleLayoutTestControlError(RenderFrameHost* frame);
 
   void OnAllServiceWorkersCleared();
+  void OnAllSharedWorkersDestroyed();
 
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
