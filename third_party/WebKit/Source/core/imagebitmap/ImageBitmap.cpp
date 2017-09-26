@@ -299,35 +299,8 @@ RefPtr<StaticBitmapImage> ScaleImage(RefPtr<StaticBitmapImage>&& image,
 RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
     RefPtr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
-  // TODO(zakerinasab): crbug.com/754713
-  // If image does not have any color space info and we must color convert to
-  // SRGB, we should tag the image as SRGB. Since we cannot use SkImage::
-  // makeColorSpace() on SkImages with no color space to get the image in SRGB,
-  // we have to do this using a slow code path (reading the pixels and creating
-  // a new SRGB SkImage). This is inefficient and also converts GPU-backed
-  // images to CPU-backed. For now, we ignore this and let the images be in
-  // null color space. This must be okay if color management is only supported
-  // for SRGB. Please see crbug.com/754713 for more details.
-
   if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     return image;
-
-  // If the image is still in legacy color mode (no color space info), redraw
-  // the image on SRGB surface to get the image in SRGB. We eventually should
-  // replace this with a check for the color space information of the image.
-  // (crbug.com/754713)
-  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
-  if (!sk_image->colorSpace()) {
-    SkImageInfo srgb_info = SkImageInfo::Make(
-        sk_image->width(), sk_image->height(), kN32_SkColorType,
-        sk_image->alphaType(), SkColorSpace::MakeSRGB());
-    sk_sp<SkSurface> surface = SkSurface::MakeRaster(srgb_info);
-    if (surface) {
-      surface->getCanvas()->drawImage(sk_image, 0, 0);
-      image = StaticBitmapImage::Create(surface->makeImageSnapshot());
-    }
-  }
-
   // Color correct the image. This code path uses SkImage::makeColorSpace(). If
   // the color space of the source image is nullptr, it will be assumed in SRGB.
   return image->ConvertToColorSpace(
@@ -812,9 +785,13 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
     bool origin_clean,
     std::unique_ptr<ParsedOptions> parsed_options) {
   DCHECK(!IsMainThread());
-  SkImageInfo info = SkImageInfo::Make(
-      dst_rect.Width(), dst_rect.Height(),
-      parsed_options->color_params.GetSkColorType(), kPremul_SkAlphaType);
+  // TODO (zakerinasab): crbug.com/768844
+  // For now only SVG is decoded async so it is fine to assume the color space
+  // is SRGB. When other sources are decoded async (crbug.com/580202), make sure
+  // that proper color space is used in SkImageInfo to avoid clipping the gamut
+  // of the image bitmap source.
+  SkImageInfo info = SkImageInfo::MakeS32(dst_rect.Width(), dst_rect.Height(),
+                                          kPremul_SkAlphaType);
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   paint_record->Playback(surface->getCanvas());
   sk_sp<SkImage> skia_image = surface->makeImageSnapshot();
