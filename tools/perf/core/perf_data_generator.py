@@ -549,7 +549,7 @@ def get_waterfall_config():
     waterfall, 'Linux Perf', 'linux-release', 'linux',
     swarming=[
       {
-       'gpu': '102b:0534',
+       'gpu': '10de:1cb3',
        'os': 'Ubuntu-14.04',
        'pool': 'Chrome-perf',
        'device_ids': [
