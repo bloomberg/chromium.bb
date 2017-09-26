@@ -29,6 +29,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
+#include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -48,10 +49,15 @@
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
+using ntp_snippets::AreAssetDownloadsEnabled;
+using ntp_snippets::AreOfflinePageDownloadsEnabled;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::ContentSuggestion;
+using ntp_snippets::IsBookmarkProviderEnabled;
+using ntp_snippets::IsPhysicalWebPageProviderEnabled;
+using ntp_snippets::IsRecentTabProviderEnabled;
 using ntp_snippets::KnownCategories;
 using ntp_snippets::RemoteSuggestion;
 using ntp_snippets::RemoteSuggestionsProvider;
@@ -459,25 +465,21 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendBoolean(
       "flag-article-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature));
+
   SendBoolean("flag-recent-offline-tab-suggestions",
-              base::FeatureList::IsEnabled(
-                  ntp_snippets::kRecentOfflineTabSuggestionsFeature));
+              IsRecentTabProviderEnabled());
   SendBoolean("flag-offlining-recent-pages-feature",
               base::FeatureList::IsEnabled(
                   offline_pages::kOffliningRecentPagesFeature));
-  SendBoolean(
-      "flag-asset-download-suggestions",
-      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature));
+
+  SendBoolean("flag-asset-download-suggestions", AreAssetDownloadsEnabled());
   SendBoolean("flag-offline-page-download-suggestions",
-              base::FeatureList::IsEnabled(
-                  features::kOfflinePageDownloadSuggestionsFeature));
-  SendBoolean(
-      "flag-bookmark-suggestions",
-      base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature));
+              AreOfflinePageDownloadsEnabled());
+
+  SendBoolean("flag-bookmark-suggestions", IsBookmarkProviderEnabled());
 
   SendBoolean("flag-physical-web-page-suggestions",
-              base::FeatureList::IsEnabled(
-                  ntp_snippets::kPhysicalWebPageSuggestionsFeature));
+              IsPhysicalWebPageProviderEnabled());
 
   SendBoolean("flag-physical-web", base::FeatureList::IsEnabled(
                                        chrome::android::kPhysicalWebFeature));
