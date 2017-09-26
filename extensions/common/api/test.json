@@ -60,6 +60,11 @@
                     "description": "The port on which the test WebSocket server is listening.",
                     "minimum": 0,
                     "maximum": 65535
+                  },
+                  "browserSideNavigationEnabled": {
+                    "type": "boolean",
+                    "optional": true,
+                    "description": "Whether navigation requets are initiated by the browser or renderer (PlzNavigate)."
                   }
                 }
               }

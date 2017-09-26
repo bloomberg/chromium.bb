@@ -405,6 +405,7 @@ class ExtensionWebRequestEventRouter {
   void ClearPendingCallbacks(const net::URLRequest* request);
 
   bool DispatchEvent(void* browser_context,
+                     const InfoMap* extension_info_map,
                      net::URLRequest* request,
                      const RawListeners& listener_ids,
                      ExtensionNavigationUIData* navigation_ui_data,
@@ -412,6 +413,7 @@ class ExtensionWebRequestEventRouter {
 
   void DispatchEventToListeners(
       void* browser_context,
+      const InfoMap* extension_info_map,
       std::unique_ptr<ListenerIDs> listener_ids,
       std::unique_ptr<WebRequestEventDetails> event_details);
 

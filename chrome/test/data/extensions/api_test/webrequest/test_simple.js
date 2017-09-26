@@ -20,7 +20,8 @@ runTests([
           event: "onBeforeRequest",
           details: {
             url: getURL("simpleLoad/a.html"),
-            frameUrl: getURL("simpleLoad/a.html")
+            frameUrl: getURL("simpleLoad/a.html"),
+            initiator: getDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "a-onResponseStarted",
@@ -30,6 +31,7 @@ runTests([
             statusCode: 200,
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -40,6 +42,7 @@ runTests([
             statusCode: 200,
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
             // Request to chrome-extension:// url has no IP.
           }
         },
@@ -58,21 +61,24 @@ runTests([
           event: "onBeforeRequest",
           details: {
             url: getURLHttpSimpleLoadRedirect(),
-            frameUrl: getURLHttpSimpleLoadRedirect()
+            frameUrl: getURLHttpSimpleLoadRedirect(),
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onBeforeSendHeaders-1",
           event: "onBeforeSendHeaders",
           details: {
             url: getURLHttpSimpleLoadRedirect(),
-            requestHeadersValid: true
+            requestHeadersValid: true,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onSendHeaders-1",
           event: "onSendHeaders",
           details: {
             url: getURLHttpSimpleLoadRedirect(),
-            requestHeadersValid: true
+            requestHeadersValid: true,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onHeadersReceived-1",
@@ -81,7 +87,8 @@ runTests([
             url: getURLHttpSimpleLoadRedirect(),
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 301 Moved Permanently",
-            statusCode: 301
+            statusCode: 301,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onBeforeRedirect",
@@ -93,28 +100,32 @@ runTests([
             responseHeadersExist: true,
             ip: "127.0.0.1",
             fromCache: false,
-            statusLine: "HTTP/1.1 301 Moved Permanently"
+            statusLine: "HTTP/1.1 301 Moved Permanently",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onBeforeRequest-2",
           event: "onBeforeRequest",
           details: {
             url: getURLHttpSimpleLoad(),
-            frameUrl: getURLHttpSimpleLoad()
+            frameUrl: getURLHttpSimpleLoad(),
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onBeforeSendHeaders-2",
           event: "onBeforeSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            requestHeadersValid: true
+            requestHeadersValid: true,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onSendHeaders-2",
           event: "onSendHeaders",
           details: {
             url: getURLHttpSimpleLoad(),
-            requestHeadersValid: true
+            requestHeadersValid: true,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onHeadersReceived-2",
@@ -123,7 +134,8 @@ runTests([
             url: getURLHttpSimpleLoad(),
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 200 OK",
-            statusCode: 200
+            statusCode: 200,
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onResponseStarted",
@@ -135,6 +147,7 @@ runTests([
             ip: "127.0.0.1",
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onCompleted",
@@ -145,7 +158,8 @@ runTests([
             ip: "127.0.0.1",
             fromCache: false,
             responseHeadersExist: true,
-            statusLine: "HTTP/1.1 200 OK"
+            statusLine: "HTTP/1.1 200 OK",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED),
           }
         }
       ],
@@ -167,7 +181,8 @@ runTests([
           event: "onBeforeRequest",
           details: {
             url: getURL("does_not_exist.html"),
-            frameUrl: getURL("does_not_exist.html")
+            frameUrl: getURL("does_not_exist.html"),
+            initiator: getDomain(initiators.BROWSER_INITIATED),
           }
         },
         { label: "onErrorOccurred",
@@ -176,6 +191,7 @@ runTests([
             url: getURL("does_not_exist.html"),
             fromCache: false,
             error: "net::ERR_FILE_NOT_FOUND",
+            initiator: getDomain(initiators.BROWSER_INITIATED),
             // Request to chrome-extension:// url has no IP.
           }
         },

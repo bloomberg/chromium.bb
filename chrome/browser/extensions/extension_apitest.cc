@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/extension_registry.h"
@@ -46,6 +47,7 @@ const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
+const char kBrowserSideNavigationEnabled[] = "browserSideNavigationEnabled";
 
 std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirectRequest(
     const net::test_server::HttpRequest& request) {
@@ -159,6 +161,8 @@ void ExtensionApiTest::SetUpOnMainThread() {
   test_config_.reset(new base::DictionaryValue());
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
+  test_config_->SetBoolean(kBrowserSideNavigationEnabled,
+                           content::IsBrowserSideNavigationEnabled());
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }

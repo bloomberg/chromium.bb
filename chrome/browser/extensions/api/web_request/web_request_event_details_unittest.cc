@@ -97,7 +97,7 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     WebRequestEventDetails details(request.get(), kFilter);
     details.SetResponseHeaders(request.get(), headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
-        details.GetFilteredDict(kFilter);
+        details.GetFilteredDict(kFilter, nullptr, std::string(), false);
     base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
     ASSERT_TRUE(filtered_headers);
     EXPECT_EQ(2u, filtered_headers->GetList().size());
@@ -119,7 +119,7 @@ TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
     WebRequestEventDetails gaia_details(gaia_request.get(), kFilter);
     gaia_details.SetResponseHeaders(gaia_request.get(), headers.get());
     std::unique_ptr<base::DictionaryValue> dict =
-        gaia_details.GetFilteredDict(kFilter);
+        gaia_details.GetFilteredDict(kFilter, nullptr, std::string(), false);
     base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
     ASSERT_TRUE(filtered_headers);
     EXPECT_EQ(1u, filtered_headers->GetList().size());

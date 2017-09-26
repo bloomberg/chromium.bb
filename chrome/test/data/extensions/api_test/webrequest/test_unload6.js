@@ -51,6 +51,7 @@ runTests([
     const mainUrl = getServerURL('empty.html', hostname1);
     const frameUrl1 = getSlowURL(hostname1);
     const frameUrl2 = getSlowURL(hostname2);
+    const initiator = getServerDomain(initiators.WEB_INITIATED, hostname1)
 
     awaitOnErrorOccurred(2, function(results) {
       // The order of the URLs doesn't matter.
@@ -69,6 +70,7 @@ runTests([
         tabId,
         type: 'sub_frame',
         fromCache: false,
+        initiator: initiator,
         error: 'net::ERR_ABORTED',
       }, {
         method: 'GET',
@@ -77,6 +79,7 @@ runTests([
         tabId,
         type: 'sub_frame',
         fromCache: false,
+        initiator: initiator,
         error: 'net::ERR_ABORTED',
       }], results);
     });
@@ -113,6 +116,7 @@ runTests([
         tabId,
         type: 'sub_frame',
         fromCache: false,
+        initiator: getServerDomain(initiators.WEB_INITIATED, hostname1),
         error: 'net::ERR_ABORTED',
       }], results);
     });

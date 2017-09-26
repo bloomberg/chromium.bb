@@ -50,6 +50,7 @@ extern const char kRealmKey[];
 extern const char kAuthCredentialsKey[];
 extern const char kUsernameKey[];
 extern const char kPasswordKey[];
+extern const char kInitiatorKey[];
 
 // Events.
 extern const char kOnAuthRequiredEvent[];

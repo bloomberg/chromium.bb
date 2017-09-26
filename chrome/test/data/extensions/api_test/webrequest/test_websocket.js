@@ -17,6 +17,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               // TODO(pkalinnikov): Figure out why the frame URL is unknown.
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onBeforeSendHeaders',
@@ -24,6 +25,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -31,6 +33,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onHeadersReceived',
@@ -40,6 +43,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onResponseStarted',
@@ -51,6 +55,7 @@ chrome.tabs.getCurrent(function(tab) {
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onCompleted',
@@ -61,6 +66,7 @@ chrome.tabs.getCurrent(function(tab) {
               fromCache: false,
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             }
           },
         ],
@@ -86,6 +92,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
             retval: {cancel: true}
           },
@@ -96,6 +103,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               fromCache: false,
+              initiator: getDomain(initiators.WEB_INITIATED),
               error: 'net::ERR_BLOCKED_BY_CLIENT'
             }
           },
@@ -123,6 +131,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               frameUrl: 'unknown frame URL',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
             retval: {redirectUrl: redirectedUrl1}
           },
@@ -131,6 +140,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onSendHeaders',
@@ -138,6 +148,7 @@ chrome.tabs.getCurrent(function(tab) {
             details: {
               url: url,
               type: 'websocket',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
           },
           { label: 'onHeadersReceived',
@@ -147,6 +158,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
+              initiator: getDomain(initiators.WEB_INITIATED)
             },
             retval: {redirectUrl: redirectedUrl2}
           },
@@ -157,6 +169,7 @@ chrome.tabs.getCurrent(function(tab) {
               type: 'websocket',
               ip: '127.0.0.1',
               fromCache: false,
+              initiator: getDomain(initiators.WEB_INITIATED),
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
             },
@@ -167,6 +180,7 @@ chrome.tabs.getCurrent(function(tab) {
               url: url,
               type: 'websocket',
               fromCache: false,
+              initiator: getDomain(initiators.WEB_INITIATED),
               statusCode: 101,
               statusLine: 'HTTP/1.1 101 Switching Protocols',
             }

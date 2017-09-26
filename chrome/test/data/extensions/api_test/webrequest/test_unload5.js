@@ -10,6 +10,7 @@ runTests([
   function startXMLHttpRequestAndRemoveFrame() {
     const hostname = 'slow-resourcetype-xhr-immediately-remove-frame';
     const url = getSlowURL(hostname);
+    const initiator = getServerDomain(initiators.WEB_INITIATED, hostname);
     const mainUrl = getPageWithFrame('empty.html', hostname);
 
     expect([
@@ -21,6 +22,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           frameUrl: 'unknown frame URL',
+          initiator: initiator
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -30,6 +32,7 @@ runTests([
           url,
           frameId: 1,
           parentFrameId: 0,
+          initiator: initiator
         },
       },
       { label: 'onSendHeaders',
@@ -39,6 +42,7 @@ runTests([
           url,
           frameId: 1,
           parentFrameId: 0,
+          initiator: initiator
         },
       },
       { label: 'onErrorOccurred',
@@ -50,6 +54,7 @@ runTests([
           parentFrameId: 0,
           fromCache: false,
           error: 'net::ERR_ABORTED',
+          initiator: initiator
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
@@ -76,6 +81,7 @@ runTests([
   function startXMLHttpRequestAndRemoveTab() {
     const hostname = 'slow-resourcetype-xhr-immediately-remove-tab';
     const url = getSlowURL(hostname);
+    const initiator = getServerDomain(initiators.WEB_INITIATED, hostname);
     const mainUrl = getServerURL('empty.html', hostname);
 
     expect([
@@ -86,6 +92,7 @@ runTests([
           url,
           frameUrl: 'unknown frame URL',
           tabId: 1,
+          initiator: initiator
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -94,6 +101,7 @@ runTests([
           type: 'xmlhttprequest',
           url,
           tabId: 1,
+          initiator: initiator
         },
       },
       { label: 'onSendHeaders',
@@ -102,6 +110,7 @@ runTests([
           type: 'xmlhttprequest',
           url,
           tabId: 1,
+          initiator: initiator
         },
       },
       { label: 'onErrorOccurred',
@@ -112,6 +121,7 @@ runTests([
           fromCache: false,
           error: 'net::ERR_ABORTED',
           tabId: 1,
+          initiator: initiator
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',

@@ -7,6 +7,7 @@ runTests([
   // removes it.
   function insertSlowCrossOriginFrameAndRemove() {
     const url = getSlowURL('frame-in-extension-url');
+    const initiator = getServerDomain(initiators.BROWSER_INITIATED);
 
     expect([
       { label: 'onBeforeRequest',
@@ -18,6 +19,7 @@ runTests([
           parentFrameId: 0,
           frameUrl: url,
           tabId: 1,
+          initiator: getServerDomain(initiators.BROWSER_INITIATED)
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -28,6 +30,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getServerDomain(initiators.BROWSER_INITIATED)
         },
       },
       { label: 'onSendHeaders',
@@ -38,6 +41,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: getServerDomain(initiators.BROWSER_INITIATED)
         },
       },
       { label: 'onErrorOccurred',
@@ -50,6 +54,7 @@ runTests([
           tabId: 1,
           fromCache: false,
           error: 'net::ERR_ABORTED',
+          initiator: getServerDomain(initiators.BROWSER_INITIATED)
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',

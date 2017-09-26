@@ -162,6 +162,7 @@ runTests([
             fromCache: false,
             statusLine: "HTTP/1.1 200 OK",
             ip: "127.0.0.1",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
           }
         }
       ],
@@ -263,7 +264,8 @@ runTests([
           details: {
             url: getURLHttpSimple(),
             fromCache: false,
-            error: "net::ERR_BLOCKED_BY_CLIENT"
+            error: "net::ERR_BLOCKED_BY_CLIENT",
+            initiator: getServerDomain(initiators.BROWSER_INITIATED)
           }
         },
       ],
