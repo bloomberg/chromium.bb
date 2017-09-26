@@ -2021,18 +2021,71 @@ def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch, remote,
                      project, branch, tracking_branch,
                      remote, sha1)
 
+# Parser related functions
+def _CheckLocalPatches(manifest, local_patches):
+  """Do an early quick check of the passed-in patches.
+
+  If the branch of a project is not specified we append the current branch the
+  project is on.
+
+  TODO(davidjames): The project:branch format isn't unique, so this means that
+  we can't differentiate what directory the user intended to apply patches to.
+  We should references by directory instead.
+
+  Args:
+    manifest: The manifest object for the checkout in question.
+    local_patches: List of patches to check in project:branch format.
+
+  Returns:
+    A list of patches that have been verified, in project:branch format.
+  """
+  verified_patches = []
+  for patch in local_patches:
+    project, _, branch = patch.partition(':')
+
+    checkouts = manifest.FindCheckouts(project)
+    if not checkouts:
+      cros_build_lib.Die('Project %s does not exist.' % (project,))
+    if len(checkouts) > 1:
+      cros_build_lib.Die(
+          'We do not yet support local patching for projects that are checked '
+          'out to multiple directories. Try uploading your patch to gerrit '
+          'and referencing it via the -g option instead.'
+      )
+
+    ok = False
+    for checkout in checkouts:
+      project_dir = checkout.GetPath(absolute=True)
+
+      # If no branch was specified, we use the project's current branch.
+      if not branch:
+        local_branch = git.GetCurrentBranch(project_dir)
+      else:
+        local_branch = branch
+
+      if local_branch and git.DoesCommitExistInRepo(project_dir, local_branch):
+        verified_patches.append('%s:%s' % (project, local_branch))
+        ok = True
+
+    if not ok:
+      if branch:
+        cros_build_lib.Die('Project %s does not have branch %s'
+                           % (project, branch))
+      else:
+        cros_build_lib.Die('Project %s is not on a branch!' % (project,))
+
+  return verified_patches
+
 
 def PrepareLocalPatches(manifest, patches):
   """Finish validation of parameters, and save patches to a temp folder.
 
   Args:
     manifest: The manifest object for the checkout in question.
-    patches: A list of user-specified patches, in project:branch form.
-      cbuildbot pre-processes the patch names before sending them to us,
-      so we can expect that branch names will always be present.
+    patches: A list of user-specified patches, in project[:branch] form.
   """
   patch_info = []
-  for patch in patches:
+  for patch in _CheckLocalPatches(manifest, patches):
     project, branch = patch.split(':')
     project_patch_info = []
     for checkout in manifest.FindCheckouts(project):

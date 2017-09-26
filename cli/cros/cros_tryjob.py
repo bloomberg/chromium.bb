@@ -143,7 +143,9 @@ class TryjobCommand(command.CliCommand):
 Remote Examples:
   cros tryjob -g 123 lumpy-compile-only-pre-cq
   cros tryjob -g 123 -g 456 lumpy-compile-only-pre-cq daisy-pre-cq
-  cros tryjob -g 123 --hwtest daisy-paladin
+  cros tryjob -g *123 --hwtest daisy-paladin
+  cros tryjob -p chromiumos/chromite lumpy-compile-only-pre-cq
+  cros tryjob -p chromiumos/chromite:foo_branch lumpy-paladin
 
 Local Examples:
   cros tryjob --local -g 123 daisy-paladin
