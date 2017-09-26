@@ -364,7 +364,7 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // A long page representing many lines and a link to go back.
   std::string manyLines =
-      "<p style='height:100em'>a</p>"
+      "<p style='height:200em'>a</p>"
       "<a onclick='window.history.back()' id='link'>link</a>";
   responses[URL] = manyLines;
   web::test::SetUpSimpleHttpServer(responses);
