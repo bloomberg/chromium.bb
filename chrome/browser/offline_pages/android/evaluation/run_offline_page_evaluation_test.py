@@ -32,9 +32,7 @@ DEFAULT_USE_TEST_SCHEDULER = True
 # 0 means the batch would be the whole list of urls.
 DEFAULT_BATCH_SIZE = 0
 DEFAULT_VERBOSE = False
-PRERENDER_TEST_CMD = 'OfflinePageSavePageLaterEvaluationTest.testFailureRate'
-BACKGROUND_LOADER_CMD = 'OfflinePageSavePageLaterEvaluationTest.' \
-                        'testBackgroundLoaderFailureRate'
+DEFAULT_TEST_CMD = 'OfflinePageSavePageLaterEvaluationTest.testFailureRate'
 CONFIG_FILENAME = 'test_config'
 CONFIG_TEMPLATE = """\
 IsUserRequested = {is_user_requested}
@@ -134,8 +132,7 @@ def main(args):
         CONFIG_TEMPLATE.format(
             is_user_requested=options.user_request,
             use_test_scheduler=options.use_test_scheduler,
-            schedule_batch_size=options.schedule_batch_size,
-            use_background_loader=options.use_background_loader))
+            schedule_batch_size=options.schedule_batch_size))
 
   print 'Uploading config file and input file onto the device.'
   subprocess.call(
@@ -150,8 +147,7 @@ def main(args):
   print CONFIG_TEMPLATE.format(
       is_user_requested=options.user_request,
       use_test_scheduler=options.use_test_scheduler,
-      schedule_batch_size=options.schedule_batch_size,
-      use_background_loader=options.use_background_loader)
+      schedule_batch_size=options.schedule_batch_size)
   # Run test with timeout-scale as 20.0 and strict mode off.
   # This scale is only applied to timeouts which are defined as scalable ones
   # in the test framework (like the timeout used to decide if Chrome doesn't
@@ -173,10 +169,7 @@ def main(args):
   if options.device_id != None:
     test_runner_cmd += ['-d', options.device_id]
 
-  if options.use_background_loader:
-    test_runner_cmd += ['-f', BACKGROUND_LOADER_CMD]
-  else:
-    test_runner_cmd += ['-f', PRERENDER_TEST_CMD]
+  test_runner_cmd += ['-f', DEFAULT_TEST_CMD]
   subprocess.call(test_runner_cmd)
 
   print 'Fetching results from device...'
