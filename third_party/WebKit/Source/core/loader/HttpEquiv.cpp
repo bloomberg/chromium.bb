@@ -7,6 +7,7 @@
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -120,12 +121,8 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
 void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                                           const AtomicString& content,
                                           Element* element) {
-  // FIXME: make setCookie work on XML documents too; e.g. in case of
-  // <html:meta.....>
-  if (!document.IsHTMLDocument())
-    return;
+  Deprecation::CountDeprecation(document, WebFeature::kMetaSetCookie);
 
-  UseCounter::Count(document, WebFeature::kMetaSetCookie);
   if (!document.GetContentSecurityPolicy()->AllowInlineScript(
           element, NullURL(), "", OrdinalNumber(), "",
           ContentSecurityPolicy::InlineType::kBlock,
@@ -134,8 +131,16 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                       WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);
   }
 
-  // Exception (for sandboxed documents) ignored.
-  document.setCookie(content, IGNORE_EXCEPTION_FOR_TESTING);
+  if (!RuntimeEnabledFeatures::BlockMetaSetCookieEnabled()) {
+    // Exception (for sandboxed documents) ignored.
+    document.setCookie(content, IGNORE_EXCEPTION_FOR_TESTING);
+    return;
+  }
+
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kSecurityMessageSource, kErrorMessageLevel,
+      String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",
+                     content.Utf8().data())));
 }
 
 }  // namespace blink
