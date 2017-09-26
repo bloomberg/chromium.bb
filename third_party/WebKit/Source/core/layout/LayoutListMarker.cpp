@@ -443,7 +443,7 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory()
 }
 
 bool LayoutListMarker::IsInside() const {
-  return list_item_->NotInList() ||
+  return list_item_->Ordinal().NotInList() ||
          Style()->ListStylePosition() == EListStylePosition::kInside;
 }
 

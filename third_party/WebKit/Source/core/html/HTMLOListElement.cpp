@@ -26,6 +26,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/ListItemOrdinal.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutListItem.h"
 
@@ -105,11 +106,11 @@ void HTMLOListElement::UpdateItemValues() {
   if (!GetLayoutObject())
     return;
   UpdateDistribution();
-  LayoutListItem::UpdateItemValuesForOrderedList(this);
+  ListItemOrdinal::InvalidateAllItemsForOrderedList(this);
 }
 
 void HTMLOListElement::RecalculateItemCount() {
-  item_count_ = LayoutListItem::ItemCountForOrderedList(this);
+  item_count_ = ListItemOrdinal::ItemCountForOrderedList(this);
   should_recalculate_item_count_ = false;
 }
 

@@ -25,10 +25,10 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/dom/Document.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/html/ListItemOrdinal.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/api/LayoutLIItem.h"
 
 namespace blink {
 
@@ -83,8 +83,8 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
 
 void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
   if (params.name == valueAttr) {
-    if (GetLayoutObject() && GetLayoutObject()->IsListItem())
-      ParseValue(params.new_value);
+    if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this))
+      ParseValue(params.new_value, ordinal);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -93,10 +93,7 @@ void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
 void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
-  if (GetLayoutObject() && GetLayoutObject()->IsListItem()) {
-    LayoutLIItem li_layout_item =
-        LayoutLIItem(ToLayoutListItem(GetLayoutObject()));
-
+  if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this)) {
     DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
 
     // Find the enclosing list node.
@@ -114,21 +111,21 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
     // inside.  We don't want to change our style to say "inside" since that
     // would affect nested nodes.
     if (!list_node)
-      li_layout_item.SetNotInList(true);
+      ordinal->SetNotInList(true);
 
-    ParseValue(FastGetAttribute(valueAttr));
+    ParseValue(FastGetAttribute(valueAttr), ordinal);
   }
 }
 
-inline void HTMLLIElement::ParseValue(const AtomicString& value) {
-  DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->IsListItem());
+void HTMLLIElement::ParseValue(const AtomicString& value,
+                               ListItemOrdinal* ordinal) {
+  DCHECK(ListItemOrdinal::IsListItem(*this));
 
   int requested_value = 0;
   if (ParseHTMLInteger(value, requested_value))
-    ToLayoutListItem(GetLayoutObject())->SetExplicitValue(requested_value);
+    ordinal->SetExplicitValue(requested_value, *this);
   else
-    ToLayoutListItem(GetLayoutObject())->ClearExplicitValue();
+    ordinal->ClearExplicitValue(*this);
 }
 
 }  // namespace blink

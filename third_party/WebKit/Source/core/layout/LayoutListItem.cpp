@@ -25,6 +25,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/FlatTreeTraversal.h"
+#include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/paint/ListItemPainter.h"
@@ -37,11 +38,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutListItem::LayoutListItem(Element* element)
-    : LayoutBlockFlow(element),
-      marker_(nullptr),
-      has_explicit_value_(false),
-      is_value_up_to_date_(false),
-      not_in_list_(false) {
+    : LayoutBlockFlow(element), marker_(nullptr) {
   SetInline(false);
 
   SetConsumesSubtreeChangeNotification();
@@ -88,13 +85,13 @@ void LayoutListItem::WillBeDestroyed() {
 void LayoutListItem::InsertedIntoTree() {
   LayoutBlockFlow::InsertedIntoTree();
 
-  UpdateListMarkerNumbers();
+  ListItemOrdinal::ItemInsertedOrRemoved(this);
 }
 
 void LayoutListItem::WillBeRemovedFromTree() {
   LayoutBlockFlow::WillBeRemovedFromTree();
 
-  UpdateListMarkerNumbers();
+  ListItemOrdinal::ItemInsertedOrRemoved(this);
 }
 
 void LayoutListItem::SubtreeDidChange() {
@@ -110,135 +107,9 @@ void LayoutListItem::SubtreeDidChange() {
     SetPreferredLogicalWidthsDirty();
 }
 
-static bool IsList(const Node& node) {
-  return isHTMLUListElement(node) || isHTMLOListElement(node);
-}
-
-// Returns the enclosing list with respect to the DOM order.
-static Node* EnclosingList(const LayoutListItem* list_item) {
-  Node* list_item_node = list_item->GetNode();
-  if (!list_item_node)
-    return nullptr;
-  Node* first_node = nullptr;
-  // We use parentNode because the enclosing list could be a ShadowRoot that's
-  // not Element.
-  for (Node* parent = FlatTreeTraversal::Parent(*list_item_node); parent;
-       parent = FlatTreeTraversal::Parent(*parent)) {
-    if (IsList(*parent))
-      return parent;
-    if (!first_node)
-      first_node = parent;
-  }
-
-  // If there's no actual <ul> or <ol> list element, then the first found
-  // node acts as our list for purposes of determining what other list items
-  // should be numbered as part of the same list.
-  return first_node;
-}
-
-// Returns the next list item with respect to the DOM order.
-static LayoutListItem* NextListItem(const Node* list_node,
-                                    const LayoutListItem* item = nullptr) {
-  if (!list_node)
-    return nullptr;
-
-  const Node* current = item ? item->GetNode() : list_node;
-  DCHECK(current);
-  DCHECK(!current->GetDocument().ChildNeedsDistributionRecalc());
-  current = LayoutTreeBuilderTraversal::Next(*current, list_node);
-
-  while (current) {
-    if (IsList(*current)) {
-      // We've found a nested, independent list: nothing to do here.
-      current =
-          LayoutTreeBuilderTraversal::NextSkippingChildren(*current, list_node);
-      continue;
-    }
-
-    LayoutObject* layout_object = current->GetLayoutObject();
-    if (layout_object && layout_object->IsListItem())
-      return ToLayoutListItem(layout_object);
-
-    // FIXME: Can this be optimized to skip the children of the elements without
-    // a layoutObject?
-    current = LayoutTreeBuilderTraversal::Next(*current, list_node);
-  }
-
-  return nullptr;
-}
-
-// Returns the previous list item with respect to the DOM order.
-static LayoutListItem* PreviousListItem(const Node* list_node,
-                                        const LayoutListItem* item) {
-  Node* current = item->GetNode();
-  DCHECK(current);
-  DCHECK(!current->GetDocument().ChildNeedsDistributionRecalc());
-  for (current = LayoutTreeBuilderTraversal::Previous(*current, list_node);
-       current && current != list_node;
-       current = LayoutTreeBuilderTraversal::Previous(*current, list_node)) {
-    LayoutObject* layout_object = current->GetLayoutObject();
-    if (!layout_object || (layout_object && !layout_object->IsListItem()))
-      continue;
-    Node* other_list = EnclosingList(ToLayoutListItem(layout_object));
-    // This item is part of our current list, so it's what we're looking for.
-    if (list_node == other_list)
-      return ToLayoutListItem(layout_object);
-    // We found ourself inside another list; lets skip the rest of it.
-    // Use nextIncludingPseudo() here because the other list itself may actually
-    // be a list item itself. We need to examine it, so we do this to counteract
-    // the previousIncludingPseudo() that will be done by the loop.
-    if (other_list)
-      current = LayoutTreeBuilderTraversal::Next(*other_list, list_node);
-  }
-  return nullptr;
-}
-
-void LayoutListItem::UpdateItemValuesForOrderedList(
-    const HTMLOListElement* list_node) {
-  DCHECK(list_node);
-
-  for (LayoutListItem* list_item = NextListItem(list_node); list_item;
-       list_item = NextListItem(list_node, list_item))
-    list_item->UpdateValue();
-}
-
-unsigned LayoutListItem::ItemCountForOrderedList(
-    const HTMLOListElement* list_node) {
-  DCHECK(list_node);
-
-  unsigned item_count = 0;
-  for (LayoutListItem* list_item = NextListItem(list_node); list_item;
-       list_item = NextListItem(list_node, list_item))
-    item_count++;
-
-  return item_count;
-}
-
-inline int LayoutListItem::CalcValue() const {
-  if (has_explicit_value_)
-    return explicit_value_;
-
-  Node* list = EnclosingList(this);
-  HTMLOListElement* o_list_element =
-      isHTMLOListElement(list) ? toHTMLOListElement(list) : nullptr;
-  int value_step = 1;
-  if (o_list_element && o_list_element->IsReversed())
-    value_step = -1;
-
-  // FIXME: This recurses to a possible depth of the length of the list.
-  // That's not good -- we need to change this to an iterative algorithm.
-  if (LayoutListItem* previous_item = PreviousListItem(list, this))
-    return ClampAdd(previous_item->Value(), value_step);
-
-  if (o_list_element)
-    return o_list_element->StartConsideringItemCount();
-
-  return 1;
-}
-
-void LayoutListItem::UpdateValueNow() const {
-  value_ = CalcValue();
-  is_value_up_to_date_ = true;
+int LayoutListItem::Value() const {
+  DCHECK(GetNode());
+  return ordinal_.Value(*GetNode());
 }
 
 bool LayoutListItem::IsEmpty() const {
@@ -286,15 +157,6 @@ static LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
   }
 
   return nullptr;
-}
-
-void LayoutListItem::UpdateValue() {
-  if (!has_explicit_value_) {
-    is_value_up_to_date_ = false;
-    if (marker_)
-      marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          LayoutInvalidationReason::kListValueChange);
-  }
 }
 
 static LayoutObject* FirstNonMarkerChild(LayoutObject* parent) {
@@ -475,84 +337,11 @@ const String& LayoutListItem::MarkerText() const {
   return g_null_atom.GetString();
 }
 
-void LayoutListItem::ExplicitValueChanged() {
-  if (marker_)
-    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        LayoutInvalidationReason::kListValueChange);
-  Node* list_node = EnclosingList(this);
-  for (LayoutListItem* item = this; item; item = NextListItem(list_node, item))
-    item->UpdateValue();
-}
-
-void LayoutListItem::SetExplicitValue(int value) {
-  DCHECK(GetNode());
-
-  if (has_explicit_value_ && explicit_value_ == value)
+void LayoutListItem::OrdinalValueChanged() {
+  if (!marker_)
     return;
-  explicit_value_ = value;
-  value_ = value;
-  has_explicit_value_ = true;
-  ExplicitValueChanged();
-}
-
-void LayoutListItem::ClearExplicitValue() {
-  DCHECK(GetNode());
-
-  if (!has_explicit_value_)
-    return;
-  has_explicit_value_ = false;
-  is_value_up_to_date_ = false;
-  ExplicitValueChanged();
-}
-
-void LayoutListItem::SetNotInList(bool not_in_list) {
-  not_in_list_ = not_in_list;
-}
-
-static LayoutListItem* PreviousOrNextItem(bool is_list_reversed,
-                                          Node* list,
-                                          LayoutListItem* item) {
-  return is_list_reversed ? PreviousListItem(list, item)
-                          : NextListItem(list, item);
-}
-
-void LayoutListItem::UpdateListMarkerNumbers() {
-  // If distribution recalc is needed, updateListMarkerNumber will be re-invoked
-  // after distribution is calculated.
-  if (GetNode()->GetDocument().ChildNeedsDistributionRecalc())
-    return;
-
-  Node* list_node = EnclosingList(this);
-  CHECK(list_node);
-
-  bool is_list_reversed = false;
-  HTMLOListElement* o_list_element =
-      isHTMLOListElement(list_node) ? toHTMLOListElement(list_node) : 0;
-  if (o_list_element) {
-    o_list_element->ItemCountChanged();
-    is_list_reversed = o_list_element->IsReversed();
-  }
-
-  // FIXME: The n^2 protection below doesn't help if the elements were inserted
-  // after the the list had already been displayed.
-
-  // Avoid an O(n^2) walk over the children below when they're all known to be
-  // attaching.
-  if (list_node->NeedsAttach())
-    return;
-
-  for (LayoutListItem* item =
-           PreviousOrNextItem(is_list_reversed, list_node, this);
-       item; item = PreviousOrNextItem(is_list_reversed, list_node, item)) {
-    if (!item->is_value_up_to_date_) {
-      // If an item has been marked for update before, we can safely
-      // assume that all the following ones have too.
-      // This gives us the opportunity to stop here and avoid
-      // marking the same nodes again.
-      break;
-    }
-    item->UpdateValue();
-  }
+  marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      LayoutInvalidationReason::kListValueChange);
 }
 
 }  // namespace blink
