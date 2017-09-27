@@ -61,7 +61,7 @@ const base::Feature kAutofillUpstreamShowNewUi{
     "AutofillUpstreamShowNewUi", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamUseAutofillProfileComparator{
     "AutofillUpstreamUseAutofillProfileComparator",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile{
     "AutofillUpstreamUseNotRecentlyUsedAutofillProfile",
     base::FEATURE_DISABLED_BY_DEFAULT};
