@@ -1103,14 +1103,13 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
             theme.ThumbLength(*scrollable_area->VerticalScrollbar()));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_HugeScrollingThumbPosition DISABLED_HugeScrollingThumbPosition
-#else
-#define MAYBE_HugeScrollingThumbPosition HugeScrollingThumbPosition
-#endif
 // Ensure thumb position is correctly calculated even at ridiculously large
 // scales.
-TEST_P(ScrollbarAppearanceTest, MAYBE_HugeScrollingThumbPosition) {
+#if defined(OS_ANDROID)
+TEST_P(ScrollbarAppearanceTest, DISABLED_HugeScrollingThumbPosition) {
+#else
+TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
+#endif
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
