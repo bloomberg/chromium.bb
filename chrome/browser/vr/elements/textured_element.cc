@@ -77,13 +77,17 @@ void TexturedElement::Flush(SkSurface* surface) {
   SkPixmap pixmap;
   CHECK(surface->peekPixels(&pixmap));
 
+  SkColorType type = pixmap.colorType();
+  DCHECK(type == kRGBA_8888_SkColorType || type == kBGRA_8888_SkColorType);
+  GLint format = (type == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA);
+
   glBindTexture(GL_TEXTURE_2D, texture_handle_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pixmap.width(), pixmap.height(), 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, pixmap.addr());
+  glTexImage2D(GL_TEXTURE_2D, 0, format, pixmap.width(), pixmap.height(), 0,
+               format, GL_UNSIGNED_BYTE, pixmap.addr());
 }
 
 void TexturedElement::OnSetMode() {

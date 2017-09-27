@@ -413,7 +413,8 @@ static constexpr char const* kTexturedQuadVertexShader = SHADER(
   }
 );
 
-#define TEXTURED_QUAD_FRAGMENT_SHADER_BODY "uniform vec4 u_CopyRect;" \
+#define TEXTURED_QUAD_FRAGMENT_SHADER_BODY                            \
+  "uniform vec4 u_CopyRect;"                                          \
   "varying vec2 v_TexCoordinate;"                                     \
   "varying vec2 v_CornerPosition;"                                    \
   "uniform float u_CornerScale;"                                      \
