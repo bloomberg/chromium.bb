@@ -7,6 +7,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/public/cpp/config.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -84,11 +85,10 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Verifies that tabbing from the lock screen will eventually focus the status
-// area. Then, a shift tab will go back to the lock screen.
-TEST_F(LockScreenSanityTest, TabGoesFromLockToStatusAreaAndBackToLock) {
-  // The status area will not focus out unless we are on the lock screen. See
-  // StatusAreaWidgetDelegate::ShouldFocusOut.
+// Verifies that tabbing from the lock screen will eventually focus the shelf.
+// Then, a shift+tab will bring focus back to the lock screen.
+TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
+  // Make lock screen shelf visible.
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
@@ -96,53 +96,67 @@ TEST_F(LockScreenSanityTest, TabGoesFromLockToStatusAreaAndBackToLock) {
   auto* lock = new LockContentsView(data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(lock);
-  views::View* system_tray =
-      Shell::Get()->GetPrimarySystemTray()->GetWidget()->GetContentsView();
+  views::View* shelf = Shelf::ForWindow(lock->GetWidget()->GetNativeWindow())
+                           ->shelf_widget()
+                           ->GetContentsView();
 
   // Lock has focus.
   ExpectFocused(lock);
-  ExpectNotFocused(system_tray);
+  ExpectNotFocused(shelf);
 
-  // Tab (eventually) goes the system tray.
+  // Tab (eventually) goes to the shelf.
   for (int i = 0; i < 50; ++i) {
     GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
     if (!HasFocusInAnyChildView(lock))
       break;
   }
   ExpectNotFocused(lock);
-  ExpectFocused(system_tray);
+  ExpectFocused(shelf);
 
   // A single shift+tab brings focus back to the lock screen.
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ExpectFocused(lock);
-  ExpectNotFocused(system_tray);
+  ExpectNotFocused(shelf);
 }
 
-// Verifies that shift-tabbing from the lock screen will go to the shelf.
-TEST_F(LockScreenSanityTest, ShiftTabGoesToShelf) {
-  // TODO(jdufault|wzang): This test is incomplete. It should verify that tab
-  // goes back to the lock screen. Doing so most likely requires that we are in
-  // a lock screen session state. However, moving to lock screen session state
-  // will currently disable/hide the shelf. See crbug.com/701394.
+// Verifies that shift-tabbing from the lock screen will eventually focus the
+// status area. Then, a tab will bring focus back to the lock screen.
+TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
+  // The status area will not focus out unless we are on the lock screen. See
+  // StatusAreaWidgetDelegate::ShouldFocusOut.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
 
   auto* lock = new LockContentsView(data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(lock);
-  auto* shelf = GetPrimaryShelf()->shelf_widget()->GetContentsView();
+  views::View* status_area =
+      RootWindowController::ForWindow(lock->GetWidget()->GetNativeWindow())
+          ->GetSystemTray()
+          ->GetWidget()
+          ->GetContentsView();
 
   // Lock screen has focus.
   ExpectFocused(lock);
-  ExpectNotFocused(shelf);
+  ExpectNotFocused(status_area);
 
-  // Two shift+tab bring focus to the shelf.
+  // Two shift+tab bring focus to the status area.
+  // TODO(crbug.com/768076): Only one shift+tab is needed as the focus should
+  // go directly to status area from password view.
+  //
   // Focus from password view to user view (user dropdown button).
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
 
-  // Focus from user view to the shelf.
+  // Focus from user view to the status area.
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
 
   ExpectNotFocused(lock);
-  ExpectFocused(shelf);
+  ExpectFocused(status_area);
+
+  // A single tab brings focus back to the lock screen.
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  ExpectFocused(lock);
+  ExpectNotFocused(status_area);
 }
 
 }  // namespace ash

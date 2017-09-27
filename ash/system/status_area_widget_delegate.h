@@ -23,10 +23,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   explicit StatusAreaWidgetDelegate(Shelf* shelf);
   ~StatusAreaWidgetDelegate() override;
 
-  // Returns status area widget delegate from primary system tray if exists,
-  // otherwise nullptr.
-  static StatusAreaWidgetDelegate* GetPrimaryInstance();
-
   // Add a tray view to the widget (e.g. system tray, web notifications).
   void AddTray(views::View* tray);
 

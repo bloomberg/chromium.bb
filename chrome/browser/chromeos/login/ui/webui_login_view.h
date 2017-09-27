@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/shell_observer.h"
-#include "ash/system/status_area_focus_observer.h"
+#include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -49,7 +49,7 @@ class WebUILoginView : public views::View,
                        public ChromeWebModalDialogManagerDelegate,
                        public web_modal::WebContentsModalDialogHost,
                        public lock_screen_apps::FocusCyclerDelegate,
-                       public ash::StatusAreaFocusObserver {
+                       public ash::SystemTrayFocusObserver {
  public:
   struct WebViewSettings {
     // If true, this will check for and consume a preloaded views::WebView
@@ -182,8 +182,8 @@ class WebUILoginView : public views::View,
   void UnregisterLockScreenAppFocusHandler() override;
   void HandleLockScreenAppFocusOut(bool reverse) override;
 
-  // Overridden from ash::StatusAreaFocusObserver.
-  void OnFocusOut(bool reverse) override;
+  // Overridden from ash::SystemTrayFocusObserver.
+  void OnFocusLeavingSystemTray(bool reverse) override;
 
   // Attempts to move focus to system tray. Returns whether the attempt was
   // successful (it might fail if the system tray is not visible).

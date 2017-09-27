@@ -13,8 +13,12 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
@@ -29,7 +33,6 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -156,18 +159,18 @@ LockContentsView::LockContentsView(LoginDataDispatcher* data_dispatcher)
       display_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
-  Shell::Get()->system_tray_notifier()->AddStatusAreaFocusObserver(this);
+  Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   error_bubble_ = base::MakeUnique<LoginBubble>();
 
   // We reuse the focusable state on this view as a signal that focus should
-  // switch to the status area. LockContentsView should otherwise not be
+  // switch to the system tray. LockContentsView should otherwise not be
   // focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 LockContentsView::~LockContentsView() {
   data_dispatcher_->RemoveObserver(this);
-  Shell::Get()->system_tray_notifier()->RemoveStatusAreaFocusObserver(this);
+  Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 }
 
 void LockContentsView::Layout() {
@@ -274,12 +277,9 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
   }
 }
 
-void LockContentsView::OnFocusOut(bool reverse) {
-  // This function is called when the status area is losing focus. We want to
-  // switch the focused widget to the next one in the cycle.
-  FocusNextWidget(reverse);
-  // We want to focus either the last or first child in this view, depending on
-  // how we are entering focus.
+void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
+  // This function is called when the system tray is losing focus. We want to
+  // focus the first or last child in this view.
   FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
 }
 
@@ -293,12 +293,18 @@ void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
 }
 
 void LockContentsView::FocusNextWidget(bool reverse) {
-  // Tell the status area the focus direction so it can focus the correct child
-  // view (assuming the status area widget receives focus next).
-  StatusAreaWidgetDelegate::GetPrimaryInstance()
-      ->set_default_last_focusable_child(reverse);
-  Shell::Get()->focus_cycler()->RotateFocus(reverse ? FocusCycler::BACKWARD
-                                                    : FocusCycler::FORWARD);
+  Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  // Tell the focus direction to the status area or the shelf so they can focus
+  // the correct child view.
+  if (reverse) {
+    shelf->GetStatusAreaWidget()
+        ->status_area_widget_delegate()
+        ->set_default_last_focusable_child(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
+  } else {
+    shelf->shelf_widget()->set_default_last_focusable_child(reverse);
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  }
 }
 
 void LockContentsView::CreateLowDensityLayout(
