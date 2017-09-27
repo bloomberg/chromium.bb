@@ -17,6 +17,9 @@
                 "include": [ "getWindowForTarget", "getWindowBounds", "setWindowBounds" ],
                 "include_types": [ "Bounds" ],
                 "include_events": []
+            },
+            {
+                "domain": "WindowManager"
             }
         ]
     },

@@ -43,22 +43,54 @@ if (!is_android) {
     "protocol/protocol.h",
   ]
 
+  if (is_chromeos) {
+    _protocol_generated += [
+      "protocol/window_manager.cc",
+      "protocol/window_manager.h",
+    ]
+  }
+
+  _concatenated_protocol_path =
+      "$root_gen_dir/chrome/browser/devtools/protocol.json"
+  action("concatenate_protocols") {
+    script = _inspector_protocol + "/ConcatenateProtocols.py"
+
+    deps = [
+      "//third_party/WebKit/Source/core/inspector:protocol_version",
+    ]
+
+    _blink_protocol_path = "$root_gen_dir/blink/core/inspector/protocol.json"
+    inputs = [
+      _blink_protocol_path,
+    ]
+    output_file = _concatenated_protocol_path
+    outputs = [
+      output_file,
+    ]
+
+    args = [ rebase_path(_blink_protocol_path, root_build_dir) ]
+    if (is_chromeos) {
+      inputs += [ "cros_protocol.json" ]
+      args += [ rebase_path("cros_protocol.json", root_build_dir) ]
+    }
+
+    args += [ rebase_path(output_file, root_build_dir) ]
+  }
+
   inspector_protocol_generate("protocol_generated_sources") {
     inspector_protocol_dir = _inspector_protocol
     visibility = [ ":*" ]  # Only targets in this file can depend on this.
     deps = [
-      "//third_party/WebKit/Source/core/inspector:protocol_version",
+      ":concatenate_protocols",
     ]
     out_dir = target_gen_dir
     config_file = "inspector_protocol_config.json"
 
-    _blink_protocol_path =
-        rebase_path("$root_gen_dir/blink/core/inspector/protocol.json",
-                    root_build_dir)
-    config_values = [ "protocol.path=$_blink_protocol_path" ]
+    protocol_path = rebase_path(_concatenated_protocol_path, root_build_dir)
+    config_values = [ "protocol.path=$protocol_path" ]
 
     inputs = [
-      "$root_gen_dir/blink/core/inspector/protocol.json",
+      _concatenated_protocol_path,
       "inspector_protocol_config.json",
     ]
 
@@ -179,6 +211,12 @@ static_library("devtools") {
       "protocol_string.cc",
       "protocol_string.h",
     ]
+    if (is_chromeos) {
+      sources += [
+        "protocol/window_manager_handler.cc",
+        "protocol/window_manager_handler.h",
+      ]
+    }
     sources += rebase_path(_protocol_generated, ".", target_gen_dir)
   }
 
