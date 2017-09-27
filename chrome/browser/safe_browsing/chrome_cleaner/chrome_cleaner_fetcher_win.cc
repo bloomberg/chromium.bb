@@ -215,9 +215,21 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!source->GetStatus().is_io_pending());
   DCHECK(fetched_callback_);
 
+  constexpr char kDownloadStatusErrorCodeHistogramName[] =
+      "SoftwareReporter.Cleaner.DownloadStatusErrorCode";
+
+  if (!source->GetStatus().is_success()) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kDownloadStatusErrorCodeHistogramName,
+                                source->GetStatus().error());
+    RecordDownloadStatusAndPostCallback(
+        CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE,
+        ChromeCleanerFetchStatus::kOtherFailure);
+    return;
+  }
+
   const int response_code = source->GetResponseCode();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "SoftwareReporter.Cleaner.DownloadHttpResponseCode", response_code);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kDownloadStatusErrorCodeHistogramName,
+                              response_code);
 
   if (response_code == net::HTTP_NOT_FOUND) {
     RecordDownloadStatusAndPostCallback(
@@ -226,7 +238,7 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (!source->GetStatus().is_success() || response_code != net::HTTP_OK) {
+  if (response_code != net::HTTP_OK) {
     RecordDownloadStatusAndPostCallback(
         CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE,
         ChromeCleanerFetchStatus::kOtherFailure);
