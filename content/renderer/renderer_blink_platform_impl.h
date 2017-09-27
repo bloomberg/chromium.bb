@@ -19,6 +19,7 @@
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
+#include "content/common/file_utilities.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/web_database.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
@@ -271,7 +272,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
 
   // Return the mojo interface for making WebDatabaseHost calls.
-  content::mojom::WebDatabaseHost& GetWebDatabaseHost();
+  mojom::WebDatabaseHost& GetWebDatabaseHost();
 
   std::unique_ptr<blink::WebThread> main_thread_;
   std::unique_ptr<service_manager::Connector> connector_;
@@ -328,9 +329,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory_;
 
-  content::mojom::WebDatabaseHostPtrInfo web_database_host_info_;
-  scoped_refptr<content::mojom::ThreadSafeWebDatabaseHostPtr>
-      web_database_host_;
+  mojom::WebDatabaseHostPtrInfo web_database_host_info_;
+  scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
+
+  mojom::FileUtilitiesHostPtrInfo file_utilities_host_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

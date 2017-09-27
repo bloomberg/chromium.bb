@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "content/child/file_info_util.h"
-#include "net/base/file_stream.h"
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"

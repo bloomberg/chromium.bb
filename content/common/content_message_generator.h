@@ -58,11 +58,6 @@
 #error "Failed to include content/common/drag_messages.h"
 #endif
 #include "content/common/drag_traits.h"
-#undef CONTENT_COMMON_FILE_UTILITIES_MESSAGES_H_
-#include "content/common/file_utilities_messages.h"
-#ifndef CONTENT_COMMON_FILE_UTILITIES_MESSAGES_H_
-#error "Failed to include content/common/file_utilities_messages.h"
-#endif
 #undef CONTENT_COMMON_FILEAPI_FILE_SYSTEM_MESSAGES_H_
 #include "content/common/fileapi/file_system_messages.h"
 #ifndef CONTENT_COMMON_FILEAPI_FILE_SYSTEM_MESSAGES_H_
