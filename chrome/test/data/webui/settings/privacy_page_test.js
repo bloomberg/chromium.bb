@@ -64,6 +64,11 @@ cr.define('settings_privacy_page', function() {
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 0,
           },
+          time_period_basic: {
+            key: 'browser.clear_data.time_period_basic',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
+          },
           browsing_history: {
             key: 'browser.clear_data.browsing_history',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -73,8 +78,23 @@ cr.define('settings_privacy_page', function() {
             key: 'browser.clear_data.cookies',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
-          }
-        }
+          },
+          cookies_basic: {
+            key: 'browser.clear_data.cookies_basic',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          cache_basic: {
+            key: 'browser.clear_data.cache_basic',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+        },
+        last_clear_browsing_data_tab: {
+          key: 'browser.last_clear_browsing_data_tab',
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: 0,
+        },
       }
     };
   }
@@ -145,7 +165,8 @@ cr.define('settings_privacy_page', function() {
         testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
         settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
         PolymerTest.clearBody();
-        element = document.createElement('settings-clear-browsing-data-dialog');
+        element =
+            document.createElement('settings-clear-browsing-data-dialog-tabs');
         element.set('prefs', getClearBrowsingDataPrefs());
         document.body.appendChild(element);
         return testBrowserProxy.whenCalled('initialize');
@@ -248,8 +269,8 @@ cr.define('settings_privacy_page', function() {
       test('Counters', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
 
-        var checkbox = element.$$('settings-checkbox');
-        assertEquals('browser.clear_data.browsing_history', checkbox.pref.key);
+        var checkbox = element.$$('#cacheCheckboxBasic');
+        assertEquals('browser.clear_data.cache_basic', checkbox.pref.key);
 
         // Simulate a browsing data counter result for history. This checkbox's
         // sublabel should be updated.
@@ -261,18 +282,21 @@ cr.define('settings_privacy_page', function() {
       test('history rows are hidden for supervised users', function() {
         assertFalse(loadTimeData.getBoolean('isSupervised'));
         assertFalse(element.$$('#browsingCheckbox').hidden);
+        assertFalse(element.$$('#browsingCheckboxBasic').hidden);
         assertFalse(element.$$('#downloadCheckbox').hidden);
 
         element.remove();
         testBrowserProxy.reset();
         loadTimeData.overrideValues({isSupervised: true});
 
-        element = document.createElement('settings-clear-browsing-data-dialog');
+        element =
+            document.createElement('settings-clear-browsing-data-dialog-tabs');
         document.body.appendChild(element);
         Polymer.dom.flush();
 
         return testBrowserProxy.whenCalled('initialize').then(function() {
           assertTrue(element.$$('#browsingCheckbox').hidden);
+          assertTrue(element.$$('#browsingCheckboxBasic').hidden);
           assertTrue(element.$$('#downloadCheckbox').hidden);
         });
       });
@@ -298,7 +322,8 @@ cr.define('settings_privacy_page', function() {
       testBrowserProxy.setImportantSites(importantSites);
       settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
-      element = document.createElement('settings-clear-browsing-data-dialog');
+      element =
+          document.createElement('settings-clear-browsing-data-dialog-tabs');
       element.set('prefs', getClearBrowsingDataPrefs());
       document.body.appendChild(element);
       return testBrowserProxy.whenCalled('initialize').then(function() {
@@ -314,7 +339,7 @@ cr.define('settings_privacy_page', function() {
       assertTrue(element.$$('#clearBrowsingDataDialog').open);
       assertFalse(element.showImportantSitesDialog_);
       // Select an entry that can have important storage.
-      element.$$('#cookiesCheckbox').checked = true;
+      element.$$('#cookiesCheckboxBasic').checked = true;
       // Clear browsing data.
       MockInteractions.tap(element.$$('#clearBrowsingDataConfirm'));
       Polymer.dom.flush();
@@ -336,7 +361,8 @@ cr.define('settings_privacy_page', function() {
             return testBrowserProxy.whenCalled('clearBrowsingData')
                 .then(function([dataTypes, timePeriod, sites]) {
                   assertEquals(1, dataTypes.length);
-                  assertEquals('browser.clear_data.cookies', dataTypes[0]);
+                  assertEquals(
+                      'browser.clear_data.cookies_basic', dataTypes[0]);
                   assertEquals(2, sites.length);
                   assertEquals('google.com', sites[0].registerableDomain);
                   assertFalse(sites[0].isChecked);
