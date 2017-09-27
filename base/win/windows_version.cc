@@ -18,6 +18,14 @@
 #error VS 2015 Update 3 with Cumulative Servicing Release or higher is required
 #endif
 
+#if !defined(NTDDI_WIN10_RS2)
+// Windows 10 Creators Update SDK is required to build Chrome. It is important
+// to install the 10.0.15063.468 version, released June 2017, because earlier
+// versions had bugs and could not build Chrome. See this link for details:
+// https://developercommunity.visualstudio.com/content/problem/42961/15063-sdk-is-broken-bitsh-indirectly-references-no.html
+#error Creators Update SDK (10.0.15063.468) required.
+#endif
+
 namespace {
 typedef BOOL (WINAPI *GetProductInfoPtr)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 }  // namespace
