@@ -38,6 +38,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/FindOptions.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/SearchBuffer.h"
