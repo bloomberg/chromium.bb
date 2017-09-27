@@ -5,9 +5,10 @@
 #include <iostream>
 
 #include "base/at_exit.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/time/time.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
@@ -69,8 +70,9 @@ void PrintUsage(const char* argv0) {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
-  // TODO(eroman): Is this needed?
-  base::MessageLoopForIO message_loop;
+  base::TaskScheduler::CreateAndStartWithDefaultParams("cert_verify_tool");
+  base::ScopedClosureRunner cleanup(
+      base::BindOnce([] { base::TaskScheduler::GetInstance()->Shutdown(); }));
   if (!base::CommandLine::Init(argc, argv)) {
     std::cerr << "ERROR in CommandLine::Init\n";
     return 1;
