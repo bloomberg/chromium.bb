@@ -509,8 +509,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 
     TrayBubbleView::InitParams init_params;
     init_params.anchor_alignment = GetAnchorAlignment();
-    init_params.min_width = kTrayMenuMinimumWidth;
-    init_params.max_width = kTrayPopupMaxWidth;
+    init_params.min_width = kTrayMenuWidth;
+    init_params.max_width = kTrayMenuWidth;
     // The bubble is not initially activatable, but will become activatable if
     // the user presses Tab. For behavioral consistency with the non-activatable
     // scenario, don't close on deactivation after Tab either.
