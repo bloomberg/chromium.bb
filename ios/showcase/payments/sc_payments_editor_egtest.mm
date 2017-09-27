@@ -303,6 +303,13 @@ id<GREYMatcher> KeyboardNextKey() {
 // get focus except for the last textfield in which case causes the focus to go
 // away from the textfield.
 - (void)testNavigationByTappingReturn {
+// TODO(crbug.com/769464): Re-enable this test on iPad devices.
+#if !TARGET_IPHONE_SIMULATOR
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
+  }
+#endif
+
   // Tap the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_tap()];
