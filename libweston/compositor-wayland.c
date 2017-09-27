@@ -1098,8 +1098,12 @@ static void
 handle_xdg_toplevel_close(void *data, struct zxdg_toplevel_v6 *xdg_toplevel)
 {
 	struct wayland_output *output = data;
+	struct weston_compositor *compositor = output->base.compositor;
 
-	weston_compositor_exit(output->base.compositor);
+	wayland_output_destroy(&output->base);
+
+	if (wl_list_empty(&compositor->output_list))
+		weston_compositor_exit(compositor);
 }
 
 static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
