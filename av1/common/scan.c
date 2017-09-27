@@ -6621,14 +6621,13 @@ void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
   const int tx_w = tx_size_wide[tx_size];
   const int tx_h = tx_size_high[tx_size];
   const int tx_w_ds = tx_w >> 1;
-  for (int r = 0; r < tx_h; r += 2) {
-    for (int c = 0; c < tx_w; c += 2) {
-      assert(r + 2 < tx_h);
-      assert(c + 2 < tx_w);
-      const int ci = r * tx_w + c;
-      const int r_ds = r >> 1;
-      const int c_ds = c >> 1;
+  const int tx_h_ds = tx_h >> 1;
+  for (int r_ds = 0; r_ds < tx_h_ds; ++r_ds) {
+    for (int c_ds = 0; c_ds < tx_w_ds; ++c_ds) {
       const int ci_ds = r_ds * tx_w_ds + c_ds;
+      const int r = r_ds << 1;
+      const int c = c_ds << 1;
+      const int ci = r * tx_w + c;
       non_zero_count_ds[ci_ds] = non_zero_count[ci] + non_zero_count[ci + 1] +
                                  non_zero_count[ci + tx_w] +
                                  non_zero_count[ci + 1 + tx_w];
