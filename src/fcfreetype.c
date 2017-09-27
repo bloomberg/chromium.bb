@@ -1497,15 +1497,15 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		if (elt)
 		{
 		    /* Trim surrounding whitespace. */
-			pp = utf8;
-			while (*pp == ' ')
-			    pp++;
-			len = strlen ((const char *) pp);
-			memmove (utf8, pp, len + 1);
-			pp = utf8 + len;
-			while (pp > utf8 && *(pp - 1) == ' ')
-			    pp--;
-			*pp = 0;
+		    pp = utf8;
+		    while (*pp == ' ')
+			pp++;
+		    len = strlen ((const char *) pp);
+		    memmove (utf8, pp, len + 1);
+		    pp = utf8 + len;
+		    while (pp > utf8 && *(pp - 1) == ' ')
+			pp--;
+		    *pp = 0;
 
 		    if (FcStringInPatternElement (pat, elt, utf8))
 		    {
