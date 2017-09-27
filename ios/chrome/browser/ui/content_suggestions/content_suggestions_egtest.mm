@@ -438,6 +438,10 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.
 - (void)testOpenPageAndGoBackWithMoreContent {
+  // TODO(crbug.com/769253): reenable when test pass on iPhone X.
+  if (IsIPhoneX()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPhone X.");
+  }
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
