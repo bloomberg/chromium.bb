@@ -32,6 +32,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -147,6 +148,7 @@ public class TileGridLayoutTest {
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @RetryOnFailure
     public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -168,6 +170,7 @@ public class TileGridLayoutTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome(false)
+    @RetryOnFailure
     public void testTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -204,6 +207,7 @@ public class TileGridLayoutTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome(false)
+    @RetryOnFailure
     public void testTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
