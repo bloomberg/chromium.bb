@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 23
+// Next MinVersion: 24
 
 module arc.mojom;
 
@@ -186,16 +186,13 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 18
-// Deprecated method ID: 9
+// Next method ID: 21
 interface AppInstance {
   Init@0(AppHost host_ptr);
 
-  // Query if a given resolution can be handled by the application. Returns true
-  // if it can.
-  [MinVersion=1] CanHandleResolution@4(string package_name, string activity,
-                                       ScreenRect dimension) =>
-                                           (bool can_handle);
+  [MinVersion=1] CanHandleResolutionDeprecated@4(
+      string package_name, string activity, ScreenRect dimension) =>
+          (bool can_handle);
 
   // Closes the the given task.
   [MinVersion=4] CloseTask@8(int32 task_id);
@@ -207,16 +204,20 @@ interface AppInstance {
   // Sends a request to ARC to install package.
   [MinVersion=8] InstallPackage@11(ArcPackageInfo arcPackageInfo);
 
-  // Sends a request to ARC to launch an ARC app defined by |package_name| and
-  // |activity|, which cannot be empty. |dimension_on_screen| can be null to
-  // indicate to use the entire screen.
-  LaunchApp@1(string package_name, string activity,
-              [MinVersion=1] ScreenRect? dimension_on_screen);
+  LaunchAppDeprecated@1(string package_name, string activity,
+                        [MinVersion=1] ScreenRect? dimension_on_screen);
 
-  // Sends a reqeust to ARC to launch an intent.  The intent is encoded as a
-  // Uri string, see Intent.toUri().
-  [MinVersion=9] LaunchIntent@12(string intent_uri,
-                                 ScreenRect? dimension_on_screen);
+  // Sends a request to ARC to launch an ARC app defined by |package_name| and
+  // |activity|, which cannot be empty.
+  [MinVersion=23] LaunchApp@18(string package_name, string activity,
+                               int64 display_id);
+
+  [MinVersion=9] LaunchIntentDeprecated@12(string intent_uri,
+                                           ScreenRect? dimension_on_screen);
+
+  // Sends a request to ARC to launch an intent. The intent is encoded as a URI
+  // string. See Intent.toUri().
+  [MinVersion=23] LaunchIntent@19(string intent_uri, int64 display_id);
 
   // Sends a request to ARC to refresh a list of ARC apps.
   // OnRefreshAppsList is expected in response to this message. However,
@@ -242,15 +243,18 @@ interface AppInstance {
   // Activates the given task and move it to foreground.
   [MinVersion=4] SetTaskActive@7(int32 task_id);
 
-  // Sends a request to ARC to show package info for given package.
   [MinVersion=5] ShowPackageInfoDeprecated@9(string package_name,
                                              ScreenRect dimension_on_screen);
 
+  [MinVersion=10] ShowPackageInfoOnPageDeprecated@15(string package_name,
+                                                     ShowPackageInfoPage page,
+                                                     ScreenRect dimension_on_screen);
+
   // Sends a request to ARC to show package info for given package on the
   // specified page.
-  [MinVersion=10] ShowPackageInfoOnPage@15(string package_name,
+  [MinVersion=23] ShowPackageInfoOnPage@20(string package_name,
                                            ShowPackageInfoPage page,
-                                           ScreenRect dimension_on_screen);
+                                           int64 display_id);
 
   // Sets notification setting for the package.
   [MinVersion=6] SetNotificationsEnabled@10(string package_name, bool enabled);

@@ -81,24 +81,28 @@ class FakeAppInstance : public mojom::AppInstance {
   // mojom::AppInstance overrides:
   void Init(mojom::AppHostPtr host_ptr) override;
   void RefreshAppList() override;
+  void LaunchAppDeprecated(const std::string& package_name,
+                           const std::string& activity,
+                           const base::Optional<gfx::Rect>& dimension) override;
   void LaunchApp(const std::string& package_name,
                  const std::string& activity,
-                 const base::Optional<gfx::Rect>& dimension) override;
+                 int64_t display_id) override;
   void RequestAppIcon(const std::string& package_name,
                       const std::string& activity,
                       mojom::ScaleFactor scale_factor) override;
-  void LaunchIntent(
+  void LaunchIntentDeprecated(
       const std::string& intent_uri,
       const base::Optional<gfx::Rect>& dimension_on_screen) override;
+  void LaunchIntent(const std::string& intent_uri, int64_t display_id) override;
   void RequestIcon(const std::string& icon_resource_id,
                    mojom::ScaleFactor scale_factor,
                    const RequestIconCallback& callback) override;
   void RemoveCachedIcon(const std::string& icon_resource_id) override;
-  void CanHandleResolution(
+  void CanHandleResolutionDeprecated(
       const std::string& package_name,
       const std::string& activity,
       const gfx::Rect& dimension,
-      const CanHandleResolutionCallback& callback) override;
+      const CanHandleResolutionDeprecatedCallback& callback) override;
   void UninstallPackage(const std::string& package_name) override;
   void GetTaskInfo(int32_t task_id,
                    const GetTaskInfoCallback& callback) override;
@@ -106,9 +110,13 @@ class FakeAppInstance : public mojom::AppInstance {
   void CloseTask(int32_t task_id) override;
   void ShowPackageInfoDeprecated(const std::string& package_name,
                                  const gfx::Rect& dimension_on_screen) override;
+  void ShowPackageInfoOnPageDeprecated(
+      const std::string& package_name,
+      mojom::ShowPackageInfoPage page,
+      const gfx::Rect& dimension_on_screen) override;
   void ShowPackageInfoOnPage(const std::string& package_name,
                              mojom::ShowPackageInfoPage page,
-                             const gfx::Rect& dimension_on_screen) override;
+                             int64_t display_id) override;
   void SetNotificationsEnabled(const std::string& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;

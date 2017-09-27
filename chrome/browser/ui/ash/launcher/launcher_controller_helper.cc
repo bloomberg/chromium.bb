@@ -176,7 +176,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   const std::string& app_id = id.app_id;
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
-    arc::LaunchApp(profile_, app_id, event_flags);
+    arc::LaunchApp(profile_, app_id, event_flags, display_id);
     return;
   }
 
