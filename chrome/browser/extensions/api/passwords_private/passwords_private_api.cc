@@ -64,6 +64,22 @@ ExtensionFunction::ResponseAction
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction
+
+PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction::
+    ~PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateUndoRemoveSavedPasswordOrExceptionFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  delegate->UndoRemoveSavedPasswordOrException();
+
+  return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRequestPlaintextPasswordFunction
 
 PasswordsPrivateRequestPlaintextPasswordFunction::

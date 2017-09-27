@@ -1181,7 +1181,9 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
       {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
-      {"export", IDS_PASSWORD_MANAGER_EXPORT_BUTTON}};
+      {"export", IDS_PASSWORD_MANAGER_EXPORT_BUTTON},
+      {"undoRemovePassword", IDS_SETTINGS_PASSWORD_UNDO},
+      {"passwordDeleted", IDS_SETTINGS_PASSWORD_DELETED_PASSWORD}};
 
   html_source->AddString(
       "managePasswordsLabel",
@@ -1191,12 +1193,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
               password_manager::kPasswordManagerAccountDashboardURL)));
   html_source->AddString("passwordManagerLearnMoreURL",
                          chrome::kPasswordManagerLearnMoreURL);
-  html_source->AddString(
-      "manageAddressesUrl",
-      autofill::payments::GetManageAddressesUrl(0).spec());
-  html_source->AddString(
-      "manageCreditCardsUrl",
-      autofill::payments::GetManageInstrumentsUrl(0).spec());
+  html_source->AddString("manageAddressesUrl",
+                         autofill::payments::GetManageAddressesUrl(0).spec());
+  html_source->AddString("manageCreditCardsUrl",
+                         autofill::payments::GetManageInstrumentsUrl(0).spec());
 
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

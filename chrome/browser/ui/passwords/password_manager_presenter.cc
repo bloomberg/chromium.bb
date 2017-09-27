@@ -38,6 +38,8 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/undo/undo_operation.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -134,6 +136,79 @@ void RemoveDuplicates(const autofill::PasswordForm& form,
   duplicates->erase(key);
 }
 
+class RemovePasswordOperation : public UndoOperation {
+ public:
+  RemovePasswordOperation(PasswordManagerPresenter* page,
+                          const autofill::PasswordForm& form);
+  ~RemovePasswordOperation() override;
+
+  // UndoOperation:
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
+
+ private:
+  PasswordManagerPresenter* page_;
+  autofill::PasswordForm form_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovePasswordOperation);
+};
+
+RemovePasswordOperation::RemovePasswordOperation(
+    PasswordManagerPresenter* page,
+    const autofill::PasswordForm& form)
+    : page_(page), form_(form) {}
+
+RemovePasswordOperation::~RemovePasswordOperation() = default;
+
+void RemovePasswordOperation::Undo() {
+  page_->AddLogin(form_);
+}
+
+int RemovePasswordOperation::GetUndoLabelId() const {
+  return 0;
+}
+
+int RemovePasswordOperation::GetRedoLabelId() const {
+  return 0;
+}
+
+class AddPasswordOperation : public UndoOperation {
+ public:
+  AddPasswordOperation(PasswordManagerPresenter* page,
+                       const autofill::PasswordForm& password_form);
+  ~AddPasswordOperation() override;
+
+  // UndoOperation:
+  void Undo() override;
+  int GetUndoLabelId() const override;
+  int GetRedoLabelId() const override;
+
+ private:
+  PasswordManagerPresenter* page_;
+  autofill::PasswordForm form_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddPasswordOperation);
+};
+
+AddPasswordOperation::AddPasswordOperation(PasswordManagerPresenter* page,
+                                           const autofill::PasswordForm& form)
+    : page_(page), form_(form) {}
+
+AddPasswordOperation::~AddPasswordOperation() = default;
+
+void AddPasswordOperation::Undo() {
+  page_->RemoveLogin(form_);
+}
+
+int AddPasswordOperation::GetUndoLabelId() const {
+  return 0;
+}
+
+int AddPasswordOperation::GetRedoLabelId() const {
+  return 0;
+}
+
 }  // namespace
 
 PasswordManagerPresenter::PasswordManagerPresenter(
@@ -195,9 +270,10 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   if (!store)
     return;
 
-  RemoveDuplicates(*password_list_[index], &password_duplicates_, store,
+  const autofill::PasswordForm& password_entry = *password_list_[index];
+  RemoveDuplicates(password_entry, &password_duplicates_, store,
                    PasswordEntryType::SAVED);
-  store->RemoveLogin(*password_list_[index]);
+  RemoveLogin(password_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
 }
@@ -213,12 +289,18 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
-  RemoveDuplicates(*password_exception_list_[index],
-                   &password_exception_duplicates_, store,
-                   PasswordEntryType::BLACKLISTED);
-  store->RemoveLogin(*password_exception_list_[index]);
+
+  const autofill::PasswordForm& password_exception_entry =
+      *password_exception_list_[index];
+  RemoveDuplicates(password_exception_entry, &password_exception_duplicates_,
+                   store, PasswordEntryType::BLACKLISTED);
+  RemoveLogin(password_exception_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
+}
+
+void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
+  undo_manager_.Undo();
 }
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {
@@ -372,6 +454,26 @@ void PasswordManagerPresenter::ExportPasswords(
     content::WebContents* web_contents) {
   password_manager_porter_.PresentFileSelector(
       web_contents, PasswordManagerPorter::Type::PASSWORD_EXPORT);
+}
+
+void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  undo_manager_.AddUndoOperation(
+      std::make_unique<AddPasswordOperation>(this, form));
+  store->AddLogin(form);
+}
+
+void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  undo_manager_.AddUndoOperation(
+      std::make_unique<RemovePasswordOperation>(this, form));
+  store->RemoveLogin(form);
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(

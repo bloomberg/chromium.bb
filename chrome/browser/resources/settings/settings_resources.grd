@@ -675,7 +675,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_JS"
                  file="passwords_and_forms_page/passwords_section.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_PASSWORD_EDIT_DIALOG_HTML"
                  file="passwords_and_forms_page/password_edit_dialog.html"
                  type="chrome_html" />
