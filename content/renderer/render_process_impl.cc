@@ -43,19 +43,6 @@
 
 namespace {
 
-const base::Feature kV8_ES2015_TailCalls_Feature {
-  "V8_ES2015_TailCalls", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
-const base::Feature kV8_ES2016_ExplicitTailCalls_Feature{
-    "V8_ES2016_ExplicitTailCalls", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kV8SerializeEagerFeature{"V8_Serialize_Eager",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kV8SerializeAgeCodeFeature{
-    "V8_Serialize_Age_Code", base::FEATURE_DISABLED_BY_DEFAULT};
-
 void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
   if (base::FeatureList::IsEnabled(feature)) {
     v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
@@ -158,11 +145,6 @@ RenderProcessImpl::RenderProcessImpl(
                                static_cast<int>(optimize_flag.size()));
   }
 
-  SetV8FlagIfFeature(kV8_ES2015_TailCalls_Feature, "--harmony-tailcalls");
-  SetV8FlagIfFeature(kV8_ES2016_ExplicitTailCalls_Feature,
-                     "--harmony-explicit-tailcalls");
-  SetV8FlagIfFeature(kV8SerializeEagerFeature, "--serialize_eager");
-  SetV8FlagIfFeature(kV8SerializeAgeCodeFeature, "--serialize_age_code");
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
