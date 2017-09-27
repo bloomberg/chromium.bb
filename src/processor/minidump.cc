@@ -49,10 +49,8 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <limits>
-#include <map>
-#include <vector>
+#include <utility>
 
 #include "processor/range_map-inl.h"
 
@@ -210,6 +208,11 @@ static inline void Swap(MDXStateConfigFeatureMscInfo* xstate_feature_info) {
   for (size_t i = 0; i < MD_MAXIMUM_XSTATE_FEATURES; i++) {
     Swap(&xstate_feature_info->features[i]);
   }
+}
+
+static inline void Swap(MDRawSimpleStringDictionaryEntry* entry) {
+  Swap(&entry->key);
+  Swap(&entry->value);
 }
 
 static inline void Swap(uint16_t* data, size_t size_in_bytes) {
@@ -371,7 +374,7 @@ static void PrintValueOrInvalid(bool valid,
 }
 
 // Converts a time_t to a string showing the time in UTC.
-string TimeTToUTCString(time_t tt) {
+static string TimeTToUTCString(time_t tt) {
   struct tm timestruct;
 #ifdef _WIN32
   gmtime_s(&timestruct, &tt);
@@ -386,6 +389,24 @@ string TimeTToUTCString(time_t tt) {
   }
 
   return string(timestr);
+}
+
+
+static string MDGUIDToString(const MDGUID& uuid) {
+  char buf[37];
+  snprintf(buf, sizeof(buf), "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+           uuid.data1,
+           uuid.data2,
+           uuid.data3,
+           uuid.data4[0],
+           uuid.data4[1],
+           uuid.data4[2],
+           uuid.data4[3],
+           uuid.data4[4],
+           uuid.data4[5],
+           uuid.data4[6],
+           uuid.data4[7]);
+  return std::string(buf);
 }
 
 
@@ -2481,17 +2502,8 @@ void MinidumpModule::Print() {
 
       printf("  (cv_record).cv_signature        = 0x%x\n",
              cv_record_70->cv_signature);
-      printf("  (cv_record).signature           = %08x-%04x-%04x-%02x%02x-",
-             cv_record_70->signature.data1,
-             cv_record_70->signature.data2,
-             cv_record_70->signature.data3,
-             cv_record_70->signature.data4[0],
-             cv_record_70->signature.data4[1]);
-      for (unsigned int guidIndex = 2;
-           guidIndex < 8;
-           ++guidIndex) {
-        printf("%02x", cv_record_70->signature.data4[guidIndex]);
-      }
+      printf("  (cv_record).signature           = %s\n",
+             MDGUIDToString(cv_record_70->signature).c_str());
       printf("\n");
       printf("  (cv_record).age                 = %d\n",
              cv_record_70->age);
@@ -4746,6 +4758,192 @@ void MinidumpLinuxMapsList::Print() const {
 }
 
 //
+// MinidumpCrashpadInfo
+//
+
+
+MinidumpCrashpadInfo::MinidumpCrashpadInfo(Minidump* minidump)
+    : MinidumpStream(minidump),
+      crashpad_info_(),
+      module_crashpad_info_links_(),
+      module_crashpad_info_(),
+      module_crashpad_info_list_annotations_(),
+      module_crashpad_info_simple_annotations_(),
+      simple_annotations_() {
+}
+
+
+bool MinidumpCrashpadInfo::Read(uint32_t expected_size) {
+  valid_ = false;
+
+  if (expected_size != sizeof(crashpad_info_)) {
+    BPLOG(ERROR) << "MinidumpCrashpadInfo size mismatch, " << expected_size <<
+                    " != " << sizeof(crashpad_info_);
+    return false;
+  }
+
+  if (!minidump_->ReadBytes(&crashpad_info_, sizeof(crashpad_info_))) {
+    BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read Crashpad info";
+    return false;
+  }
+
+  if (minidump_->swap()) {
+    Swap(&crashpad_info_.version);
+    Swap(&crashpad_info_.report_id);
+    Swap(&crashpad_info_.client_id);
+    Swap(&crashpad_info_.simple_annotations);
+    Swap(&crashpad_info_.module_list);
+  }
+
+  if (crashpad_info_.simple_annotations.data_size) {
+    if (!minidump_->ReadSimpleStringDictionary(
+        crashpad_info_.simple_annotations.rva,
+        &simple_annotations_)) {
+      BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read simple_annotations";
+      return false;
+    }
+  }
+
+  if (crashpad_info_.module_list.data_size) {
+    if (!minidump_->SeekSet(crashpad_info_.module_list.rva)) {
+      BPLOG(ERROR) << "MinidumpCrashpadInfo cannot seek to module_list";
+      return false;
+    }
+
+    uint32_t count;
+    if (!minidump_->ReadBytes(&count, sizeof(count))) {
+      BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read module_list count";
+      return false;
+    }
+
+    if (minidump_->swap()) {
+      Swap(&count);
+    }
+
+    scoped_array<MDRawModuleCrashpadInfoLink> module_crashpad_info_links(
+        new MDRawModuleCrashpadInfoLink[count]);
+
+    // Read the entire array in one fell swoop, instead of reading one entry
+    // at a time in the loop.
+    if (!minidump_->ReadBytes(
+            &module_crashpad_info_links[0],
+            sizeof(MDRawModuleCrashpadInfoLink) * count)) {
+      BPLOG(ERROR)
+          << "MinidumpCrashpadInfo could not read Crashpad module links";
+      return false;
+    }
+
+    for (uint32_t index = 0; index < count; ++index) {
+      if (minidump_->swap()) {
+        Swap(&module_crashpad_info_links[index].minidump_module_list_index);
+        Swap(&module_crashpad_info_links[index].location);
+      }
+
+      if (!minidump_->SeekSet(module_crashpad_info_links[index].location.rva)) {
+        BPLOG(ERROR)
+            << "MinidumpCrashpadInfo cannot seek to Crashpad module info";
+        return false;
+      }
+
+      MDRawModuleCrashpadInfo module_crashpad_info;
+      if (!minidump_->ReadBytes(&module_crashpad_info,
+                                sizeof(module_crashpad_info))) {
+        BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read Crashpad module info";
+        return false;
+      }
+
+      if (minidump_->swap()) {
+        Swap(&module_crashpad_info.version);
+        Swap(&module_crashpad_info.list_annotations);
+        Swap(&module_crashpad_info.simple_annotations);
+      }
+
+      std::vector<std::string> list_annotations;
+      if (module_crashpad_info.list_annotations.data_size) {
+        if (!minidump_->ReadStringList(
+                module_crashpad_info.list_annotations.rva,
+                &list_annotations)) {
+          BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read Crashpad module "
+              "info list annotations";
+          return false;
+        }
+      }
+
+      std::map<std::string, std::string> simple_annotations;
+      if (module_crashpad_info.simple_annotations.data_size) {
+        if (!minidump_->ReadSimpleStringDictionary(
+                module_crashpad_info.simple_annotations.rva,
+                &simple_annotations)) {
+          BPLOG(ERROR) << "MinidumpCrashpadInfo cannot read Crashpad module "
+              "info simple annotations";
+          return false;
+        }
+      }
+
+      module_crashpad_info_links_.push_back(
+          module_crashpad_info_links[index].minidump_module_list_index);
+      module_crashpad_info_.push_back(module_crashpad_info);
+      module_crashpad_info_list_annotations_.push_back(list_annotations);
+      module_crashpad_info_simple_annotations_.push_back(simple_annotations);
+    }
+  }
+
+  valid_ = true;
+  return true;
+}
+
+
+void MinidumpCrashpadInfo::Print() {
+  if (!valid_) {
+    BPLOG(ERROR) << "MinidumpCrashpadInfo cannot print invalid data";
+    return;
+  }
+
+  printf("MDRawCrashpadInfo\n");
+  printf("  version = %d\n", crashpad_info_.version);
+  printf("  report_id = %s\n",
+         MDGUIDToString(crashpad_info_.report_id).c_str());
+  printf("  client_id = %s\n",
+         MDGUIDToString(crashpad_info_.client_id).c_str());
+  for (std::map<string, string>::const_iterator iterator =
+           simple_annotations_.begin();
+       iterator != simple_annotations_.end();
+       ++iterator) {
+    printf("  simple_annotations[\"%s\"] = %s\n",
+           iterator->first.c_str(), iterator->second.c_str());
+  }
+  for (uint32_t module_index = 0;
+       module_index < module_crashpad_info_links_.size();
+       ++module_index) {
+    printf("  module_list[%d].minidump_module_list_index = %d\n",
+           module_index, module_crashpad_info_links_[module_index]);
+    printf("  module_list[%d].version = %d\n",
+           module_index, module_crashpad_info_[module_index].version);
+    for (uint32_t annotation_index = 0;
+         annotation_index <
+             module_crashpad_info_list_annotations_[module_index].size();
+         ++annotation_index) {
+      printf("  module_list[%d].list_annotations[%d] = %s\n",
+             module_index,
+             annotation_index,
+             module_crashpad_info_list_annotations_
+                 [module_index][annotation_index].c_str());
+    }
+    for (std::map<string, string>::const_iterator iterator =
+             module_crashpad_info_simple_annotations_[module_index].begin();
+         iterator !=
+             module_crashpad_info_simple_annotations_[module_index].end();
+         ++iterator) {
+      printf("  module_list[%d].simple_annotations[\"%s\"] = %s\n",
+             module_index, iterator->first.c_str(), iterator->second.c_str());
+    }
+  }
+
+  printf("\n");
+}
+
+
+//
 // Minidump
 //
 
@@ -4993,7 +5191,8 @@ bool Minidump::Read() {
         case MD_EXCEPTION_STREAM:
         case MD_SYSTEM_INFO_STREAM:
         case MD_MISC_INFO_STREAM:
-        case MD_BREAKPAD_INFO_STREAM: {
+        case MD_BREAKPAD_INFO_STREAM:
+        case MD_CRASHPAD_INFO_STREAM: {
           if (stream_map_->find(stream_type) != stream_map_->end()) {
             // Another stream with this type was already found.  A minidump
             // file should contain at most one of each of these stream types.
@@ -5100,6 +5299,11 @@ bool Minidump::IsAndroid() {
   return system_info && system_info->platform_id == MD_OS_ANDROID;
 }
 
+MinidumpCrashpadInfo* Minidump::GetCrashpadInfo() {
+  MinidumpCrashpadInfo* crashpad_info;
+  return GetStream(&crashpad_info);
+}
+
 static const char* get_stream_name(uint32_t stream_type) {
   switch (stream_type) {
   case MD_UNUSED_STREAM:
@@ -5170,6 +5374,8 @@ static const char* get_stream_name(uint32_t stream_type) {
     return "MD_LINUX_MAPS";
   case MD_LINUX_DSO_DEBUG:
     return "MD_LINUX_DSO_DEBUG";
+  case MD_CRASHPAD_INFO_STREAM:
+    return "MD_CRASHPAD_INFO_STREAM";
   default:
     return "unknown";
   }
@@ -5348,6 +5554,158 @@ string* Minidump::ReadString(off_t offset) {
   }
 
   return UTF16ToUTF8(string_utf16, swap_);
+}
+
+
+bool Minidump::ReadUTF8String(off_t offset, string* string_utf8) {
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid Minidump for ReadString";
+    return false;
+  }
+  if (!SeekSet(offset)) {
+    BPLOG(ERROR) << "ReadUTF8String could not seek to string at offset "
+                 << offset;
+    return false;
+  }
+
+  uint32_t bytes;
+  if (!ReadBytes(&bytes, sizeof(bytes))) {
+    BPLOG(ERROR) << "ReadUTF8String could not read string size at offset " <<
+                    offset;
+    return false;
+  }
+
+  if (swap_) {
+    Swap(&bytes);
+  }
+
+  if (bytes > max_string_length_) {
+    BPLOG(ERROR) << "ReadUTF8String string length " << bytes <<
+                    " exceeds maximum " << max_string_length_ <<
+                    " at offset " << offset;
+    return false;
+  }
+
+  string_utf8->resize(bytes);
+
+  if (!ReadBytes(&(*string_utf8)[0], bytes)) {
+    BPLOG(ERROR) << "ReadUTF8String could not read " << bytes <<
+                    "-byte string at offset " << offset;
+    return false;
+  }
+
+  return true;
+}
+
+
+bool Minidump::ReadStringList(
+    off_t offset,
+    std::vector<std::string>* string_list) {
+  string_list->clear();
+
+  if (!SeekSet(offset)) {
+    BPLOG(ERROR) << "Minidump cannot seek to string_list";
+    return false;
+  }
+
+  uint32_t count;
+  if (!ReadBytes(&count, sizeof(count))) {
+    BPLOG(ERROR) << "Minidump cannot read string_list count";
+    return false;
+  }
+
+  if (swap_) {
+    Swap(&count);
+  }
+
+  scoped_array<MDRVA> rvas(new MDRVA[count]);
+
+  // Read the entire array in one fell swoop, instead of reading one entry
+  // at a time in the loop.
+  if (!ReadBytes(&rvas[0], sizeof(MDRVA) * count)) {
+    BPLOG(ERROR) << "Minidump could not read string_list";
+    return false;
+  }
+
+  for (uint32_t index = 0; index < count; ++index) {
+    if (swap()) {
+      Swap(&rvas[index]);
+    }
+
+    string entry;
+    if (!ReadUTF8String(rvas[index], &entry)) {
+      BPLOG(ERROR) << "Minidump could not read string_list entry";
+      return false;
+    }
+
+    string_list->push_back(entry);
+  }
+
+  return true;
+}
+
+
+bool Minidump::ReadSimpleStringDictionary(
+    off_t offset,
+    std::map<std::string, std::string>* simple_string_dictionary) {
+  simple_string_dictionary->clear();
+
+  if (!SeekSet(offset)) {
+    BPLOG(ERROR) << "Minidump cannot seek to simple_string_dictionary";
+    return false;
+  }
+
+  uint32_t count;
+  if (!ReadBytes(&count, sizeof(count))) {
+    BPLOG(ERROR)
+        << "Minidump cannot read simple_string_dictionary count";
+    return false;
+  }
+
+  if (swap()) {
+    Swap(&count);
+  }
+
+  scoped_array<MDRawSimpleStringDictionaryEntry> entries(
+      new MDRawSimpleStringDictionaryEntry[count]);
+
+  // Read the entire array in one fell swoop, instead of reading one entry
+  // at a time in the loop.
+  if (!ReadBytes(
+          &entries[0],
+          sizeof(MDRawSimpleStringDictionaryEntry) * count)) {
+    BPLOG(ERROR) << "Minidump could not read simple_string_dictionary";
+    return false;
+  }
+
+  for (uint32_t index = 0; index < count; ++index) {
+    if (swap()) {
+      Swap(&entries[index]);
+    }
+
+    string key;
+    if (!ReadUTF8String(entries[index].key, &key)) {
+      BPLOG(ERROR) << "Minidump could not read simple_string_dictionary key";
+      return false;
+    }
+
+    string value;
+    if (!ReadUTF8String(entries[index].value, &value)) {
+      BPLOG(ERROR) << "Minidump could not read simple_string_dictionary value";
+      return false;
+    }
+
+    if (simple_string_dictionary->find(key) !=
+        simple_string_dictionary->end()) {
+      BPLOG(ERROR)
+          << "Minidump: discarding duplicate simple_string_dictionary value "
+          << value << " for key " << key;
+    } else {
+      simple_string_dictionary->insert(std::make_pair(key, value));
+    }
+  }
+
+  return true;
 }
 
 

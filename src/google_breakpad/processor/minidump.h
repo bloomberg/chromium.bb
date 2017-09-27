@@ -1103,6 +1103,37 @@ class MinidumpLinuxMapsList : public MinidumpStream {
   DISALLOW_COPY_AND_ASSIGN(MinidumpLinuxMapsList);
 };
 
+// MinidumpCrashpadInfo wraps MDRawCrashpadInfo, which is an optional stream in
+// a minidump that provides additional information about the process state
+// at the time the minidump was generated.
+class MinidumpCrashpadInfo : public MinidumpStream {
+ public:
+  const MDRawCrashpadInfo* crashpad_info() const {
+    return valid_ ? &crashpad_info_ : NULL;
+  }
+
+  // Print a human-readable representation of the object to stdout.
+  void Print();
+
+ private:
+  friend class Minidump;
+
+  static const uint32_t kStreamType = MD_CRASHPAD_INFO_STREAM;
+
+  explicit MinidumpCrashpadInfo(Minidump* minidump_);
+
+  bool Read(uint32_t expected_size);
+
+  MDRawCrashpadInfo crashpad_info_;
+  std::vector<uint32_t> module_crashpad_info_links_;
+  std::vector<MDRawModuleCrashpadInfo> module_crashpad_info_;
+  std::vector<std::vector<std::string>> module_crashpad_info_list_annotations_;
+  std::vector<std::map<std::string, std::string>>
+      module_crashpad_info_simple_annotations_;
+  std::map<std::string, std::string> simple_annotations_;
+};
+
+
 // Minidump is the user's interface to a minidump file.  It wraps MDRawHeader
 // and provides access to the minidump's top-level stream directory.
 class Minidump {
@@ -1164,6 +1195,7 @@ class Minidump {
   virtual MinidumpMiscInfo* GetMiscInfo();
   virtual MinidumpBreakpadInfo* GetBreakpadInfo();
   virtual MinidumpMemoryInfoList* GetMemoryInfoList();
+  MinidumpCrashpadInfo* GetCrashpadInfo();
 
   // The next method also calls GetStream, but is exclusive for Linux dumps.
   virtual MinidumpLinuxMapsList *GetLinuxMapsList();
@@ -1191,12 +1223,20 @@ class Minidump {
   // Returns the current position of the minidump file.
   off_t Tell();
 
-  // The next 2 methods are medium-level I/O routines.
+  // Medium-level I/O routines.
 
   // ReadString returns a string which is owned by the caller!  offset
   // specifies the offset that a length-encoded string is stored at in the
   // minidump file.
   string* ReadString(off_t offset);
+
+  bool ReadUTF8String(off_t offset, string* string_utf8);
+
+  bool ReadStringList(off_t offset, std::vector<std::string>* string_list);
+
+  bool ReadSimpleStringDictionary(
+      off_t offset,
+      std::map<std::string, std::string>* simple_string_dictionary);
 
   // SeekToStreamType positions the file at the beginning of a stream
   // identified by stream_type, and informs the caller of the stream's
