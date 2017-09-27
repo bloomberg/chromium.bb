@@ -234,7 +234,6 @@ class RemoteTryJob(object):
       buildbucket request properties as a python dict.
     """
     properties = self._GetRequestProperties(bot)
-    properties['mastername'] = 'chromiumos.chromium'
 
     return {
         'bucket': constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
