@@ -22,7 +22,7 @@
 
   <project path='src/src/tools/gyp'
            name='external/gyp/'
-           revision='e8ab0833a42691cd2184bd4c45d779e43821d3e0'
+           revision='324dd166b7c0b39d513026fa52d6280ac6d56770'
            remote='chromium' />
 
   <project path='src/src/testing'

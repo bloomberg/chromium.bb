@@ -56,24 +56,29 @@ deps = {
 
 hooks = [
   {
-    # TODO(chrisha): Fix the GYP files so that they work without
-    # --no-circular-check.
-    "pattern": ".",
-    "action": ["python",
-               "src/src/tools/gyp/gyp_main.py",
-               "--no-circular-check",
-               "src/src/client/windows/breakpad_client.gyp"],
-  },
-  {
-    # XXX: this and above should all be wired into build/all.gyp ?
-    "action": ["python",
-               "src/src/tools/gyp/gyp_main.py",
-               "--no-circular-check",
-               "src/src/tools/windows/tools_windows.gyp"],
-  },
-  {
     # Keep the manifest up to date.
     "action": ["python", "src/src/tools/python/deps-to-manifest.py",
                "src/DEPS", "src/default.xml"],
   },
 ]
+
+hooks_os = {
+  'win': [
+    {
+      # TODO(chrisha): Fix the GYP files so that they work without
+      # --no-circular-check.
+      "pattern": ".",
+      "action": ["python",
+                 "src/src/tools/gyp/gyp_main.py",
+                 "--no-circular-check",
+                 "src/src/client/windows/breakpad_client.gyp"],
+    },
+    {
+      # XXX: this and above should all be wired into build/all.gyp ?
+      "action": ["python",
+                 "src/src/tools/gyp/gyp_main.py",
+                 "--no-circular-check",
+                 "src/src/tools/windows/tools_windows.gyp"],
+    },
+  ],
+}
