@@ -1023,8 +1023,6 @@ void Browser::TabDetachedAt(WebContents* contents, int index) {
 
 void Browser::TabDeactivated(WebContents* contents) {
   exclusive_access_manager_->OnTabDeactivated(contents);
-  if (instant_controller_)
-    instant_controller_->OnTabDeactivated(contents);
   SearchTabHelper::FromWebContents(contents)->OnTabDeactivated();
 
   // Save what the user's currently typing, so it can be restored when we
@@ -1078,9 +1076,6 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
 
   // Propagate the profile to the location bar.
   UpdateToolbar((reason & CHANGE_REASON_REPLACED) == 0);
-
-  if (instant_controller_)
-    instant_controller_->OnTabActivated(new_contents);
 
   // Update reload/stop state.
   command_controller_->LoadingStateChanged(new_contents->IsLoading(), true);
@@ -2384,9 +2379,6 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   if (find_bar_controller_.get() && index == tab_strip_model_->active_index()) {
     find_bar_controller_->ChangeWebContents(NULL);
   }
-
-  if (instant_controller_)
-    instant_controller_->OnTabDetached(contents);
 
   for (size_t i = 0; i < interstitial_observers_.size(); i++) {
     if (interstitial_observers_[i]->web_contents() != contents)

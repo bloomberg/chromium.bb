@@ -15,33 +15,20 @@
 class Browser;
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 // BrowserInstantController is responsible for reloading any Instant tabs (which
 // today just means NTPs) when the default search provider changes. This can
 // happen when the user chooses a different default search engine, or when the
-// Google base URL changes while Google is the default search engine. Also owns
-// a SearchModel instance that corresponds to the currently-active tab.
+// Google base URL changes while Google is the default search engine.
 class BrowserInstantController {
  public:
   explicit BrowserInstantController(Browser* browser);
   ~BrowserInstantController();
 
-  // Returns the Profile associated with the Browser that owns this object.
-  Profile* profile() const;
-
-  // Invoked by |browser_| when the active tab changes.
-  // TODO(treib): Implement TabStripModelObserver instead of relying on custom
-  // callbacks from Browser.
-  void OnTabActivated(content::WebContents* web_contents);
-  void OnTabDeactivated(content::WebContents* web_contents);
-  void OnTabDetached(content::WebContents* web_contents);
-
  private:
   void OnSearchEngineBaseURLChanged(
       SearchEngineBaseURLTracker::ChangeReason change_reason);
+
+  Profile* profile() const;
 
   Browser* const browser_;
 

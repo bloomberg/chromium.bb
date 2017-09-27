@@ -12,7 +12,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -50,13 +50,38 @@ class InstantController::TabObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TabObserver);
 };
 
-InstantController::InstantController(
-    BrowserInstantController* browser_instant_controller)
-    : browser_instant_controller_(browser_instant_controller) {}
+InstantController::InstantController(Profile* profile,
+                                     TabStripModel* tab_strip_model)
+    : profile_(profile), tab_strip_observer_(this) {
+  tab_strip_observer_.Add(tab_strip_model);
+}
 
 InstantController::~InstantController() = default;
 
-void InstantController::OnTabActivated(content::WebContents* web_contents) {
+void InstantController::TabDetachedAt(content::WebContents* contents,
+                                      int index) {
+  StopWatchingTab(contents);
+}
+
+void InstantController::TabDeactivated(content::WebContents* contents) {
+  StopWatchingTab(contents);
+}
+
+void InstantController::ActiveTabChanged(content::WebContents* old_contents,
+                                         content::WebContents* new_contents,
+                                         int index,
+                                         int reason) {
+  StartWatchingTab(new_contents);
+}
+
+void InstantController::TabReplacedAt(TabStripModel* tab_strip_model,
+                                      content::WebContents* old_contents,
+                                      content::WebContents* new_contents,
+                                      int index) {
+  StopWatchingTab(old_contents);
+}
+
+void InstantController::StartWatchingTab(content::WebContents* web_contents) {
   if (!tab_observer_ || tab_observer_->web_contents() != web_contents) {
     tab_observer_ = std::make_unique<TabObserver>(
         web_contents, base::Bind(&InstantController::UpdateInfoForInstantTab,
@@ -68,19 +93,15 @@ void InstantController::OnTabActivated(content::WebContents* web_contents) {
   }
 }
 
-void InstantController::OnTabDeactivated(content::WebContents* web_contents) {
+void InstantController::StopWatchingTab(content::WebContents* web_contents) {
   if (tab_observer_ && tab_observer_->web_contents() == web_contents) {
     tab_observer_ = nullptr;
   }
 }
 
-void InstantController::OnTabDetached(content::WebContents* web_contents) {
-  OnTabDeactivated(web_contents);
-}
-
 void InstantController::UpdateInfoForInstantTab() {
-  InstantService* instant_service = InstantServiceFactory::GetForProfile(
-      browser_instant_controller_->profile());
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
   if (instant_service) {
     instant_service->UpdateThemeInfo();
     instant_service->UpdateMostVisitedItemsInfo();

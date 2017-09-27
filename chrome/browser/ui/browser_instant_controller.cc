@@ -73,7 +73,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabReloader);
 // BrowserInstantController ---------------------------------------------------
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
-    : browser_(browser), instant_(this) {
+    : browser_(browser), instant_(profile(), browser_->tab_strip_model()) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
   // TemplateURLService can be null in tests.
@@ -88,25 +88,6 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
 }
 
 BrowserInstantController::~BrowserInstantController() = default;
-
-Profile* BrowserInstantController::profile() const {
-  return browser_->profile();
-}
-
-void BrowserInstantController::OnTabActivated(
-    content::WebContents* web_contents) {
-  instant_.OnTabActivated(web_contents);
-}
-
-void BrowserInstantController::OnTabDeactivated(
-    content::WebContents* web_contents) {
-  instant_.OnTabDeactivated(web_contents);
-}
-
-void BrowserInstantController::OnTabDetached(
-    content::WebContents* web_contents) {
-  instant_.OnTabDetached(web_contents);
-}
 
 void BrowserInstantController::OnSearchEngineBaseURLChanged(
     SearchEngineBaseURLTracker::ChangeReason change_reason) {
@@ -146,4 +127,8 @@ void BrowserInstantController::OnSearchEngineBaseURLChanged(
       TabReloader::Reload(contents);
     }
   }
+}
+
+Profile* BrowserInstantController::profile() const {
+  return browser_->profile();
 }
