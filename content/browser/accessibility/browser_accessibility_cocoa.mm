@@ -1845,7 +1845,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
   ui::AXRole browserAccessibilityRole = [self internalRole];
-  if (browserAccessibilityRole == ui::AX_ROLE_TEXT_FIELD &&
+  if (ui::IsEditField(browserAccessibilityRole) &&
       GetState(browserAccessibility_, ui::AX_STATE_PROTECTED)) {
     return NSAccessibilitySecureTextFieldSubrole;
   }

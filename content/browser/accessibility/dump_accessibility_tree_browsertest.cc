@@ -1277,6 +1277,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("input-image-button-in-menu.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputList) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-list.html"));
+}
+
 // crbug.com/423675 - AX tree is different for Win7 and Win8.
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,

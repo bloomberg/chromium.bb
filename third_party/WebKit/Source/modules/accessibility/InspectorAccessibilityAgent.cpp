@@ -136,9 +136,10 @@ bool RoleAllowsReadonly(AccessibilityRole role) {
 }
 
 bool RoleAllowsRequired(AccessibilityRole role) {
-  return role == kComboBoxRole || role == kCellRole || role == kListBoxRole ||
-         role == kRadioGroupRole || role == kSpinButtonRole ||
-         role == kTextFieldRole || role == kTreeRole ||
+  return role == kComboBoxGroupingRole || role == kComboBoxMenuButtonRole ||
+         role == kCellRole || role == kListBoxRole || role == kRadioGroupRole ||
+         role == kSpinButtonRole || role == kTextFieldRole ||
+         role == kTextFieldWithComboBoxRole || role == kTreeRole ||
          role == kColumnHeaderRole || role == kRowHeaderRole ||
          role == kTreeGridRole;
 }

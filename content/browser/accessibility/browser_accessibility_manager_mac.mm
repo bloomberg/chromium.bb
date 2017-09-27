@@ -150,8 +150,7 @@ BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
   // For editable combo boxes, focus should stay on the combo box so the user
   // will not be taken out of the combo box while typing.
   if (focus && (focus->GetRole() == ui::AX_ROLE_LIST_BOX ||
-                (focus->GetRole() == ui::AX_ROLE_COMBO_BOX &&
-                 focus->HasState(ui::AX_STATE_EDITABLE)))) {
+                (focus->GetRole() == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX))) {
     return focus;
   }
 
@@ -175,7 +174,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
       if (node->GetRole() == ui::AX_ROLE_TREE) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
-      } else if (node->GetRole() == ui::AX_ROLE_COMBO_BOX) {
+      } else if (node->GetRole() == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX) {
         // Even though the selected item in the combo box has changed, we don't
         // want to post a focus change because this will take the focus out of
         // the combo box where the user might be typing.

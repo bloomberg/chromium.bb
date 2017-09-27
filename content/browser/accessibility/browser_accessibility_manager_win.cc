@@ -25,7 +25,8 @@ namespace {
 
 bool IsContainerWithSelectableChildrenRole(ui::AXRole role) {
   switch (role) {
-    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_COMBO_BOX_MENU_BUTTON:
+    case ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
     case ui::AX_ROLE_GRID:
     case ui::AX_ROLE_LIST_BOX:
     case ui::AX_ROLE_MENU:

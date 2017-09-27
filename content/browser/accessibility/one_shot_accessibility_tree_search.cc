@@ -247,7 +247,9 @@ bool AccessibilityCheckboxPredicate(
 
 bool AccessibilityComboboxPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_COMBO_BOX ||
+  return (node->GetRole() == ui::AX_ROLE_COMBO_BOX_GROUPING ||
+          node->GetRole() == ui::AX_ROLE_COMBO_BOX_MENU_BUTTON ||
+          node->GetRole() == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX ||
           node->GetRole() == ui::AX_ROLE_POP_UP_BUTTON);
 }
 

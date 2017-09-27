@@ -1341,9 +1341,11 @@ void AXLayoutObject::AriaDescribedbyElements(
 bool AXLayoutObject::AriaHasPopup() const {
   const AtomicString& has_popup =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
+  if (!has_popup.IsNull())
+    return !has_popup.IsEmpty() && !EqualIgnoringASCIICase(has_popup, "false");
 
-  return !has_popup.IsNull() && !has_popup.IsEmpty() &&
-         !EqualIgnoringASCIICase(has_popup, "false");
+  return RoleValue() == kComboBoxMenuButtonRole ||
+         RoleValue() == kTextFieldWithComboBoxRole;
 }
 
 bool AXLayoutObject::SupportsARIADragging() const {

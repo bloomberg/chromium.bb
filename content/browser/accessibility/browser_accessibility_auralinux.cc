@@ -860,7 +860,9 @@ void BrowserAccessibilityAuraLinux::InitRoleAndState() {
     case ui::AX_ROLE_COLUMN_HEADER:
       atk_role_ = ATK_ROLE_COLUMN_HEADER;
       break;
-    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_COMBO_BOX_GROUPING:
+    case ui::AX_ROLE_COMBO_BOX_MENU_BUTTON:
+    case ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
       atk_role_ = ATK_ROLE_COMBO_BOX;
       break;
     case ui::AX_ROLE_DATE:
