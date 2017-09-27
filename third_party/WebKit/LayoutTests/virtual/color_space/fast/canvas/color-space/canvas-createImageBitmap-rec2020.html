@@ -536,7 +536,8 @@ function initializeOffscreenCanvas(canvasColorSpace, canvasPixelFormat)
     canvas.width = 20;
     canvas.height = 20;
     var offscreen = canvas.transferControlToOffscreen();
-    var ctx = offscreen.getContext('2d');
+    var ctx = offscreen.getContext('2d',
+        {colorSpace: canvasColorSpace, pixelFormat:canvasPixelFormat});
     ctx.fillStyle = "rgba(155, 27, 27, 1)";
     ctx.fillRect(0, 0, 10, 10);
     ctx.fillStyle = "rgba(27, 155, 27, 1)";
@@ -580,7 +581,8 @@ function initializeOffscreenCanvasTransparent(canvasColorSpace, canvasPixelForma
     canvas.width = 20;
     canvas.height = 20;
     var offscreen = canvas.transferControlToOffscreen();
-    var ctx = offscreen.getContext('2d');
+    var ctx = offscreen.getContext('2d',
+        {colorSpace: canvasColorSpace, pixelFormat:canvasPixelFormat});
     ctx.fillStyle = "rgba(155, 27, 27, 0.5)";
     ctx.fillRect(0, 0, 10, 10);
     ctx.fillStyle = "rgba(27, 155, 27, 0.5)";
