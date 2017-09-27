@@ -3,6 +3,7 @@
 
 # https://crbug.com/765779: unique name trouble with PlzNavigate
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/765779 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
 
 # https://crbug.com/758075: Uninvestigated timeout.
 # (apparently https://crbug.com/599670 doesn't affect the Site Isolation bot,
