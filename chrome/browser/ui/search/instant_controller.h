@@ -9,8 +9,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-class BrowserInstantController;
+class Profile;
+class TabStripModel;
 
 namespace content {
 class WebContents;
@@ -22,15 +25,22 @@ class WebContents;
 // * an open tab navigates to an NTP.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController {
+class InstantController : public TabStripModelObserver {
  public:
-  explicit InstantController(
-      BrowserInstantController* browser_instant_controller);
-  ~InstantController();
+  explicit InstantController(Profile* profile, TabStripModel* tab_strip_model);
+  ~InstantController() override;
 
-  void OnTabActivated(content::WebContents* web_contents);
-  void OnTabDeactivated(content::WebContents* web_contents);
-  void OnTabDetached(content::WebContents* web_contents);
+  // TabStripModelObserver:
+  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabDeactivated(content::WebContents* contents) override;
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
 
  private:
   class TabObserver;
@@ -38,10 +48,14 @@ class InstantController {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            DispatchMVChangeEventWhileNavigatingBackToNTP);
 
+  void StartWatchingTab(content::WebContents* web_contents);
+  void StopWatchingTab(content::WebContents* web_contents);
+
   // Sends theme info and most visited items to the Instant renderer process.
   void UpdateInfoForInstantTab();
 
-  BrowserInstantController* const browser_instant_controller_;
+  Profile* const profile_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
 
   // Observes the currently active tab, and calls us back if it becomes an NTP.
   std::unique_ptr<TabObserver> tab_observer_;

@@ -120,8 +120,7 @@ class TabStripModelObserver {
                             int index,
                             TabChangeType change_type);
 
-  // The WebContents was replaced at the specified index. This is invoked
-  // when instant is enabled and the user navigates by way of instant or when
+  // The WebContents was replaced at the specified index. This is invoked when
   // prerendering swaps in a prerendered WebContents.
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              content::WebContents* old_contents,
