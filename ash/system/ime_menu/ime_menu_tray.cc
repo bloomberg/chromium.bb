@@ -331,8 +331,8 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
   init_params.anchor_alignment = GetAnchorAlignment();
-  init_params.min_width = kTrayMenuMinimumWidth;
-  init_params.max_width = kTrayMenuMinimumWidth;
+  init_params.min_width = kTrayMenuWidth;
+  init_params.max_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
 
   views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
