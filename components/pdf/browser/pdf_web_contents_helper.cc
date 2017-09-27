@@ -108,6 +108,8 @@ PDFWebContentsHelper::CreateDrawable() {
   return std::unique_ptr<ui::TouchHandleDrawable>();
 }
 
+void PDFWebContentsHelper::DidScroll() {}
+
 void PDFWebContentsHelper::OnManagerWillDestroy(
     content::TouchSelectionControllerClientManager* manager) {
   DCHECK(manager == touch_selection_controller_client_manager_);

@@ -144,4 +144,8 @@ TouchSelectionControllerClientManagerAndroid::CreateDrawable() {
   return rwhv_->CreateDrawable();
 }
 
+void TouchSelectionControllerClientManagerAndroid::DidScroll() {
+  // Nothing needs to be done here.
+}
+
 }  // namespace content

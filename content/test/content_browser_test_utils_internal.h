@@ -27,6 +27,7 @@
 namespace content {
 
 class FrameTreeNode;
+class MessageLoopRunner;
 class RenderFrameHost;
 class Shell;
 class SiteInstance;
@@ -176,6 +177,34 @@ class UrlCommitObserver : WebContentsObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlCommitObserver);
+};
+
+// Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
+class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
+ public:
+  FrameRectChangedMessageFilter();
+
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  gfx::Rect last_rect() const;
+
+  void Wait();
+  void Reset();
+
+ private:
+  ~FrameRectChangedMessageFilter() override;
+
+  void OnFrameRectChanged(const gfx::Rect& rect,
+                          const viz::LocalSurfaceId& local_surface_id);
+
+  void OnFrameRectChangedOnUI(const gfx::Rect& rect,
+                              const viz::LocalSurfaceId& local_surface_id);
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool frame_rect_received_;
+  gfx::Rect last_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameRectChangedMessageFilter);
 };
 
 }  // namespace content
