@@ -360,7 +360,11 @@ typedef struct frame_contexts {
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+  aom_cdf_prob delta_lf_cdf[FRAME_LF_COUNT][CDF_SIZE(DELTA_LF_PROBS + 1)];
+#else
   aom_cdf_prob delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 #if CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
@@ -376,7 +380,11 @@ typedef struct frame_contexts {
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   aom_prob delta_q_prob[DELTA_Q_PROBS];
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+  aom_prob delta_lf_prob[FRAME_LF_COUNT][DELTA_LF_PROBS];
+#else
   aom_prob delta_lf_prob[DELTA_LF_PROBS];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 #if CONFIG_PVQ
   // TODO(any): If PVQ is enabled, most of coefficient related cdf,
@@ -507,7 +515,11 @@ typedef struct FRAME_COUNTS {
 #endif
   unsigned int delta_q[DELTA_Q_PROBS][2];
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+  unsigned int delta_lf[FRAME_LF_COUNT][DELTA_LF_PROBS][2];
+#else
   unsigned int delta_lf[DELTA_LF_PROBS][2];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   unsigned int tx_size_implied[TX_SIZES][TX_SIZES];

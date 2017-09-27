@@ -82,6 +82,12 @@ extern "C" {
 
 #define MI_SIZE_64X64 (64 >> MI_SIZE_LOG2)
 
+#if CONFIG_LOOPFILTER_LEVEL
+// 4 frame filter levels: y plane vertical, y plane horizontal,
+// u plane, and v plane
+#define FRAME_LF_COUNT 4
+#endif  // CONFIG_LOOPFILTER_LEVEL
+
 #if CONFIG_LPF_SB
 #define LPF_DELTA_BITS 3
 #define LPF_STEP 2

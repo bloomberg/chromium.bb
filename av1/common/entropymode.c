@@ -1683,11 +1683,24 @@ static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+static const aom_prob default_delta_lf_probs[FRAME_LF_COUNT][DELTA_LF_PROBS] = {
+  { 220, 220, 220 }, { 220, 220, 220 }, { 220, 220, 220 }, { 220, 220, 220 }
+};
+static const aom_cdf_prob
+    default_delta_lf_cdf[FRAME_LF_COUNT][CDF_SIZE(DELTA_LF_PROBS + 1)] = {
+      { AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0 }
+    };
+#else
 static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
                                                                  220 };
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 
 #if CONFIG_SMOOTH_HV
@@ -5287,9 +5300,16 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+  for (i = 0; i < FRAME_LF_COUNT; ++i)
+    for (int j = 0; j < DELTA_LF_PROBS; ++j)
+      fc->delta_lf_prob[i][j] = mode_mv_merge_probs(pre_fc->delta_lf_prob[i][j],
+                                                    counts->delta_lf[i][j]);
+#else
   for (i = 0; i < DELTA_LF_PROBS; ++i)
     fc->delta_lf_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_lf_prob[i], counts->delta_lf[i]);
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_EXT_DELTA_Q
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP

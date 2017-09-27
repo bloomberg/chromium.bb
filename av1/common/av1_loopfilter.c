@@ -27,6 +27,12 @@ static const SEG_LVL_FEATURES seg_lvl_lf_lut[MAX_MB_PLANE][2] = {
   { SEG_LVL_ALT_LF_U, SEG_LVL_ALT_LF_U },
   { SEG_LVL_ALT_LF_V, SEG_LVL_ALT_LF_V }
 };
+
+#if CONFIG_EXT_DELTA_Q
+static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
+  { 0, 1 }, { 2, 2 }, { 3, 3 }
+};
+#endif  // CONFIG_EXT_DELTA_Q
 #endif  // CONFIG_LOOPFILTER_LEVEL
 
 #if CONFIG_LPF_DIRECT
@@ -645,9 +651,10 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #endif  // CONFIG_SUPERTX
   if (cm->delta_lf_present_flag) {
 #if CONFIG_LOOPFILTER_LEVEL
+    const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
+    const int delta_lf = mbmi->curr_delta_lf[delta_lf_idx];
     int lvl_seg =
-        clamp(mbmi->current_delta_lf_from_base + cm->lf.filter_level[dir_idx],
-              0, MAX_LOOP_FILTER);
+        clamp(delta_lf + cm->lf.filter_level[dir_idx], 0, MAX_LOOP_FILTER);
 #else
     int lvl_seg = clamp(mbmi->current_delta_lf_from_base + cm->lf.filter_level,
                         0, MAX_LOOP_FILTER);

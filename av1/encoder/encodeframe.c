@@ -1622,6 +1622,23 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
     xd->prev_qindex = mbmi->current_q_index;
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_LOOPFILTER_LEVEL
+    if (cm->delta_lf_present_flag) {
+      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+        const int delta_lf =
+            (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
+            cm->delta_lf_res;
+        const int abs_delta_lf = abs(delta_lf);
+        for (i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
+          td->counts->delta_lf[lf_id][i][1]++;
+        }
+        if (abs_delta_lf < DELTA_LF_SMALL)
+          td->counts->delta_lf[lf_id][abs_delta_lf][0]++;
+        xd->prev_delta_lf[lf_id] = mbmi->curr_delta_lf[lf_id];
+      }
+      xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
+    }
+#else
     if (cm->delta_lf_present_flag) {
       const int dlf =
           (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
@@ -1633,6 +1650,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       if (absdlf < DELTA_LF_SMALL) td->counts->delta_lf[absdlf][0]++;
       xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
     }
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
   }
   if (!frame_is_intra_only(cm)) {
@@ -2141,6 +2159,10 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
     mbmi = &xd->mi[0]->mbmi;
     if (bsize == BLOCK_64X64 && mbmi->skip == 1 &&
         cpi->common.delta_lf_present_flag) {
+#if CONFIG_LOOPFILTER_LEVEL
+      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+        mbmi->curr_delta_lf[lf_id] = xd->prev_delta_lf[lf_id];
+#endif  // CONFIG_LOOPFILTER_LEVEL
       mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
     }
 #endif
@@ -4604,8 +4626,14 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   if (cm->delta_q_present_flag)
     if (mi_row == tile_info->mi_row_start) xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-  if (cm->delta_lf_present_flag)
+  if (cm->delta_lf_present_flag) {
+#if CONFIG_LOOPFILTER_LEVEL
+    if (mi_row == tile_info->mi_row_start)
+      for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+        xd->prev_delta_lf[lf_id] = 0;
+#endif  // CONFIG_LOOPFILTER_LEVEL
     if (mi_row == tile_info->mi_row_start) xd->prev_delta_lf_from_base = 0;
+  }
 #endif
 
   // Code each SB in the row
@@ -4702,6 +4730,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           for (k = 0; k < AOMMIN(cm->mib_size, cm->mi_cols - mi_col); k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
                 .mbmi.current_delta_lf_from_base = current_delta_lf_from_base;
+#if CONFIG_LOOPFILTER_LEVEL
+            for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
+              cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
+                  .mbmi.curr_delta_lf[lf_id] = current_delta_lf_from_base;
+            }
+#endif  // CONFIG_LOOPFILTER_LEVEL
           }
         }
       }

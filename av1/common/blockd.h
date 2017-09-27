@@ -445,6 +445,9 @@ typedef struct MB_MODE_INFO {
   int current_q_index;
 #if CONFIG_EXT_DELTA_Q
   int current_delta_lf_from_base;
+#if CONFIG_LOOPFILTER_LEVEL
+  int curr_delta_lf[FRAME_LF_COUNT];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
@@ -805,6 +808,23 @@ typedef struct macroblockd {
   // superblock's actual lf and current lf.
   int prev_delta_lf_from_base;
   int current_delta_lf_from_base;
+#if CONFIG_LOOPFILTER_LEVEL
+  // For this experiment, we have four frame filter levels for different plane
+  // and direction. So, to support the per superblock update, we need to add
+  // a few more params as below.
+  // 0: delta loop filter level for y plane vertical
+  // 1: delta loop filter level for y plane horizontal
+  // 2: delta loop filter level for u plane
+  // 3: delta loop filter level for v plane
+  // To make it consistent with the reference to each filter level in segment,
+  // we need to -1, since
+  // SEG_LVL_ALT_LF_Y_V = 1;
+  // SEG_LVL_ALT_LF_Y_H = 2;
+  // SEG_LVL_ALT_LF_U   = 3;
+  // SEG_LVL_ALT_LF_V   = 4;
+  int prev_delta_lf[FRAME_LF_COUNT];
+  int curr_delta_lf[FRAME_LF_COUNT];
+#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
 #if CONFIG_ADAPT_SCAN
   const EobThresholdMD *eob_threshold_md;

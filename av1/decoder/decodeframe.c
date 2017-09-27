@@ -5069,6 +5069,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       assert(!segment_quantizer_active);
       cm->delta_lf_present_flag = aom_rb_read_bit(rb);
       if (cm->delta_lf_present_flag) {
+#if CONFIG_LOOPFILTER_LEVEL
+        for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id)
+          xd->prev_delta_lf[lf_id] = 0;
+#endif  // CONFIG_LOOPFILTER_LEVEL
         xd->prev_delta_lf_from_base = 0;
         cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
       }
