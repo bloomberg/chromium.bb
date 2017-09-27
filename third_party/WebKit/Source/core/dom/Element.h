@@ -481,13 +481,13 @@ class CORE_EXPORT Element : public ContainerNode {
   // HostsUsingFeatures::countMainWorldOnly, which should be handled in the
   // bindings instead so adding a ShadowRoot from C++ doesn't need one.
   ShadowRoot* createShadowRoot(const ScriptState*, ExceptionState&);
-  ShadowRoot* createShadowRoot(const ScriptState* = nullptr);
   ShadowRoot* attachShadow(const ScriptState*,
                            const ShadowRootInit&,
                            ExceptionState&);
-  ShadowRoot* CreateShadowRootInternal(ShadowRootType, ExceptionState&);
+  ShadowRoot& CreateShadowRootInternal();
+  ShadowRoot& CreateUserAgentShadowRoot();
   ShadowRoot& AttachShadowRootInternal(ShadowRootType,
-                                       bool delegate_focus = false);
+                                       bool delegates_focus = false);
 
   ShadowRoot* OpenShadowRoot() const;
   ShadowRoot* ClosedShadowRoot() const;

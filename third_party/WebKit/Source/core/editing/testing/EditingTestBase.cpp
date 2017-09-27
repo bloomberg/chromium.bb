@@ -96,13 +96,13 @@ ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
     TreeScope& scope,
     const char* host_element_id,
     const char* shadow_root_content) {
-  ShadowRoot* shadow_root =
+  ShadowRoot& shadow_root =
       scope.getElementById(AtomicString::FromUTF8(host_element_id))
-          ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_root_content),
-                                      ASSERT_NO_EXCEPTION);
+          ->CreateShadowRootInternal();
+  shadow_root.SetInnerHTMLFromString(String::FromUTF8(shadow_root_content),
+                                     ASSERT_NO_EXCEPTION);
   scope.GetDocument().View()->UpdateAllLifecyclePhases();
-  return shadow_root;
+  return &shadow_root;
 }
 
 void EditingTestBase::SetBodyContent(const std::string& body_content) {

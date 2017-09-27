@@ -161,9 +161,18 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
                                ShadowRootType shadow_type,
                                const char* shadow_content,
                                bool delegates_focus = false) {
-    ShadowRoot* shadow_root =
-        scope.getElementById(AtomicString::FromUTF8(host))
-            ->CreateShadowRootInternal(shadow_type, ASSERT_NO_EXCEPTION);
+    Element* host_element = scope.getElementById(AtomicString::FromUTF8(host));
+    ShadowRoot* shadow_root;
+    if (shadow_type == ShadowRootType::V0) {
+      DCHECK(!delegates_focus);
+      shadow_root = &host_element->CreateShadowRootInternal();
+    } else if (shadow_type == ShadowRootType::kUserAgent) {
+      DCHECK(!delegates_focus);
+      shadow_root = &host_element->CreateUserAgentShadowRoot();
+    } else {
+      shadow_root =
+          &host_element->AttachShadowRootInternal(shadow_type, delegates_focus);
+    }
     shadow_root->SetDelegatesFocus(delegates_focus);
     shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_content),
                                         ASSERT_NO_EXCEPTION);

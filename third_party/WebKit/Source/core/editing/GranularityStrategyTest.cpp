@@ -720,9 +720,9 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
-  ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
-      ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
-  shadow_root->SetInnerHTMLFromString("<input type=range>");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
@@ -756,9 +756,9 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
-  ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
-      ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
-  shadow_root->SetInnerHTMLFromString("<input type=range>");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =

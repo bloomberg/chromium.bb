@@ -18,9 +18,8 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
 
   Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
-  ShadowRoot* shadow_root =
-      html->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  EXPECT_EQ(shadow_root, shadow_root->CommonAncestorTreeScope(*shadow_root));
+  ShadowRoot& shadow_root = html->CreateShadowRootInternal();
+  EXPECT_EQ(shadow_root, shadow_root.CommonAncestorTreeScope(shadow_root));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
@@ -31,11 +30,10 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   Document* document = Document::CreateForTest();
   Element* html = document->createElement("html", StringOrDictionary());
   document->AppendChild(html);
-  ShadowRoot* shadow_root =
-      html->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+  ShadowRoot& shadow_root = html->CreateShadowRootInternal();
 
-  EXPECT_EQ(document, document->CommonAncestorTreeScope(*shadow_root));
-  EXPECT_EQ(document, shadow_root->CommonAncestorTreeScope(*document));
+  EXPECT_EQ(document, document->CommonAncestorTreeScope(shadow_root));
+  EXPECT_EQ(document, shadow_root.CommonAncestorTreeScope(*document));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
@@ -51,13 +49,11 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   Element* body = document->createElement("body", StringOrDictionary());
   html->AppendChild(body);
 
-  ShadowRoot* shadow_root_a =
-      head->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  ShadowRoot* shadow_root_b =
-      body->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+  ShadowRoot& shadow_root_a = head->CreateShadowRootInternal();
+  ShadowRoot& shadow_root_b = body->CreateShadowRootInternal();
 
-  EXPECT_EQ(document, shadow_root_a->CommonAncestorTreeScope(*shadow_root_b));
-  EXPECT_EQ(document, shadow_root_b->CommonAncestorTreeScope(*shadow_root_a));
+  EXPECT_EQ(document, shadow_root_a.CommonAncestorTreeScope(shadow_root_b));
+  EXPECT_EQ(document, shadow_root_b.CommonAncestorTreeScope(shadow_root_a));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
@@ -75,18 +71,15 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   Element* body = document->createElement("body", StringOrDictionary());
   html->AppendChild(body);
 
-  ShadowRoot* shadow_root_y =
-      head->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  ShadowRoot* shadow_root_b =
-      body->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+  ShadowRoot& shadow_root_y = head->CreateShadowRootInternal();
+  ShadowRoot& shadow_root_b = body->CreateShadowRootInternal();
 
   Element* div_in_y = document->createElement("div", StringOrDictionary());
-  shadow_root_y->AppendChild(div_in_y);
-  ShadowRoot* shadow_root_a = div_in_y->CreateShadowRootInternal(
-      ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+  shadow_root_y.AppendChild(div_in_y);
+  ShadowRoot& shadow_root_a = div_in_y->CreateShadowRootInternal();
 
-  EXPECT_EQ(document, shadow_root_a->CommonAncestorTreeScope(*shadow_root_b));
-  EXPECT_EQ(document, shadow_root_b->CommonAncestorTreeScope(*shadow_root_a));
+  EXPECT_EQ(document, shadow_root_a.CommonAncestorTreeScope(shadow_root_b));
+  EXPECT_EQ(document, shadow_root_b.CommonAncestorTreeScope(shadow_root_a));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments) {
