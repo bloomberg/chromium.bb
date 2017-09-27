@@ -11,6 +11,7 @@
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/tracing.h"
@@ -141,16 +142,20 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
                            int number_of_extenstion_processes = 0u) {
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
                     count, true);
+#if !defined(OS_MACOSX)
   CheckMemoryMetric("Memory.Experimental.Browser2.Resident", histogram_tester,
                     count, true);
+#endif
   CheckMemoryMetric("Memory.Experimental.Browser2.PrivateMemoryFootprint",
                     histogram_tester, count, true);
   if (number_of_renderer_processes) {
     CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
                       count, true, number_of_renderer_processes);
+#if !defined(OS_MACOSX)
     CheckMemoryMetric("Memory.Experimental.Renderer2.Resident",
                       histogram_tester, count, true,
                       number_of_renderer_processes);
+#endif
     CheckMemoryMetric("Memory.Experimental.Renderer2.BlinkGC", histogram_tester,
                       count, false, number_of_renderer_processes);
     CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
@@ -165,9 +170,11 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
   if (number_of_extenstion_processes) {
     CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
                       count, true, number_of_extenstion_processes);
+#if !defined(OS_MACOSX)
     CheckMemoryMetric("Memory.Experimental.Extension2.Resident",
                       histogram_tester, count, true,
                       number_of_extenstion_processes);
+#endif
     CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
                       histogram_tester, count, false,
                       number_of_extenstion_processes);
@@ -252,8 +259,10 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
                               size_t metric_count = 1u) {
     CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
                               metric_count);
+#if !defined(OS_MACOSX)
     CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
                               metric_count);
+#endif
     CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
                               false, metric_count);
     CheckMemoryMetricWithName(source_id, UkmEntry::kBlinkGCName, true,
@@ -271,8 +280,10 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
                              size_t metric_count = 1u) {
     CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
                               metric_count);
+#if !defined(OS_MACOSX)
     CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
                               metric_count);
+#endif
     CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
                               false, metric_count);
   }
