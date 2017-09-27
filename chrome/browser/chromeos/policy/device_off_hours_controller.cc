@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/gregocal.h"
@@ -203,9 +204,26 @@ std::unique_ptr<em::ChromeDeviceSettingsProto> ApplyOffHoursPolicyToProto(
   return policies;
 }
 
-DeviceOffHoursController::DeviceOffHoursController() {}
+DeviceOffHoursController::DeviceOffHoursController() {
+  if (chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+        this);
+  }
+}
 
-DeviceOffHoursController::~DeviceOffHoursController() {}
+DeviceOffHoursController::~DeviceOffHoursController() {
+  if (chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+        this);
+  }
+}
+
+void DeviceOffHoursController::SuspendDone(
+    const base::TimeDelta& sleep_duration) {
+  // Triggered when device wakes up. "OffHours" state could be changed during
+  // sleep mode and should be updated after that.
+  UpdateOffHoursMode();
+}
 
 void DeviceOffHoursController::UpdateOffHoursMode() {
   if (off_hours_intervals_.empty()) {
