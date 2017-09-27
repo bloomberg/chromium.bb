@@ -534,8 +534,8 @@ Tool types
       "action": Defaults for actions
 
     Platform specific tools:
-      "copy_bundle_data": [iOS, OS X] Tool to copy files in a bundle.
-      "compile_xcassets": [iOS, OS X] Tool to compile asset catalogs.
+      "copy_bundle_data": [iOS, macOS] Tool to copy files in a bundle.
+      "compile_xcassets": [iOS, macOS] Tool to compile asset catalogs.
 
 Tool variables
 
@@ -886,7 +886,7 @@ R"(  The static library ("alink") tool allows {{arflags}} plus the common tool
   common tool substitutions.
 
   The copy_bundle_data and compile_xcassets tools only allows the common tool
-  substitutions. Both tools are required to create iOS/OS X bundles and need
+  substitutions. Both tools are required to create iOS/macOS bundles and need
   only be defined on those platforms.
 
   The copy_bundle_data tool will be called with one source and needs to copy

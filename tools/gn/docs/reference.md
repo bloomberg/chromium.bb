@@ -19,9 +19,9 @@
 *   [Target declarations](#targets)
     *   [action: Declare a target that runs a script a single time.](#action)
     *   [action_foreach: Declare a target that runs a script over a set of files.](#action_foreach)
-    *   [bundle_data: [iOS/OS X] Declare a target without output.](#bundle_data)
+    *   [bundle_data: [iOS/macOS] Declare a target without output.](#bundle_data)
     *   [copy: Declare a target that copies files.](#copy)
-    *   [create_bundle: [iOS/OS X] Build an OS X / iOS bundle.](#create_bundle)
+    *   [create_bundle: [iOS/macOS] Build an iOS or macOS bundle.](#create_bundle)
     *   [executable: Declare an executable target.](#executable)
     *   [group: Declare a named group of targets.](#group)
     *   [loadable_module: Declare a loadable module target.](#loadable_module)
@@ -1159,7 +1159,7 @@
         "/{{source_name_part}}.h" ]
   }
 ```
-### <a name="bundle_data"></a>**bundle_data**: [iOS/OS X] Declare a target without output.
+### <a name="bundle_data"></a>**bundle_data**: [iOS/macOS] Declare a target without output.
 
 ```
   This target type allows to declare data that is required at runtime. It is
@@ -1171,8 +1171,8 @@
   output. The output must reference a file inside of {{bundle_root_dir}}.
 
   This target can be used on all platforms though it is designed only to
-  generate iOS/OS X bundle. In cross-platform projects, it is advised to put it
-  behind iOS/Mac conditionals.
+  generate iOS/macOS bundle. In cross-platform projects, it is advised to put it
+  behind iOS/macOS conditionals.
 
   See "gn help create_bundle" for more information.
 ```
@@ -1250,10 +1250,10 @@
     outputs = [ "$target_gen_dir/{{source_file_part}}" ]
   }
 ```
-### <a name="create_bundle"></a>**create_bundle**: [iOS/OS X] Build an OS X / iOS bundle.
+### <a name="create_bundle"></a>**create_bundle**: [ios/macOS] Build an iOS or macOS bundle.
 
 ```
-  This target generates an iOS/OS X bundle (which is a directory with a
+  This target generates an iOS or macOS bundle (which is a directory with a
   well-know structure). This target does not define any sources, instead they
   are computed from all "bundle_data" target this one depends on transitively
   (the recursion stops at "create_bundle" targets).
@@ -1262,8 +1262,8 @@
   expansion of {{bundle_*_dir}} rules in "bundle_data" outputs.
 
   This target can be used on all platforms though it is designed only to
-  generate iOS/OS X bundle. In cross-platform projects, it is advised to put it
-  behind iOS/Mac conditionals.
+  generate iOS or macOS bundle. In cross-platform projects, it is advised to put
+  it behind iOS/macOS conditionals.
 
   If a create_bundle is specified as a data_deps for another target, the bundle
   is considered a leaf, and its public and private dependencies will not
@@ -1305,7 +1305,7 @@
 
 ```
   # Defines a template to create an application. On most platform, this is just
-  # an alias for an "executable" target, but on iOS/OS X, it builds an
+  # an alias for an "executable" target, but on iOS/macOS, it builds an
   # application bundle.
   template("app") {
     if (!is_ios && !is_mac) {
@@ -2754,8 +2754,8 @@
       "action": Defaults for actions
 
     Platform specific tools:
-      "copy_bundle_data": [iOS, OS X] Tool to copy files in a bundle.
-      "compile_xcassets": [iOS, OS X] Tool to compile asset catalogs.
+      "copy_bundle_data": [iOS, macOS] Tool to copy files in a bundle.
+      "compile_xcassets": [iOS, macOS] Tool to compile asset catalogs.
 ```
 
 #### **Tool variables**
@@ -3108,7 +3108,7 @@
   common tool substitutions.
 
   The copy_bundle_data and compile_xcassets tools only allows the common tool
-  substitutions. Both tools are required to create iOS/OS X bundles and need
+  substitutions. Both tools are required to create iOS/macOS bundles and need
   only be defined on those platforms.
 
   The copy_bundle_data tool will be called with one source and needs to copy
@@ -4388,7 +4388,7 @@
   However, no verification is done on these so GN doesn't enforce this. The
   paths are just rebased and passed along when requested.
 
-  Note: On iOS and OS X, create_bundle targets will not be recursed into when
+  Note: On iOS and macOS, create_bundle targets will not be recursed into when
   gathering data. See "gn help create_bundle" for details.
 
   See "gn help runtime_deps" for how these are used.
@@ -4405,7 +4405,7 @@
   This is normally used for things like plugins or helper programs that a
   target needs at runtime.
 
-  Note: On iOS and OS X, create_bundle targets will not be recursed into when
+  Note: On iOS and macOS, create_bundle targets will not be recursed into when
   gathering data_deps. See "gn help create_bundle" for details.
 
   See also "gn help deps" and "gn help data".
