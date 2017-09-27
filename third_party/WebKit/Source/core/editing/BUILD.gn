@@ -23,6 +23,7 @@ blink_core_sources("editing") {
     "EditingStyle.h",
     "EditingStyleUtilities.cpp",
     "EditingStyleUtilities.h",
+    "EditingTriState.h",
     "EditingUtilities.cpp",
     "EditingUtilities.h",
     "Editor.cpp",

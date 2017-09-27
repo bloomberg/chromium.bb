@@ -131,7 +131,6 @@ component("wtf") {
     "ThreadingWin.cpp",
     "Time.h",
     "TreeNode.h",
-    "TriState.h",
     "TypeTraits.h",
     "Vector.h",
     "VectorTraits.h",

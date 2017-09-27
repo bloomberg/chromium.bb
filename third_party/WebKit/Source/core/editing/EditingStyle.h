@@ -39,7 +39,6 @@
 #include "core/editing/WritingDirection.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/TriState.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -56,6 +55,7 @@ class Node;
 class QualifiedName;
 class ComputedStyle;
 class StylePropertySet;
+enum class EditingTriState;
 
 class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
  public:
@@ -112,8 +112,8 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
     kIgnoreTextOnlyProperties,
     kDoNotIgnoreTextOnlyProperties
   };
-  TriState TriStateOfStyle(EditingStyle*) const;
-  TriState TriStateOfStyle(const VisibleSelection&) const;
+  EditingTriState TriStateOfStyle(EditingStyle*) const;
+  EditingTriState TriStateOfStyle(const VisibleSelection&) const;
   bool ConflictsWithInlineStyleOfElement(HTMLElement* element) const {
     return ConflictsWithInlineStyleOfElement(element, 0, 0);
   }
@@ -176,8 +176,8 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   void ReplaceFontSizeByKeywordIfPossible(const ComputedStyle*,
                                           CSSComputedStyleDeclaration*);
   void ExtractFontSizeDelta();
-  TriState TriStateOfStyle(CSSStyleDeclaration* style_to_compare,
-                           ShouldIgnoreTextOnlyProperties) const;
+  EditingTriState TriStateOfStyle(CSSStyleDeclaration* style_to_compare,
+                                  ShouldIgnoreTextOnlyProperties) const;
   bool ConflictsWithInlineStyleOfElement(
       HTMLElement*,
       EditingStyle* extracted_style,
