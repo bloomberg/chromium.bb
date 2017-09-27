@@ -165,7 +165,7 @@ class CONTENT_EXPORT NavigationThrottle {
   virtual void Resume();
 
   // Cancels a navigation that was previously deferred by this
-  // NavigationThrottle. |result| should be equal to either:
+  // NavigationThrottle. |result|'s action should be equal to either:
   //  - NavigationThrottle::CANCEL,
   //  - NavigationThrottle::CANCEL_AND_IGNORE, or
   //  - NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE.
