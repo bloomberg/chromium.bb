@@ -570,13 +570,6 @@ void SurfaceManager::DestroySurfaceInternal(const SurfaceId& surface_id) {
 }
 
 #if DCHECK_IS_ON()
-void SurfaceManager::AppendDebugFrameSinkLabel(const FrameSinkId& frame_sink_id,
-                                               std::stringstream* str) const {
-  std::string frame_sink_label = GetFrameSinkDebugLabel(frame_sink_id);
-  if (!frame_sink_label.empty())
-    *str << " " << frame_sink_label;
-}
-
 void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
                                                    std::string indent,
                                                    std::stringstream* str) {
@@ -586,7 +579,10 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
   if (surface) {
     *str << surface->surface_id().ToString();
 
-    AppendDebugFrameSinkLabel(surface_id.frame_sink_id(), str);
+    std::string frame_sink_label =
+        GetFrameSinkDebugLabel(surface_id.frame_sink_id());
+    if (!frame_sink_label.empty())
+      *str << " " << frame_sink_label;
     *str << (IsMarkedForDestruction(surface_id) ? " destroyed" : " live");
 
     if (surface->HasPendingFrame()) {

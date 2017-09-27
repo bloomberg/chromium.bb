@@ -113,6 +113,10 @@ class SurfaceReferencesTest : public testing::Test {
     return temp_references;
   }
 
+  const base::flat_map<FrameSinkId, std::string>& GetFrameSinkLabels() {
+    return manager_->surface_manager()->valid_frame_sink_labels_;
+  }
+
  protected:
   // testing::Test:
   void SetUp() override {
@@ -145,6 +149,26 @@ TEST_F(SurfaceReferencesTest, AddReference) {
               UnorderedElementsAre(GetSurfaceManager().GetRootSurfaceId()));
   EXPECT_THAT(GetReferencesFrom(id1), IsEmpty());
 }
+
+#if DCHECK_IS_ON()
+// The test sets up a surface reference with a label and verifies that the label
+// is correctly associated with the Surface. It then invalidates the FrameSinkId
+// associated with the label and verifies that the label no longer exists in
+// |SurfaceManager::valid_frame_sink_labels_|.
+TEST_F(SurfaceReferencesTest, DebugLabelLookup) {
+  CreateSurface(kFrameSink1, 1);
+  const std::string kLabel = "kFrameSink1";
+  GetSurfaceManager().SetFrameSinkDebugLabel(kFrameSink1, kLabel);
+  EXPECT_EQ(kLabel, GetSurfaceManager().GetFrameSinkDebugLabel(kFrameSink1));
+  GetSurfaceManager().InvalidateFrameSinkId(kFrameSink1);
+
+  // Verify that the label is no longer in |valid_frame_sink_labels_|. The first
+  // EXPECT_EQ calls GetFrameSinkDebugLabel(). The second EXPECT_EQ verifies
+  // that calling GetFrameSinkDebugLabel() doesn't add the entry back.
+  EXPECT_EQ("", GetSurfaceManager().GetFrameSinkDebugLabel(kFrameSink1));
+  EXPECT_EQ(0u, GetFrameSinkLabels().count(kFrameSink1));
+}
+#endif
 
 TEST_F(SurfaceReferencesTest, AddRemoveReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, 1);
