@@ -10,13 +10,13 @@
 
 using content::DesktopMediaID;
 
-FakeDesktopMediaList::FakeDesktopMediaList(DesktopMediaID::Type type)
+FakeDesktopMediaList::FakeDesktopMediaList(DesktopMediaID::Source type)
     : observer_(NULL), type_(type) {}
 FakeDesktopMediaList::~FakeDesktopMediaList() {}
 
 void FakeDesktopMediaList::AddSource(int id) {
   AddSourceByFullMediaID(
-      content::DesktopMediaID(DesktopMediaID::TYPE_WINDOW, id));
+      content::DesktopMediaID(DesktopMediaID::SOURCE_WINDOW, id));
 }
 
 void FakeDesktopMediaList::AddSourceByFullMediaID(
@@ -74,6 +74,6 @@ const DesktopMediaList::Source& FakeDesktopMediaList::GetSource(
   return sources_[index];
 }
 
-DesktopMediaID::Type FakeDesktopMediaList::GetMediaListType() const {
+DesktopMediaID::Source FakeDesktopMediaList::GetMediaListType() const {
   return type_;
 }

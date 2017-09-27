@@ -11,7 +11,7 @@
 
 class FakeDesktopMediaList : public DesktopMediaList {
  public:
-  explicit FakeDesktopMediaList(content::DesktopMediaID::Type type);
+  explicit FakeDesktopMediaList(content::DesktopMediaID::Source type);
   ~FakeDesktopMediaList() override;
 
   void AddSource(int id);
@@ -28,13 +28,13 @@ class FakeDesktopMediaList : public DesktopMediaList {
   void StartUpdating(DesktopMediaListObserver* observer) override;
   int GetSourceCount() const override;
   const Source& GetSource(int index) const override;
-  content::DesktopMediaID::Type GetMediaListType() const override;
+  content::DesktopMediaID::Source GetMediaListType() const override;
 
  private:
   std::vector<Source> sources_;
   DesktopMediaListObserver* observer_;
   gfx::ImageSkia thumbnail_;
-  const content::DesktopMediaID::Type type_;
+  const content::DesktopMediaID::Source type_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaList);
 };

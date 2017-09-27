@@ -83,7 +83,7 @@ class NativeDesktopMediaList::Worker
     : public webrtc::DesktopCapturer::Callback {
  public:
   Worker(base::WeakPtr<NativeDesktopMediaList> media_list,
-         DesktopMediaID::Type type,
+         DesktopMediaID::Source type,
          std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~Worker() override;
 
@@ -101,7 +101,7 @@ class NativeDesktopMediaList::Worker
 
   base::WeakPtr<NativeDesktopMediaList> media_list_;
 
-  DesktopMediaID::Type type_;
+  DesktopMediaID::Source type_;
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
 
   std::unique_ptr<webrtc::DesktopFrame> current_frame_;
@@ -113,7 +113,7 @@ class NativeDesktopMediaList::Worker
 
 NativeDesktopMediaList::Worker::Worker(
     base::WeakPtr<NativeDesktopMediaList> media_list,
-    DesktopMediaID::Type type,
+    DesktopMediaID::Source type,
     std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : media_list_(media_list), type_(type), capturer_(std::move(capturer)) {
   capturer_->Start(this);
@@ -135,7 +135,7 @@ void NativeDesktopMediaList::Worker::Refresh(
   base::string16 title;
   for (size_t i = 0; i < sources.size(); ++i) {
     switch (type_) {
-      case DesktopMediaID::TYPE_SCREEN:
+      case DesktopMediaID::SOURCE_SCREEN:
         // Just in case 'Screen' is inflected depending on the screen number,
         // use plural formatter.
         title = mutiple_sources
@@ -146,7 +146,7 @@ void NativeDesktopMediaList::Worker::Refresh(
                           IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME);
         break;
 
-      case DesktopMediaID::TYPE_WINDOW:
+      case DesktopMediaID::SOURCE_WINDOW:
         // Skip the picker dialog window.
         if (sources[i].id == view_dialog_id)
           continue;
@@ -212,7 +212,7 @@ void NativeDesktopMediaList::Worker::OnCaptureResult(
 }
 
 NativeDesktopMediaList::NativeDesktopMediaList(
-    DesktopMediaID::Type type,
+    DesktopMediaID::Source type,
     std::unique_ptr<webrtc::DesktopCapturer> capturer)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
@@ -247,7 +247,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 #if defined(USE_AURA)
   // Associate aura id with native id.
   for (auto& source : sources) {
-    if (source.id.type != DesktopMediaID::TYPE_WINDOW)
+    if (source.id.source_type != DesktopMediaID::SOURCE_WINDOW)
       continue;
 
     aura::Window* aura_window = NULL;
@@ -260,7 +260,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 #endif  // defined(USE_X11)
     if (aura_window) {
       DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
-          DesktopMediaID::TYPE_WINDOW, aura_window);
+          DesktopMediaID::SOURCE_WINDOW, aura_window);
       source.id.aura_id = aura_id.aura_id;
     }
   }

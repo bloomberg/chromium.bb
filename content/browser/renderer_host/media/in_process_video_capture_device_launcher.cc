@@ -272,11 +272,11 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
     return;
   }
 
-  if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+  if (desktop_id.source_type == DesktopMediaID::SOURCE_WEB_CONTENTS) {
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     video_capture_device = WebContentsVideoCaptureDevice::Create(id);
     IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED);
-    if (desktop_id.audio_share) {
+    if (desktop_id.is_audio_capture()) {
       IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITH_AUDIO);
     } else {
       IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITHOUT_AUDIO);

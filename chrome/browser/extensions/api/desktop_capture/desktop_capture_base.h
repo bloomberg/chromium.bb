@@ -30,7 +30,7 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
    public:
     virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
     virtual std::unique_ptr<DesktopMediaList> CreateMediaList(
-        content::DesktopMediaID::Type type) = 0;
+        content::DesktopMediaID::Source type) = 0;
 
    protected:
     PickerFactory() = default;

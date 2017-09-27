@@ -11,7 +11,7 @@
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
-  DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
+  DCHECK(id.source_type == content::DesktopMediaID::SOURCE_WINDOW);
 
   CGWindowID ids[1];
   ids[0] = id.id;

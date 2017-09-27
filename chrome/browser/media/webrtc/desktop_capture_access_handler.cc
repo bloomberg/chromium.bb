@@ -74,74 +74,75 @@ bool ShouldDisplayNotification(const extensions::Extension* extension) {
 base::string16 GetStopSharingUIString(
     const base::string16& application_title,
     const base::string16& registered_extension_name,
-    bool capture_audio,
-    content::DesktopMediaID::Type capture_type) {
-  if (!capture_audio) {
+    const content::DesktopMediaID& media_id) {
+  if (!media_id.is_audio_capture()) {
+    DCHECK(media_id.is_video_capture());
     if (application_title == registered_extension_name) {
-      switch (capture_type) {
-        case content::DesktopMediaID::TYPE_SCREEN:
+      switch (media_id.source_type) {
+        case content::DesktopMediaID::SOURCE_SCREEN:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, application_title);
-        case content::DesktopMediaID::TYPE_WINDOW:
+        case content::DesktopMediaID::SOURCE_WINDOW:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_WINDOW_CAPTURE_NOTIFICATION_TEXT, application_title);
-        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+        case content::DesktopMediaID::SOURCE_WEB_CONTENTS:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_TAB_CAPTURE_NOTIFICATION_TEXT, application_title);
-        case content::DesktopMediaID::TYPE_NONE:
+        case content::DesktopMediaID::SOURCE_NONE:
           NOTREACHED();
       }
     } else {
-      switch (capture_type) {
-        case content::DesktopMediaID::TYPE_SCREEN:
+      switch (media_id.source_type) {
+        case content::DesktopMediaID::SOURCE_SCREEN:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
               registered_extension_name, application_title);
-        case content::DesktopMediaID::TYPE_WINDOW:
+        case content::DesktopMediaID::SOURCE_WINDOW:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_WINDOW_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
               registered_extension_name, application_title);
-        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+        case content::DesktopMediaID::SOURCE_WEB_CONTENTS:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_TAB_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
               registered_extension_name, application_title);
-        case content::DesktopMediaID::TYPE_NONE:
+        case content::DesktopMediaID::SOURCE_NONE:
           NOTREACHED();
       }
     }
-  } else if (capture_type != content::DesktopMediaID::TYPE_NONE) {
+  } else if (media_id.is_video_capture() && media_id.is_audio_capture()) {
     // Audio and screen capture
     if (application_title == registered_extension_name) {
-      switch (capture_type) {
-        case content::DesktopMediaID::TYPE_SCREEN:
+      switch (media_id.source_type) {
+        case content::DesktopMediaID::SOURCE_SCREEN:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT,
               application_title);
-        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+        case content::DesktopMediaID::SOURCE_WEB_CONTENTS:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT,
               application_title);
-        case content::DesktopMediaID::TYPE_NONE:
-        case content::DesktopMediaID::TYPE_WINDOW:
+        case content::DesktopMediaID::SOURCE_NONE:
+        case content::DesktopMediaID::SOURCE_WINDOW:
           NOTREACHED();
       }
     } else {
-      switch (capture_type) {
-        case content::DesktopMediaID::TYPE_SCREEN:
+      switch (media_id.source_type) {
+        case content::DesktopMediaID::SOURCE_SCREEN:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED,
               registered_extension_name, application_title);
-        case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+        case content::DesktopMediaID::SOURCE_WEB_CONTENTS:
           return l10n_util::GetStringFUTF16(
               IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED,
               registered_extension_name, application_title);
-        case content::DesktopMediaID::TYPE_NONE:
-        case content::DesktopMediaID::TYPE_WINDOW:
+        case content::DesktopMediaID::SOURCE_NONE:
+        case content::DesktopMediaID::SOURCE_WINDOW:
           NOTREACHED();
       }
     }
   } else {
     // Audio-only capture.
+    DCHECK(media_id.is_audio_capture() && !media_id.is_video_capture());
     return application_title == registered_extension_name
                ? l10n_util::GetStringFUTF16(
                      IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_NOTIFICATION_TEXT,
@@ -177,8 +178,7 @@ base::string16 GetConfirmationUIString(
 // Returns an instance of MediaStreamUI to be passed to content layer.
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::MediaStreamDevices* devices,
-    content::DesktopMediaID media_id,
-    bool capture_audio,
+    const content::DesktopMediaID& media_id,
     bool disable_local_echo,
     bool display_notification,
     const base::string16& application_title,
@@ -187,21 +187,23 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   std::unique_ptr<content::MediaStreamUI> ui;
 
   DVLOG(2) << __func__ << ": media_id " << media_id.ToString()
-           << ", capture_audio " << capture_audio << ", disable_local_echo "
-           << disable_local_echo << ", display_notification "
-           << display_notification << ", application_title "
-           << application_title << ", extension_name "
+           << ", video_capture " << media_id.is_video_capture()
+           << ", audio_capture " << media_id.is_audio_capture()
+           << ", disable_local_echo " << disable_local_echo
+           << ", display_notification " << display_notification
+           << ", application_title " << application_title << ", extension_name "
            << registered_extension_name;
 
   // Add selected desktop source to the list.
-  if (media_id.type == content::DesktopMediaID::TYPE_SCREEN) {
+  if (media_id.source_type == content::DesktopMediaID::SOURCE_SCREEN &&
+      media_id.is_video_capture()) {
     devices->push_back(
         content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
                                    media_id.ToString(), media_id.ToString()));
   }
 
-  if (capture_audio) {
-    if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
+  if (media_id.is_audio_capture()) {
+    if (media_id.source_type == content::DesktopMediaID::SOURCE_WEB_CONTENTS) {
       content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;
       web_id.disable_local_echo = disable_local_echo;
       devices->push_back(
@@ -228,8 +230,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   }
 
   ui = ScreenCaptureNotificationUI::Create(GetStopSharingUIString(
-      application_title, registered_extension_name, capture_audio,
-      media_id.type));
+      application_title, registered_extension_name, media_id));
 
   return ui;
 }
@@ -348,24 +349,25 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
 #if defined(OS_CHROMEOS)
         screen_id = content::DesktopMediaID::RegisterAuraWindow(
-            content::DesktopMediaID::TYPE_SCREEN,
+            content::DesktopMediaID::SOURCE_SCREEN,
             ash::Shell::Get()->GetPrimaryRootWindow());
 #else   // defined(OS_CHROMEOS)
-        screen_id = content::DesktopMediaID(
-            content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
+        screen_id =
+            content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
+                                    webrtc::kFullDesktopScreenId);
 #endif  // !defined(OS_CHROMEOS)
       }
 
-      bool capture_audio =
-          (request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
-           loopback_audio_supported);
+      screen_id.set_audio_capture(request.audio_type ==
+                                      content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
+                                  loopback_audio_supported);
 
       // Determine if the extension is required to display a notification.
       const bool display_notification = ShouldDisplayNotification(extension);
 
       ui = GetDevicesForDesktopCapture(
-          &devices, screen_id, capture_audio, request.disable_local_echo,
-          display_notification, application_title, application_title);
+          &devices, screen_id, request.disable_local_echo, display_notification,
+          application_title, application_title);
       DCHECK(!devices.empty());
     }
 
@@ -452,8 +454,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
                                              &original_extension_name);
   }
 
-  // Received invalid video device id.
-  if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
+  // Received invalid device id.
+  if (media_id.source_type == content::DesktopMediaID::SOURCE_NONE) {
     callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
@@ -466,7 +468,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // This value essentially from the checkbox on picker window, so it
   // corresponds to user permission.
-  const bool audio_permitted = media_id.audio_share;
+  const bool audio_permitted = media_id.is_audio_capture();
 
   // This value essentially from whether getUserMedia requests audio stream.
   const bool audio_requested =
@@ -476,25 +478,24 @@ void DesktopCaptureAccessHandler::HandleRequest(
   // can support audio sharing. Currently audio is only supported for screen and
   // tab/webcontents capture streams.
   const bool audio_supported =
-      (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
+      (media_id.source_type == content::DesktopMediaID::SOURCE_SCREEN &&
        loopback_audio_supported) ||
-      media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS;
+      media_id.source_type == content::DesktopMediaID::SOURCE_WEB_CONTENTS;
 
   const bool check_audio_permission =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           extensions::switches::kDisableDesktopCaptureAudio);
-  const bool capture_audio =
+  media_id.set_audio_capture(
       (check_audio_permission ? audio_permitted : true) && audio_requested &&
-      audio_supported;
+      audio_supported);
 
   // Determine if the extension is required to display a notification.
   const bool display_notification = ShouldDisplayNotification(extension);
 
-  ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio,
-                                   request.disable_local_echo,
-                                   display_notification,
-                                   GetApplicationTitle(web_contents, extension),
-                                   base::UTF8ToUTF16(original_extension_name));
+  ui = GetDevicesForDesktopCapture(
+      &devices, media_id, request.disable_local_echo, display_notification,
+      GetApplicationTitle(web_contents, extension),
+      base::UTF8ToUTF16(original_extension_name));
   UpdateExtensionTrusted(request, extension);
   callback.Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }

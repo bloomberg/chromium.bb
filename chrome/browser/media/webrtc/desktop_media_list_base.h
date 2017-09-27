@@ -30,7 +30,7 @@ class DesktopMediaListBase : public DesktopMediaList {
   void StartUpdating(DesktopMediaListObserver* observer) override;
   int GetSourceCount() const override;
   const Source& GetSource(int index) const override;
-  content::DesktopMediaID::Type GetMediaListType() const override;
+  content::DesktopMediaID::Source GetMediaListType() const override;
 
   static uint32_t GetImageHash(const gfx::Image& image);
 
@@ -60,10 +60,10 @@ class DesktopMediaListBase : public DesktopMediaList {
 
   // ID of the hosting dialog.
   content::DesktopMediaID view_dialog_id_ =
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_NONE, -1);
+      content::DesktopMediaID(content::DesktopMediaID::SOURCE_NONE, -1);
 
   // Desktop media type of the list.
-  content::DesktopMediaID::Type type_ = content::DesktopMediaID::TYPE_NONE;
+  content::DesktopMediaID::Source type_ = content::DesktopMediaID::SOURCE_NONE;
 
  private:
   // Time interval between mode updates.

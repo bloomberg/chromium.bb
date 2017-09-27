@@ -78,13 +78,13 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
   void SetUp() override {
     CocoaTest::SetUp();
 
-    std::vector<DesktopMediaID::Type> source_types = {
-        DesktopMediaID::TYPE_SCREEN, DesktopMediaID::TYPE_WINDOW,
-        DesktopMediaID::TYPE_WEB_CONTENTS};
+    std::vector<DesktopMediaID::Source> source_types = {
+        DesktopMediaID::SOURCE_SCREEN, DesktopMediaID::SOURCE_WINDOW,
+        DesktopMediaID::SOURCE_WEB_CONTENTS};
 
-    screen_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_SCREEN);
-    window_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_WINDOW);
-    tab_list_ = new FakeDesktopMediaList(DesktopMediaID::TYPE_WEB_CONTENTS);
+    screen_list_ = new FakeDesktopMediaList(DesktopMediaID::SOURCE_SCREEN);
+    window_list_ = new FakeDesktopMediaList(DesktopMediaID::SOURCE_WINDOW);
+    tab_list_ = new FakeDesktopMediaList(DesktopMediaID::SOURCE_WEB_CONTENTS);
 
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
     source_lists.push_back(std::unique_ptr<DesktopMediaList>(screen_list_));
@@ -116,7 +116,7 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
     return callback_called_;
   }
 
-  void ChangeType(DesktopMediaID::Type sourceType) {
+  void ChangeType(DesktopMediaID::Source sourceType) {
     NSSegmentedControl* control = [controller_ sourceTypeControl];
     [control selectSegmentWithTag:sourceType];
     // [control selectSegmentWithTag] does not trigger handler, so we need to
@@ -126,17 +126,17 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
 
   void AddWindow(int id) {
     window_list_->AddSourceByFullMediaID(
-        DesktopMediaID(DesktopMediaID::TYPE_WINDOW, id));
+        DesktopMediaID(DesktopMediaID::SOURCE_WINDOW, id));
   }
 
   void AddScreen(int id) {
     screen_list_->AddSourceByFullMediaID(
-        DesktopMediaID(DesktopMediaID::TYPE_SCREEN, id));
+        DesktopMediaID(DesktopMediaID::SOURCE_SCREEN, id));
   }
 
   void AddTab(int id) {
     tab_list_->AddSourceByFullMediaID(
-        DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, id));
+        DesktopMediaID(DesktopMediaID::SOURCE_WEB_CONTENTS, id));
   }
 
  protected:
@@ -157,7 +157,7 @@ class DesktopMediaPickerControllerTest : public CocoaTest {
 
 TEST_F(DesktopMediaPickerControllerTest, ShowAndDismiss) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
 
   AddScreen(0);
   AddScreen(1);
@@ -173,7 +173,7 @@ TEST_F(DesktopMediaPickerControllerTest, ShowAndDismiss) {
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
 
   EXPECT_FALSE([[controller_ shareButton] isEnabled]);
   AddScreen(0);
@@ -193,7 +193,7 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WINDOW);
+  ChangeType(DesktopMediaID::SOURCE_WINDOW);
   AddWindow(0);
   window_list_->SetSourceThumbnail(0);
   AddWindow(1);
@@ -214,7 +214,7 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareWindow) {
 
 TEST_F(DesktopMediaPickerControllerTest, ClickShareTab) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
   AddTab(0);
   tab_list_->SetSourceThumbnail(0);
   AddTab(1);
@@ -237,7 +237,7 @@ TEST_F(DesktopMediaPickerControllerTest, ClickShareTab) {
 
 TEST_F(DesktopMediaPickerControllerTest, ClickCancel) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WINDOW);
+  ChangeType(DesktopMediaID::SOURCE_WINDOW);
 
   AddWindow(0);
   window_list_->SetSourceThumbnail(0);
@@ -254,7 +254,7 @@ TEST_F(DesktopMediaPickerControllerTest, ClickCancel) {
 
 TEST_F(DesktopMediaPickerControllerTest, CloseWindow) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
 
   AddScreen(0);
   screen_list_->SetSourceThumbnail(0);
@@ -268,7 +268,7 @@ TEST_F(DesktopMediaPickerControllerTest, CloseWindow) {
 
 TEST_F(DesktopMediaPickerControllerTest, UpdateThumbnail) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
 
   AddTab(0);
   tab_list_->SetSourceThumbnail(0);
@@ -285,7 +285,7 @@ TEST_F(DesktopMediaPickerControllerTest, UpdateThumbnail) {
 
 TEST_F(DesktopMediaPickerControllerTest, UpdateName) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WINDOW);
+  ChangeType(DesktopMediaID::SOURCE_WINDOW);
 
   AddWindow(0);
   window_list_->SetSourceThumbnail(0);
@@ -302,7 +302,7 @@ TEST_F(DesktopMediaPickerControllerTest, UpdateName) {
 
 TEST_F(DesktopMediaPickerControllerTest, RemoveSource) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
 
   AddScreen(0);
   AddScreen(1);
@@ -316,7 +316,7 @@ TEST_F(DesktopMediaPickerControllerTest, RemoveSource) {
 
 TEST_F(DesktopMediaPickerControllerTest, MoveSource) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WINDOW);
+  ChangeType(DesktopMediaID::SOURCE_WINDOW);
 
   AddWindow(0);
   AddWindow(1);
@@ -345,26 +345,26 @@ TEST_F(DesktopMediaPickerControllerTest, AudioShareCheckboxState) {
   EXPECT_EQ(YES, [checkbox isHidden]);
 
   [checkbox setHidden:NO];
-  ChangeType(DesktopMediaID::TYPE_WINDOW);
+  ChangeType(DesktopMediaID::SOURCE_WINDOW);
   EXPECT_EQ(YES, [checkbox isHidden]);
 
   [checkbox setHidden:YES];
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
   EXPECT_EQ(NO, [checkbox isHidden]);
 
   [checkbox setHidden:NO];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
   EXPECT_EQ(YES, [checkbox isHidden]);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, TabShareWithAudio) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
 
   DesktopMediaID origin_id =
-      DesktopMediaID(DesktopMediaID::TYPE_WEB_CONTENTS, 123);
+      DesktopMediaID(DesktopMediaID::SOURCE_WEB_CONTENTS, 123);
   DesktopMediaID id_with_audio = origin_id;
-  id_with_audio.audio_share = true;
+  id_with_audio.set_audio_capture(true);
 
   tab_list_->AddSourceByFullMediaID(origin_id);
 
@@ -380,7 +380,7 @@ TEST_F(DesktopMediaPickerControllerTest, TabShareWithAudio) {
 
 TEST_F(DesktopMediaPickerControllerTest, TabBrowserFocusAlgorithm) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
   AddTab(0);
   AddTab(1);
   AddTab(2);
@@ -408,15 +408,15 @@ TEST_F(DesktopMediaPickerControllerTest, TabBrowserFocusAlgorithm) {
   EXPECT_EQ(1, [[items objectAtIndex:selected_index] sourceID].id);
 
   // Change source type back and forth, browser should memorize the selection.
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
-  ChangeType(DesktopMediaID::TYPE_WEB_CONTENTS);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_WEB_CONTENTS);
   selected_index = [[browser selectedRowIndexes] firstIndex];
   EXPECT_EQ(1, [[items objectAtIndex:selected_index] sourceID].id);
 }
 
 TEST_F(DesktopMediaPickerControllerTest, SingleScreenNoLabel) {
   [controller_ showWindow:nil];
-  ChangeType(DesktopMediaID::TYPE_SCREEN);
+  ChangeType(DesktopMediaID::SOURCE_SCREEN);
 
   NSArray* items = [controller_ screenItems];
 

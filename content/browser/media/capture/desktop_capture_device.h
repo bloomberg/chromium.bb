@@ -52,7 +52,7 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
 
   DesktopCaptureDevice(
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
-      DesktopMediaID::Type type);
+      DesktopMediaID::Source type);
 
   base::Thread thread_;
   std::unique_ptr<Core> core_;

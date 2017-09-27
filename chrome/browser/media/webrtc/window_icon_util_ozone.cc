@@ -8,7 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
-  DCHECK_EQ(content::DesktopMediaID::TYPE_WINDOW, id.type);
+  DCHECK_EQ(content::DesktopMediaID::SOURCE_WINDOW, id.type);
   // TODO(tonikitoo): can we make the implementation of
   // chrome/browser/media/webrtc/window_icon_util_chromeos.cc generic
   // enough so we can reuse it here?

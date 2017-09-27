@@ -25,8 +25,8 @@ void SetCaptureSource(AuraWindowCaptureMachine* machine,
   aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
   if (window) {
     machine->SetWindow(window);
-    if (source.type == DesktopMediaID::TYPE_SCREEN) {
-      if (source.audio_share)
+    if (source.source_type == DesktopMediaID::SOURCE_SCREEN) {
+      if (source.is_audio_capture())
         IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED_WITH_AUDIO);
       else
         IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);

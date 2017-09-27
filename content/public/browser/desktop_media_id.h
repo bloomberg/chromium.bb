@@ -23,7 +23,13 @@ namespace content {
 // stored in MediaStreamRequest::requested_video_device_id.
 struct CONTENT_EXPORT DesktopMediaID {
  public:
-  enum Type { TYPE_NONE, TYPE_SCREEN, TYPE_WINDOW, TYPE_WEB_CONTENTS };
+  enum Source {
+    SOURCE_NONE,
+    SOURCE_SCREEN,
+    SOURCE_WINDOW,
+    SOURCE_WEB_CONTENTS
+  };
+  enum Capture { CAPTURE_VIDEO = 1, CAPTURE_AUDIO = 2 };
 
   typedef intptr_t Id;
 
@@ -32,7 +38,8 @@ struct CONTENT_EXPORT DesktopMediaID {
 
 #if defined(USE_AURA)
   // Assigns integer identifier to the |window| and returns its DesktopMediaID.
-  static DesktopMediaID RegisterAuraWindow(Type type, aura::Window* window);
+  static DesktopMediaID RegisterAuraWindow(Source source_type,
+                                           aura::Window* window);
 
   // Returns the Window that was previously registered using
   // RegisterAuraWindow(), else nullptr.
@@ -41,23 +48,30 @@ struct CONTENT_EXPORT DesktopMediaID {
 
   DesktopMediaID() = default;
 
-  DesktopMediaID(Type type, Id id) : type(type), id(id) {}
+  DesktopMediaID(Source source_type, Id id)
+      : source_type(source_type), id(id) {}
 
-  DesktopMediaID(Type type, Id id, WebContentsMediaCaptureId web_contents_id)
-      : type(type), id(id), web_contents_id(web_contents_id) {}
+  DesktopMediaID(Source source_type,
+                 Id id,
+                 WebContentsMediaCaptureId web_contents_id)
+      : source_type(source_type), id(id), web_contents_id(web_contents_id) {}
 
-  DesktopMediaID(Type type, Id id, bool audio_share)
-      : type(type), id(id), audio_share(audio_share) {}
+  DesktopMediaID(Source source_type, Id id, uint32_t capture_type)
+      : source_type(source_type), id(id), capture_type(capture_type) {}
 
   // Operators so that DesktopMediaID can be used with STL containers.
   bool operator<(const DesktopMediaID& other) const;
   bool operator==(const DesktopMediaID& other) const;
 
-  bool is_null() const { return type == TYPE_NONE; }
-  std::string ToString() const;
+  bool is_null() const { return source_type == SOURCE_NONE; }
+  void set_video_capture(bool capture);
+  void set_audio_capture(bool capture);
+  bool is_video_capture() const { return capture_type & CAPTURE_VIDEO; }
+  bool is_audio_capture() const { return capture_type & CAPTURE_AUDIO; }
   static DesktopMediaID Parse(const std::string& str);
+  std::string ToString() const;
 
-  Type type = TYPE_NONE;
+  Source source_type = SOURCE_NONE;
 
   // The IDs referring to the target native screen or window.  |id| will be
   // non-null if and only if it refers to a native screen/window.  |aura_id|
@@ -70,10 +84,8 @@ struct CONTENT_EXPORT DesktopMediaID {
   Id aura_id = kNullId;
 #endif
 
-  // This records whether the desktop share has sound or not.
-  // TODO(crbug.com/766728): Replace with a capture type bitmask
-  // with AUDIO, VIDEO, and AUDIO_VIDEO values.
-  bool audio_share = false;
+  // This bitmask of Capture values records the type of media captured.
+  uint32_t capture_type = CAPTURE_VIDEO;
 
   // This id contains information for WebContents capture.
   WebContentsMediaCaptureId web_contents_id;
