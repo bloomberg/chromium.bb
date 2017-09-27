@@ -253,9 +253,9 @@ Value RunActionForEach(Scope* scope,
 
 const char kBundleData[] = "bundle_data";
 const char kBundleData_HelpShort[] =
-    "bundle_data: [iOS/OS X] Declare a target without output.";
+    "bundle_data: [iOS/macOS] Declare a target without output.";
 const char kBundleData_Help[] =
-    R"(bundle_data: [iOS/OS X] Declare a target without output.
+    R"(bundle_data: [iOS/macOS] Declare a target without output.
 
   This target type allows to declare data that is required at runtime. It is
   used to inform "create_bundle" targets of the files to copy into generated
@@ -266,8 +266,8 @@ const char kBundleData_Help[] =
   output. The output must reference a file inside of {{bundle_root_dir}}.
 
   This target can be used on all platforms though it is designed only to
-  generate iOS/OS X bundle. In cross-platform projects, it is advised to put it
-  behind iOS/Mac conditionals.
+  generate iOS/macOS bundle. In cross-platform projects, it is advised to put it
+  behind iOS/macOS conditionals.
 
   See "gn help create_bundle" for more information.
 
@@ -318,11 +318,11 @@ Value RunBundleData(Scope* scope,
 
 const char kCreateBundle[] = "create_bundle";
 const char kCreateBundle_HelpShort[] =
-    "create_bundle: [iOS/OS X] Build an OS X / iOS bundle.";
+    "create_bundle: [iOS/macOS] Build an iOS or macOS bundle.";
 const char kCreateBundle_Help[] =
-    R"(create_bundle: [iOS/OS X] Build an OS X / iOS bundle.
+    R"(create_bundle: [ios/macOS] Build an iOS or macOS bundle.
 
-  This target generates an iOS/OS X bundle (which is a directory with a
+  This target generates an iOS or macOS bundle (which is a directory with a
   well-know structure). This target does not define any sources, instead they
   are computed from all "bundle_data" target this one depends on transitively
   (the recursion stops at "create_bundle" targets).
@@ -331,8 +331,8 @@ const char kCreateBundle_Help[] =
   expansion of {{bundle_*_dir}} rules in "bundle_data" outputs.
 
   This target can be used on all platforms though it is designed only to
-  generate iOS/OS X bundle. In cross-platform projects, it is advised to put it
-  behind iOS/Mac conditionals.
+  generate iOS or macOS bundle. In cross-platform projects, it is advised to put
+  it behind iOS/macOS conditionals.
 
   If a create_bundle is specified as a data_deps for another target, the bundle
   is considered a leaf, and its public and private dependencies will not
@@ -368,7 +368,7 @@ Variables
 Example
 
   # Defines a template to create an application. On most platform, this is just
-  # an alias for an "executable" target, but on iOS/OS X, it builds an
+  # an alias for an "executable" target, but on iOS/macOS, it builds an
   # application bundle.
   template("app") {
     if (!is_ios && !is_mac) {
