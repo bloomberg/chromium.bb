@@ -473,6 +473,7 @@ css_properties("make_core_generated_computed_style_base") {
     "../build/scripts/templates/fields/group.tmpl",
     "../build/scripts/templates/fields/base.tmpl",
     "../build/scripts/templates/fields/keyword.tmpl",
+    "../build/scripts/templates/fields/pointer.tmpl",
     "../build/scripts/templates/fields/primitive.tmpl",
     "../build/scripts/templates/fields/monotonic_flag.tmpl",
     "../build/scripts/templates/fields/external.tmpl",
