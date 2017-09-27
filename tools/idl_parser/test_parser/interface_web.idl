@@ -218,7 +218,7 @@ interface MyIFaceBig2 {
  *          StringType(DOMString)
  *    Type()
  *      PrimitiveType(void)
- *  Operation(_unnamed_)
+ *  Operation()
  *    GETTER: True
  *    Arguments()
  *      Argument(property)
@@ -236,7 +236,7 @@ interface MyIFaceSpecials {
  *Interface(MyIFaceStringifiers)
  *  Stringifier()
  *  Stringifier()
- *    Operation(_unnamed_)
+ *    Operation()
  *      Arguments()
  *      Type()
  *        StringType(DOMString)
