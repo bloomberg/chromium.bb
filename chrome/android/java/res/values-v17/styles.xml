@@ -746,10 +746,9 @@
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
     </style>
-    <style name="SuggestionCardAction" parent="ButtonCompatBorderless">
+    <style name="SuggestionCardActionModern" parent="ButtonCompatBorderless">
         <item name="android:textAppearance">@style/BlueButtonText2</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
+        <item name="android:layout_marginTop">16dp</item>
 
         <!-- Negative marginEnd to balance the padding from the parent (SuggestionCardModern).
              Buttons are supposed to have 8dp margin while we have a 16dp margin at the parent
