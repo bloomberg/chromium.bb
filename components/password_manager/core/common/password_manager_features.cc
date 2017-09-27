@@ -63,6 +63,11 @@ extern const base::Feature kEnableUsernameCorrection{
 extern const base::Feature kEnablePasswordSelection{
     "EnablePasswordSelection", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the "Show all saved passwords" option in Context Menu.
+extern const base::Feature kEnableShowAllSavedPasswordsContextMenu{
+    "kEnableShowAllSavedPasswordsContextMenu",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Disallow autofilling of the sync credential.
 const base::Feature kProtectSyncCredential = {
     "protect-sync-credential", base::FEATURE_DISABLED_BY_DEFAULT};

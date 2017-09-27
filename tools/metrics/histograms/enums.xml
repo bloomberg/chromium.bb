@@ -33187,6 +33187,7 @@ from previous Chrome versions.
   <int value="87" label="IDC_CONTENT_CONTEXT_OPEN_WITH14"/>
   <int value="88" label="IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN"/>
   <int value="89" label="IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP"/>
+  <int value="90" label="IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS"/>
 </enum>
 
 <enum name="ReportingHeaderEndpointOutcome">
