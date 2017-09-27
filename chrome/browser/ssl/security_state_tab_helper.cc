@@ -145,6 +145,15 @@ void SecurityStateTabHelper::DidFinishNavigation(
         "warning has been added to the URL bar. For more information, see "
         "https://goo.gl/y8SRRv.");
   }
+  if (net::IsCertStatusError(security_info.cert_status) &&
+      !net::IsCertStatusMinorError(security_info.cert_status)) {
+    // Record each time a user visits a site after having clicked through a
+    // certificate warning interstitial. This is used as a baseline for
+    // interstitial.ssl.did_user_revoke_decision2 in order to determine how
+    // many times the re-enable warnings button is clicked, as a fraction of
+    // the number of times it was available.
+    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
+  }
 }
 
 void SecurityStateTabHelper::WebContentsDestroyed() {
