@@ -88,7 +88,7 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
 
 const DisplayLayout& DisplayLayoutStore::GetRegisteredDisplayLayout(
     const DisplayIdList& list) {
-  DCHECK_NE(1u, list.size());
+  DCHECK_GT(list.size(), 1u);
   const auto iter = layouts_.find(list);
   const DisplayLayout* layout = iter != layouts_.end()
                                     ? iter->second.get()

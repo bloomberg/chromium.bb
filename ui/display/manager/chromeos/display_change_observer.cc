@@ -54,17 +54,6 @@ const int kMinimumWidthFor4K = 3840;
 // available in external large monitors.
 const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 
-void UpdateInternalDisplayId(
-    const DisplayConfigurator::DisplayStateList& display_states) {
-  for (auto* state : display_states) {
-    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (Display::HasInternalDisplay())
-        DCHECK_EQ(Display::InternalDisplayId(), state->display_id());
-      Display::SetInternalDisplayId(state->display_id());
-    }
-  }
-}
-
 }  // namespace
 
 // static
@@ -152,8 +141,8 @@ DisplayChangeObserver::~DisplayChangeObserver() {
 }
 
 MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
-    const DisplayConfigurator::DisplayStateList& display_states) const {
-  UpdateInternalDisplayId(display_states);
+    const DisplayConfigurator::DisplayStateList& display_states) {
+  UpdateInternalDisplay(display_states);
   if (display_states.size() == 1)
     return MULTIPLE_DISPLAY_STATE_SINGLE;
   DisplayIdList list =
@@ -180,76 +169,15 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
 
 void DisplayChangeObserver::OnDisplayModeChanged(
     const DisplayConfigurator::DisplayStateList& display_states) {
-  UpdateInternalDisplayId(display_states);
+  UpdateInternalDisplay(display_states);
 
   std::vector<ManagedDisplayInfo> displays;
-  std::set<int64_t> ids;
   for (const DisplaySnapshot* state : display_states) {
     const DisplayMode* mode_info = state->current_mode();
     if (!mode_info)
       continue;
 
-    float device_scale_factor = 1.0f;
-    // Sets dpi only if the screen size is not blacklisted.
-    float dpi = IsDisplaySizeBlackListed(state->physical_size())
-                    ? 0
-                    : kInchInMm * mode_info->size().width() /
-                          state->physical_size().width();
-    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (dpi)
-        device_scale_factor = FindDeviceScaleFactor(dpi);
-    } else {
-      scoped_refptr<ManagedDisplayMode> mode =
-          display_manager_->GetSelectedModeForDisplayId(state->display_id());
-      if (mode) {
-        device_scale_factor = mode->device_scale_factor();
-      } else {
-        // For monitors that are 40 inches and 4K or above, set
-        // |device_scale_factor| to 2x. For margin purposes, 100 is subtracted
-        // from the value of |k2xThreshouldSizeSquaredFor4KInMm|
-        const int k2xThreshouldSizeSquaredFor4KInMm =
-            (40 * 40 * kInchInMm * kInchInMm) - 100;
-        gfx::Vector2d size_in_vec(state->physical_size().width(),
-                                  state->physical_size().height());
-        if (size_in_vec.LengthSquared() > k2xThreshouldSizeSquaredFor4KInMm &&
-            mode_info->size().width() >= kMinimumWidthFor4K) {
-          // Make sure that additional device scale factors table has 2x.
-          DCHECK_EQ(2.0f, kAdditionalDeviceScaleFactorsFor4k[1]);
-          device_scale_factor = 2.0f;
-        }
-      }
-    }
-    gfx::Rect display_bounds(state->origin(), mode_info->size());
-
-    std::string name = (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
-                           ? l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL)
-                           : state->display_name();
-
-    if (name.empty())
-      name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);
-
-    bool has_overscan = state->has_overscan();
-    int64_t id = state->display_id();
-    ids.insert(id);
-
-    displays.push_back(ManagedDisplayInfo(id, name, has_overscan));
-    ManagedDisplayInfo& new_info = displays.back();
-    new_info.set_sys_path(state->sys_path());
-    new_info.set_device_scale_factor(device_scale_factor);
-    new_info.SetBounds(display_bounds);
-    new_info.set_native(true);
-    new_info.set_is_aspect_preserving_scaling(
-        state->is_aspect_preserving_scaling());
-    if (dpi)
-      new_info.set_device_dpi(dpi);
-
-    ManagedDisplayInfo::ManagedDisplayModeList display_modes =
-        (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
-            ? GetInternalManagedDisplayModeList(new_info, *state)
-            : GetExternalManagedDisplayModeList(*state);
-    new_info.SetManagedDisplayModes(display_modes);
-
-    new_info.set_maximum_cursor_size(state->maximum_cursor_size());
+    displays.emplace_back(CreateManagedDisplayInfo(state, mode_info));
   }
 
   AssociateTouchscreens(
@@ -284,6 +212,89 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
   const auto& cached_displays = display_configurator_->cached_displays();
   if (!cached_displays.empty())
     OnDisplayModeChanged(cached_displays);
+}
+
+void DisplayChangeObserver::UpdateInternalDisplay(
+    const DisplayConfigurator::DisplayStateList& display_states) {
+  for (auto* state : display_states) {
+    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      if (Display::HasInternalDisplay())
+        DCHECK_EQ(Display::InternalDisplayId(), state->display_id());
+      Display::SetInternalDisplayId(state->display_id());
+
+      if (state->native_mode()) {
+        ManagedDisplayInfo new_info =
+            CreateManagedDisplayInfo(state, state->native_mode());
+        display_manager_->UpdateInternalDisplay(new_info);
+      }
+    }
+  }
+}
+
+ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
+    const DisplaySnapshot* state,
+    const DisplayMode* mode_info) {
+  float device_scale_factor = 1.0f;
+  // Sets dpi only if the screen size is not blacklisted.
+  float dpi = IsDisplaySizeBlackListed(state->physical_size())
+                  ? 0
+                  : kInchInMm * mode_info->size().width() /
+                        state->physical_size().width();
+
+  if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (dpi)
+      device_scale_factor = FindDeviceScaleFactor(dpi);
+  } else {
+    scoped_refptr<ManagedDisplayMode> mode =
+        display_manager_->GetSelectedModeForDisplayId(state->display_id());
+    if (mode) {
+      device_scale_factor = mode->device_scale_factor();
+    } else {
+      // For monitors that are 40 inches and 4K or above, set
+      // |device_scale_factor| to 2x. For margin purposes, 100 is subtracted
+      // from the value of |k2xThreshouldSizeSquaredFor4KInMm|
+      const int k2xThreshouldSizeSquaredFor4KInMm =
+          (40 * 40 * kInchInMm * kInchInMm) - 100;
+      gfx::Vector2d size_in_vec(state->physical_size().width(),
+                                state->physical_size().height());
+      if (size_in_vec.LengthSquared() > k2xThreshouldSizeSquaredFor4KInMm &&
+          mode_info->size().width() >= kMinimumWidthFor4K) {
+        // Make sure that additional device scale factors table has 2x.
+        DCHECK_EQ(2.0f, kAdditionalDeviceScaleFactorsFor4k[1]);
+        device_scale_factor = 2.0f;
+      }
+    }
+  }
+
+  std::string name = (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
+                         ? l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL)
+                         : state->display_name();
+
+  if (name.empty())
+    name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);
+
+  const bool has_overscan = state->has_overscan();
+  const int64_t id = state->display_id();
+
+  ManagedDisplayInfo new_info = ManagedDisplayInfo(id, name, has_overscan);
+  new_info.set_sys_path(state->sys_path());
+  new_info.set_device_scale_factor(device_scale_factor);
+  const gfx::Rect display_bounds(state->origin(), mode_info->size());
+  new_info.SetBounds(display_bounds);
+  new_info.set_native(true);
+  new_info.set_is_aspect_preserving_scaling(
+      state->is_aspect_preserving_scaling());
+  if (dpi)
+    new_info.set_device_dpi(dpi);
+
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+      (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
+          ? GetInternalManagedDisplayModeList(new_info, *state)
+          : GetExternalManagedDisplayModeList(*state);
+  new_info.SetManagedDisplayModes(display_modes);
+
+  new_info.set_maximum_cursor_size(state->maximum_cursor_size());
+  return new_info;
 }
 
 // static

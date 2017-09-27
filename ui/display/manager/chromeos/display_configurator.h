@@ -95,7 +95,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
     // Called when displays are detected.
     virtual MultipleDisplayState GetStateForDisplayIds(
-        const DisplayConfigurator::DisplayStateList& outputs) const = 0;
+        const DisplayConfigurator::DisplayStateList& outputs) = 0;
 
     // Queries the resolution (|size|) in pixels to select display mode for the
     // given display id.

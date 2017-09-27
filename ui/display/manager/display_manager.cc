@@ -207,6 +207,12 @@ void DisplayManager::InitDefaultDisplay() {
   OnNativeDisplaysChanged(info_list);
 }
 
+void DisplayManager::UpdateInternalDisplay(
+    const ManagedDisplayInfo& display_info) {
+  DCHECK(Display::HasInternalDisplay());
+  InsertAndUpdateDisplayInfo(display_info);
+}
+
 void DisplayManager::RefreshFontParams() {
 #if defined(OS_CHROMEOS)
   // Use the largest device scale factor among currently active displays. Non

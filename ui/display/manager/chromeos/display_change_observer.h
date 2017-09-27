@@ -43,7 +43,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
 
   // DisplayConfigurator::StateController overrides:
   MultipleDisplayState GetStateForDisplayIds(
-      const DisplayConfigurator::DisplayStateList& outputs) const override;
+      const DisplayConfigurator::DisplayStateList& outputs) override;
   bool GetResolutionForDisplayId(int64_t display_id,
                                  gfx::Size* size) const override;
 
@@ -61,6 +61,12 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   DISPLAY_EXPORT static float FindDeviceScaleFactor(float dpi);
 
  private:
+  void UpdateInternalDisplay(
+      const DisplayConfigurator::DisplayStateList& display_states);
+
+  ManagedDisplayInfo CreateManagedDisplayInfo(const DisplaySnapshot* state,
+                                              const DisplayMode* mode_info);
+
   // Both |display_configurator_| and |display_manager_| are not owned and must
   // outlive DisplayChangeObserver.
   DisplayConfigurator* display_configurator_;

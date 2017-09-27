@@ -37,8 +37,10 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
+#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -2947,6 +2949,69 @@ TEST_F(DisplayManagerTest, AccelerometerSupport) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(display::Display::ACCELEROMETER_SUPPORT_AVAILABLE,
             screen->GetPrimaryDisplay().accelerometer_support());
+}
+
+namespace {
+
+std::unique_ptr<display::DisplayMode> MakeDisplayMode() {
+  return std::make_unique<display::DisplayMode>(gfx::Size(1366, 768), false,
+                                                60);
+}
+
+}  // namespace
+
+TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
+  constexpr int64_t external_id = 123;
+  const int64_t internal_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+  Shell* shell = Shell::Get();
+  display::DisplayChangeObserver observer(shell->display_configurator(),
+                                          display_manager());
+  display::DisplayConfigurator::DisplayStateList outputs;
+  std::unique_ptr<display::DisplaySnapshot> internal_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(internal_id)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetDPI(210)  // 1.6f
+          .SetNativeMode(MakeDisplayMode())
+          .Build();
+  EXPECT_FALSE(internal_snapshot->current_mode());
+
+  outputs.push_back(internal_snapshot.get());
+  std::unique_ptr<display::DisplaySnapshot> external_snapshot =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(external_id)
+          .SetNativeMode(MakeDisplayMode())
+          .AddMode(MakeDisplayMode())
+          .Build();
+  // "Connectd display" has the current mode.
+  external_snapshot->set_current_mode(external_snapshot->native_mode());
+
+  outputs.push_back(external_snapshot.get());
+
+  // Update the display manager through DisplayChangeObserver.
+  observer.GetStateForDisplayIds(outputs);
+  observer.OnDisplayModeChanged(outputs);
+
+  EXPECT_EQ(1u, display_manager()->GetNumDisplays());
+  EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
+  EXPECT_FALSE(display_manager()->IsActiveDisplayId(internal_id));
+
+  const display::ManagedDisplayInfo& display_info =
+      display_manager()->GetDisplayInfo(internal_id);
+  EXPECT_EQ(1.6f, display_info.device_scale_factor());
+
+  bool has_default = false;
+  for (auto& mode : display_info.display_modes()) {
+    if (mode->is_default()) {
+      has_default = true;
+      EXPECT_EQ(1.6f, mode->device_scale_factor());
+    }
+  }
+  EXPECT_TRUE(has_default);
 }
 
 namespace {

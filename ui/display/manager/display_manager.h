@@ -127,6 +127,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Initialize default display.
   void InitDefaultDisplay();
 
+  // Update the internal display's display info.
+  void UpdateInternalDisplay(const ManagedDisplayInfo& display_info);
+
   // Initializes font related params that depends on display configuration.
   void RefreshFontParams();
 
