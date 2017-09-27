@@ -7,6 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
+using NetPredictor = chrome_browser_net::Predictor;
 using net::NetworkChangeNotifier;
 
 namespace {
@@ -46,6 +48,14 @@ class LoadingPredictorConfigTest : public testing::Test {
 
   void SetPreference(NetworkPredictionOptions value) {
     profile_->GetPrefs()->SetInteger(prefs::kNetworkPredictionOptions, value);
+  }
+
+  bool IsNetPredictorEnabled() {
+    std::unique_ptr<NetPredictor> predictor = base::WrapUnique(
+        NetPredictor::CreatePredictor(true /* simple_shutdown */));
+    bool is_enabled = predictor->PredictorEnabled();
+    predictor->Shutdown();
+    return is_enabled;
   }
 
   void TestIsPrefetchEnabledForOrigin(const LoadingPredictorConfig& config,
@@ -114,6 +124,8 @@ TEST_F(LoadingPredictorConfigTest, EnablePreconnectLearning) {
   EXPECT_TRUE(config.IsLearningEnabled());
   EXPECT_TRUE(config.is_origin_learning_enabled);
   EXPECT_FALSE(config.is_host_learning_enabled);
+  EXPECT_FALSE(config.should_disable_other_preconnects);
+  EXPECT_TRUE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPrefetchingEnabledForSomeOrigin(profile_.get()));
   EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
   TestIsDefaultExtraConfig(config);
@@ -153,8 +165,26 @@ TEST_F(LoadingPredictorConfigTest, EnablePreconnect) {
   EXPECT_TRUE(MaybeEnableSpeculativePreconnect(&config));
 
   EXPECT_TRUE(config.IsLearningEnabled());
+  EXPECT_TRUE(config.should_disable_other_preconnects);
+  EXPECT_FALSE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPrefetchingEnabledForSomeOrigin(profile_.get()));
   EXPECT_TRUE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
+  TestIsDefaultExtraConfig(config);
+}
+
+TEST_F(LoadingPredictorConfigTest, EnableNoPreconnect) {
+  variations::testing::VariationParamsManager params_manager(
+      "dummy-trial", {{kModeParamName, kNoPreconnectMode}},
+      {kSpeculativePreconnectFeatureName});
+
+  LoadingPredictorConfig config;
+  EXPECT_FALSE(MaybeEnableSpeculativePreconnect(&config));
+
+  EXPECT_FALSE(config.IsLearningEnabled());
+  EXPECT_TRUE(config.should_disable_other_preconnects);
+  EXPECT_FALSE(IsNetPredictorEnabled());
+  EXPECT_FALSE(config.IsPrefetchingEnabledForSomeOrigin(profile_.get()));
+  EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
   TestIsDefaultExtraConfig(config);
 }
 

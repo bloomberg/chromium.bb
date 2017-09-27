@@ -28,6 +28,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/channel_info.h"
@@ -1187,6 +1188,21 @@ const FeatureEntry::FeatureVariation kThirdPartyDoodlesVariations[] = {
     {"(force animated test doodle)", kThirdPartyDoodlesTestAnimated,
      arraysize(kThirdPartyDoodlesTestAnimated), nullptr}};
 #endif  // defined(OS_ANDROID)
+
+const FeatureEntry::FeatureParam kSpeculativePreconnectPreconnect[] = {
+    {predictors::kModeParamName, predictors::kPreconnectMode}};
+const FeatureEntry::FeatureParam kSpeculativePreconnectLearning[] = {
+    {predictors::kModeParamName, predictors::kLearningMode}};
+const FeatureEntry::FeatureParam kSpeculativePreconnectNoPreconnect[] = {
+    {predictors::kModeParamName, predictors::kNoPreconnectMode}};
+
+const FeatureEntry::FeatureVariation kSpeculativePreconnectFeatureVariations[] =
+    {{"Preconnect", kSpeculativePreconnectPreconnect,
+      arraysize(kSpeculativePreconnectPreconnect), nullptr},
+     {"Learning", kSpeculativePreconnectLearning,
+      arraysize(kSpeculativePreconnectLearning), nullptr},
+     {"No preconnect", kSpeculativePreconnectNoPreconnect,
+      arraysize(kSpeculativePreconnectNoPreconnect), nullptr}};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3496,6 +3512,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHtmlBasedUsernameDetectorDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableHtmlBasedUsernameDetector)},
+
+    {"enable-new-preconnect", flag_descriptions::kSpeculativePreconnectName,
+     flag_descriptions::kSpeculativePreconnectDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(predictors::kSpeculativePreconnectFeature,
+                                    kSpeculativePreconnectFeatureVariations,
+                                    "SpeculativePreconnectValidation")},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
