@@ -973,10 +973,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
 #endif
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_NavigationHandledByEmbedder,
-                        OnNavigationHandledByEmbedder)
-#endif
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
@@ -2764,15 +2760,6 @@ void RenderFrameHostImpl::OnHidePopup() {
       render_view_host_->delegate_->GetDelegateView();
   if (view)
     view->HidePopupMenu();
-}
-#endif
-
-#if defined(OS_ANDROID)
-void RenderFrameHostImpl::OnNavigationHandledByEmbedder() {
-  if (navigation_handle_)
-    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
-
-  OnDidStopLoading();
 }
 #endif
 

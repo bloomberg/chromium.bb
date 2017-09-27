@@ -827,7 +827,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnHidePopup();
 #endif
 #if defined(OS_ANDROID)
-  void OnNavigationHandledByEmbedder();
   void ForwardGetInterfaceToRenderFrame(const std::string& interface_name,
                                         mojo::ScopedMessagePipeHandle pipe);
 #endif

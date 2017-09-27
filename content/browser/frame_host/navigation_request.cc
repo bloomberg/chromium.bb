@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -417,6 +418,20 @@ void NavigationRequest::BeginNavigation() {
 
   state_ = STARTED;
 
+#if defined(OS_ANDROID)
+  if (GetContentClient()->browser()->ShouldOverrideUrlLoading(
+          frame_tree_node_->frame_tree_node_id(), browser_initiated_,
+          request_params_.original_url, request_params_.original_method,
+          request_params_.has_user_gesture, false,
+          frame_tree_node_->IsMainFrame(), common_params_.transition)) {
+    // Don't create a NavigationHandle here to simulate what happened with the
+    // old navigation code path (i.e. doesn't fire onPageFinished notification
+    // for aborted loads).
+    OnRequestFailed(false, net::ERR_ABORTED, base::nullopt, false);
+    return;
+  }
+#endif
+
   // Check Content Security Policy before the NavigationThrottles run. This
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block. Similarly, the NavigationHandle is created afterwards, so
@@ -636,6 +651,10 @@ void NavigationRequest::OnRequestRedirected(
   RenderProcessHost* expected_process =
       site_instance->HasProcess() ? site_instance->GetProcess() : nullptr;
 
+#if defined(OS_ANDROID)
+  base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
+#endif
+
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
   bool is_external_protocol =
@@ -646,6 +665,21 @@ void NavigationRequest::OnRequestRedirected(
       response->head.connection_info, expected_process,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
+// |this| may be deleted.
+
+#if defined(OS_ANDROID)
+  if (this_ptr &&
+      GetContentClient()->browser()->ShouldOverrideUrlLoading(
+          frame_tree_node_->frame_tree_node_id(), browser_initiated_,
+          redirect_info.new_url, redirect_info.new_method,
+          // Redirects are always not counted as from user gesture.
+          false, true, frame_tree_node_->IsMainFrame(),
+          common_params_.transition)) {
+    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
+    frame_tree_node_->ResetNavigationRequest(false, true);
+    return;
+  }
+#endif
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -756,7 +790,8 @@ void NavigationRequest::OnRequestFailed(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "OnRequestFailed", "error", net_error);
   state_ = FAILED;
-  navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
+  if (navigation_handle_.get())
+    navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
 
   // With PlzNavigate, debug URLs will give a failed navigation because the
   // WebUI backend won't find a handler for them. They will be processed in the

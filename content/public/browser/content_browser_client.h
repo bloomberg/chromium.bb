@@ -867,6 +867,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url,
       const scoped_refptr<net::X509Certificate>& cert,
       std::string* console_messsage);
+
+#if defined(OS_ANDROID)
+  // Only used by Android WebView.
+  virtual bool ShouldOverrideUrlLoading(int frame_tree_node_id,
+                                        bool browser_initiated,
+                                        const GURL& gurl,
+                                        const std::string& request_method,
+                                        bool has_user_gesture,
+                                        bool is_redirect,
+                                        bool is_main_frame,
+                                        ui::PageTransition transition);
+#endif
 };
 
 }  // namespace content

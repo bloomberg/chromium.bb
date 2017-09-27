@@ -36,6 +36,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
@@ -78,6 +79,7 @@
 
 using content::BrowserThread;
 using content::ResourceType;
+using content::WebContents;
 
 namespace android_webview {
 namespace {
@@ -602,6 +604,52 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
   }
 
   return safe_browsing_url_checker_delegate_.get();
+}
+
+bool AwContentBrowserClient::ShouldOverrideUrlLoading(
+    int frame_tree_node_id,
+    bool browser_initiated,
+    const GURL& gurl,
+    const std::string& request_method,
+    bool has_user_gesture,
+    bool is_redirect,
+    bool is_main_frame,
+    ui::PageTransition transition) {
+  // Only GETs can be overridden.
+  if (request_method != "GET")
+    return false;
+
+  bool application_initiated =
+      browser_initiated || transition & ui::PAGE_TRANSITION_FORWARD_BACK;
+
+  // Don't offer application-initiated navigations unless it's a redirect.
+  if (application_initiated && !is_redirect)
+    return false;
+
+  // For HTTP schemes, only top-level navigations can be overridden. Similarly,
+  // WebView Classic lets app override only top level about:blank navigations.
+  // So we filter out non-top about:blank navigations here.
+  //
+  // Note: about:blank navigations are not received in this path at the moment,
+  // they use the old SYNC IPC path as they are not handled by network stack.
+  // However, the old path should be removed in future.
+  if (!is_main_frame &&
+      (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
+       gurl.SchemeIs(url::kAboutScheme)))
+    return false;
+
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (web_contents == nullptr)
+    return false;
+  AwContentsClientBridge* client_bridge =
+      AwContentsClientBridge::FromWebContents(web_contents);
+  if (client_bridge == nullptr)
+    return false;
+
+  base::string16 url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
+  return client_bridge->ShouldOverrideUrlLoading(url, has_user_gesture,
+                                                 is_redirect, is_main_frame);
 }
 
 }  // namespace android_webview
