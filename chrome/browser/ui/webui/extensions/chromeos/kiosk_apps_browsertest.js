@@ -60,8 +60,8 @@ KioskAppSettingsWebUITest.prototype = {
          'enableKioskAutoLaunch',
          'disableKioskAutoLaunch'
         ]);
-    this.mockHandler.stubs().getKioskAppSettings().
-        will(callFunction(function() {
+    this.mockHandler.stubs().getKioskAppSettings(ANYTHING).will(
+        callFunction(function() {
           extensions.KioskAppsOverlay.setSettings(this.settings_);
         }.bind(this)));
     this.mockHandler.stubs().addKioskApp(ANYTHING);

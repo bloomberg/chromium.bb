@@ -19,11 +19,18 @@ cr.define('extensions', function() {
      */
     clearErrorTimer_: null,
 
+    /** @private {WebUIListenerTracker} */
+    listenerTracker_: null,
+
     /**
      * Initialize the page.
      */
     initialize: function() {
-      chrome.send('initializeKioskAppSettings');
+      this.listenerTracker_ = new WebUIListenerTracker();
+
+      cr.sendWithPromise('initializeKioskAppSettings')
+          .then(KioskAppsOverlay.enableKiosk);
+
       extensions.KioskAppList.decorate($('kiosk-app-list'));
 
       var overlay = $('kiosk-apps-page');
@@ -42,7 +49,14 @@ cr.define('extensions', function() {
      * Invoked when the page is shown.
      */
     didShowPage: function() {
-      chrome.send('getKioskAppSettings');
+      this.listenerTracker_.add(
+          'kiosk-app-settings-changed', KioskAppsOverlay.setSettings);
+      this.listenerTracker_.add(
+          'kiosk-app-updated', KioskAppsOverlay.updateApp);
+      this.listenerTracker_.add('kiosk-app-error', KioskAppsOverlay.showError);
+
+      cr.sendWithPromise('getKioskAppSettings')
+          .then(KioskAppsOverlay.setSettings);
       $('kiosk-app-id-edit').focus();
     },
 
@@ -95,6 +109,7 @@ cr.define('extensions', function() {
     handleDismiss_: function() {
       this.handleAddButtonClick_();
       extensions.ExtensionSettings.showOverlay(null);
+      this.listenerTracker_.removeAll();
     }
   };
 

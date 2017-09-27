@@ -37,6 +37,8 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
 
   // content::WebUIMessageHandler overrides:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // KioskAppManagerObserver overrides:
   void OnKioskAppDataChanged(const std::string& app_id) override;
@@ -47,8 +49,8 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   void OnKioskAppsSettingsChanged() override;
 
  private:
-  // Sends all kiosk apps and settings to webui.
-  void SendKioskAppSettings();
+  // Get all kiosk apps and settings.
+  std::unique_ptr<base::DictionaryValue> GetSettingsDictionary();
 
   // JS callbacks.
   void HandleInitializeKioskAppSettings(const base::ListValue* args);
@@ -64,6 +66,7 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
 
   // Callback for KioskAppManager::GetConsumerKioskModeStatus().
   void OnGetConsumerKioskAutoLaunchStatus(
+      const std::string& callback_id,
       chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status);
 
   KioskAppManager* kiosk_app_manager_;  // not owned.
