@@ -107,6 +107,13 @@ ninja -C out/release chromevox_tests
 out/release/chromevox_tests --test-launcher-jobs=10
 ```
 
+### Select-To-Speak tests
+
+```
+ninja -C out/release unit_tests
+out/release/unit_tests --gtest_filter="*SelectToSpeak*"
+```
+
 ## Other locations of accessibility tests:
 
 Even this isn't a complete list. The tests described above cover more
@@ -121,3 +128,14 @@ ui/chromeos
 ui/views/accessibility
 ```
 
+## Helpful flags:
+
+Across all tests there are some helpful flags that will make testing easier.
+
+```
+--test-launcher-jobs=10  # This will run stuff in parallel and make flakes more obvious
+```
+
+```
+--gtest_filter="*Cats*"  # Filter which tests run. Takes a wildcard (*) optionally.
+```
