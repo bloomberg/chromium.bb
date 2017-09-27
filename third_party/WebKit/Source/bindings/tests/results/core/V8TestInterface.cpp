@@ -1430,7 +1430,6 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -1593,7 +1592,6 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::Func
   window = ToDOMWindow(info.GetIsolate(), info[0]);
   if (!window) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", "parameter 1 is not of type 'Window'."));
-
     return;
   }
 
@@ -1706,7 +1704,6 @@ static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v
   window = ToDOMWindow(info.GetIsolate(), info[0]);
   if (!window) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Window'.");
-
     return;
   }
 
@@ -1792,7 +1789,6 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
@@ -1875,7 +1871,6 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
   ScriptValue partialCallbackTypeArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   partialCallbackTypeArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -2087,7 +2082,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ScriptValue thisArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
-
     return;
   }
   callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);

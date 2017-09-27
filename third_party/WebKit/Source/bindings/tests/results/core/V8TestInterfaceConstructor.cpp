@@ -119,13 +119,11 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 3 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
   if (!IsUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 4 ('dictionaryArg') is not an object.");
-
     return;
   }
   dictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[3], exceptionState);
@@ -146,7 +144,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   if (!IsUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
-
     return;
   }
   optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[7], exceptionState);
@@ -156,7 +153,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[8]);
   if (!optionalTestInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 

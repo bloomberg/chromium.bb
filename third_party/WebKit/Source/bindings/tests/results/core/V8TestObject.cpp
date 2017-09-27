@@ -4774,7 +4774,6 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -4800,7 +4799,6 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
@@ -4825,7 +4823,6 @@ static void voidMethodEventTargetArgMethod(const v8::FunctionCallbackInfo<v8::Va
   eventTargetArg = V8EventTarget::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!eventTargetArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodEventTargetArg", "TestObject", "parameter 1 is not of type 'EventTarget'."));
-
     return;
   }
 
@@ -4858,7 +4855,6 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   attrArg = V8Attr::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!attrArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodAttrArg", "TestObject", "parameter 1 is not of type 'Attr'."));
-
     return;
   }
 
@@ -4877,7 +4873,6 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
   documentArg = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!documentArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocumentArg", "TestObject", "parameter 1 is not of type 'Document'."));
-
     return;
   }
 
@@ -4896,7 +4891,6 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
   documentTypeArg = V8DocumentType::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!documentTypeArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocumentTypeArg", "TestObject", "parameter 1 is not of type 'DocumentType'."));
-
     return;
   }
 
@@ -4915,7 +4909,6 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
   elementArg = V8Element::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!elementArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodElementArg", "TestObject", "parameter 1 is not of type 'Element'."));
-
     return;
   }
 
@@ -4934,7 +4927,6 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   nodeArg = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!nodeArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNodeArg", "TestObject", "parameter 1 is not of type 'Node'."));
-
     return;
   }
 
@@ -4995,7 +4987,6 @@ static void voidMethodArrayBufferArgMethod(const v8::FunctionCallbackInfo<v8::Va
   arrayBufferArg = info[0]->IsArrayBuffer() ? V8ArrayBuffer::ToImpl(v8::Local<v8::ArrayBuffer>::Cast(info[0])) : 0;
   if (!arrayBufferArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodArrayBufferArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
-
     return;
   }
 
@@ -5014,7 +5005,6 @@ static void voidMethodArrayBufferOrNullArgMethod(const v8::FunctionCallbackInfo<
   arrayBufferArg = V8ArrayBuffer::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arrayBufferArg && !IsUndefinedOrNull(info[0])) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodArrayBufferOrNullArg", "TestObject", "parameter 1 is not of type 'ArrayBuffer'."));
-
     return;
   }
 
@@ -5037,7 +5027,6 @@ static void voidMethodArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8
     return;
   if (!arrayBufferViewArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
-
     return;
   }
 
@@ -5058,7 +5047,6 @@ static void voidMethodFlexibleArrayBufferViewArgMethod(const v8::FunctionCallbac
   ToFlexibleArrayBufferView(info.GetIsolate(), info[0], arrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
   if (!arrayBufferViewArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
-
     return;
   }
 
@@ -5079,7 +5067,6 @@ static void voidMethodFlexibleArrayBufferViewTypedArgMethod(const v8::FunctionCa
   ToFlexibleArrayBufferView(info.GetIsolate(), info[0], typedArrayBufferViewArg, allocateFlexibleArrayBufferViewStorage(info[0]));
   if (!typedArrayBufferViewArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Float32Array'.");
-
     return;
   }
 
@@ -5102,7 +5089,6 @@ static void voidMethodFloat32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::V
     return;
   if (!float32ArrayArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Float32Array'.");
-
     return;
   }
 
@@ -5125,7 +5111,6 @@ static void voidMethodInt32ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     return;
   if (!int32ArrayArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Int32Array'.");
-
     return;
   }
 
@@ -5148,7 +5133,6 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
     return;
   if (!uint8ArrayArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Uint8Array'.");
-
     return;
   }
 
@@ -5171,7 +5155,6 @@ static void voidMethodAllowSharedArrayBufferViewArgMethod(const v8::FunctionCall
     return;
   if (!arrayBufferViewArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
-
     return;
   }
 
@@ -5194,7 +5177,6 @@ static void voidMethodAllowSharedUint8ArrayArgMethod(const v8::FunctionCallbackI
     return;
   if (!uint8ArrayArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Uint8Array'.");
-
     return;
   }
 
@@ -5584,7 +5566,6 @@ static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallba
   nullableTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!nullableTestInterfaceEmptyArg && !IsUndefinedOrNull(info[0])) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyOrNullArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -5602,7 +5583,6 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
   TestCallbackInterface* testCallbackInterfaceArg;
   if (info.Length() <= 0 || !info[0]->IsFunction()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   testCallbackInterfaceArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -5617,7 +5597,6 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
   if (!IsUndefinedOrNull(info[0])) {
     if (!info[0]->IsFunction()) {
       V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-
       return;
     }
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -5639,7 +5618,6 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
   TestCallbackInterface* testCallbackInterfaceArg;
   if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -5807,7 +5785,6 @@ static void promiseMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 
   if (!IsUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 2 ('arg2') is not an object.");
-
     return;
   }
   arg2 = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[1], exceptionState);
@@ -5845,7 +5822,6 @@ static void promiseMethodWithoutExceptionStateMethod(const v8::FunctionCallbackI
   Dictionary arg1;
   if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('arg1') is not an object.");
-
     return;
   }
   arg1 = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
@@ -5880,7 +5856,6 @@ static void voidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
   Dictionary dictionaryArg;
   if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('dictionaryArg') is not an object.");
-
     return;
   }
   dictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
@@ -5916,7 +5891,6 @@ static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>
   promiseArg = ScriptPromise::Cast(ScriptState::Current(info.GetIsolate()), info[0]);
   if (!promiseArg.IsUndefinedOrNull() && !promiseArg.IsObject()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."));
-
     return;
   }
 
@@ -5953,7 +5927,6 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
   xPathNSResolverArg = ToXPathNSResolver(ScriptState::Current(info.GetIsolate()), info[0]);
   if (!xPathNSResolverArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodXPathNSResolverArg", "TestObject", "parameter 1 is not of type 'XPathNSResolver'."));
-
     return;
   }
 
@@ -6039,7 +6012,6 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
   optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!optionalTestInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -6242,7 +6214,6 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
   optionalTestInterfaceEmpty = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!optionalTestInterfaceEmpty) {
     exceptionState.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
@@ -6270,7 +6241,6 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
   optionalTestInterfaceEmpty = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!optionalTestInterfaceEmpty) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
@@ -6293,7 +6263,6 @@ static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo
   Dictionary optionalDictionaryArg;
   if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('optionalDictionaryArg') is not an object.");
-
     return;
   }
   optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
@@ -6459,7 +6428,6 @@ static void voidMethodDefaultNullableTestInterfaceArgMethod(const v8::FunctionCa
     defaultTestInterfaceArg = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
     if (!defaultTestInterfaceArg && !IsUndefinedOrNull(info[0])) {
       V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDefaultNullableTestInterfaceArg", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-
       return;
     }
   } else {
@@ -6564,7 +6532,6 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
   for (int i = 0; i < info.Length(); ++i) {
     if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
       exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-
       return;
     }
     variadicTestInterfaceEmptyArgs.push_back(V8TestInterfaceEmpty::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
@@ -6588,14 +6555,12 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
   for (int i = 1; i < info.Length(); ++i) {
     if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
       exceptionState.ThrowTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
-
       return;
     }
     variadicTestInterfaceEmptyArgs.push_back(V8TestInterfaceEmpty::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
@@ -6613,7 +6578,6 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::F
   for (int i = 0; i < info.Length(); ++i) {
     if (!V8TestInterfaceGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
       exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceGarbageCollected'.");
-
       return;
     }
     variadicTestInterfaceGarbageCollectedArg.push_back(V8TestInterfaceGarbageCollected::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
@@ -6782,7 +6746,6 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodC", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -6891,7 +6854,6 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyOrNullArg && !IsUndefinedOrNull(info[0])) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodE", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -7023,7 +6985,6 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     testInterfaceEmptyOrNullArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
     if (!testInterfaceEmptyOrNullArg && !IsUndefinedOrNull(info[0])) {
       V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodG", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
       return;
     }
   } else {
@@ -7078,7 +7039,6 @@ static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   testInterfaceArg = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-
     return;
   }
 
@@ -7092,7 +7052,6 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodH", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -7202,7 +7161,6 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestDictionary testDictionaryArg;
   if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('testDictionaryArg') is not an object.");
-
     return;
   }
   V8TestDictionary::ToImpl(info.GetIsolate(), info[0], testDictionaryArg, exceptionState);
@@ -7246,7 +7204,6 @@ static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   ScriptValue functionArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   functionArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -7382,7 +7339,6 @@ static void overloadedMethodN1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   testInterfaceArg = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodN", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-
     return;
   }
 
@@ -7395,7 +7351,6 @@ static void overloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestCallbackInterface* testCallbackInterfaceArg;
   if (info.Length() <= 0 || !info[0]->IsFunction()) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   testCallbackInterfaceArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -7463,7 +7418,6 @@ static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Valu
   arg1 = ToDOMWindow(info.GetIsolate(), info[0]);
   if (!arg1) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Window'.");
-
     return;
   }
 
@@ -7491,7 +7445,6 @@ static void promiseOverloadMethod3Method(const v8::FunctionCallbackInfo<v8::Valu
   arg1 = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arg1) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Document'.");
-
     return;
   }
 
@@ -7774,7 +7727,6 @@ static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::Func
   defaultUndefinedTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!defaultUndefinedTestInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDefaultUndefinedTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -8430,7 +8382,6 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -8449,7 +8400,6 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObject", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -8602,7 +8552,6 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
   TestCallbackInterface* testCallbackInterfaceArg;
   if (info.Length() <= 0 || !info[0]->IsFunction()) {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
-
     return;
   }
   testCallbackInterfaceArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -8622,7 +8571,6 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
   if (!IsUndefinedOrNull(info[0])) {
     if (!info[0]->IsFunction()) {
       exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
-
       return;
     }
     optionalTestCallbackInterfaceArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
@@ -8774,7 +8722,6 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod2Method(const v8::Functio
   testInterfaceArg = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", "parameter 1 is not of type 'TestInterface'."));
-
     return;
   }
 
@@ -8818,7 +8765,6 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
   testInterfaceArg = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), info[2]);
   if (!testInterfaceArg) {
     exceptionState.ThrowTypeError("parameter 3 is not of type 'TestInterface'.");
-
     return;
   }
 
@@ -8911,7 +8857,6 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMe
   for (int i = 0; i < info.Length(); ++i) {
     if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
       exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-
       return;
     }
     testInterfaceEmptyArg.push_back(V8TestInterfaceEmpty::ToImpl(v8::Local<v8::Object>::Cast(info[i])));
@@ -8939,7 +8884,6 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(const v8:
   node1 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!node1) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 1 is not of type 'Node'."));
-
     return;
   }
 
@@ -8950,7 +8894,6 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethod(const v8:
   node2 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!node2) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", "TestObject", "parameter 2 is not of type 'Node'."));
-
     return;
   }
 
@@ -8970,14 +8913,12 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethod(const v8:
   node1 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!node1) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 1 is not of type 'Node'."));
-
     return;
   }
 
   node2 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!node2 && !IsUndefinedOrNull(info[1])) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", "TestObject", "parameter 2 is not of type 'Node'."));
-
     return;
   }
 
@@ -8997,14 +8938,12 @@ static void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethod(const v8
   node1 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!node1) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 1 is not of type 'Node'."));
-
     return;
   }
 
   node2 = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[1]);
   if (!node2) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", "TestObject", "parameter 2 is not of type 'Node'."));
-
     return;
   }
 
@@ -9131,7 +9070,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ScriptValue thisArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
-
     return;
   }
   callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);

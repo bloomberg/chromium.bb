@@ -101,7 +101,6 @@ static void voidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo
   V8VoidCallbackFunction* voidCallbackFunctionArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   voidCallbackFunctionArg = V8VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -120,7 +119,6 @@ static void voidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInf
   V8AnyCallbackFunctionOptionalAnyArg* anyCallbackFunctionOptionalAnyArgArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   anyCallbackFunctionOptionalAnyArgArg = V8AnyCallbackFunctionOptionalAnyArg::Create(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -139,7 +137,6 @@ static void voidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::Funct
   V8LongCallbackFunction* longCallbackFunctionArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   longCallbackFunctionArg = V8LongCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -163,7 +160,6 @@ static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCall
   }
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   voidCallbackFunctionArg = V8VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), info[0]);
@@ -182,7 +178,6 @@ static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
   V8VoidCallbackFunction* voidCallbackFunctionArg;
   if (!IsUndefinedOrNull(info[0]) && !(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   voidCallbackFunctionArg = V8VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), info[0]);

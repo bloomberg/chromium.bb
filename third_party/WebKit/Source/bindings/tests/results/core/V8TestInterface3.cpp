@@ -96,7 +96,6 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodDocument", "TestInterface3", "parameter 1 is not of type 'Document'."));
-
     return;
   }
 

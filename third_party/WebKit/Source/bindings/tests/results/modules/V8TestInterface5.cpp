@@ -329,7 +329,6 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterface5", "parameter 1 is not of type 'TestInterfaceEmpty'."));
-
     return;
   }
 
@@ -478,7 +477,6 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
   arg = V8VoidExperimentalCallbackFunction::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "parameter 1 is not of type 'VoidExperimentalCallbackFunction'."));
-
     return;
   }
 
@@ -496,7 +494,6 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
   V8VoidCallbackFunctionModules* arg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));
-
     return;
   }
   arg = V8VoidCallbackFunctionModules::Create(ScriptState::Current(info.GetIsolate()), info[0]);
