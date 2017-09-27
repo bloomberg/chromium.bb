@@ -22,6 +22,9 @@
     },
     {
       'target_name': 'extensions',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:webui_listener_tracker',
+      ],
       'variables': {
         'script_args': ['--custom_sources'],
         'source_files': [

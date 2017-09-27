@@ -111,11 +111,20 @@ KioskAppsHandler::KioskAppsHandler(OwnerSettingsServiceChromeOS* service)
       is_kiosk_enabled_(false),
       is_auto_launch_enabled_(false),
       owner_settings_service_(service),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this) {}
+
+KioskAppsHandler::~KioskAppsHandler() {
+  // TODO(scottchen): This is needed because OnJavascriptDisallowed only called
+  // with refresh or off-page navigation, otherwise DCHECK triggered when
+  // exiting. Ask tommycli for more information.
+  kiosk_app_manager_->RemoveObserver(this);
+}
+
+void KioskAppsHandler::OnJavascriptAllowed() {
   kiosk_app_manager_->AddObserver(this);
 }
 
-KioskAppsHandler::~KioskAppsHandler() {
+void KioskAppsHandler::OnJavascriptDisallowed() {
   kiosk_app_manager_->RemoveObserver(this);
 }
 
@@ -208,6 +217,7 @@ void KioskAppsHandler::OnKioskExtensionDownloadFailed(
 }
 
 void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
+    const std::string& callback_id,
     chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   initialized_ = true;
   if (KioskAppManager::IsConsumerKioskEnabled()) {
@@ -228,23 +238,24 @@ void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
     is_auto_launch_enabled_ = false;
   }
 
-  if (is_kiosk_enabled_) {
-    base::DictionaryValue kiosk_params;
-    kiosk_params.SetBoolean("kioskEnabled", is_kiosk_enabled_);
-    kiosk_params.SetBoolean("autoLaunchEnabled", is_auto_launch_enabled_);
-    web_ui()->CallJavascriptFunctionUnsafe(
-        "extensions.KioskAppsOverlay.enableKiosk", kiosk_params);
-  }
+  base::DictionaryValue kiosk_params;
+  kiosk_params.SetBoolean("kioskEnabled", is_kiosk_enabled_);
+  kiosk_params.SetBoolean("autoLaunchEnabled", is_auto_launch_enabled_);
+  ResolveJavascriptCallback(base::Value(callback_id), kiosk_params);
 }
 
 
 void KioskAppsHandler::OnKioskAppsSettingsChanged() {
-  SendKioskAppSettings();
+  FireWebUIListener("kiosk-app-settings-changed", *GetSettingsDictionary());
 }
 
-void KioskAppsHandler::SendKioskAppSettings() {
-  if (!initialized_ || !is_kiosk_enabled_)
-    return;
+std::unique_ptr<base::DictionaryValue>
+KioskAppsHandler::GetSettingsDictionary() {
+  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue);
+
+  if (!initialized_ || !is_kiosk_enabled_) {
+    return settings;
+  }
 
   bool enable_bailout_shortcut;
   if (!CrosSettings::Get()->GetBoolean(
@@ -253,10 +264,9 @@ void KioskAppsHandler::SendKioskAppSettings() {
     enable_bailout_shortcut = true;
   }
 
-  base::DictionaryValue settings;
-  settings.SetBoolean("disableBailout", !enable_bailout_shortcut);
-  settings.SetBoolean("hasAutoLaunchApp",
-                      !kiosk_app_manager_->GetAutoLaunchApp().empty());
+  settings->SetBoolean("disableBailout", !enable_bailout_shortcut);
+  settings->SetBoolean("hasAutoLaunchApp",
+                       !kiosk_app_manager_->GetAutoLaunchApp().empty());
 
   KioskAppManager::Apps apps;
   kiosk_app_manager_->GetApps(&apps);
@@ -269,21 +279,29 @@ void KioskAppsHandler::SendKioskAppSettings() {
     PopulateAppDict(app_data, app_info.get());
     apps_list->Append(std::move(app_info));
   }
-  settings.SetWithoutPathExpansion("apps", std::move(apps_list));
+  settings->SetWithoutPathExpansion("apps", std::move(apps_list));
 
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "extensions.KioskAppsOverlay.setSettings", settings);
+  return settings;
 }
 
 void KioskAppsHandler::HandleInitializeKioskAppSettings(
     const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  AllowJavascript();
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
       base::Bind(&KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), callback_id));
 }
 
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {
-  SendKioskAppSettings();
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  ResolveJavascriptCallback(base::Value(callback_id), *GetSettingsDictionary());
 }
 
 
@@ -359,15 +377,12 @@ void KioskAppsHandler::UpdateApp(const std::string& app_id) {
 
   base::DictionaryValue app_dict;
   PopulateAppDict(app_data, &app_dict);
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "extensions.KioskAppsOverlay.updateApp", app_dict);
+  FireWebUIListener("kiosk-app-updated", app_dict);
 }
 
 void KioskAppsHandler::ShowError(const std::string& app_id) {
   base::Value app_id_value(app_id);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "extensions.KioskAppsOverlay.showError", app_id_value);
+  FireWebUIListener("kiosk-app-error", app_id_value);
 
   kiosk_app_manager_->RemoveApp(app_id, owner_settings_service_);
 }
