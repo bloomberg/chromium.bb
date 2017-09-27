@@ -1153,7 +1153,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // does not have any subframe history items.
   if (is_same_document && GetLastCommittedEntry()) {
     FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
-        params.frame_unique_name, params.item_sequence_number,
+        rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
         params.url, params.referrer, params.method, params.post_id);
     new_entry = GetLastCommittedEntry()->CloneAndReplace(
@@ -1258,7 +1258,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   // Update the FrameNavigationEntry for new main frame commits.
   FrameNavigationEntry* frame_entry =
       new_entry->GetFrameEntry(rfh->frame_tree_node());
-  frame_entry->set_frame_unique_name(params.frame_unique_name);
+  frame_entry->set_frame_unique_name(rfh->frame_tree_node()->unique_name());
   frame_entry->set_item_sequence_number(params.item_sequence_number);
   frame_entry->set_document_sequence_number(params.document_sequence_number);
   frame_entry->set_method(params.method);
@@ -1515,7 +1515,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 
   // Make sure we don't leak frame_entry if new_entry doesn't take ownership.
   scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
-      params.frame_unique_name, params.item_sequence_number,
+      rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
       params.url, params.referrer, params.method, params.post_id));
   std::unique_ptr<NavigationEntryImpl> new_entry =

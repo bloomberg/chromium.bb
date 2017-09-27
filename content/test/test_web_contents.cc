@@ -129,7 +129,6 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.nav_entry_id = nav_entry_id;
-  params.frame_unique_name = std::string();
   params.item_sequence_number = item_sequence_number;
   params.document_sequence_number = document_sequence_number;
   params.url = url;
