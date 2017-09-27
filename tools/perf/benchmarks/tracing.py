@@ -37,5 +37,5 @@ class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableBenchmark([story.expectations.ALL], 'crbug.com/765140')
+        pass
     return StoryExpectations()
