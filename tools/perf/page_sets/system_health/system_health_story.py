@@ -15,6 +15,18 @@ from telemetry.page import shared_page_state
 _WAIT_TIME_AFTER_LOAD = 10
 
 
+class _SystemHealthSharedState(shared_page_state.SharedPageState):
+  """Shared state which enables disabling stories on individual platforms.
+     This should be used only to disable the stories permanently. For
+     disabling stories temporarily use story expectations in ./expectations.py.
+  """
+
+  def CanRunOnBrowser(self, browser_info, story):
+    if story.TAGS and story_tags.WEBGL in story.TAGS:
+      return browser_info.HasWebGLSupport()
+    return True
+
+
 class _MetaSystemHealthStory(type):
   """Metaclass for SystemHealthStory."""
 
@@ -50,7 +62,7 @@ class SystemHealthStory(page.Page):
         assert t in story_tags.ALL_TAGS
         tags.append(t.name)
     super(SystemHealthStory, self).__init__(
-        shared_page_state_class=shared_page_state.SharedPageState,
+        shared_page_state_class=_SystemHealthSharedState,
         page_set=story_set, name=self.NAME, url=self.URL, tags=tags,
         credentials_path='../data/credentials.json',
         grouping_keys={'case': case, 'group': group},
