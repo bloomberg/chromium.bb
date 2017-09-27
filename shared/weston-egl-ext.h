@@ -181,6 +181,10 @@ typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATEPLATFORMPIXMAPSURFACEEXTPROC) (EGLD
 typedef void *EGLSyncKHR;
 #endif /* EGL_KHR_cl_event2 */
 
+#ifndef EGL_NO_SYNC_KHR
+#define EGL_NO_SYNC_KHR ((EGLSyncKHR)0)
+#endif
+
 #ifndef EGL_KHR_fence_sync
 #define EGL_KHR_fence_sync 1
 typedef EGLSyncKHR (EGLAPIENTRYP PFNEGLCREATESYNCKHRPROC) (EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
@@ -191,6 +195,14 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLDESTROYSYNCKHRPROC) (EGLDisplay dpy, EGLS
 #define EGL_ANDROID_native_fence_sync 1
 typedef EGLint (EGLAPIENTRYP PFNEGLDUPNATIVEFENCEFDANDROIDPROC) (EGLDisplay dpy, EGLSyncKHR sync);
 #endif /* EGL_ANDROID_native_fence_sync */
+
+#ifndef EGL_SYNC_NATIVE_FENCE_ANDROID
+#define EGL_SYNC_NATIVE_FENCE_ANDROID 0x3144
+#endif
+
+#ifndef EGL_NO_NATIVE_FENCE_FD_ANDROID
+#define EGL_NO_NATIVE_FENCE_FD_ANDROID -1
+#endif
 
 #else /* ENABLE_EGL */
 

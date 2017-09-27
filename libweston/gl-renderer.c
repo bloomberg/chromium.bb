@@ -39,6 +39,16 @@
 #include <assert.h>
 #include <linux/input.h>
 #include <drm_fourcc.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+
+#ifdef HAVE_LINUX_SYNC_FILE_H
+#include <linux/sync_file.h>
+#else
+#include "weston-sync-file.h"
+#endif
+
+#include "timeline.h"
 
 #include "gl-renderer.h"
 #include "vertex-clipping.h"
@@ -47,6 +57,7 @@
 
 #include "shared/helpers.h"
 #include "shared/platform.h"
+#include "shared/timespec-util.h"
 #include "weston-egl-ext.h"
 
 struct gl_shader {
@@ -87,6 +98,9 @@ struct gl_output_state {
 	enum gl_border_status border_status;
 
 	struct weston_matrix output_matrix;
+
+	/* struct timeline_render_point::link */
+	struct wl_list timeline_render_point_list;
 };
 
 enum buffer_type {
@@ -238,6 +252,20 @@ struct gl_renderer {
 	PFNEGLDUPNATIVEFENCEFDANDROIDPROC dup_native_fence_fd;
 };
 
+enum timeline_render_point_type {
+	TIMELINE_RENDER_POINT_TYPE_BEGIN,
+	TIMELINE_RENDER_POINT_TYPE_END
+};
+
+struct timeline_render_point {
+	struct wl_list link; /* gl_output_state::timeline_render_point_list */
+
+	enum timeline_render_point_type type;
+	int fd;
+	struct weston_output *output;
+	struct wl_event_source *event_source;
+};
+
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
 
 static inline const char *
@@ -272,6 +300,115 @@ static inline struct gl_renderer *
 get_renderer(struct weston_compositor *ec)
 {
 	return (struct gl_renderer *)ec->renderer;
+}
+
+static int
+linux_sync_file_read_timestamp(int fd, uint64_t *ts)
+{
+	struct sync_file_info file_info = { { 0 } };
+	struct sync_fence_info fence_info = { { 0 } };
+
+	assert(ts != NULL);
+
+	file_info.sync_fence_info = (uint64_t)(uintptr_t)&fence_info;
+	file_info.num_fences = 1;
+
+	if (ioctl(fd, SYNC_IOC_FILE_INFO, &file_info) < 0)
+		return -1;
+
+	*ts = fence_info.timestamp_ns;
+
+	return 0;
+}
+
+static void
+timeline_render_point_destroy(struct timeline_render_point *trp)
+{
+	wl_list_remove(&trp->link);
+	wl_event_source_remove(trp->event_source);
+	close(trp->fd);
+	free(trp);
+}
+
+static int
+timeline_render_point_handler(int fd, uint32_t mask, void *data)
+{
+	struct timeline_render_point *trp = data;
+	const char *tp_name = trp->type == TIMELINE_RENDER_POINT_TYPE_BEGIN ?
+			      "renderer_gpu_begin" : "renderer_gpu_end";
+
+	if (mask & WL_EVENT_READABLE) {
+		uint64_t ts;
+
+		if (linux_sync_file_read_timestamp(trp->fd, &ts) == 0) {
+			struct timespec tspec = { 0 };
+
+			timespec_add_nsec(&tspec, &tspec, ts);
+
+			TL_POINT(tp_name, TLP_GPU(&tspec),
+				 TLP_OUTPUT(trp->output), TLP_END);
+		}
+	}
+
+	timeline_render_point_destroy(trp);
+
+	return 0;
+}
+
+static EGLSyncKHR
+timeline_create_render_sync(struct gl_renderer *gr)
+{
+	static const EGLint attribs[] = { EGL_NONE };
+
+	if (!weston_timeline_enabled_ || !gr->has_native_fence_sync)
+		return EGL_NO_SYNC_KHR;
+
+	return gr->create_sync(gr->egl_display, EGL_SYNC_NATIVE_FENCE_ANDROID,
+			       attribs);
+}
+
+static void
+timeline_submit_render_sync(struct gl_renderer *gr,
+			    struct weston_compositor *ec,
+			    struct weston_output *output,
+			    EGLSyncKHR sync,
+			    enum timeline_render_point_type type)
+{
+	struct gl_output_state *go;
+	struct wl_event_loop *loop;
+	int fd;
+	struct timeline_render_point *trp;
+
+	if (!weston_timeline_enabled_ ||
+	    !gr->has_native_fence_sync ||
+	    sync == EGL_NO_SYNC_KHR)
+		return;
+
+	go = get_output_state(output);
+	loop = wl_display_get_event_loop(ec->wl_display);
+
+	fd = gr->dup_native_fence_fd(gr->egl_display, sync);
+	if (fd == EGL_NO_NATIVE_FENCE_FD_ANDROID)
+		goto out;
+
+	trp = zalloc(sizeof *trp);
+	if (trp == NULL) {
+		close(fd);
+		goto out;
+	}
+
+	trp->type = type;
+	trp->fd = fd;
+	trp->output = output;
+	trp->event_source = wl_event_loop_add_fd(loop, fd,
+						 WL_EVENT_READABLE,
+						 timeline_render_point_handler,
+						 trp);
+
+	wl_list_insert(&go->timeline_render_point_list, &trp->link);
+
+out:
+	gr->destroy_sync(gr->egl_display, sync);
 }
 
 static struct egl_image*
@@ -1106,9 +1243,12 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_box32_t *rects;
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
+	EGLSyncKHR begin_render_sync, end_render_sync;
 
 	if (use_output(output) < 0)
 		return;
+
+	begin_render_sync = timeline_create_render_sync(gr);
 
 	/* Calculate the viewport */
 	glViewport(go->borders[GL_RENDERER_BORDER_LEFT].width,
@@ -1158,6 +1298,8 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
 
+	end_render_sync = timeline_create_render_sync(gr);
+
 	if (gr->swap_buffers_with_damage) {
 		pixman_region32_init(&buffer_damage);
 		weston_transformed_region(output->width, output->height,
@@ -1203,6 +1345,14 @@ gl_renderer_repaint_output(struct weston_output *output,
 	}
 
 	go->border_status = BORDER_STATUS_CLEAN;
+
+	/* We have to submit the render sync objects after swap buffers, since
+	 * the objects get assigned a valid sync file fd only after a gl flush.
+	 */
+	timeline_submit_render_sync(gr, compositor, output, begin_render_sync,
+				    TIMELINE_RENDER_POINT_TYPE_BEGIN);
+	timeline_submit_render_sync(gr, compositor, output, end_render_sync,
+				    TIMELINE_RENDER_POINT_TYPE_END);
 }
 
 static int
@@ -2827,6 +2977,8 @@ gl_renderer_output_create(struct weston_output *output,
 	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
 		pixman_region32_init(&go->buffer_damage[i]);
 
+	wl_list_init(&go->timeline_render_point_list);
+
 	output->renderer_state = go;
 
 	return 0;
@@ -2867,6 +3019,7 @@ gl_renderer_output_destroy(struct weston_output *output)
 {
 	struct gl_renderer *gr = get_renderer(output->compositor);
 	struct gl_output_state *go = get_output_state(output);
+	struct timeline_render_point *trp, *tmp;
 	int i;
 
 	for (i = 0; i < 2; i++)
@@ -2877,6 +3030,13 @@ gl_renderer_output_destroy(struct weston_output *output)
 		       EGL_NO_CONTEXT);
 
 	weston_platform_destroy_egl_surface(gr->egl_display, go->egl_surface);
+
+	if (!wl_list_empty(&go->timeline_render_point_list))
+		weston_log("warning: discarding pending timeline render"
+			   "objects at output destruction");
+
+	wl_list_for_each_safe(trp, tmp, &go->timeline_render_point_list, link)
+		timeline_render_point_destroy(trp);
 
 	free(go);
 }
@@ -3042,6 +3202,9 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		gr->dup_native_fence_fd =
 			(void *) eglGetProcAddress("eglDupNativeFenceFDANDROID");
 		gr->has_native_fence_sync = 1;
+	} else {
+		weston_log("warning: Disabling render GPU timeline due to "
+			   "missing EGL_ANDROID_native_fence_sync extension\n");
 	}
 
 	renderer_setup_egl_client_extensions(gr);
