@@ -282,6 +282,8 @@ const CGFloat kHintLabelSidePadding = 12;
 }
 
 - (void)loadVoiceSearch:(id)sender {
+  [self.commandHandler dismissModals];
+
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
