@@ -7,6 +7,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainterBase.h"
+#include "core/paint/ng/ng_paint_fragment.h"
 #include "core/paint/ng/ng_text_painter.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ComputedStyle.h"
@@ -41,6 +42,12 @@ static void PaintDecorationsExceptLineThrough(
 }
 
 }  // anonymous namespace
+
+NGTextFragmentPainter::NGTextFragmentPainter(
+    const NGPaintFragment& text_fragment)
+    : fragment_(text_fragment) {
+  DCHECK(text_fragment.PhysicalFragment().IsText());
+}
 
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
@@ -103,7 +110,9 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
   // TODO(layout-dev): Add hyphen support.
 
-  unsigned length = fragment_.Text().length();
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
+  unsigned length = text_fragment.Text().length();
   unsigned truncation = kCNoTruncation;
 
   bool ltr = true;
@@ -120,8 +129,8 @@ void NGTextFragmentPainter::Paint(const Document& document,
     length = ltr == flow_is_ltr ? truncation : length;
   }
 
-  NGTextPainter text_painter(context, font, fragment_, text_origin, box_rect,
-                             fragment_.IsHorizontal());
+  NGTextPainter text_painter(context, font, text_fragment, text_origin,
+                             box_rect, text_fragment.IsHorizontal());
   TextEmphasisPosition emphasis_mark_position;
   bool has_text_emphasis = false;  // TODO(layout-dev): Implement.
   emphasis_mark_position = TextEmphasisPosition::kOverRight;
@@ -149,11 +158,11 @@ void NGTextFragmentPainter::Paint(const Document& document,
                                          style_to_use, decorating_box_style);
       GraphicsContextStateSaver state_saver(context, false);
       TextPainterBase::UpdateGraphicsContext(
-          context, text_style, fragment_.IsHorizontal(), state_saver);
+          context, text_style, text_fragment.IsHorizontal(), state_saver);
 
       PaintDecorationsExceptLineThrough(
-          text_painter, has_line_through_decoration, fragment_, decoration_info,
-          paint_info, style_to_use.AppliedTextDecorations());
+          text_painter, has_line_through_decoration, text_fragment,
+          decoration_info, paint_info, style_to_use.AppliedTextDecorations());
     }
 
     int start_offset = 0;
@@ -177,7 +186,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
     if (has_line_through_decoration) {
       GraphicsContextStateSaver state_saver(context, false);
       TextPainterBase::UpdateGraphicsContext(
-          context, text_style, fragment_.IsHorizontal(), state_saver);
+          context, text_style, text_fragment.IsHorizontal(), state_saver);
       text_painter.PaintDecorationsOnlyLineThrough(
           decoration_info, paint_info, style_to_use.AppliedTextDecorations());
     }
