@@ -85,6 +85,9 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {
       base::BindOnce(&NavigationURLLoaderImplCore::ProceedWithResponse, core_));
 }
 
+void NavigationURLLoaderImpl::InterceptNavigation(
+    NavigationURLLoader::NavigationInterceptionCB callback) {}
+
 void NavigationURLLoaderImpl::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {

@@ -36,6 +36,7 @@ class TestNavigationURLLoader
   // NavigationURLLoader implementation.
   void FollowRedirect() override;
   void ProceedWithResponse() override;
+  void InterceptNavigation(NavigationInterceptionCB callback) override;
 
   NavigationRequestInfo* request_info() const { return request_info_.get(); }
 

@@ -22,11 +22,13 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/url_download_handler.h"
+#include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/ssl_status.h"
 
 namespace net {
 class NetLog;
@@ -44,6 +46,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
                                            private DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated = base::Callback<void(DownloadItemImpl*)>;
+  using UniqueUrlDownloadHandlerPtr =
+      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>;
 
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
@@ -143,6 +147,12 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       int render_frame_route_id,
       bool do_not_prompt_for_login);
 
+  // Returns the callback to intercept the navigation response.
+  NavigationURLLoader::NavigationInterceptionCB GetNavigationInterceptionCB(
+      const scoped_refptr<ResourceResponse>& response,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle,
+      const SSLStatus& ssl_status);
+
  private:
   using DownloadSet = std::set<DownloadItem*>;
   using DownloadGuidMap = std::unordered_map<std::string, DownloadItemImpl*>;
@@ -199,9 +209,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
 
-  void AddUrlDownloadHandler(
-      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
-          downloader);
+  void AddUrlDownloadHandler(UniqueUrlDownloadHandlerPtr downloader);
 
   // Factory for creation of downloads items.
   std::unique_ptr<DownloadItemFactory> item_factory_;
@@ -240,9 +248,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   net::NetLog* net_log_;
 
-  std::vector<
-      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>>
-      url_download_handlers_;
+  std::vector<UniqueUrlDownloadHandlerPtr> url_download_handlers_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

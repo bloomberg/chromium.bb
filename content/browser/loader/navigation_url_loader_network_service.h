@@ -38,6 +38,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
   // NavigationURLLoader implementation:
   void FollowRedirect() override;
   void ProceedWithResponse() override;
+  void InterceptNavigation(NavigationInterceptionCB callback) override;
 
   void OnReceiveResponse(scoped_refptr<ResourceResponse> response,
                          const base::Optional<net::SSLInfo>& ssl_info,

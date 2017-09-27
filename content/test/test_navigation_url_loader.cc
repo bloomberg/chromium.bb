@@ -38,6 +38,9 @@ void TestNavigationURLLoader::ProceedWithResponse() {
   response_proceeded_ = true;
 }
 
+void TestNavigationURLLoader::InterceptNavigation(
+    NavigationURLLoader::NavigationInterceptionCB callback) {}
+
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 302;
