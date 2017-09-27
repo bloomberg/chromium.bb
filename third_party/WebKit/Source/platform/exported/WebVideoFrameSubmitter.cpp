@@ -4,6 +4,7 @@
 
 #include "public/platform/WebVideoFrameSubmitter.h"
 
+#include <memory>
 #include "third_party/WebKit/Source/platform/graphics/VideoFrameSubmitter.h"
 
 namespace cc {
@@ -14,7 +15,7 @@ namespace blink {
 
 std::unique_ptr<WebVideoFrameSubmitter> WebVideoFrameSubmitter::Create(
     cc::VideoFrameProvider* provider) {
-  return base::MakeUnique<VideoFrameSubmitter>(provider);
+  return std::make_unique<VideoFrameSubmitter>(provider);
 }
 
 }  // namespace blink

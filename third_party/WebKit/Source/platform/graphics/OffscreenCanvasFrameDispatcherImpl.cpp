@@ -4,6 +4,7 @@
 
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
+#include <memory>
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -61,7 +62,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
                                         mojo::MakeRequest(&sink_));
   }
   offscreen_canvas_resource_provider_ =
-      base::MakeUnique<OffscreenCanvasResourceProvider>(width, height);
+      std::make_unique<OffscreenCanvasResourceProvider>(width, height);
 }
 
 OffscreenCanvasFrameDispatcherImpl::~OffscreenCanvasFrameDispatcherImpl() {

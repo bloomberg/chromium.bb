@@ -1255,7 +1255,7 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
 void GraphicsLayer::SetLayerState(PropertyTreeState&& layer_state,
                                   const IntPoint& layer_offset) {
   if (!layer_state_) {
-    layer_state_ = base::MakeUnique<LayerState>(
+    layer_state_ = std::make_unique<LayerState>(
         LayerState{std::move(layer_state), layer_offset});
     return;
   }
