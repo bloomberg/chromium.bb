@@ -155,4 +155,7 @@ TEST_F(DeviceOffHoursControllerTest, CheckOffHoursModeOn) {
                   .guest_mode_enabled());
 }
 
+// TODO(yakovleva): Add tests for PowerManagerClient observer, SuspendDone
+// calls.
+
 }  // namespace chromeos
