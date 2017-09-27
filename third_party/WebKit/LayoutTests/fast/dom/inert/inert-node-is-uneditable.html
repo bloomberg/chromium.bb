@@ -36,23 +36,23 @@ function clickOn(element)
     });
 }
 
-notEditable = document.querySelector('#not-editable');
-editable = document.querySelector('#editable');
+var notEditable = document.querySelector('#not-editable');
+var editable = document.querySelector('#editable');
 
-test(function() {
-    clickOn(notEditable).then(() => {
-        oldValue = notEditable.textContent;
-        eventSender.keyDown('a');
-        assert_equals(notEditable.textContent, oldValue);
-    });
+promise_test(async () => {
+    await clickOn(notEditable);
+    var oldValue = notEditable.textContent;
+    assert_equals(oldValue, "I'm not editable.");
+    eventSender.keyDown('a');
+    assert_equals(notEditable.textContent, oldValue);
 }, "Can't edit inert contenteditable");
 
-test(function() {
-    clickOn(editable).then(() => {
-        oldValue = editable.textContent;
-        eventSender.keyDown('a');
-        assert_not_equals(editable.textContent, oldValue);
-    });
+promise_test(async () => {
+    await clickOn(editable);
+    var oldValue = editable.textContent;
+    assert_equals(oldValue, "I'm editable.");
+    eventSender.keyDown('a');
+    assert_not_equals(editable.textContent, oldValue);
 }, "Can edit non-inert contenteditable");
 
 </script>
