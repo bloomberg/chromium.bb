@@ -6,29 +6,30 @@
 <dom-module id="passphrase-dialog">
   <template>
     <link rel="stylesheet" href="../css/passphrase-dialog.css">
-    <!-- TODO(takise): Translation -->
-    <h3>This file is password protected</h3>
+    <h3 i18n-content="ZIP_ARCHIVER_PASSPHRASE_TITLE"></h3>
     <paper-input-container>
-      <!-- TODO(takise): Translation -->
-      Password
-      <input is="core-input" type="password" id="input" autofocus>
+      <input is="core-input"
+             type="password"
+             id="input"
+             autofocus
+             i18n-values="placeholder:ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL;aria-label:ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
     </paper-input-container>
     <div id="bar">
-      <paper-checkbox id="remember">
-        <!-- TODO(takise): Translation -->
-          Remember
+      <paper-checkbox id="remember"
+                      i18n-content="ZIP_ARCHIVER_PASSPHRASE_REMEMBER">
       </paper-checkbox>
       <div id="buttons">
-        <paper-button on-click="cancel" id="cancelButton">
-          <!-- TODO(takise): Translation -->
-            Cancel
+        <paper-button on-click="cancel"
+                      id="cancelButton"
+                      i18n-content="ZIP_ARCHIVER_PASSPHRASE_CANCEL">
         </paper-button>
-        <paper-button on-click="accept" id="acceptButton">
-          <!-- TODO(takise): Translation -->
-            Accept
+        <paper-button on-click="accept"
+                      id="acceptButton"
+                      i18n-content="ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
         </paper-button>
       </div>
     </div>
   </template>
-  <script src="../js/passphrase-dialog.js"></script>
 </dom-module>
+
+<script src="../js/passphrase-dialog.js"></script>

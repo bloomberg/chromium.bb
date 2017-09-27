@@ -38,3 +38,10 @@ h3 {
 #cancelButton {
   color: #9e9e9e;
 }
+
+#input {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}

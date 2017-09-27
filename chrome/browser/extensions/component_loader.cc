@@ -85,7 +85,8 @@ std::string GenerateId(const base::DictionaryValue* manifest,
 #if defined(OS_CHROMEOS)
 std::unique_ptr<base::DictionaryValue> LoadManifestOnFileThread(
     const base::FilePath& root_directory,
-    const base::FilePath::CharType* manifest_filename) {
+    const base::FilePath::CharType* manifest_filename,
+    bool localize_manifest) {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   std::string error;
   std::unique_ptr<base::DictionaryValue> manifest(
@@ -96,9 +97,13 @@ std::unique_ptr<base::DictionaryValue> LoadManifestOnFileThread(
                << ": " << error;
     return nullptr;
   }
-  bool localized = extension_l10n_util::LocalizeExtension(
-      root_directory, manifest.get(), &error);
-  CHECK(localized) << error;
+
+  if (localize_manifest) {
+    bool localized = extension_l10n_util::LocalizeExtension(
+        root_directory, manifest.get(), &error);
+    CHECK(localized) << error;
+  }
+
   return manifest;
 }
 
@@ -324,9 +329,11 @@ void ComponentLoader::AddZipArchiverExtension() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableZipArchiverOnFileManager) &&
       PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddComponentFromDir(
+    AddWithNameAndDescriptionFromDir(
         resources_path.Append(extension_misc::kZipArchiverExtensionPath),
-        extension_misc::kZipArchiverExtensionId, base::Closure());
+        extension_misc::kZipArchiverExtensionId,
+        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
+        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
   }
 #endif  // defined(OS_CHROMEOS)
 }
@@ -682,20 +689,47 @@ void ComponentLoader::AddComponentFromDir(
 
   base::PostTaskAndReplyWithResult(
       GetExtensionFileTaskRunner().get(), FROM_HERE,
-      base::Bind(&LoadManifestOnFileThread, root_directory, manifest_filename),
+      base::Bind(&LoadManifestOnFileThread, root_directory, manifest_filename,
+                 true),
       base::Bind(&ComponentLoader::FinishAddComponentFromDir,
                  weak_factory_.GetWeakPtr(), root_directory, extension_id,
-                 done_cb));
+                 base::nullopt, base::nullopt, done_cb));
+}
+
+void ComponentLoader::AddWithNameAndDescriptionFromDir(
+    const base::FilePath& root_directory,
+    const char* extension_id,
+    const std::string& name_string,
+    const std::string& description_string) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::PostTaskAndReplyWithResult(
+      GetExtensionFileTaskRunner().get(), FROM_HERE,
+      base::Bind(&LoadManifestOnFileThread, root_directory,
+                 extensions::kManifestFilename, false),
+      base::Bind(&ComponentLoader::FinishAddComponentFromDir,
+                 weak_factory_.GetWeakPtr(), root_directory, extension_id,
+                 name_string, description_string, base::Closure()));
 }
 
 void ComponentLoader::FinishAddComponentFromDir(
     const base::FilePath& root_directory,
     const char* extension_id,
+    const base::Optional<std::string>& name_string,
+    const base::Optional<std::string>& description_string,
     const base::Closure& done_cb,
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!manifest)
     return;  // Error already logged.
+
+  if (name_string)
+    manifest->SetString(manifest_keys::kName, name_string.value());
+
+  if (description_string) {
+    manifest->SetString(manifest_keys::kDescription,
+                        description_string.value());
+  }
+
   std::string actual_extension_id =
       Add(std::move(manifest), root_directory, false);
   CHECK_EQ(extension_id, actual_extension_id);

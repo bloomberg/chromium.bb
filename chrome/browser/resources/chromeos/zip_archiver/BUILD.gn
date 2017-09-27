@@ -59,6 +59,7 @@ copy("zip_archiver_js") {
     "js/compressor-foreground.js",
     "js/compressor.js",
     "js/decompressor.js",
+    "js/main.js",
     "js/passphrase-dialog.js",
     "js/passphrase-manager.js",
     "js/request.js",
