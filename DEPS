@@ -26,11 +26,20 @@
 #  git commit -a
 #  git cl upload
 
+gclient_gn_args_file = 'src/build/config/gclient_args.gni'
+gclient_gn_args = [
+  'checkout_nacl',
+]
+
 
 vars = {
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
   'checkout_src_internal': 'False',
+
+  # Check out and download nacl by default. This can be disabled e.g. with
+  # custom_vars.
+  'checkout_nacl': 'True',
 
   'chromium_git': 'https://chromium.googlesource.com',
   'swiftshader_git': 'https://swiftshader.googlesource.com',
@@ -189,8 +198,10 @@ deps = {
   'src/v8':
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
-  'src/native_client':
-    Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
+  'src/native_client': {
+    'url': Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
+    'condition': 'checkout_nacl',
+  },
 
   'src/third_party/sfntly/src':
     Var('chromium_git') + '/external/github.com/googlei18n/sfntly.git' + '@' + Var('sfntly_revision'),
@@ -246,8 +257,10 @@ deps = {
   'src/third_party/pyftpdlib/src':
     Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
 
-  'src/third_party/scons-2.0.1':
-    Var('chromium_git') + '/native_client/src/third_party/scons-2.0.1.git' + '@' + '1c1550e17fc26355d08627fbdec13d8291227067',
+  'src/third_party/scons-2.0.1': {
+    'url': Var('chromium_git') + '/native_client/src/third_party/scons-2.0.1.git' + '@' + '1c1550e17fc26355d08627fbdec13d8291227067',
+    'condition': 'checkout_nacl',
+  },
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '433b11ede72a8047ad5b34d8ab522e2da07f99f8', # commit position 19922
@@ -344,15 +357,21 @@ deps_os = {
       Var('chromium_git') + '/external/pefile.git' + '@' + '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
 
     # GNU binutils assembler for x86-32.
-    'src/third_party/gnu_binutils':
-      Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
+    'src/third_party/gnu_binutils': {
+      'url': Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
+      'condition': 'checkout_nacl',
+    },
     # GNU binutils assembler for x86-64.
-    'src/third_party/mingw-w64/mingw/bin':
-      Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+    'src/third_party/mingw-w64/mingw/bin': {
+      'url': Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+      'condition': 'checkout_nacl',
+    },
 
     # Binaries for nacl sdk.
-    'src/third_party/nacl_sdk_binaries':
-      Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
+    'src/third_party/nacl_sdk_binaries': {
+      'url': Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
+      'condition': 'checkout_nacl',
+    },
   },
   'ios': {
     'src/ios/third_party/earl_grey/src':
@@ -602,6 +621,7 @@ hooks = [
     # Done in lieu of building the toolchain from scratch as it can take
     # anywhere from 30 minutes to 4 hours depending on platform to build.
     'name': 'nacltools',
+    'condition': 'checkout_nacl',
     'pattern': '.',
     'action': [
         'python',
