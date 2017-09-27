@@ -11,6 +11,7 @@
 #include "platform/fonts/NGTextFragmentPaintInfo.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

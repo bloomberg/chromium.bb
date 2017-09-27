@@ -12,7 +12,7 @@ namespace blink {
 class LayoutPoint;
 struct PaintInfo;
 class LayoutNGBlockFlow;
-class NGPhysicalBoxFragment;
+class NGPaintFragment;
 
 // Painter for NGBlockFlow which represents the root of a LayoutNG sub-tree.
 // Paints the root fragment associated with the NGBlockFlow recursively, walking
@@ -26,7 +26,7 @@ class NGBlockFlowPainter {
   void PaintContents(const PaintInfo&, const LayoutPoint&);
 
  private:
-  void PaintBoxFragment(const NGPhysicalBoxFragment&,
+  void PaintBoxFragment(const NGPaintFragment&,
                         const PaintInfo&,
                         const LayoutPoint&);
 

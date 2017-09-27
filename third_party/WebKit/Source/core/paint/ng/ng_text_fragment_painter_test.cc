@@ -60,13 +60,13 @@ TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
   IntRect interest_rect(0, 0, 640, 480);
   Paint(&interest_rect);
 
-  const NGPhysicalBoxFragment& root_fragment = *block_flow.RootFragment();
-  const NGPhysicalBoxFragment& box_fragment =
-      ToNGPhysicalBoxFragment(*root_fragment.Children()[0].Get());
-  const NGPhysicalLineBoxFragment& line_box_fragment =
-      ToNGPhysicalLineBoxFragment(*box_fragment.Children()[0].Get());
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(*line_box_fragment.Children()[0].Get());
+  const NGPaintFragment& root_fragment = *block_flow.PaintFragment();
+  EXPECT_EQ(1u, root_fragment.Children().size());
+  const NGPaintFragment& box_fragment = *root_fragment.Children()[0];
+  EXPECT_EQ(1u, box_fragment.Children().size());
+  const NGPaintFragment& line_box_fragment = *box_fragment.Children()[0];
+  EXPECT_EQ(1u, line_box_fragment.Children().size());
+  const NGPaintFragment& text_fragment = *line_box_fragment.Children()[0];
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 4,

@@ -15,9 +15,7 @@ namespace blink {
 class FillLayer;
 class LayoutRect;
 struct PaintInfo;
-class NGPhysicalFragment;
-class NGPhysicalBoxFragment;
-class NGPhysicalTextFragment;
+class NGPaintFragment;
 class Image;
 
 // Painter for LayoutNG box fragments, paints borders and background. Delegates
@@ -26,7 +24,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  NGBoxFragmentPainter(const NGPhysicalBoxFragment&);
+  NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&, const LayoutPoint&);
   void PaintChildren(const PaintInfo&, const LayoutPoint&);
@@ -37,7 +35,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                             const LayoutRect&);
 
   static bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-      const NGPhysicalFragment&,
+      const NGPaintFragment&,
       const PaintInfo&);
 
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
@@ -61,10 +59,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                       const LayoutRect&) override;
 
  private:
-  void PaintChildren(const Vector<RefPtr<NGPhysicalFragment>>&,
+  void PaintChildren(const Vector<std::unique_ptr<const NGPaintFragment>>&,
                      const PaintInfo&,
                      const LayoutPoint&);
-  void PaintText(const NGPhysicalTextFragment&,
+  void PaintText(const NGPaintFragment&,
                  const PaintInfo&,
                  const LayoutPoint& paint_offset);
   void PaintBackground(const PaintInfo&,
@@ -72,7 +70,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
 
-  const NGPhysicalBoxFragment& box_fragment_;
+  const NGPaintFragment& box_fragment_;
 };
 
 }  // namespace blink

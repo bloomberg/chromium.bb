@@ -107,7 +107,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   }
   fragment->SetOffset(physical_offset);
 
-  physical_root_fragment_ = fragment;
+  paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(std::move(fragment));
 }
 
 void LayoutNGBlockFlow::UpdateMargins(
@@ -150,7 +150,7 @@ void LayoutNGBlockFlow::AddOverflowFromChildren() {
       // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
       // re-compute glyph bounding box. How to detect it and how to re-compute
       // is TBD.
-      LayoutRect visual_rect = physical_fragment->VisualRect();
+      LayoutRect visual_rect = physical_fragment->LocalVisualRect();
       AddContentsVisualOverflow(visual_rect);
       // TODO(kojii): The above code computes visual overflow only, we fallback
       // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute

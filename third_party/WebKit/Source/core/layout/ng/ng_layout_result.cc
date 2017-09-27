@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
