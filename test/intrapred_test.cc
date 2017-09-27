@@ -234,7 +234,9 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorAvx2[] = {
   lowbd_entry(v, 32, 32, avx2),       lowbd_entry(h, 32, 32, avx2),
   lowbd_entry(dc, 32, 16, avx2),      lowbd_entry(dc_top, 32, 16, avx2),
   lowbd_entry(dc_left, 32, 16, avx2), lowbd_entry(dc_128, 32, 16, avx2),
-  lowbd_entry(v, 32, 16, avx2),
+  lowbd_entry(v, 32, 16, avx2),       lowbd_entry(paeth, 16, 8, avx2),
+  lowbd_entry(paeth, 16, 16, avx2),   lowbd_entry(paeth, 16, 32, avx2),
+  lowbd_entry(paeth, 32, 16, avx2),   lowbd_entry(paeth, 32, 32, avx2),
 };
 
 INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,

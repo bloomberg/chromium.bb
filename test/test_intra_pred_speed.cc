@@ -666,11 +666,23 @@ INTRA_PRED_TEST(SSSE3_1, TestIntraPred16, "intra16x16", NULL, NULL, NULL, NULL,
                 NULL, NULL, aom_paeth_predictor_16x16_ssse3, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSSE3_2, TestIntraPred16, "intra16x8", NULL, NULL, NULL, NULL,
                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                aom_paeth_predictor_16x8, NULL, NULL, NULL)
+                aom_paeth_predictor_16x8_ssse3, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSSE3_3, TestIntraPred16, "intra16x32", NULL, NULL, NULL, NULL,
                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_16x32_ssse3, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
+
+#if HAVE_AVX2
+INTRA_PRED_TEST(AVX2_1, TestIntraPred16, "intra16x16", NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_16x16_avx2, NULL, NULL, NULL)
+INTRA_PRED_TEST(AVX2_2, TestIntraPred16, "intra16x8", NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_16x8_avx2, NULL, NULL, NULL)
+INTRA_PRED_TEST(AVX2_3, TestIntraPred16, "intra16x32", NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_16x32_avx2, NULL, NULL, NULL)
+#endif  // HAVE_AVX2
 
 #if HAVE_DSPR2
 INTRA_PRED_TEST(DSPR2, TestIntraPred16, "intra16x16",
@@ -767,13 +779,13 @@ INTRA_PRED_TEST(AVX2_1, TestIntraPred32, "intra32x32",
                 aom_dc_top_predictor_32x32_avx2,
                 aom_dc_128_predictor_32x32_avx2, aom_v_predictor_32x32_avx2,
                 aom_h_predictor_32x32_avx2, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL)
+                aom_paeth_predictor_32x32_avx2, NULL, NULL, NULL)
 INTRA_PRED_TEST(AVX2_2, TestIntraPred32, "intra32x16",
                 aom_dc_predictor_32x16_avx2, aom_dc_left_predictor_32x16_avx2,
                 aom_dc_top_predictor_32x16_avx2,
                 aom_dc_128_predictor_32x16_avx2, aom_v_predictor_32x16_avx2,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL)
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_32x16_avx2, NULL, NULL, NULL)
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON

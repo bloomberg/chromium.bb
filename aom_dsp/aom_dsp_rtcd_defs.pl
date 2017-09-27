@@ -142,11 +142,11 @@ specialize qw/aom_paeth_predictor_4x8 ssse3/;
 specialize qw/aom_paeth_predictor_8x4 ssse3/;
 specialize qw/aom_paeth_predictor_8x8 ssse3/;
 specialize qw/aom_paeth_predictor_8x16 ssse3/;
-specialize qw/aom_paeth_predictor_16x8 ssse3/;
-specialize qw/aom_paeth_predictor_16x16 ssse3/;
-specialize qw/aom_paeth_predictor_16x32 ssse3/;
-specialize qw/aom_paeth_predictor_32x16 ssse3/;
-specialize qw/aom_paeth_predictor_32x32 ssse3/;
+specialize qw/aom_paeth_predictor_16x8 ssse3 avx2/;
+specialize qw/aom_paeth_predictor_16x16 ssse3 avx2/;
+specialize qw/aom_paeth_predictor_16x32 ssse3 avx2/;
+specialize qw/aom_paeth_predictor_32x16 ssse3 avx2/;
+specialize qw/aom_paeth_predictor_32x32 ssse3 avx2/;
 
 specialize qw/aom_d63e_predictor_4x4 ssse3/;
 specialize qw/aom_d135_predictor_4x4 neon/;
