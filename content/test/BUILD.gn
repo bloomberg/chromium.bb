@@ -29,6 +29,10 @@ static_library("test_support") {
   }
 
   sources = [
+    "../browser/accessibility/accessibility_event_recorder.cc",
+    "../browser/accessibility/accessibility_event_recorder.h",
+    "../browser/accessibility/accessibility_event_recorder_mac.mm",
+    "../browser/accessibility/accessibility_event_recorder_win.cc",
     "../browser/background_fetch/background_fetch_embedded_worker_test_helper.cc",
     "../browser/background_fetch/background_fetch_embedded_worker_test_helper.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
@@ -635,10 +639,6 @@ test("content_browsertests") {
   sources = [
     "../app/mojo/mojo_browsertest.cc",
     "../browser/accessibility/accessibility_action_browsertest.cc",
-    "../browser/accessibility/accessibility_event_recorder.cc",
-    "../browser/accessibility/accessibility_event_recorder.h",
-    "../browser/accessibility/accessibility_event_recorder_mac.mm",
-    "../browser/accessibility/accessibility_event_recorder_win.cc",
     "../browser/accessibility/accessibility_ipc_error_browsertest.cc",
     "../browser/accessibility/accessibility_mode_browsertest.cc",
     "../browser/accessibility/cross_platform_accessibility_browsertest.cc",
