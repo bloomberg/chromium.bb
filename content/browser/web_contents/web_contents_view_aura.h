@@ -195,6 +195,8 @@ class CONTENT_EXPORT WebContentsViewAura
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
 
+  bool enable_surface_synchronization_ = false;
+
   std::unique_ptr<aura::Window> window_;
 
   std::unique_ptr<WindowObserver> window_observer_;

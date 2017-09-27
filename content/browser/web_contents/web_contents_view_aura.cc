@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/common/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -537,7 +538,12 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
-      init_rwhv_with_null_parent_for_testing_(false) {}
+      init_rwhv_with_null_parent_for_testing_(false) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  enable_surface_synchronization_ =
+      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+}
 
 void WebContentsViewAura::SetDelegateForTesting(
     WebContentsViewDelegate* delegate) {
@@ -850,8 +856,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
       g_create_render_widget_host_view
           ? g_create_render_widget_host_view(render_widget_host,
                                              is_guest_view_hack)
-          : new RenderWidgetHostViewAura(render_widget_host,
-                                         is_guest_view_hack);
+          : new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack,
+                                         enable_surface_synchronization_);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =
@@ -874,7 +880,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
-  return new RenderWidgetHostViewAura(render_widget_host, false);
+  return new RenderWidgetHostViewAura(render_widget_host, false,
+                                      enable_surface_synchronization_);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {

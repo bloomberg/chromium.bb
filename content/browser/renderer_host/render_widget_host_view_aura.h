@@ -94,7 +94,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   //
   // TODO(lazyboy): Remove |is_guest_view_hack| once BrowserPlugin has migrated
   // to use RWHVChildFrame (http://crbug.com/330264).
-  RenderWidgetHostViewAura(RenderWidgetHost* host, bool is_guest_view_hack);
+  RenderWidgetHostViewAura(RenderWidgetHost* host,
+                           bool is_guest_view_hack,
+                           bool enable_surface_synchronization);
 
   // RenderWidgetHostView implementation.
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -391,6 +393,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            ForwardsBeginFrameAcks);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            VirtualKeyboardFocusEnsureCaretInRect);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+                           CompositorFrameSinkChange);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+                           SurfaceChanges);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, PopupMenuTest);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
@@ -493,6 +499,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // The model object.
   RenderWidgetHostImpl* const host_;
+
+  const bool enable_surface_synchronization_;
 
   aura::Window* window_;
 

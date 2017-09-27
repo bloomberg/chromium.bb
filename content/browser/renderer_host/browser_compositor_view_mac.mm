@@ -183,7 +183,9 @@ BrowserCompositorMac::BrowserCompositorMac(
   g_browser_compositor_count += 1;
 
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-  delegated_frame_host_.reset(new DelegatedFrameHost(frame_sink_id, this));
+  // TODO(fsamuel): Plumb surface synchronization settings.
+  delegated_frame_host_.reset(new DelegatedFrameHost(
+      frame_sink_id, this, false /* enable_surface_synchronization */));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);
@@ -444,6 +446,10 @@ gfx::Size BrowserCompositorMac::DelegatedFrameHostDesiredSizeInDIP() const {
 bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
   // Mac uses the RenderWidgetResizeHelper instead of a resize lock.
   return false;
+}
+
+viz::LocalSurfaceId BrowserCompositorMac::GetLocalSurfaceId() const {
+  return client_->GetLocalSurfaceId();
 }
 
 std::unique_ptr<CompositorResizeLock>
