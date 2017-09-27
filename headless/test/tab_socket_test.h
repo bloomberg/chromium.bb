@@ -13,7 +13,7 @@
 namespace headless {
 
 class TabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
-                      public headless::HeadlessTabSocket::Listener,
+                      public HeadlessTabSocket::Listener,
                       public page::Observer,
                       public runtime::Observer {
  public:

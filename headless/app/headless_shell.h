@@ -54,7 +54,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   // network::Observer implementation:
   void OnRequestIntercepted(
-      const headless::network::RequestInterceptedParams& params) override;
+      const network::RequestInterceptedParams& params) override;
 
   virtual void Shutdown();
 

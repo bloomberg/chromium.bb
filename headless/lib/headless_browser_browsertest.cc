@@ -832,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithNetLog, WriteNetLog) {
 
 namespace {
 
-class TraceHelper : public headless::tracing::ExperimentalObserver {
+class TraceHelper : public tracing::ExperimentalObserver {
  public:
   TraceHelper(HeadlessBrowserTest* browser_test, HeadlessDevToolsTarget* target)
       : browser_test_(browser_test),
@@ -860,22 +860,21 @@ class TraceHelper : public headless::tracing::ExperimentalObserver {
   }
 
  private:
-  void OnTracingStarted(std::unique_ptr<headless::tracing::StartResult>) {
+  void OnTracingStarted(std::unique_ptr<tracing::StartResult>) {
     // We don't need the callback from End, but the OnTracingComplete event.
     client_->GetTracing()->GetExperimental()->End(
-        headless::tracing::EndParams::Builder().Build());
+        tracing::EndParams::Builder().Build());
   }
 
-  // headless::tracing::ExperimentalObserver implementation:
-  void OnDataCollected(
-      const headless::tracing::DataCollectedParams& params) override {
+  // tracing::ExperimentalObserver implementation:
+  void OnDataCollected(const tracing::DataCollectedParams& params) override {
     for (const auto& value : *params.GetValue()) {
       tracing_data_->Append(value->CreateDeepCopy());
     }
   }
 
   void OnTracingComplete(
-      const headless::tracing::TracingCompleteParams& params) override {
+      const tracing::TracingCompleteParams& params) override {
     browser_test_->FinishAsynchronousTest();
   }
 

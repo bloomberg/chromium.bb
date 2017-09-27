@@ -139,17 +139,17 @@ def CreateUserTypeDefinition(domain, type):
   namespace = CamelCaseToHackerStyle(domain['domain'])
   return {
       'js_type': '!chromium.DevTools.%s.%s' % (domain['domain'], type['id']),
-      'return_type': 'std::unique_ptr<headless::%s::%s>' % (
+      'return_type': 'std::unique_ptr<::headless::%s::%s>' % (
           namespace, type['id']),
-      'pass_type': 'std::unique_ptr<headless::%s::%s>' % (
+      'pass_type': 'std::unique_ptr<::headless::%s::%s>' % (
           namespace, type['id']),
       'to_raw_type': '*%s',
       'to_raw_return_type': '%s.get()',
       'to_pass_type': 'std::move(%s)',
-      'type': 'std::unique_ptr<headless::%s::%s>' % (namespace, type['id']),
-      'raw_type': 'headless::%s::%s' % (namespace, type['id']),
-      'raw_pass_type': 'headless::%s::%s*' % (namespace, type['id']),
-      'raw_return_type': 'const headless::%s::%s*' % (namespace, type['id']),
+      'type': 'std::unique_ptr<::headless::%s::%s>' % (namespace, type['id']),
+      'raw_type': '::headless::%s::%s' % (namespace, type['id']),
+      'raw_pass_type': '::headless::%s::%s*' % (namespace, type['id']),
+      'raw_return_type': 'const ::headless::%s::%s*' % (namespace, type['id']),
   }
 
 
@@ -157,15 +157,15 @@ def CreateEnumTypeDefinition(domain_name, type):
   namespace = CamelCaseToHackerStyle(domain_name)
   return {
       'js_type': '!chromium.DevTools.%s.%s' % (domain_name, type['id']),
-      'return_type': 'headless::%s::%s' % (namespace, type['id']),
-      'pass_type': 'headless::%s::%s' % (namespace, type['id']),
+      'return_type': '::headless::%s::%s' % (namespace, type['id']),
+      'pass_type': '::headless::%s::%s' % (namespace, type['id']),
       'to_raw_type': '%s',
       'to_raw_return_type': '%s',
       'to_pass_type': '%s',
-      'type': 'headless::%s::%s' % (namespace, type['id']),
-      'raw_type': 'headless::%s::%s' % (namespace, type['id']),
-      'raw_pass_type': 'headless::%s::%s' % (namespace, type['id']),
-      'raw_return_type': 'headless::%s::%s' % (namespace, type['id']),
+      'type': '::headless::%s::%s' % (namespace, type['id']),
+      'raw_type': '::headless::%s::%s' % (namespace, type['id']),
+      'raw_pass_type': '::headless::%s::%s' % (namespace, type['id']),
+      'raw_return_type': '::headless::%s::%s' % (namespace, type['id']),
   }
 
 

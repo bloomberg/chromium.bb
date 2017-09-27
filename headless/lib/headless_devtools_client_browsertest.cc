@@ -102,8 +102,8 @@ class HeadlessDevToolsClientWindowManagementTest
       const gfx::Rect& rect,
       base::Callback<void(std::unique_ptr<browser::SetWindowBoundsResult>)>
           callback) {
-    std::unique_ptr<headless::browser::Bounds> bounds =
-        headless::browser::Bounds::Builder()
+    std::unique_ptr<browser::Bounds> bounds =
+        browser::Bounds::Builder()
             .SetLeft(rect.x())
             .SetTop(rect.y())
             .SetWidth(rect.width())
@@ -124,8 +124,8 @@ class HeadlessDevToolsClientWindowManagementTest
       const browser::WindowState state,
       base::Callback<void(std::unique_ptr<browser::SetWindowBoundsResult>)>
           callback) {
-    std::unique_ptr<headless::browser::Bounds> bounds =
-        headless::browser::Bounds::Builder().SetWindowState(state).Build();
+    std::unique_ptr<browser::Bounds> bounds =
+        browser::Bounds::Builder().SetWindowState(state).Build();
     int window_id = HeadlessWebContentsImpl::From(web_contents_)->window_id();
     std::unique_ptr<browser::SetWindowBoundsParams> params =
         browser::SetWindowBoundsParams::Builder()
@@ -153,7 +153,7 @@ class HeadlessDevToolsClientWindowManagementTest
       const gfx::Rect& bounds,
       const browser::WindowState state,
       std::unique_ptr<browser::GetWindowBoundsResult> result) {
-    const headless::browser::Bounds* actual_bounds = result->GetBounds();
+    const browser::Bounds* actual_bounds = result->GetBounds();
 // Mac does not support repositioning, as we don't show any actual window.
 #if !defined(OS_MACOSX)
     EXPECT_EQ(bounds.x(), actual_bounds->GetLeft());
@@ -895,7 +895,7 @@ class HeadlessDevToolsNavigationControlTest
     devtools_client_->GetNetwork()
         ->GetExperimental()
         ->SetRequestInterceptionEnabled(
-            headless::network::SetRequestInterceptionEnabledParams::Builder()
+            network::SetRequestInterceptionEnabledParams::Builder()
                 .SetEnabled(true)
                 .Build());
     devtools_client_->GetPage()->Navigate(
@@ -910,7 +910,7 @@ class HeadlessDevToolsNavigationControlTest
     devtools_client_->GetNetwork()
         ->GetExperimental()
         ->ContinueInterceptedRequest(
-            headless::network::ContinueInterceptedRequestParams::Builder()
+            network::ContinueInterceptedRequestParams::Builder()
                 .SetInterceptionId(params.GetInterceptionId())
                 .Build());
   }
@@ -933,7 +933,7 @@ class HeadlessCrashObserverTest : public HeadlessAsyncDevTooledBrowserTest,
   void RunDevTooledTest() override {
     devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
     devtools_client_->GetInspector()->GetExperimental()->Enable(
-        headless::inspector::EnableParams::Builder().Build());
+        inspector::EnableParams::Builder().Build());
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(content::kChromeUICrashURL);
   }
