@@ -994,6 +994,35 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
         Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
     }
 
+    /**
+     * Verify that a payment app with duplicate default and supported method can use its own
+     * default payment method, which supports all origins.
+     * Repeated app look ups should succeed.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testDuplicateDefaultAndSupportedMethodAndAllOriginsSupported() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://henrypay.com/webpay");
+        mPackageManager.installPaymentApp(
+                "HenryPay", "com.henrypay", "https://henrypay.com/webpay", "55555555551111111111");
+        mPackageManager.setStringArrayMetaData(
+                "com.henrypay", new String[] {"https://henrypay.com/webpay"});
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getAppIdentifier());
+
+        mPaymentApps.clear();
+        mAllPaymentAppsCreated = false;
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getAppIdentifier());
+    }
+
     private void findApps(final Set<String> methodNames) throws Throwable {
         mRule.runOnUiThread(() -> AndroidPaymentAppFinder.find(
                 mRule.getActivity().getCurrentContentViewCore().getWebContents(), methodNames,
