@@ -453,7 +453,7 @@ base::string16 PowerStatus::GetAccessibleNameString(
   }
   return battery_time_accessible.empty()
              ? battery_percentage_accessible
-             : battery_percentage_accessible + base::ASCIIToUTF16(". ") +
+             : battery_percentage_accessible + base::ASCIIToUTF16(" ") +
                    battery_time_accessible;
 }
 
