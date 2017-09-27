@@ -95,6 +95,20 @@ TEST(av1_inv_txfm1d, InvAccuracyCheck) {
   }
 }
 
+static INLINE int get_max_bit(int x) {
+  int max_bit = -1;
+  while (x) {
+    x = x >> 1;
+    max_bit++;
+  }
+  return max_bit;
+}
+
+TEST(av1_inv_txfm1d, get_max_bit) {
+  int max_bit = get_max_bit(8);
+  EXPECT_EQ(max_bit, 3);
+}
+
 TEST(av1_inv_txfm1d, round_trip) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   for (int si = 0; si < NELEMENTS(fwd_txfm_func_ls); ++si) {
