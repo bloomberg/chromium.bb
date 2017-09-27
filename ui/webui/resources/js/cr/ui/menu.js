@@ -78,6 +78,7 @@ cr.define('cr.ui', function() {
      * Clears menu.
      */
     clear: function() {
+      this.selectedItem = null;
       this.textContent = '';
     },
 
