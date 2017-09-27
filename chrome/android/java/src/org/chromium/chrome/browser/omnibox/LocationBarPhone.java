@@ -9,7 +9,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.text.Selection;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
@@ -164,23 +163,7 @@ public class LocationBarPhone extends LocationBarLayout {
      */
     public void finishUrlFocusChange(boolean hasFocus) {
         if (!hasFocus) {
-            // Remove the selection from the url text.  The ending selection position
-            // will determine the scroll position when the url field is restored.  If
-            // we do not clear this, it will scroll to the end of the text when you
-            // enter/exit the tab stack.
-            // We set the selection to 0 instead of removing the selection to avoid a crash that
-            // happens if you clear the selection instead.
-            //
-            // Triggering the bug happens by:
-            // 1.) Selecting some portion of the URL (where the two selection handles
-            //     appear)
-            // 2.) Trigger a text change in the URL bar (i.e. by triggering a new URL load
-            //     by a command line intent)
-            // 3.) Simultaneously moving one of the selection handles left and right.  This will
-            //     occasionally throw an AssertionError on the bounds of the selection.
-            if (!mUrlBar.scrollToTLD()) {
-                Selection.setSelection(mUrlBar.getText(), 0);
-            }
+            mUrlBar.scrollToTLD();
 
             // The animation rendering may not yet be 100% complete and hiding the keyboard makes
             // the animation quite choppy.
