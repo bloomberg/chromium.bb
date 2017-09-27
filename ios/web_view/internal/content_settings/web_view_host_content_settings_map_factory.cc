@@ -33,6 +33,11 @@ WebViewHostContentSettingsMapFactory::WebViewHostContentSettingsMapFactory()
 
 WebViewHostContentSettingsMapFactory::~WebViewHostContentSettingsMapFactory() {}
 
+void WebViewHostContentSettingsMapFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  HostContentSettingsMap::RegisterProfilePrefs(registry);
+}
+
 scoped_refptr<RefcountedKeyedService>
 WebViewHostContentSettingsMapFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
