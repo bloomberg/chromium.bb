@@ -316,6 +316,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   scoped_refptr<ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
   mojo::ScopedDataPipeConsumerHandle handle_;
+  SSLStatus ssl_status_;
+  bool is_download_;
 
   base::Closure on_start_checks_complete_closure_;
 

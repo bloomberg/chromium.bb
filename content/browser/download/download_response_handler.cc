@@ -45,22 +45,24 @@ mojom::NetworkRequestStatus ConvertInterruptReasonToMojoNetworkRequestStatus(
 
 }  // namespace
 
-DownloadResponseHandler::DownloadResponseHandler(DownloadUrlParameters* params,
-                                                 Delegate* delegate,
-                                                 bool is_parallel_request)
+DownloadResponseHandler::DownloadResponseHandler(
+    ResourceRequest* resource_request,
+    Delegate* delegate,
+    std::unique_ptr<DownloadSaveInfo> save_info,
+    bool is_parallel_request,
+    bool is_transient)
     : delegate_(delegate),
       started_(false),
-      save_info_(base::MakeUnique<DownloadSaveInfo>(params->GetSaveInfo())),
-      url_chain_(1, params->url()),
-      guid_(params->guid()),
-      method_(params->method()),
-      referrer_(params->referrer().url),
-      is_transient_(params->is_transient()),
+      save_info_(std::move(save_info)),
+      url_chain_(1, resource_request->url),
+      method_(resource_request->method),
+      referrer_(resource_request->referrer),
+      is_transient_(is_transient),
       has_strong_validators_(false) {
   if (!is_parallel_request)
     RecordDownloadCount(UNTHROTTLED_COUNT);
-  if (params->initiator().has_value())
-    origin_ = params->initiator().value().GetURL();
+  if (resource_request->request_initiator.has_value())
+    origin_ = resource_request->request_initiator.value().GetURL();
 }
 
 DownloadResponseHandler::~DownloadResponseHandler() = default;
@@ -118,7 +120,6 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->connection_info = head.connection_info;
   create_info->url_chain = url_chain_;
   create_info->referrer_url = referrer_;
-  create_info->guid = guid_;
   create_info->transient = is_transient_;
   create_info->response_headers = head.headers;
   create_info->offset = create_info->save_info->offset;

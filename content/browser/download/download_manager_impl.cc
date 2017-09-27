@@ -38,6 +38,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -118,7 +119,7 @@ void CreateInterruptedDownload(
                      params->callback()));
 }
 
-std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
+DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     content::ResourceContext* resource_context,
     uint32_t download_id,
@@ -156,14 +157,13 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     return nullptr;
   }
 
-  return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
+  return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
       UrlDownloader::BeginDownload(download_manager, std::move(url_request),
                                    params->referrer(), false)
           .release());
 }
 
-std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>
-BeginResourceDownload(
+DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
@@ -181,12 +181,36 @@ BeginResourceDownload(
     return nullptr;
   }
 
-  return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(
-      ResourceDownloader::BeginDownload(download_manager, std::move(params),
-                                        std::move(request),
-                                        url_loader_factory_getter, download_id,
-                                        false)
+  return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
+      ResourceDownloader::BeginDownload(
+          download_manager, std::move(params), std::move(request),
+          url_loader_factory_getter, download_id, false)
           .release());
+}
+
+// Creates a ResourceDownloader to own the URLLoader and intercept the response,
+// and passes it back to the DownloadManager.
+void InterceptNavigationResponse(
+    base::OnceCallback<void(DownloadManagerImpl::UniqueUrlDownloadHandlerPtr)>
+        callback,
+    base::WeakPtr<DownloadManagerImpl> download_manager,
+    const scoped_refptr<ResourceResponse>& response,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle,
+    const SSLStatus& ssl_status,
+    std::unique_ptr<ResourceRequest> resource_request,
+    std::unique_ptr<ThrottlingURLLoader> url_loader,
+    base::Optional<ResourceRequestCompletionStatus> completion_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DownloadManagerImpl::UniqueUrlDownloadHandlerPtr resource_downloader(
+      ResourceDownloader::InterceptNavigationResponse(
+          download_manager, std::move(resource_request), response,
+          std::move(consumer_handle), ssl_status, std::move(url_loader),
+          std::move(completion_status))
+          .release());
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(resource_downloader)));
 }
 
 class DownloadItemFactoryImpl : public DownloadItemFactory {
@@ -603,8 +627,7 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
 }
 
 void DownloadManagerImpl::AddUrlDownloadHandler(
-    std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
-        downloader) {
+    UniqueUrlDownloadHandlerPtr downloader) {
   if (downloader)
     url_download_handlers_.push_back(std::move(downloader));
 }
@@ -663,6 +686,19 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
       std::move(url_request), std::move(handler), true,  // download
       is_content_initiated, do_not_prompt_for_login, resource_context);
   return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+NavigationURLLoader::NavigationInterceptionCB
+DownloadManagerImpl::GetNavigationInterceptionCB(
+    const scoped_refptr<ResourceResponse>& response,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle,
+    const SSLStatus& ssl_status) {
+  return base::BindOnce(
+      &InterceptNavigationResponse,
+      base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
+                     weak_factory_.GetWeakPtr()),
+      weak_factory_.GetWeakPtr(), response, std::move(consumer_handle),
+      ssl_status);
 }
 
 int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
