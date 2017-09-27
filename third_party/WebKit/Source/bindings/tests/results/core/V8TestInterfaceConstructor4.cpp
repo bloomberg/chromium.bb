@@ -74,7 +74,6 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
   testInterface4Arg = V8TestInterfaceConstructor4::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterface4Arg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToConstruct("TestInterfaceConstructor4", "parameter 1 is not of type 'TestInterfaceConstructor4'."));
-
     return;
   }
 

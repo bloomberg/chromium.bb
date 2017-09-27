@@ -102,7 +102,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   if (!IsUndefinedOrNull(info[1]) && !info[1]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 2 ('testInterfaceEventInit') is not an object.");
-
     return;
   }
   V8TestInterfaceEventInit::ToImpl(info.GetIsolate(), info[1], testInterfaceEventInit, exceptionState);

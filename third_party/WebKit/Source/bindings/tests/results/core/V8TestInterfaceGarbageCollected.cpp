@@ -122,7 +122,6 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   arg = V8TestInterfaceGarbageCollected::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!arg) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("func", "TestInterfaceGarbageCollected", "parameter 1 is not of type 'TestInterfaceGarbageCollected'."));
-
     return;
   }
 
@@ -173,7 +172,6 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ScriptValue thisArg;
   if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     exceptionState.ThrowTypeError("The callback provided as parameter 1 is not a function.");
-
     return;
   }
   callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);

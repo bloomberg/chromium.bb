@@ -163,7 +163,6 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
   document = V8Document::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!document) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'Document'.");
-
     return;
   }
 
@@ -246,7 +245,6 @@ static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
   node = V8Node::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!node) {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
-
     return;
   }
 

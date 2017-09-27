@@ -316,14 +316,14 @@ V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToC
 {%- else %}
 V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("{{method.name}}", "{{interface_name}}", {{error_message}}));
 {%- endif %}
-{% endmacro %}
+{%- endmacro %}
 
 
 {##############################################################################}
 {% macro throw_argument_error(method, argument, error_message) %}
 {% set quoted_message = '"%s"' % (error_message | replace('\"', '\\\"')) %}
 {{throw_type_error(method, quoted_message | format(index=(argument.index + 1), name=argument.name, type=argument.idl_type))}}
-{% endmacro %}
+{%- endmacro %}
 
 
 {##############################################################################}

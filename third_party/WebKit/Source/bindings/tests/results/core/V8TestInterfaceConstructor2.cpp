@@ -90,7 +90,6 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   Dictionary dictionaryArg;
   if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('dictionaryArg') is not an object.");
-
     return;
   }
   dictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[0], exceptionState);
@@ -139,7 +138,6 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   testInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
   if (!testInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 1 is not of type 'TestInterfaceEmpty'.");
-
     return;
   }
 
@@ -160,7 +158,6 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   }
   if (!IsUndefinedOrNull(info[4]) && !info[4]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
-
     return;
   }
   defaultUndefinedOptionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[4], exceptionState);
