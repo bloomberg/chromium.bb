@@ -2263,18 +2263,13 @@ static inline int fc_max (int a, int b) { return a >= b ? a : b; }
 static inline FcBool fc_approximately_equal (int x, int y)
 { return abs (x - y) * 33 <= fc_max (abs (x), abs (y)); }
 
-FcCharSet *
-FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
+static int
+FcFreeTypeSpacing (FT_Face face)
 {
-    FcCharSet	    *fcs;
-    int		    o;
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_Pos	    advances[3] = {};
-    unsigned int    num_advances = spacing ? 0 : 3;
-
-    fcs = FcCharSetCreate ();
-    if (!fcs)
-	goto bail0;
+    unsigned int    num_advances = 0;
+    int		    o;
 
     /* When using scalable fonts, only report those glyphs
      * which can be scaled; otherwise those fonts will
@@ -2299,18 +2294,65 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 		strike_index = i;
 	}
 
-	if (FT_Select_Size (face, strike_index) != FT_Err_Ok)
-	    goto bail1;
+	FT_Select_Size (face, strike_index);
     }
 #endif
+
+    for (o = 0; o < NUM_DECODE; o++)
+    {
+	FcChar32        ucs4;
+	FT_UInt	 	glyph;
+
+	if (FT_Select_Charmap (face, fcFontEncodings[o]) != 0)
+	    continue;
+
+	ucs4 = FT_Get_First_Char (face, &glyph);
+	while (glyph != 0 && num_advances < 3)
+	{
+	    FT_Pos advance = 0;
+	    if (!FT_Get_Advance (face, glyph, load_flags, &advance) && advance)
+	    {
+		unsigned int j;
+		for (j = 0; j < num_advances; j++)
+		  if (fc_approximately_equal (advance, advances[j]))
+		    break;
+		if (j == num_advances)
+		  advances[num_advances++] = advance;
+	    }
+
+	    ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
+	}
+	break;
+    }
+
+    if (num_advances <= 1)
+	return FC_MONO;
+    else if (num_advances == 2 &&
+	     fc_approximately_equal (fc_min (advances[0], advances[1]) * 2,
+				     fc_max (advances[0], advances[1])))
+	return FC_DUAL;
+    else
+	return FC_PROPORTIONAL;
+}
+
+FcCharSet *
+FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks FC_UNUSED)
+{
+    const FT_Int    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
+    FcCharSet	    *fcs;
+    int		    o;
+
+    fcs = FcCharSetCreate ();
+    if (!fcs)
+	goto bail;
 
 #ifdef CHECK
     printf ("Family %s style %s\n", face->family_name, face->style_name);
 #endif
     for (o = 0; o < NUM_DECODE; o++)
     {
-	FcChar32	page, off, ucs4;
-	FcCharLeaf	*leaf;
+	FcChar32        page, off, ucs4;
+	FcCharLeaf      *leaf;
 	FT_UInt	 	glyph;
 
 	if (FT_Select_Charmap (face, fcFontEncodings[o]) != 0)
@@ -2335,26 +2377,13 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 
 	    if (good)
 	    {
-		if (num_advances < 3)
-		{
-		    FT_Pos advance = 0;
-		    if (!FT_Get_Advance (face, glyph, load_flags, &advance) && advance)
-		    {
-			unsigned int i;
-			for (i = 0; i < num_advances; i++)
-			  if (fc_approximately_equal (advance, advances[i]))
-			    break;
-			if (i == num_advances)
-			  advances[num_advances++] = advance;
-		    }
-		}
-
+		FcCharSetAddChar (fcs, ucs4);
 		if ((ucs4 >> 8) != page)
 		{
 		    page = (ucs4 >> 8);
 		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
 		    if (!leaf)
-			goto bail1;
+			goto bail;
 		}
 		off = ucs4 & 0xff;
 		leaf->map[off >> 5] |= (1 << (off & 0x1f));
@@ -2395,29 +2424,20 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 	break;
     }
 
-    if (spacing)
-    {
-      if (num_advances <= 1)
-	  *spacing = FC_MONO;
-      else if (num_advances == 2 &&
-	       fc_approximately_equal (fc_min (advances[0], advances[1]) * 2,
-				       fc_max (advances[0], advances[1])))
-	  *spacing = FC_DUAL;
-      else
-	  *spacing = FC_PROPORTIONAL;
-    }
-
     return fcs;
-bail1:
+bail:
     FcCharSetDestroy (fcs);
-bail0:
     return 0;
 }
 
 FcCharSet *
-FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks FC_UNUSED)
+FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
 {
-    return FcFreeTypeCharSetAndSpacing (face, blanks, NULL);
+
+    if (spacing)
+	*spacing = FcFreeTypeSpacing (face);
+
+    return FcFreeTypeCharSet (face, blanks);
 }
 
 
