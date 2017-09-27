@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
+#import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -105,7 +106,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
   _stackView.axis = UILayoutConstraintAxisVertical;
   _stackView.layoutMarginsRelativeArrangement = YES;
-  _stackView.layoutMargins = UIEdgeInsetsMake(
+  _stackView.layoutMargins = UIEdgeInsetsMakeDirected(
       kVerticalPadding, 0, kVerticalPadding, kHorizontalPadding);
   _stackView.alignment = UIStackViewAlignmentLeading;
   _stackView.spacing = kVerticalSpacingBetweenLabels;
