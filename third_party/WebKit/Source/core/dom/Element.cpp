@@ -2168,15 +2168,21 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   if (local_change != kNoChange)
     UpdateCallbackSelectors(old_style.Get(), new_style.Get());
 
-  if (local_change != kNoChange) {
-    if (LayoutObject* layout_object = this->GetLayoutObject()) {
+  if (LayoutObject* layout_object = this->GetLayoutObject()) {
+    // kNoChange may means that the computed style didn't change, but there are
+    // additional flags in ComputedStyle which may have changed. For instance,
+    // the AffectedBy* flags. We don't need to go through the visual
+    // invalidation diffing in that case, but we replace the old ComputedStyle
+    // object with the new one to ensure the mentioned flags are up to date.
+    if (local_change == kNoChange)
+      layout_object->SetStyleInternal(new_style.Get());
+    else
       layout_object->SetStyle(new_style.Get());
-    } else {
-      if (ShouldStoreNonLayoutObjectComputedStyle(*new_style))
-        StoreNonLayoutObjectComputedStyle(new_style);
-      else if (HasRareData())
-        GetElementRareData()->ClearComputedStyle();
-    }
+  } else {
+    if (ShouldStoreNonLayoutObjectComputedStyle(*new_style))
+      StoreNonLayoutObjectComputedStyle(new_style);
+    else if (HasRareData())
+      GetElementRareData()->ClearComputedStyle();
   }
 
   if (GetStyleChangeType() >= kSubtreeStyleChange)
