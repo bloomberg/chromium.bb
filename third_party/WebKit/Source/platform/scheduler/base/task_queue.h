@@ -22,7 +22,9 @@ class BlameContext;
 
 namespace blink {
 namespace scheduler {
-
+namespace task_queue_throttler_unittest {
+class TaskQueueThrottlerTest;
+}
 namespace internal {
 class TaskQueueImpl;
 }
@@ -248,7 +250,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManager;
 
-  friend class TaskQueueThrottlerTest;
+  friend class task_queue_throttler_unittest::TaskQueueThrottlerTest;
 
   const std::unique_ptr<internal::TaskQueueImpl> impl_;
 

@@ -26,7 +26,11 @@
 
 using ::testing::ElementsAre;
 
-namespace {
+namespace blink {
+namespace scheduler {
+namespace task_queue_throttler_unittest {  // To avoid symbol collisions in
+                                           // jumbo builds.
+
 bool MessageLoopTaskCounter(size_t* count) {
   *count = *count + 1;
   return true;
@@ -38,12 +42,6 @@ void AddOneTask(size_t* count) {
   (*count)++;
 }
 
-}  // namespace
-
-namespace blink {
-namespace scheduler {
-
-namespace {
 void RunTenTimesTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
   if (++(*count) < 10) {
     timer_queue->PostTask(FROM_HERE,
@@ -71,8 +69,6 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
  private:
   base::TimeDelta advancing_interval_;
 };
-
-}  // namespace
 
 class TaskQueueThrottlerTest : public ::testing::Test {
  public:
@@ -1272,5 +1268,6 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(3003)));
 }
 
+}  // namespace task_queue_throttler_unittest
 }  // namespace scheduler
 }  // namespace blink

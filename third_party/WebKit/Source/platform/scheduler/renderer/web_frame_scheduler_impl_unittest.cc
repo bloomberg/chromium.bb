@@ -20,6 +20,8 @@
 
 namespace blink {
 namespace scheduler {
+namespace web_frame_scheduler_impl_unittest {  // To avoid symbol collisions in
+                                               // jumbo builds.
 
 class WebFrameSchedulerImplTest : public ::testing::Test {
  public:
@@ -284,5 +286,6 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
   observer->CheckObserverState(throttled_count, not_throttled_count);
 }
 
+}  // namespace web_frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

@@ -30,6 +30,9 @@ class ConvertableToTraceFormat;
 
 namespace blink {
 namespace scheduler {
+namespace task_queue_manager_unittest {
+class TaskQueueManagerTest;
+}
 namespace internal {
 class TaskQueueImpl;
 }  // namespace internal
@@ -154,7 +157,7 @@ class PLATFORM_EXPORT TaskQueueManager
  protected:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
-  friend class TaskQueueManagerTest;
+  friend class task_queue_manager_unittest::TaskQueueManagerTest;
 
   // Intermediate data structure, used to compute NextDelayedDoWork.
   class NextTaskDelay {
