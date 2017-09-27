@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <fstream>
 #include <initializer_list>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -743,14 +744,12 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
       temp_dir_.GetPath().Append(FPL("Test Readable File.txt"));
   EXPECT_FALSE(PathExists(file_name));
 
-  const std::string kData("hello");
-
-  int buffer_size = kData.length();
-  char* buffer = new char[buffer_size];
+  static constexpr char kData[] = "hello";
+  static constexpr int kDataSize = sizeof(kData) - 1;
+  char buffer[kDataSize];
 
   // Write file.
-  EXPECT_EQ(static_cast<int>(kData.length()),
-            WriteFile(file_name, kData.data(), kData.length()));
+  EXPECT_EQ(kDataSize, WriteFile(file_name, kData, kDataSize));
   EXPECT_TRUE(PathExists(file_name));
 
   // Make sure the file is readable.
@@ -763,21 +762,18 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndRead) {
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_FALSE(mode & FILE_PERMISSION_READ_BY_USER);
   // Make sure the file can't be read.
-  EXPECT_EQ(-1, ReadFile(file_name, buffer, buffer_size));
+  EXPECT_EQ(-1, ReadFile(file_name, buffer, kDataSize));
 
   // Give the read permission.
   EXPECT_TRUE(SetPosixFilePermissions(file_name, FILE_PERMISSION_READ_BY_USER));
   EXPECT_TRUE(GetPosixFilePermissions(file_name, &mode));
   EXPECT_TRUE(mode & FILE_PERMISSION_READ_BY_USER);
   // Make sure the file can be read.
-  EXPECT_EQ(static_cast<int>(kData.length()),
-            ReadFile(file_name, buffer, buffer_size));
+  EXPECT_EQ(kDataSize, ReadFile(file_name, buffer, kDataSize));
 
   // Delete the file.
   EXPECT_TRUE(DeleteFile(file_name, false));
   EXPECT_FALSE(PathExists(file_name));
-
-  delete[] buffer;
 }
 
 TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
@@ -2584,7 +2580,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   FilePath image_file = data_dir.Append(FILE_PATH_LITERAL("red.png"));
   int64_t image_size;
   GetFileSize(image_file, &image_size);
-  EXPECT_LT(0, image_size);
+  ASSERT_GT(image_size, 0);
 
   // Insert the image into MediaStore. MediaStore will do some conversions, and
   // return the content URI.
@@ -2598,11 +2594,10 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   EXPECT_EQ(image_size, content_uri_size);
 
   // We should be able to read the file.
-  char* buffer = new char[image_size];
   File file = OpenContentUriForRead(path);
   EXPECT_TRUE(file.IsValid());
-  EXPECT_TRUE(file.ReadAtCurrentPos(buffer, image_size));
-  delete[] buffer;
+  auto buffer = std::make_unique<char[]>(image_size);
+  EXPECT_TRUE(file.ReadAtCurrentPos(buffer.get(), image_size));
 }
 
 TEST_F(FileUtilTest, NonExistentContentUriTest) {
