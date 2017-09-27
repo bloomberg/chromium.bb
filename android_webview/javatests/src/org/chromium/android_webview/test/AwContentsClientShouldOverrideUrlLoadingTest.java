@@ -57,6 +57,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private AwContents mAwContents;
+
     private TestAwContentsClient.ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
 
     private static class TestDefaultContentsClient extends TestAwContentsClient {
@@ -932,5 +933,97 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         } finally {
             mActivityTestRule.getActivity().setIgnoreStartActivity(false);
         }
+    }
+
+    // Verify popups can open about:blank but no shouldoverrideurloading is received for about:blank
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOpenAboutBlankInPopup() throws Throwable {
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper popupShouldOverrideUrlLoadingHelper =
+                createPopUp("about:blank", true /* wait for title */);
+        // Popup is just created, so testing against 0 is true.
+        Assert.assertEquals(0, popupShouldOverrideUrlLoadingHelper.getCallCount());
+    }
+
+    // Verify popups can open custom scheme and shouldoverrideurlloading is called.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOpenCustomSchemeUrlInPopup() throws Throwable {
+        final String popupPath = "foo://bar";
+        verifyShouldOverrideUrlLoadingInPopup(popupPath);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOpenHttpUrlInPopup() throws Throwable {
+        final String popupPath = "http://example.com/";
+        verifyShouldOverrideUrlLoadingInPopup(popupPath);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOpenHttpUrlInPopupAddsTrailingSlash() throws Throwable {
+        final String popupPath = "http://example.com";
+        verifyShouldOverrideUrlLoadingInPopup(popupPath, popupPath + "/");
+    }
+
+    private void verifyShouldOverrideUrlLoadingInPopup(String popupPath) throws Throwable {
+        verifyShouldOverrideUrlLoadingInPopup(popupPath, popupPath);
+    }
+
+    private void verifyShouldOverrideUrlLoadingInPopup(
+            String popupPath, String expectedPathInShouldOVerrideUrlLoading) throws Throwable {
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper popupShouldOverrideUrlLoadingHelper =
+                createPopUp(popupPath, false /* wait for onpagefinished */);
+        Assert.assertEquals(expectedPathInShouldOVerrideUrlLoading,
+                popupShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
+        Assert.assertEquals(false, popupShouldOverrideUrlLoadingHelper.isRedirect());
+        Assert.assertFalse(popupShouldOverrideUrlLoadingHelper.hasUserGesture());
+        Assert.assertTrue(popupShouldOverrideUrlLoadingHelper.isMainFrame());
+    }
+
+    private TestAwContentsClient.ShouldOverrideUrlLoadingHelper createPopUp(
+            String popupPath, boolean waitForTitle) throws Throwable {
+        standardSetup();
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("",
+                "<script>"
+                        + "function tryOpenWindow() {"
+                        + "  var newWindow = window.open('" + popupPath + "');"
+                        + "}</script>");
+        mActivityTestRule.triggerPopup(mAwContents, mContentsClient, mWebServer, parentPageHtml,
+                null, null, "tryOpenWindow()");
+
+        final TestAwContentsClient popupContentsClient = new TestAwContentsClient();
+        final AwTestContainerView popupContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(popupContentsClient);
+        final AwContents popupContents = popupContainerView.getAwContents();
+
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper popupShouldOverrideUrlLoadingHelper =
+                popupContentsClient.getShouldOverrideUrlLoadingHelper();
+        int currentCallCount = popupShouldOverrideUrlLoadingHelper.getCallCount();
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mAwContents.supplyContentsForPopup(popupContents));
+
+        if (waitForTitle) {
+            // Wait for popup to be loaded for about:blank. Turned out that in about:blank
+            // navigation to open a popup, both WebviewClient and WebChromeClient callbacks such as
+            // OnPageFinished, OnReceivedTitle, onPageStarted, are not called. However,
+            // title changes.
+            pollTitleAs("about:blank", popupContents);
+        } else {
+            popupContentsClient.getOnPageFinishedHelper().waitForCallback(
+                    currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }
+        return popupShouldOverrideUrlLoadingHelper;
+    }
+
+    private void pollTitleAs(final String title, final AwContents awContents) throws Exception {
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> title.equals(mActivityTestRule.getTitleOnUiThread(awContents)));
     }
 }
