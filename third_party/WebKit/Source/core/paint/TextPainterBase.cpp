@@ -117,7 +117,7 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
     text_style.stroke_color = Color::kBlack;
     text_style.emphasis_mark_color = Color::kBlack;
     text_style.stroke_width = style.TextStrokeWidth();
-    text_style.shadow = 0;
+    text_style.shadow = nullptr;
   } else {
     text_style.current_color = style.VisitedDependentColor(CSSPropertyColor);
     text_style.fill_color =
@@ -143,10 +143,6 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
       text_style.emphasis_mark_color =
           TextColorForWhiteBackground(text_style.emphasis_mark_color);
     }
-
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    if (is_printing)
-      text_style.shadow = 0;
   }
 
   return text_style;
