@@ -105,8 +105,11 @@ void LeakDetector::OnLeakDetectionComplete(
     list->AppendInteger(result.number_of_live_layout_objects);
     detail.Set("numberOfLiveLayoutObjects", std::move(list));
   }
+  // Resources associated with User Agent CSS should be excluded from leak
+  // detection as they are persisted through page navigation.
   if (previous_result_.number_of_live_resources <
-      result.number_of_live_resources) {
+      (result.number_of_live_resources -
+       result.number_of_live_ua_css_resources)) {
     auto list = base::MakeUnique<base::ListValue>();
     list->AppendInteger(previous_result_.number_of_live_resources);
     list->AppendInteger(result.number_of_live_resources);

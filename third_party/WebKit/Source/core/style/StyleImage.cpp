@@ -6,9 +6,15 @@
 
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
+#include "platform/InstanceCounters.h"
 #include "platform/geometry/LayoutSize.h"
 
 namespace blink {
+
+StyleImage::~StyleImage() {
+  if (is_ua_css_resource_)
+    InstanceCounters::DecrementCounter(InstanceCounters::kUACSSResourceCounter);
+}
 
 LayoutSize StyleImage::ApplyZoom(const LayoutSize& size, float multiplier) {
   if (multiplier == 1.0f)
@@ -36,6 +42,14 @@ LayoutSize StyleImage::ImageSizeForSVGImage(
   LayoutSize image_size(RoundedIntSize(
       svg_image->ConcreteObjectSize(unzoomed_default_object_size)));
   return ApplyZoom(image_size, multiplier);
+}
+
+void StyleImage::FlagAsUserAgentResource() {
+  if (is_ua_css_resource_)
+    return;
+
+  InstanceCounters::IncrementCounter(InstanceCounters::kUACSSResourceCounter);
+  is_ua_css_resource_ = true;
 }
 
 }  // namespace blink

@@ -50,7 +50,8 @@ namespace blink {
   V(ScriptPromise)                \
   V(SuspendableObject)            \
   V(V8PerContextData)             \
-  V(WorkerGlobalScope)
+  V(WorkerGlobalScope)            \
+  V(UACSSResource)
 
 class InstanceCounters {
   STATIC_ONLY(InstanceCounters);

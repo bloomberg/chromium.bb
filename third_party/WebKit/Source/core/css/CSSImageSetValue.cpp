@@ -43,8 +43,10 @@
 
 namespace blink {
 
-CSSImageSetValue::CSSImageSetValue()
-    : CSSValueList(kImageSetClass, kCommaSeparator), cached_scale_factor_(1) {}
+CSSImageSetValue::CSSImageSetValue(CSSParserMode parser_mode)
+    : CSSValueList(kImageSetClass, kCommaSeparator),
+      cached_scale_factor_(1),
+      parser_mode_(parser_mode) {}
 
 CSSImageSetValue::~CSSImageSetValue() {}
 
@@ -135,6 +137,9 @@ StyleImage* CSSImageSetValue::CacheImage(
       cached_image_ = StyleInvalidImage::Create(image.image_url);
     }
     cached_scale_factor_ = device_scale_factor;
+
+    if (parser_mode_ == kUASheetMode)
+      cached_image_->FlagAsUserAgentResource();
   }
 
   return cached_image_.Get();
@@ -184,7 +189,7 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue) {
 }
 
 CSSImageSetValue* CSSImageSetValue::ValueWithURLsMadeAbsolute() {
-  CSSImageSetValue* value = CSSImageSetValue::Create();
+  CSSImageSetValue* value = CSSImageSetValue::Create(parser_mode_);
   for (auto& item : *this)
     item->IsImageValue()
         ? value->Append(*ToCSSImageValue(*item).ValueWithURLMadeAbsolute())

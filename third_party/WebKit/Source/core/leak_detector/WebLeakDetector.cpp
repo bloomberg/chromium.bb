@@ -96,6 +96,8 @@ void WebLeakDetectorImpl::OnLeakDetectionComplete() {
       InstanceCounters::kV8PerContextDataCounter);
   result.number_of_worker_global_scopes = InstanceCounters::CounterValue(
       InstanceCounters::kWorkerGlobalScopeCounter);
+  result.number_of_live_ua_css_resources =
+      InstanceCounters::CounterValue(InstanceCounters::kUACSSResourceCounter);
 
   client_->OnLeakDetectionComplete(result);
   detector_.reset();
