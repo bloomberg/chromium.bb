@@ -766,6 +766,9 @@ extern const char kSoftwareRasterizerDescription[];
 extern const char kSoundContentSettingName[];
 extern const char kSoundContentSettingDescription[];
 
+extern const char kSpeculativePreconnectName[];
+extern const char kSpeculativePreconnectDescription[];
+
 extern const char kSpeculativePrefetchName[];
 extern const char kSpeculativePrefetchDescription[];
 

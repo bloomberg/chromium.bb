@@ -31,6 +31,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_features.h"
@@ -170,7 +171,8 @@ Predictor::~Predictor() {
 // static
 Predictor* Predictor::CreatePredictor(bool simple_shutdown) {
   bool predictor_enabled =
-      base::FeatureList::IsEnabled(features::kNetworkPrediction);
+      base::FeatureList::IsEnabled(features::kNetworkPrediction) &&
+      !predictors::ShouldDisableOtherPreconnects();
   if (simple_shutdown)
     return new SimplePredictor(predictor_enabled);
   return new Predictor(predictor_enabled);

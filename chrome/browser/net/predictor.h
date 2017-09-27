@@ -423,7 +423,8 @@ class Predictor {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Status of speculative DNS resolution and speculative TCP/IP connection
-  // feature. This is false if and only if disabled by a command line switch.
+  // feature. This is true if features::kNetworkPredicton is enabled and
+  // LoadingPredictor's preconnect is disabled.
   // Protected by |preconnect_enabled_lock_|, which is used by tests to bypass
   // the command line flags.
   bool predictor_enabled_;

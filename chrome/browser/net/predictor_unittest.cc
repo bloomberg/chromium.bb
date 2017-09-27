@@ -17,10 +17,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/url_info.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -559,6 +561,16 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   EXPECT_FALSE(testing_master.work_queue_.IsEmpty());
 
   testing_master.Shutdown();
+}
+
+TEST_F(PredictorTest, PredictorDisabledByNetworkPredictionFeature) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kNetworkPrediction);
+
+  std::unique_ptr<Predictor> testing_master =
+      base::WrapUnique(Predictor::CreatePredictor(true));
+  EXPECT_FALSE(testing_master->PredictorEnabled());
+  testing_master->Shutdown();
 }
 
 }  // namespace chrome_browser_net
