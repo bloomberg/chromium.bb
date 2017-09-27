@@ -1159,6 +1159,32 @@ static const FT_UShort nameid_order[] = {
 
 #define NUM_NAMEID_ORDER  (sizeof (nameid_order) / sizeof (nameid_order[0]))
 
+static FcBool
+FcFreeTypeGetName (const FT_Face face,
+		   unsigned int  platform,
+		   unsigned int  nameid,
+		   FT_SfntName   *sname)
+{
+    int min = 0, max = (int) FT_Get_Sfnt_Name_Count (face) - 1;
+
+    while (min <= max)
+    {
+	int mid = (min + max) / 2;
+
+	if (FT_Get_Sfnt_Name (face, mid, sname) != 0)
+	    return FcFalse;
+
+	if (platform < sname->platform_id || (platform == sname->platform_id && nameid < sname->name_id))
+	    max = mid - 1;
+	else if (platform > sname->platform_id || (platform == sname->platform_id && nameid > sname->name_id))
+	    min = mid + 1;
+	else
+	    return FcTrue;
+    }
+
+    return FcFalse;
+}
+
 static FcPattern *
 FcFreeTypeQueryFaceInternal (const FT_Face  face,
 			     const FcChar8  *file,
@@ -1197,8 +1223,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 #endif
     TT_Header	    *head;
     const FcChar8   *exclusiveLang = 0;
-    FT_SfntName	    sname;
-    FT_UInt    	    snamei, snamec;
 
     int		    nfamily = 0;
     int		    nfamily_lang = 0;
@@ -1207,7 +1231,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     int		    nfullname = 0;
     int		    nfullname_lang = 0;
     unsigned int    p, n;
-    int		    platform, nameid;
 
     FcChar8	    *style = 0;
     int		    st;
@@ -1369,10 +1392,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
      * and style names.  FreeType makes quite a hash
      * of them
      */
-    snamec = FT_Get_Sfnt_Name_Count (face);
     for (p = 0; p < NUM_PLATFORM_ORDER; p++)
     {
-	platform = platform_order[p];
+	int platform = platform_order[p];
 
 	/*
 	 * Order nameids so preferred names appear first
@@ -1380,149 +1402,142 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	 */
 	for (n = 0; n < NUM_NAMEID_ORDER; n++)
 	{
-	    nameid = nameid_order[n];
+	    FT_SfntName sname;
+	    const FcChar8	*lang;
+	    const char	*elt = 0, *eltlang = 0;
+	    int		*np = 0, *nlangp = 0;
+	    size_t		len;
+	    int nameid, lookupid;
 
-	    for (snamei = 0; snamei < snamec; snamei++)
+	    nameid = lookupid = nameid_order[n];
+
+	    if (instance)
 	    {
-		const FcChar8	*lang;
-		const char	*elt = 0, *eltlang = 0;
-		int		*np = 0, *nlangp = 0;
-		size_t		len;
-
-		if (FT_Get_Sfnt_Name (face, snamei, &sname) != 0)
+		/* For named-instances, we skip regular style nameIDs,
+		 * and treat the instance's nameid as FONT_SUBFAMILY.
+		 * Postscript name is automatically handled by FreeType. */
+		if (nameid == TT_NAME_ID_WWS_SUBFAMILY ||
+		    nameid == TT_NAME_ID_PREFERRED_SUBFAMILY)
 		    continue;
 
-		if (instance)
-		{
-		    /* For named-instances, we skip regular style nameIDs,
-		     * and treat the instance's nameid as FONT_SUBFAMILY.
-		     * Postscript name is automatically handled by FreeType. */
-		    if (sname.name_id == TT_NAME_ID_WWS_SUBFAMILY ||
-			sname.name_id == TT_NAME_ID_PREFERRED_SUBFAMILY ||
-			sname.name_id == TT_NAME_ID_FONT_SUBFAMILY)
-			continue;
-		    if (sname.name_id == instance->strid)
-			sname.name_id = TT_NAME_ID_FONT_SUBFAMILY;
-		}
+		if (nameid == TT_NAME_ID_FONT_SUBFAMILY)
+		    lookupid = instance->strid;
+	    }
 
-		if (sname.name_id != nameid)
-		    continue;
+	    if (!FcFreeTypeGetName (face, platform, lookupid, &sname))
+		continue;
 
-		if (sname.platform_id != platform)
-		    continue;
-
-		switch (sname.name_id) {
+	    switch (nameid) {
 #ifdef TT_NAME_ID_WWS_FAMILY
-		case TT_NAME_ID_WWS_FAMILY:
+	    case TT_NAME_ID_WWS_FAMILY:
 #endif
-		case TT_NAME_ID_PREFERRED_FAMILY:
-		case TT_NAME_ID_FONT_FAMILY:
+	    case TT_NAME_ID_PREFERRED_FAMILY:
+	    case TT_NAME_ID_FONT_FAMILY:
 #if 0	
-		case TT_NAME_ID_UNIQUE_ID:
+	    case TT_NAME_ID_UNIQUE_ID:
 #endif
-		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found family (n %2d p %d e %d l 0x%04x)",
-				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id);
+		if (FcDebug () & FC_DBG_SCANV)
+		    printf ("found family (n %2d p %d e %d l 0x%04x)",
+			    sname.name_id, sname.platform_id,
+			    sname.encoding_id, sname.language_id);
 
-		    elt = FC_FAMILY;
-		    eltlang = FC_FAMILYLANG;
-		    np = &nfamily;
-		    nlangp = &nfamily_lang;
-		    break;
-		case TT_NAME_ID_MAC_FULL_NAME:
-		case TT_NAME_ID_FULL_NAME:
-		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found full   (n %2d p %d e %d l 0x%04x)",
-				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id);
+		elt = FC_FAMILY;
+		eltlang = FC_FAMILYLANG;
+		np = &nfamily;
+		nlangp = &nfamily_lang;
+		break;
+	    case TT_NAME_ID_MAC_FULL_NAME:
+	    case TT_NAME_ID_FULL_NAME:
+		if (FcDebug () & FC_DBG_SCANV)
+		    printf ("found full   (n %2d p %d e %d l 0x%04x)",
+			    sname.name_id, sname.platform_id,
+			    sname.encoding_id, sname.language_id);
 
-		    elt = FC_FULLNAME;
-		    eltlang = FC_FULLNAMELANG;
-		    np = &nfullname;
-		    nlangp = &nfullname_lang;
-		    break;
+		elt = FC_FULLNAME;
+		eltlang = FC_FULLNAMELANG;
+		np = &nfullname;
+		nlangp = &nfullname_lang;
+		break;
 #ifdef TT_NAME_ID_WWS_SUBFAMILY
-		case TT_NAME_ID_WWS_SUBFAMILY:
+	    case TT_NAME_ID_WWS_SUBFAMILY:
 #endif
-		case TT_NAME_ID_PREFERRED_SUBFAMILY:
-		case TT_NAME_ID_FONT_SUBFAMILY:
-		    if (variable)
-			break;
-		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found style  (n %2d p %d e %d l 0x%04x) ",
-				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id);
+	    case TT_NAME_ID_PREFERRED_SUBFAMILY:
+	    case TT_NAME_ID_FONT_SUBFAMILY:
+		if (variable)
+		    break;
+		if (FcDebug () & FC_DBG_SCANV)
+		    printf ("found style  (n %2d p %d e %d l 0x%04x) ",
+			    sname.name_id, sname.platform_id,
+			    sname.encoding_id, sname.language_id);
 
-		    elt = FC_STYLE;
-		    eltlang = FC_STYLELANG;
-		    np = &nstyle;
-		    nlangp = &nstyle_lang;
-		    break;
-		case TT_NAME_ID_TRADEMARK:
-		case TT_NAME_ID_MANUFACTURER:
-		    /* If the foundry wasn't found in the OS/2 table, look here */
-		    if(!foundry)
-		    {
-			FcChar8 *utf8;
-			utf8 = FcSfntNameTranscode (&sname);
-			foundry = FcNoticeFoundry((FT_String *) utf8);
-			free (utf8);
-		    }
-		    break;
-		}
-		if (elt)
+		elt = FC_STYLE;
+		eltlang = FC_STYLELANG;
+		np = &nstyle;
+		nlangp = &nstyle_lang;
+		break;
+	    case TT_NAME_ID_TRADEMARK:
+	    case TT_NAME_ID_MANUFACTURER:
+		/* If the foundry wasn't found in the OS/2 table, look here */
+		if(!foundry)
 		{
-		    FcChar8		*utf8, *pp;
-
+		    FcChar8 *utf8;
 		    utf8 = FcSfntNameTranscode (&sname);
-		    lang = FcSfntNameLanguage (&sname);
-
-		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("%s\n", utf8);
-
-		    if (!utf8)
-			continue;
-
-		    /* Trim surrounding whitespace. */
-		    pp = utf8;
-		    while (*pp == ' ')
-			pp++;
-		    len = strlen ((const char *) pp);
-		    memmove (utf8, pp, len + 1);
-		    pp = utf8 + len;
-		    while (pp > utf8 && *(pp - 1) == ' ')
-			pp--;
-		    *pp = 0;
-
-		    if (FcStringInPatternElement (pat, elt, utf8))
-		    {
-			free (utf8);
-			continue;
-		    }
-
-		    /* add new element */
-		    if (!FcPatternAddString (pat, elt, utf8))
-		    {
-			free (utf8);
-			goto bail1;
-		    }
+		    foundry = FcNoticeFoundry((FT_String *) utf8);
 		    free (utf8);
-		    if (lang)
+		}
+		break;
+	    }
+	    if (elt)
+	    {
+		FcChar8		*utf8, *pp;
+
+		utf8 = FcSfntNameTranscode (&sname);
+		lang = FcSfntNameLanguage (&sname);
+
+		if (FcDebug () & FC_DBG_SCANV)
+		    printf ("%s\n", utf8);
+
+		if (!utf8)
+		    continue;
+
+		/* Trim surrounding whitespace. */
+		pp = utf8;
+		while (*pp == ' ')
+		    pp++;
+		len = strlen ((const char *) pp);
+		memmove (utf8, pp, len + 1);
+		pp = utf8 + len;
+		while (pp > utf8 && *(pp - 1) == ' ')
+		    pp--;
+		*pp = 0;
+
+		if (FcStringInPatternElement (pat, elt, utf8))
+		{
+		    free (utf8);
+		    continue;
+		}
+
+		/* add new element */
+		if (!FcPatternAddString (pat, elt, utf8))
+		{
+		    free (utf8);
+		    goto bail1;
+		}
+		free (utf8);
+		if (lang)
+		{
+		    /* pad lang list with 'und' to line up with elt */
+		    while (*nlangp < *np)
 		    {
-			/* pad lang list with 'und' to line up with elt */
-			while (*nlangp < *np)
-			{
-			    if (!FcPatternAddString (pat, eltlang, (FcChar8 *) "und"))
-				goto bail1;
-			    ++*nlangp;
-			}
-			if (!FcPatternAddString (pat, eltlang, lang))
+			if (!FcPatternAddString (pat, eltlang, (FcChar8 *) "und"))
 			    goto bail1;
 			++*nlangp;
 		    }
-		    ++*np;
+		    if (!FcPatternAddString (pat, eltlang, lang))
+			goto bail1;
+		    ++*nlangp;
 		}
+		++*np;
 	    }
 	}
     }
