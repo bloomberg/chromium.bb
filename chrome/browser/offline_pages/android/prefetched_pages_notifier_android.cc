@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "jni/OfflineNotificationBackgroundTask_jni.h"
 #include "jni/PrefetchedPagesNotifier_jni.h"
 #include "url/gurl.h"
 
@@ -17,6 +18,13 @@ void ShowPrefetchedContentNotification(const GURL& page_url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PrefetchedPagesNotifier_showDebuggingNotification(
       env, base::android::ConvertUTF8ToJavaString(env, page_url.host()));
+}
+
+void OnFreshOfflineContentAvailableForNotification() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return prefetch::
+      Java_OfflineNotificationBackgroundTask_onFreshOfflineContentAvailable(
+          env);
 }
 
 }  // namespace offline_pages

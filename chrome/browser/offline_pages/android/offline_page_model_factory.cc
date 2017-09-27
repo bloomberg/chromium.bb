@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/offline_pages/android/cct_origin_observer.h"
+#include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -59,6 +60,8 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
       background_task_runner);
 
   CctOriginObserver::AttachToOfflinePageModel(model);
+
+  FreshOfflineContentObserver::AttachToOfflinePageModel(model);
 
   return model;
 }

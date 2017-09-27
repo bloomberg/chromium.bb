@@ -72,7 +72,6 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
 
     public OfflineNotificationBackgroundTask() {}
 
-    @CalledByNative
     public static void scheduleTask(int detectionMode) {
         if (shouldNotReschedule()) {
             return;
@@ -97,6 +96,19 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
                 ContextUtils.getApplicationContext(), taskInfo);
     }
 
+    public static void scheduleTaskWhenOnline() {
+        PrefetchPrefs.setOfflineCounter(0);
+        scheduleTask(DETECTION_MODE_ONLINE);
+    }
+
+    @CalledByNative
+    private static void onFreshOfflineContentAvailable() {
+        // When fresh offline content becomes available, the user is most likely online. We ignore
+        // the rare case that the user might suddenly go offline.
+        PrefetchPrefs.setHasNewPages(true);
+        scheduleTaskWhenOnline();
+    }
+
     @Override
     public void reschedule(Context context) {
         if (shouldNotReschedule()) {
@@ -117,8 +129,7 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
 
         DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
         if (deviceConditions.getNetConnectionType(context) != ConnectionType.CONNECTION_NONE) {
-            PrefetchPrefs.setOfflineCounter(0);
-            scheduleTask(DETECTION_MODE_ONLINE);
+            scheduleTaskWhenOnline();
 
             // We schedule ourselves and return DONE because we want to reschedule using the normal
             // 1 hour timeout rather than Android's default 30s * 2^n exponential backoff schedule.

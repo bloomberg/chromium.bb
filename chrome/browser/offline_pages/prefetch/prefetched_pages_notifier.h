@@ -26,6 +26,10 @@ base::string16 ExtractRelevantHostFromOfflinePageItemList(
     const base::Time& pages_created_after,
     const MultipleOfflinePageItemResult page_list);
 
+// Notifies that fresh offline content becomes available. A notification might
+// be shown to inform the user.
+void OnFreshOfflineContentAvailableForNotification();
+
 }  // namespace offline_pages
 
 #endif  // CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCHED_PAGES_NOTIFIER_H_
