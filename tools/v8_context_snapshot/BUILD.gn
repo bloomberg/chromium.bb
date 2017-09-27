@@ -45,7 +45,7 @@ config("use_v8_context_snapshot") {
 
 if (use_v8_context_snapshot) {
   action("generate_v8_context_snapshot") {
-    script = "run.py"
+    script = "//build/gn_run_binary.py"
     output_file = "$root_out_dir/v8_context_snapshot.bin"
     output_path = rebase_path(output_file, root_build_dir)
 
