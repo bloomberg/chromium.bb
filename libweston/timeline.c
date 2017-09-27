@@ -232,12 +232,24 @@ emit_vblank_timestamp(struct timeline_emit_context *ctx, void *obj)
 	return 1;
 }
 
+static int
+emit_gpu_timestamp(struct timeline_emit_context *ctx, void *obj)
+{
+	struct timespec *ts = obj;
+
+	fprintf(ctx->cur, "\"gpu\":[%" PRId64 ", %ld]",
+		(int64_t)ts->tv_sec, ts->tv_nsec);
+
+	return 1;
+}
+
 typedef int (*type_func)(struct timeline_emit_context *ctx, void *obj);
 
 static const type_func type_dispatch[] = {
 	[TLT_OUTPUT] = emit_weston_output,
 	[TLT_SURFACE] = emit_weston_surface,
 	[TLT_VBLANK] = emit_vblank_timestamp,
+	[TLT_GPU] = emit_gpu_timestamp,
 };
 
 WL_EXPORT void

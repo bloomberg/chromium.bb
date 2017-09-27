@@ -42,6 +42,7 @@ enum timeline_type {
 	TLT_OUTPUT,
 	TLT_SURFACE,
 	TLT_VBLANK,
+	TLT_GPU,
 };
 
 #define TYPEVERIFY(type, arg) ({			\
@@ -53,6 +54,7 @@ enum timeline_type {
 #define TLP_OUTPUT(o) TLT_OUTPUT, TYPEVERIFY(struct weston_output *, (o))
 #define TLP_SURFACE(s) TLT_SURFACE, TYPEVERIFY(struct weston_surface *, (s))
 #define TLP_VBLANK(t) TLT_VBLANK, TYPEVERIFY(const struct timespec *, (t))
+#define TLP_GPU(t) TLT_GPU, TYPEVERIFY(const struct timespec *, (t))
 
 #define TL_POINT(...) do { \
 	if (weston_timeline_enabled_) \
