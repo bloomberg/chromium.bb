@@ -6,7 +6,8 @@ body {
   -webkit-app-region: drag;
   bottom: 0;
   left: 0;
-  padding: 15px 15px 8px 15px;
+  margin: 0;
+  padding: 12px;
   position: absolute;
   right: 0;
   top: 0;
