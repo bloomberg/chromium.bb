@@ -1124,9 +1124,11 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 #if !defined(OS_CHROMEOS)
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
-      static_cast<SigninManager*>(signin_->GetOriginal())
-          ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
-                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+      if (!IsLocalSyncEnabled()) {
+        static_cast<SigninManager*>(signin_->GetOriginal())
+            ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
+                      signin_metrics::SignoutDelete::IGNORE_METRIC);
+      }
 #endif
       break;
     case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
