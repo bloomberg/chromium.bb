@@ -226,8 +226,7 @@ ArcSettingsServiceImpl::ArcSettingsServiceImpl(
 ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
   StopObservingSettingsChanges();
 
-  if (arc_bridge_service_->app()->has_instance())
-    arc_bridge_service_->app()->RemoveObserver(this);
+  arc_bridge_service_->app()->RemoveObserver(this);
 
   ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
   if (arc_session_manager)
