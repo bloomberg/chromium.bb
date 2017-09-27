@@ -313,7 +313,7 @@ public class OfflinePageBridgeTest {
 
     @Test
     @SmallTest
-    public void testGetPagesForNamespace() throws Exception {
+    public void testGetPagesByNamespace() throws Exception {
         // Save 3 pages and record their offline IDs to delete later.
         Set<Long> offlineIdsToFetch = new HashSet<>();
         for (int i = 0; i < 3; i++) {
@@ -328,7 +328,7 @@ public class OfflinePageBridgeTest {
         long offlineIdToIgnore = savePage(SavePageResult.SUCCESS, urlToIgnore,
                 new ClientId(OfflinePageBridge.ASYNC_NAMESPACE, "-42"));
 
-        List<OfflinePageItem> pages = getPagesForNamespace(OfflinePageBridge.BOOKMARK_NAMESPACE);
+        List<OfflinePageItem> pages = getPagesByNamespace(OfflinePageBridge.BOOKMARK_NAMESPACE);
         Assert.assertEquals(
                 "The number of pages returned does not match the number of pages saved.",
                 offlineIdsToFetch.size(), pages.size());
@@ -336,11 +336,11 @@ public class OfflinePageBridgeTest {
             offlineIdsToFetch.remove(page.getOfflineId());
         }
         Assert.assertEquals(
-                "There were different pages saved than those returned by getPagesForNamespace.", 0,
+                "There were different pages saved than those returned by getPagesByNamespace.", 0,
                 offlineIdsToFetch.size());
 
         // Check that the page in the other namespace still exists.
-        List<OfflinePageItem> asyncPages = getPagesForNamespace(OfflinePageBridge.ASYNC_NAMESPACE);
+        List<OfflinePageItem> asyncPages = getPagesByNamespace(OfflinePageBridge.ASYNC_NAMESPACE);
         Assert.assertEquals("The page saved in an alternate namespace is no longer there.", 1,
                 asyncPages.size());
         Assert.assertEquals(
@@ -529,14 +529,14 @@ public class OfflinePageBridgeTest {
         return result;
     }
 
-    private List<OfflinePageItem> getPagesForNamespace(final String namespace)
+    private List<OfflinePageItem> getPagesByNamespace(final String namespace)
             throws InterruptedException {
         final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getPagesForNamespace(
+                mOfflinePageBridge.getPagesByNamespace(
                         namespace, new Callback<List<OfflinePageItem>>() {
                             @Override
                             public void onResult(List<OfflinePageItem> pages) {
