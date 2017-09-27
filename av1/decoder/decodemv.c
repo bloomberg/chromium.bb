@@ -922,6 +922,9 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   mbmi->angle_delta[0] = 0;
   mbmi->angle_delta[1] = 0;
+#if CONFIG_INTRA_INTERP
+  mbmi->intra_filter = INTRA_FILTER_LINEAR;
+#endif  // CONFIG_INTRA_INTERP
 
   if (!av1_use_angle_delta(bsize)) return;
 
@@ -935,8 +938,6 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       mbmi->intra_filter = aom_read_symbol(r, ec_ctx->intra_filter_cdf[ctx],
                                            INTRA_FILTERS, ACCT_STR);
       if (counts) ++counts->intra_filter[ctx][mbmi->intra_filter];
-    } else {
-      mbmi->intra_filter = INTRA_FILTER_LINEAR;
     }
 #endif  // CONFIG_INTRA_INTERP
   }
