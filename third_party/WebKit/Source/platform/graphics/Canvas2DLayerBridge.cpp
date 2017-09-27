@@ -1027,6 +1027,11 @@ void Canvas2DLayerBridge::ReleaseFrameResources(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
+  if (sync_token.HasData() && context_provider_wrapper) {
+    context_provider_wrapper->ContextProvider()
+        ->ContextGL()
+        ->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  }
   bool context_or_layer_bridge_lost = true;
   if (layer_bridge) {
     DCHECK(layer_bridge->IsAccelerated() || layer_bridge->IsHibernating());
