@@ -5952,6 +5952,7 @@
         ]
     },
     "chromeos-infra-go": {
+        "active_waterfall": "chromiumos",
         "boards": [],
         "build_timeout": 3600,
         "build_type": "generic",

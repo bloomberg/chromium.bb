@@ -3669,6 +3669,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=60 * 60,
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
+      active_waterfall=waterfall.WATERFALL_EXTERNAL,
   )
 
 
