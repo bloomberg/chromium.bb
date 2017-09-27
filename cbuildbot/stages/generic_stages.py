@@ -1036,6 +1036,22 @@ class ArchivingStageMixin(object):
         return True
     return False
 
+  def _FilterBuildFromMoblab(self, url, bot_id):
+    """Deteminine if this is a build that should not be copied to moblab.
+
+    Args:
+      url: The gs url of the target bucket.
+      bot_id: The name of the bot
+
+    Returns:
+      True is the build should not be copied to this moblab url
+    """
+    bot_filter_list = ['paladin', 'trybot', 'pfq']
+    if (url.find('moblab') and
+        any(bot_id.find(filter) != -1 for filter in bot_filter_list)):
+      return True
+    return False
+
   def _GetUploadUrls(self, filename, builder_run=None):
     """Returns a list of all urls for which to upload filename to.
 
@@ -1061,6 +1077,10 @@ class ArchivingStageMixin(object):
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)
         for url in json_file.get('extra_upload_urls', []):
+          # Moblab users do not need the paladin, pfq or trybot
+          # builds, filter those bots from extra uploads.
+          if self._FilterBuildFromMoblab(url, bot_id):
+            continue
           urls.append('/'.join([url, bot_id, self.version]))
     return urls
 
