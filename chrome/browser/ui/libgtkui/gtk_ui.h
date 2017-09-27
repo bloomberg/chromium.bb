@@ -96,7 +96,6 @@ class GtkUi : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) override;
   void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) override;
-  bool UnityIsRunning() override;
   NonClientMiddleClickAction GetNonClientMiddleClickAction() override;
   void NotifyWindowManagerStartupComplete() override;
   void UpdateDeviceScaleFactor() override;

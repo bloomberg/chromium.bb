@@ -4,10 +4,23 @@
 
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/linux_ui/linux_ui.h"
+
+namespace {
+
+bool IsDesktopEnvironmentUnity() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  base::nix::DesktopEnvironment desktop_env =
+      base::nix::GetDesktopEnvironment(env.get());
+  return desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY;
+}
+
+}  // namespace
 
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     views::Widget::InitParams* params,
@@ -26,8 +39,13 @@ gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
 }
 
 bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
-  // On Ubuntu Unity, the system always provides a title bar for maximized
-  // windows.
-  views::LinuxUI* ui = views::LinuxUI::instance();
-  return maximized && ui && ui->UnityIsRunning();
+  // On Ubuntu Unity, the system always provides a title bar for
+  // maximized windows.
+  //
+  // TODO(thomasanderson): Consider using the _UNITY_SHELL wm hint
+  // when support for Ubuntu Trusty is dropped.
+  if (!maximized)
+    return false;
+  static bool is_desktop_environment_unity = IsDesktopEnvironmentUnity();
+  return is_desktop_environment_unity;
 }
