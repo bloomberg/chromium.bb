@@ -582,6 +582,9 @@ void ArcNotificationContentView::OnFocus() {
 
   NativeViewHost::OnFocus();
   static_cast<ArcNotificationView*>(parent())->OnContentFocused();
+
+  if (surface_ && surface_->GetAXTreeId() != -1)
+    Activate();
 }
 
 void ArcNotificationContentView::OnBlur() {
