@@ -351,9 +351,9 @@ Whether you should allow an interface to have a named constructor or not depends
 
 Standard: [NewObject](https://heycam.github.io/webidl/#NewObject)
 
-Summary: Signals that a method that returns an object type always returns a new object.
+Summary: Signals that a method that returns an object type always returns a new object or promise.
 
-Generates a test in debug mode to ensure that no wrapper object for the returned DOM object exists yet. Also see `[DoNotTestNewObject]`.
+When a method returns an interface type, this extended attribute generates a test in debug mode to ensure that no wrapper object for the returned DOM object exists yet. Also see `[DoNotTestNewObject]`. When a method returns a Promise, this extended attribute currently does nothing.
 
 ### [NoInterfaceObject] _(i)_
 

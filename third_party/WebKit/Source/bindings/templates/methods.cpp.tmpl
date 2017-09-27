@@ -280,9 +280,14 @@ if (exceptionState.HadException()) {
 {% endif %}
 {# Set return value #}
 {% if method.is_new_object and not method.do_not_test_new_object %}
+{% if not method.returns_promise %}
+{# We currently only add the DCHECK for IDL interfaces. Even though #}
+{# [NewObject] also applies to promises, there is nothing for us to check at #}
+{# the moment. #}
 // [NewObject] must always create a new wrapper.  Check that a wrapper
 // does not exist yet.
 DCHECK(!result || DOMDataStore::GetWrapper(result, info.GetIsolate()).IsEmpty());
+{% endif %}{# not method.returns_promise #}
 {% endif %}
 {% if method.is_constructor %}
 {{generate_constructor_wrapper(method)}}
