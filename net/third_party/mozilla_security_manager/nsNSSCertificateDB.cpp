@@ -49,14 +49,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 
-#if !defined(CERTDB_TERMINAL_RECORD)
-/* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD
- * and marks CERTDB_VALID_PEER as deprecated.
- * If we're using an older version, rename it ourselves.
- */
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
-
 namespace mozilla_security_manager {
 
 // Based on nsNSSCertificateDB::handleCACertDownload, minus the UI bits.

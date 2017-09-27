@@ -28,12 +28,6 @@
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "net/third_party/mozilla_security_manager/nsPKCS12Blob.h"
 
-// In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
-// the new name of the macro.
-#if !defined(CERTDB_TERMINAL_RECORD)
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
-
 // PSM = Mozilla's Personal Security Manager.
 namespace psm = mozilla_security_manager;
 

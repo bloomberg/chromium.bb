@@ -59,14 +59,6 @@
 #include "net/base/ip_endpoint.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(CERTDB_TERMINAL_RECORD)
-/* NSS 3.13 renames CERTDB_VALID_PEER to CERTDB_TERMINAL_RECORD
- * and marks CERTDB_VALID_PEER as deprecated.
- * If we're using an older version, rename it ourselves.
- */
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
-
 namespace {
 
 std::string BMPtoUTF8(PRArenaPool* arena, unsigned char* data,

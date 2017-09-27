@@ -50,12 +50,7 @@ SECStatus PR_CALLBACK CollectCertsCallback(void* arg,
 // Parses the Principal attribute from |name| and outputs the result in
 // |principal|. Returns true on success.
 bool ParsePrincipal(CERTName* name, CertPrincipal* principal) {
-// Starting in NSS 3.15, CERTGetNameFunc takes a const CERTName* argument.
-#if NSS_VMINOR >= 15
   typedef char* (*CERTGetNameFunc)(const CERTName* name);
-#else
-  typedef char* (*CERTGetNameFunc)(CERTName * name);
-#endif
 
   // TODO(jcampan): add business_category and serial_number.
   // TODO(wtc): NSS has the CERT_GetOrgName, CERT_GetOrgUnitName, and
