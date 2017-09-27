@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -469,6 +470,36 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       security_state::SECURE, false, security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
+}
+
+// Tests that interstitial.ssl.visited_site_after_warning is being logged to
+// correctly.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMALogsVisitsAfterWarning) {
+  const char kHistogramName[] = "interstitial.ssl.visited_site_after_warning";
+  base::HistogramTester histograms;
+  SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_DATE_INVALID,
+                                      net::ERR_CERT_DATE_INVALID);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  // Histogram shouldn't log before clicking through interstitial.
+  histograms.ExpectTotalCount(kHistogramName, 0);
+  ProceedThroughInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  // Histogram should log after clicking through.
+  histograms.ExpectTotalCount(kHistogramName, 1);
+  histograms.ExpectBucketCount(kHistogramName, true, 1);
+}
+
+// Tests that interstitial.ssl.visited_site_after_warning is not being logged
+// to on errors that do not trigger a full site interstitial.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMADoesNotLogOnMinorError) {
+  const char kHistogramName[] = "interstitial.ssl.visited_site_after_warning";
+  base::HistogramTester histograms;
+  SetUpMockCertVerifierForHttpsServer(
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, net::OK);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  histograms.ExpectTotalCount(kHistogramName, 0);
 }
 
 // Test security state after clickthrough for a SHA-1 certificate that is

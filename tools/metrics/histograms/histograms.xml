@@ -28795,6 +28795,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.visited_site_after_warning" enum="Boolean">
+  <owner>carlosil@chromium.org</owner>
+  <summary>
+    Records when a user visits a site after clicking through a certificate
+    warning.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl_accept_time" units="ms">
   <obsolete>
     Removed on 8/1/13.
