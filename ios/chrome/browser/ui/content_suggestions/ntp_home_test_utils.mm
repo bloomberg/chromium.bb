@@ -55,7 +55,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 namespace ntp_home {
 id<GREYMatcher> OmniboxWidth(CGFloat width) {
   MatchesBlock matches = ^BOOL(UIView* view) {
-    return view.bounds.size.width == width;
+    return fabs(view.bounds.size.width - width) < 0.001;
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description
