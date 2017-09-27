@@ -58766,6 +58766,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.WiFiDeviceCount" units="wifi devices">
+  <owner>cernekee@chromium.org</owner>
+  <owner>semenzato@chromium.org</owner>
+  <summary>
+    Sample collected 10s after boot, showing how many WiFi interfaces are
+    present.
+  </summary>
+</histogram>
+
 <histogram name="Platform.WriteSectorsLong">
   <owner>gwendal@google.com</owner>
   <summary>
