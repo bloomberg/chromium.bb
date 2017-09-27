@@ -69,6 +69,8 @@ PasswordProtectionRequest::PasswordProtectionRequest(
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   DCHECK(trigger_type_ != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
          matches_sync_password_ || matching_domains_.size() > 0);
+
+  request_proto_->set_trigger_type(trigger_type_);
 }
 
 PasswordProtectionRequest::~PasswordProtectionRequest() {
@@ -133,7 +135,6 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
 
 void PasswordProtectionRequest::FillRequestProto() {
   request_proto_->set_page_url(main_frame_url_.spec());
-  request_proto_->set_trigger_type(trigger_type_);
   password_protection_service_->FillUserPopulation(trigger_type_,
                                                    request_proto_.get());
   request_proto_->set_stored_verdict_cnt(

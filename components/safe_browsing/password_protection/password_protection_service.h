@@ -54,9 +54,11 @@ extern const char kSyncPasswordChromeSettingsHistogram[];
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
-  using TriggerType = LoginReputationClientRequest::TriggerType;
+  // TODO(jialiul): Remove all these aliases, since they are unnecessary.
   using SyncAccountType =
       LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
+  using TriggerType = LoginReputationClientRequest::TriggerType;
+  using VerdictType = LoginReputationClientResponse::VerdictType;
 
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -125,10 +127,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Looks up |settings| to find the cached verdict response. If verdict is not
   // available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
   // any thread.
-  LoginReputationClientResponse::VerdictType GetCachedVerdict(
-      const GURL& url,
-      TriggerType trigger_type,
-      LoginReputationClientResponse* out_response);
+  VerdictType GetCachedVerdict(const GURL& url,
+                               TriggerType trigger_type,
+                               LoginReputationClientResponse* out_response);
 
   // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
   // |verdict| and |receive_time|.
@@ -184,9 +185,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RecordWarningAction(WarningUIType ui_type, WarningAction action);
 
   // If we want to show password reuse modal warning.
-  static bool ShouldShowModalWarning(
-      const LoginReputationClientRequest* request,
-      const LoginReputationClientResponse* response);
+  static bool ShouldShowModalWarning(TriggerType trigger_type,
+                                     bool matches_sync_password,
+                                     SyncAccountType account_type,
+                                     VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
