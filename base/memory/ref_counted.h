@@ -298,7 +298,17 @@ class BASE_EXPORT ScopedAllowCrossThreadRefCountAccess final {
   static constexpr ::base::subtle::StartRefCountFromOneTag \
       kRefCountPreference = ::base::subtle::kStartRefCountFromOneTag
 
-template <class T>
+template <class T, typename Traits>
+class RefCounted;
+
+template <typename T>
+struct DefaultRefCountedTraits {
+  static void Destruct(const T* x) {
+    RefCounted<T, DefaultRefCountedTraits>::DeleteInternal(x);
+  }
+};
+
+template <class T, typename Traits = DefaultRefCountedTraits<T>>
 class RefCounted : public subtle::RefCountedBase {
  public:
   static constexpr subtle::StartRefCountFromZeroTag kRefCountPreference =
@@ -317,7 +327,7 @@ class RefCounted : public subtle::RefCountedBase {
       // lifetime guarantees of the refcounting system.
       ANALYZER_SKIP_THIS_PATH();
 
-      delete static_cast<const T*>(this);
+      Traits::Destruct(static_cast<const T*>(this));
     }
   }
 
@@ -325,6 +335,9 @@ class RefCounted : public subtle::RefCountedBase {
   ~RefCounted() = default;
 
  private:
+  friend struct DefaultRefCountedTraits<T>;
+  static void DeleteInternal(const T* x) { delete x; }
+
   DISALLOW_COPY_AND_ASSIGN(RefCounted);
 };
 
