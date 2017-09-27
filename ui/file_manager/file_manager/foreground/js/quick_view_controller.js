@@ -193,7 +193,7 @@ QuickViewController.prototype.onOpenInNewButtonTap_ = function(event) {
 };
 
 /**
- * Handles key event on listContainer if it's relevent to quick view.
+ * Handles key event on listContainer if it's relevant to quick view.
  *
  * @param {!Event} event A keyboard event.
  * @private
@@ -203,6 +203,7 @@ QuickViewController.prototype.onKeyDownToOpen_ = function(event) {
     return;
   if (event.key === ' ') {
     event.preventDefault();
+    event.stopImmediatePropagation();
     this.display_(QuickViewUma.WayToOpen.SPACE_KEY);
   }
 };
