@@ -13,6 +13,7 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_nss.h"
 
 // TODO(mattm): structure so that supporting ChromeOS multi-profile stuff is
 // doable (Have a TrustStoreChromeOS which uses net::NSSProfileFilterChromeOS,
@@ -72,44 +73,42 @@ void TrustStoreNSS::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
   // CERTCertificate and ParsedCertificate representations multiple times
   // (when getting the issuers, and again here).
 
-  // Lookup the certificate by Issuer + Serial number. Note that
-  // CERT_FindCertByDERCert() doesn't check for equal DER, just matching issuer
-  // + serial number.
-  SECItem der_cert;
-  der_cert.data = const_cast<uint8_t*>(cert->der_cert().UnsafeData());
-  der_cert.len = cert->der_cert().Length();
-  der_cert.type = siDERCertBuffer;
-  ScopedCERTCertificate nss_matched_cert(
-      CERT_FindCertByDERCert(CERT_GetDefaultCertDB(), &der_cert));
-  if (!nss_matched_cert) {
+  // Note that trust records in NSS are keyed on issuer + serial, and there
+  // exist builtin distrust records for which a matching certificate is not
+  // included in the builtin cert list. Therefore, create a temp NSS cert even
+  // if no existing cert matches. (Eg, this uses CERT_NewTempCertificate, not
+  // CERT_FindCertByDERCert.)
+  ScopedCERTCertificate nss_cert(x509_util::CreateCERTCertificateFromBytes(
+      cert->der_cert().UnsafeData(), cert->der_cert().Length()));
+  if (!nss_cert) {
     *out_trust = CertificateTrust::ForUnspecified();
     return;
   }
 
   // Determine the trustedness of the matched certificate.
   CERTCertTrust trust;
-  if (CERT_GetCertTrust(nss_matched_cert.get(), &trust) != SECSuccess) {
+  if (CERT_GetCertTrust(nss_cert.get(), &trust) != SECSuccess) {
     *out_trust = CertificateTrust::ForUnspecified();
     return;
   }
 
-  // TODO(eroman): Determine if |nss_matched_cert| is distrusted.
+  int trust_flags = SEC_GET_TRUST_FLAGS(&trust, trust_type_);
+
+  // Determine if the certificate is distrusted.
+  if ((trust_flags & (CERTDB_TERMINAL_RECORD | CERTDB_TRUSTED_CA |
+                      CERTDB_TRUSTED)) == CERTDB_TERMINAL_RECORD) {
+    *out_trust = CertificateTrust::ForDistrusted();
+    return;
+  }
 
   // Determine if the certificate is a trust anchor.
-  const int ca_trust = CERTDB_TRUSTED_CA;
-  bool is_trusted =
-      (SEC_GET_TRUST_FLAGS(&trust, trust_type_) & ca_trust) == ca_trust;
-
-  // To consider |cert| trusted, need to additionally check that
-  // |cert| is the same as |nss_matched_cert|. This is because the lookup in NSS
-  // was only by issuer + serial number, so could be for a different
-  // SPKI.
-  if (is_trusted &&
-      (cert->der_cert() == der::Input(nss_matched_cert->derCert.data,
-                                      nss_matched_cert->derCert.len))) {
+  if ((trust_flags & CERTDB_TRUSTED_CA) == CERTDB_TRUSTED_CA) {
     *out_trust = CertificateTrust::ForTrustAnchor();
     return;
   }
+
+  // TODO(mattm): handle trusted server certs (CERTDB_TERMINAL_RECORD +
+  // CERTDB_TRUSTED)
 
   *out_trust = CertificateTrust::ForUnspecified();
   return;
