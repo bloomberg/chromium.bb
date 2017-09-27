@@ -1136,6 +1136,7 @@ static const FT_UShort platform_order[] = {
     TT_PLATFORM_MICROSOFT,
     TT_PLATFORM_APPLE_UNICODE,
     TT_PLATFORM_MACINTOSH,
+    TT_PLATFORM_ISO,
 };
 #define NUM_PLATFORM_ORDER (sizeof (platform_order) / sizeof (platform_order[0]))
 
@@ -1369,12 +1370,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
      * of them
      */
     snamec = FT_Get_Sfnt_Name_Count (face);
-    for (p = 0; p <= NUM_PLATFORM_ORDER; p++)
+    for (p = 0; p < NUM_PLATFORM_ORDER; p++)
     {
-	if (p < NUM_PLATFORM_ORDER)
-	    platform = platform_order[p];
-	else
-	    platform = 0xffff;
+	platform = platform_order[p];
 
 	/*
 	 * Order nameids so preferred names appear first
@@ -1410,25 +1408,8 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		if (sname.name_id != nameid)
 		    continue;
 
-		/*
-		 * Sort platforms in preference order, accepting
-		 * all other platforms last
-		 */
-		if (p < NUM_PLATFORM_ORDER)
-		{
-		    if (sname.platform_id != platform)
-			continue;
-		}
-		else
-		{
-		    unsigned int	sp;
-
-		    for (sp = 0; sp < NUM_PLATFORM_ORDER; sp++)
-			if (sname.platform_id == platform_order[sp])
-			    break;
-		    if (sp != NUM_PLATFORM_ORDER)
-			continue;
-		}
+		if (sname.platform_id != platform)
+		    continue;
 
 		switch (sname.name_id) {
 #ifdef TT_NAME_ID_WWS_FAMILY
