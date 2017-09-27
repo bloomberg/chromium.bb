@@ -31,6 +31,8 @@
 #ifndef HTMLImportChildClient_h
 #define HTMLImportChildClient_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class HTMLImportChild;
