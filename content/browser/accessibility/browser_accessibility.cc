@@ -772,26 +772,8 @@ bool BrowserAccessibility::IsNativeTextControl() const {
   return html_tag == "textarea";
 }
 
-// In general we should use ui::IsEditField() instead if we want to check for
-// something that has a caret and the user can edit.
-// TODO(aleventhal) this name is confusing because it returns true for combobox,
-// and we should take a look at why a combobox is considered a text control. The
-// ARIA spec says a combobox would contain (but not be) a text field. It looks
-// like a mistake may have been made in that comboboxes have been considered a
-// kind of textbox. Find an appropriate name for this function, and consider
-// returning false for comboboxes it doesn't break existing websites.
 bool BrowserAccessibility::IsSimpleTextControl() const {
-  // Time fields, color wells and spinner buttons might also use text fields as
-  // constituent parts, but they are not considered text fields as a whole.
-  switch (GetRole()) {
-    case ui::AX_ROLE_COMBO_BOX:
-    case ui::AX_ROLE_SEARCH_BOX:
-      return true;
-    case ui::AX_ROLE_TEXT_FIELD:
-      return !HasState(ui::AX_STATE_RICHLY_EDITABLE);
-    default:
-      return false;
-  }
+  return ui::IsEditField(GetRole()) && !HasState(ui::AX_STATE_RICHLY_EDITABLE);
 }
 
 // Indicates if this object is at the root of a rich edit text control.

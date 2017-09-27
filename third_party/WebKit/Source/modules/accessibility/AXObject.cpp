@@ -91,7 +91,7 @@ const RoleEntry kRoles[] = {{"alert", kAlertRole},
                             {"cell", kCellRole},
                             {"checkbox", kCheckBoxRole},
                             {"columnheader", kColumnHeaderRole},
-                            {"combobox", kComboBoxRole},
+                            {"combobox", kComboBoxGroupingRole},
                             {"complementary", kComplementaryRole},
                             {"contentinfo", kContentInfoRole},
                             {"definition", kDefinitionRole},
@@ -177,7 +177,8 @@ const InternalRoleEntry kInternalRoles[] = {
     {kColorWellRole, "ColorWell"},
     {kColumnHeaderRole, "ColumnHeader"},
     {kColumnRole, "Column"},
-    {kComboBoxRole, "ComboBox"},
+    {kComboBoxGroupingRole, "ComboBox"},
+    {kComboBoxMenuButtonRole, "ComboBox"},
     {kComplementaryRole, "Complementary"},
     {kContentInfoRole, "ContentInfo"},
     {kDateRole, "Date"},
@@ -264,6 +265,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {kTableRole, "Table"},
     {kTermRole, "Term"},
     {kTextFieldRole, "TextField"},
+    {kTextFieldWithComboBoxRole, "ComboBox"},
     {kTimeRole, "Time"},
     {kTimerRole, "Timer"},
     {kToggleButtonRole, "ToggleButton"},
@@ -279,11 +281,15 @@ static_assert(WTF_ARRAY_LENGTH(kInternalRoles) == kNumRoles,
               "Not all internal roles have an entry in internalRoles array");
 
 // Roles which we need to map in the other direction
-const RoleEntry kReverseRoles[] = {
-    {"button", kToggleButtonRole},     {"combobox", kPopUpButtonRole},
-    {"contentinfo", kFooterRole},      {"menuitem", kMenuButtonRole},
-    {"menuitem", kMenuListOptionRole}, {"progressbar", kMeterRole},
-    {"textbox", kTextFieldRole}};
+const RoleEntry kReverseRoles[] = {{"button", kToggleButtonRole},
+                                   {"combobox", kPopUpButtonRole},
+                                   {"contentinfo", kFooterRole},
+                                   {"menuitem", kMenuButtonRole},
+                                   {"menuitem", kMenuListOptionRole},
+                                   {"progressbar", kMeterRole},
+                                   {"textbox", kTextFieldRole},
+                                   {"combobox", kComboBoxMenuButtonRole},
+                                   {"combobox", kTextFieldWithComboBoxRole}};
 
 static ARIARoleMap* CreateARIARoleMap() {
   ARIARoleMap* role_map = new ARIARoleMap;
@@ -528,7 +534,7 @@ void AXObject::GetSparseAXAttributes(
 bool AXObject::IsARIATextControl() const {
   return AriaRoleAttribute() == kTextFieldRole ||
          AriaRoleAttribute() == kSearchBoxRole ||
-         AriaRoleAttribute() == kComboBoxRole;
+         AriaRoleAttribute() == kTextFieldWithComboBoxRole;
 }
 
 bool AXObject::IsButton() const {
@@ -664,10 +670,8 @@ bool AXObject::IsClickable() const {
   // TODO(dmazzoni): Ensure that kColorWellRole and kSpinButtonRole are
   // correctly handled here via their constituent parts.
   switch (RoleValue()) {
-    // TODO(dmazzoni): Replace kComboBoxRole with two new combo box roles.
-    // Composite widget and text field.
-    case kComboBoxRole:
     case kCheckBoxRole:
+    case kComboBoxMenuButtonRole:
     case kDisclosureTriangleRole:
     case kListBoxRole:
     case kListBoxOptionRole:
@@ -1003,16 +1007,14 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
 bool AXObject::CanSetValueAttribute() const {
   switch (RoleValue()) {
     case kColorWellRole:
-    case kComboBoxRole:
     case kDateRole:
     case kDateTimeRole:
-    case kListBoxRole:
-    case kMenuButtonRole:
     case kScrollBarRole:
     case kSliderRole:
     case kSpinButtonRole:
     case kSplitterRole:
     case kTextFieldRole:
+    case kTextFieldWithComboBoxRole:
     case kTimeRole:
     case kSearchBoxRole:
       return Restriction() == kNone;
@@ -1448,9 +1450,7 @@ AXDefaultActionVerb AXObject::Action() const {
       return AXDefaultActionVerb::kSelect;
     case kLinkRole:
       return AXDefaultActionVerb::kJump;
-    // TODO(dmazzoni): Change kComboBoxRole to combo box composite widget.
-    case kComboBoxRole:
-    case kListBoxRole:
+    case kComboBoxMenuButtonRole:
     case kPopUpButtonRole:
       return AXDefaultActionVerb::kOpen;
     default:
@@ -1475,7 +1475,8 @@ bool AXObject::SupportsActiveDescendant() const {
   // and ARIA groups should be able to expose an active descendant.
   // Implicitly, <input> and <textarea> elements should also have this ability.
   switch (AriaRoleAttribute()) {
-    case kComboBoxRole:
+    case kComboBoxGroupingRole:
+    case kComboBoxMenuButtonRole:
     case kGridRole:
     case kGroupRole:
     case kListBoxRole:
@@ -1486,6 +1487,7 @@ bool AXObject::SupportsActiveDescendant() const {
     case kSearchBoxRole:
     case kTabListRole:
     case kTextFieldRole:
+    case kTextFieldWithComboBoxRole:
     case kToolbarRole:
     case kTreeRole:
     case kTreeGridRole:
@@ -1580,6 +1582,21 @@ AccessibilityRole AXObject::DetermineAriaRoleAttribute() const {
     role = ButtonRoleType();
 
   role = RemapAriaRoleDueToParent(role);
+
+  // Distinguish between different uses of the "combobox" role:
+  //
+  // kComboBoxGroupingRole:
+  //   <div role="combobox"><input></div>
+  // kTextFieldWithComboBoxRole:
+  //   <input role="combobox">
+  // kComboBoxMenuButtonRole:
+  //   <div tabindex=0 role="combobox">Select</div>
+  if (role == kComboBoxGroupingRole) {
+    if (IsNativeTextControl())
+      role = kTextFieldWithComboBoxRole;
+    else if (GetElement() && GetElement()->SupportsFocus())
+      role = kComboBoxMenuButtonRole;
+  }
 
   if (role)
     return role;
@@ -1720,7 +1737,8 @@ AXObject* AXObject::ParentObjectUnignored() const {
 // sub-widgets
 bool AXObject::IsContainerWidget() const {
   switch (RoleValue()) {
-    case kComboBoxRole:
+    case kComboBoxGroupingRole:
+    case kComboBoxMenuButtonRole:
     case kGridRole:
     case kListBoxRole:
     case kMenuBarRole:
@@ -2248,13 +2266,13 @@ int AXObject::LineForPosition(const VisiblePosition& position) const {
 
 bool AXObject::IsARIAControl(AccessibilityRole aria_role) {
   return IsARIAInput(aria_role) || aria_role == kButtonRole ||
-         aria_role == kComboBoxRole || aria_role == kSliderRole;
+         aria_role == kComboBoxMenuButtonRole || aria_role == kSliderRole;
 }
 
 bool AXObject::IsARIAInput(AccessibilityRole aria_role) {
   return aria_role == kRadioButtonRole || aria_role == kCheckBoxRole ||
          aria_role == kTextFieldRole || aria_role == kSwitchRole ||
-         aria_role == kSearchBoxRole;
+         aria_role == kSearchBoxRole || aria_role == kTextFieldWithComboBoxRole;
 }
 
 AccessibilityRole AXObject::AriaRoleToWebCoreRole(const String& value) {
@@ -2286,6 +2304,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kCellRole:
     case kCheckBoxRole:
     case kColumnHeaderRole:
+    case kComboBoxMenuButtonRole:
     case kDisclosureTriangleRole:
     case kHeadingRole:
     case kLineBreakRole:
@@ -2320,7 +2339,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kBlockquoteRole:
     case kColorWellRole:
     case kColumnRole:
-    case kComboBoxRole:
+    case kComboBoxGroupingRole:
     case kComplementaryRole:
     case kContentInfoRole:
     case kDateRole:
@@ -2368,6 +2387,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kTabPanelRole:
     case kTermRole:
     case kTextFieldRole:
+    case kTextFieldWithComboBoxRole:
     case kTimeRole:
     case kTimerRole:
     case kToolbarRole:
@@ -2430,7 +2450,8 @@ bool AXObject::CanSupportAriaReadOnly() const {
     case kCheckBoxRole:
     case kColorWellRole:
     case kColumnHeaderRole:
-    case kComboBoxRole:
+    case kComboBoxGroupingRole:
+    case kComboBoxMenuButtonRole:
     case kDateRole:
     case kDateTimeRole:
     case kGridRole:
@@ -2447,6 +2468,7 @@ bool AXObject::CanSupportAriaReadOnly() const {
     case kSpinButtonRole:
     case kSwitchRole:
     case kTextFieldRole:
+    case kTextFieldWithComboBoxRole:
     case kToggleButtonRole:
     case kTreeGridRole:
       return true;

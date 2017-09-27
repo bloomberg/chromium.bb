@@ -395,7 +395,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
   bool IsColorWell() const { return RoleValue() == kColorWellRole; }
-  bool IsComboBox() const { return RoleValue() == kComboBoxRole; }
   virtual bool IsControl() const { return false; }
   virtual bool IsDataTable() const { return false; }
   virtual bool IsEmbeddedObject() const { return false; }
