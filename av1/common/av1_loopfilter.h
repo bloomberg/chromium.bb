@@ -138,7 +138,12 @@ void av1_loop_filter_init(struct AV1Common *cm);
 // av1_loop_filter_frame()
 // calls this function directly.
 void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
-                                int default_filt_lvl_r);
+                                int default_filt_lvl_r
+#if CONFIG_LOOPFILTER_LEVEL
+                                ,
+                                int plane
+#endif
+                                );
 
 #if CONFIG_LPF_SB
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,

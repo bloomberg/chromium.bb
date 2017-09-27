@@ -21,6 +21,14 @@
 #include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
 
+#if CONFIG_LOOPFILTER_LEVEL
+static const SEG_LVL_FEATURES seg_lvl_lf_lut[MAX_MB_PLANE][2] = {
+  { SEG_LVL_ALT_LF_Y_V, SEG_LVL_ALT_LF_Y_H },
+  { SEG_LVL_ALT_LF_U, SEG_LVL_ALT_LF_U },
+  { SEG_LVL_ALT_LF_V, SEG_LVL_ALT_LF_V }
+};
+#endif  // CONFIG_LOOPFILTER_LEVEL
+
 #if CONFIG_LPF_DIRECT
 static void pick_filter_pixel_left(uint8_t *const src, uint8_t *const line,
                                    int *const orig_pos, int length, int row,
@@ -618,7 +626,7 @@ static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {
 static uint8_t get_filter_level(const AV1_COMMON *cm,
                                 const loop_filter_info_n *lfi_n,
 #if CONFIG_LOOPFILTER_LEVEL
-                                const int dir_idx,
+                                const int dir_idx, int plane,
 #endif
 #if CONFIG_LPF_SB
                                 int mi_row, int mi_col,
@@ -647,12 +655,23 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
                         0, MAX_LOOP_FILTER);
 #endif
     const int scale = 1 << (lvl_seg >> 5);
+#if CONFIG_LOOPFILTER_LEVEL
+    assert(plane >= 0 && plane <= 2);
+    const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir_idx];
+    if (segfeature_active(&cm->seg, segment_id, seg_lf_feature_id)) {
+      const int data = get_segdata(&cm->seg, segment_id, seg_lf_feature_id);
+      lvl_seg =
+          clamp(cm->seg.abs_delta == SEGMENT_ABSDATA ? data : lvl_seg + data, 0,
+                MAX_LOOP_FILTER);
+    }
+#else
     if (segfeature_active(&cm->seg, segment_id, SEG_LVL_ALT_LF)) {
       const int data = get_segdata(&cm->seg, segment_id, SEG_LVL_ALT_LF);
       lvl_seg =
           clamp(cm->seg.abs_delta == SEGMENT_ABSDATA ? data : lvl_seg + data, 0,
                 MAX_LOOP_FILTER);
     }
+#endif  // CONFIG_LOOPFILTER_LEVEL
 
     if (cm->lf.mode_ref_delta_enabled) {
       lvl_seg += cm->lf.ref_deltas[mbmi->ref_frame[0]] * scale;
@@ -723,7 +742,12 @@ void av1_loop_filter_sb_level_init(AV1_COMMON *cm, int mi_row, int mi_col,
 #endif  // CONFIG_LPF_SB
 
 void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
-                                int default_filt_lvl_r) {
+                                int default_filt_lvl_r
+#if CONFIG_LOOPFILTER_LEVEL
+                                ,
+                                int plane
+#endif
+                                ) {
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
@@ -740,23 +764,37 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
   }
 
   for (seg_id = 0; seg_id < MAX_SEGMENTS; seg_id++) {
-    int lvl_seg = default_filt_lvl;
-    if (segfeature_active(seg, seg_id, SEG_LVL_ALT_LF)) {
-      const int data = get_segdata(seg, seg_id, SEG_LVL_ALT_LF);
-      lvl_seg = clamp(
-          seg->abs_delta == SEGMENT_ABSDATA ? data : default_filt_lvl + data, 0,
-          MAX_LOOP_FILTER);
-    }
-
-    if (!lf->mode_ref_delta_enabled) {
-      // we could get rid of this if we assume that deltas are set to
-      // zero when not in use; encoder always uses deltas
-      memset(lfi->lvl[seg_id], lvl_seg, sizeof(lfi->lvl[seg_id]));
-    } else {
-      int ref, mode;
+    for (int dir = 0; dir < 2; ++dir) {
+      int lvl_seg = (dir == 0) ? default_filt_lvl : default_filt_lvl_r;
 #if CONFIG_LOOPFILTER_LEVEL
-      for (int dir = 0; dir < 2; ++dir) {
-        lvl_seg = (dir == 0) ? default_filt_lvl : default_filt_lvl_r;
+      assert(plane >= 0 && plane <= 2);
+      const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir];
+      if (segfeature_active(seg, seg_id, seg_lf_feature_id)) {
+        const int data = get_segdata(&cm->seg, seg_id, seg_lf_feature_id);
+        lvl_seg = clamp(
+            seg->abs_delta == SEGMENT_ABSDATA ? data : default_filt_lvl + data,
+            0, MAX_LOOP_FILTER);
+      }
+#else
+      if (segfeature_active(seg, seg_id, SEG_LVL_ALT_LF)) {
+        const int data = get_segdata(seg, seg_id, SEG_LVL_ALT_LF);
+        lvl_seg = clamp(
+            seg->abs_delta == SEGMENT_ABSDATA ? data : default_filt_lvl + data,
+            0, MAX_LOOP_FILTER);
+      }
+#endif  // CONFIG_LOOPFILTER_LEVEL
+
+      if (!lf->mode_ref_delta_enabled) {
+// we could get rid of this if we assume that deltas are set to
+// zero when not in use; encoder always uses deltas
+#if CONFIG_LOOPFILTER_LEVEL
+        memset(lfi->lvl[seg_id][dir], lvl_seg, sizeof(lfi->lvl[seg_id][dir]));
+#else
+        memset(lfi->lvl[seg_id], lvl_seg, sizeof(lfi->lvl[seg_id]));
+#endif  // CONFIG_LOOPFILTER_LEVEL
+      } else {
+        int ref, mode;
+#if CONFIG_LOOPFILTER_LEVEL
         scale = 1 << (lvl_seg >> 5);
 
         const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
@@ -771,20 +809,20 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
                 clamp(inter_lvl, 0, MAX_LOOP_FILTER);
           }
         }
-      }
 #else
-      (void)default_filt_lvl_r;
-      const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
-      lfi->lvl[seg_id][INTRA_FRAME][0] = clamp(intra_lvl, 0, MAX_LOOP_FILTER);
+        (void)default_filt_lvl_r;
+        const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
+        lfi->lvl[seg_id][INTRA_FRAME][0] = clamp(intra_lvl, 0, MAX_LOOP_FILTER);
 
-      for (ref = LAST_FRAME; ref < TOTAL_REFS_PER_FRAME; ++ref) {
-        for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
-          const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
-                                lf->mode_deltas[mode] * scale;
-          lfi->lvl[seg_id][ref][mode] = clamp(inter_lvl, 0, MAX_LOOP_FILTER);
+        for (ref = LAST_FRAME; ref < TOTAL_REFS_PER_FRAME; ++ref) {
+          for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
+            const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
+                                  lf->mode_deltas[mode] * scale;
+            lfi->lvl[seg_id][ref][mode] = clamp(inter_lvl, 0, MAX_LOOP_FILTER);
+          }
         }
-      }
 #endif
+      }
     }
   }
 }
@@ -1481,7 +1519,7 @@ static void build_masks(AV1_COMMON *const cm,
       txsize_vert_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
-  const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
+  const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
 #else
 #if CONFIG_LPF_SB
   const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
@@ -1583,7 +1621,7 @@ static void build_y_mask(AV1_COMMON *const cm,
 #endif
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
-  const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
+  const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
 #else
 #if CONFIG_LPF_SB
   const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
@@ -2196,7 +2234,7 @@ static void get_filter_level_and_masks_non420(
 // Filter level can vary per MI
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
-    if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, 0, mbmi)))
+    if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, 0, 0, mbmi)))
       continue;
 #else
 #if CONFIG_LPF_SB
@@ -2901,7 +2939,7 @@ static void set_lpf_parameters(
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
     const uint32_t curr_level =
-        get_filter_level(cm, &cm->lf_info, edge_dir, mbmi);
+        get_filter_level(cm, &cm->lf_info, edge_dir, plane, mbmi);
 #else
 #if CONFIG_LPF_SB
     const uint32_t curr_level =
@@ -2942,8 +2980,8 @@ static void set_lpf_parameters(
 
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
-          const uint32_t pv_lvl =
-              get_filter_level(cm, &cm->lf_info, edge_dir, &mi_prev->mbmi);
+          const uint32_t pv_lvl = get_filter_level(cm, &cm->lf_info, edge_dir,
+                                                   plane, &mi_prev->mbmi);
 #else
 #if CONFIG_LPF_SB
           const uint32_t pv_lvl = get_filter_level(cm, &cm->lf_info, pv_row,
@@ -3675,7 +3713,10 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
 #if CONFIG_LOOPFILTER_LEVEL
-  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r);
+  // TODO(chengchen): refactor the code such that y_only has its matching
+  // meaning. Now it means the plane to be filtered in this experiment.
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r,
+                             y_only);
 #else
   av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level);
 #endif

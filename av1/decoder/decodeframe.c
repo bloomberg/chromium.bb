@@ -5515,13 +5515,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-#if CONFIG_LOOPFILTER_LEVEL
-  if ((cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
-      !cm->skip_loop_filter) {
-    av1_loop_filter_frame_init(cm, cm->lf.filter_level[0],
-                               cm->lf.filter_level[1]);
-  }
-#else
+#if !CONFIG_LOOPFILTER_LEVEL
   if (cm->lf.filter_level && !cm->skip_loop_filter) {
     av1_loop_filter_frame_init(cm, cm->lf.filter_level, cm->lf.filter_level);
   }
@@ -5828,13 +5822,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-#if CONFIG_LOOPFILTER_LEVEL
-  if ((cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
-      !cm->skip_loop_filter) {
-    av1_loop_filter_frame_init(cm, cm->lf.filter_level[0],
-                               cm->lf.filter_level[1]);
-  }
-#else
+#if !CONFIG_LOOPFILTER_LEVEL
   if (cm->lf.filter_level && !cm->skip_loop_filter) {
     av1_loop_filter_frame_init(cm, cm->lf.filter_level, cm->lf.filter_level);
   }

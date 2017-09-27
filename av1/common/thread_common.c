@@ -435,7 +435,8 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
 #if CONFIG_LOOPFILTER_LEVEL
-  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r);
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r,
+                             y_only);
 #else
   av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level);
 #endif  // CONFIG_LOOPFILTER_LEVEL
