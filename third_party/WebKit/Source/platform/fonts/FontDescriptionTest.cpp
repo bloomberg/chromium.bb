@@ -104,7 +104,14 @@ TEST(FontDescriptionTest, ToString) {
       "computed_size=2.200000, adjusted_size=3.300000, size_adjust=4.400000, "
       "letter_spacing=5.500000, word_spacing=6.600000, "
       "font_selection_request=[weight=32.500000, width=33.500000, "
-      "slope=31.500000], typesetting_features=[Kerning,Ligatures]",
+      "slope=31.500000], typesetting_features=[Kerning,Ligatures], "
+      "orientation=Horizontal, width_variant=Regular, variant_caps=Normal, "
+      "is_absolute_size=false, generic_family=None, kerning=Auto, "
+      "variant_ligatures=[common=Normal, discretionary=Normal, "
+      "historical=Normal, contextual=Normal], keyword_size=0, "
+      "font_smoothing=Auto, text_rendering=OptimizeLegibility, "
+      "synthetic_bold=false, synthetic_italic=false, "
+      "subpixel_positioning=false, subpixel_ascent_descent=false",
       description.ToString());
 }
 

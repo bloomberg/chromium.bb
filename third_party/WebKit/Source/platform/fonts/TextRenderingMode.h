@@ -26,6 +26,9 @@
 #ifndef TextRenderingMode_h
 #define TextRenderingMode_h
 
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Forward.h"
+
 namespace blink {
 
 enum TextRenderingMode {
@@ -34,6 +37,8 @@ enum TextRenderingMode {
   kOptimizeLegibility,
   kGeometricPrecision
 };
+
+PLATFORM_EXPORT String ToString(TextRenderingMode);
 
 }  // namespace blink
 
