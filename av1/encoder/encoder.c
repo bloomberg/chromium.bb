@@ -368,6 +368,9 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(cm, select_sb_size(cpi));
+#if CONFIG_REFERENCE_BUFFER
+    set_use_reference_buffer(cm, 0);
+#endif  // CONFIG_REFERENCE_BUFFER
   } else {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
@@ -5397,7 +5400,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  {
+  if (cm->use_reference_buffer) {
     /* Non-normative definition of current_frame_id ("frame counter" with
     * wraparound) */
     const int frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
@@ -5422,7 +5425,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
           (1 << frame_id_length);
     }
   }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_EXT_DELTA_Q
   cm->delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
@@ -5497,7 +5500,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 
 #if CONFIG_REFERENCE_BUFFER
-  {
+  if (cm->use_reference_buffer) {
     int i;
     /* Update reference frame id values based on the value of refresh_mask */
     for (i = 0; i < REF_FRAMES; i++) {
@@ -5506,7 +5509,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       }
     }
   }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
 #if DUMP_RECON_FRAMES == 1
   // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -6463,10 +6466,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  if (*time_stamp == 0) {
-    cpi->common.current_frame_id = -1;
+  if (cm->use_reference_buffer) {
+    if (*time_stamp == 0) {
+      cpi->common.current_frame_id = -1;
+    }
   }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_AMVR
   cpi->cur_poc++;
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {

@@ -242,7 +242,6 @@ static aom_codec_err_t decoder_peek_si_internal(
     si->is_kf = 1;
     intra_only_flag = 1;
     si->h = 1;
-
 #else
     int show_frame;
     int error_resilient;
@@ -273,29 +272,38 @@ static aom_codec_err_t decoder_peek_si_internal(
 
     si->is_kf = !aom_rb_read_bit(&rb);
     show_frame = aom_rb_read_bit(&rb);
+    if (!si->is_kf) {
+      if (!show_frame) intra_only_flag = show_frame ? 0 : aom_rb_read_bit(&rb);
+    }
     error_resilient = aom_rb_read_bit(&rb);
 #if CONFIG_REFERENCE_BUFFER
-    {
+    int use_reference_buffer = 1;
+    SequenceHeader seq_params = { 0, 0, 0 };
+    if (si->is_kf) {
       /* TODO: Move outside frame loop or inside key-frame branch */
-      int frame_id_len;
-      SequenceHeader seq_params;
-      read_sequence_header(&seq_params);
+      use_reference_buffer = aom_rb_read_bit(&rb);
+      if (use_reference_buffer) {
+        read_sequence_header(&seq_params);
 #if CONFIG_EXT_TILE
-      if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
+        if (large_scale_tile) seq_params.frame_id_numbers_present_flag = 0;
 #endif  // CONFIG_EXT_TILE
+      }
+    }
+#endif  // CONFIG_REFERENCE_BUFFER
+#if CONFIG_REFERENCE_BUFFER
+    if (use_reference_buffer) {
+      int frame_id_len;
       if (seq_params.frame_id_numbers_present_flag) {
         frame_id_len = seq_params.frame_id_length_minus7 + 7;
         aom_rb_read_literal(&rb, frame_id_len);
       }
     }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
     if (si->is_kf) {
       if (!parse_bitdepth_colorspace_sampling(profile, &rb))
         return AOM_CODEC_UNSUP_BITSTREAM;
       av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
     } else {
-      intra_only_flag = show_frame ? 0 : aom_rb_read_bit(&rb);
-
       rb.bit_offset += error_resilient ? 0 : 2;  // reset_frame_context
 
       if (intra_only_flag) {
@@ -307,7 +315,7 @@ static aom_codec_err_t decoder_peek_si_internal(
         av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
       }
     }
-#endif
+#endif  // CONFIG_OBU
   }
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;

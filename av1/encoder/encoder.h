@@ -624,7 +624,7 @@ typedef struct AV1_COMP {
 #endif
 #if CONFIG_REFERENCE_BUFFER
   SequenceHeader seq_params;
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_LV_MAP
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
 #endif

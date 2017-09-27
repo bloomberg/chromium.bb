@@ -64,7 +64,7 @@ extern "C" {
 #define FRAME_ID_NUMBERS_PRESENT_FLAG 1
 #define FRAME_ID_LENGTH_MINUS7 8         // Allows frame id up to 2^15-1
 #define DELTA_FRAME_ID_LENGTH_MINUS2 12  // Allows frame id deltas up to 2^14-1
-#endif
+#endif                                   // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 #define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
@@ -508,12 +508,13 @@ typedef struct AV1Common {
 #endif
   int num_tg;
 #if CONFIG_REFERENCE_BUFFER
+  int use_reference_buffer;
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
   int refresh_mask;
   int invalid_delta_frame_id_minus1;
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   int ans_window_size_log2;
 #endif
@@ -535,7 +536,7 @@ typedef struct SequenceHeader {
   int frame_id_length_minus7;
   int delta_frame_id_length_minus2;
 } SequenceHeader;
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
 // frame reference count.
@@ -1274,6 +1275,10 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   };
 
   return base_partitions[split_idx];
+}
+
+static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
+  cm->use_reference_buffer = use;
 }
 
 static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {

@@ -4331,7 +4331,7 @@ void write_sequence_header(
   seq_params->frame_id_length_minus7 = FRAME_ID_LENGTH_MINUS7;
   seq_params->delta_frame_id_length_minus2 = DELTA_FRAME_ID_LENGTH_MINUS2;
 }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
 static void write_sb_size(const AV1_COMMON *cm,
                           struct aom_write_bit_buffer *wb) {
@@ -4495,15 +4495,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
-#if CONFIG_REFERENCE_BUFFER
-  /* TODO: Move outside frame loop or inside key-frame branch */
-  write_sequence_header(
-#if CONFIG_EXT_TILE
-      cm,
-#endif  // CONFIG_EXT_TILE
-      &cpi->seq_params);
-#endif
-
   aom_wb_write_literal(wb, AOM_FRAME_MARKER, 2);
 
   write_profile(cm->profile, wb);
@@ -4531,16 +4522,18 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
 #if CONFIG_REFERENCE_BUFFER
-    if (cpi->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-      int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
-      aom_wb_write_literal(wb, display_frame_id, frame_id_len);
-      /* Add a zero byte to prevent emulation of superframe marker */
-      /* Same logic as when when terminating the entropy coder */
-      /* Consider to have this logic only one place */
-      aom_wb_write_literal(wb, 0, 8);
+    if (cm->use_reference_buffer) {
+      if (cpi->seq_params.frame_id_numbers_present_flag) {
+        int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+        int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
+        aom_wb_write_literal(wb, display_frame_id, frame_id_len);
+        /* Add a zero byte to prevent emulation of superframe marker */
+        /* Same logic as when when terminating the entropy coder */
+        /* Consider to have this logic only one place */
+        aom_wb_write_literal(wb, 0, 8);
+      }
     }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
     return;
   } else {
@@ -4552,16 +4545,31 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
   aom_wb_write_bit(wb, cm->frame_type);
   aom_wb_write_bit(wb, cm->show_frame);
+  if (cm->frame_type != KEY_FRAME)
+    if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
   aom_wb_write_bit(wb, cm->error_resilient_mode);
 
+  if (cm->frame_type == KEY_FRAME) {
 #if CONFIG_REFERENCE_BUFFER
-  cm->invalid_delta_frame_id_minus1 = 0;
-  if (cpi->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-    aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
+    aom_wb_write_bit(wb, cm->use_reference_buffer);
+    if (cm->use_reference_buffer) {
+      write_sequence_header(
+#if CONFIG_EXT_TILE
+          cm,
+#endif  // CONFIG_EXT_TILE
+          &cpi->seq_params);
+    }
+#endif  // CONFIG_REFERENCE_BUFFER
   }
-#endif
-
+#if CONFIG_REFERENCE_BUFFER
+  if (cm->use_reference_buffer) {
+    cm->invalid_delta_frame_id_minus1 = 0;
+    if (cpi->seq_params.frame_id_numbers_present_flag) {
+      int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+      aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
+    }
+  }
+#endif  // CONFIG_REFERENCE_BUFFER
   if (cm->frame_type == KEY_FRAME) {
     write_bitdepth_colorspace_sampling(cm, wb);
     write_frame_size(cm, wb);
@@ -4584,7 +4592,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     }
 #endif
   } else {
-    if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
     if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
@@ -4642,21 +4649,23 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
                              REF_FRAMES_LOG2);
         aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
 #if CONFIG_REFERENCE_BUFFER
-        if (cpi->seq_params.frame_id_numbers_present_flag) {
-          int i = get_ref_frame_map_idx(cpi, ref_frame);
-          int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-          int diff_len = cpi->seq_params.delta_frame_id_length_minus2 + 2;
-          int delta_frame_id_minus1 =
-              ((cm->current_frame_id - cm->ref_frame_id[i] +
-                (1 << frame_id_len)) %
-               (1 << frame_id_len)) -
-              1;
-          if (delta_frame_id_minus1 < 0 ||
-              delta_frame_id_minus1 >= (1 << diff_len))
-            cm->invalid_delta_frame_id_minus1 = 1;
-          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+        if (cm->use_reference_buffer) {
+          if (cpi->seq_params.frame_id_numbers_present_flag) {
+            int i = get_ref_frame_map_idx(cpi, ref_frame);
+            int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+            int diff_len = cpi->seq_params.delta_frame_id_length_minus2 + 2;
+            int delta_frame_id_minus1 =
+                ((cm->current_frame_id - cm->ref_frame_id[i] +
+                  (1 << frame_id_len)) %
+                 (1 << frame_id_len)) -
+                1;
+            if (delta_frame_id_minus1 < 0 ||
+                delta_frame_id_minus1 >= (1 << diff_len))
+              cm->invalid_delta_frame_id_minus1 = 1;
+            aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+          }
         }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
       }
 
 #if CONFIG_FRAME_SIZE
@@ -4702,8 +4711,11 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  cm->refresh_mask = cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
-#endif
+  if (cm->use_reference_buffer) {
+    cm->refresh_mask =
+        cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
+  }
+#endif  // CONFIG_REFERENCE_BUFFER
 
   if (!cm->error_resilient_mode) {
     aom_wb_write_bit(
@@ -4811,16 +4823,18 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
 #if CONFIG_REFERENCE_BUFFER
-    if (cpi->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-      int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
-      aom_wb_write_literal(wb, display_frame_id, frame_id_len);
-      /* Add a zero byte to prevent emulation of superframe marker */
-      /* Same logic as when when terminating the entropy coder */
-      /* Consider to have this logic only one place */
-      aom_wb_write_literal(wb, 0, 8);
+    if (cm->use_reference_buffer) {
+      if (cpi->seq_params.frame_id_numbers_present_flag) {
+        int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+        int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
+        aom_wb_write_literal(wb, display_frame_id, frame_id_len);
+        /* Add a zero byte to prevent emulation of superframe marker */
+        /* Same logic as when when terminating the entropy coder */
+        /* Consider to have this logic only one place */
+        aom_wb_write_literal(wb, 0, 8);
+      }
     }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
     return;
   } else {
@@ -4839,13 +4853,20 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->error_resilient_mode);
 
 #if CONFIG_REFERENCE_BUFFER
-  cm->invalid_delta_frame_id_minus1 = 0;
-  if (cpi->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-    aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
+  if (cm->frame_type == KEY_FRAME) {
+    aom_wb_write_bit(wb, cm->use_reference_buffer);
   }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
 
+#if CONFIG_REFERENCE_BUFFER
+  if (cm->use_reference_buffer) {
+    cm->invalid_delta_frame_id_minus1 = 0;
+    if (cpi->seq_params.frame_id_numbers_present_flag) {
+      int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+      aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
+    }
+  }
+#endif  // CONFIG_REFERENCE_BUFFER
   if (cm->frame_type == KEY_FRAME) {
     write_frame_size(cm, wb);
     write_sb_size(cm, wb);
@@ -4896,7 +4917,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   } else if (cm->frame_type == INTER_FRAME) {
     MV_REFERENCE_FRAME ref_frame;
-
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
       aom_wb_write_bit(wb, cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
@@ -4927,21 +4947,23 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                            REF_FRAMES_LOG2);
       aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
 #if CONFIG_REFERENCE_BUFFER
-      if (cpi->seq_params.frame_id_numbers_present_flag) {
-        int i = get_ref_frame_map_idx(cpi, ref_frame);
-        int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
-        int diff_len = cpi->seq_params.delta_frame_id_length_minus2 + 2;
-        int delta_frame_id_minus1 =
-            ((cm->current_frame_id - cm->ref_frame_id[i] +
-              (1 << frame_id_len)) %
-             (1 << frame_id_len)) -
-            1;
-        if (delta_frame_id_minus1 < 0 ||
-            delta_frame_id_minus1 >= (1 << diff_len))
-          cm->invalid_delta_frame_id_minus1 = 1;
-        aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+      if (cm->use_reference_buffer) {
+        if (cpi->seq_params.frame_id_numbers_present_flag) {
+          int i = get_ref_frame_map_idx(cpi, ref_frame);
+          int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+          int diff_len = cpi->seq_params.delta_frame_id_length_minus2 + 2;
+          int delta_frame_id_minus1 =
+              ((cm->current_frame_id - cm->ref_frame_id[i] +
+                (1 << frame_id_len)) %
+               (1 << frame_id_len)) -
+              1;
+          if (delta_frame_id_minus1 < 0 ||
+              delta_frame_id_minus1 >= (1 << diff_len))
+            cm->invalid_delta_frame_id_minus1 = 1;
+          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+        }
       }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
     }
 
 #if CONFIG_FRAME_SIZE
@@ -5008,7 +5030,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
           cm->invalid_delta_frame_id_minus1 = 1;
         aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
       }
-#endif
+#endif  // CONFIG_REFERENCE_BUFFER
     }
 
 #if CONFIG_FRAME_SIZE
@@ -5048,8 +5070,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_REFERENCE_BUFFER
-  cm->refresh_mask = cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
-#endif
+  if (cm->use_reference_buffer) {
+    cm->refresh_mask =
+        cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
+  }
+#endif  // CONFIG_REFERENCE_BUFFER
 
   if (!cm->error_resilient_mode) {
     aom_wb_write_bit(
