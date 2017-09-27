@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_row.h"
 
 #include "base/logging.h"
 
@@ -24,7 +24,7 @@ const CGFloat kAppendButtonTrailingMargin = 4;
 const CGFloat kAppendButtonSize = 48.0;
 }
 
-@interface OmniboxPopupMaterialRow () {
+@interface OmniboxPopupRow () {
   BOOL _incognito;
 }
 
@@ -33,7 +33,7 @@ const CGFloat kAppendButtonSize = 48.0;
 
 @end
 
-@implementation OmniboxPopupMaterialRow
+@implementation OmniboxPopupRow
 
 @synthesize textTruncatingLabel = _textTruncatingLabel;
 @synthesize detailTruncatingLabel = _detailTruncatingLabel;
@@ -50,7 +50,7 @@ const CGFloat kAppendButtonSize = 48.0;
 
 - (instancetype)initWithIncognito:(BOOL)incognito {
   self = [super initWithStyle:UITableViewCellStyleDefault
-              reuseIdentifier:@"OmniboxPopupMaterialRow"];
+              reuseIdentifier:@"OmniboxPopupRow"];
   if (self) {
     self.isAccessibilityElement = YES;
     self.backgroundColor = [UIColor clearColor];

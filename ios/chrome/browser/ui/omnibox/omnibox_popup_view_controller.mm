@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_controller.h"
 
 #include <memory>
 
 #include "base/ios/ios_util.h"
 #include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_row.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -43,13 +43,13 @@ UIColor* BackgroundColorIncognito() {
 }
 }  // namespace
 
-@interface OmniboxPopupMaterialViewController () {
+@interface OmniboxPopupViewController () {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
   NSArray<id<AutocompleteSuggestion>>* _currentResult;
 
-  // Array containing the OmniboxPopupMaterialRow objects displayed in the view.
+  // Array containing the OmniboxPopupRow objects displayed in the view.
   NSArray* _rows;
 
   // The height of the keyboard. Used to determine the content inset for the
@@ -59,7 +59,7 @@ UIColor* BackgroundColorIncognito() {
 
 @end
 
-@implementation OmniboxPopupMaterialViewController
+@implementation OmniboxPopupViewController
 @synthesize delegate = _delegate;
 @synthesize incognito = _incognito;
 @synthesize imageRetriever = _imageRetriever;
@@ -115,8 +115,8 @@ UIColor* BackgroundColorIncognito() {
   // Cache fonts needed for omnibox attributed string.
   NSMutableArray* rowsBuilder = [[NSMutableArray alloc] init];
   for (int i = 0; i < kRowCount; i++) {
-    OmniboxPopupMaterialRow* row =
-        [[OmniboxPopupMaterialRow alloc] initWithIncognito:_incognito];
+    OmniboxPopupRow* row =
+        [[OmniboxPopupRow alloc] initWithIncognito:_incognito];
     row.accessibilityIdentifier =
         [NSString stringWithFormat:@"omnibox suggestion %i", i];
     row.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -169,7 +169,7 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark -
 #pragma mark Updating data and UI
 
-- (void)updateRow:(OmniboxPopupMaterialRow*)row
+- (void)updateRow:(OmniboxPopupRow*)row
         withMatch:(id<AutocompleteSuggestion>)match {
   const CGFloat kTextCellLeadingPadding =
       IsIPadIdiom() ? (!IsCompactTablet() ? 192 : 100) : 16;
@@ -326,7 +326,7 @@ UIColor* BackgroundColorIncognito() {
   [self.tableView reloadData];
   [self.tableView beginUpdates];
   for (size_t i = 0; i < kRowCount; i++) {
-    OmniboxPopupMaterialRow* row = _rows[i];
+    OmniboxPopupRow* row = _rows[i];
 
     if (i < size) {
       [self updateRow:row withMatch:_currentResult[i]];
@@ -367,13 +367,11 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)fadeInRows {
   [CATransaction begin];
-  [CATransaction setAnimationTimingFunction:[CAMediaTimingFunction
-                                                functionWithControlPoints:
-                                                                        0:
-                                                                        0:
-                                                                      0.2:1]];
+  [CATransaction
+      setAnimationTimingFunction:[CAMediaTimingFunction
+                                     functionWithControlPoints:0:0:0.2:1]];
   for (size_t i = 0; i < kRowCount; i++) {
-    OmniboxPopupMaterialRow* row = _rows[i];
+    OmniboxPopupRow* row = _rows[i];
     CGFloat beginTime = (i + 1) * .05;
     CABasicAnimation* transformAnimation =
         [CABasicAnimation animationWithKeyPath:@"transform"];
@@ -423,7 +421,7 @@ UIColor* BackgroundColorIncognito() {
   }
 
   [self.delegate autocompleteResultConsumerDidScroll:self];
-  for (OmniboxPopupMaterialRow* row in _rows) {
+  for (OmniboxPopupRow* row in _rows) {
     row.highlighted = NO;
   }
 }
@@ -457,7 +455,7 @@ UIColor* BackgroundColorIncognito() {
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
-  return ((OmniboxPopupMaterialRow*)(_rows[indexPath.row])).rowHeight;
+  return ((OmniboxPopupRow*)(_rows[indexPath.row])).rowHeight;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
