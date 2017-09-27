@@ -40,7 +40,7 @@ class CONTENT_EXPORT ServiceWorkerHandleReference {
   const ServiceWorkerObjectInfo& info() const { return info_; }
   int handle_id() const { return info_.handle_id; }
   const GURL& url() const { return info_.url; }
-  blink::WebServiceWorkerState state() const { return info_.state; }
+  blink::mojom::ServiceWorkerState state() const { return info_.state; }
   int64_t version_id() const { return info_.version_id; }
 
  private:

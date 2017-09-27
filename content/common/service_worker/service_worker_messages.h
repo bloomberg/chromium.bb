@@ -37,8 +37,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerErrorType,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
                           blink::kWebServiceWorkerEventResultLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerState,
-                          blink::kWebServiceWorkerStateLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerState,
+                          blink::mojom::ServiceWorkerState::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerResponseError,
                           blink::kWebServiceWorkerResponseErrorLast)
@@ -319,7 +319,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
-                     blink::WebServiceWorkerState)
+                     blink::mojom::ServiceWorkerState)
 
 // Tells the child process to set service workers for the given registration.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetVersionAttributes,

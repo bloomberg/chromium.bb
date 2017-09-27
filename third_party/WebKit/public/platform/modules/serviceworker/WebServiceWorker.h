@@ -36,7 +36,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerState.h"
+#include "public/platform/modules/serviceworker/service_worker_state.mojom-shared.h"
 
 namespace blink {
 
@@ -66,8 +66,8 @@ class WebServiceWorker {
   virtual WebServiceWorkerProxy* Proxy() { return nullptr; }
 
   virtual WebURL Url() const { return WebURL(); }
-  virtual WebServiceWorkerState GetState() const {
-    return kWebServiceWorkerStateUnknown;
+  virtual mojom::ServiceWorkerState GetState() const {
+    return mojom::ServiceWorkerState::kUnknown;
   }
 
   // Callee receives ownership of the passed vector.

@@ -40,13 +40,13 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   WebServiceWorkerImpl(std::unique_ptr<ServiceWorkerHandleReference> handle_ref,
                        ThreadSafeSender* thread_safe_sender);
 
-  void OnStateChanged(blink::WebServiceWorkerState new_state);
+  void OnStateChanged(blink::mojom::ServiceWorkerState new_state);
 
   // blink::WebServiceWorker overrides.
   void SetProxy(blink::WebServiceWorkerProxy* proxy) override;
   blink::WebServiceWorkerProxy* Proxy() override;
   blink::WebURL Url() const override;
-  blink::WebServiceWorkerState GetState() const override;
+  blink::mojom::ServiceWorkerState GetState() const override;
   void PostMessage(blink::WebServiceWorkerProvider* provider,
                    const blink::WebString& message,
                    const blink::WebSecurityOrigin& source_origin,
@@ -63,7 +63,7 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   ~WebServiceWorkerImpl() override;
 
   std::unique_ptr<ServiceWorkerHandleReference> handle_ref_;
-  blink::WebServiceWorkerState state_;
+  blink::mojom::ServiceWorkerState state_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   blink::WebServiceWorkerProxy* proxy_;
 
