@@ -49,6 +49,7 @@ cr-menu[hidden].files-menu.animating {
 }
 
 cr-menu.files-menu > cr-menu-item {
+  background-size: 16px 16px;
   position: relative;
 }
 

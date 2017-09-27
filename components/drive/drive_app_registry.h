@@ -145,7 +145,7 @@ class DriveAppRegistry {
 namespace util {
 
 // The preferred icon size, which should usually be used for FindPreferredIcon;
-const int kPreferredIconSize = 16;
+const int kPreferredIconSize = 32;
 
 // Finds an icon in the list of icons. If unable to find an icon of the exact
 // size requested, returns one with the next larger size. If all icons are
