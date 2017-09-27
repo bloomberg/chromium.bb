@@ -1476,18 +1476,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		case TT_NAME_ID_FONT_SUBFAMILY:
 		    if (variable)
 			break;
-		    if (utf8)
-		    {
-			pp = utf8;
-			while (*pp == ' ')
-			    pp++;
-			len = strlen ((const char *) pp);
-			memmove (utf8, pp, len + 1);
-			pp = utf8 + len - 1;
-			while (*pp == ' ')
-			    pp--;
-			*(pp + 1) = 0;
-		    }
 		    if (FcDebug () & FC_DBG_SCANV)
 			printf ("found style  (n %2d p %d e %d l 0x%04x) %s\n",
 				sname.name_id, sname.platform_id,
@@ -1508,6 +1496,17 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		}
 		if (elt)
 		{
+		    /* Trim surrounding whitespace. */
+			pp = utf8;
+			while (*pp == ' ')
+			    pp++;
+			len = strlen ((const char *) pp);
+			memmove (utf8, pp, len + 1);
+			pp = utf8 + len - 1;
+			while (*pp == ' ')
+			    pp--;
+			*(pp + 1) = 0;
+
 		    if (FcStringInPatternElement (pat, elt, utf8))
 		    {
 			free (utf8);
