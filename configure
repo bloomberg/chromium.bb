@@ -285,7 +285,6 @@ EXPERIMENT_LIST="
     ncobmc
     warped_motion
     q_adapt_probs
-    bitstream_debug
     inter_stats_only
     palette_delta_encoding
     rawbits
@@ -394,6 +393,7 @@ CONFIG_LIST="
     inspection
     decode_perf_tests
     encode_perf_tests
+    bitstream_debug
     coefficient_range_checking
     lowbitdepth
     highbitdepth
@@ -451,6 +451,7 @@ CMDLINE_SELECT="
     decode_perf_tests
     encode_perf_tests
     coefficient_range_checking
+    bitstream_debug
     lowbitdepth
     highbitdepth
     experimental
