@@ -5,5 +5,5 @@
 [
     ImplementedAs=GlobalFetch
 ] partial interface Window {
-    [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
+    [CallWith=ScriptState, NewObject, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
 };
