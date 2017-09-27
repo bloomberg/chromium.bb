@@ -48,7 +48,7 @@ cr.define('extension_shortcut_input_tests', function() {
       expectTrue(input.capturing_);
       // Add shift.
       MockInteractions.keyDownOn(field, 16, ['ctrl', 'shift']);
-      expectEquals('Ctrl+Shift', fieldText());
+      expectEquals('Ctrl + Shift', fieldText());
       expectTrue(input.capturing_);
       // Remove shift.
       MockInteractions.keyUpOn(field, 16, ['ctrl']);
@@ -62,7 +62,7 @@ cr.define('extension_shortcut_input_tests', function() {
       expectEquals('Ctrl', fieldText());
       expectTrue(input.capturing_);
       {
-        // Add 'A'. Once a valid shortcut is typed (like Ctrl+A), it is
+        // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
         // committed.
         let updatedListener = new extension_test_util.ListenerMock();
         updatedListener.addListener(
@@ -72,7 +72,7 @@ cr.define('extension_shortcut_input_tests', function() {
         MockInteractions.keyDownOn(field, 65, ['ctrl']);
         updatedListener.verify();
       }
-      expectEquals('Ctrl+A', fieldText());
+      expectEquals('Ctrl + A', fieldText());
       expectFalse(input.capturing_);
       expectEquals('Ctrl+A', input.shortcut);
       expectTrue(isClearVisible());
