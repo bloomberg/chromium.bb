@@ -32,6 +32,7 @@ class CORE_EXPORT TextPainter : public TextPainterBase {
 
   void SetCombinedText(LayoutTextCombine* combined_text) {
     combined_text_ = combined_text;
+    has_combined_text_ = combined_text_ ? true : false;
   }
 
   void ClipDecorationsStripe(float upper,

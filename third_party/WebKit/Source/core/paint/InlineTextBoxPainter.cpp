@@ -90,30 +90,6 @@ bool InlineTextBoxPainter::PaintsMarkerHighlights(
              layout_object.GetNode());
 }
 
-static void PrepareContextForDecoration(GraphicsContext& context,
-                                        GraphicsContextStateSaver& state_saver,
-                                        bool is_horizontal,
-                                        const TextPaintStyle& text_style,
-                                        const LayoutTextCombine* combined_text,
-                                        const LayoutRect& box_rect) {
-  TextPainterBase::UpdateGraphicsContext(context, text_style, is_horizontal,
-                                         state_saver);
-  if (combined_text) {
-    context.ConcatCTM(
-        TextPainterBase::Rotation(box_rect, TextPainterBase::kClockwise));
-  }
-}
-
-static void RestoreContextFromDecoration(GraphicsContext& context,
-                                         const LayoutTextCombine* combined_text,
-                                         const LayoutRect& box_rect) {
-  if (combined_text) {
-    context.ConcatCTM(TextPainterBase::Rotation(
-        box_rect, TextPainterBase::kCounterclockwise));
-  }
-}
-
-
 static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
                                         LayoutPoint& local_origin,
                                         LayoutUnit& width) {
@@ -371,17 +347,12 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                          local_origin, width,
                                          inline_text_box_.Root().BaselineType(),
                                          style_to_use, decorating_box_style);
-      GraphicsContextStateSaver state_saver(context, false);
-      PrepareContextForDecoration(context, state_saver,
-                                  inline_text_box_.IsHorizontal(), text_style,
-                                  combined_text, box_rect);
-
       TextDecorationOffset decoration_offset(*decoration_info.style,
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
           decoration_offset, decoration_info, paint_info,
-          style_to_use.AppliedTextDecorations(), &has_line_through_decoration);
-      RestoreContextFromDecoration(context, combined_text, box_rect);
+          style_to_use.AppliedTextDecorations(), text_style,
+          &has_line_through_decoration);
     }
 
     int start_offset = 0;
@@ -403,13 +374,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
 
     // Paint line-through decoration if needed.
     if (has_line_through_decoration) {
-      GraphicsContextStateSaver state_saver(context, false);
-      PrepareContextForDecoration(context, state_saver,
-                                  inline_text_box_.IsHorizontal(), text_style,
-                                  combined_text, box_rect);
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info, paint_info, style_to_use.AppliedTextDecorations());
-      RestoreContextFromDecoration(context, combined_text, box_rect);
+          decoration_info, paint_info, style_to_use.AppliedTextDecorations(),
+          text_style);
     }
   }
 

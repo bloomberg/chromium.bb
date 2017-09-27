@@ -55,10 +55,12 @@ class CORE_EXPORT TextPainterBase {
                                          const DecorationInfo&,
                                          const PaintInfo&,
                                          const Vector<AppliedTextDecoration>&,
+                                         const TextPaintStyle& text_style,
                                          bool* has_line_through_decoration);
   void PaintDecorationsOnlyLineThrough(const DecorationInfo&,
                                        const PaintInfo&,
-                                       const Vector<AppliedTextDecoration>&);
+                                       const Vector<AppliedTextDecoration>&,
+                                       const TextPaintStyle&);
   void PaintDecorationUnderOrOverLine(GraphicsContext&,
                                       const DecorationInfo&,
                                       const AppliedTextDecoration&,
@@ -107,6 +109,7 @@ class CORE_EXPORT TextPainterBase {
   LayoutPoint text_origin_;
   LayoutRect text_bounds_;
   bool horizontal_;
+  bool has_combined_text_;
   AtomicString emphasis_mark_;
   int emphasis_mark_offset_;
   int ellipsis_offset_;
