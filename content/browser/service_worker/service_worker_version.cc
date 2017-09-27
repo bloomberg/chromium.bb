@@ -1528,12 +1528,11 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->pause_after_download = pause_after_download_;
 
   mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info;
-  if (ServiceWorkerUtils::IsScriptStreamingEnabled() &&
+  if (ServiceWorkerUtils::IsScriptStreamingEnabled() && IsInstalled(status()) &&
       !pause_after_download_) {
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
-        base::MakeUnique<ServiceWorkerInstalledScriptsSender>(
-            this, script_url(), context());
+        base::MakeUnique<ServiceWorkerInstalledScriptsSender>(this);
     installed_scripts_info = installed_scripts_sender_->CreateInfoAndBind();
     installed_scripts_sender_->Start();
   }

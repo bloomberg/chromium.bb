@@ -10,7 +10,6 @@
 namespace content {
 
 struct HttpResponseInfoIOBuffer;
-class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
 // ServiceWorkerInstalledScriptsSender serves the service worker's installed
@@ -32,10 +31,9 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender {
     kMaxValue = kMetaDataSenderError,
   };
 
-  ServiceWorkerInstalledScriptsSender(
-      ServiceWorkerVersion* owner,
-      const GURL& main_script_url,
-      base::WeakPtr<ServiceWorkerContextCore> context);
+  // |owner| must be an installed service worker.
+  explicit ServiceWorkerInstalledScriptsSender(ServiceWorkerVersion* owner);
+
   ~ServiceWorkerInstalledScriptsSender();
 
   // Creates a Mojo struct (mojom::ServiceWorkerInstalledScriptsInfo) and sets
@@ -80,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender {
 
   ServiceWorkerVersion* owner_;
   const GURL main_script_url_;
-  int main_script_id_;
+  const int main_script_id_;
 
   mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
   std::unique_ptr<Sender> running_sender_;
@@ -88,7 +86,6 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender {
   FinishedReason finished_reason_;
   std::map<int64_t /* resource_id */, GURL> imported_scripts_;
   std::map<int64_t /* resource_id */, GURL>::iterator imported_script_iter_;
-  base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerInstalledScriptsSender);
 };
