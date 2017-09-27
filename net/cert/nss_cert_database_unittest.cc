@@ -37,16 +37,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using net::test::IsError;
 using net::test::IsOk;
-
-// In NSS 3.13, CERTDB_VALID_PEER was renamed CERTDB_TERMINAL_RECORD. So we use
-// the new name of the macro.
-#if !defined(CERTDB_TERMINAL_RECORD)
-#define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
-#endif
-
-using base::ASCIIToUTF16;
 
 namespace net {
 
@@ -803,12 +796,6 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa) {
 }
 
 TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
-  if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
-    // See http://bugzil.la/863947 for details.
-    LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
-    return;
-  }
-
   NSSCertDatabase::ImportCertFailureList failed;
 
   ScopedCERTCertificateList intermediate_certs =
@@ -861,12 +848,6 @@ TEST_F(CertDatabaseNSSTest, TrustIntermediateCa2) {
 }
 
 TEST_F(CertDatabaseNSSTest, TrustIntermediateCa3) {
-  if (NSS_VersionCheck("3.14.2") && !NSS_VersionCheck("3.15")) {
-    // See http://bugzil.la/863947 for details.
-    LOG(INFO) << "Skipping test for NSS 3.14.2 - NSS 3.15";
-    return;
-  }
-
   NSSCertDatabase::ImportCertFailureList failed;
 
   ScopedCERTCertificateList ca_certs = CreateCERTCertificateListFromFile(
