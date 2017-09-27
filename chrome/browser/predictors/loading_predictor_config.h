@@ -29,7 +29,7 @@ bool IsLoadingPredictorEnabled(Profile* profile,
 bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config);
 
 // Indicates what caused the page load hint.
-enum class HintOrigin { NAVIGATION, EXTERNAL };
+enum class HintOrigin { NAVIGATION, EXTERNAL, OMNIBOX };
 
 // Represents the config for the Loading predictor.
 struct LoadingPredictorConfig {

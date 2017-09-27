@@ -110,17 +110,19 @@ class PreconnectManager {
   virtual ~PreconnectManager();
 
   // Starts preconnect and preresolve jobs keyed by |url|.
-  void Start(const GURL& url,
-             const std::vector<GURL>& preconnect_origins,
-             const std::vector<GURL>& preresolve_hosts);
+  virtual void Start(const GURL& url,
+                     const std::vector<GURL>& preconnect_origins,
+                     const std::vector<GURL>& preresolve_hosts);
 
   // Starts special preconnect and preresolve jobs that are not cancellable and
-  // don't report about their completion.
-  void StartPreresolveHosts(const std::vector<std::string> hostnames);
-  void StartPreconnectUrl(const GURL& url, bool allow_credentials);
+  // don't report about their completion. They are considered more important
+  // than trackable requests thus they are put in the front of the jobs queue.
+  virtual void StartPreresolveHost(const GURL& url);
+  virtual void StartPreresolveHosts(const std::vector<std::string>& hostnames);
+  virtual void StartPreconnectUrl(const GURL& url, bool allow_credentials);
 
   // No additional jobs keyed by the |url| will be queued after this.
-  void Stop(const GURL& url);
+  virtual void Stop(const GURL& url);
 
   // Public for mocking in unit tests. Don't use, internal only.
   virtual void PreconnectUrl(const GURL& url,

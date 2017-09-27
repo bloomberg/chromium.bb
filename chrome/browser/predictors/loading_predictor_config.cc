@@ -129,6 +129,9 @@ bool LoadingPredictorConfig::IsPrefetchingEnabledForOrigin(
     case HintOrigin::EXTERNAL:
       mask = PREFETCHING_FOR_EXTERNAL;
       break;
+    case HintOrigin::OMNIBOX:
+      // No prefetching for omnibox.
+      break;
   }
   return IsPrefetchingEnabledInternal(profile, mode, mask);
 }

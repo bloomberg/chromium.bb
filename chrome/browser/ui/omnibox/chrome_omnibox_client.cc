@@ -26,6 +26,8 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -434,7 +436,13 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
   // Warm up DNS Prefetch cache, or preconnect to a search service.
   UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", match.type,
                             AutocompleteMatchType::NUM_TYPES);
-  if (profile_->GetNetworkPredictor()) {
+  auto* loading_predictor =
+      predictors::LoadingPredictorFactory::GetForProfile(profile_);
+  if (loading_predictor) {
+    loading_predictor->PrepareForPageLoad(
+        match.destination_url, predictors::HintOrigin::OMNIBOX,
+        predictors::AutocompleteActionPredictor::IsPreconnectable(match));
+  } else if (profile_->GetNetworkPredictor()) {
     profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
         match.destination_url,
         predictors::AutocompleteActionPredictor::IsPreconnectable(match));

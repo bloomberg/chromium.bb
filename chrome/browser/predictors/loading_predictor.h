@@ -51,7 +51,9 @@ class LoadingPredictor : public KeyedService,
 
   // Hints that a page load is expected for |url|, with the hint coming from a
   // given |origin|. May trigger actions, such as prefetch and/or preconnect.
-  void PrepareForPageLoad(const GURL& url, HintOrigin origin);
+  void PrepareForPageLoad(const GURL& url,
+                          HintOrigin origin,
+                          bool preconnectable = false);
 
   // Indicates that a page load hint is no longer active.
   void CancelPageLoadHint(const GURL& url);
@@ -113,10 +115,20 @@ class LoadingPredictor : public KeyedService,
   // If a preconnect exists for |url|, stop it.
   void MaybeRemovePreconnect(const GURL& url);
 
+  // May start a preconnect or a preresolve for |url|. |preconnectable|
+  // indicates if preconnect is possible.
+  void HandleOmniboxHint(const GURL& url, bool preconnectable);
+
   // For testing.
   void set_mock_resource_prefetch_predictor(
       std::unique_ptr<ResourcePrefetchPredictor> predictor) {
     resource_prefetch_predictor_ = std::move(predictor);
+  }
+
+  // For testing.
+  void set_mock_preconnect_manager(
+      std::unique_ptr<PreconnectManager> preconnect_manager) {
+    preconnect_manager_ = std::move(preconnect_manager);
   }
 
   LoadingPredictorConfig config_;
@@ -134,7 +146,12 @@ class LoadingPredictor : public KeyedService,
   TestLoadingObserver* observer_;
   bool shutdown_ = false;
 
+  GURL last_omnibox_origin_;
+  base::TimeTicks last_omnibox_preconnect_time_;
+  base::TimeTicks last_omnibox_preresolve_time_;
+
   friend class LoadingPredictorTest;
+  friend class LoadingPredictorPreconnectTest;
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestMainFrameResponseCancelsHint);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
@@ -145,6 +162,7 @@ class LoadingPredictor : public KeyedService,
                            TestMainFrameRequestDoesntCancelExternalHint);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestDontTrackNonPrefetchableUrls);
+  FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest, TestDontPredictOmniboxHints);
 
   base::WeakPtrFactory<LoadingPredictor> weak_factory_;
 
