@@ -16,7 +16,6 @@ import "cast_logs.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
 import "omnibox_event.proto";
-import "profiler_event.proto";
 import "system_profile.proto";
 import "translate_event.proto";
 import "printer_event.proto";
@@ -69,7 +68,6 @@ message ChromeUserMetricsExtension {
   repeated UserActionEventProto user_action_event = 4;
   repeated OmniboxEventProto omnibox_event = 5;
   repeated HistogramEventProto histogram_event = 6;
-  repeated ProfilerEventProto profiler_event = 7;
   repeated TranslateEventProto translate_event = 15;
   repeated PrinterEventProto printer_event = 16;
 
