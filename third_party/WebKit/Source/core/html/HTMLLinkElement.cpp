@@ -127,12 +127,13 @@ bool HTMLLinkElement::ShouldLoadLink() {
 bool HTMLLinkElement::LoadLink(const String& type,
                                const String& as,
                                const String& media,
+                               const String& nonce,
                                ReferrerPolicy referrer_policy,
                                const KURL& url) {
   return link_loader_->LoadLink(rel_attribute_,
                                 GetCrossOriginAttributeValue(FastGetAttribute(
                                     HTMLNames::crossoriginAttr)),
-                                type, as, media, referrer_policy, url,
+                                type, as, media, nonce, referrer_policy, url,
                                 GetDocument(), NetworkHintsInterfaceImpl());
 }
 

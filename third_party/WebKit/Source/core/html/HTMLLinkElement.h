@@ -99,6 +99,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   bool LoadLink(const String& type,
                 const String& as,
                 const String& media,
+                const String& nonce,
                 ReferrerPolicy,
                 const KURL&);
   bool IsAlternate() const {

@@ -73,6 +73,7 @@ class CORE_EXPORT LinkLoader final
                 const String& type,
                 const String& as,
                 const String& media,
+                const String& nonce,
                 ReferrerPolicy,
                 const KURL&,
                 Document&,
