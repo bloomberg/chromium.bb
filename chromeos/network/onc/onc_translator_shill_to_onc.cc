@@ -44,6 +44,37 @@ std::unique_ptr<base::Value> ConvertStringToValue(const std::string& str,
   return value;
 }
 
+// If the network is configured with an installed certificate, a PKCS11 id will
+// be set which is provided for the UI to display certificate information.
+// Returns true if the PKCS11 id is available and set.
+bool SetPKCS11Id(const base::DictionaryValue* shill_dictionary,
+                 const char* cert_id_property,
+                 const char* cert_slot_property,
+                 base::DictionaryValue* onc_object) {
+  std::string shill_cert_id;
+  if (!shill_dictionary->GetStringWithoutPathExpansion(cert_id_property,
+                                                       &shill_cert_id) ||
+      shill_cert_id.empty()) {
+    return false;
+  }
+
+  std::string shill_slot;
+  std::string pkcs11_id;
+  if (shill_dictionary->GetStringWithoutPathExpansion(cert_slot_property,
+                                                      &shill_slot) &&
+      !shill_slot.empty()) {
+    pkcs11_id = shill_slot + ":" + shill_cert_id;
+  } else {
+    pkcs11_id = shill_cert_id;
+  }
+
+  onc_object->SetKey(::onc::client_cert::kClientCertType,
+                     base::Value(::onc::client_cert::kPKCS11Id));
+  onc_object->SetKey(::onc::client_cert::kClientCertPKCS11Id,
+                     base::Value(pkcs11_id));
+  return true;
+}
+
 // This class implements the translation of properties from the given
 // |shill_dictionary| to a new ONC object of signature |onc_signature|. Using
 // recursive calls to CreateTranslatedONCObject of new instances, nested objects
@@ -215,6 +246,9 @@ void ShillToONCTranslator::TranslateOpenVPN() {
                                          std::move(certKUs));
   }
 
+  SetPKCS11Id(shill_dictionary_, shill::kOpenVPNClientCertIdProperty,
+              shill::kOpenVPNClientCertSlotProperty, onc_object_.get());
+
   for (const OncFieldSignature* field_signature = onc_signature_->fields;
        field_signature->onc_field_name != NULL; ++field_signature) {
     const std::string& onc_field_name = field_signature->onc_field_name;
@@ -263,11 +297,14 @@ void ShillToONCTranslator::TranslateIPsec() {
   CopyPropertiesAccordingToSignature();
   if (shill_dictionary_->HasKey(shill::kL2tpIpsecXauthUserProperty))
     TranslateAndAddNestedObject(::onc::ipsec::kXAUTH);
-  std::string client_cert_id;
-  shill_dictionary_->GetStringWithoutPathExpansion(
-      shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
-  std::string authentication_type =
-      client_cert_id.empty() ? ::onc::ipsec::kPSK : ::onc::ipsec::kCert;
+
+  std::string authentication_type;
+  if (SetPKCS11Id(shill_dictionary_, shill::kL2tpIpsecClientCertIdProperty,
+                  shill::kL2tpIpsecClientCertSlotProperty, onc_object_.get())) {
+    authentication_type = ::onc::ipsec::kCert;
+  } else {
+    authentication_type = ::onc::ipsec::kPSK;
+  }
   onc_object_->SetKey(::onc::ipsec::kAuthenticationType,
                       base::Value(authentication_type));
 }
@@ -652,9 +689,11 @@ void ShillToONCTranslator::TranslateEap() {
   std::string shill_cert_id;
   if (shill_dictionary_->GetStringWithoutPathExpansion(
           shill::kEapCertIdProperty, &shill_cert_id)) {
-    // Note: shill::kEapKeyIdProperty == shill::kEapCertIdProperty.
     onc_object_->SetKey(::onc::client_cert::kClientCertType,
                         base::Value(::onc::client_cert::kPKCS11Id));
+    // Note: shill::kEapCertIdProperty is already in the format slot:key_id.
+    // Note: shill::kEapKeyIdProperty has the same value as
+    //       shill::kEapCertIdProperty and is ignored.
     onc_object_->SetKey(::onc::client_cert::kClientCertPKCS11Id,
                         base::Value(shill_cert_id));
   }

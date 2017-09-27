@@ -39,6 +39,33 @@ std::unique_ptr<base::Value> ConvertValueToString(const base::Value& value) {
   return base::MakeUnique<base::Value>(str);
 }
 
+// Sets any client cert properties when ClientCertType is PKCS11Id.
+void SetClientCertProperties(client_cert::ConfigType config_type,
+                             const base::DictionaryValue* onc_object,
+                             base::DictionaryValue* shill_dictionary) {
+  std::string cert_type;
+  onc_object->GetStringWithoutPathExpansion(::onc::client_cert::kClientCertType,
+                                            &cert_type);
+  if (cert_type != ::onc::client_cert::kPKCS11Id)
+    return;
+
+  std::string pkcs11_id;
+  onc_object->GetStringWithoutPathExpansion(
+      ::onc::client_cert::kClientCertPKCS11Id, &pkcs11_id);
+  if (pkcs11_id.empty()) {
+    // If the cert type is PKCS11 but the pkcs11 id is empty, set empty
+    // properties to indicate 'no certificate'.
+    client_cert::SetEmptyShillProperties(config_type, shill_dictionary);
+    return;
+  }
+
+  int slot_id;
+  std::string cert_id =
+      client_cert::GetPkcs11AndSlotIdFromEapCertId(pkcs11_id, &slot_id);
+  client_cert::SetShillProperties(config_type, slot_id, cert_id,
+                                  shill_dictionary);
+}
+
 // This class is responsible to translate the local fields of the given
 // |onc_object| according to |onc_signature| into |shill_dictionary|. This
 // translation should consider (if possible) only fields of this ONC object and
@@ -61,6 +88,7 @@ class LocalTranslator {
   void TranslateEthernet();
   void TranslateOpenVPN();
   void TranslateIPsec();
+  void TranslateL2TP();
   void TranslateVPN();
   void TranslateWiFi();
   void TranslateEAP();
@@ -108,6 +136,8 @@ void LocalTranslator::TranslateFields() {
     TranslateOpenVPN();
   else if (onc_signature_ == &kIPsecSignature)
     TranslateIPsec();
+  else if (onc_signature_ == &kL2TPSignature)
+    TranslateL2TP();
   else if (onc_signature_ == &kWiFiSignature)
     TranslateWiFi();
   else if (onc_signature_ == &kEAPSignature)
@@ -167,27 +197,45 @@ void LocalTranslator::TranslateOpenVPN() {
   shill_dictionary_->SetKey(shill::kOpenVPNRemoteCertKUProperty,
                             base::Value(cert_ku));
 
+  SetClientCertProperties(client_cert::CONFIG_TYPE_OPENVPN, onc_object_,
+                          shill_dictionary_);
+
+  // Modified CopyFieldsAccordingToSignature to handle RemoteCertKU and
+  // ServerCAPEMs and handle all other fields as strings.
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
+    std::string key = it.key();
     std::unique_ptr<base::Value> translated;
-    if (it.key() == ::onc::openvpn::kRemoteCertKU ||
-        it.key() == ::onc::openvpn::kServerCAPEMs) {
+    if (key == ::onc::openvpn::kRemoteCertKU ||
+        key == ::onc::openvpn::kServerCAPEMs) {
       translated.reset(it.value().DeepCopy());
     } else {
       // Shill wants all Provider/VPN fields to be strings.
       translated = ConvertValueToString(it.value());
     }
-    AddValueAccordingToSignature(it.key(), std::move(translated));
+    AddValueAccordingToSignature(key, std::move(translated));
   }
 }
 
 void LocalTranslator::TranslateIPsec() {
-  CopyFieldsAccordingToSignature();
+  SetClientCertProperties(client_cert::CONFIG_TYPE_IPSEC, onc_object_,
+                          shill_dictionary_);
 
   // SaveCredentials needs special handling when translating from Shill -> ONC
   // so handle it explicitly here.
   CopyFieldFromONCToShill(::onc::vpn::kSaveCredentials,
                           shill::kSaveCredentialsProperty);
+
+  CopyFieldsAccordingToSignature();
+}
+
+void LocalTranslator::TranslateL2TP() {
+  // SaveCredentials needs special handling when translating from Shill -> ONC
+  // so handle it explicitly here.
+  CopyFieldFromONCToShill(::onc::vpn::kSaveCredentials,
+                          shill::kSaveCredentialsProperty);
+
+  CopyFieldsAccordingToSignature();
 }
 
 void LocalTranslator::TranslateVPN() {
@@ -265,20 +313,8 @@ void LocalTranslator::TranslateEAP() {
     }
   }
 
-  std::string cert_type;
-  onc_object_->GetStringWithoutPathExpansion(
-      ::onc::client_cert::kClientCertType, &cert_type);
-  if (cert_type == ::onc::client_cert::kPKCS11Id) {
-    std::string pkcs11_id;
-    onc_object_->GetStringWithoutPathExpansion(
-        ::onc::client_cert::kClientCertPKCS11Id, &pkcs11_id);
-    shill_dictionary_->SetKey(
-        shill::kEapPinProperty,
-        base::Value(chromeos::client_cert::kDefaultTPMPin));
-    shill_dictionary_->SetKey(shill::kEapCertIdProperty,
-                              base::Value(pkcs11_id));
-    shill_dictionary_->SetKey(shill::kEapKeyIdProperty, base::Value(pkcs11_id));
-  }
+  SetClientCertProperties(client_cert::CONFIG_TYPE_EAP, onc_object_,
+                          shill_dictionary_);
 
   CopyFieldsAccordingToSignature();
 }

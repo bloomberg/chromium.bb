@@ -522,46 +522,54 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * `Allowed values are` *PSK* and
       *Cert*. If *Cert* is used, **ClientCertType** and *ServerCARefs* (or the
       deprecated *ServerCARef*) must be set.
-  
+
 * **ClientCertPattern**
     * (required if **ClientCertType** is *Pattern*, otherwise ignored) -
       [CertificatePattern](#CertificatePattern-type)
     * Pattern describing the client certificate.
-  
+
 * **ClientCertRef**
     * (required if **ClientCertType** is *Ref*, otherwise ignored) - **string**
     * Reference to client certificate stored in certificate section.
-  
+
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
+    * PKCS#11 identifier in the format slot:key_id.
+
 * **ClientCertType**
     * (required if **AuthenticationType** is *Cert*, otherwise ignored) -
       **string**
-    * `Allowed values are` *Ref* and *Pattern*
-  
+    * `Allowed values are` *Ref*, *Pattern* and *PKCS11Id*.
+    * *Ref* and *Pattern* indicate that the associated property should be used
+      to identify the client certificate.
+    * *PKCS11Id* is used when representing a certificate in a local store and is
+      only valid when describing a local configuration.
+
 * **EAP**
     * (optional if **IKEVersion** is 2, otherwise ignored) - [EAP](#EAP-type)
     * Indicating that EAP authentication should be used with the provided
         parameters.
-  
+
 * **Group**
     * (optional if **IKEVersion** is 1, otherwise ignored) - **string**
     * Group name used for machine authentication.
-  
+
 * **IKEVersion**
     * (required) - **integer**
     * Version of IKE protocol to use.
-  
+
 * **PSK**
     * (optional if **AuthenticationType** is *PSK*, otherwise ignored)
       - **string**
     * Pre-Shared Key. If not specified, user is prompted at time of
         connection.
-  
+
 * **SaveCredentials**
     * (optional if **AuthenticationType**
           is *PSK*, otherwise ignored, defaults to *false*) - **boolean**
     * If *false*, require user to enter credentials
         (PSK) each time they connect.
-  
+
 * **ServerCARefs**
     * (optional if **AuthenticationType** is *Cert*, otherwise rejected)
       - **array of string**
@@ -569,7 +577,7 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
       used for verifying the host's certificate chain. At least one of the CA 
       certificates must match. If this field is set, **ServerCARef** must be
       unset.
-  
+
 * **ServerCARef**
     * (optional if **AuthenticationType** is *Cert*, otherwise rejected) -
       **string**
@@ -577,7 +585,7 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
       Reference to a CA certificate in **Certificates**. Certificate authority
       to use for verifying connection. If this field is set, **ServerCARefs**
       must be unset.
-  
+
 * **XAUTH**
     * (optional if **IKEVersion** is 1, otherwise ignored) -
       [XAUTH](#XAUTH-type)
@@ -695,11 +703,19 @@ L2TP over IPsec with pre-shared key:
       [CertificatePattern](#CertificatePattern-type)
     * Pattern to use to find the client certificate.
 
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
+    * PKCS#11 identifier in the format slot:key_id.
+
 * **ClientCertType**
     * (required) - **string**
-    * `Allowed values are` *Ref*, *Pattern*, and *None*.
-    * *None* implies that the server is configured to
-      not require client certificates.
+    * `Allowed values are` *Ref*, *Pattern*, *PKCS11Id* and *None*.
+    * *Ref* and *Pattern* indicate that the associated property should be used
+      to identify the client certificate.
+    * *PKCS11Id* is used when representing a certificate in a local store and is
+      only valid when describing a local configuration.
+    * *None* indicates that the server is configured to not require client
+      certificates.
 
 * **CompLZO**
     * (optional, defaults to *adaptive*) - **string**

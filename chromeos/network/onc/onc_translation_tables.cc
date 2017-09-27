@@ -23,7 +23,7 @@ namespace {
 const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
-    // { ::onc::eap::kClientCertPKCS11Id, shill::kEapCertIdProperty },
+    // { ::onc::client_cert::kClientCertPKCS11Id, shill::kEapCertIdProperty },
     {::onc::eap::kIdentity, shill::kEapIdentityProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::eap::kInner, shill::kEapPhase2AuthProperty },
@@ -42,6 +42,8 @@ const FieldTranslationEntry ipsec_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::ipsec::kAuthenticationType, shill::kL2tpIpsecAuthenticationType
     // },
+    // {::onc::client_cert::kClientCertPKCS11Id,
+    //  shill::kL2tpIpsecClientCertIdProperty},
     {::onc::ipsec::kGroup, shill::kL2tpIpsecTunnelGroupProperty},
     // Ignored by Shill, not necessary to synchronize.
     // { ::onc::ipsec::kIKEVersion, shill::kL2tpIpsecIkeVersion },
@@ -70,6 +72,9 @@ const FieldTranslationEntry openvpn_fields[] = {
     {::onc::openvpn::kAuthNoCache, shill::kOpenVPNAuthNoCacheProperty},
     {::onc::openvpn::kAuthRetry, shill::kOpenVPNAuthRetryProperty},
     {::onc::openvpn::kCipher, shill::kOpenVPNCipherProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // {::onc::client_cert::kClientCertPKCS11Id,
+    //  shill::kOpenVPNClientCertIdProperty},
     {::onc::openvpn::kCompLZO, shill::kOpenVPNCompLZOProperty},
     {::onc::openvpn::kCompNoAdapt, shill::kOpenVPNCompNoAdaptProperty},
     {::onc::openvpn::kIgnoreDefaultRoute,
