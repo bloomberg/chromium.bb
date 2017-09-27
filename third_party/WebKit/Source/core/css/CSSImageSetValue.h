@@ -27,6 +27,7 @@
 #define CSSImageSetValue_h
 
 #include "core/css/CSSValueList.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/weborigin/Referrer.h"
@@ -39,7 +40,9 @@ class StyleImage;
 
 class CSSImageSetValue : public CSSValueList {
  public:
-  static CSSImageSetValue* Create() { return new CSSImageSetValue(); }
+  static CSSImageSetValue* Create(CSSParserMode parser_mode) {
+    return new CSSImageSetValue(parser_mode);
+  }
   ~CSSImageSetValue();
 
   bool IsCachePending(float device_scale_factor) const;
@@ -69,7 +72,7 @@ class CSSImageSetValue : public CSSValueList {
   ImageWithScale BestImageForScaleFactor(float scale_factor);
 
  private:
-  CSSImageSetValue();
+  explicit CSSImageSetValue(CSSParserMode);
 
   void FillImageSet();
   static inline bool CompareByScaleFactor(ImageWithScale first,
@@ -80,6 +83,7 @@ class CSSImageSetValue : public CSSValueList {
   float cached_scale_factor_;
   Member<StyleImage> cached_image_;
 
+  CSSParserMode parser_mode_;
   Vector<ImageWithScale> images_in_set_;
 };
 

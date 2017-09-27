@@ -50,6 +50,7 @@ class WebLeakDetectorClient {
     unsigned number_of_live_frames;
     unsigned number_of_live_v8_per_context_data;
     unsigned number_of_worker_global_scopes;
+    unsigned number_of_live_ua_css_resources;
   };
 
   virtual void OnLeakDetectionComplete(const Result&) = 0;

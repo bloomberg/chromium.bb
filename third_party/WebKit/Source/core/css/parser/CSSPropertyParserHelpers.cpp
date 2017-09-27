@@ -1455,7 +1455,7 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
                                  const CSSParserContext* context) {
   CSSParserTokenRange range_copy = range;
   CSSParserTokenRange args = ConsumeFunction(range_copy);
-  CSSImageSetValue* image_set = CSSImageSetValue::Create();
+  CSSImageSetValue* image_set = CSSImageSetValue::Create(context->Mode());
   do {
     AtomicString url_value = ConsumeUrlAsStringView(args).ToAtomicString();
     if (url_value.IsNull())

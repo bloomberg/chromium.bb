@@ -15,6 +15,7 @@ Received metrics:
 	SuspendableObjectCount
 	V8PerContextDataCount
 	WorkerGlobalScopeCount
+	UACSSResourceCount
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -41,6 +42,7 @@ Received metrics:
 	SuspendableObjectCount
 	V8PerContextDataCount
 	WorkerGlobalScopeCount
+	UACSSResourceCount
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
