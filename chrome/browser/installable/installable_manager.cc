@@ -98,6 +98,9 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
   return params.check_installable && params.fetch_valid_primary_icon;
 }
 
+// Used for a no-op call to GetData.
+void DoNothingCallback(const InstallableData& data) {}
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
@@ -119,6 +122,7 @@ InstallableManager::InstallableManager(content::WebContents* web_contents)
       valid_manifest_(base::MakeUnique<ValidManifestProperty>()),
       worker_(base::MakeUnique<ServiceWorkerProperty>()),
       service_worker_context_(nullptr),
+      has_pwa_check_(false),
       weak_factory_(this) {
   // This is null in unit tests.
   if (web_contents) {
@@ -165,6 +169,9 @@ void InstallableManager::GetData(const InstallableParams& params,
                                  const InstallableCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (IsParamsForPwaCheck(params))
+    has_pwa_check_ = true;
+
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
   bool was_active = task_queue_.HasCurrent();
@@ -190,6 +197,16 @@ void InstallableManager::RecordAddToHomescreenNoTimeout() {
 
 void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
   metrics_->RecordAddToHomescreenManifestAndIconTimeout();
+
+  // If needed, explicitly trigger GetData() with a no-op callback to complete
+  // the installability check. This is so we can accurately record whether or
+  // not a site is a PWA, assuming that the check finishes prior to resetting.
+  if (!has_pwa_check_) {
+    InstallableParams params;
+    params.check_installable = true;
+    params.fetch_valid_primary_icon = true;
+    GetData(params, base::Bind(&DoNothingCallback));
+  }
 }
 
 void InstallableManager::RecordAddToHomescreenInstallabilityTimeout() {
@@ -305,6 +322,7 @@ void InstallableManager::Reset() {
   // If we have paused tasks, we are waiting for a service worker.
   metrics_->Flush(task_queue_.HasPaused());
   task_queue_.Reset();
+  has_pwa_check_ = false;
 
   metrics_ = base::MakeUnique<InstallableMetrics>();
   manifest_ = base::MakeUnique<ManifestProperty>();

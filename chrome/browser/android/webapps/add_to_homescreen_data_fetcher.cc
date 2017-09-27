@@ -193,18 +193,10 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
   if (!web_contents())
     return;
 
-  if (is_waiting_for_manifest_) {
-    // Explicitly trigger a GetData call with a no-op callback to complete the
-    // installability check. This is so we can accurately record whether or not
-    // a site is a PWA, assuming that the check finishes prior to a reset
-    // operation. If it does not complete, an "UNKNOWN" will be recorded.
+  if (is_waiting_for_manifest_)
     installable_manager_->RecordAddToHomescreenManifestAndIconTimeout();
-    installable_manager_->GetData(
-        ParamsToPerformInstallableCheck(check_webapk_compatibility_),
-        InstallableCallback());
-  } else {
+  else
     installable_manager_->RecordAddToHomescreenInstallabilityTimeout();
-  }
 
   if (check_webapk_compatibility_)
     observer_->OnDidDetermineWebApkCompatibility(false);
