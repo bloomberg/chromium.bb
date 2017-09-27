@@ -94,7 +94,7 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 - (void)windowDidChange;
 @end
 
-@interface ToolbarView : UIImageView<RelaxedBoundsConstraintsHitTestSupport>
+@interface ToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
 // The delegate used to handle frame changes and windows events.
 @property(nonatomic, weak) id<ToolbarFrameDelegate> delegate;
 // Records whether or not the toolbar is currently involved in a transition
@@ -103,28 +103,23 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
     BOOL animatingTransition;
 @end
 
-// Base class for a toolbar, containing the standard button set that is common
-// across different types of toolbars and action handlers for those buttons
-// (forwarding to the delegate).
-// This is not intended to be used on its own, but to be subclassed by more
-// specific toolbars that provide more buttons in the empty space.
+// Base class for a toolbar, containing the standard button set that is
+// common across different types of toolbars and action handlers for those
+// buttons (forwarding to the delegate). This is not intended to be used
+// on its own, but to be subclassed by more specific toolbars that provide
+// more buttons in the empty space.
 @interface ToolbarController : NSObject<ActivityServicePositioner,
                                         PopupMenuDelegate,
                                         BubbleViewAnchorPointProvider>
 
-// The top-level toolbar view. It is a |UIImageView| even though it does not
-// hold any image for testability: unlike |UIView|, a |UIImageView| that is
-// visible in the UI automation view hierarchy does not prevent its subviews
-// from also being visible.
-// TODO(crbug.com/228469): Figure out how to fix this and have the top-level
-// view be a UIView.
+// The top-level toolbar view.
 @property(nonatomic, readonly, strong) ToolbarView* view;
 // The view for the toolbar background image. This is a subview of |view| to
 // allow clients to alter the transparency of the background image without
 // affecting the other components of the toolbar.
 @property(nonatomic, readonly, strong) UIImageView* backgroundView;
-// The view for the toolbar shadow image.  This is a subview of |view| to allow
-// clients to alter the visibility of the shadow without affecting other
+// The view for the toolbar shadow image.  This is a subview of |view| to
+// allow clients to alter the visibility of the shadow without affecting other
 // components of the toolbar.
 @property(nonatomic, readonly, strong) UIImageView* shadowView;
 
@@ -164,8 +159,8 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // asynchronously for the other states. Optionally sets the image for the
 // disabled state as well.  Meant to be called during initialization.
 // Note:  |withImageEnum| should be one of the ToolbarButtonName values, or an
-// extended value provided by a subclass.  It is an int to support "subclassing"
-// of the enum and overriding helper functions.
+// extended value provided by a subclass.  It is an int to support
+// "subclassing" of the enum and overriding helper functions.
 - (void)setUpButton:(UIButton*)button
        withImageEnum:(int)imageEnum
      forInitialState:(UIControlState)initialState
@@ -199,13 +194,13 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // subcleasses that need to set the opacity of the entire toolbar.
 - (void)setBackgroundAlpha:(CGFloat)alpha;
 
-// Called whenever one of the standard controls is triggered. Does nothing, but
-// can be overridden by subclasses to clear any state (e.g., close menus).
+// Called whenever one of the standard controls is triggered. Does nothing,
+// but can be overridden by subclasses to clear any state (e.g., close menus).
 - (void)standardButtonPressed:(UIButton*)sender;
 
-// Updates the tab stack button (if there is one) based on the given tab count.
-// If |tabCount| > |kStackButtonMaxTabCount|, an easter egg is shown instead of
-// the actual number of tabs.
+// Updates the tab stack button (if there is one) based on the given tab
+// count. If |tabCount| > |kStackButtonMaxTabCount|, an easter egg is shown
+// instead of the actual number of tabs.
 - (void)setTabCount:(NSInteger)tabCount;
 
 // Called when buttons are pressed. Records action metrics.
@@ -227,9 +222,9 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 
 @interface ToolbarController (ProtectedMethods)
 
-// Returns the area that subclasses should use for adding their own controls.
-// Nothing should be added outside this frame without first calling
-// |setStandardControlsVisible:NO|.
+// Returns the area that subclasses should use for adding their own
+// controls. Nothing should be added outside this frame without first
+// calling |setStandardControlsVisible:NO|.
 - (CGRect)specificControlsArea;
 
 // Sets the standard control set to be visible or invisible. Uses alpha, so it
@@ -242,8 +237,8 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 - (void)setStandardControlsAlpha:(CGFloat)alpha;
 
 // Sets the transform that is applied to the standard controls. Can be
-// animated if called from an animation context. Intended for use by subclasses
-// that need to apply a transform to all toolbar buttons.
+// animated if called from an animation context. Intended for use by
+// subclasses that need to apply a transform to all toolbar buttons.
 - (void)setStandardControlsTransform:(CGAffineTransform)transform;
 
 // Returns the UIImage from the resources bundle for the |imageEnum| and
@@ -251,15 +246,15 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 - (UIImage*)imageForImageEnum:(int)imageEnum
                      forState:(ToolbarButtonUIState)state;
 
-// Returns the image enum for a given button object.  If the user taps a button
-// before its secondary images have been loaded, the image(s) will be loaded
-// then, synchronously.  Called by -standardButtonPressed.
+// Returns the image enum for a given button object.  If the user taps a
+// button before its secondary images have been loaded, the image(s) will be
+// loaded then, synchronously.  Called by -standardButtonPressed.
 - (int)imageEnumForButton:(UIButton*)button;
 
 // Returns the resource ID for the image with enum |index|, corresponding to
 // |style| and |state|.  Returns 0 if there is not a corresponding ID.
-// If a subclass extends the enum ToolbarButtonName, it must also override this
-// method to provide the correct mapping from enum to resource ID.
+// If a subclass extends the enum ToolbarButtonName, it must also override
+// this method to provide the correct mapping from enum to resource ID.
 - (int)imageIdForImageEnum:(int)index
                      style:(ToolbarControllerStyle)style
                   forState:(ToolbarButtonUIState)state;
@@ -271,20 +266,21 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // animation used for Material.
 - (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox;
 
-// Add position and opacity animations to |view|'s layer. The opacity animation
-// goes from 0 to 1. The position animation goes from [view.layer.position
-// offset in the leading direction by |leadingOffset|)  to view.layer.position.
-// Both animations occur after |delay| seconds.
+// Add position and opacity animations to |view|'s layer. The opacity
+// animation goes from 0 to 1. The position animation goes from
+// [view.layer.position offset in the leading direction by |leadingOffset|)
+// to view.layer.position. Both animations occur after |delay| seconds.
 - (void)fadeInView:(UIView*)view
     fromLeadingOffset:(LayoutOffset)leadingOffset
          withDuration:(NSTimeInterval)duration
            afterDelay:(NSTimeInterval)delay;
 
-// Performs the transition animation specified by |style|, animating the toolbar
-// view from |beginFrame| to |endFrame|.
-// Animations are added to subview depending on |style|:
+// Performs the transition animation specified by |style|, animating the
+// toolbar view from |beginFrame| to |endFrame|. Animations are added to
+// subview depending on |style|:
 //   - ToolbarTransitionStyleToStackView: faded out immediately
-//   - ToolbarTransitionStyleToBVC: fade in from a vertical offset after a delay
+//   - ToolbarTransitionStyleToBVC: fade in from a vertical offset after a
+//   delay
 - (void)animateTransitionWithBeginFrame:(CGRect)beginFrame
                                endFrame:(CGRect)endFrame
                         transitionStyle:(ToolbarTransitionStyle)style;
@@ -298,7 +294,8 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // Shows/hides iPhone toolbar views for when the new tab page is displayed.
 - (void)hideViewsForNewTabPage:(BOOL)hide;
 
-// Triggers an animation on the tools menu button to draw the user's attention.
+// Triggers an animation on the tools menu button to draw the user's
+// attention.
 - (void)triggerToolsMenuButtonAnimation;
 
 @end
