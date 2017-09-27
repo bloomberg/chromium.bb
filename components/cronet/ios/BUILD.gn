@@ -253,10 +253,9 @@ template("ios_static_framework") {
     _framework_name = invoker.framework_name
   }
 
-  _bundle_target_name = _target_name + "_bundle"
   _framework_headers_target = _target_name + "_framework_headers"
   bundle_data(_framework_headers_target) {
-    visibility = [ ":$_bundle_target_name" ]
+    visibility = [ ":$_target_name" ]
     sources = invoker.public_headers
     outputs = [
       "{{bundle_contents_dir}}/Headers/{{source_file_part}}",
@@ -267,7 +266,7 @@ template("ios_static_framework") {
   _static_library_target = invoker.static_library_target
 
   bundle_data(_framework_binary_target) {
-    visibility = [ ":$_bundle_target_name" ]
+    visibility = [ ":$_target_name" ]
     sources = get_target_outputs(_static_library_target)
     outputs = [
       "{{bundle_executable_dir}}/$_framework_name",
@@ -277,9 +276,9 @@ template("ios_static_framework") {
     ]
   }
 
-  create_bundle(_bundle_target_name) {
+  create_bundle(_target_name) {
     product_type = "com.apple.product-type.framework"
-    bundle_root_dir = "$root_out_dir/Static/$_output_name"
+    bundle_root_dir = "$root_out_dir/Static/${_output_name}"
     bundle_contents_dir = bundle_root_dir
     bundle_executable_dir = bundle_contents_dir
     bundle_resources_dir = bundle_contents_dir
@@ -287,16 +286,6 @@ template("ios_static_framework") {
     deps = [
       ":$_framework_binary_target",
       ":$_framework_headers_target",
-    ]
-  }
-
-  action(_target_name) {
-    script = "//build/config/ios/dummy.py"
-    outputs = [
-      "$root_out_dir/Static/$_output_name",
-    ]
-    deps = [
-      ":$_bundle_target_name",
     ]
     public_configs = invoker.public_configs
   }
