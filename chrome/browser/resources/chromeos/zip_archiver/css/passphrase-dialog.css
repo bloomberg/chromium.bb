@@ -8,10 +8,6 @@ paper-checkbox {
   -webkit-app-region: no-drag;
 }
 
-h3 {
-  margin: 0;
-}
-
 :host {
   align-items: stretch;
   display: flex;
@@ -31,17 +27,63 @@ h3 {
   justify-content: flex-end;
 }
 
-#acceptButton {
-  color: rgb(33, 150, 243);
-}
-
-#cancelButton {
-  color: #9e9e9e;
-}
-
 #input {
   font-family: inherit;
-  font-size: inherit;
+  font-size: 13px;
   font-weight: inherit;
   line-height: inherit;
 }
+
+#remember {
+  --paper-checkbox-checked-color: rgb(51, 103, 214);
+  font-size: 13px;
+}
+
+#title {
+  color: black;
+  font-size: 14px;
+  margin: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#buttons paper-button {
+  box-sizing: border-box;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 0 5px;
+  min-height: 32px;
+  min-width: 70px;
+  overflow: hidden;
+  padding: 0.7em 0.57em;
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#buttons paper-button:focus:not(:active) {
+  box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
+}
+
+paper-checkbox {
+  --paper-checkbox-ink-size: 38px;
+}
+
+paper-input-container {
+  --paper-input-container-focus-color: rgb(51, 103, 214);
+  --paper-input-container-underline-focus: {
+    height: 1px;
+  }
+}
+
+#acceptButton {
+  background: rgb(51, 103, 214);
+  color: white;
+}
+
+#cancelButton {
+  color: rgb(100, 100, 100);
+}
+
+

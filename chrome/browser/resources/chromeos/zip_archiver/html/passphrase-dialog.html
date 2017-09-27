@@ -6,7 +6,7 @@
 <dom-module id="passphrase-dialog">
   <template>
     <link rel="stylesheet" href="../css/passphrase-dialog.css">
-    <h3 i18n-content="ZIP_ARCHIVER_PASSPHRASE_TITLE"></h3>
+    <span id="title" i18n-content="ZIP_ARCHIVER_PASSPHRASE_TITLE"></span>
     <paper-input-container>
       <input is="core-input"
              type="password"
@@ -19,13 +19,15 @@
                       i18n-content="ZIP_ARCHIVER_PASSPHRASE_REMEMBER">
       </paper-checkbox>
       <div id="buttons">
-        <paper-button on-click="cancel"
-                      id="cancelButton"
-                      i18n-content="ZIP_ARCHIVER_PASSPHRASE_CANCEL">
-        </paper-button>
-        <paper-button on-click="accept"
+        <paper-button noink
+                      on-click="accept"
                       id="acceptButton"
                       i18n-content="ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
+        </paper-button>
+        <paper-button noink
+                      on-click="cancel"
+                      id="cancelButton"
+                      i18n-content="ZIP_ARCHIVER_PASSPHRASE_CANCEL">
         </paper-button>
       </div>
     </div>

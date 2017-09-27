@@ -86,13 +86,13 @@ Press any key to continue exploring.
     Zip Archiver - Open and pack ZIP files in Files app.
   </message>
   <message desc="Title of the password input dialog." name="IDS_ZIP_ARCHIVER_PASSPHRASE_TITLE">
-    This file is password protected
+    Enter your password to gain access
   </message>
   <message desc="Label of the password input field." name="IDS_ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
     Password
   </message>
   <message desc="Short name of the password accept button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
-    Accept
+    Unlock
   </message>
   <message desc="Short name of the password cancel button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_CANCEL">
     Cancel
