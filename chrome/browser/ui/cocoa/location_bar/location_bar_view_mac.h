@@ -187,6 +187,10 @@ class LocationBarViewMac : public LocationBar,
     return manage_passwords_decoration_.get();
   }
 
+  SaveCreditCardDecoration* save_credit_card_decoration() {
+    return save_credit_card_decoration_.get();
+  }
+
   StarDecoration* star_decoration() const { return star_decoration_.get(); }
 
   TranslateDecoration* translate_decoration() const {

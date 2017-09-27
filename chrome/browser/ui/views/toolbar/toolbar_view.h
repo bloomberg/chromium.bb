@@ -30,11 +30,6 @@ class HomeButton;
 class ReloadButton;
 class ToolbarButton;
 
-namespace autofill {
-class SaveCardBubbleController;
-class SaveCardBubbleView;
-}
-
 namespace bookmarks {
 class BookmarkBubbleObserver;
 }
@@ -81,12 +76,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowBookmarkBubble(const GURL& url,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
-
-  // Shows a bubble offering to save a credit card and anchors it appropriately.
-  autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
-      content::WebContents* contents,
-      autofill::SaveCardBubbleController* controller,
-      bool is_user_gesture);
 
   // Shows the translate bubble and anchors it appropriately.
   void ShowTranslateBubble(content::WebContents* web_contents,

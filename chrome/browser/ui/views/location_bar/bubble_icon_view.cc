@@ -7,6 +7,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event.h"
@@ -51,6 +52,12 @@ const gfx::ImageSkia& BubbleIconView::GetImage() const {
 
 void BubbleIconView::SetTooltipText(const base::string16& tooltip) {
   image_->SetTooltipText(tooltip);
+}
+
+void BubbleIconView::OnBubbleCreated(LocationBarBubbleDelegateView* bubble) {
+  // This observer is removed when the bubble's widget is destroyed, by
+  // |OnWidgetDestroying|.
+  bubble->GetWidget()->AddObserver(this);
 }
 
 void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
