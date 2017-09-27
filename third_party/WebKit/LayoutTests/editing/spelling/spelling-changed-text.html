@@ -9,7 +9,7 @@ spellcheck_test(
     'insertText Spell wellcome. Is it broken?',
     '<div contenteditable>Spell #wellcome#. Is it broken?</div>',
     {
-      title: 'Setup a content editable div with spelling marker',
+      title: '1 Setup a content editable div with spelling marker',
       callback: sample => spellcheck_test(
           sample,
           document => {
@@ -38,7 +38,29 @@ spellcheck_test(
             eventSender.keyDown("Escape", null);
           },
           '<div contenteditable>Spell #wellcome#.</div>',
-          'Spellcheck should not crash after the text has changed.')
+          '1 Spellcheck should not crash after the text has changed.')
+    });
+
+spellcheck_test(
+    '<div contenteditable>zz.|</div>',
+    '',
+    '<div contenteditable>#zz#.</div>',
+    {
+      title: '2 Setup a content editable div with spelling marker',
+      callback: sample => spellcheck_test(
+          sample,
+          document => {
+            // Send out a new request that rechecks the entire div.
+            document.execCommand('insertText', false, ' zz.');
+            if (window.internals)
+              internals.runIdleTimeSpellChecker(document);
+
+            // Mutate the text node to cancel the previous request.
+            const text = document.querySelector('div').firstChild;
+            text.deleteData(text.length - 2, 2);
+          },
+          '<div contenteditable>#zz#. z</div>',
+          '2 Canceled spellcheck request should not remove existing marker')
     });
 </script>
 </body>

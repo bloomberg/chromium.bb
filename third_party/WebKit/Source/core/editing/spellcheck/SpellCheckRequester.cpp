@@ -246,19 +246,16 @@ void SpellCheckRequester::EnqueueRequest(SpellCheckRequest* request) {
   request_queue_.push_back(request);
 }
 
-void SpellCheckRequester::DidCheck(int sequence,
-                                   const Vector<TextCheckingResult>& results) {
+bool SpellCheckRequester::EnsureValidRequestQueueFor(int sequence) {
   DCHECK(processing_request_);
-  DCHECK_EQ(processing_request_->Data().Sequence(), sequence);
-  if (processing_request_->Data().Sequence() != sequence) {
-    request_queue_.clear();
-    return;
-  }
+  if (processing_request_->Data().Sequence() == sequence)
+    return true;
+  NOTREACHED();
+  request_queue_.clear();
+  return false;
+}
 
-  if (results.size())
-    GetFrame().GetSpellChecker().MarkAndReplaceFor(processing_request_,
-                                                   results);
-
+void SpellCheckRequester::DidCheck(int sequence) {
   DCHECK_LT(last_processed_sequence_, sequence);
   last_processed_sequence_ = sequence;
 
@@ -270,25 +267,16 @@ void SpellCheckRequester::DidCheck(int sequence,
 void SpellCheckRequester::DidCheckSucceed(
     int sequence,
     const Vector<TextCheckingResult>& results) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  TextCheckingRequestData request_data = processing_request_->Data();
-  if (request_data.Sequence() == sequence) {
-    DocumentMarker::MarkerTypes markers = DocumentMarker::MisspellingMarkers();
-    if (processing_request_->IsValid()) {
-      Range* checking_range = processing_request_->CheckingRange();
-      GetFrame().GetDocument()->Markers().RemoveMarkersInRange(
-          EphemeralRange(checking_range), markers);
-    }
-  }
-  DidCheck(sequence, results);
+  if (!EnsureValidRequestQueueFor(sequence))
+    return;
+  GetFrame().GetSpellChecker().MarkAndReplaceFor(processing_request_, results);
+  DidCheck(sequence);
 }
 
 void SpellCheckRequester::DidCheckCancel(int sequence) {
-  Vector<TextCheckingResult> results;
-  DidCheck(sequence, results);
+  if (!EnsureValidRequestQueueFor(sequence))
+    return;
+  DidCheck(sequence);
 }
 
 DEFINE_TRACE(SpellCheckRequester) {
