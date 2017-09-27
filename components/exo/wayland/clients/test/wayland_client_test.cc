@@ -4,6 +4,8 @@
 
 #include "components/exo/wayland/clients/test/wayland_client_test.h"
 
+#include <stdlib.h>
+
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -11,6 +13,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/exo/display.h"
@@ -100,6 +103,11 @@ void WaylandClientTest::TearDown() {
 }
 
 void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
+  xdg_temp_dir_ = std::make_unique<base::ScopedTempDir>();
+  ASSERT_TRUE(xdg_temp_dir_->CreateUniqueTempDir());
+  setenv("XDG_RUNTIME_DIR", xdg_temp_dir_->GetPath().MaybeAsASCII().c_str(),
+         1 /* overwrite */);
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
@@ -146,6 +154,7 @@ void WaylandClientTest::TearDownOnUIThread(base::WaitableEvent* event) {
   ash_test_helper_->TearDown();
   ash_test_helper_ = nullptr;
   ash_test_environment_ = nullptr;
+  xdg_temp_dir_ = nullptr;
   event->Signal();
 }
 

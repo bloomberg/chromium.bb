@@ -15,6 +15,7 @@ class AshTestHelper;
 
 namespace base {
 class MessageLoop;
+class ScopedTempDir;
 class WaitableEvent;
 }  // namespace base
 
@@ -45,6 +46,7 @@ class WaylandClientTest : public testing::Test {
   void TearDownOnUIThread(base::WaitableEvent* event);
 
   // Below objects can only be accessed from UI thread.
+  std::unique_ptr<base::ScopedTempDir> xdg_temp_dir_;
   std::unique_ptr<ash::AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
   std::unique_ptr<WMHelper> wm_helper_;

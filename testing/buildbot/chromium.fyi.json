@@ -12736,6 +12736,12 @@
           "shards": 5
         },
         "test": "mus_browser_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "wayland_client_perftests"
       }
     ],
     "isolated_scripts": [
