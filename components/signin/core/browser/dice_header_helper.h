@@ -14,6 +14,9 @@ class GURL;
 
 namespace signin {
 
+// Version of the Dice protocol.
+extern const char kDiceProtocolVersion[];
+
 // SigninHeaderHelper implementation managing the Dice header.
 class DiceHeaderHelper : public SigninHeaderHelper {
  public:
@@ -32,8 +35,9 @@ class DiceHeaderHelper : public SigninHeaderHelper {
 
   // Returns the header value for Dice requests. Returns the empty string when
   // the header must not be added.
-  std::string BuildRequestHeader(const std::string& account_id,
-                                 bool sync_enabled);
+  // |sync_account_id| is not empty if Sync is currently enabled for this
+  // account.
+  std::string BuildRequestHeader(const std::string& sync_account_id);
 
  private:
   // SigninHeaderHelper implementation:

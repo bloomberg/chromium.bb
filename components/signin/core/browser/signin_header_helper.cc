@@ -153,11 +153,12 @@ bool AppendOrRemoveDiceRequestHeader(
     const content_settings::CookieSettings* cookie_settings) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
-  DiceHeaderHelper dice_helper(!account_id.empty() && sync_has_auth_error);
+  DiceHeaderHelper dice_helper(!account_id.empty() && sync_has_auth_error &&
+                               sync_enabled);
   std::string dice_header_value;
   if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
-    dice_header_value =
-        dice_helper.BuildRequestHeader(account_id, sync_enabled);
+    dice_header_value = dice_helper.BuildRequestHeader(
+        sync_enabled ? account_id : std::string());
   }
   return dice_helper.AppendOrRemoveRequestHeader(
       request, redirect_url, kDiceRequestHeader, dice_header_value);

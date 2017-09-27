@@ -8,19 +8,31 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 
 namespace signin {
 
+const char kDiceProtocolVersion[] = "1";
+
 namespace {
 
+// Request parameters.
+const char kRequestSigninAll[] = "all_accounts";
+const char kRequestSigninSyncAccount[] = "sync_account";
+const char kRequestSignoutNoConfirmation[] = "no_confirmation";
+const char kRequestSignoutShowConfirmation[] = "show_confirmation";
+
+// Signin response parameters.
 const char kSigninActionAttrName[] = "action";
 const char kSigninAuthUserAttrName[] = "authuser";
 const char kSigninAuthorizationCodeAttrName[] = "authorization_code";
 const char kSigninEmailAttrName[] = "email";
 const char kSigninIdAttrName[] = "id";
+
+// Signout response parameters.
 const char kSignoutEmailAttrName[] = "email";
 const char kSignoutSessionIndexAttrName[] = "sessionindex";
 const char kSignoutObfuscatedIDAttrName[] = "obfuscatedid";
@@ -144,13 +156,35 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
   return gaia::IsGaiaSignonRealm(url.GetOrigin());
 }
 
-std::string DiceHeaderHelper::BuildRequestHeader(const std::string& account_id,
-                                                 bool sync_enabled) {
+std::string DiceHeaderHelper::BuildRequestHeader(
+    const std::string& sync_account_id) {
+  // When fixing auth errors, only add the header when Sync is actually in error
+  // state.
+  DCHECK(signed_in_with_auth_error_ ||
+         (GetAccountConsistencyMethod() !=
+          AccountConsistencyMethod::kDiceFixAuthErrors));
+  DCHECK(!(sync_account_id.empty() && signed_in_with_auth_error_));
+
   std::vector<std::string> parts;
+  parts.push_back(base::StringPrintf("version=%s", kDiceProtocolVersion));
   parts.push_back("client_id=" +
                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  if (sync_enabled)
-    parts.push_back("sync_account_id=" + account_id);
+  if (!sync_account_id.empty())
+    parts.push_back("sync_account_id=" + sync_account_id);
+
+  // Restrict Signin to Sync account only when fixing auth errors.
+  std::string signin_mode = (GetAccountConsistencyMethod() ==
+                             AccountConsistencyMethod::kDiceFixAuthErrors)
+                                ? kRequestSigninSyncAccount
+                                : kRequestSigninAll;
+  parts.push_back("signin_mode=" + signin_mode);
+
+  // Show the signout confirmation only when Dice is fully enabled.
+  std::string signout_mode = IsAccountConsistencyDiceEnabled()
+                                 ? kRequestSignoutShowConfirmation
+                                 : kRequestSignoutNoConfirmation;
+  parts.push_back("signout_mode=" + signout_mode);
+
   return base::JoinString(parts, ",");
 }
 
