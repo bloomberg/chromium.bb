@@ -18,6 +18,7 @@ class AccountId;
 
 namespace ash {
 
+enum class AddUserSessionPolicy;
 class SessionController;
 
 // Implement SessionControllerClient mojo interface to simulate chrome behavior
@@ -41,6 +42,7 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   // Helpers to set SessionController state.
   void SetCanLockScreen(bool can_lock);
   void SetShouldLockScreenAutomatically(bool should_lock);
+  void SetAddUserSessionPolicy(AddUserSessionPolicy policy);
   void SetSessionState(session_manager::SessionState state);
 
   // Creates the |count| pre-defined user sessions. The users are named by

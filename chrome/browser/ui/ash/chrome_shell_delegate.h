@@ -30,7 +30,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   // ash::ShellDelegate overrides;
   service_manager::Connector* GetShellConnector() const override;
-  bool IsMultiProfilesEnabled() const override;
   bool IsIncognitoAllowed() const override;
   bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;

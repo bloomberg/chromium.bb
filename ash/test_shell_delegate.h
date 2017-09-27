@@ -17,14 +17,9 @@ class TestShellDelegate : public ShellDelegate {
   TestShellDelegate();
   ~TestShellDelegate() override;
 
-  void set_multi_profiles_enabled(bool multi_profiles_enabled) {
-    multi_profiles_enabled_ = multi_profiles_enabled;
-  }
-
   // Overridden from ShellDelegate:
   ::service_manager::Connector* GetShellConnector() const override;
   bool IsIncognitoAllowed() const override;
-  bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
@@ -50,7 +45,6 @@ class TestShellDelegate : public ShellDelegate {
 
  private:
   int num_exit_requests_ = 0;
-  bool multi_profiles_enabled_ = false;
   bool force_maximize_on_first_run_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

@@ -12,13 +12,14 @@
 class PrefService;
 
 namespace ash {
-class NativeCursorManagerAsh;
 class DragDropController;
-class TabletModeWindowManager;
+class MessageCenterController;
+class NativeCursorManagerAsh;
 class PaletteDelegate;
 class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
+class TabletModeWindowManager;
 class WorkspaceController;
 
 // Accesses private data from a Shell for testing.
@@ -27,6 +28,7 @@ class ShellTestApi {
   ShellTestApi();
   explicit ShellTestApi(Shell* shell);
 
+  MessageCenterController* message_center_controller();
   SystemGestureEventFilter* system_gesture_event_filter();
   WorkspaceController* workspace_controller();
   ScreenPositionController* screen_position_controller();

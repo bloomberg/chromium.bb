@@ -24,9 +24,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
-#include "ash/test/ash_test_helper.h"
-#include "ash/test_shell_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -66,6 +63,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1160,13 +1158,12 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     // Initialize the WallpaperManager singleton.
     chromeos::WallpaperManager::Initialize();
 
-    // Configure a test shell delegate to enable the multi-profile feature.
-    ash::TestShellDelegate* test_shell_delegate = new ash::TestShellDelegate();
-    test_shell_delegate->set_multi_profiles_enabled(true);
-    ash_test_helper()->set_test_shell_delegate(test_shell_delegate);
-
     // Initialize the rest.
     ChromeLauncherControllerTest::SetUp();
+
+    // Ensure there are multiple profiles. User 0 is created during setup.
+    CreateMultiUserProfile("user1");
+    ASSERT_TRUE(SessionControllerClient::IsMultiProfileAvailable());
   }
 
   void TearDown() override {
@@ -1252,7 +1249,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
   // Override BrowserWithTestWindowTest:
   TestingProfile* CreateProfile() override {
-    return CreateMultiUserProfile("user1");
+    return CreateMultiUserProfile("user0");
   }
   void DestroyProfile(TestingProfile* profile) override {
     // Delete the profile through our profile manager.

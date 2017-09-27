@@ -26,7 +26,6 @@ class ShellDelegateImpl : public ShellDelegate {
   // ShellDelegate:
   ::service_manager::Connector* GetShellConnector() const override;
   bool IsIncognitoAllowed() const override;
-  bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;

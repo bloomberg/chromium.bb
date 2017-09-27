@@ -71,10 +71,6 @@ bool ShellDelegateImpl::IsIncognitoAllowed() const {
   return true;
 }
 
-bool ShellDelegateImpl::IsMultiProfilesEnabled() const {
-  return false;
-}
-
 bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }
