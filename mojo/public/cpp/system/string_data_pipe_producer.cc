@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/system/data_pipe_string_writer.h"
+#include "mojo/public/cpp/system/string_data_pipe_producer.h"
 
 #include <algorithm>
 
@@ -55,16 +55,16 @@ MojoResult WriteDataToProducerHandle(DataPipeProducerHandle producer,
 
 }  // namespace
 
-DataPipeStringWriter::DataPipeStringWriter(
+StringDataPipeProducer::StringDataPipeProducer(
     ScopedDataPipeProducerHandle producer)
     : producer_(std::move(producer)),
       watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
       weak_factory_(this) {}
 
-DataPipeStringWriter::~DataPipeStringWriter() = default;
+StringDataPipeProducer::~StringDataPipeProducer() = default;
 
-void DataPipeStringWriter::Write(const base::StringPiece& data,
-                                 CompletionCallback callback) {
+void StringDataPipeProducer::Write(const base::StringPiece& data,
+                                   CompletionCallback callback) {
   DCHECK(!callback_);
   callback_ = std::move(callback);
 
@@ -75,7 +75,7 @@ void DataPipeStringWriter::Write(const base::StringPiece& data,
       WriteDataToProducerHandle(producer_.get(), data.data(), &size);
   if (result == MOJO_RESULT_OK && size == data.size()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&DataPipeStringWriter::InvokeCallback,
+        FROM_HERE, base::BindOnce(&StringDataPipeProducer::InvokeCallback,
                                   weak_factory_.GetWeakPtr(), MOJO_RESULT_OK));
   } else {
     // Copy whatever data didn't make the cut and try again when the pipe has
@@ -84,17 +84,17 @@ void DataPipeStringWriter::Write(const base::StringPiece& data,
     data_view_ = data_;
     watcher_.Watch(producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                    MOJO_WATCH_CONDITION_SATISFIED,
-                   base::Bind(&DataPipeStringWriter::OnProducerHandleReady,
+                   base::Bind(&StringDataPipeProducer::OnProducerHandleReady,
                               base::Unretained(this)));
   }
 }
 
-void DataPipeStringWriter::InvokeCallback(MojoResult result) {
+void StringDataPipeProducer::InvokeCallback(MojoResult result) {
   // May delete |this|.
   std::move(callback_).Run(result);
 }
 
-void DataPipeStringWriter::OnProducerHandleReady(
+void StringDataPipeProducer::OnProducerHandleReady(
     MojoResult ready_result,
     const HandleSignalsState& state) {
   bool failed = false;
