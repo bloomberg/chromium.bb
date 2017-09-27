@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -120,7 +121,9 @@ class NewTabPageControllerTest : public BlockCleanupTest {
 TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
   // Switching the selected index in the NewTabPageBar should cause
   // newTabBarItemDidChange to get called.
-  NewTabPageBar* bar = [[controller_ ntpView] tabBar];
+  NewTabPageView* NTPView =
+      base::mac::ObjCCastStrict<NewTabPageView>(controller_.view);
+  NewTabPageBar* bar = [NTPView tabBar];
   NSUInteger bookmarkIndex = 0;
   UIButton* button = [[bar buttons] objectAtIndex:bookmarkIndex];
   UIControlEvents event =
