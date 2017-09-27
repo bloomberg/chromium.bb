@@ -29,7 +29,9 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
-    onBeforeHide: function() {},
+    onBeforeHide: function() {
+      Oobe.getInstance().solidBackground = false;
+    },
 
     /**
      * Updates the app name and icon.
