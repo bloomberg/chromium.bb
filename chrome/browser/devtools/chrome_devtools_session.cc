@@ -8,6 +8,10 @@
 #include "chrome/browser/devtools/protocol/page_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/devtools/protocol/window_manager_handler.h"
+#endif
+
 ChromeDevToolsSession::ChromeDevToolsSession(
     content::DevToolsAgentHost* agent_host,
     int session_id)
@@ -20,6 +24,10 @@ ChromeDevToolsSession::ChromeDevToolsSession(
                                                   dispatcher_.get());
   }
   browser_handler_ = std::make_unique<BrowserHandler>(dispatcher_.get());
+#if defined(OS_CHROMEOS)
+  window_manager_protocl_handler_ =
+      std::make_unique<WindowManagerHandler>(dispatcher_.get());
+#endif
 }
 
 ChromeDevToolsSession::~ChromeDevToolsSession() = default;

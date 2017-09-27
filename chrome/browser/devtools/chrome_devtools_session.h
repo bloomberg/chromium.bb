@@ -16,6 +16,7 @@ class DevToolsAgentHost;
 
 class BrowserHandler;
 class PageHandler;
+class WindowManagerHandler;
 
 class ChromeDevToolsSession : public protocol::FrontendChannel {
  public:
@@ -39,6 +40,9 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
   std::unique_ptr<BrowserHandler> browser_handler_;
   std::unique_ptr<PageHandler> page_handler_;
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<WindowManagerHandler> window_manager_protocl_handler_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsSession);
 };

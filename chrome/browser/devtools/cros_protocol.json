@@ -1,0 +1,21 @@
+{
+    "domains": [
+        {
+            "domain": "WindowManager",
+            "commands": [
+                {
+                  "name": "enterOverviewMode",
+                  "description": "Enter the overview mode."
+                },
+                {
+                  "name": "exitOverviewMode",
+                  "description": "Exit the overview mode."
+                }
+            ]
+        }
+    ],
+    "version": {
+        "major": "1",
+        "minor": "0"
+    }
+}
