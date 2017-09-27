@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
@@ -171,6 +172,11 @@ class Surface final : public ui::PropertyHandler {
 
   // Returns the current input region of surface in the form of a hit-test mask.
   void GetHitTestMask(gfx::Path* mask) const;
+
+  // Returns the current input region of surface in the form of a set of
+  // hit-test rects.
+  std::unique_ptr<aura::WindowTargeter::HitTestRects> GetHitTestShapeRects()
+      const;
 
   // Surface does not own cursor providers. It is the responsibility of the
   // caller to remove the cursor provider before it is destroyed.

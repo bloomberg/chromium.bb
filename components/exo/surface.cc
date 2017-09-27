@@ -174,6 +174,16 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
   }
 
+  std::unique_ptr<HitTestRects> GetExtraHitTestShapeRects(
+      aura::Window* window) const override {
+    Surface* surface = Surface::AsSurface(window);
+    if (!surface)
+      return nullptr;
+    if (!surface->HasHitTestMask())
+      return nullptr;
+    return surface->GetHitTestShapeRects();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
@@ -570,6 +580,15 @@ bool Surface::HasHitTestMask() const {
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
   state_.input_region.getBoundaryPath(mask);
+}
+
+std::unique_ptr<aura::WindowTargeter::HitTestRects>
+Surface::GetHitTestShapeRects() const {
+  auto rects = std::make_unique<aura::WindowTargeter::HitTestRects>();
+  SkRegion::Iterator it(state_.input_region);
+  for (const SkIRect& rect = it.rect(); !it.done(); it.next())
+    rects->push_back(gfx::SkIRectToRect(rect));
+  return rects;
 }
 
 void Surface::RegisterCursorProvider(Pointer* provider) {
