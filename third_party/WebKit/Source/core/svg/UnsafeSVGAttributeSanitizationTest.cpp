@@ -12,6 +12,7 @@
 #include "core/clipboard/Pasteboard.h"
 #include "core/dom/QualifiedName.h"
 #include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/VisibleSelection.h"

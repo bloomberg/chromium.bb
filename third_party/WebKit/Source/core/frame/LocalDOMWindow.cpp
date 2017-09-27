@@ -51,6 +51,7 @@
 #include "core/dom/events/DOMWindowEventQueue.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
 #include "core/events/HashChangeEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/PageTransitionEvent.h"
