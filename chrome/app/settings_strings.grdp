@@ -191,8 +191,8 @@
     <message name="IDS_SETTINGS_TAP_DRAGGING_LABEL" desc="Label for checkbox which enables tap dragging.">
       Enable tap dragging
     </message>
-    <message name="IDS_SETTINGS_CLICK_ON_STOP_LABEL" desc="Label for checkbox which enables automatically clicking when the mouse pointer stops.">
-      Automatically click when the mouse pointer stops
+    <message name="IDS_SETTINGS_CLICK_ON_STOP_LABEL" desc="Label for checkbox which enables automatically clicking when the mouse cursor stops.">
+      Automatically click when the mouse cursor stops
     </message>
     <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LABEL" desc="Label for dropdown menu which contains various time delays for clicks.">
       Delay before click:
