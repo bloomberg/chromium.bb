@@ -336,7 +336,10 @@ class RefCounted : public subtle::RefCountedBase {
 
  private:
   friend struct DefaultRefCountedTraits<T>;
-  static void DeleteInternal(const T* x) { delete x; }
+  template <typename U>
+  static void DeleteInternal(const U* x) {
+    delete x;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(RefCounted);
 };
@@ -397,7 +400,10 @@ class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
 
  private:
   friend struct DefaultRefCountedThreadSafeTraits<T>;
-  static void DeleteInternal(const T* x) { delete x; }
+  template <typename U>
+  static void DeleteInternal(const U* x) {
+    delete x;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafe);
 };
