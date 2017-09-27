@@ -66,14 +66,17 @@ class PLATFORM_EXPORT FontDescription {
     kFantasyFamily,
     kPictographFamily
   };
+  static String ToString(GenericFamilyType);
 
   enum Kerning { kAutoKerning, kNormalKerning, kNoneKerning };
+  static String ToString(Kerning);
 
   enum LigaturesState {
     kNormalLigaturesState,
     kDisabledLigaturesState,
     kEnabledLigaturesState
   };
+  static String ToString(LigaturesState);
 
   enum FontVariantCaps {
     kCapsNormal,
@@ -84,6 +87,7 @@ class PLATFORM_EXPORT FontDescription {
     kUnicase,
     kTitlingCaps
   };
+  static String ToString(FontVariantCaps);
 
   FontDescription();
   FontDescription(const FontDescription&);
@@ -103,6 +107,8 @@ class PLATFORM_EXPORT FontDescription {
           historical(state),
           contextual(state) {}
 
+    String ToString() const;
+
     unsigned common : 2;
     unsigned discretionary : 2;
     unsigned historical : 2;
@@ -113,9 +119,12 @@ class PLATFORM_EXPORT FontDescription {
     STACK_ALLOCATED();
     Size(unsigned keyword, float value, bool is_absolute)
         : keyword(keyword), is_absolute(is_absolute), value(value) {}
-    unsigned keyword : 4;     // FontDescription::keywordSize
-    unsigned is_absolute : 1;  // FontDescription::isAbsoluteSize
-    float value;
+
+    String ToString() const;
+
+    unsigned keyword : 4;      // FontDescription::KeywordSize
+    unsigned is_absolute : 1;  // FontDescription::IsAbsoluteSize
+    float value;               // FontDescription::SpecifiedSize
   };
 
   struct FamilyDescription {
@@ -125,6 +134,9 @@ class PLATFORM_EXPORT FontDescription {
     FamilyDescription(GenericFamilyType generic_family,
                       const FontFamily& family)
         : generic_family(generic_family), family(family) {}
+
+    String ToString() const;
+
     GenericFamilyType generic_family;
     FontFamily family;
   };
@@ -357,7 +369,10 @@ class PLATFORM_EXPORT FontDescription {
 
   struct BitFields {
     DISALLOW_NEW();
-    unsigned orientation_ : static_cast<unsigned>(FontOrientation::kBitCount);
+
+    String ToString() const;
+
+    unsigned orientation_ : kFontOrientationBitCount;
 
     unsigned width_variant_ : 2;  // FontWidthVariant
 

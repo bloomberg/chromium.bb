@@ -26,6 +26,9 @@
 #ifndef FontSmoothingMode_h
 #define FontSmoothingMode_h
 
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Forward.h"
+
 namespace blink {
 
 enum FontSmoothingMode {
@@ -34,6 +37,8 @@ enum FontSmoothingMode {
   kAntialiased,
   kSubpixelAntialiased
 };
+
+PLATFORM_EXPORT String ToString(FontSmoothingMode);
 
 }  // namespace blink
 

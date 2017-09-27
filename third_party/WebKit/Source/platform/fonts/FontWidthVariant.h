@@ -26,7 +26,9 @@
 #ifndef FontWidthVariant_h
 #define FontWidthVariant_h
 
+#include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -42,6 +44,8 @@ const unsigned kFontWidthVariantWidth = 2;
 
 static_assert(kLastFontWidthVariant >> kFontWidthVariantWidth == 0,
               "FontWidthVariantWidth must be correct");
+
+PLATFORM_EXPORT String ToString(FontWidthVariant);
 
 }  // namespace blink
 

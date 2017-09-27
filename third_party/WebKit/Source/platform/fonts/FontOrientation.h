@@ -26,7 +26,9 @@
 #ifndef FontOrientation_h
 #define FontOrientation_h
 
+#include "platform/PlatformExport.h"
 #include "platform/text/Character.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -42,17 +44,12 @@ enum class FontOrientation {
   // Vertical with all upright;
   // i.e., writing-mode: vertical-*, text-orientation: upright
   kVerticalUpright = 3,
-
-  kBitCount = 2,
-
-  kAnyUprightMask = 2,
 };
+const unsigned kFontOrientationBitCount = 2;
+const unsigned kFontOrientationAnyUprightMask = 2;
 
-inline bool operator&(FontOrientation value, FontOrientation mask) {
-  return static_cast<unsigned>(value) & static_cast<unsigned>(mask);
-}
 inline bool IsVerticalAnyUpright(FontOrientation orientation) {
-  return orientation & FontOrientation::kAnyUprightMask;
+  return static_cast<unsigned>(orientation) & kFontOrientationAnyUprightMask;
 }
 inline bool IsVerticalNonCJKUpright(FontOrientation orientation) {
   return orientation == FontOrientation::kVerticalUpright;
@@ -75,6 +72,8 @@ inline FontOrientation AdjustOrientationForCharacterInMixedVertical(
              ? FontOrientation::kVerticalUpright
              : FontOrientation::kVerticalRotated;
 }
+
+PLATFORM_EXPORT String ToString(FontOrientation);
 
 }  // namespace blink
 
