@@ -202,6 +202,11 @@ void MessageCenterSettingsController::GetNotifierList(
 void MessageCenterSettingsController::SetNotifierEnabled(
     const NotifierId& notifier_id,
     bool enabled) {
+  // TODO(estade): This is wrong: the notifier may be disabled for the wrong
+  // profile.
+  if (notifier_groups_.empty())
+    RebuildNotifierGroups(false);
+
   DCHECK_LT(current_notifier_group_, notifier_groups_.size());
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
