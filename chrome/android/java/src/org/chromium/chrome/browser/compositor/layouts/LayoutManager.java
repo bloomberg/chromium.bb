@@ -20,6 +20,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -116,6 +117,9 @@ public class LayoutManager
     // Whether the currently active event filter has changed.
     private boolean mIsNewEventFilter;
 
+    /** The animation handler responsible for updating all the browser compositor's animations. */
+    private final CompositorAnimationHandler mAnimationHandler;
+
     /**
      * Creates a {@link LayoutManager} instance.
      * @param host A {@link LayoutManagerHost} instance.
@@ -126,6 +130,8 @@ public class LayoutManager
 
         mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
+
+        mAnimationHandler = new CompositorAnimationHandler(this);
 
         mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
 
@@ -244,6 +250,9 @@ public class LayoutManager
     public boolean onUpdate(long timeMs, long dtMs) {
         if (!mUpdateRequested) return false;
         mUpdateRequested = false;
+
+        mAnimationHandler.pushUpdate(dtMs);
+
         final Layout layout = getActiveLayout();
         if (layout != null && layout.onUpdate(timeMs, dtMs) && layout.isHiding()) {
             layout.doneHiding();
@@ -314,6 +323,7 @@ public class LayoutManager
      * Cleans up and destroys this object.  It should not be used after this.
      */
     public void destroy() {
+        mAnimationHandler.destroy();
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mOverlayPanelManager != null) mOverlayPanelManager.destroy();
