@@ -77429,9 +77429,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SoftwareReporter.Cleaner.DownloadHttpResponseCode"
     enum="HttpResponseCode">
+  <obsolete>
+    Deprecated as of 09/2017. Replaced with
+    SoftwareReporter.Cleaner.DownloadResponseCode.
+  </obsolete>
   <owner>ftirelo@chromium.org</owner>
   <summary>
     The HTTP response code for the Chrome Cleanup Tool download request.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.Cleaner.DownloadResponseCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    The HTTP response or net error code when trying to download the Chrome
+    Cleanup Tool.
   </summary>
 </histogram>
 

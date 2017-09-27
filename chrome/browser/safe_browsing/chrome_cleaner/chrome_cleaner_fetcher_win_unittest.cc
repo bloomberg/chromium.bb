@@ -109,8 +109,10 @@ TEST_F(ChromeCleanerFetcherTest, FetchSuccess) {
 }
 
 TEST_F(ChromeCleanerFetcherTest, NotFoundOnServer) {
-  // Set up the fetcher to return a HTTP_NOT_FOUND failure.
-  fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
+  // Set up the fetcher to return a HTTP_NOT_FOUND failure. Notice that the
+  // net error in this case is OK, since there was no error preventing any
+  // response (even 404) from being received.
+  fetcher_->set_status(net::URLRequestStatus{});
   fetcher_->set_response_code(net::HTTP_NOT_FOUND);
 
   fetcher_->delegate()->OnURLFetchComplete(fetcher_);
