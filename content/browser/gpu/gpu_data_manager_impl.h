@@ -115,6 +115,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // of GPU rasterization. In the future this will be used for more features.
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
 
+  gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
+
   // Insert disable-feature switches corresponding to preliminary gpu feature
   // flags into the renderer process command line.
   void AppendRendererCommandLine(base::CommandLine* command_line) const;

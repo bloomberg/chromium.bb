@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -95,6 +96,7 @@ class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
   viz::mojom::GpuServicePtr gpu_service_;
   mojo::Binding<mojom::GpuHost> gpu_host_binding_;
   gpu::GPUInfo gpu_info_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
   std::unique_ptr<viz::ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   mojom::GpuMainPtr gpu_main_;

@@ -71,6 +71,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
+  gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
 
   void AppendRendererCommandLine(base::CommandLine* command_line) const;
 

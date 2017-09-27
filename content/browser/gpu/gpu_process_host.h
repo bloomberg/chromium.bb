@@ -75,6 +75,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   using EstablishChannelCallback =
       base::Callback<void(const IPC::ChannelHandle&,
                           const gpu::GPUInfo&,
+                          const gpu::GpuFeatureInfo&,
                           EstablishChannelStatus status)>;
 
   enum class BufferCreationStatus {

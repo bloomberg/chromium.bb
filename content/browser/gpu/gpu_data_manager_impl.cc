@@ -197,6 +197,11 @@ void GpuDataManagerImpl::UpdateGpuFeatureInfo(
   private_->UpdateGpuFeatureInfo(gpu_feature_info);
 }
 
+gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetGpuFeatureInfo();
+}
+
 void GpuDataManagerImpl::AppendRendererCommandLine(
     base::CommandLine* command_line) const {
   base::AutoLock auto_lock(lock_);

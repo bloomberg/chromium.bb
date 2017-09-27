@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/flush_params.h"
@@ -82,6 +83,7 @@ class GPU_EXPORT GpuChannelHost
       GpuChannelHostFactory* factory,
       int channel_id,
       const gpu::GPUInfo& gpu_info,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
       const IPC::ChannelHandle& channel_handle,
       base::WaitableEvent* shutdown_event,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
@@ -95,6 +97,9 @@ class GPU_EXPORT GpuChannelHost
 
   // The GPU stats reported by the GPU process.
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
+  const gpu::GpuFeatureInfo& gpu_feature_info() const {
+    return gpu_feature_info_;
+  }
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
@@ -214,6 +219,7 @@ class GPU_EXPORT GpuChannelHost
   GpuChannelHost(GpuChannelHostFactory* factory,
                  int channel_id,
                  const gpu::GPUInfo& gpu_info,
+                 const gpu::GpuFeatureInfo& gpu_feature_info,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuChannelHost() override;
   void Connect(const IPC::ChannelHandle& channel_handle,
@@ -230,6 +236,7 @@ class GPU_EXPORT GpuChannelHost
 
   const int channel_id_;
   const gpu::GPUInfo gpu_info_;
+  const gpu::GpuFeatureInfo gpu_feature_info_;
 
   scoped_refptr<MessageFilter> channel_filter_;
 

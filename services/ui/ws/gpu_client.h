@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS_GPU_CLIENT_H_
 
 #include "base/memory/weak_ptr.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
@@ -31,6 +32,7 @@ class GpuClient : public mojom::Gpu {
  public:
   GpuClient(int client_id,
             gpu::GPUInfo* gpu_info,
+            gpu::GpuFeatureInfo* gpu_feature_info,
             viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
             viz::mojom::GpuService* gpu_service);
   ~GpuClient() override;
@@ -61,6 +63,7 @@ class GpuClient : public mojom::Gpu {
 
   // The objects these pointers refer to are owned by the GpuHost object.
   const gpu::GPUInfo* gpu_info_;
+  const gpu::GpuFeatureInfo* gpu_feature_info_;
   viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::mojom::GpuService* gpu_service_;
 

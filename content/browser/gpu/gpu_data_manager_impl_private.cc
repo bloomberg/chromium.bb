@@ -708,6 +708,10 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
   }
 }
 
+gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
+  return gpu_feature_info_;
+}
+
 void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     base::CommandLine* command_line) const {
   DCHECK(command_line);
