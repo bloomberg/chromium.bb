@@ -13,6 +13,8 @@
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
+#include "platform/testing/FontTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "platform/wtf/Vector.h"
@@ -689,5 +691,176 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
   // Check width and bounds are not too much different. ".1" is heuristic.
   EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
 }
+
+TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
+  FontDescription::VariantLigatures ligatures;
+  ligatures.common = FontDescription::kEnabledLigaturesState;
+
+  // MEgalopolis Extra has a lot of ligatures which this test relies on.
+  Font testFont = blink::testing::CreateTestFont(
+      "MEgalopolis",
+      blink::testing::PlatformTestDataPath(
+          "third_party/MEgalopolis/MEgalopolisExtra.woff"),
+      16, &ligatures);
+
+  String string = To16Bit("ffi ff", 6);
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+
+  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));  // At start of string.
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));  // At end of "ffi" ligature.
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(2));  // At end of "ffi" ligature.
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));  // At end of "ffi" ligature.
+  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));  // After space.
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(5));  // At end of "ff" ligature.
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));  // At end of "ff" ligature.
+
+  // Verify safe to break information in copied results to ensure that both
+  // copying and multi-run break information works.
+  RefPtr<ShapeResult> copied_result =
+      ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
+  result->CopyRange(0, 3, copied_result.Get());
+  result->CopyRange(3, string.length(), copied_result.Get());
+
+  EXPECT_EQ(0u, copied_result->NextSafeToBreakOffset(0));
+  EXPECT_EQ(3u, copied_result->NextSafeToBreakOffset(1));
+  EXPECT_EQ(3u, copied_result->NextSafeToBreakOffset(2));
+  EXPECT_EQ(3u, copied_result->NextSafeToBreakOffset(3));
+  EXPECT_EQ(4u, copied_result->NextSafeToBreakOffset(4));
+  EXPECT_EQ(6u, copied_result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(6u, copied_result->NextSafeToBreakOffset(6));
+}
+
+TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
+  FontDescription::VariantLigatures ligatures;
+  ligatures.common = FontDescription::kEnabledLigaturesState;
+
+  // MEgalopolis Extra has a lot of ligatures which this test relies on.
+  Font testFont = blink::testing::CreateTestFont(
+      "MEgalopolis",
+      blink::testing::PlatformTestDataPath(
+          "third_party/MEgalopolis/MEgalopolisExtra.woff"),
+      16, &ligatures);
+
+  String string = To16Bit("ffi ff", 6);
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+
+  EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(6));  // At end of "ff" liga.
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(5));  // At end of "ff" liga.
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(4));  // After space.
+  EXPECT_EQ(3u, result->PreviousSafeToBreakOffset(3));  // At end of "ffi" liga.
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(2));  // At start of string.
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(1));  // At start of string.
+  EXPECT_EQ(0u, result->PreviousSafeToBreakOffset(0));  // At start of string.
+
+  // Verify safe to break information in copied results to ensure that both
+  // copying and multi-run break information works.
+  RefPtr<ShapeResult> copied_result =
+      ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
+  result->CopyRange(0, 3, copied_result.Get());
+  result->CopyRange(3, string.length(), copied_result.Get());
+
+  EXPECT_EQ(6u, copied_result->PreviousSafeToBreakOffset(6));
+  EXPECT_EQ(4u, copied_result->PreviousSafeToBreakOffset(5));
+  EXPECT_EQ(4u, copied_result->PreviousSafeToBreakOffset(4));
+  EXPECT_EQ(3u, copied_result->PreviousSafeToBreakOffset(3));
+  EXPECT_EQ(0u, copied_result->PreviousSafeToBreakOffset(2));
+  EXPECT_EQ(0u, copied_result->PreviousSafeToBreakOffset(1));
+  EXPECT_EQ(0u, copied_result->PreviousSafeToBreakOffset(0));
+}
+
+TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
+  FontDescription::VariantLigatures ligatures;
+  ligatures.common = FontDescription::kEnabledLigaturesState;
+  ligatures.discretionary = FontDescription::kEnabledLigaturesState;
+
+  // MEgalopolis Extra has a lot of ligatures which this test relies on.
+  Font testFont = blink::testing::CreateTestFont(
+      "MEgalopolis",
+      blink::testing::PlatformTestDataPath(
+          "third_party/MEgalopolis/MEgalopolisExtra.woff"),
+      16, &ligatures);
+
+  // RA and CA form ligatures, most glyph pairs have kerning.
+  String string(u"ABRACADABRA");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
+  EXPECT_EQ(9u, result->NextSafeToBreakOffset(7));    // Before RA ligature.
+  EXPECT_EQ(9u, result->NextSafeToBreakOffset(9));    // Before RA ligature.
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));  // At end of string.
+
+  // Add zero-width spaces at the safe to break offsets.
+  String refString(u"ABRACA\u200BDAB\u200BRA");
+  HarfBuzzShaper refShaper(refString.Characters16(), refString.length());
+  RefPtr<ShapeResult> referenceResult =
+      refShaper.Shape(&testFont, TextDirection::kLtr);
+
+  // Results should be identical if it truly is safe to break at the designated
+  // safe-to-break offsets
+  EXPECT_EQ(result->SnappedWidth(), referenceResult->SnappedWidth());
+  EXPECT_EQ(result->Bounds(), referenceResult->Bounds());
+  EXPECT_EQ(result->SnappedStartPositionForOffset(0),
+            referenceResult->SnappedStartPositionForOffset(0));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(1),
+            referenceResult->SnappedStartPositionForOffset(1));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(2),
+            referenceResult->SnappedStartPositionForOffset(2));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(3),
+            referenceResult->SnappedStartPositionForOffset(3));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(4),
+            referenceResult->SnappedStartPositionForOffset(4));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(5),
+            referenceResult->SnappedStartPositionForOffset(5));
+
+  // First zero-width space is at position 6 so the the matching character in
+  // the reference results is 7.
+  EXPECT_EQ(result->SnappedStartPositionForOffset(6),
+            referenceResult->SnappedStartPositionForOffset(7));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(7),
+            referenceResult->SnappedStartPositionForOffset(8));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(8),
+            referenceResult->SnappedStartPositionForOffset(9));
+
+  // Second zero-width space is at position 9 so the the matching character in
+  // the reference results is 11.
+  EXPECT_EQ(result->SnappedStartPositionForOffset(9),
+            referenceResult->SnappedStartPositionForOffset(11));
+  EXPECT_EQ(result->SnappedStartPositionForOffset(10),
+            referenceResult->SnappedStartPositionForOffset(12));
+}
+
+// TODO(layout-dev): This test fails on Mac due to AAT shaping.
+TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
+  FontDescription::VariantLigatures ligatures;
+  ligatures.common = FontDescription::kEnabledLigaturesState;
+
+  // كسر الاختبار
+  String string(
+      u"\u0643\u0633\u0631\u0020\u0627\u0644\u0627\u062E\u062A\u0628\u0627"
+      u"\u0631");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
+
+  // Safe to break at 0, 3, 4, 5, 7, and 11.
+  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(2));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
+  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
+  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(7u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(7u, result->NextSafeToBreakOffset(7));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(8));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(11));
+  EXPECT_EQ(12u, result->NextSafeToBreakOffset(12));
+}
+
+// TODO(layout-dev): Expand RTL test coverage and add tests for mixed
+// directionality strings.
 
 }  // namespace blink

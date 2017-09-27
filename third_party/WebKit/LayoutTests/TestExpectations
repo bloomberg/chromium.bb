@@ -285,6 +285,7 @@ crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abs
 
 ### virtual/layout_ng Mac textarea.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Failure ]
+crbug.com/763494 [ Mac ] virtual/layout_ng/fast/block/float/editable-text-overlapping-float.html [ Crash Failure ]
 
 ### virtual/layout_ng Mac 1px glyph difference.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
