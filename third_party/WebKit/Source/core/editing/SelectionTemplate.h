@@ -160,6 +160,9 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 using SelectionInDOMTree = SelectionTemplate<EditingStrategy>;
 using SelectionInFlatTree = SelectionTemplate<EditingInFlatTreeStrategy>;
 
+SelectionInDOMTree ConvertToSelectionInDOMTree(const SelectionInFlatTree&);
+SelectionInFlatTree ConvertToSelectionInFlatTree(const SelectionInDOMTree&);
+
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const SelectionInDOMTree&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const SelectionInFlatTree&);
 
