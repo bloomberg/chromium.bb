@@ -41,6 +41,8 @@ class WebViewHostContentSettingsMapFactory
       web::BrowserState* context) const override;
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
+  void RegisterBrowserStatePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewHostContentSettingsMapFactory);
 };
