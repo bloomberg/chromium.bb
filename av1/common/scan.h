@@ -30,7 +30,7 @@ extern const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES];
 extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 
 #if CONFIG_ADAPT_SCAN
-#define USE_2X2_PROB 0
+#define USE_2X2_PROB 1
 void av1_update_scan_count_facade(AV1_COMMON *cm, FRAME_COUNTS *counts,
                                   TX_SIZE tx_size, TX_TYPE tx_type,
                                   const tran_low_t *dqcoeffs, int max_scan);
