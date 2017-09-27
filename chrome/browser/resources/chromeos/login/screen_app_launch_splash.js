@@ -60,7 +60,9 @@ login.createScreen('AppLaunchSplashScreen', 'app-launch-splash', function() {
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
-    onBeforeHide: function() {},
+    onBeforeHide: function() {
+      Oobe.getInstance().solidBackground = false;
+    },
 
     /**
      * Toggles visibility of the network configuration option.

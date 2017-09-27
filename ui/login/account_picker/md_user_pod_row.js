@@ -3646,6 +3646,8 @@ cr.define('login', function() {
       // apply to account picker.
       // This is a hacky solution: we can make #scroll-container hide the
       // overflow area and manully position #inner-container.
+      // NOTE: The global states set here might need to be cleared in
+      //   handleHide. Please update the code there when adding new stuff here.
       var isScreenShrinked = this.isScreenShrinked_();
       $('scroll-container')
           .classList.toggle('disable-scroll', isScreenShrinked);
@@ -4754,6 +4756,11 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = 0;
+
+      // Clear global states that should only applies to account picker.
+      $('scroll-container').classList.remove('disable-scroll');
+      $('inner-container').classList.remove('disable-scroll');
+      $('inner-container').style.top = 'unset';
     },
 
     /**
