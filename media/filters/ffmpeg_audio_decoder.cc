@@ -416,7 +416,7 @@ int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
           ? CHANNEL_LAYOUT_DISCRETE
           : ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
 
-  if (config_.channel_layout() == CHANNEL_LAYOUT_UNSUPPORTED) {
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
     DLOG(ERROR) << "Unsupported channel layout.";
     return AVERROR(EINVAL);
   }
