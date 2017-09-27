@@ -11,7 +11,7 @@ namespace blink {
 
 // GCInfo indices start from 1 for heap objects, with 0 being treated
 // specially as the index for freelist entries and large heap objects.
-int GCInfoTable::gc_info_index_ = 0;
+size_t GCInfoTable::gc_info_index_ = 0;
 
 size_t GCInfoTable::gc_info_table_size_ = 0;
 GCInfo const** g_gc_info_table = nullptr;

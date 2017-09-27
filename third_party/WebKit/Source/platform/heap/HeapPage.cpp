@@ -393,11 +393,11 @@ bool BaseArena::WillObjectBeLazilySwept(BasePage* page,
     size_t size = header->size();
     // Scan made it to |objectPointer| without encountering any marked objects.
     //  => lazy sweep will have processed this unmarked, but live, object.
-    //  => |objectPointer| will not be lazily swept.
+    //  => |object_pointer| will not be lazily swept.
     //
-    // Notice that |objectPointer| might be pointer to a GarbageCollectedMixin,
-    // hence using fromPayload() to derive the HeapObjectHeader isn't possible
-    // (and use its value to check if |headerAddress| is equal to it.)
+    // Notice that |object_pointer| might be pointer to a GarbageCollectedMixin,
+    // hence using |FromPayload| to derive the HeapObjectHeader isn't possible
+    // (and use its value to check if |header_address| is equal to it.)
     if (header_address > object_pointer)
       return false;
     if (!header->IsFree() && header->IsMarked()) {

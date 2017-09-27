@@ -21,10 +21,9 @@
 
 namespace blink {
 
-// The FinalizerTraitImpl specifies how to finalize objects. Object
-// that inherit from GarbageCollectedFinalized are finalized by
-// calling their 'finalize' method which by default will call the
-// destructor on the object.
+// The FinalizerTraitImpl specifies how to finalize objects. Objects that
+// inherit from GarbageCollectedFinalized are finalized by calling their
+// |Finalize| method which by default will call the destructor on the object.
 template <typename T, bool isGarbageCollectedFinalized>
 struct FinalizerTraitImpl;
 
@@ -45,13 +44,13 @@ struct FinalizerTraitImpl<T, false> {
   };
 };
 
-// The FinalizerTrait is used to determine if a type requires
-// finalization and what finalization means.
+// The FinalizerTrait is used to determine if a type requires finalization and
+// what finalization means.
 //
 // By default classes that inherit from GarbageCollectedFinalized need
-// finalization and finalization means calling the 'finalize' method
-// of the object. The FinalizerTrait can be specialized if the default
-// behavior is not desired.
+// finalization and finalization means calling the |Finalize| method of the
+// object. The FinalizerTrait can be specialized if the default behavior is not
+// desired.
 template <typename T>
 struct FinalizerTrait {
   STATIC_ONLY(FinalizerTrait);
@@ -135,14 +134,14 @@ struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
   }
 };
 
-// GCInfo contains meta-data associated with objects allocated in the
-// Blink heap. This meta-data consists of a function pointer used to
-// trace the pointers in the object during garbage collection, an
-// indication of whether or not the object needs a finalization
-// callback, and a function pointer used to finalize the object when
-// the garbage collector determines that the object is no longer
-// reachable. There is a GCInfo struct for each class that directly
-// inherits from GarbageCollected or GarbageCollectedFinalized.
+// GCInfo contains meta-data associated with object classes allocated in the
+// Blink heap. This meta-data consists of a function pointer used to trace the
+// pointers in the class instance during garbage collection, an indication of
+// whether or not the instance needs a finalization callback, and a function
+// pointer used to finalize the instance when the garbage collector determines
+// that the instance is no longer reachable. There is a GCInfo struct for each
+// class that directly inherits from GarbageCollected or
+// GarbageCollectedFinalized.
 struct GCInfo {
   bool HasFinalizer() const { return non_trivial_finalizer_; }
   bool HasVTable() const { return has_v_table_; }
@@ -152,8 +151,8 @@ struct GCInfo {
   bool has_v_table_;
 };
 
-// s_gcInfoTable holds the per-class GCInfo descriptors; each heap
-// object header keeps its index into this table.
+// s_gcInfoTable holds the per-class GCInfo descriptors; each HeapObjectHeader
+// keeps an index into this table.
 extern PLATFORM_EXPORT GCInfo const** g_gc_info_table;
 
 #if DCHECK_IS_ON()
@@ -171,17 +170,18 @@ class GCInfoTable {
   static size_t GcInfoIndex() { return gc_info_index_; }
 
   // The (max + 1) GCInfo index supported.
+  //
   // We assume that 14 bits is enough to represent all possible types: during
-  // telemetry runs, we see about 1000 different types, looking at the output
-  // of the oilpan gc clang plugin, there appear to be at most about 6000
-  // types, so 14 bits should be more than twice as many bits as we will ever
-  // encounter.
+  // telemetry runs, we see about 1,000 different types; looking at the output
+  // of the Oilpan GC Clang plugin, there appear to be at most about 6,000
+  // types. Thus 14 bits should be more than twice as many bits as we will ever
+  // need.
   static const size_t kMaxIndex = 1 << 14;
 
  private:
   static void Resize();
 
-  static int gc_info_index_;
+  static size_t gc_info_index_;
   static size_t gc_info_table_size_;
 };
 
