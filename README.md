@@ -63,6 +63,35 @@ CMake built in variable `BUILD_SHARED_LIBS`:
 
 This is currently only supported on non-Windows targets.
 
+### Debugging
+
+Depending on the generator used there are multiple ways of going about
+debugging AV1 components. For single configuration generators like the Unix
+Makefiles generator, setting `CMAKE_BUILD_TYPE` to Debug is sufficient:
+
+~~~
+    $ cmake path/to/aom -DCMAKE_BUILD_TYPE=Debug
+~~~
+
+For Xcode, mainly because configuration controls for Xcode builds are buried two
+configuration windows deep and must be set for each subproject within Xcode IDE
+individually, `CMAKE_CONFIGURATION_TYPES` should be set to Debug:
+
+~~~
+    $ cmake path/to/aom -G Xcode -DCMAKE_CONFIGURATION_TYPES=Debug
+~~~
+
+For Visual Studio the in-IDE configuration controls should be used. Simply set
+the IDE project configuration to Debug to allow for stepping through the code.
+
+In addition to the above it can sometimes be useful to debug only C and C++
+code. To disable all assembly code and instrinsics set `AOM_TARGET_CPU` to
+generic at generation time:
+
+~~~
+    $ cmake path/to/aom -DAOM_TARGET_CPU=generic
+~~~
+
 ### Cross compiling
 
 For the purposes of building the AV1 codec and applications and relative to the
