@@ -78,6 +78,35 @@ Press any key to continue exploring.
     The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
   </message>
 
+  <!-- Zip Archiver -->
+  <message desc="The product name for Zip Archiver." name="IDS_ZIP_ARCHIVER_NAME">
+    Zip Archiver
+  </message>
+  <message desc="The product description, displayed in the Chrome Extensions page." name="IDS_ZIP_ARCHIVER_DESCRIPTION">
+    Zip Archiver - Open and pack ZIP files in Files app.
+  </message>
+  <message desc="Title of the password input dialog." name="IDS_ZIP_ARCHIVER_PASSPHRASE_TITLE">
+    This file is password protected
+  </message>
+  <message desc="Label of the password input field." name="IDS_ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
+    Password
+  </message>
+  <message desc="Short name of the password accept button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
+    Accept
+  </message>
+  <message desc="Short name of the password cancel button." name="IDS_ZIP_ARCHIVER_PASSPHRASE_CANCEL">
+    Cancel
+  </message>
+  <message desc="Title for of a checkbox whether the password should be remembered. Please keep it as short." name="IDS_ZIP_ARCHIVER_PASSPHRASE_REMEMBER">
+    Remember
+  </message>
+  <message desc="Error message when opening an archive fails because of an unknown reason." name="IDS_ZIP_ARCHIVER_OTHER_ERROR_MESSAGE">
+    The archive format is not supported, or the file is broken.
+  </message>
+  <message desc="Message shown when opening an archive takes long time." name="IDS_ZIP_ARCHIVER_MOUNTING_MESSAGE">
+    Please wait, the archive is being scanned...
+  </message>
+
   <!-- File Manager -->
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">
     An operation is taking longer than expected. Do you want to abort it?

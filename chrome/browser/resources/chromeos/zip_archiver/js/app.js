@@ -55,6 +55,12 @@ unpacker.app = {
   compressors: {},
 
   /**
+   * A promise used to postpone all calls to access string assets.
+   * @type {?Promise<!Object>}
+   */
+  stringDataLoadedPromise: null,
+
+  /**
    * A map with promises of loading a volume's metadata from NaCl.
    * Any call from fileSystemProvider API should work only on valid metadata.
    * These promises ensure that the fileSystemProvider API calls wait for the
@@ -400,6 +406,17 @@ unpacker.app = {
    */
   naclModuleIsLoaded: function() {
     return !!unpacker.app.naclModule;
+  },
+
+  /**
+   * Loads string assets.
+   */
+  loadStringData: function() {
+    unpacker.app.stringDataLoadedPromise = new Promise(function(fulfill) {
+      chrome.fileManagerPrivate.getStrings(function(strings) {
+        fulfill(strings);
+      });
+    });
   },
 
   /**
@@ -749,6 +766,9 @@ unpacker.app = {
 
     unpacker.app.moduleLoadedPromise
         .then(function() {
+          return unpacker.app.stringDataLoadedPromise;
+        })
+        .then(function(stringData) {
           unpacker.app.mountProcessCounter--;
           launchData.items.forEach(function(item) {
             unpacker.app.mountProcessCounter++;
@@ -762,7 +782,7 @@ unpacker.app = {
                           type: 'basic',
                           iconUrl: chrome.runtime.getManifest().icons[128],
                           title: entry.name,
-                          message: chrome.i18n.getMessage('mountingMessage'),
+                          message: stringData['ZIP_ARCHIVER_MOUNTING_MESSAGE'],
                         },
                         function() {});
                   }, unpacker.app.MOUNTING_NOTIFICATION_DELAY);
@@ -783,7 +803,8 @@ unpacker.app = {
                           type: 'basic',
                           iconUrl: chrome.runtime.getManifest().icons[128],
                           title: entry.name,
-                          message: chrome.i18n.getMessage('otherErrorMessage')
+                          message:
+                              stringData['ZIP_ARCHIVER_OTHER_ERROR_MESSAGE'],
                         },
                         function() {});
                     if (opt_onError)
