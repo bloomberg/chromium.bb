@@ -2162,7 +2162,7 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
     mbmi = &xd->mi[0]->mbmi;
-    if (bsize == BLOCK_64X64 && mbmi->skip == 1 && is_inter_block(mbmi) &&
+    if (bsize == BLOCK_64X64 && mbmi->skip == 1 &&
         cpi->common.delta_lf_present_flag) {
       mbmi->current_delta_lf_from_base = xd->prev_delta_lf_from_base;
     }
