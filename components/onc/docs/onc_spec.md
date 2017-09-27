@@ -68,7 +68,7 @@ a `Type` field which must have either the value
 
 For a description of the [EncryptedConfiguration](#EncryptedConfiguration-type)
 type, see the section on [Encrypted Configuration](#Encrypted-Configuration)
-below. 
+below.
 The [EncryptedConfiguration](#Encrypted-Configuration) format encrypts
 an unencrypted JSON object.
 
@@ -162,7 +162,9 @@ Field **NetworkConfigurations** is an array of
 * **IPAddressConfigType**
     * (optional if **Remove** is *false*, otherwise ignored. Defaults to *DHCP*
       if **NameServersConfigType** is specified) - **string**
-    * `Allowed values are` *DHCP* and *Static*.
+    * Allowed values are:
+        * *DHCP*
+        * *Static*.
     * Determines whether the IP Address configuration is statically configured,
       see **StaticIPConfig**, or automatically configured
       using DHCP.
@@ -170,7 +172,9 @@ Field **NetworkConfigurations** is an array of
 * **NameServersConfigType**
     * (optional if **Remove** is *false*, otherwise ignored. Defaults to *DHCP*
     if **IPAddressConfigType** is specified) - **string**
-    * `Allowed values are` *DHCP* and *Static*.
+    * Allowed values are:
+        * *DHCP*
+        * *Static*.
     * Determines whether the NameServers configuration is statically configured,
       see **StaticIPConfig**, or automatically configured
       using DHCP.
@@ -237,18 +241,21 @@ Field **NetworkConfigurations** is an array of
 
 * **Type**
     * (required if **Remove** is *false*, otherwise ignored) - **string**
-    * `Allowed values are` *Cellular*,
-        *Ethernet*, *WiFi*,
-        *WiMAX* and *VPN*.
+    * Allowed values are:
+        * *Cellular*
+        * *Ethernet*
+        * *WiFi*
+        * *WiMAX*
+        * *VPN*
     * Indicates which kind of connection this is.
 
 * **ConnectionState**
     * (optional, read-only) - **string**
     * The current connection state for this network, provided by the system.
-      `Allowed values are`:
-        *Connected*,
-        *Connecting*,
-        *NotConnected*
+      Allowed values are:
+        * *Connected*
+        * *Connecting*
+        * *NotConnected*
 
 * **RestrictedConnectivity**
     * (optional, defaults to *false*, read-only) - **boolean**
@@ -286,12 +293,12 @@ Field **NetworkConfigurations** is an array of
           policy for the device.
         * *None*: Not configured, e.g. a visible
           but unconfigured WiFi network.
-    * `Allowed values are`:
-        *User*,
-        *Device*,
-        *UserPolicy*,
-        *DevicePolicy*,
-        *None*
+    * Allowed values are:
+        * *User*,
+        * *Device*,
+        * *UserPolicy*,
+        * *DevicePolicy*,
+        * *None*
 
 * **Priority**
     * (optional) - **integer**
@@ -310,7 +317,9 @@ type [Ethernet](#Ethernet-type).
 
 * **Authentication**
     * (optional) - **string**
-    * `Allowed values are` *None* and *8021X*.
+    * Allowed values are:
+        * *None*
+        * *8021X*
 
 * **EAP**
     * (required if **Authentication** is *8021X*, otherwise ignored) -
@@ -322,14 +331,16 @@ type [Ethernet](#Ethernet-type).
 Objects of type [IPConfig](#IPConfig-type) are used to report the
 actual IP configuration of a connected network (see
 **IPConfigs**), the IP configuration received from
-DHCP (see **SavedIPConfig**) and to configure a 
+DHCP (see **SavedIPConfig**) and to configure a
 static IP configuration (see **StaticIPConfig**).
 
 ### IPConfig type
 
 * **Type**
     * (required) - **string**
-    * `Allowed values are` *IPv4* and *IPv6*
+    * Allowed values are:
+        * *IPv4*
+        * *IPv6*
     * Describes the type of configuration this is.
 
 * **IPAddress**
@@ -434,11 +445,12 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
 
 * **Security**
     * (required) - **string**
-    * `Allowed values are` *None*,
-        *WEP-PSK*,
-        *WEP-8021X*,
-        *WPA-PSK*, and
-        *WPA-EAP*.
+    * Allowed values are:
+        * *None*
+        * *WEP-PSK*
+        * *WEP-8021X*
+        * *WPA-PSK*
+        * *WPA-EAP*
 
 * **SSID**
     * (optional if **HexSSID** is set, otherwise ignored) - **string**
@@ -510,7 +522,11 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
 
 * **Type**
     * (required) - **string**
-    * `Allowed values are` *L2TP-IPsec*, *OpenVPN*, *ThirdPartyVPN*, *ARCVPN*
+    * Allowed values are:
+        * *ARCVPN*
+        * *L2TP-IPsec*
+        * *OpenVPN*
+        * *ThirdPartyVPN*
     * Type of the VPN.
 
 ## IPsec-based VPN types
@@ -519,9 +535,15 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
 
 * **AuthenticationType**
     * (required) - **string**
-    * `Allowed values are` *PSK* and
-      *Cert*. If *Cert* is used, **ClientCertType** and *ServerCARefs* (or the
+    * Allowed values are:
+        * *Cert*
+        * *PSK*
+    * If *Cert* is used, **ClientCertType** and *ServerCARefs* (or the
       deprecated *ServerCARef*) must be set.
+
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) -
+    * PKCS#11 identifier in the format slot:key_id.
 
 * **ClientCertPattern**
     * (required if **ClientCertType** is *Pattern*, otherwise ignored) -
@@ -532,14 +554,13 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * (required if **ClientCertType** is *Ref*, otherwise ignored) - **string**
     * Reference to client certificate stored in certificate section.
 
-* **ClientCertPKCS11Id**
-    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
-    * PKCS#11 identifier in the format slot:key_id.
-
 * **ClientCertType**
     * (required if **AuthenticationType** is *Cert*, otherwise ignored) -
       **string**
-    * `Allowed values are` *Ref*, *Pattern* and *PKCS11Id*.
+    * Allowed values are
+      * *PKCS11Id*
+      * *Pattern*
+      * *Ref*
     * *Ref* and *Pattern* indicate that the associated property should be used
       to identify the client certificate.
     * *PKCS11Id* is used when representing a certificate in a local store and is
@@ -574,7 +595,7 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * (optional if **AuthenticationType** is *Cert*, otherwise rejected)
       - **array of string**
     * Non-empty list of references to CA certificates in **Certificates** to be
-      used for verifying the host's certificate chain. At least one of the CA 
+      used for verifying the host's certificate chain. At least one of the CA
       certificates must match. If this field is set, **ServerCARef** must be
       unset.
 
@@ -605,39 +626,39 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * Disable L2TP connection monitoring via PPP LCP frames.  This
         allows the VPN client to work around server implementations
         that do not support the LCP echo feature.
-  
+
 * **Password**
     * (optional) - **string**
     * User authentication password. If not specified, user is prompted at time
         of connection.
-  
+
 * **SaveCredentials**
     * (optional, defaults to *false*) - **boolean**
     * If *false*, require user to enter credentials
         each time they connect.
-  
+
 * **Username**
     * (optional) - **string**
     * User identity. This value is subject to string expansions. If not
         specified, user is prompted at time of connection.
-    
+
 ### XAUTH type
 
 * **Password**
     * (optional) - **string**
     * XAUTH password. If not specified, user is prompted at time of
         connection.
-  
+
 * **SaveCredentials**
     * (optional, defaults to *false*) - **boolean**
     * If *false*, require user to enter credentials
         each time they connect.
-  
+
 * **Username**
     * (optional) - **string**
     * XAUTH user name. This value is subject to string expansions. If not
         specified, user is prompted at time of connection.
- 
+
 ## IPsec IKE v1 VPN connections
 
 **VPN.Type** must
@@ -665,7 +686,7 @@ L2TP over IPsec with pre-shared key:
     * **IKEVersion** must be 1.
     * **AuthenticationType** must be PSK.
     * **XAUTH** must not be set.
-    
+
 * The field **L2TP** must be present.
 
 
@@ -680,7 +701,7 @@ L2TP over IPsec with pre-shared key:
 
 * **AuthRetry**
     * (optional, defaults to *none*) - **string**
-    * `Allowed values are none, nointeract, and interact`:
+    * Allowed values are:
         * *none* = Fail with error on retry
         * *nointeract* = retry without asking for authentication
         * *interact* = ask again for authentication each time
@@ -694,22 +715,26 @@ L2TP over IPsec with pre-shared key:
     * (optional, defaults to *BF-CBC*) - **string**
     * Cipher to use.
 
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) -
+    * PKCS#11 identifier in the format slot:key_id.
+
+* **ClientCertPattern**
+    * (required if **ClientCertType** is *Pattern*, otherwise ignored) -
+      [CertificatePattern](#CertificatePattern-type)
+    * Pattern to use to find the client certificate.
+
 * **ClientCertRef**
     * (required if **ClientCertType** is *Ref*, otherwise ignored) - **string**
     * Reference to client certificate stored in certificate section.
 
-* **ClientCertPattern**
-    * (required if **ClientCertType** is *Pattern*, otherwise ignored) - 
-      [CertificatePattern](#CertificatePattern-type)
-    * Pattern to use to find the client certificate.
-
-* **ClientCertPKCS11Id**
-    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
-    * PKCS#11 identifier in the format slot:key_id.
-
 * **ClientCertType**
     * (required) - **string**
-    * `Allowed values are` *Ref*, *Pattern*, *PKCS11Id* and *None*.
+    * Allowed values are
+      * *PKCS11Id*
+      * *Pattern*
+      * *Ref*
+      * *None*
     * *Ref* and *Pattern* indicate that the associated property should be used
       to identify the client certificate.
     * *PKCS11Id* is used when representing a certificate in a local store and is
@@ -791,7 +816,9 @@ L2TP over IPsec with pre-shared key:
 
 * **RemoteCertTLS**
     * (optional, defaults to *server*) - **string**
-    * `Allowed values are` *none* and *server*.
+    * Allowed values are:
+        * *none*
+        * *server*
     * Require peer certificate signing based on RFC3280 TLS rules.
 
 * **RenegSec**
@@ -847,10 +874,11 @@ L2TP over IPsec with pre-shared key:
 
 * **UserAuthenticationType**
     * (optional, defaults to *None*) - **string**
-    * `Allowed values are` *None*,
-        *Password*,
-        *PasswordAndOTP* and
-        *OTP*.
+    * Allowed values are:
+        * *None*
+        * *Password*
+        * *PasswordAndOTP*
+        * *OTP*
     * Determines the required form of user authentication:
         * *PasswordAndOTP*: This VPN requires a password
         and an OTP (possibly empty). Both will be send to the server in the
@@ -890,7 +918,7 @@ L2TP over IPsec with pre-shared key:
 * **VerifyX509**
     * (optional) - [VerifyX509](#VerifyX509-type)
     * If set, the "--verify-x509-name" argument is passed to OpenVPN with the
-      values of this object and only connections will be accepted if a host's 
+      values of this object and only connections will be accepted if a host's
       X.509 name is equal to the given name.
 
 ---
@@ -908,9 +936,12 @@ L2TP over IPsec with pre-shared key:
 * **Type**
     * (optional) - **string**
     * Determines which of the host's X.509 names will be verified.
-    * `Allowed values are` *name*, *name-prefix* and *subject*.
+    * Allowed values are:
+        * *name*
+        * *name-prefix*
+        * *subject*
       See OpenVPN's documentation for "--verify-x509-name" for the meaning of
-      each value. Defaults to OpenVPN's default if not specified. 
+      each value. Defaults to OpenVPN's default if not specified.
 
 ## Third-party VPN provider based connections and types
 
@@ -1003,8 +1034,11 @@ Every network can be configured to use a proxy.
 
 * **Type**
     * (required) - **string**
-    * `Allowed values are` *Direct*,
-        *Manual*, *PAC*, and *WPAD*.
+    * Allowed values are:
+        * *Direct*,
+        * *Manual*
+        * *PAC*
+        * *WPAD*
     * *PAC* indicates Proxy Auto-Configuration.
       *WPAD* indicates Web Proxy Autodiscovery.
 
@@ -1064,6 +1098,10 @@ type exists to configure the authentication.
       presented to the outer protocol. This value is subject to string
       expansions. If not specified, use empty string.
 
+* **ClientCertPKCS11Id**
+    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) -
+    * PKCS#11 identifier in the format slot:key_id.
+
 * **ClientCertPattern**
     * (required if **ClientCertType** is *Pattern*, otherwise ignored) -
       [CertificatePattern](#CertificatePattern-type)
@@ -1073,13 +1111,13 @@ type exists to configure the authentication.
     * (required if **ClientCertType** is *Ref*, otherwise ignored) - **string**
     * Reference to client certificate stored in certificate section.
 
-* **ClientCertPKCS11Id**
-    * (required if **ClientCertType** is *PKCS11Id*, otherwise ignored) - 
-    * PKCS#11 identifier in the format slot:key_id.
-  
 * **ClientCertType**
     * (optional) - **string**
-    * `Allowed values are` *Ref*, *Pattern*, *PKCS11Id* and *None*.
+    * Allowed values are:
+        * *PKCS11Id*
+        * *Pattern*
+        * *Ref*
+        * *None*
     * *Ref* and *Pattern* indicate that the associated property should be used
       to identify the client certificate.
     * *PKCS11Id* is used when representing a certificate in a local store and is
@@ -1100,14 +1138,26 @@ type exists to configure the authentication.
 * **Inner**
     * (optional if **Outer** is *EAP-FAST*, *EAP-TTLS* or *PEAP*, otherwise
         ignored, defaults to *Automatic*) - **string**
-    * `Allowed values are` *Automatic*, *MD5*, *MSCHAP*, *MSCHAPv2*, *PAP*,
-        *CHAP* and *GTC*.
+    * Allowed values are:
+        * *Automatic*
+        * *MD5*
+        * *MSCHAP*
+        * *MSCHAPv2*
+        * *PAP*
+        * *CHAP*
+        * *GTC*
     * For tunneling outer protocols.
 
 * **Outer**
     * (required) - **string**
-    * `Allowed values are` *LEAP*, *EAP-AKA*, *EAP-FAST*, *EAP-TLS*, *EAP-TTLS*,
-        *EAP-SIM* and *PEAP*.
+    * Allowed values are:
+        * *LEAP*
+        * *EAP-AKA*
+        * *EAP-FAST*
+        * *EAP-TLS*
+        * *EAP-TTLS*
+        * *EAP-SIM*
+        * *PEAP*
 
 * **Password**
     * (optional) - **string**
@@ -1115,11 +1165,9 @@ type exists to configure the authentication.
 
 * **SaveCredentials**
     * (optional, defaults to *false*) - **boolean**
-    * If *false*, require user to enter credentials
-      each time they connect. Specifying **Identity**
-      and/or **Password** when
-      **SaveCredentials** is
-      *false* is not allowed.
+    * If *false*, require user to enter credentials each time they connect.
+      Specifying **Identity** and/or **Password** when **SaveCredentials**
+      is *false* is not allowed.
 
 * **ServerCAPEMs**
     * (optional) - **array of string**
@@ -1139,7 +1187,7 @@ type exists to configure the authentication.
 * **ServerCARef**
     * (optional) - **string**
     * DEPRECATED, use **ServerCARefs** instead.<br/>
-      Reference to a CA certificate in **Certificates**. 
+      Reference to a CA certificate in **Certificates**.
     * If this field is set, **ServerCARefs** must be unset.
       If neither **ServerCARefs** nor **ServerCARef** is set, the client does
       not check that the server certificate is signed by a specific CA.
@@ -1230,11 +1278,11 @@ ONC configuration of of **Cellular** networks is not yet supported.
 * **ActivationState**
     * (optional, read-only) - **string**
     * Carrier account activation state.
-    * `Allowed values are`
-        *Activated*,
-        *Activating*,
-        *NotActivated*,
-        *PartiallyActivated*
+    * Allowed values are:
+        * *Activated*
+        * *Activating*
+        * *NotActivated*
+        * *PartiallyActivated*
 
 * **AllowRoaming**
     * (optional) - **boolean**
@@ -1251,9 +1299,9 @@ ONC configuration of of **Cellular** networks is not yet supported.
 * **Family**
     * (optional, read-only) - **string**
     * Technology family.
-    * `Allowed values are`
-        *CDMA*,
-        *GSM*
+    * Allowed values are:
+        * *CDMA*
+        ** GSM*
 
 * **FirmwareRevision**
     * (optional, read-only) - **string**
@@ -1317,17 +1365,17 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * (optional, read-only) - **string**
     * If the modem is registered on a network, then this is set to the
       network technology currently in use.
-    * `Allowed values are`
-        *CDMA1XRTT*,
-        *EDGE*,
-        *EVDO*,
-        *GPRS*,
-        *GSM*,
-        *HSPA*,
-        *HSPAPlus*,
-        *LTE*,
-        *LTEAdvanced*
-        *UMTS*,
+    * Allowed values are:
+        * *CDMA1XRTT*
+        * *EDGE*
+        * *EVDO*
+        * *GPRS*
+        * *GSM*
+        * *HSPA*
+        * *HSPAPlus*
+        * *LTE*
+        * *LTEAdvanced*
+        * *UMTS*
 
 * **PaymentPortal**
     * (optional, read-only) - [PaymentPortal](#PaymentPortal-type)
@@ -1341,8 +1389,10 @@ ONC configuration of of **Cellular** networks is not yet supported.
 * **RoamingState**
     * (optional, read-only) - **string**
     * The roaming status of the cellular modem on the current network.
-    * `Allowed values are` *Home*,
-        *Roaming*, or if the provider has no home network, *Required*.
+    * Allowed values are:
+        * *Home*,
+        * *Roaming*
+        * *Required* - the provider has no home network
 
 * **Scanning**
     * (optional, read-only) - **boolean**
@@ -1463,9 +1513,9 @@ ONC configuration of of **Cellular** networks is not yet supported.
 * **LockType**
     * (required) - **string**
     * Specifies the type of lock in effect, or an empty string if unlocked.
-    * `Allowed values are`
-        *sim-pin*,
-        *sim-puk*
+    * Allowed values are:
+        * *sim-pin*,
+        * *sim-puk*
 
 * **LockEnabled**
     * (required) - **boolean**
@@ -1560,9 +1610,10 @@ objects of [Certificate](#Certificate-type) type.
 
 * **Type**
     * (required if **Remove** is *false*, otherwise ignored) - **string**
-    * `Allowed values are` *Client*,
-        *Server*, and
-        *Authority*.
+    * Allowed values are:
+        * *Client*
+        * *Server*
+        * *Authority*
     * *Client* indicates the certificate is for
       identifying the user or device over HTTPS or for
       VPN/802.1X. *Server* indicates the certificate
@@ -1604,7 +1655,7 @@ iterations, and encrypted using an AES-256 CBC mode cipher with an SHA-1
 HMAC on the ciphertext.
 
 An encrypted ONC file's top level object will have the
-[EncryptedConfiguration](#EncryptedConfiguration-type) type. 
+[EncryptedConfiguration](#EncryptedConfiguration-type) type.
 
 ### EncryptedConfiguration type
 
@@ -1664,29 +1715,29 @@ expansions. These allow one ONC to have basic user-specific variations.
 ### The expansions are:
 
 * ${LOGIN_ID} - expands to the email address of the user, but before the '@'.
-    
+
 * ${LOGIN_EMAIL} - expands to the email address of the user.
 
 ### The following SED would properly handle resolution.
 
 * s/\$\{LOGIN_ID\}/bobquail$1/g
-    
+
 * s/\$\{LOGIN_EMAIL\}/bobquail@example.com$1/g
 
 ### Example expansions, assuming the user was bobquail@example.com:
 
 * "${LOGIN_ID}" -> "bobquail"
-    
+
 * "${LOGIN_ID}@corp.example.com" -> "bobquail@corp.example.com"
-    
+
 * "${LOGIN_EMAIL}" -> "bobquail@example.com"
-    
+
 * "${LOGIN_ID}X" -> "bobquailX"
-    
+
 * "${LOGIN_IDX}" -> "${LOGIN_IDX}"
-    
+
 * "X${LOGIN_ID}" -> "Xbobquail"
-    
+
 ## Detection
 
 This format should be sent in files ending in the .onc extension. When
@@ -1805,7 +1856,7 @@ server authentication.
       "GUID": "{f31f2110-9f5f-61a7-a8bd7c00b94237af}",
       "TrustBits": [ "Web" ],
       "Type": "Authority",
-      "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw==" 
+      "X509": "MIIEpzCCA4+gAwIBAgIJAMueiWq5WEIAMA0GCSqGSIb3DQEBBQUAMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MB4XDTExMDEyODA2MjA0MFoXDTEyMDEyODA2MjA0MFowgZMxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZSYWRpdXMxEjAQBgNVBAcTCVNvbWV3aGVyZTEVMBMGA1UEChMMRXhhbXBsZSBJbmMuMSAwHgYJKoZIhvcNAQkBFhFhZG1pbkBleGFtcGxlLmNvbTEmMCQGA1UEAxMdRXhhbXBsZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9EDplhyrVNJIoy1OsVqvD/K67B5PW2bDKKxGznodrzCu8jHsP1Ne3mgrK20vbzQUUBdmxTCWO6x3a3//r4ZuPOuZd1ViycWjt6mRfRbBzNrHzP7NiyFuXjdlz74beHQQLcHwvZ3qFAWZK37uweiLiDPaMaEQlka2Bztqx4PsogmSdoVPSCxi5Cl1XlJmITA03LlKpO79+0rEPRamWO/DMCwvffn2/UUjJLog4/lYe16HQ6iq/6bjhffm2rLXDFKOGZmBVbLNMCfANRMtdFWHYdBXERoUo2zpM9tduOOUNLy7E7kRKVm/wy38s51ChFPlpORrhimN2j1caar+KAv2tAgMBAAGjgfswgfgwHQYDVR0OBBYEFBTIImiXp+57jjgn2N5wq93GgAAtMIHIBgNVHSMEgcAwgb2AFBTIImiXp+57jjgn2N5wq93GgAAtoYGZpIGWMIGTMQswCQYDVQQGEwJGUjEPMA0GA1UECBMGUmFkaXVzMRIwEAYDVQQHEwlTb21ld2hlcmUxFTATBgNVBAoTDEV4YW1wbGUgSW5jLjEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZXhhbXBsZS5jb20xJjAkBgNVBAMTHUV4YW1wbGUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5ggkAy56JarlYQgAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAnNd0YY7s2YVYPsgEgDS+rBNjcQloTFWgc9Hv4RWBjwcdJdSPIrpBp7LSjC96wH5U4eWpQjlWbOYQ9RBq9Z/RpuAPEjzRV78rIrQrCWQ3lxwywWEb5Th1EVJSN68eNv7Ke5BlZ2l9kfLRKFm5MEBXX9YoHMX0U8I8dPIXfTyevmKOT1PuEta5cQOM6/zH86XWn6WYx3EXkyjpeIbVOw49AqaEY8u70yBmut4MO03zz/pwLjV1BWyIkXhsrtuJyA+ZImvgLK2oAMZtGGFo7b0GW/sWY/P3R6Un3RFy35k6U3kXCDYYhgZEcS36lIqcj5y6vYUUVM732/etCsuOLz6ppw=="
     }
   ]
 }
