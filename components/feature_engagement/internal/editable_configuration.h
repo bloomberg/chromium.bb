@@ -27,7 +27,8 @@ class EditableConfiguration : public Configuration {
       const base::Feature& feature) const override;
   const FeatureConfig& GetFeatureConfigByName(
       const std::string& feature_name) const override;
-  const Configuration::ConfigMap& GetRegisteredFeatures() const override;
+  const Configuration::ConfigMap& GetRegisteredFeatureConfigs() const override;
+  const std::vector<std::string> GetRegisteredFeatures() const override;
 
   // Adds a new FeatureConfig to the current configurations. If it already
   // exists, the contents are replaced.

@@ -56,7 +56,8 @@ void RecordNotifyEvent(const std::string& event_name,
   DCHECK(config);
 
   // Find which feature this event belongs to.
-  const Configuration::ConfigMap& features = config->GetRegisteredFeatures();
+  const Configuration::ConfigMap& features =
+      config->GetRegisteredFeatureConfigs();
   std::string feature_name;
   for (const auto& element : features) {
     const std::string fname = element.first;

@@ -6,6 +6,7 @@
 #define COMPONENTS_FEATURE_ENGAGEMENT_INTERNAL_FEATURE_CONFIG_CONDITION_VALIDATOR_H_
 
 #include <stdint.h>
+#include <map>
 
 #include "base/macros.h"
 #include "components/feature_engagement/internal/condition_validator.h"
@@ -29,7 +30,10 @@ class FeatureConfigConditionValidator : public ConditionValidator {
       const EventModel& event_model,
       const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
-  void NotifyIsShowing(const base::Feature& feature) override;
+  void NotifyIsShowing(
+      const base::Feature& feature,
+      const FeatureConfig& config,
+      const std::vector<std::string>& all_feature_names) override;
   void NotifyDismissed(const base::Feature& feature) override;
 
  private:
@@ -42,11 +46,16 @@ class FeatureConfigConditionValidator : public ConditionValidator {
                                    const AvailabilityModel& availability_model,
                                    uint32_t current_day) const;
 
+  bool SessionRateMeetsConditions(const Comparator session_rate,
+                                  const base::Feature& feature) const;
+
   // Whether in-product help is currently being shown.
   bool currently_showing_;
 
-  // Number of times in-product help has been shown within the current session.
-  uint32_t times_shown_;
+  // Stores how many times features that impact a given feature have been shown.
+  // By default, all features impact each other, but some features override this
+  // through the use of |session_rate_impact|.
+  std::map<std::string, uint32_t> times_shown_for_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureConfigConditionValidator);
 };

@@ -31,7 +31,10 @@ class NeverConditionValidator : public ConditionValidator {
       const EventModel& event_model,
       const AvailabilityModel& availability_model,
       uint32_t current_day) const override;
-  void NotifyIsShowing(const base::Feature& feature) override;
+  void NotifyIsShowing(
+      const base::Feature& feature,
+      const FeatureConfig& config,
+      const std::vector<std::string>& all_feature_names) override;
   void NotifyDismissed(const base::Feature& feature) override;
 
  private:

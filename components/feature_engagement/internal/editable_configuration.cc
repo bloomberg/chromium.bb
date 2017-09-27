@@ -36,9 +36,17 @@ const FeatureConfig& EditableConfiguration::GetFeatureConfigByName(
   return it->second;
 }
 
-const Configuration::ConfigMap& EditableConfiguration::GetRegisteredFeatures()
-    const {
+const Configuration::ConfigMap&
+EditableConfiguration::GetRegisteredFeatureConfigs() const {
   return configs_;
+}
+
+const std::vector<std::string> EditableConfiguration::GetRegisteredFeatures()
+    const {
+  std::vector<std::string> features;
+  for (const auto& element : configs_)
+    features.push_back(element.first);
+  return features;
 }
 
 }  // namespace feature_engagement

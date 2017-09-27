@@ -25,6 +25,10 @@ const base::Feature kTestFeatureFoo{"test_foo",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTestFeatureBar{"test_bar",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeatureQux{"test_qux",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeatureXyz{"test_xyz",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 FeatureConfig GetValidFeatureConfig() {
   FeatureConfig config;
@@ -40,6 +44,14 @@ FeatureConfig GetAcceptingFeatureConfig() {
   config.session_rate = Comparator(ANY, 0);
   config.availability = Comparator(ANY, 0);
   return config;
+}
+
+SessionRateImpact CreateSessionRateImpactExplicit(
+    std::vector<std::string> affected_features) {
+  SessionRateImpact impact;
+  impact.type = SessionRateImpact::Type::EXPLICIT;
+  impact.affected_features = affected_features;
+  return impact;
 }
 
 class TestEventModel : public EventModel {
@@ -130,6 +142,13 @@ class FeatureConfigConditionValidatorTest : public ::testing::Test {
                                       availability_model_, 0);
   }
 
+  ConditionValidator::Result GetResultForDayZeroForFeature(
+      const base::Feature& feature,
+      const FeatureConfig& config) {
+    return validator_.MeetsConditions(feature, config, event_model_,
+                                      availability_model_, 0);
+  }
+
   TestEventModel event_model_;
   TestAvailabilityModel availability_model_;
   FeatureConfigConditionValidator validator_;
@@ -192,7 +211,8 @@ TEST_F(FeatureConfigConditionValidatorTest, CurrentlyShowing) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
 
-  validator_.NotifyIsShowing(kTestFeatureBar);
+  validator_.NotifyIsShowing(kTestFeatureBar, FeatureConfig(),
+                             {kTestFeatureFoo.name, kTestFeatureBar.name});
   ConditionValidator::Result result =
       GetResultForDayZero(GetAcceptingFeatureConfig());
   EXPECT_FALSE(result.NoErrors());
@@ -290,27 +310,193 @@ TEST_F(FeatureConfigConditionValidatorTest, TwoFailingPreconditions) {
 TEST_F(FeatureConfigConditionValidatorTest, SessionRate) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+  std::vector<std::string> all_feature_names = {kTestFeatureFoo.name,
+                                                kTestFeatureBar.name};
 
-  FeatureConfig config = GetAcceptingFeatureConfig();
-  config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig foo_config = GetAcceptingFeatureConfig();
+  foo_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig bar_config = GetAcceptingFeatureConfig();
 
-  EXPECT_TRUE(GetResultForDayZero(config).NoErrors());
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
 
-  validator_.NotifyIsShowing(kTestFeatureBar);
+  validator_.NotifyIsShowing(kTestFeatureBar, bar_config, all_feature_names);
   validator_.NotifyDismissed(kTestFeatureBar);
-  EXPECT_TRUE(GetResultForDayZero(config).NoErrors());
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
 
-  validator_.NotifyIsShowing(kTestFeatureBar);
+  validator_.NotifyIsShowing(kTestFeatureBar, bar_config, all_feature_names);
   validator_.NotifyDismissed(kTestFeatureBar);
-  ConditionValidator::Result result = GetResultForDayZero(config);
+  ConditionValidator::Result result = GetResultForDayZero(foo_config);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
 
-  validator_.NotifyIsShowing(kTestFeatureBar);
+  validator_.NotifyIsShowing(kTestFeatureBar, bar_config, all_feature_names);
   validator_.NotifyDismissed(kTestFeatureBar);
-  result = GetResultForDayZero(config);
+  result = GetResultForDayZero(foo_config);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
+}
+
+TEST_F(FeatureConfigConditionValidatorTest, SessionRateImpactAffectsNone) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({kTestFeatureFoo, kTestFeatureBar}, {});
+  std::vector<std::string> all_feature_names = {kTestFeatureFoo.name,
+                                                kTestFeatureBar.name};
+
+  FeatureConfig foo_config = GetAcceptingFeatureConfig();
+  foo_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig affects_none_config = GetAcceptingFeatureConfig();
+  affects_none_config.session_rate_impact = SessionRateImpact();
+  affects_none_config.session_rate_impact.type = SessionRateImpact::Type::NONE;
+
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureBar, affects_none_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureBar);
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureBar, affects_none_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureBar);
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureBar, affects_none_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureBar);
+  EXPECT_TRUE(GetResultForDayZero(foo_config).NoErrors());
+}
+
+TEST_F(FeatureConfigConditionValidatorTest, SessionRateImpactAffectsExplicit) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
+  std::vector<std::string> all_feature_names = {
+      kTestFeatureFoo.name, kTestFeatureBar.name, kTestFeatureQux.name};
+
+  FeatureConfig foo_config = GetAcceptingFeatureConfig();
+  foo_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig bar_config = GetAcceptingFeatureConfig();
+  bar_config.session_rate = Comparator(LESS_THAN, 2u);
+
+  FeatureConfig affects_only_foo_config = GetAcceptingFeatureConfig();
+  affects_only_foo_config.session_rate_impact =
+      CreateSessionRateImpactExplicit({kTestFeatureFoo.name});
+
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureQux, affects_only_foo_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureQux);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureQux, affects_only_foo_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureQux);
+  ConditionValidator::Result result =
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config);
+  EXPECT_FALSE(result.NoErrors());
+  EXPECT_FALSE(result.session_rate_ok);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+}
+
+TEST_F(FeatureConfigConditionValidatorTest, SessionRateImpactAffectsSelf) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux}, {});
+  std::vector<std::string> all_feature_names = {kTestFeatureFoo.name,
+                                                kTestFeatureBar.name};
+
+  FeatureConfig foo_config = GetAcceptingFeatureConfig();
+  foo_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig bar_config = GetAcceptingFeatureConfig();
+  bar_config.session_rate = Comparator(LESS_THAN, 2u);
+
+  FeatureConfig affects_only_foo_config = GetAcceptingFeatureConfig();
+  affects_only_foo_config.session_rate_impact =
+      CreateSessionRateImpactExplicit({kTestFeatureFoo.name});
+
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureFoo, affects_only_foo_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureFoo);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureFoo, affects_only_foo_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureFoo);
+  ConditionValidator::Result result =
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config);
+  EXPECT_FALSE(result.NoErrors());
+  EXPECT_FALSE(result.session_rate_ok);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+}
+
+TEST_F(FeatureConfigConditionValidatorTest,
+       SessionRateImpactAffectsExplicitMultipleFeatures) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {kTestFeatureFoo, kTestFeatureBar, kTestFeatureQux, kTestFeatureXyz}, {});
+  std::vector<std::string> all_feature_names = {
+      kTestFeatureFoo.name, kTestFeatureBar.name, kTestFeatureQux.name,
+      kTestFeatureXyz.name};
+
+  FeatureConfig foo_config = GetAcceptingFeatureConfig();
+  foo_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig bar_config = GetAcceptingFeatureConfig();
+  bar_config.session_rate = Comparator(LESS_THAN, 2u);
+  FeatureConfig xyz_config = GetAcceptingFeatureConfig();
+  xyz_config.session_rate = Comparator(LESS_THAN, 2u);
+
+  FeatureConfig affects_foo_and_bar_config = GetAcceptingFeatureConfig();
+  affects_foo_and_bar_config.session_rate_impact =
+      CreateSessionRateImpactExplicit(
+          {kTestFeatureFoo.name, kTestFeatureBar.name});
+
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureXyz, xyz_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureQux, affects_foo_and_bar_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureQux);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureBar, bar_config).NoErrors());
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureXyz, xyz_config).NoErrors());
+
+  validator_.NotifyIsShowing(kTestFeatureQux, affects_foo_and_bar_config,
+                             all_feature_names);
+  validator_.NotifyDismissed(kTestFeatureQux);
+  ConditionValidator::Result foo_result =
+      GetResultForDayZeroForFeature(kTestFeatureFoo, foo_config);
+  EXPECT_FALSE(foo_result.NoErrors());
+  EXPECT_FALSE(foo_result.session_rate_ok);
+  ConditionValidator::Result bar_result =
+      GetResultForDayZeroForFeature(kTestFeatureFoo, bar_config);
+  EXPECT_FALSE(bar_result.NoErrors());
+  EXPECT_FALSE(bar_result.session_rate_ok);
+  EXPECT_TRUE(
+      GetResultForDayZeroForFeature(kTestFeatureXyz, xyz_config).NoErrors());
 }
 
 TEST_F(FeatureConfigConditionValidatorTest, Availability) {

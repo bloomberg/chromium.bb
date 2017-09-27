@@ -288,6 +288,7 @@ Format:
 {
   "availability": "{Comparator}",
   "session_rate": "{Comparator}",
+  "session_rate_impact": "{SessionRateImpact}",
   "event_used": "{EventConfig}",
   "event_trigger": "{EventConfig}",
   "event_???": "{EventConfig}",
@@ -308,6 +309,10 @@ The `FeatureConfig` fields `availability`, `session_rate`, `event_used` and
         end user session.
     *   The value of the `Comparator` is a count of total In-Product Help
         displayed in the current end user session.
+*   `session_rate_impact`
+    *   Which other in-product help features showing the current IPH impacts.
+    *   By default, a feature impacts every other feature.
+    *   See `SessionRateImpact` below for details.
 *   `event_used`
     *   Relates to what the in-product help wants to highlight, i.e. teach the
         user about and increase usage of.
@@ -408,6 +413,33 @@ Other than `any`, all comparators require a value.
 ==0
 any
 <15
+```
+
+### SessionRateImpact
+
+Format: ```[all|none|comma-separated list]```
+
+*   `all` means this feature impacts every other feature regarding their
+    `session_rate` calculations. This is the default.
+*   `none` means that this feature does not impact any other features regarding
+    the `session_rate`. This feature may therefore be shown an unlimited amount
+    of times, without making other features go over their `session_rate` config.
+*   `[comma-separated list]` means that this feature only impacts the particular
+    features listed. Use the `base::Feature` name of the feature in the list.
+    For features in the list, this feature will affect their `session_rate`
+    conditions, and for features not in the list, this feature will not affect
+    their `session_rate` calculations.
+    *   It is *NOT* valid to use the feature names `all` or `none`. They must
+        only be used alone with no comma, at which point they work as described
+        above.
+
+**Examples**
+
+```
+all
+none
+IPH_DownloadHome
+IPH_DonwloadPage,IPH_DownloadHome
 ```
 
 ### Using Chrome Variations at runtime
