@@ -259,9 +259,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void DestroySurfaceInternal(const SurfaceId& surface_id);
 
 #if DCHECK_IS_ON()
-  void AppendDebugFrameSinkLabel(const FrameSinkId& frame_sink_id,
-                                 std::stringstream* str) const;
-
   // Recursively prints surface references starting at |surface_id| to |str|.
   void SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
                                      std::string indent,
