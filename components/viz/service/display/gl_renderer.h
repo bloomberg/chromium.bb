@@ -80,7 +80,11 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void GetFramebufferPixelsAsync(const gfx::Rect& rect,
                                  const gfx::ColorSpace& framebuffer_color_space,
                                  std::unique_ptr<CopyOutputRequest> request);
-  void GetFramebufferTexture(unsigned texture_id, const gfx::Rect& device_rect);
+  // Returns the format to use for storage if copying from the current
+  // framebuffer. If the root renderpass is current, it uses the best matching
+  // format from the OutputSurface, otherwise it uses the best matching format
+  // from the texture being drawn to as the backbuffer.
+  GLenum GetFramebufferCopyTextureFormat();
   void ReleaseRenderPassTextures();
   enum BoundGeometry { NO_BINDING, SHARED_BINDING, CLIPPED_BINDING };
   void PrepareGeometry(BoundGeometry geometry_to_bind);
@@ -169,8 +173,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const gfx::QuadF* clip_region,
       bool use_aa,
       gfx::Rect* unclipped_rect);
-  std::unique_ptr<cc::ScopedResource> GetBackdropTexture(
-      const gfx::Rect& bounding_rect);
+  // Allocates and returns a texture id that contains a copy of the contents
+  // of the current RenderPass being drawn.
+  uint32_t GetBackdropTexture(const gfx::Rect& window_rect);
 
   static bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
@@ -178,9 +183,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   sk_sp<SkImage> ApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations& background_filters,
-      cc::ScopedResource* background_texture,
-      const gfx::RectF& rect,
-      const gfx::RectF& unclipped_rect);
+      uint32_t background_texture,
+      const gfx::Rect& rect,
+      const gfx::Rect& unclipped_rect);
 
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
