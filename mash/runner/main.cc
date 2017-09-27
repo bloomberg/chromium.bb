@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -83,10 +84,10 @@ int main(int argc, char** argv) {
       ipc_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   service_manager::Context service_manager_context(nullptr,
                                                    std::move(manifest_value));
-  message_loop.task_runner()->PostTask(
+  scoped_task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&service_manager::Context::RunCommandLineApplication,
                  base::Unretained(&service_manager_context)));
