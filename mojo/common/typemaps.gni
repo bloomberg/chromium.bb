@@ -4,6 +4,7 @@
 
 typemaps = [
   "//mojo/common/file.typemap",
+  "//mojo/common/file_info.typemap",
   "//mojo/common/file_path.typemap",
   "//mojo/common/memory_allocator_dump_cross_process_uid.typemap",
   "//mojo/common/process_id.typemap",

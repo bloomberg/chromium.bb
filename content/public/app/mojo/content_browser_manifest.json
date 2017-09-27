@@ -28,6 +28,7 @@
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
           "content::mojom::FieldTrialRecorder",
+          "content::mojom::FileUtilitiesHost",
           "content::mojom::FrameSinkProvider",
           "content::mojom::MediaStreamDispatcherHost",
           "content::mojom::MemoryCoordinatorHandle",
