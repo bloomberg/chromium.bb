@@ -6068,7 +6068,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-    if (mbmi->sb_type >= BLOCK_8X8 && mode == DC_PRED)
+    if (mbmi->sb_type >= BLOCK_8X8 && mode == UV_DC_PRED)
       this_rate += av1_cost_bit(cpi->common.fc->filter_intra_probs[1], 0);
 #endif  // CONFIG_FILTER_INTRA
     if (try_palette && mode == UV_DC_PRED)
