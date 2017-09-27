@@ -76,6 +76,10 @@
 #include <freerdp/locale/keyboard.h>
 #include <winpr/input.h>
 
+#if FREERDP_VERSION_MAJOR >= 2
+#include <winpr/ssl.h>
+#endif
+
 #include "shared/helpers.h"
 #include "compositor.h"
 #include "compositor-rdp.h"
@@ -1013,7 +1017,8 @@ xf_peer_activate(freerdp_peer* client)
 	return TRUE;
 }
 
-static BOOL xf_peer_post_connect(freerdp_peer *client)
+static BOOL
+xf_peer_post_connect(freerdp_peer *client)
 {
 	return TRUE;
 }
@@ -1166,7 +1171,7 @@ xf_input_unicode_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 
 
 static FREERDP_CB_RET_TYPE
-xf_suppress_output(rdpContext *context, BYTE allow, RECTANGLE_16 *area)
+xf_suppress_output(rdpContext *context, BYTE allow, const RECTANGLE_16 *area)
 {
 	RdpPeerContext *peerContext = (RdpPeerContext *)context;
 
@@ -1227,7 +1232,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	client->PostConnect = xf_peer_post_connect;
 	client->Activate = xf_peer_activate;
 
-	client->update->SuppressOutput = xf_suppress_output;
+	client->update->SuppressOutput = (pSuppressOutput)xf_suppress_output;
 
 	input = client->input;
 	input->SynchronizeEvent = xf_input_synchronize_event;
@@ -1387,6 +1392,9 @@ weston_backend_init(struct weston_compositor *compositor,
 	struct weston_rdp_backend_config config = {{ 0, }};
 	int major, minor, revision;
 
+#if FREERDP_VERSION_MAJOR >= 2
+	winpr_InitializeSSL(0);
+#endif
 	freerdp_get_version(&major, &minor, &revision);
 	weston_log("using FreeRDP version %d.%d.%d\n", major, minor, revision);
 
