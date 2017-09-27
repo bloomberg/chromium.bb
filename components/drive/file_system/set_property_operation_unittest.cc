@@ -37,7 +37,7 @@ TEST_F(SetPropertyOperationTest, SetProperty) {
       test_path, google_apis::drive::Property::Visibility::VISIBILITY_PRIVATE,
       kTestKey, kTestValue,
       google_apis::test_util::CreateCopyResultCallback(&result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, result);
 
   ResourceEntry entry;
@@ -70,7 +70,7 @@ TEST_F(SetPropertyOperationTest, SetProperty_Duplicate) {
       test_path, google_apis::drive::Property::Visibility::VISIBILITY_PRIVATE,
       kTestKey, kTestValue,
       google_apis::test_util::CreateCopyResultCallback(&result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, result);
 
   ResourceEntry entry;
@@ -92,7 +92,7 @@ TEST_F(SetPropertyOperationTest, SetProperty_Overwrite) {
       test_path, google_apis::drive::Property::Visibility::VISIBILITY_PUBLIC,
       kTestKey, kTestAnotherValue,
       google_apis::test_util::CreateCopyResultCallback(&result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, result);
 
   ResourceEntry entry;
@@ -115,7 +115,7 @@ TEST_F(SetPropertyOperationTest, SetProperty_DifferentVisibilities) {
         test_path, google_apis::drive::Property::Visibility::VISIBILITY_PRIVATE,
         kTestKey, kTestValue,
         google_apis::test_util::CreateCopyResultCallback(&result));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, result);
 
     ResourceEntry entry;
@@ -136,7 +136,7 @@ TEST_F(SetPropertyOperationTest, SetProperty_DifferentVisibilities) {
         test_path, google_apis::drive::Property::Visibility::VISIBILITY_PUBLIC,
         kTestKey, kTestAnotherValue,
         google_apis::test_util::CreateCopyResultCallback(&result));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, result);
 
     ResourceEntry entry;

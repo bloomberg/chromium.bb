@@ -35,7 +35,7 @@ class ValueStoreFrontendTest : public testing::Test {
   }
 
   void TearDown() override {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     storage_.reset();
   }
 
@@ -48,7 +48,7 @@ class ValueStoreFrontendTest : public testing::Test {
   bool Get(const std::string& key, std::unique_ptr<base::Value>* output) {
     storage_->Get(key, base::Bind(&ValueStoreFrontendTest::GetAndWait,
                                   base::Unretained(this), output));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     return !!output->get();
   }
 

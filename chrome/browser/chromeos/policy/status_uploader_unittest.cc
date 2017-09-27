@@ -90,7 +90,7 @@ class StatusUploaderTest : public testing::Test {
   }
 
   void TearDown() override {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     chromeos::DBusThreadManager::Shutdown();
   }
 

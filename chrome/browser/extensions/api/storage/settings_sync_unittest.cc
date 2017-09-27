@@ -205,7 +205,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     frontend_.reset();
     profile_.reset();
     // Execute any pending deletion tasks.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
@@ -260,7 +260,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
                                     Func func) {
     GetBackendTaskRunner()->PostTask(
         from_here, base::Bind(&ExtensionSettingsSyncTest::RunFunc<Func>, func));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   // Needed so that the DCHECKs for running on FILE or UI threads pass.
@@ -1471,7 +1471,7 @@ TEST_F(ExtensionSettingsSyncTest, MAYBE_UnlimitedStorageForLocalButNotSync) {
                             settings_namespace::LOCAL,
                             base::Bind(&UnlimitedLocalStorageTestCallback));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace extensions

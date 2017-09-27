@@ -260,7 +260,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
                                  origin, test->url_request_context_getter_);
                        },
                        base::Unretained(this)));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     // useful keys and values during tests
     value1_ = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
@@ -279,7 +279,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
                          test->backing_store_ = nullptr;
                        },
                        base::Unretained(this)));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
@@ -490,7 +490,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
             }
           },
           base::Unretained(backing_store()), key1_, value1_));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
@@ -522,7 +522,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
                 state->transaction1->CommitPhaseOne(state->callback1).ok());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -571,7 +571,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
 
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -582,7 +582,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
             EXPECT_TRUE(test->CheckBlobRemovals());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
@@ -657,7 +657,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
             },
             base::Unretained(backing_store()), base::Unretained(&state),
             base::ConstRef(keys), database_id, object_store_id));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -688,7 +688,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
             },
             base::Unretained(backing_store()), base::Unretained(&state), range,
             database_id, object_store_id));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -707,7 +707,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
                         backing_store->removals()[1]);
             },
             base::Unretained(backing_store()), base::Unretained(&state)));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
   }
 }
 
@@ -782,7 +782,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
             },
             base::Unretained(backing_store()), base::Unretained(&state),
             base::ConstRef(keys), database_id, object_store_id));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -813,7 +813,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
             },
             base::Unretained(backing_store()), base::Unretained(&state), range,
             database_id, object_store_id));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE,
@@ -828,7 +828,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
               EXPECT_EQ(0UL, backing_store->removals().size());
             },
             base::Unretained(backing_store()), base::Unretained(&state)));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
   }
 }
 
@@ -861,7 +861,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
                 state->transaction1->CommitPhaseOne(state->callback1).ok());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -890,7 +890,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
                 state->transaction2->CommitPhaseOne(state->callback2).ok());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -910,7 +910,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
             EXPECT_EQ(0U, test->backing_store()->removals().size());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
@@ -942,7 +942,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                 state->transaction1->CommitPhaseOne(state->callback1).ok());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -989,7 +989,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                 state->transaction3->CommitPhaseOne(state->callback3).ok());
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -1006,7 +1006,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
             }
           },
           base::Unretained(this), base::Unretained(&state)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(
@@ -1015,7 +1015,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
                        EXPECT_TRUE(test->CheckBlobRemovals());
                      },
                      base::Unretained(this)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 // Make sure that using very high ( more than 32 bit ) values for database_id
@@ -1095,7 +1095,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
             }
           },
           base::Unretained(backing_store()), key1_, key2_, value1_));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 // Make sure that other invalid ids do not crash.
@@ -1171,7 +1171,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
             EXPECT_FALSE(s.ok());
           },
           base::Unretained(backing_store()), key1_, value1_));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
@@ -1255,7 +1255,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
             }
           },
           base::Unretained(backing_store())));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
@@ -1291,7 +1291,7 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
                        EXPECT_EQ(db1_name, names[0]);
                      },
                      base::Unretained(backing_store())));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 }  // namespace

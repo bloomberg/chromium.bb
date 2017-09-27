@@ -137,7 +137,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithoutExtension) {
             operation->GetImagePath().BaseName().value());
 
   operation->Cancel();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithExtension) {
@@ -182,7 +182,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
 
   operation->Download(runloop.QuitClosure());
   runloop.Run();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(base::ContentsEqual(test_utils_.GetImagePath(),
                                   operation->GetImagePath()));

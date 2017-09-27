@@ -47,7 +47,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true, // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, FindDirectory(kNewDirectory1));
   EXPECT_EQ(1U, delegate()->get_changed_files().size());
@@ -75,7 +75,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true, // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, FindDirectory(kNewDirectory2));
 
@@ -84,7 +84,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true, // is_exclusive
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, FindDirectory(kNewDirectory2));
 
@@ -94,7 +94,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true, // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
 
   operation.CreateDirectory(
@@ -102,7 +102,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       false, // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Try to create a directory with a path for an existing file.
@@ -111,7 +111,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       false, // is_exclusive
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 
   // Try to create a directory under a file.
@@ -120,7 +120,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       false, // is_exclusive
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 }
 

@@ -40,7 +40,7 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
@@ -70,7 +70,7 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
@@ -94,7 +94,7 @@ TEST_F(MoveOperationTest, MoveNotExistingFile) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   ResourceEntry entry;
@@ -110,7 +110,7 @@ TEST_F(MoveOperationTest, MoveFileToNonExistingDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   ResourceEntry entry;
@@ -129,7 +129,7 @@ TEST_F(MoveOperationTest, MoveFileToInvalidPath) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 
   ResourceEntry entry;

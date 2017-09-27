@@ -239,7 +239,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
   feedback(0)->finish_callback().Run();
   EXPECT_FALSE(feedback(0));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(base::PathExists(file_path));
 }
 
@@ -346,7 +346,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
     EXPECT_FALSE(feedback(2));
   }
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // These files should still exist since the FakeDownloadFeedback does not
   // delete them.
   EXPECT_TRUE(base::PathExists(file_path[0]));
@@ -416,7 +416,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   // File should still exist since the FileUtilProxy task hasn't run yet.
   EXPECT_TRUE(base::PathExists(file_path[2]));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // File should be deleted since the AcquireFileCallback ran after the service
   // was deleted.
   EXPECT_FALSE(base::PathExists(file_path[2]));

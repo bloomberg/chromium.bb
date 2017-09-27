@@ -52,7 +52,7 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
   void TearDown() override {
     frontend_.reset();
     // Execute any pending deletion tasks.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     ExtensionsTest::TearDown();
   }
 
@@ -133,7 +133,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
   // This would be triggered by extension uninstall via a DataDeleter.
   frontend_->DeleteStorageSoon(id);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
   storage = util::GetStorage(extension, settings::LOCAL, frontend_.get());
@@ -168,7 +168,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   }
 
   frontend_.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // TODO(kalman): Figure out why this fails, despite appearing to work.
   // Leaving this commented out rather than disabling the whole test so that the
   // deletion code paths are at least exercised.

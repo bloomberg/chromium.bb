@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(WindowedInstallDialogControllerBrowserTest,
       base::Bind(&TestingShowAppListInstallDialogController, &controller));
 
   // The prompt needs to load the image, which happens on the blocking pool.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   ASSERT_TRUE(controller);
 
   base::scoped_nsobject<NSWindow> window(

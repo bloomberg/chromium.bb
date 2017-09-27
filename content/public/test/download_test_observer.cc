@@ -318,7 +318,7 @@ void DownloadTestFlushObserver::WaitForFlush() {
   download_manager_->AddObserver(this);
   // The wait condition may have been met before WaitForFlush() was called.
   CheckDownloadsInProgress(true);
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 void DownloadTestFlushObserver::OnDownloadCreated(

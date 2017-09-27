@@ -163,7 +163,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
     host_.reset();
     context_impl_ = nullptr;
     quota_manager_ = nullptr;
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     // File are leaked if this doesn't return true.
     ASSERT_TRUE(temp_dir_.Delete());
   }

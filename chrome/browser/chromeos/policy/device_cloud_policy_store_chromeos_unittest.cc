@@ -197,7 +197,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
   device_policy_.SetDefaultNewSigningKey();
   device_policy_.Build();
   store_->Store(device_policy_.policy());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   device_settings_test_helper_.FlushStore();
   owner_key_util_->SetPublicKeyFromPrivateKey(
       *device_policy_.GetNewSigningKey());

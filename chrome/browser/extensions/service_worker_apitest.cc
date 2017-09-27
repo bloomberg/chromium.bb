@@ -795,7 +795,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, WorkerRefCount) {
     EXPECT_EQ("roundtrip-succeeded", result);
 
     // Ensure IO thread IPCs run.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   // The ref count should drop to 0.

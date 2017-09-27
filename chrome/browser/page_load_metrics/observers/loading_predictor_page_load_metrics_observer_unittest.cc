@@ -47,7 +47,7 @@ class LoadingPredictorPageLoadMetricsObserverTest
     // The base class of MockResourcePrefetchPredictor constructs the
     // PredictorDatabase for the profile. The PredictorDatabase is initialized
     // asynchronously and we have to wait for the initialization completion.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
     collector_ = base::MakeUnique<LoadingDataCollector>(predictor_.get(),
                                                         nullptr, config);

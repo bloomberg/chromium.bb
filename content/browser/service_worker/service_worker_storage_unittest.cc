@@ -317,7 +317,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   void TearDown() override {
     helper_.reset();
     disk_cache::FlushCacheThreadForTesting();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   bool InitUserDataDirectory() {

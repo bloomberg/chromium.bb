@@ -105,7 +105,7 @@ ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       db_(base::MakeUnique<PredictorDatabase>(&profile_, task_runner_)),
       tables_(db_->resource_prefetch_tables()) {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
@@ -114,13 +114,13 @@ ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
 void ResourcePrefetchPredictorTablesTest::SetUp() {
   DeleteAllData();
   InitializeSampleData();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TearDown() {
   tables_ = nullptr;
   db_ = nullptr;
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TestGetAllData() {
@@ -685,7 +685,7 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
 
 void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
   db_ = base::MakeUnique<PredictorDatabase>(&profile_, task_runner_);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   tables_ = db_->resource_prefetch_tables();
 }
 

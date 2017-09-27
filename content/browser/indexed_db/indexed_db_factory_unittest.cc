@@ -134,7 +134,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLifetime) {
           },
           base::Unretained(context())));
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
@@ -172,7 +172,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
           },
           base::Unretained(context())));
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
@@ -214,7 +214,7 @@ TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
           },
           base::Unretained(context())));
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
@@ -246,7 +246,7 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
           },
           base::Unretained(context())));
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 class DiskFullFactory : public IndexedDBFactoryImpl {
@@ -322,7 +322,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
           },
           base::Unretained(context()), std::move(callbacks),
           std::move(dummy_database_callbacks)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
@@ -360,7 +360,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
           base::Unretained(context()),
           base::MakeRefCounted<MockIndexedDBCallbacks>(),
           base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>()));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
@@ -409,7 +409,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
           base::Unretained(context()),
           base::MakeRefCounted<MockIndexedDBCallbacks>(),
           base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>()));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
@@ -442,7 +442,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
           base::Unretained(context()),
           base::MakeRefCounted<MockIndexedDBCallbacks>(
               false /*expect_connection*/)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
@@ -473,7 +473,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
           base::Unretained(context()),
           base::MakeRefCounted<MockIndexedDBCallbacks>(
               false /*expect_connection*/)));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
@@ -518,7 +518,7 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
           base::Unretained(context()),
           base::MakeRefCounted<MockIndexedDBCallbacks>(),
           base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>()));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 class UpgradeNeededCallbacks : public MockIndexedDBCallbacks {
@@ -604,7 +604,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
           transaction_id, origin));
 
   // Pump the message loop so the upgrade transaction can run.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   context()->TaskRunner()->PostTask(
       FROM_HERE,
@@ -649,7 +649,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
           base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>(), db_name,
           transaction_id, origin));
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 namespace {
@@ -716,7 +716,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
             base::Unretained(&callbacks),
             base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>(), origin,
             transaction_id));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     context()->TaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -733,7 +733,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
             },
             std::move(factory), std::move(callbacks), origin, transaction_id,
             base::Unretained(&result)));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     return result;
   };
 

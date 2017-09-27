@@ -356,7 +356,7 @@ void SupervisedUserTestBase::StartUserCreation(
   registration_utility_stub_->RunSuccessCallback("token");
 
   // Token writing moves control to BlockingPool and back.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
   JSEvalOrExitBrowser("$('supervised-user-creation-gotit-button').click()");

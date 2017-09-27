@@ -78,7 +78,7 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
   EXPECT_TRUE(cancel_success_);
   EXPECT_EQ("", cancel_error_);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
@@ -103,7 +103,7 @@ TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
   EXPECT_TRUE(cancel_success_);
   EXPECT_EQ("", cancel_error_);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 } // namespace

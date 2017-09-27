@@ -188,7 +188,7 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
                                    "");
   EXPECT_TRUE(feedback_finish_called_);
   feedback.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(base::PathExists(upload_file_path_));
 }
 
@@ -220,7 +220,7 @@ TEST_F(DownloadFeedbackTest, CancelUpload) {
   feedback.reset();
   EXPECT_FALSE(feedback_finish_called_);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(base::PathExists(upload_file_path_));
 }
 

@@ -158,7 +158,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
 
   void RefreshSampleResourceUsage() {
     SampleResourceUsage();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
@@ -360,7 +360,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 
     // Finish pending tasks.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     DiskMountManager::Shutdown();
   }
@@ -939,7 +939,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
                          base::Bind(&GetEmptyCPUTempInfo),
                          base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   GetStatus();
   EXPECT_EQ(expected_mount_points.size(),
@@ -992,7 +992,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
                          base::Bind(&GetEmptyCPUTempInfo),
                          base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   GetStatus();
   ASSERT_EQ(1, device_status_.cpu_utilization_pct().size());
   EXPECT_EQ(100, device_status_.cpu_utilization_pct(0));
@@ -1043,7 +1043,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
                          base::Bind(&GetFakeCPUTempInfo, expected_temp_info),
                          base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   GetStatus();
   EXPECT_EQ(expected_temp_info.size(),

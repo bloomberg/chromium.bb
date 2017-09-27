@@ -44,7 +44,7 @@ TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
           new DummyDriveService, std::string(), base::FilePath(),
           new DummyFileSystem));
   integration_service->SetEnabled(true);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   integration_service->Shutdown();
 }
 

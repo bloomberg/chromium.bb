@@ -394,7 +394,7 @@ class DriveTestVolume : public TestVolume {
         drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
         google_apis::test_util::CreateCopyResultCallback(&error,
                                                          &parent_entry));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
     ASSERT_TRUE(parent_entry);
 

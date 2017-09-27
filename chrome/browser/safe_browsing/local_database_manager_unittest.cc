@@ -319,7 +319,7 @@ TEST_F(LocalDatabaseManagerTest, ServiceStopWithPendingChecks) {
 
   // Start the service and flush tasks to ensure database is made available.
   db_manager->StartOnIOThread(NULL, GetTestV4ProtocolConfig());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(db_manager->DatabaseAvailable());
 
@@ -333,7 +333,7 @@ TEST_F(LocalDatabaseManagerTest, ServiceStopWithPendingChecks) {
 
   // Now run posted tasks, whish should include the extension check which has
   // been posted to the safe browsing task runner. This should not crash.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   base::RunLoop().RunUntilIdle();
 }
 

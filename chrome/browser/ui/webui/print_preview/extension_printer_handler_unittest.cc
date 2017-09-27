@@ -778,7 +778,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   EXPECT_EQ(0u, call_count);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
@@ -831,7 +831,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   EXPECT_EQ(0u, call_count);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
@@ -884,7 +884,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
 
   EXPECT_EQ(0u, call_count);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);

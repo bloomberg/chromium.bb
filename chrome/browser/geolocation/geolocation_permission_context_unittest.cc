@@ -174,14 +174,14 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
       web_contents, id, requesting_frame, user_gesture,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void GeolocationPermissionContextTests::CancelGeolocationPermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id) {
   geolocation_permission_context_->CancelPermissionRequest(web_contents, id);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(

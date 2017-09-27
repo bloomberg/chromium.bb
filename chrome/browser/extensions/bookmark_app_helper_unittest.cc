@@ -334,7 +334,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
       CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
   helper.CompleteIconDownload(true, icon_map);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
@@ -372,7 +372,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   std::map<GURL, std::vector<SkBitmap> > icon_map;
   helper.CompleteIconDownload(true, icon_map);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
@@ -406,7 +406,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
 
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
 
   const Extension* extension =
@@ -430,7 +430,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   helper.CompleteGetManifest(content::Manifest());
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
 
   const Extension* extension =
@@ -455,7 +455,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(helper.extension());
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
@@ -496,7 +496,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
       CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
 
   extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   {
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
@@ -517,7 +517,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   web_app_info.scope = GURL(kAppAlternativeScope);
 
   extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   {
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
@@ -546,7 +546,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
   web_app_info.scope = GURL(kAppScope);
 
   extensions::CreateOrUpdateBookmarkApp(service_, &web_app_info);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   base::RunLoop run_loop;

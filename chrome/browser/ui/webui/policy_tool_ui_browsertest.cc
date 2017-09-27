@@ -69,7 +69,7 @@ void PolicyToolUITest::LoadSession(const std::string& session_name) {
                                  "$('load-session-button').click();";
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 std::unique_ptr<base::DictionaryValue> PolicyToolUITest::ExtractPolicyValues(

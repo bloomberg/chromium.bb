@@ -64,12 +64,12 @@ class WebRtcEventlogHostTest : public testing::Test {
     EXPECT_TRUE(base::DeleteFile(base_file_, false));
     EXPECT_FALSE(base::PathExists(base_file_));
     EXPECT_TRUE(event_log_host_.StartWebRTCEventLog(base_file_));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
   }
 
   void StopLogging() {
     EXPECT_TRUE(event_log_host_.StopWebRTCEventLog());
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
   }
 
   void ValidateStartIPCMessageAndCloseFile(const IPC::Message* msg,

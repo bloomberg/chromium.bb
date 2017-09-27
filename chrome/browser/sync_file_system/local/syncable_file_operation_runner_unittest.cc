@@ -178,13 +178,13 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.operation_runner()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, File::FILE_ERROR_NOT_FOUND));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // End syncing (to enable write).
@@ -192,14 +192,14 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kFile)));
 
   ResetCallbackStatus();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(2, callback_count_);
 
   // Now the file must have been created and updated.
   ResetCallbackStatus();
   file_system_.operation_runner()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
 
@@ -219,13 +219,13 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   file_system_.operation_runner()->Remove(
       URL(kParent), true /* recursive */,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.operation_runner()->DirectoryExists(
       URL(kDir), ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Writes to unrelated files must succeed as well.
@@ -233,7 +233,7 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   file_system_.operation_runner()->CreateDirectory(
       URL(kOther), false /* exclusive */, false /* recursive */,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // End syncing (to enable write).
@@ -241,7 +241,7 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kDir)));
 
   ResetCallbackStatus();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }
 
@@ -266,7 +266,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
       URL("dest-move"),
       storage::FileSystemOperation::OPTION_NONE,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Only "dest-copy1" should exist.
@@ -285,13 +285,13 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       storage::FileSystemOperationRunner::CopyProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Finish syncing the "dest-copy2" directory to unlock Copy.
   sync_status()->EndSyncing(URL("dest-copy2"));
   ResetCallbackStatus();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-copy2".
@@ -301,7 +301,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // Finish syncing the kParent to unlock Move.
   sync_status()->EndSyncing(URL(kParent));
   ResetCallbackStatus();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-move".
@@ -320,14 +320,14 @@ TEST_F(SyncableFileOperationRunnerTest, Write) {
   file_system_.operation_runner()->Write(
       &url_request_context_,
       URL(kFile), blob.GetBlobDataHandle(), 0, GetWriteCallback(FROM_HERE));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   sync_status()->EndSyncing(URL(kFile));
   ResetCallbackStatus();
 
   while (!write_complete_)
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(File::FILE_OK, write_status_);
   EXPECT_EQ(kData.size(), write_bytes_);
@@ -345,7 +345,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, File::FILE_ERROR_ABORT));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   ResetCallbackStatus();
@@ -353,7 +353,7 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   // This shouldn't crash nor leak memory.
   sync_context_->ShutdownOnUIThread();
   sync_context_ = nullptr;
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }
 
@@ -375,7 +375,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   file_system_.operation_runner()->CopyInForeignFile(
       temp_path, URL(kFile),
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // End syncing (to enable write).
@@ -383,7 +383,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   ASSERT_TRUE(sync_status()->IsWritable(URL(kFile)));
 
   ResetCallbackStatus();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Now the file must have been created and have the same content as temp_path.
@@ -391,7 +391,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   file_system_.DoVerifyFile(
       URL(kFile), kTestData,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
 
@@ -400,7 +400,7 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
   file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
       ExpectStatus(FROM_HERE, File::FILE_OK));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Run Truncate and immediately cancel. This shouldn't crash.

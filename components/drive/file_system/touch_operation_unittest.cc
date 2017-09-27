@@ -40,7 +40,7 @@ TEST_F(TouchOperationTest, TouchFile) {
       base::Time::FromUTCExploded(kLastModifiedTime, &last_modified_time_utc));
   operation.TouchFile(kTestPath, last_access_time_utc, last_modified_time_utc,
                       google_apis::test_util::CreateCopyResultCallback(&error));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   ResourceEntry entry;

@@ -66,7 +66,7 @@ class FileDownloaderTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_CALL(*this, OnDownloadFinished(expected_result));
     // Wait for the FileExists check to happen if necessary.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
  private:

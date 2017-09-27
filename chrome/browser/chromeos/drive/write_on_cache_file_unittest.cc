@@ -71,7 +71,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
       base::FilePath(kDrivePath),
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kLocalPath, path.value());
@@ -93,7 +93,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
       base::FilePath(kInvalidPath),
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
   EXPECT_TRUE(path.empty());

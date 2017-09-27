@@ -138,7 +138,7 @@ void OpenFileSystems(storage::FileSystemContext* fs_context,
   fs_context->OpenFileSystem(extension_url, storage::kFileSystemTypePersistent,
                              storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                              base::Bind(&DidOpenFileSystem));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
@@ -169,16 +169,16 @@ void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
 
   fs_context->operation_runner()->CreateFile(fs_persistent_url, false,
                                              base::Bind(&DidCreate));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   fs_context->operation_runner()->Write(url_request_context, fs_temp_url,
                                         blob1.GetBlobDataHandle(), 0,
                                         base::Bind(&DidWrite));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   fs_context->operation_runner()->Write(url_request_context, fs_persistent_url,
                                         blob1.GetBlobDataHandle(), 0,
                                         base::Bind(&DidWrite));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void VerifyFileContents(base::File file,
@@ -220,11 +220,11 @@ void VerifyTestFilesMigrated(content::StoragePartition* new_partition,
   new_fs_context->operation_runner()->OpenFile(
       fs_temp_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
       base::Bind(&VerifyFileContents));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   new_fs_context->operation_runner()->OpenFile(
       fs_persistent_url, base::File::FLAG_READ | base::File::FLAG_OPEN,
       base::Bind(&VerifyFileContents));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(AppDataMigratorTest, ShouldMigrate) {
@@ -268,7 +268,7 @@ TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
   migrator_->DoMigrationAndReply(old_ext.get(), new_ext.get(),
                                  base::Bind(&MigrationCallback));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   registry_->AddEnabled(new_ext);
   GURL extension_url =
@@ -283,7 +283,7 @@ TEST_F(AppDataMigratorTest, DISABLED_FileSystemMigration) {
   VerifyTestFilesMigrated(new_partition, new_ext.get());
 
   // Clean up.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace extensions

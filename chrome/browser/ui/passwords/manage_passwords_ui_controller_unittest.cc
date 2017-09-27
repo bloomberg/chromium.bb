@@ -1048,7 +1048,7 @@ TEST_F(ManagePasswordsUIControllerTest,
     // As the timeout is zero, the fallback will be hidden right after show.
     // Visibility update confirms that hiding event happened.
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     EXPECT_FALSE(controller()->opened_bubble());
     ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
@@ -1082,7 +1082,7 @@ TEST_F(ManagePasswordsUIControllerTest,
 
     // Fallback hiding is triggered by timeout but blocked because of open
     // bubble.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     ExpectIconAndControllerStateIs(
         password_manager::ui::PENDING_PASSWORD_STATE);
 

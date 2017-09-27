@@ -153,7 +153,7 @@ void RunSwitchLanguageTest(const std::string& locale,
                               ProfileManager::GetActiveUserProfile());
 
   // Token writing moves control to BlockingPool and back.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(data.done, true);
   EXPECT_EQ(data.result.requested_locale, locale);

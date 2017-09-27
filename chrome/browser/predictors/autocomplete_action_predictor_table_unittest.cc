@@ -79,7 +79,7 @@ AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {
 void AutocompleteActionPredictorTableTest::SetUp() {
   db_ = base::MakeUnique<PredictorDatabase>(
       &profile_, base::SequencedTaskRunnerHandle::Get());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
@@ -97,7 +97,7 @@ void AutocompleteActionPredictorTableTest::SetUp() {
 
 void AutocompleteActionPredictorTableTest::TearDown() {
   db_ = nullptr;
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   test_db_.clear();
 }
 

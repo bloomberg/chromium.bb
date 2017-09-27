@@ -171,7 +171,7 @@ class TestRequestCallbacks
 };
 
 void RunAllPendingTasks() {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace

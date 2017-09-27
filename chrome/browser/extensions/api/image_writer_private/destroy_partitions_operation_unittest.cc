@@ -62,7 +62,7 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   EXPECT_CALL(manager, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
   operation->PostTask(base::Bind(&Operation::Start, operation));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 } // namespace

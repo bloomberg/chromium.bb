@@ -55,7 +55,7 @@ void ValidateBrowserWindowProperties(
     const Browser* browser,
     const base::string16& expected_profile_name) {
   // Let shortcut creation finish before we validate the results.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   HWND hwnd = views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
 
@@ -100,7 +100,7 @@ void ValidateBrowserWindowProperties(
 
 void ValidateHostedAppWindowProperties(const Browser* browser,
                                        const extensions::Extension* extension) {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   HWND hwnd = views::HWNDForNativeWindow(browser->window()->GetNativeWindow());
 

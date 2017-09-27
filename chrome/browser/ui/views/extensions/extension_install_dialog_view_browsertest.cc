@@ -111,7 +111,7 @@ bool ScrollbarTest::IsScrollbarVisible(
   views::Widget* modal = constrained_window::CreateBrowserModalDialogViews(
       dialog, web_contents()->GetTopLevelNativeWindow());
   modal->Show();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check if the vertical scrollbar is visible.
   return dialog->scroll_view()->vertical_scroll_bar()->visible();

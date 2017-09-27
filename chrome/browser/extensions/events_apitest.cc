@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ChromeUpdatesEventsApiTest, ChromeUpdates) {
       .WaitForExtensionViewsToLoad();
 
   content::RunAllPendingInMessageLoop();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // "chrome updates listener" registerd a listener for the onInstalled event,
   // whereas "chrome updates non listener" did not. Only the

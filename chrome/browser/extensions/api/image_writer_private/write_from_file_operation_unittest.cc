@@ -56,7 +56,7 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
                       error::kImageInvalid)).Times(1);
 
   op->PostTask(base::BindOnce(&Operation::Start, op));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 // Runs the entire WriteFromFile operation.
@@ -103,7 +103,7 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
   op->PostTask(base::BindOnce(&Operation::Start, op));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace image_writer

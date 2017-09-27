@@ -139,7 +139,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     integration_service_->file_system()->GetResourceEntry(
         base::FilePath::FromUTF8Unsafe("drive/root"),  // whatever
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
   }
 

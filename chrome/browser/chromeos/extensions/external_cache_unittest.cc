@@ -155,7 +155,7 @@ TEST_F(ExternalCacheTest, Basic) {
   prefs->Set(kTestExtensionId4, CreateEntryWithUpdateUrl(false));
 
   external_cache.UpdateExtensionsList(std::move(prefs));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(provided_prefs());
   EXPECT_EQ(provided_prefs()->size(), 2ul);
@@ -195,7 +195,7 @@ TEST_F(ExternalCacheTest, Basic) {
       extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
       extensions::ExtensionDownloaderDelegate::InstallCallback());
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(provided_prefs()->size(), 3ul);
 
   const base::DictionaryValue* entry2 = NULL;
@@ -221,7 +221,7 @@ TEST_F(ExternalCacheTest, Basic) {
       extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
       extensions::ExtensionDownloaderDelegate::InstallCallback());
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(provided_prefs()->size(), 4ul);
 
   const base::DictionaryValue* entry4 = NULL;
@@ -240,7 +240,7 @@ TEST_F(ExternalCacheTest, Basic) {
   // Damaged file should be removed from disk.
   external_cache.OnDamagedFileDetected(
       GetExtensionFile(cache_dir, kTestExtensionId2, "2"));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(provided_prefs()->size(), 3ul);
   EXPECT_FALSE(base::PathExists(
       GetExtensionFile(cache_dir, kTestExtensionId2, "2")));
@@ -251,13 +251,13 @@ TEST_F(ExternalCacheTest, Basic) {
         base::Bind(&ExternalCacheTest::OnExtensionListsUpdated,
                    base::Unretained(this),
                    base::Unretained(empty.get())));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(provided_prefs()->size(), 0ul);
 
   // After Shutdown directory shouldn't be touched.
   external_cache.OnDamagedFileDetected(
       GetExtensionFile(cache_dir, kTestExtensionId4, "4"));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(base::PathExists(
       GetExtensionFile(cache_dir, kTestExtensionId4, "4")));
 }
@@ -276,7 +276,7 @@ TEST_F(ExternalCacheTest, PreserveInstalled) {
   AddInstalledExtension(kTestExtensionId1, "1");
 
   external_cache.UpdateExtensionsList(std::move(prefs));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(provided_prefs());
   EXPECT_EQ(provided_prefs()->size(), 1ul);

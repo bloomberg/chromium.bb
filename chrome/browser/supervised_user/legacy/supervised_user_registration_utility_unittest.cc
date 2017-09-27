@@ -168,7 +168,7 @@ SupervisedUserRegistrationUtilityTest::
 }
 
 void SupervisedUserRegistrationUtilityTest::TearDown() {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 std::unique_ptr<SyncChangeProcessor>

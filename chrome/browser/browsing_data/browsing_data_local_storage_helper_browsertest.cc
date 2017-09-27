@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
       new BrowsingDataLocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteOrigin(GURL(kOriginOfTestFile0));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Ensure the file has been deleted.
   base::ThreadRestrictions::ScopedAllowIO allow_io;

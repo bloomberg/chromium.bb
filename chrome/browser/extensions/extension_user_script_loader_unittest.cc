@@ -83,7 +83,7 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
       HostID(),
       true /* listen_for_extension_system_loaded */);
   loader.StartLoad();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(shared_memory_ != NULL);
 }

@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(BlobStorageBrowserTest, BlobCombinations) {
 
   // Make sure we run all file / io tasks.
   base::RunLoop().RunUntilIdle();
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 class MojoBlobStorageBrowserTest : public BlobStorageBrowserTest {
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(MojoBlobStorageBrowserTest, BlobCombinations) {
 
   // Make sure we run all file / io tasks.
   base::RunLoop().RunUntilIdle();
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 }  // namespace content

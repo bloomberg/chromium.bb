@@ -88,7 +88,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Checks that the file is retrieved.
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -123,7 +123,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_NotExist) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Checks that the file is created and retrieved.
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -147,7 +147,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Directory) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Checks that an error is returned.
   EXPECT_EQ(FILE_ERROR_EXISTS, error);

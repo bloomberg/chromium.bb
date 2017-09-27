@@ -89,12 +89,12 @@ void StorageMonitorWinTest::SetUp() {
                                            new TestPortableDeviceWatcherWin));
 
   monitor_->Init();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   monitor_->AddObserver(&observer_);
 }
 
 void StorageMonitorWinTest::TearDown() {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   monitor_->RemoveObserver(&observer_);
 
   // Windows storage monitor must be destroyed on the same thread
@@ -126,7 +126,7 @@ void StorageMonitorWinTest::PreAttachDevices() {
 
   EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   std::vector<base::FilePath> checked_devices =
       volume_mount_watcher_->devices_checked();
@@ -157,7 +157,7 @@ void StorageMonitorWinTest::DoMassStorageDeviceAttachedTest(
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
                                reinterpret_cast<LPARAM>(&volume_broadcast));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
   EXPECT_EQ(0, observer_.detach_calls());
@@ -184,7 +184,7 @@ void StorageMonitorWinTest::DoMassStorageDevicesDetachedTest(
   }
   monitor_->InjectDeviceChange(DBT_DEVICEREMOVECOMPLETE,
                                reinterpret_cast<LPARAM>(&volume_broadcast));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(pre_attach_calls, observer_.attach_calls());
   EXPECT_EQ(expect_detach_calls, observer_.detach_calls());
 }
@@ -231,7 +231,7 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
       test_attach ? DBT_DEVICEARRIVAL : DBT_DEVICEREMOVECOMPLETE,
       reinterpret_cast<LPARAM>(dev_interface_broadcast.get()));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
   EXPECT_EQ(expect_detach_calls, observer_.detach_calls());
 }
@@ -247,7 +247,7 @@ bool StorageMonitorWinTest::GetMTPStorageInfo(
 
 TEST_F(StorageMonitorWinTest, RandomMessage) {
   monitor_->InjectDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(StorageMonitorWinTest, DevicesAttached) {
@@ -294,7 +294,7 @@ TEST_F(StorageMonitorWinTest, PathMountDevices) {
   volume_mount_watcher_->AddDeviceForTesting(
       base::FilePath(FILE_PATH_LITERAL("F:\\mount2")),
       "dcim:mount2", L"mount2", 100);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(init_storages + 3, monitor_->GetAllAvailableStorages().size());
 
   StorageInfo info;
@@ -390,7 +390,7 @@ TEST_F(StorageMonitorWinTest, DevicesDetachedAdjacentBits) {
 TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
   // Make sure the original C: mount notification makes it all the
   // way through.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   volume_mount_watcher_->BlockDeviceCheckForTesting();
   base::FilePath kAttachedDevicePath =
@@ -414,12 +414,12 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
 
   EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
   volume_mount_watcher_->ReleaseDeviceCheck();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   volume_mount_watcher_->ReleaseDeviceCheck();
 
   // Now let all attach notifications finish running. We'll only get one
   // finish-attach call.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   const std::vector<base::FilePath>& checked_devices =
       volume_mount_watcher_->devices_checked();
@@ -429,9 +429,9 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
   // We'll receive a duplicate check now that the first check has fully cleared.
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
                                reinterpret_cast<LPARAM>(&volume_broadcast));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   volume_mount_watcher_->ReleaseDeviceCheck();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(2u, checked_devices.size());
   EXPECT_EQ(kAttachedDevicePath, checked_devices[0]);

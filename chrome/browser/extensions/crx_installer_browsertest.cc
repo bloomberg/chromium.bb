@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
       browser()->profile());
   EXPECT_FALSE(registry->enabled_extensions().GetByID(extension_id));
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_FALSE(base::PathExists(extension_path));
 }

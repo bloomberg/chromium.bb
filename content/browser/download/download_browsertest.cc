@@ -911,7 +911,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelAtFinalRename) {
   download_manager->GetAllDownloads(&items);
   ASSERT_EQ(1u, items.size());
   items[0]->Cancel(true);
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // Check state.
   EXPECT_EQ(DownloadItem::CANCELLED, items[0]->GetState());
@@ -1081,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   ASSERT_EQ(1u, items.size());
   items[0]->Cancel(true);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
   EXPECT_EQ(DownloadItem::IN_PROGRESS, items[0]->GetState());
 
   MockDownloadItemObserver observer;
@@ -1502,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
   // quiesced before clearing and injecting the new errors, as the
   // InjectErrors() routine alters the currently in use download file
   // factory.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // Clear the old errors list.
   injector->ClearError();
@@ -1544,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // quiesced before clearing and injecting the new errors, as the
   // InjectErrors() routine alters the currently in use download file
   // factory.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // Clear the old errors list.
   injector->ClearError();
@@ -1581,7 +1581,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
   // quiesced before clearing and injecting the new errors, as the
   // InjectErrors() routine alters the currently in use download file
   // factory, which is a download sequence object.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // Clear the old errors list.
   injector->ClearError();
@@ -1659,7 +1659,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
   ASSERT_TRUE(PathExists(intermediate_path));
 
   download->Cancel(true /* user_cancel */);
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // The intermediate file should now be gone.
   EXPECT_FALSE(PathExists(intermediate_path));
@@ -1680,7 +1680,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveInterruptedDownload) {
   ASSERT_TRUE(PathExists(intermediate_path));
 
   download->Remove();
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // The intermediate file should now be gone.
   EXPECT_FALSE(PathExists(intermediate_path));
@@ -1701,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveCompletedDownload) {
   base::FilePath target_path(download->GetTargetFilePath());
   EXPECT_TRUE(PathExists(target_path));
   download->Remove();
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // The file should still exist.
   EXPECT_TRUE(PathExists(target_path));
@@ -1740,7 +1740,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   request_start_handler.RespondWith(std::string(), net::OK);
 
   // The intermediate file should now be gone.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
   EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
@@ -1790,7 +1790,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
 
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::IO);
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
   EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
@@ -1832,7 +1832,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumedDownload) {
   download->Remove();
 
   // The intermediate file should now be gone.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
   EXPECT_FALSE(PathExists(intermediate_path));
   EXPECT_FALSE(PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());
@@ -1864,7 +1864,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
   download->Cancel(true);
 
   // The intermediate file should now be gone.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
   EXPECT_FALSE(PathExists(intermediate_path));
   EXPECT_FALSE(PathExists(target_path));
   EXPECT_TRUE(EnsureNoPendingDownloads());

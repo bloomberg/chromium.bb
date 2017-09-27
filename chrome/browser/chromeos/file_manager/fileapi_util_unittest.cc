@@ -114,7 +114,7 @@ TEST(FileManagerFileAPIUtilTest,
       GURL("http://example.com"),
       selected_info_list,
       base::Bind(&PassFileChooserFileInfoList, &result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   ASSERT_EQ(3u, result.size());
