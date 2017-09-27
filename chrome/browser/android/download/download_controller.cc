@@ -19,6 +19,7 @@
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
@@ -106,6 +107,7 @@ void CreateContextMenuDownload(
   if (!is_link && extra_headers.empty())
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
   dlm->DownloadUrl(std::move(dl_params));
 }
 
