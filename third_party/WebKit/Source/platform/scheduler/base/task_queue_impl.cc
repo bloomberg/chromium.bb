@@ -462,10 +462,10 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   state->SetBoolean("enabled", IsQueueEnabled());
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
-  bool verbose_tracing_enabled = false;
+  bool verbose_snapshots_enabled = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
-      &verbose_tracing_enabled);
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots"),
+      &verbose_snapshots_enabled);
   state->SetInteger("immediate_incoming_queue_size",
                     immediate_incoming_queue().size());
   state->SetInteger("delayed_incoming_queue_size",
@@ -483,7 +483,7 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   }
   if (main_thread_only().current_fence)
     state->SetInteger("current_fence", main_thread_only().current_fence);
-  if (verbose_tracing_enabled) {
+  if (verbose_snapshots_enabled) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(immediate_incoming_queue(), now, state);
     state->EndArray();

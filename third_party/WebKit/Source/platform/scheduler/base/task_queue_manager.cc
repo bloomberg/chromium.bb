@@ -442,8 +442,8 @@ bool TaskQueueManager::SelectWorkQueueToService(
     internal::WorkQueue** out_work_queue) {
   bool should_run = selector_.SelectWorkQueueToService(out_work_queue);
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager", this,
-      AsValueWithSelectorResult(should_run, *out_work_queue));
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"), "TaskQueueManager",
+      this, AsValueWithSelectorResult(should_run, *out_work_queue));
   return should_run;
 }
 

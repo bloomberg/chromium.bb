@@ -1449,14 +1449,16 @@ RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
 
 void RendererSchedulerImpl::CreateTraceEventObjectSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
-      this, AsValue(helper_.scheduler_tqm_delegate()->NowTicks()));
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
+      "RendererScheduler", this,
+      AsValue(helper_.scheduler_tqm_delegate()->NowTicks()));
 }
 
 void RendererSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
-      this, AsValueLocked(helper_.scheduler_tqm_delegate()->NowTicks()));
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"),
+      "RendererScheduler", this,
+      AsValueLocked(helper_.scheduler_tqm_delegate()->NowTicks()));
 }
 
 // static

@@ -25,14 +25,15 @@ RendererScheduler::RAILModeObserver::~RAILModeObserver() = default;
 
 // static
 std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
-  // Ensure worker.scheduler, worker.scheduler.debug and
-  // renderer.scheduler.debug appear as an option in about://tracing
+  // Ensure categories appear as an option in chrome://tracing.
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"));
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
+  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots"));
 
   base::MessageLoop* message_loop = base::MessageLoop::current();
   std::unique_ptr<RendererSchedulerImpl> scheduler(
