@@ -64,7 +64,8 @@ def _UninstallApk(devices, install_dict, package_name):
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
-def _LaunchUrl(devices, input_args, device_args_file, url, apk):
+def _LaunchUrl(devices, input_args, device_args_file, url, apk,
+               wait_for_debugger):
   if input_args and device_args_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
@@ -73,6 +74,14 @@ def _LaunchUrl(devices, input_args, device_args_file, url, apk):
       raise Exception('APK does not support launching with URLs.')
 
   def launch(device):
+    # Set debug app in order to enable reading command line flags on user
+    # builds.
+    cmd = ['am', 'set-debug-app', '--persistent', apk.GetPackageName()]
+    if wait_for_debugger:
+      cmd[-1:-1] = ['-w']
+    # Ignore error since it will fail if apk is not debuggable.
+    device.RunShellCommand(cmd, check_return=False)
+
     # The flags are first updated with input args.
     changer = flag_changer.FlagChanger(device, device_args_file)
     flags = []
@@ -468,7 +477,7 @@ class _LogcatProcessor(object):
       if log.pid not in self._my_pids:
         self._not_my_pids.add(log.pid)
         dim = True
-    if self._verbose or not dim:
+    if (self._verbose and not fast) or not dim:
       self._PrintParsedLine(log, dim)
 
 
@@ -613,9 +622,9 @@ class _Command(object):
   supports_incremental = False
   accepts_command_line_flags = False
   accepts_args = False
-  accepts_url = False
   all_devices_by_default = False
   calls_exec = False
+  supports_multiple_devices = True
 
   def __init__(self, from_wrapper_script):
     self._parser = None
@@ -688,9 +697,6 @@ class _Command(object):
       group.add_argument(
           '--args', help='Extra arguments. Use = to assign args')
 
-    if self.accepts_url:
-      group.add_argument('url', nargs='?', help='A URL to launch with.')
-
     if not self._from_wrapper_script and self.accepts_command_line_flags:
       # Provided by wrapper scripts.
       group.add_argument(
@@ -716,7 +722,7 @@ class _Command(object):
 
     try:
       if len(devices) > 1:
-        if self.calls_exec:
+        if not self.supports_multiple_devices:
           self._parser.error(device_errors.MultipleDevicesError(devices))
         if not args.all and not args.devices:
           self._parser.error(_GenerateMissingAllFlagMessage(devices))
@@ -808,29 +814,16 @@ class _LaunchCommand(_Command):
   #     parsing "dumpsys package" for launch & view activities.
   needs_apk_path = True
   accepts_command_line_flags = True
-  accepts_url = True
   all_devices_by_default = True
 
-  def Run(self):
-    _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
-               self.args.url, self.apk_helper)
-
-
-class _RunCommand(_Command):
-  name = 'run'
-  description = 'Install and then launch.'
-  needs_apk_path = True
-  supports_incremental = True
-  needs_package_name = True
-  accepts_command_line_flags = True
-  accepts_url = True
+  def _RegisterExtraArgs(self, group):
+    group.add_argument('-w', '--wait-for-debugger', action='store_true',
+                       help='Pause execution until debugger attaches.')
+    group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
-    logging.warning('Installing...')
-    _InstallApk(self.devices, self.apk_helper, self.install_dict)
-    logging.warning('Sending launch intent...')
     _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
-               self.args.url, self.apk_helper)
+               self.args.url, self.apk_helper, self.args.wait_for_debugger)
 
 
 class _StopCommand(_Command):
@@ -874,6 +867,7 @@ class _GdbCommand(_Command):
   needs_output_directory = True
   accepts_args = True
   calls_exec = True
+  supports_multiple_devices = False
 
   def Run(self):
     extra_args = shlex.split(self.args.args or '')
@@ -885,7 +879,7 @@ class _LogcatCommand(_Command):
   name = 'logcat'
   description = 'Runs "adb logcat" filtering to just the current APK processes'
   needs_package_name = True
-  calls_exec = True
+  supports_multiple_devices = False
 
   def Run(self):
     mapping = self.args.proguard_mapping_path
@@ -946,6 +940,10 @@ class _ShellCommand(_Command):
   def calls_exec(self):
     return not self.args.cmd
 
+  @property
+  def supports_multiple_devices(self):
+    return not self.args.cmd
+
   def _RegisterExtraArgs(self, group):
     group.add_argument(
         'cmd', nargs=argparse.REMAINDER, help='Command to run.')
@@ -975,12 +973,32 @@ class _CompileDexCommand(_Command):
                    self.args.compilation_filter)
 
 
+class _RunCommand(_InstallCommand, _LaunchCommand, _LogcatCommand):
+  name = 'run'
+  description = 'Install, launch, and show logcat (when targeting one device).'
+  all_devices_by_default = False
+  supports_multiple_devices = True
+
+  def _RegisterExtraArgs(self, group):
+    _InstallCommand._RegisterExtraArgs(self, group)
+    _LaunchCommand._RegisterExtraArgs(self, group)
+    _LogcatCommand._RegisterExtraArgs(self, group)
+
+  def Run(self):
+    logging.warning('Installing...')
+    _InstallCommand.Run(self)
+    logging.warning('Sending launch intent...')
+    _LaunchCommand.Run(self)
+    if len(self.devices) == 1:
+      logging.warning('Entering logcat...')
+      _LogcatCommand.Run(self)
+
+
 _COMMANDS = [
     _DevicesCommand,
     _InstallCommand,
     _UninstallCommand,
     _LaunchCommand,
-    _RunCommand,
     _StopCommand,
     _ClearDataCommand,
     _ArgvCommand,
@@ -991,6 +1009,7 @@ _COMMANDS = [
     _MemUsageCommand,
     _ShellCommand,
     _CompileDexCommand,
+    _RunCommand,
 ]
 
 
