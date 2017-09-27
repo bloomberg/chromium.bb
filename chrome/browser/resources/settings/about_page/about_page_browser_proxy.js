@@ -52,6 +52,13 @@ var BrowserChannel = {
   DEV: 'dev-channel',
   STABLE: 'stable-channel',
 };
+
+/**
+ * @typedef {{
+ *   updateAvailable: boolean,
+ * }}
+ */
+var TPMFirmwareUpdateStatusChangedEvent;
 // </if>
 
 /**
@@ -190,6 +197,11 @@ cr.define('settings', function() {
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo() {}
 
+    /**
+     * Request TPM firmware update status from the browser. It results in one or
+     * more 'tpm-firmware-update-status-changed' WebUI events.
+     */
+    refreshTPMFirmwareUpdateStatus() {}
     // </if>
 
     // <if expr="_google_chrome and is_macosx">
@@ -264,6 +276,11 @@ cr.define('settings', function() {
     /** @override */
     getRegulatoryInfo() {
       return cr.sendWithPromise('getRegulatoryInfo');
+    }
+
+    /** @override */
+    refreshTPMFirmwareUpdateStatus() {
+      chrome.send('refreshTPMFirmwareUpdateStatus');
     }
     // </if>
   }
