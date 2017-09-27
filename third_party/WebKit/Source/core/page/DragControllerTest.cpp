@@ -362,6 +362,7 @@ TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
       "    height: 40px;"
       "    font-size: 30px;"
       "    overflow: hidden;"
+      "    margin-top: 2px;"
       "  }"
       "</style>"
       "<div id='drag'>abcdefg<br>abcdefg<br>abcdefg</div>");
@@ -386,9 +387,60 @@ TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   IntSize expected_image_size = IntSize(50, 40);
   expected_image_size.Scale(page_scale_factor);
   EXPECT_EQ(expected_image_size, IntSize(ChromeClient().last_drag_image_size));
-  IntPoint expected_offset = IntPoint(5, 10);
+  // The drag image has a margin of 2px which should offset the selection
+  // image by 2px from the dragged location of (5, 10).
+  IntPoint expected_offset = IntPoint(5, 10 - 2);
   expected_offset.Scale(page_scale_factor, page_scale_factor);
   EXPECT_EQ(expected_offset, IntPoint(ChromeClient().last_drag_image_offset));
+}
+
+TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; } "
+      "  a {"
+      "    width: 50px;"
+      "    height: 40px;"
+      "    font-size: 30px;"
+      "    margin-top: 2px;"
+      "    display: block;"
+      "  }"
+      "</style>"
+      "<a id='drag' href='https://foobarbaz.com'>foobarbaz</a>");
+  const int page_scale_factor = 2;
+  GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
+  GetFrame().Selection().SelectAll();
+
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = WebMouseEvent::Button::kRight;
+  mouse_event.SetFrameScale(1);
+  mouse_event.SetPositionInWidget(5, 10);
+
+  auto& drag_state = GetFrame().GetPage()->GetDragController().GetDragState();
+  drag_state.drag_type_ = kDragSourceActionLink;
+  drag_state.drag_src_ = GetDocument().getElementById("drag");
+  drag_state.drag_data_transfer_ = DataTransfer::Create(
+      DataTransfer::kDragAndDrop, kDataTransferWritable, DataObject::Create());
+  GetFrame().GetPage()->GetDragController().StartDrag(
+      &GetFrame(), drag_state, mouse_event, IntPoint(5, 10));
+
+  IntSize link_image_size = IntSize(ChromeClient().last_drag_image_size);
+  // The drag link image should be a textual representation of the drag url in a
+  // system font (see: DragImageForLink in DragController.cpp) and should not be
+  // an empty image.
+  EXPECT_GT(link_image_size.Area(), 0u);
+  // Unlike the drag image in DragImageOffsetWithPageScaleFactor, the link
+  // image is not offset by margin because the link image is not based on the
+  // link's painting but instead is a generated image of the link's url. Because
+  // link_image_size is already scaled, no additional scaling is expected.
+  IntPoint expected_offset = IntPoint(link_image_size.Width() / 2, 2);
+  // The offset is mapped using integers which can introduce rounding errors
+  // (see TODO in DragController::DoSystemDrag) so we accept values near our
+  // expectation until more precise offset mapping is available.
+  EXPECT_NEAR(expected_offset.X(), ChromeClient().last_drag_image_offset.x, 1);
+  EXPECT_NEAR(expected_offset.Y(), ChromeClient().last_drag_image_offset.y, 1);
 }
 
 }  // namespace blink

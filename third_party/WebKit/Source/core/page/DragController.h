@@ -109,6 +109,8 @@ class CORE_EXPORT DragController final
 
   void MouseMovedIntoDocument(Document*);
 
+  // drag_location and drag_origin should be in the coordinate space of the
+  // LocalFrame's contents.
   void DoSystemDrag(DragImage*,
                     const IntPoint& drag_location,
                     const IntPoint& drag_origin,
