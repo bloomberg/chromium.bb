@@ -114,6 +114,10 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void RequestUpdateOverCellular(const std::string& update_version,
                                  int64_t update_size);
 
+  // Called once when the page has loaded to retrieve the TPM firmware update
+  // status.
+  void HandleRefreshTPMFirmwareUpdateStatus(const base::ListValue* args);
+  void RefreshTPMFirmwareUpdateStatus(bool update_available);
 #endif
 
   // Checks for and applies update.
