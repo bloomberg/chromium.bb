@@ -150,8 +150,8 @@ TEST_F(ContextMenuJsTest, TextAreaStopsProximity) {
 
   for (size_t i = 0; i < arraysize(test_data); i++) {
     const TestCoordinatesAndExpectedValue& data = test_data[i];
-    ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout
     LoadHtml(html);
+    ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout
     id result = ExecuteGetElementFromPointJavaScript(data.x, data.y);
     EXPECT_NSEQ(data.expected_value, result)
         << " in test " << i << ": (" << data.x << ", " << data.y << ")";
