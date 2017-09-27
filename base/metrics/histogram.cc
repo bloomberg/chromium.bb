@@ -606,7 +606,7 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
       debug_string += allocation.context.type_name;
       debug_string += ")";
     }
-    for (size_t i = 0; i < allocation.context.backtrace.frame_count; ++i) {
+    for (int i = allocation.context.backtrace.frame_count - 1; i >= 0; --i) {
       base::trace_event::StackFrame& frame =
           allocation.context.backtrace.frames[i];
       switch (frame.type) {
