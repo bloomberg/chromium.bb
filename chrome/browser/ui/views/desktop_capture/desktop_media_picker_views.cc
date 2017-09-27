@@ -75,12 +75,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   for (auto& source_list : source_lists) {
     switch (source_list->GetMediaListType()) {
-      case DesktopMediaID::TYPE_NONE: {
+      case DesktopMediaID::SOURCE_NONE: {
         NOTREACHED();
         break;
       }
-      case DesktopMediaID::TYPE_SCREEN: {
-        source_types_.push_back(DesktopMediaID::TYPE_SCREEN);
+      case DesktopMediaID::SOURCE_SCREEN: {
+        source_types_.push_back(DesktopMediaID::SOURCE_SCREEN);
 
         const DesktopMediaSourceViewStyle kSingleScreenStyle(
             1,                                       // columns
@@ -120,8 +120,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         pane_->set_listener(this);
         break;
       }
-      case DesktopMediaID::TYPE_WINDOW: {
-        source_types_.push_back(DesktopMediaID::TYPE_WINDOW);
+      case DesktopMediaID::SOURCE_WINDOW: {
+        source_types_.push_back(DesktopMediaID::SOURCE_WINDOW);
 
         const DesktopMediaSourceViewStyle kWindowStyle(
             3,                                     // columns
@@ -149,8 +149,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         pane_->set_listener(this);
         break;
       }
-      case DesktopMediaID::TYPE_WEB_CONTENTS: {
-        source_types_.push_back(DesktopMediaID::TYPE_WEB_CONTENTS);
+      case DesktopMediaID::SOURCE_WEB_CONTENTS: {
+        source_types_.push_back(DesktopMediaID::SOURCE_WEB_CONTENTS);
 
         const DesktopMediaSourceViewStyle kTabStyle(
             1,                                     // columns
@@ -226,7 +226,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   DesktopMediaID dialog_window_id;
   if (!modal_dialog) {
     dialog_window_id = DesktopMediaID::RegisterAuraWindow(
-        DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
+        DesktopMediaID::SOURCE_WINDOW, widget->GetNativeWindow());
 
     // Set native window ID if the windows is outside Ash.
 #if !defined(USE_ASH)
@@ -251,20 +251,20 @@ void DesktopMediaPickerDialogView::OnSourceTypeSwitched(int index) {
   // Set whether the checkbox is visible based on the source type.
   if (audio_share_checkbox_) {
     switch (source_types_[index]) {
-      case DesktopMediaID::TYPE_SCREEN:
+      case DesktopMediaID::SOURCE_SCREEN:
 #if defined(USE_CRAS) || defined(OS_WIN)
         audio_share_checkbox_->SetVisible(true);
 #else
         audio_share_checkbox_->SetVisible(false);
 #endif
         break;
-      case DesktopMediaID::TYPE_WINDOW:
+      case DesktopMediaID::SOURCE_WINDOW:
         audio_share_checkbox_->SetVisible(false);
         break;
-      case DesktopMediaID::TYPE_WEB_CONTENTS:
+      case DesktopMediaID::SOURCE_WEB_CONTENTS:
         audio_share_checkbox_->SetVisible(true);
         break;
-      case DesktopMediaID::TYPE_NONE:
+      case DesktopMediaID::SOURCE_NONE:
         NOTREACHED();
         break;
     }
@@ -317,11 +317,11 @@ bool DesktopMediaPickerDialogView::Accept() {
   // Ok button should only be enabled when a source is selected.
   DCHECK(selection);
   DesktopMediaID source = selection->source_id();
-  source.audio_share = audio_share_checkbox_ &&
-                       audio_share_checkbox_->visible() &&
-                       audio_share_checkbox_->checked();
+  source.set_audio_capture(audio_share_checkbox_ &&
+                           audio_share_checkbox_->visible() &&
+                           audio_share_checkbox_->checked());
 
-  if (source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+  if (source.source_type == DesktopMediaID::SOURCE_WEB_CONTENTS) {
     // Activate the selected tab and bring the browser window for the selected
     // tab to the front.
     content::WebContents* tab = content::WebContents::FromRenderFrameHost(
@@ -334,7 +334,7 @@ bool DesktopMediaPickerDialogView::Accept() {
       if (browser && browser->window())
         browser->window()->Activate();
     }
-  } else if (source.type == DesktopMediaID::TYPE_WINDOW) {
+  } else if (source.source_type == DesktopMediaID::SOURCE_WINDOW) {
 #if defined(USE_AURA)
     aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
     Browser* browser = chrome::FindBrowserWithWindow(window);
@@ -367,7 +367,7 @@ void DesktopMediaPickerDialogView::OnDoubleClick() {
 }
 
 void DesktopMediaPickerDialogView::SelectTab(
-    content::DesktopMediaID::Type source_type) {
+    content::DesktopMediaID::Source source_type) {
   for (size_t i = 0; i < source_types_.size(); i++) {
     if (source_types_[i] == source_type) {
       pane_->SelectTabAt(i);
@@ -404,7 +404,7 @@ views::Checkbox* DesktopMediaPickerDialogView::GetCheckboxForTesting() const {
 }
 
 int DesktopMediaPickerDialogView::GetIndexOfSourceTypeForTesting(
-    DesktopMediaID::Type source_type) const {
+    DesktopMediaID::Source source_type) const {
   for (size_t i = 0; i < source_types_.size(); i++) {
     if (source_types_[i] == source_type)
       return i;

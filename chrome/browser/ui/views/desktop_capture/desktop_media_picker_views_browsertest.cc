@@ -26,9 +26,9 @@ class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
     gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
 
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists;
-    for (auto type : {content::DesktopMediaID::TYPE_SCREEN,
-                      content::DesktopMediaID::TYPE_WINDOW,
-                      content::DesktopMediaID::TYPE_WEB_CONTENTS}) {
+    for (auto type : {content::DesktopMediaID::SOURCE_SCREEN,
+                      content::DesktopMediaID::SOURCE_WINDOW,
+                      content::DesktopMediaID::SOURCE_WEB_CONTENTS}) {
       source_lists.push_back(base::MakeUnique<FakeDesktopMediaList>(type));
     }
 

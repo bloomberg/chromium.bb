@@ -7,7 +7,7 @@
 #include "ui/gfx/icon_util.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
-  DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
+  DCHECK(id.source_type == content::DesktopMediaID::SOURCE_WINDOW);
 
   HWND hwnd = reinterpret_cast<HWND>(id.id);
 

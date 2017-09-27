@@ -21,12 +21,12 @@ const int kDefaultUpdatePeriod = 500;
 
 }  // namespace
 
-DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Type type)
+DesktopMediaListAsh::DesktopMediaListAsh(content::DesktopMediaID::Source type)
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
-  DCHECK(type == content::DesktopMediaID::TYPE_SCREEN ||
-         type == content::DesktopMediaID::TYPE_WINDOW);
+  DCHECK(type == content::DesktopMediaID::SOURCE_SCREEN ||
+         type == content::DesktopMediaID::SOURCE_WINDOW);
   type_ = type;
 }
 
@@ -57,7 +57,7 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
     if (!(*it)->IsVisible() || !(*it)->CanFocus())
       continue;
     content::DesktopMediaID id = content::DesktopMediaID::RegisterAuraWindow(
-        content::DesktopMediaID::TYPE_WINDOW, *it);
+        content::DesktopMediaID::SOURCE_WINDOW, *it);
     if (id.aura_id == view_dialog_id_.aura_id)
       continue;
     SourceDescription window_source(id, (*it)->GetTitle());
@@ -74,10 +74,10 @@ void DesktopMediaListAsh::EnumerateSources(
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
   for (size_t i = 0; i < root_windows.size(); ++i) {
-    if (type_ == content::DesktopMediaID::TYPE_SCREEN) {
+    if (type_ == content::DesktopMediaID::SOURCE_SCREEN) {
       SourceDescription screen_source(
           content::DesktopMediaID::RegisterAuraWindow(
-              content::DesktopMediaID::TYPE_SCREEN, root_windows[i]),
+              content::DesktopMediaID::SOURCE_SCREEN, root_windows[i]),
           root_windows[i]->GetTitle());
 
       if (root_windows[i] == ash::Shell::GetPrimaryRootWindow())

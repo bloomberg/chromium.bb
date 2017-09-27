@@ -44,7 +44,7 @@ class DesktopMediaListAshTest : public ash::AshTestBase {
     ash::AshTestBase::TearDown();
   }
 
-  void CreateList(content::DesktopMediaID::Type type) {
+  void CreateList(content::DesktopMediaID::Source type) {
     list_.reset(new DesktopMediaListAsh(type));
     list_->SetThumbnailSize(gfx::Size(kThumbnailSize, kThumbnailSize));
 
@@ -64,7 +64,7 @@ ACTION(QuitMessageLoop) {
 }
 
 TEST_F(DesktopMediaListAshTest, ScreenOnly) {
-  CreateList(content::DesktopMediaID::TYPE_SCREEN);
+  CreateList(content::DesktopMediaID::SOURCE_SCREEN);
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
@@ -78,7 +78,7 @@ TEST_F(DesktopMediaListAshTest, ScreenOnly) {
 }
 
 TEST_F(DesktopMediaListAshTest, WindowOnly) {
-  CreateList(content::DesktopMediaID::TYPE_WINDOW);
+  CreateList(content::DesktopMediaID::SOURCE_WINDOW);
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 

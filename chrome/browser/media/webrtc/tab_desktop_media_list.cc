@@ -60,7 +60,7 @@ TabDesktopMediaList::TabDesktopMediaList()
     : DesktopMediaListBase(
           base::TimeDelta::FromMilliseconds(kDefaultUpdatePeriod)),
       weak_factory_(this) {
-  type_ = DesktopMediaID::TYPE_WEB_CONTENTS;
+  type_ = DesktopMediaID::SOURCE_WEB_CONTENTS;
   thumbnail_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
@@ -101,7 +101,7 @@ void TabDesktopMediaList::Refresh() {
       content::RenderFrameHost* main_frame = contents->GetMainFrame();
       DCHECK(main_frame);
       DesktopMediaID media_id(
-          DesktopMediaID::TYPE_WEB_CONTENTS, DesktopMediaID::kNullId,
+          DesktopMediaID::SOURCE_WEB_CONTENTS, DesktopMediaID::kNullId,
           content::WebContentsMediaCaptureId(main_frame->GetProcess()->GetID(),
                                              main_frame->GetRoutingID()));
 

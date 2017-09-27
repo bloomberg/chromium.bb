@@ -40,7 +40,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   // Called by DesktopMediaListView.
   void OnSelectionChanged();
   void OnDoubleClick();
-  void SelectTab(content::DesktopMediaID::Type source_type);
+  void SelectTab(content::DesktopMediaID::Source source_type);
 
   // views::TabbedPaneListener overrides.
   void TabSelectedAt(int index) override;
@@ -64,7 +64,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   DesktopMediaSourceView* GetMediaSourceViewForTesting(int index) const;
   views::Checkbox* GetCheckboxForTesting() const;
   int GetIndexOfSourceTypeForTesting(
-      content::DesktopMediaID::Type source_type) const;
+      content::DesktopMediaID::Source source_type) const;
   views::TabbedPane* GetPaneForTesting() const;
 
  private:
@@ -78,7 +78,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   views::TabbedPane* pane_;
   std::vector<DesktopMediaListView*> list_views_;
-  std::vector<content::DesktopMediaID::Type> source_types_;
+  std::vector<content::DesktopMediaID::Source> source_types_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerDialogView);
 };

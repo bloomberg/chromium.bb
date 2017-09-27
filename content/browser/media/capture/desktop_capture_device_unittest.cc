@@ -258,7 +258,7 @@ class DesktopCaptureDeviceTest : public testing::Test {
   void CreateScreenCaptureDevice(
       std::unique_ptr<webrtc::DesktopCapturer> capturer) {
     capture_device_.reset(new DesktopCaptureDevice(
-        std::move(capturer), DesktopMediaID::TYPE_SCREEN));
+        std::move(capturer), DesktopMediaID::SOURCE_SCREEN));
   }
 
   void CopyFrame(const uint8_t* frame,

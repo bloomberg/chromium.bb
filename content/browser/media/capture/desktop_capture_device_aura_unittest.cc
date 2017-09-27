@@ -151,7 +151,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   std::unique_ptr<media::VideoCaptureDevice> capture_device =
       DesktopCaptureDeviceAura::Create(
           content::DesktopMediaID::RegisterAuraWindow(
-              content::DesktopMediaID::TYPE_SCREEN, root_window()));
+              content::DesktopMediaID::SOURCE_SCREEN, root_window()));
   ASSERT_TRUE(capture_device);
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());

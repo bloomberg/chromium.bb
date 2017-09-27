@@ -1691,7 +1691,7 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
 
     DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
     // WebContentsVideoCaptureDevice is used for tab/webcontents.
-    if (media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS)
+    if (media_id.source_type == DesktopMediaID::SOURCE_WEB_CONTENTS)
       continue;
 #if defined(USE_AURA)
     // DesktopCaptureDevicAura is used when aura_id is valid.

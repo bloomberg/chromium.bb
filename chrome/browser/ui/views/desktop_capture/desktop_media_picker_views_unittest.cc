@@ -32,9 +32,9 @@ using content::DesktopMediaID;
 
 namespace views {
 
-const std::vector<DesktopMediaID::Type> kSourceTypes = {
-    DesktopMediaID::TYPE_SCREEN, DesktopMediaID::TYPE_WINDOW,
-    DesktopMediaID::TYPE_WEB_CONTENTS};
+const std::vector<DesktopMediaID::Source> kSourceTypes = {
+    DesktopMediaID::SOURCE_SCREEN, DesktopMediaID::SOURCE_WINDOW,
+    DesktopMediaID::SOURCE_WEB_CONTENTS};
 
 class DesktopMediaPickerViewsTest : public testing::Test {
  public:
@@ -72,7 +72,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     return picker_views_->GetDialogViewForTesting();
   }
 
-  bool ClickSourceTypeButton(DesktopMediaID::Type source_type) {
+  bool ClickSourceTypeButton(DesktopMediaID::Source source_type) {
     int index =
         GetPickerDialogView()->GetIndexOfSourceTypeForTesting(source_type);
 
@@ -88,7 +88,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   views::ScopedViewsTestHelper test_helper_;
-  std::map<DesktopMediaID::Type, FakeDesktopMediaList*> media_lists_;
+  std::map<DesktopMediaID::Source, FakeDesktopMediaList*> media_lists_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
 };
 
@@ -107,16 +107,16 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {
 #endif
 
 TEST_F(DesktopMediaPickerViewsTest, MAYBE_DoneCallbackCalledOnOkButtonPressed) {
-  const DesktopMediaID kFakeId(DesktopMediaID::TYPE_WINDOW, 222);
+  const DesktopMediaID kFakeId(DesktopMediaID::SOURCE_WINDOW, 222);
   EXPECT_CALL(*this, OnPickerDone(kFakeId));
 
-  media_lists_[DesktopMediaID::TYPE_WINDOW]->AddSourceByFullMediaID(kFakeId);
+  media_lists_[DesktopMediaID::SOURCE_WINDOW]->AddSourceByFullMediaID(kFakeId);
   GetPickerDialogView()->GetCheckboxForTesting()->SetChecked(true);
 
   EXPECT_FALSE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_WINDOW));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_WINDOW));
 
   GetPickerDialogView()->GetMediaSourceViewForTesting(0)->OnFocus();
 
@@ -145,7 +145,7 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
 
     // By default, the first screen is selected, but not for other sharing
     // types.
-    EXPECT_EQ(source_type == DesktopMediaID::TYPE_SCREEN,
+    EXPECT_EQ(source_type == DesktopMediaID::SOURCE_SCREEN,
               source_view_0->is_selected());
     EXPECT_FALSE(source_view_1->is_selected());
 
@@ -170,12 +170,12 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
 }
 
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
-  const DesktopMediaID kFakeId(DesktopMediaID::TYPE_WEB_CONTENTS, 222);
+  const DesktopMediaID kFakeId(DesktopMediaID::SOURCE_WEB_CONTENTS, 222);
   EXPECT_CALL(*this, OnPickerDone(kFakeId));
 
-  media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
+  media_lists_[DesktopMediaID::SOURCE_WEB_CONTENTS]->AddSourceByFullMediaID(
       kFakeId);
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_WEB_CONTENTS));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_WEB_CONTENTS));
   GetPickerDialogView()->GetCheckboxForTesting()->SetChecked(false);
 
   ui::MouseEvent double_click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -189,13 +189,13 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
 }
 
 TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
-  const DesktopMediaID kFakeId(DesktopMediaID::TYPE_SCREEN, 222);
+  const DesktopMediaID kFakeId(DesktopMediaID::SOURCE_SCREEN, 222);
   EXPECT_CALL(*this, OnPickerDone(kFakeId));
 
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_SCREEN));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_SCREEN));
   GetPickerDialogView()->GetCheckboxForTesting()->SetChecked(false);
 
-  media_lists_[DesktopMediaID::TYPE_SCREEN]->AddSourceByFullMediaID(kFakeId);
+  media_lists_[DesktopMediaID::SOURCE_SCREEN]->AddSourceByFullMediaID(kFakeId);
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(2);
   ui::GestureEvent double_tap(10, 10, 0, base::TimeTicks(), details);
@@ -284,35 +284,35 @@ TEST_F(DesktopMediaPickerViewsTest, ListViewHasInitialFocus) {
 // Verifies the visible status of audio checkbox.
 TEST_F(DesktopMediaPickerViewsTest, AudioCheckboxState) {
   bool expect_value = false;
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_SCREEN));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_SCREEN));
 #if defined(OS_WIN) || defined(USE_CRAS)
   expect_value = true;
 #endif
   EXPECT_EQ(expect_value,
             GetPickerDialogView()->GetCheckboxForTesting()->visible());
 
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_WINDOW));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_WINDOW));
   EXPECT_FALSE(GetPickerDialogView()->GetCheckboxForTesting()->visible());
 
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_WEB_CONTENTS));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_WEB_CONTENTS));
   EXPECT_TRUE(GetPickerDialogView()->GetCheckboxForTesting()->visible());
 }
 
 // Verifies that audio share information is recorded in the ID if the checkbox
 // is checked.
 TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
-  DesktopMediaID originId(DesktopMediaID::TYPE_WEB_CONTENTS, 222);
+  DesktopMediaID originId(DesktopMediaID::SOURCE_WEB_CONTENTS, 222);
   DesktopMediaID returnId = originId;
-  returnId.audio_share = true;
+  returnId.set_audio_capture(true);
 
   // This matches the real workflow that when a source is generated in
-  // media_list, its |audio_share| bit is not set. The bit is set by the picker
-  // UI if the audio checkbox is checked.
+  // media_list, its |set_audio_capture| bit is not set. The bit is set by the
+  // picker UI if the audio checkbox is checked.
   EXPECT_CALL(*this, OnPickerDone(returnId));
-  media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
+  media_lists_[DesktopMediaID::SOURCE_WEB_CONTENTS]->AddSourceByFullMediaID(
       originId);
 
-  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::TYPE_WEB_CONTENTS));
+  EXPECT_TRUE(ClickSourceTypeButton(DesktopMediaID::SOURCE_WEB_CONTENTS));
   GetPickerDialogView()->GetCheckboxForTesting()->SetChecked(true);
   GetPickerDialogView()->GetMediaSourceViewForTesting(0)->OnFocus();
 

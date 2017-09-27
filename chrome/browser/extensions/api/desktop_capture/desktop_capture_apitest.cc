@@ -67,15 +67,15 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
 
     for (auto& source_list : source_lists) {
       switch (source_list->GetMediaListType()) {
-        case DesktopMediaID::TYPE_NONE:
+        case DesktopMediaID::SOURCE_NONE:
           break;
-        case DesktopMediaID::TYPE_SCREEN:
+        case DesktopMediaID::SOURCE_SCREEN:
           show_screens = true;
           break;
-        case DesktopMediaID::TYPE_WINDOW:
+        case DesktopMediaID::SOURCE_WINDOW:
           show_windows = true;
           break;
-        case DesktopMediaID::TYPE_WEB_CONTENTS:
+        case DesktopMediaID::SOURCE_WEB_CONTENTS:
           show_tabs = true;
           break;
       }
@@ -132,7 +132,7 @@ class FakeDesktopMediaPickerFactory :
   }
 
   std::unique_ptr<DesktopMediaList> CreateMediaList(
-      DesktopMediaID::Type type) override {
+      DesktopMediaID::Source type) override {
     EXPECT_LE(current_test_, tests_count_);
     return std::unique_ptr<DesktopMediaList>(new FakeDesktopMediaList(type));
   }
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
       {true, true, false, false, content::DesktopMediaID()},
       // chooseMedia()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                content::DesktopMediaID::kNullId)},
       // screensOnly()
       {true, false, false, false, content::DesktopMediaID()},
@@ -200,19 +200,21 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
       {false, false, true, false, content::DesktopMediaID()},
       // audioShareNoApproval()
       {true, true, true, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
-                               false)},
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_WEB_CONTENTS,
+                               123, content::DesktopMediaID::CAPTURE_VIDEO)},
       // audioShareApproval()
       {true, true, true, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 123,
-                               true)},
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_WEB_CONTENTS,
+                               123,
+                               content::DesktopMediaID::CAPTURE_VIDEO |
+                                   content::DesktopMediaID::CAPTURE_AUDIO)},
       // chooseMediaAndGetStream()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                webrtc::kFullDesktopScreenId)},
       // chooseMediaAndTryGetStreamWithInvalidId()
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                webrtc::kFullDesktopScreenId)},
       // cancelDialog()
       {true, true, false, false, content::DesktopMediaID(), true},
@@ -223,24 +225,29 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
 
       // tabShareWithAudioGetStream()
       //{false, false, true, true,
-      // content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 0,
+      // content::DesktopMediaID(content::DesktopMediaID::SOURCE_WEB_CONTENTS,
+      // 0,
       //                         true)},
       // windowShareWithAudioGetStream()
       //{false, true, false, true,
-      //content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, 0, true)},
+      // content::DesktopMediaID(content::DesktopMediaID::SOURCE_WINDOW, 0,
+      // true)},
       // screenShareWithAudioGetStream()
       {true, false, false, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                               webrtc::kFullDesktopScreenId, true)},
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
+                               webrtc::kFullDesktopScreenId,
+                               content::DesktopMediaID::CAPTURE_VIDEO |
+                                   content::DesktopMediaID::CAPTURE_AUDIO)},
       // tabShareWithoutAudioGetStream()
       //{false, false, true, true,
-      //content::DesktopMediaID(content::DesktopMediaID::TYPE_WEB_CONTENTS, 0)},
+      // content::DesktopMediaID(content::DesktopMediaID::SOURCE_WEB_CONTENTS,
+      // 0)},
       // windowShareWithoutAudioGetStream()
       //{false, true, false, true,
-      // content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, 0)},
+      // content::DesktopMediaID(content::DesktopMediaID::SOURCE_WINDOW, 0)},
       // screenShareWithoutAudioGetStream()
       {true, false, false, true,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                webrtc::kFullDesktopScreenId)},
   };
   picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
@@ -268,13 +275,13 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
 
   TestFlags test_flags[] = {
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                content::DesktopMediaID::kNullId)},
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                content::DesktopMediaID::kNullId)},
       {true, true, false, false,
-       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+       content::DesktopMediaID(content::DesktopMediaID::SOURCE_SCREEN,
                                content::DesktopMediaID::kNullId),
        true},
   };

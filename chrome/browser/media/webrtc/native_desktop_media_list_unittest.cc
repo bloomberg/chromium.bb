@@ -214,7 +214,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
 #endif
     // Get the aura window's id.
     DesktopMediaID aura_id = DesktopMediaID::RegisterAuraWindow(
-        DesktopMediaID::TYPE_WINDOW, aura_window);
+        DesktopMediaID::SOURCE_WINDOW, aura_window);
     native_aura_id_map_[window.id] = aura_id.aura_id;
 
     window_list_.push_back(window);
@@ -250,7 +250,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
   void AddWindowsAndVerify(bool has_view_dialog) {
     window_capturer_ = new FakeWindowCapturer();
     model_ = base::MakeUnique<NativeDesktopMediaList>(
-        DesktopMediaID::TYPE_WINDOW, base::WrapUnique(window_capturer_));
+        DesktopMediaID::SOURCE_WINDOW, base::WrapUnique(window_capturer_));
 
     // Set update period to reduce the time it takes to run tests.
     model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(20));
@@ -274,7 +274,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
 
     // Set view dialog window ID as the first window id.
     if (has_view_dialog) {
-      DesktopMediaID dialog_window_id(DesktopMediaID::TYPE_WINDOW,
+      DesktopMediaID dialog_window_id(DesktopMediaID::SOURCE_WINDOW,
                                       window_list_[0].id);
       model_->SetViewDialogWindowId(dialog_window_id);
       window_count--;
@@ -301,7 +301,8 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
     run_loop.Run();
 
     for (size_t i = 0; i < window_count; ++i) {
-      EXPECT_EQ(model_->GetSource(i).id.type, DesktopMediaID::TYPE_WINDOW);
+      EXPECT_EQ(model_->GetSource(i).id.source_type,
+                DesktopMediaID::SOURCE_WINDOW);
       EXPECT_EQ(model_->GetSource(i).name, base::UTF8ToUTF16("Test window"));
       int index = has_view_dialog ? i + 1 : i;
       int native_id = window_list_[index].id;
@@ -338,7 +339,7 @@ TEST_F(NativeDesktopMediaListTest, Windows) {
 
 TEST_F(NativeDesktopMediaListTest, ScreenOnly) {
   model_ = base::MakeUnique<NativeDesktopMediaList>(
-      DesktopMediaID::TYPE_SCREEN, base::MakeUnique<FakeScreenCapturer>());
+      DesktopMediaID::SOURCE_SCREEN, base::MakeUnique<FakeScreenCapturer>());
 
   // Set update period to reduce the time it takes to run tests.
   model_->SetUpdatePeriod(base::TimeDelta::FromMilliseconds(20));
@@ -355,7 +356,7 @@ TEST_F(NativeDesktopMediaListTest, ScreenOnly) {
   model_->StartUpdating(&observer_);
   run_loop.Run();
 
-  EXPECT_EQ(model_->GetSource(0).id.type, DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->GetSource(0).id.source_type, DesktopMediaID::SOURCE_SCREEN);
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
 }
 
@@ -381,7 +382,8 @@ TEST_F(NativeDesktopMediaListTest, AddNativeWindow) {
 
   run_loop.Run();
 
-  EXPECT_EQ(model_->GetSource(index).id.type, DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(index).id.source_type,
+            DesktopMediaID::SOURCE_WINDOW);
   EXPECT_EQ(model_->GetSource(index).id.id, index);
 }
 
@@ -403,7 +405,8 @@ TEST_F(NativeDesktopMediaListTest, AddAuraWindow) {
   run_loop.Run();
 
   int native_id = window_list_.back().id;
-  EXPECT_EQ(model_->GetSource(index).id.type, DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(index).id.source_type,
+            DesktopMediaID::SOURCE_WINDOW);
   EXPECT_EQ(model_->GetSource(index).id.id, native_id);
   EXPECT_EQ(model_->GetSource(index).id.aura_id,
             native_aura_id_map_[native_id]);

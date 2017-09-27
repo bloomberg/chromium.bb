@@ -84,7 +84,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
        std::unique_ptr<webrtc::DesktopCapturer> capturer,
-       DesktopMediaID::Type type);
+       DesktopMediaID::Source type);
   ~Core() override;
 
   // Implementation of VideoCaptureDevice methods.
@@ -146,7 +146,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   bool first_capture_returned_;
 
   // The type of the capturer.
-  DesktopMediaID::Type capturer_type_;
+  DesktopMediaID::Source capturer_type_;
 
   // The system time when we receive the first frame.
   base::TimeTicks first_ref_time_;
@@ -165,7 +165,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
 DesktopCaptureDevice::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
-    DesktopMediaID::Type type)
+    DesktopMediaID::Source type)
     : task_runner_(task_runner),
       desktop_capturer_(std::move(capturer)),
       capture_in_progress_(false),
@@ -234,7 +234,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
 
   if (!first_capture_returned_) {
     first_capture_returned_ = true;
-    if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
+    if (capturer_type_ == DesktopMediaID::SOURCE_SCREEN) {
       IncrementDesktopCaptureCounter(success ? FIRST_SCREEN_CAPTURE_SUCCEEDED
                                              : FIRST_SCREEN_CAPTURE_FAILED);
     } else {
@@ -255,7 +255,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
 
   // The two UMA_ blocks must be put in its own scope since it creates a static
   // variable which expected constant histogram name.
-  if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
+  if (capturer_type_ == DesktopMediaID::SOURCE_SCREEN) {
     UMA_HISTOGRAM_TIMES(kUmaScreenCaptureTime, capture_time);
   } else {
     UMA_HISTOGRAM_TIMES(kUmaWindowCaptureTime, capture_time);
@@ -428,8 +428,8 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   auto options = CreateDesktopCaptureOptions();
   std::unique_ptr<webrtc::DesktopCapturer> capturer;
 
-  switch (source.type) {
-    case DesktopMediaID::TYPE_SCREEN: {
+  switch (source.source_type) {
+    case DesktopMediaID::SOURCE_SCREEN: {
       std::unique_ptr<webrtc::DesktopCapturer> screen_capturer(
           webrtc::DesktopCapturer::CreateScreenCapturer(options));
       if (screen_capturer && screen_capturer->SelectSource(source.id)) {
@@ -437,13 +437,13 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
             std::move(screen_capturer), options));
         IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
         IncrementDesktopCaptureCounter(
-            source.audio_share ? SCREEN_CAPTURER_CREATED_WITH_AUDIO
-                               : SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);
+            source.is_audio_capture() ? SCREEN_CAPTURER_CREATED_WITH_AUDIO
+                                      : SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);
       }
       break;
     }
 
-    case DesktopMediaID::TYPE_WINDOW: {
+    case DesktopMediaID::SOURCE_WINDOW: {
       std::unique_ptr<webrtc::DesktopCapturer> window_capturer =
           webrtc::CroppingWindowCapturer::CreateCapturer(options);
       if (window_capturer && window_capturer->SelectSource(source.id)) {
@@ -460,7 +460,8 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   std::unique_ptr<media::VideoCaptureDevice> result;
   if (capturer)
-    result.reset(new DesktopCaptureDevice(std::move(capturer), source.type));
+    result.reset(
+        new DesktopCaptureDevice(std::move(capturer), source.source_type));
 
   return result;
 }
@@ -498,7 +499,7 @@ void DesktopCaptureDevice::SetNotificationWindowId(
 
 DesktopCaptureDevice::DesktopCaptureDevice(
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
-    DesktopMediaID::Type type)
+    DesktopMediaID::Source type)
     : thread_("desktopCaptureThread") {
 #if defined(OS_WIN)
   // On Windows the thread must be a UI thread.

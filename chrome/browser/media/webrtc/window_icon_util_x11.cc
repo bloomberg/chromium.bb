@@ -13,7 +13,7 @@
 #include "ui/gfx/x/x11_types.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
-  DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
+  DCHECK(id.source_type == content::DesktopMediaID::SOURCE_WINDOW);
 
   Display* display = gfx::GetXDisplay();
   Atom property = gfx::GetAtom("_NET_WM_ICON");

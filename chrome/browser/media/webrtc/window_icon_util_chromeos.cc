@@ -9,7 +9,7 @@
 #include "ui/aura/window.h"
 
 gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
-  DCHECK_EQ(content::DesktopMediaID::TYPE_WINDOW, id.type);
+  DCHECK_EQ(content::DesktopMediaID::SOURCE_WINDOW, id.source_type);
   aura::Window* window = content::DesktopMediaID::GetAuraWindowById(id);
   if (!window)
     return gfx::ImageSkia();

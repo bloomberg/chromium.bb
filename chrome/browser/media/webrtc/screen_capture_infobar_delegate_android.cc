@@ -90,7 +90,7 @@ void ScreenCaptureInfoBarDelegateAndroid::RunCallback(
   std::unique_ptr<content::MediaStreamUI> ui;
   if (result == content::MEDIA_DEVICE_OK) {
     content::DesktopMediaID screen_id = content::DesktopMediaID(
-        content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
+        content::DesktopMediaID::SOURCE_SCREEN, webrtc::kFullDesktopScreenId);
     devices.push_back(content::MediaStreamDevice(
         content::MEDIA_DESKTOP_VIDEO_CAPTURE, screen_id.ToString(), "Screen"));
 
