@@ -487,6 +487,22 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
 
   if (node && node->EnsureComputedStyle()) {
     const ComputedStyle* computed_style = node->EnsureComputedStyle();
+
+    // Fix for crbug.com/768261: due to text-autosizing, reading the current
+    // computed font size and re-writing it to an element may actually cause the
+    // font size to become larger (since the autosizer will run again on the new
+    // computed size). The fix is to toss out the computed size property here
+    // and use ComputedStyle::SpecifiedFontSize().
+    if (computed_style->ComputedFontSize() !=
+        computed_style->SpecifiedFontSize()) {
+      // ReplaceSelectionCommandTest_TextAutosizingDoesntInflateText gets here.
+      mutable_style_->SetProperty(
+          CSSPropertyFontSize,
+          CSSPrimitiveValue::Create(computed_style->SpecifiedFontSize(),
+                                    CSSPrimitiveValue::UnitType::kPixels)
+              ->CssText());
+    }
+
     RemoveInheritedColorsIfNeeded(computed_style);
     ReplaceFontSizeByKeywordIfPossible(computed_style,
                                        computed_style_at_position);
