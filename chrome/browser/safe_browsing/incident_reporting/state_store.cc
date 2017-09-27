@@ -168,9 +168,8 @@ bool StateStore::HasBeenReported(IncidentType type,
 
 void StateStore::CleanLegacyValues(Transaction* transaction) {
   static const IncidentType kLegacyTypes[] = {
-      // TODO(grt): remove in M44 (crbug.com/451173).
-      IncidentType::OMNIBOX_INTERACTION,
-  };
+      IncidentType::OBSOLETE_BLACKLIST_LOAD,
+      IncidentType::OBSOLETE_SUSPICIOUS_MODULE};
 
   for (IncidentType type : kLegacyTypes)
     transaction->ClearForType(type);

@@ -8,7 +8,6 @@ EXPORTS
   TestDll_AddDllToBlacklist=AddDllToBlacklist
   TestDll_BlacklistSize=BlacklistSize
   TestDll_BlockedDll=BlockedDll
-  TestDll_GetBlacklistIndex=GetBlacklistIndex
   TestDll_IsBlacklistInitialized=IsBlacklistInitialized
   TestDll_SuccessfullyBlocked=SuccessfullyBlocked
   TestDll_RemoveDllFromBlacklist=RemoveDllFromBlacklist

@@ -41,7 +41,6 @@ namespace {
 typedef bool (*TestDll_AddDllToBlacklistFunction)(const wchar_t* dll_name);
 typedef int (*TestDll_BlacklistSizeFunction)();
 typedef void (*TestDll_BlockedDllFunction)(size_t blocked_index);
-typedef int (*TestDll_GetBlacklistIndexFunction)(const wchar_t* dll_name);
 typedef bool (*TestDll_IsBlacklistInitializedFunction)();
 typedef bool (*TestDll_RemoveDllFromBlacklistFunction)(const wchar_t* dll_name);
 typedef bool (*TestDll_SuccessfullyBlockedFunction)(
@@ -52,7 +51,6 @@ typedef void (*InitTestDllFunction)();
 TestDll_AddDllToBlacklistFunction TestDll_AddDllToBlacklist = nullptr;
 TestDll_BlacklistSizeFunction TestDll_BlacklistSize = nullptr;
 TestDll_BlockedDllFunction TestDll_BlockedDll = nullptr;
-TestDll_GetBlacklistIndexFunction TestDll_GetBlacklistIndex = nullptr;
 TestDll_IsBlacklistInitializedFunction TestDll_IsBlacklistInitialized = nullptr;
 TestDll_RemoveDllFromBlacklistFunction TestDll_RemoveDllFromBlacklist = nullptr;
 TestDll_SuccessfullyBlockedFunction TestDll_SuccessfullyBlocked = nullptr;
@@ -164,9 +162,6 @@ class BlacklistTest : public testing::Test {
         ::GetProcAddress(dll, "TestDll_BlacklistSize"));
     TestDll_BlockedDll = reinterpret_cast<TestDll_BlockedDllFunction>(
         ::GetProcAddress(dll, "TestDll_BlockedDll"));
-    TestDll_GetBlacklistIndex =
-        reinterpret_cast<TestDll_GetBlacklistIndexFunction>(
-            ::GetProcAddress(dll, "TestDll_GetBlacklistIndex"));
     TestDll_IsBlacklistInitialized =
         reinterpret_cast<TestDll_IsBlacklistInitializedFunction>(
             ::GetProcAddress(dll, "TestDll_IsBlacklistInitialized"));
@@ -179,9 +174,9 @@ class BlacklistTest : public testing::Test {
     InitTestDll = reinterpret_cast<InitTestDllFunction>(
         ::GetProcAddress(dll, "InitTestDll"));
     if (!TestDll_AddDllToBlacklist || !TestDll_BlacklistSize ||
-        !TestDll_BlockedDll || !TestDll_GetBlacklistIndex ||
-        !TestDll_IsBlacklistInitialized || !TestDll_RemoveDllFromBlacklist ||
-        !TestDll_SuccessfullyBlocked || !InitTestDll)
+        !TestDll_BlockedDll || !TestDll_IsBlacklistInitialized ||
+        !TestDll_RemoveDllFromBlacklist || !TestDll_SuccessfullyBlocked ||
+        !InitTestDll)
       return;
 
     // We have to call this exported function every time this test setup runs.
@@ -254,8 +249,10 @@ TEST_F(BlacklistTest, AddAndRemoveModules) {
 }
 
 TEST_F(BlacklistTest, SuccessfullyBlocked) {
+  const int initial_size = TestDll_BlacklistSize();
+
   // Add 5 news dlls to blacklist.
-  const int kDesiredBlacklistSize = 1;
+  const int kDesiredBlacklistSize = 5;
   std::vector<base::string16> dlls_to_block;
   for (int i = 0; i < kDesiredBlacklistSize; ++i) {
     dlls_to_block.push_back(base::IntToString16(i) + L".dll");
@@ -265,7 +262,7 @@ TEST_F(BlacklistTest, SuccessfullyBlocked) {
   // Block the dlls, one at a time, and ensure SuccesfullyBlocked correctly
   // passes the list of blocked dlls.
   for (int i = 0; i < kDesiredBlacklistSize; ++i) {
-    TestDll_BlockedDll(TestDll_GetBlacklistIndex(dlls_to_block[i].c_str()));
+    TestDll_BlockedDll(initial_size + i);
 
     int size = 0;
     TestDll_SuccessfullyBlocked(NULL, &size);

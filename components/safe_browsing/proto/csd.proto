@@ -716,9 +716,13 @@ message ClientIncidentReport {
       optional ClientDownloadRequest.SignatureInfo signature = 5;
       optional ClientDownloadRequest.ImageHeaders image_headers = 6;
     }
+
+    message OmniboxInteractionIncident { optional string origin = 1; }
+
     message VariationsSeedSignatureIncident {
       optional string variations_seed_signature = 1;
     }
+
     message ResourceRequestIncident {
       enum Type {
         UNKNOWN = 0;
@@ -728,6 +732,7 @@ message ClientIncidentReport {
       optional string origin = 2;
       optional Type type = 3 [default = UNKNOWN];
     }
+
     message SuspiciousModuleIncident {
       optional string path = 1;
       optional ClientDownloadRequest.Digests digest = 2;
@@ -735,14 +740,18 @@ message ClientIncidentReport {
       optional ClientDownloadRequest.SignatureInfo signature = 4;
       optional ClientDownloadRequest.ImageHeaders image_headers = 5;
     }
+
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
     optional BinaryIntegrityIncident binary_integrity = 3;
-    optional BlacklistLoadIncident blacklist_load = 4;
-    // Note: skip tag 5 because it was previously used.
+    optional BlacklistLoadIncident DEPRECATED_blacklist_load = 4
+        [deprecated = true];
+    optional OmniboxInteractionIncident DEPRECATED_omnibox_interaction = 5
+        [deprecated = true];
     optional VariationsSeedSignatureIncident variations_seed_signature = 6;
     optional ResourceRequestIncident resource_request = 7;
-    optional SuspiciousModuleIncident suspicious_module = 8;
+    optional SuspiciousModuleIncident DEPRECATED_suspicious_module = 8
+        [deprecated = true];
   }
 
   repeated IncidentData incident = 1;

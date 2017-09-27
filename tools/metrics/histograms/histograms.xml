@@ -69915,6 +69915,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.BLAHashTime" units="ms">
+  <obsolete>
+    Blacklist Load analysis was removed in M63.
+  </obsolete>
   <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to compute the hash of a blacklisted module.
@@ -69922,6 +69925,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.BLASignatureTime" units="ms">
+  <obsolete>
+    Blacklist Load analysis was removed in M63.
+  </obsolete>
   <owner>caitkp@google.com</owner>
   <summary>
     The elapsed time to validate the signature of a blacklisted module.
