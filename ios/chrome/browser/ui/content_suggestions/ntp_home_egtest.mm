@@ -82,8 +82,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 @implementation NTPHomeTestCase
 
 + (void)setUp {
+  [super setUp];
   if (IsIPadIdiom()) {
-    [super setUp];
     // Make sure we are on the Home panel on iPad.
     chrome_test_util::OpenNewTab();
     [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
