@@ -350,10 +350,12 @@ TEST(RuntimeDeps, CreateBundle) {
 
   Target bundle(setup.settings(), Label(source_dir, "bundle"));
   InitTargetWithType(setup, &bundle, Target::CREATE_BUNDLE);
-  const std::string root_dir(build_dir + "Bundle.framework/Versions/A/");
+  const std::string root_dir(build_dir + "Bundle.framework/");
+  const std::string contents_dir(root_dir + "Versions/A/");
   bundle.bundle_data().root_dir() = SourceDir(root_dir);
-  bundle.bundle_data().resources_dir() = SourceDir(root_dir + "Resources");
-  bundle.bundle_data().executable_dir() = SourceDir(root_dir + "MacOS");
+  bundle.bundle_data().contents_dir() = SourceDir(contents_dir);
+  bundle.bundle_data().resources_dir() = SourceDir(contents_dir + "Resources");
+  bundle.bundle_data().executable_dir() = SourceDir(contents_dir + "MacOS");
   bundle.private_deps().push_back(LabelTargetPair(&dylib_data));
   bundle.private_deps().push_back(LabelTargetPair(&module_data));
   bundle.data_deps().push_back(LabelTargetPair(&data_dep));

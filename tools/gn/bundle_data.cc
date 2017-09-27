@@ -156,46 +156,12 @@ SourceFile BundleData::GetCompiledAssetCatalogPath() const {
 }
 
 SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
-  // TODO(crbug.com/764286): all bundles used to be created in $root_out_dir
-  // and the bundle main output was assumed to be the first path component
-  // relative to $root_out_dir.
-  //
-  // This broke when Chrome on iOS had to generate multiple bundles with the
-  // same names (variation of the same bundle with some assets swapped). To
-  // fix this, a new variable $bundle_contents_dir was added to support that
-  // macOS bundle files are not in the root of the bundle but in a subdirectory.
-  //
-  // To allow migration introducing this variable without breaking existing
-  // code, the function does the following heuristic:
-  // 1. if $bundle_contents_dir is defined, then returns $bundle_root_dir,
-  // 2. otherwise, returns the first component of $bundle_root_dir relative
-  //    to $root_out_dir (this was the old code).
-  //
-  // Remove those heuristics when all the code has been fixed to use the new
-  // variable $bundle_contents_dir instead of $bundle_root_dir, and just return
-  // the value of $bundle_root_dir.
+  std::string root_dir_value = root_dir().value();
+  size_t last_separator = root_dir_value.rfind('/');
+  if (last_separator != std::string::npos)
+    root_dir_value = root_dir_value.substr(0, last_separator);
 
-  if (!contents_dir().is_null()) {
-    std::string root_dir_value = root_dir().value();
-    size_t last_separator = root_dir_value.rfind('/');
-    if (last_separator != std::string::npos)
-      root_dir_value = root_dir_value.substr(0, last_separator);
-
-    return SourceFile(SourceFile::SWAP_IN, &root_dir_value);
-  }
-
-  const SourceDir& build_dir = settings->toolchain_output_dir();
-  std::string bundle_root_relative = RebasePath(root_dir().value(), build_dir);
-
-  size_t first_component = bundle_root_relative.find('/');
-  if (first_component != std::string::npos) {
-    base::StringPiece outermost_bundle_dir =
-        base::StringPiece(bundle_root_relative).substr(0, first_component);
-    std::string return_value(build_dir.value());
-    outermost_bundle_dir.AppendToString(&return_value);
-    return SourceFile(SourceFile::SWAP_IN, &return_value);
-  }
-  return SourceFile(root_dir().value());
+  return SourceFile(SourceFile::SWAP_IN, &root_dir_value);
 }
 
 SourceDir BundleData::GetBundleRootDirOutputAsDir(
