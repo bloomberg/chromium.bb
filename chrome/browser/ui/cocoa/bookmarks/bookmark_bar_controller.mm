@@ -2662,10 +2662,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ((size_t)buttonIndex < layout_.VisibleButtonCount()) {
     // The button being removed is showing in the bar.
     BookmarkButton* oldButton = buttons_[buttonIndex];
-    if (oldButton == [folderController_ parentButton]) {
-      // If we are deleting a button whose folder is currently open, close it!
-      [self closeAllBookmarkFolders];
-    }
     if (animate && innerContentAnimationsEnabled_ && [self isVisible] &&
         [[self browserWindow] isMainWindow]) {
       NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
