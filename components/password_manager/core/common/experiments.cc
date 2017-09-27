@@ -18,4 +18,9 @@ bool ManualPasswordGenerationEnabled() {
       password_manager::features::kEnableManualPasswordGeneration);
 }
 
+bool ShowAllSavedPasswordsContextMenuEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kEnableShowAllSavedPasswordsContextMenu);
+}
+
 }  // namespace password_manager

@@ -167,7 +167,7 @@
   </message>
 
   <message name="IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK" desc="The text shown as an option in the suggestion drop down when a password field is clicked">
-    Show all saved passwords...
+    Show all saved passwords
   </message>
 
   <message name="IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK" desc="The text shown as an option in the suggestion drop down when a password field is clicked">

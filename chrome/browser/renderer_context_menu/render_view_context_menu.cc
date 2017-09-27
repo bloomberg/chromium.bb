@@ -53,6 +53,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -70,6 +71,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/google/core/browser/google_util.h"
@@ -86,6 +88,7 @@
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -319,10 +322,11 @@ const struct UmaEnumCommandIdPair {
     {87, -1, IDC_CONTENT_CONTEXT_OPEN_WITH14},
     {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
     {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
+    {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {90, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {91, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -1521,6 +1525,12 @@ void RenderViewContextMenu::AppendPasswordItems() {
                                     IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
     add_separator = true;
   }
+  if (password_manager::ShowAllSavedPasswordsContextMenuEnabled()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS,
+                                    IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
+    add_separator = true;
+  }
+
   if (add_separator)
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
@@ -1710,6 +1720,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
+    case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
       return true;
 
     case IDC_ROUTE_MEDIA:
@@ -1990,6 +2001,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
       ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
           GeneratePassword();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
+      autofill::ChromeAutofillClient::FromWebContents(source_web_contents_)
+          ->ExecuteCommand(autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
       break;
 
     default:
