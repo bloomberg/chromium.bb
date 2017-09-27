@@ -1189,7 +1189,8 @@ static FcPattern *
 FcFreeTypeQueryFaceInternal (const FT_Face  face,
 			     const FcChar8  *file,
 			     unsigned int   id,
-			     FcCharSet      *cs)
+			     FcCharSet      **cs_share,
+			     FcLangSet      **ls_share)
 {
     FcPattern	    *pat;
     int		    slant = -1;
@@ -1200,7 +1201,8 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     FcBool	    variable_weight = FcFalse;
     FcBool	    variable_width = FcFalse;
     FcBool	    variable_size = FcFalse;
-    FcLangSet	    *ls;
+    FcCharSet       *cs;
+    FcLangSet       *ls;
 #if 0
     FcChar8	    *family = 0;
 #endif
@@ -1938,10 +1940,14 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     /*
      * Compute the unicode coverage for the font
      */
-    if (cs)
-	cs = FcCharSetCopy (cs);
+    if (cs_share && *cs_share)
+	cs = FcCharSetCopy (*cs_share);
     else
+    {
 	cs = FcFreeTypeCharSet (face, NULL);
+	if (cs_share)
+	    *cs_share = FcCharSetCopy (cs);
+    }
     if (!cs)
 	goto bail1;
 
@@ -1985,7 +1991,14 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 
     if (!symbol)
     {
-	ls = FcFreeTypeLangSet (cs, exclusiveLang);
+	if (ls_share && *ls_share)
+	    ls = FcLangSetCopy (*ls_share);
+	else
+	{
+	    ls = FcFreeTypeLangSet (cs, exclusiveLang);
+	    if (ls_share)
+		*ls_share = FcLangSetCopy (ls);
+	}
 	if (!ls)
 	    goto bail2;
     }
@@ -2061,7 +2074,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		     unsigned int   id,
 		     FcBlanks	    *blanks FC_UNUSED)
 {
-    return FcFreeTypeQueryFaceInternal (face, file, id, NULL);
+    return FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL);
 }
 
 FcPattern *
@@ -2083,7 +2096,7 @@ FcFreeTypeQuery(const FcChar8	*file,
     if (count)
       *count = face->num_faces;
 
-    pat = FcFreeTypeQueryFaceInternal (face, file, id, NULL);
+    pat = FcFreeTypeQueryFaceInternal (face, file, id, NULL, NULL);
 
     FT_Done_Face (face);
 bail:
@@ -2101,6 +2114,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
     FT_Face face = NULL;
     FT_Library ftLibrary = NULL;
     FcCharSet *cs = NULL;
+    FcLangSet *ls = NULL;
     FT_MM_Var *mm_var = NULL;
     FcBool index_set = id != (unsigned int) -1;
     unsigned int set_face_num = index_set ? id & 0xFFFF : 0;
@@ -2120,7 +2134,6 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 
     if (FT_New_Face (ftLibrary, (const char *) file, face_num, &face))
 	goto bail;
-    cs = FcFreeTypeCharSet (face, blanks);
 
     num_faces = face->num_faces;
     num_instances = face->style_flags >> 16;
@@ -2160,7 +2173,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	}
 
 	id = ((instance_num << 16) + face_num);
-	pat = FcFreeTypeQueryFaceInternal (face, (const FcChar8 *) file, id, cs);
+	pat = FcFreeTypeQueryFaceInternal (face, (const FcChar8 *) file, id, &cs, &ls);
 
 	if (pat)
 	{
@@ -2179,6 +2192,8 @@ skip:
 	    instance_num = 0x8000; /* variable font */
 	else
 	{
+	    FcLangSetDestroy (ls);
+	    ls = NULL;
 	    FcCharSetDestroy (cs);
 	    cs = NULL;
 	    FT_Done_Face (face);
@@ -2189,11 +2204,11 @@ skip:
 
 	    if (FT_New_Face (ftLibrary, (const char *) file, face_num, &face))
 	      break;
-	    cs = FcFreeTypeCharSet (face, blanks);
 	}
     } while (!err && (!index_set || face_num == set_face_num) && face_num < num_faces);
 
 bail:
+    FcLangSetDestroy (ls);
     FcCharSetDestroy (cs);
     if (face)
 	FT_Done_Face (face);
