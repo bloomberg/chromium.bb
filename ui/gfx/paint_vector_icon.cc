@@ -433,12 +433,12 @@ void PaintPath(Canvas* canvas,
     previous_command_type = command_type;
   }
 
-  ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size, flips_in_rtl);
-
   if (dip_size != canvas_size) {
     SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
     canvas->sk_canvas()->scale(scale, scale);
   }
+
+  ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size, flips_in_rtl);
 
   if (!clip_rect.isEmpty())
     canvas->sk_canvas()->clipRect(clip_rect);
