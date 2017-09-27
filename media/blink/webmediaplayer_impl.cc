@@ -1034,7 +1034,7 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
     if (!context_3d.gr_context)
       return;  // The context has been lost since and can't setup a GrContext.
   }
-  if (out_metadata) {
+  if (out_metadata && video_frame) {
     // WebGL last-uploaded-frame-metadata API enabled. https://crbug.com/639174
     ComputeFrameUploadMetadata(video_frame.get(), already_uploaded_id,
                                out_metadata);
@@ -1139,6 +1139,7 @@ void WebMediaPlayerImpl::ComputeFrameUploadMetadata(
     int already_uploaded_id,
     VideoFrameUploadMetadata* out_metadata) {
   DCHECK(out_metadata);
+  DCHECK(frame);
   out_metadata->frame_id = frame->unique_id();
   out_metadata->visible_rect = frame->visible_rect();
   out_metadata->timestamp = frame->timestamp();
