@@ -633,6 +633,9 @@ public class UrlBar extends AutocompleteEditText {
     private void scrollToTLDInternal() {
         if (mFocused) return;
 
+        // Ensure any selection from the focus state is cleared.
+        setSelection(0);
+
         String previousTldScrollText = mPreviousTldScrollText;
         int previousTldScrollViewWidth = mPreviousTldScrollViewWidth;
         int previousTldScrollResultXPosition = mPreviousTldScrollResultXPosition;
