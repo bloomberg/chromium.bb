@@ -240,13 +240,69 @@ TEST_P(SurfaceTest, SetOpaqueRegion) {
 }
 
 TEST_P(SurfaceTest, SetInputRegion) {
-  std::unique_ptr<Surface> surface(new Surface);
+  // Create a shell surface which size is 512x512.
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(512, 512);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_FALSE(surface->HasHitTestMask());
 
-  // Setting a non-empty input region should succeed.
-  surface->SetInputRegion(SkRegion(SkIRect::MakeWH(256, 256)));
+  {
+    // Setting a non-empty input region should succeed.
+    surface->SetInputRegion(SkRegion(SkIRect::MakeWH(256, 256)));
+    surface->Commit();
+    std::unique_ptr<std::vector<gfx::Rect>> rects =
+        surface->GetHitTestShapeRects();
 
-  // Setting an empty input region should succeed.
-  surface->SetInputRegion(SkRegion(SkIRect::MakeEmpty()));
+    // The input region doesn't contain the surface, so we need hit test mask.
+    EXPECT_TRUE(surface->HasHitTestMask());
+    ASSERT_EQ(1u, rects->size());
+    ASSERT_EQ(gfx::Rect(256, 256), (*rects)[0]);
+  }
+
+  {
+    // Setting an empty input region should succeed.
+    surface->SetInputRegion(SkRegion(SkIRect::MakeEmpty()));
+    surface->Commit();
+
+    // The input region doesn't contain the surface, so we need hit test mask.
+    EXPECT_TRUE(surface->HasHitTestMask());
+    auto rects = surface->GetHitTestShapeRects();
+    EXPECT_TRUE(rects->empty());
+  }
+
+  {
+    // Setting an input region which contains the surface.
+    surface->SetInputRegion(SkRegion(SkIRect::MakeWH(512, 512)));
+    surface->Commit();
+
+    // The input region contains the surface, so we don't need hit test mask.
+    EXPECT_FALSE(surface->HasHitTestMask());
+  }
+
+  {
+    SkRegion region(SkIRect::MakeWH(512, 512));
+    region.op(SkIRect::MakeXYWH(0, 64, 64, 64), SkRegion::kDifference_Op);
+    region.op(SkIRect::MakeXYWH(88, 88, 12, 55), SkRegion::kDifference_Op);
+    region.op(SkIRect::MakeXYWH(100, 0, 33, 66), SkRegion::kDifference_Op);
+
+    // Setting a non-rectangle input region should succeed.
+    surface->SetInputRegion(SkRegion(region));
+    surface->Commit();
+
+    // The input region doesn't contain the surface, so we need hit test mask.
+    EXPECT_TRUE(surface->HasHitTestMask());
+
+    auto rects = surface->GetHitTestShapeRects();
+    ASSERT_EQ(10u, rects->size());
+    SkRegion result(SkIRect::MakeEmpty());
+    for (const auto& r : *rects)
+      result.op(gfx::RectToSkIRect(r), SkRegion::kUnion_Op);
+    ASSERT_EQ(result, region);
+  }
 }
 
 TEST_P(SurfaceTest, SetBufferScale) {
