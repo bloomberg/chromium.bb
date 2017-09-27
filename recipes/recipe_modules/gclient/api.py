@@ -149,7 +149,7 @@ class GclientApi(recipe_api.RecipeApi):
       return revision.resolve(self.m.properties)
     return revision
 
-  def sync(self, cfg, **kwargs):
+  def sync(self, cfg, extra_sync_flags=None, **kwargs):
     revisions = []
     self.set_patch_project_revision(self.m.properties.get('patch_project'), cfg)
     for i, s in enumerate(cfg.solutions):
@@ -188,6 +188,7 @@ class GclientApi(recipe_api.RecipeApi):
       args = ['sync', '--verbose', '--nohooks', j, '--reset', '--force',
               '--upstream', '--no-nag-max', '--with_branch_heads',
               '--with_tags']
+      args.extend(extra_sync_flags or [])
       if cfg.delete_unversioned_trees:
         args.append('--delete_unversioned_trees')
       self('sync', args + revisions +
