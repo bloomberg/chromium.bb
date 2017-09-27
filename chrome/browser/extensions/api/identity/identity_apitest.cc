@@ -2128,11 +2128,13 @@ class OnSignInChangedEventTest : public IdentityTestWithSignin {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
-  // Adds an event that is expected to fire. Events are checked in the order of
-  // addition, i.e., the first event added is expected to be the first event to
-  // fire.
+  // Adds an event that is expected to fire. Events are unordered, i.e., when an
+  // event fires it will be checked against all of the expected events that have
+  // been added. This is because the order of multiple events firing due to the
+  // same underlying state change is undefined in the
+  // chrome.identity.onSignInEventChanged() API.
   void AddExpectedEvent(std::unique_ptr<base::ListValue> args) {
-    expected_events_.push_back(
+    expected_events_.insert(
         base::MakeUnique<Event>(events::IDENTITY_ON_SIGN_IN_CHANGED,
                                 api::identity::OnSignInChanged::kEventName,
                                 std::move(args), browser()->profile()));
@@ -2145,18 +2147,37 @@ class OnSignInChangedEventTest : public IdentityTestWithSignin {
     if (!HasExpectedEvent())
       return;
 
-    // Check that |event| matches the first event expected to fire.
-    const auto& expected_event = expected_events_[0];
-    EXPECT_EQ(expected_event->histogram_value, event->histogram_value);
-    EXPECT_EQ(expected_event->event_name, event->event_name);
-    EXPECT_EQ(*(expected_event->event_args.get()), *(event->event_args.get()));
+    // Search for |event| in the set of expected events.
+    bool found_event = false;
+    const auto* event_args = event->event_args.get();
+    for (const auto& expected_event : expected_events_) {
+      EXPECT_EQ(expected_event->histogram_value, event->histogram_value);
+      EXPECT_EQ(expected_event->event_name, event->event_name);
 
-    // Erase that first element whether it matched or not, since it's no longer
-    // expected.
-    expected_events_.erase(expected_events_.begin());
+      const auto* expected_event_args = expected_event->event_args.get();
+      if (*event_args != *expected_event_args)
+        continue;
+
+      expected_events_.erase(expected_event);
+      found_event = true;
+      break;
+    }
+
+    if (!found_event) {
+      EXPECT_TRUE(false) << "Received bad event:";
+
+      LOG(INFO) << "Was expecting events with these args:";
+
+      for (const auto& expected_event : expected_events_) {
+        LOG(INFO) << *(expected_event->event_args.get());
+      }
+
+      LOG(INFO) << "But received event with different args:";
+      LOG(INFO) << *event_args;
+    }
   }
 
-  std::vector<std::unique_ptr<Event>> expected_events_;
+  std::set<std::unique_ptr<Event>> expected_events_;
 };
 
 // Test that an event is fired when the primary account signs in.
@@ -2268,10 +2289,38 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   EXPECT_TRUE(HasExpectedEvent());
 }
 
+// The below tests involve elements that aren't relevant on ChromeOS:
+// - Signin of secondary accounts before the primary account signs in. On
+//   ChromeOS, this isn't possible.
+// - Signout of the primary account. On ChromeOS, this isn't possible.
 #if !defined(OS_CHROMEOS)
+// Test that signin events are fired for all known accounts when the primary
+// account signs in and there is a secondary account already present. Note that
+// the order in which the events fire is undefined.
+IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
+                       FireForAllAccountsOnPrimaryAccountSignIn) {
+  id_api()->SetAccountStateForTesting("primary", false);
+  id_api()->SetAccountStateForTesting("secondary", false);
+
+  api::identity::AccountInfo account_info;
+  account_info.id = "secondary";
+  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
+
+  // Add the secondary account, and verify that no event is yet fired for it.
+  AddAccount("secondary", "secondary");
+  EXPECT_TRUE(HasExpectedEvent());
+
+  // Add an event for the primary account in preparation for signing in.
+  account_info.id = "primary";
+  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
+
+  // Sign in with the primary account, and verify that both events are fired.
+  SignIn("primary", "primary");
+  EXPECT_FALSE(HasExpectedEvent());
+}
+
 // Test that signout events are fired for all known accounts when the primary
-// account signs out, firing first for the primary account and then for any
-// secondary accounts.
+// account signs out. Note that the order in which the events fire is undefined.
 IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
                        FireForAllAccountsOnPrimaryAccountSignOut) {
   id_api()->SetAccountStateForTesting("primary", true);
