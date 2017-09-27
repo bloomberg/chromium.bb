@@ -93,8 +93,7 @@ std::unique_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
   service->Initialize(GetApplicationContext()->GetLocalState());
   for (auto& observer : observer_list_)
     observer.SigninManagerCreated(service.get());
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return service;
 }
 
 void SigninManagerFactory::BrowserStateShutdown(web::BrowserState* context) {

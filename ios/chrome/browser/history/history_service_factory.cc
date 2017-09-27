@@ -81,8 +81,7 @@ std::unique_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
           browser_state->GetStatePath()))) {
     return nullptr;
   }
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(history_service);
+  return history_service;
 }
 
 web::BrowserState* HistoryServiceFactory::GetBrowserStateToUse(

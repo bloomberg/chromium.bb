@@ -73,8 +73,7 @@ std::unique_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
   ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
       ->Start(bookmark_model.get());
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(bookmark_model);
+  return bookmark_model;
 }
 
 web::BrowserState* BookmarkModelFactory::GetBrowserStateToUse(

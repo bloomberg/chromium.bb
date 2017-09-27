@@ -442,8 +442,7 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
       url::kAboutScheme,
       base::MakeUnique<about_handler::AboutProtocolHandler>());
 
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(job_factory);
+  return job_factory;
 }
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(

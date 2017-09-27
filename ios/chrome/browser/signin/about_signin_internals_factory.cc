@@ -59,8 +59,7 @@ AboutSigninInternalsFactory::BuildServiceInstanceFor(
           chrome_browser_state)));
   service->Initialize(
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return service;
 }
 
 void AboutSigninInternalsFactory::RegisterBrowserStatePrefs(

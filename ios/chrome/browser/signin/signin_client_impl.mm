@@ -148,8 +148,7 @@ SigninClientImpl::AddCookieChangedCallback(
   DCHECK(context_getter.get());
   std::unique_ptr<SigninCookieChangedSubscription> subscription(
       new SigninCookieChangedSubscription(context_getter, url, name, callback));
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(subscription);
+  return subscription;
 }
 
 void SigninClientImpl::OnSignedIn(const std::string& account_id,

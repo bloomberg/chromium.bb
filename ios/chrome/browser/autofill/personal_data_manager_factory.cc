@@ -59,8 +59,7 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
           chrome_browser_state),
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->IsOffTheRecord());
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return service;
 }
 
 }  // namespace autofill

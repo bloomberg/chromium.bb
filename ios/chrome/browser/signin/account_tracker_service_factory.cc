@@ -48,8 +48,7 @@ AccountTrackerServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<AccountTrackerService> service(new AccountTrackerService());
   service->Initialize(
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return service;
 }
 
 }  // namespace ios

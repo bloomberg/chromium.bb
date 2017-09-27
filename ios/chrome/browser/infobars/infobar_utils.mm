@@ -21,6 +21,5 @@ std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
   ConfirmInfoBarController* controller =
       [[ConfirmInfoBarController alloc] initWithDelegate:infobar.get()];
   infobar->SetController(controller);
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(infobar);
+  return infobar;
 }

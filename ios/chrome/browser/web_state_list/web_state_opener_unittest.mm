@@ -44,8 +44,7 @@ class WebStateOpenerTest : public PlatformTest {
     auto test_web_state = base::MakeUnique<web::TestWebState>();
     test_web_state->SetNavigationManager(
         base::MakeUnique<FakeNavigationManager>(last_committed_item_index));
-    // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-    return std::move(test_web_state);
+    return test_web_state;
   }
 
  private:

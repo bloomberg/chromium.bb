@@ -151,6 +151,5 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   // Will also initialize the sync client.
   pss->Initialize();
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(pss);
+  return pss;
 }

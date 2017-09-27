@@ -57,8 +57,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
   // Initialize the new session.
   web_state->GetNavigationManagerImpl().InitializeSession();
 
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(web_state);
+  return web_state;
 }
 
 /* static */
@@ -66,11 +65,7 @@ std::unique_ptr<WebState> WebState::CreateWithStorageSession(
     const CreateParams& params,
     CRWSessionStorage* session_storage) {
   DCHECK(session_storage);
-  std::unique_ptr<WebStateImpl> web_state(
-      new WebStateImpl(params, session_storage));
-
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(web_state);
+  return base::WrapUnique(new WebStateImpl(params, session_storage));
 }
 
 WebStateImpl::WebStateImpl(const CreateParams& params)

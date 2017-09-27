@@ -52,8 +52,7 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
       GaiaCookieManagerServiceFactory::GetForBrowserState(
           chrome_browser_state)));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(reconcilor);
+  return reconcilor;
 }
 
 }  // namespace ios
