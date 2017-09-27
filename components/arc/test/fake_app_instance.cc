@@ -53,9 +53,16 @@ void FakeAppInstance::RefreshAppList() {
   ++refresh_app_list_count_;
 }
 
+void FakeAppInstance::LaunchAppDeprecated(
+    const std::string& package_name,
+    const std::string& activity,
+    const base::Optional<gfx::Rect>& dimension) {
+  LaunchApp(package_name, activity, 0);
+}
+
 void FakeAppInstance::LaunchApp(const std::string& package_name,
                                 const std::string& activity,
-                                const base::Optional<gfx::Rect>& dimension) {
+                                int64_t display_id) {
   launch_requests_.push_back(base::MakeUnique<Request>(package_name, activity));
 }
 
@@ -236,11 +243,11 @@ void FakeAppInstance::SendInstallationFinished(const std::string& package_name,
       mojom::InstallationResultPtr(result.Clone()));
 }
 
-void FakeAppInstance::CanHandleResolution(
+void FakeAppInstance::CanHandleResolutionDeprecated(
     const std::string& package_name,
     const std::string& activity,
     const gfx::Rect& dimension,
-    const CanHandleResolutionCallback& callback) {
+    const CanHandleResolutionDeprecatedCallback& callback) {
   callback.Run(true);
 }
 
@@ -267,10 +274,14 @@ void FakeAppInstance::ShowPackageInfoDeprecated(
     const std::string& package_name,
     const gfx::Rect& dimension_on_screen) {}
 
-void FakeAppInstance::ShowPackageInfoOnPage(
+void FakeAppInstance::ShowPackageInfoOnPageDeprecated(
     const std::string& package_name,
     mojom::ShowPackageInfoPage page,
     const gfx::Rect& dimension_on_screen) {}
+
+void FakeAppInstance::ShowPackageInfoOnPage(const std::string& package_name,
+                                            mojom::ShowPackageInfoPage page,
+                                            int64_t display_id) {}
 
 void FakeAppInstance::SetNotificationsEnabled(const std::string& package_name,
                                               bool enabled) {}
@@ -325,9 +336,14 @@ void FakeAppInstance::StartPaiFlow() {
   ++start_pai_request_count_;
 }
 
-void FakeAppInstance::LaunchIntent(
+void FakeAppInstance::LaunchIntentDeprecated(
     const std::string& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {
+  LaunchIntent(intent_uri, 0);
+}
+
+void FakeAppInstance::LaunchIntent(const std::string& intent_uri,
+                                   int64_t display_id) {
   launch_intents_.push_back(intent_uri);
 }
 

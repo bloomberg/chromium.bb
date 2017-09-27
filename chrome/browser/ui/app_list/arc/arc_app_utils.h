@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_UTILS_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -85,7 +87,8 @@ bool ShouldShowInLauncher(const std::string& app_id);
 
 // Launch Android Settings app.
 bool LaunchAndroidSettingsApp(content::BrowserContext* context,
-                              int event_flags);
+                              int event_flags,
+                              int64_t display_id);
 
 // Launch Play Store app.
 bool LaunchPlayStoreWithUrl(const std::string& url);
@@ -94,11 +97,16 @@ bool LaunchPlayStoreWithUrl(const std::string& url);
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                int event_flags);
+bool LaunchApp(content::BrowserContext* context,
+               const std::string& app_id,
+               int event_flags,
+               int64_t display_id);
 
 bool LaunchAppWithIntent(content::BrowserContext* context,
                          const std::string& app_id,
                          const base::Optional<std::string>& launch_intent,
-                         int event_flags);
+                         int event_flags,
+                         int64_t display_id);
 
 // Sets task active.
 void SetTaskActive(int task_id);
@@ -123,7 +131,8 @@ void RemoveCachedIcon(const std::string& icon_resource_id);
 
 // Shows package info for ARC package at the specified page.
 bool ShowPackageInfo(const std::string& package_name,
-                     mojom::ShowPackageInfoPage page);
+                     mojom::ShowPackageInfoPage page,
+                     int64_t display_id);
 
 // Returns true if |id| represents either ARC app or ARC shelf group.
 bool IsArcItem(content::BrowserContext* context, const std::string& id);

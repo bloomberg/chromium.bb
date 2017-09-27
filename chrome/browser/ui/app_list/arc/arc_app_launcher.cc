@@ -12,11 +12,13 @@
 ArcAppLauncher::ArcAppLauncher(content::BrowserContext* context,
                                const std::string& app_id,
                                const base::Optional<std::string>& launch_intent,
-                               bool deferred_launch_allowed)
+                               bool deferred_launch_allowed,
+                               int64_t display_id)
     : context_(context),
       app_id_(app_id),
       launch_intent_(launch_intent),
-      deferred_launch_allowed_(deferred_launch_allowed) {
+      deferred_launch_allowed_(deferred_launch_allowed),
+      display_id_(display_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
 
@@ -55,8 +57,8 @@ void ArcAppLauncher::LaunchApp() {
   DCHECK(prefs && prefs->GetApp(app_id_));
   prefs->RemoveObserver(this);
 
-  if (!arc::LaunchAppWithIntent(context_, app_id_, launch_intent_,
-                                ui::EF_NONE)) {
+  if (!arc::LaunchAppWithIntent(context_, app_id_, launch_intent_, ui::EF_NONE,
+                                display_id_)) {
     VLOG(2) << "Failed to launch app: " + app_id_ + ".";
   }
 

@@ -46,6 +46,7 @@
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/display/types/display_constants.h"
 
 namespace arc {
 
@@ -309,7 +310,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
           profile_, kPlayStoreAppId,
           GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
                           {kInitialStartParam}),
-          false /* deferred_launch_allowed */);
+          false /* deferred_launch_allowed */, display::kInvalidDisplayId);
     }
 
     for (auto& observer : observer_list_)
