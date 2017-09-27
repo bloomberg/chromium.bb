@@ -1734,6 +1734,7 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-method-abort-update-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text-3/line-break/line-break-anywhere-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-3/line-break/line-break-anywhere-002.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/PaymentAddress/attributes-and-toJSON-method-manual.https.html [ Skip ]
