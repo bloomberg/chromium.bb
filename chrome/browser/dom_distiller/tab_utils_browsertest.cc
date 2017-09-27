@@ -70,8 +70,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
       loaded_distiller_page_ = true;
   }
 
-  void TitleWasSet(content::NavigationEntry* entry,
-                   bool explicit_set) override {
+  void TitleWasSet(content::NavigationEntry* entry) override {
     // The title will be set twice on distilled pages; once for the placeholder
     // and once when the distillation has finished. Watch for the second time
     // as a signal that the JavaScript that sets the content has run.

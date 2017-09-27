@@ -43,8 +43,7 @@ void SyncSessionsRouterTabHelper::DidFinishNavigation(
     NotifyRouter();
 }
 
-void SyncSessionsRouterTabHelper::TitleWasSet(content::NavigationEntry* entry,
-                                              bool explicit_set) {
+void SyncSessionsRouterTabHelper::TitleWasSet(content::NavigationEntry* entry) {
   NotifyRouter();
 }
 

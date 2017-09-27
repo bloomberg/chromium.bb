@@ -161,13 +161,19 @@ void HistoryTabHelper::DidFinishNavigation(
   UpdateHistoryForNavigation(add_page_args);
 }
 
-void HistoryTabHelper::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
+void HistoryTabHelper::TitleWasSet(NavigationEntry* entry) {
   if (received_page_title_)
     return;
 
   if (entry) {
     UpdateHistoryPageTitle(*entry);
-    received_page_title_ = explicit_set;
+
+    // For file URLs without a title, the title is synthesized. In that case, we
+    // don't want the update to count toward the "one set per page of the title
+    // to history."
+    bool title_is_synthesized =
+        entry->GetURL().SchemeIsFile() && entry->GetTitle().empty();
+    received_page_title_ = !title_is_synthesized;
   }
 }
 

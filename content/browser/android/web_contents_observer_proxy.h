@@ -42,7 +42,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DidFirstVisuallyNonEmptyPaint() override;
   void WasShown() override;
   void WasHidden() override;
-  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
+  void TitleWasSet(NavigationEntry* entry) override;
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;

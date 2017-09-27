@@ -32,8 +32,7 @@ WebContentsForcedTitle::WebContentsForcedTitle(
 
 WebContentsForcedTitle::~WebContentsForcedTitle() {}
 
-void WebContentsForcedTitle::TitleWasSet(content::NavigationEntry* entry,
-                                         bool explicit_set) {
+void WebContentsForcedTitle::TitleWasSet(content::NavigationEntry* entry) {
   if (!entry || entry->GetTitle() != title_)
     web_contents()->UpdateTitleForEntry(entry, title_);
 }

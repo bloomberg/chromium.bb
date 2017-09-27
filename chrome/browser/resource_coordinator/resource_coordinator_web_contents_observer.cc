@@ -162,8 +162,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
 }
 
 void ResourceCoordinatorWebContentsObserver::TitleWasSet(
-    content::NavigationEntry* entry,
-    bool explicit_set) {
+    content::NavigationEntry* entry) {
   if (!first_time_title_set_) {
     first_time_title_set_ = true;
     return;
