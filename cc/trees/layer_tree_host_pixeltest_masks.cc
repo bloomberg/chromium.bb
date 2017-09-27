@@ -309,6 +309,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   mask->SetIsDrawable(true);
   mask->SetLayerMaskType(mask_type_);
   blur->SetMaskLayer(mask.get());
+  CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
   float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
   float percentage_pixels_small_error = 0.0f;

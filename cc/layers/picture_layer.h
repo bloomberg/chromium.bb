@@ -55,6 +55,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   const DisplayItemList* GetDisplayItemList();
 
+  LayerMaskType mask_type() { return mask_type_; }
+
  protected:
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct PictureLayerInputs {
@@ -76,8 +78,6 @@ class CC_EXPORT PictureLayer : public Layer {
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
-
-  LayerMaskType mask_type() { return mask_type_; }
 
   PictureLayerInputs picture_layer_inputs_;
 
