@@ -37,6 +37,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/editing/EditingTriState.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SpellCheckMarker.h"
@@ -403,13 +404,13 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     }
   }
 
-  if (selected_frame->GetEditor().SelectionHasStyle(CSSPropertyDirection,
-                                                    "ltr") != kFalseTriState) {
+  if (selected_frame->GetEditor().SelectionHasStyle(
+          CSSPropertyDirection, "ltr") != EditingTriState::kFalse) {
     data.writing_direction_left_to_right |=
         WebContextMenuData::kCheckableMenuItemChecked;
   }
-  if (selected_frame->GetEditor().SelectionHasStyle(CSSPropertyDirection,
-                                                    "rtl") != kFalseTriState) {
+  if (selected_frame->GetEditor().SelectionHasStyle(
+          CSSPropertyDirection, "rtl") != EditingTriState::kFalse) {
     data.writing_direction_right_to_left |=
         WebContextMenuData::kCheckableMenuItemChecked;
   }

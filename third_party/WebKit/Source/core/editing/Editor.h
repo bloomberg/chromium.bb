@@ -107,7 +107,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void RespondToChangedContents(const Position&);
 
   bool SelectionStartHasStyle(CSSPropertyID, const String& value) const;
-  TriState SelectionHasStyle(CSSPropertyID, const String& value) const;
+  EditingTriState SelectionHasStyle(CSSPropertyID, const String& value) const;
   String SelectionStartCSSPropertyValue(CSSPropertyID);
 
   void RemoveFormattingAndStyle();
@@ -149,7 +149,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     bool IsSupported() const;
     bool IsEnabled(Event* triggering_event = nullptr) const;
 
-    TriState GetState(Event* triggering_event = nullptr) const;
+    EditingTriState GetState(Event* triggering_event = nullptr) const;
     String Value(Event* triggering_event = nullptr) const;
 
     bool IsTextInsertion() const;

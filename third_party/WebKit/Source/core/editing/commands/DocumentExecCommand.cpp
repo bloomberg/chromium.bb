@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 
 #include "core/dom/events/ScopedEventQueue.h"
+#include "core/editing/EditingTriState.h"
 #include "core/editing/Editor.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/TextControlElement.h"
@@ -113,7 +114,7 @@ bool Document::queryCommandIndeterm(const String& command_name,
     return false;
   }
 
-  return GetCommand(this, command_name).GetState() == kMixedTriState;
+  return GetCommand(this, command_name).GetState() == EditingTriState::kMixed;
 }
 
 bool Document::queryCommandState(const String& command_name,
@@ -125,7 +126,7 @@ bool Document::queryCommandState(const String& command_name,
     return false;
   }
 
-  return GetCommand(this, command_name).GetState() == kTrueTriState;
+  return GetCommand(this, command_name).GetState() == EditingTriState::kTrue;
 }
 
 bool Document::queryCommandSupported(const String& command_name,

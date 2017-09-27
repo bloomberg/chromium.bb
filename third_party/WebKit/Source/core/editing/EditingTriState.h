@@ -23,17 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TriState_h
-#define TriState_h
+#ifndef EditingTriState_h
+#define EditingTriState_h
 
-namespace WTF {
+namespace blink {
 
-enum TriState { kFalseTriState, kTrueTriState, kMixedTriState };
-}
+enum class EditingTriState { kFalse, kTrue, kMixed };
 
-using WTF::TriState;
-using WTF::kFalseTriState;
-using WTF::kTrueTriState;
-using WTF::kMixedTriState;
+}  // namespace blink
 
-#endif  // TriState_h
+#endif
