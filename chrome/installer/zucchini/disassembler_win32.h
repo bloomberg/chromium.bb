@@ -52,7 +52,7 @@ struct Win32X64Traits {
 template <class Traits>
 class DisassemblerWin32 : public Disassembler {
  public:
-  enum ReferenceType : uint8_t { kRel32, kTypeCount };
+  enum ReferenceType : uint8_t { kReloc, kRel32, kTypeCount };
 
   // Applies quick checks to determine whether |image| *may* point to the start
   // of an executable. Returns true iff the check passes.
@@ -70,8 +70,9 @@ class DisassemblerWin32 : public Disassembler {
   std::vector<ReferenceGroup> MakeReferenceGroups() const override;
 
   // Functions that return reader / writer for references.
-  std::unique_ptr<ReferenceReader> MakeReadRel32(offset_t lower,
-                                                 offset_t upper);
+  std::unique_ptr<ReferenceReader> MakeReadRelocs(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadRel32(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceWriter> MakeWriteRelocs(MutableBufferView image);
   std::unique_ptr<ReferenceWriter> MakeWriteRel32(MutableBufferView image);
 
  private:
@@ -83,6 +84,7 @@ class DisassemblerWin32 : public Disassembler {
 
   // Parsers to extract references. These are lazily called, and return whether
   // parsing was successful (failures are non-fatal).
+  bool ParseAndStoreRelocBlocks();
   bool ParseAndStoreRel32();
 
   // PE-specific translation utilities.
@@ -95,16 +97,23 @@ class DisassemblerWin32 : public Disassembler {
   // Image base address to translate between RVA and VA.
   typename Traits::Address image_base_ = 0;
 
+  // Pointer to data Directory entry of the relocation table.
+  const pe::ImageDataDirectory* base_relocation_table_ = nullptr;
+
   // Translator between offsets and RVAs.
   AddressTranslator translator_;
 
   // Reference storage.
+  BufferRegion reloc_region_;
+  std::vector<offset_t> reloc_block_offsets_;
+  offset_t reloc_end_ = 0;
   std::vector<offset_t> rel32_locations_;
 
   // Initialization states of reference storage, used for lazy initialization.
   // TODO(huangs): Investigate whether lazy initialization is useful for memory
   // reduction. This is a carryover from Courgette. To be sure we should run
   // experiment after Zucchini is able to do ensemble patching.
+  bool has_parsed_relocs_ = false;
   bool has_parsed_rel32_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerWin32);
