@@ -1383,6 +1383,48 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   DCHECK_EQ(filter->last_rect().y(), 0);
 }
 
+class ScrollObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  ScrollObserver(double delta_x, double delta_y) { Reset(delta_x, delta_y); }
+  ~ScrollObserver() override {}
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+      blink::WebGestureEvent received_update =
+          *static_cast<const blink::WebGestureEvent*>(&event);
+      remaining_delta_x_ -= received_update.data.scroll_update.delta_x;
+      remaining_delta_y_ -= received_update.data.scroll_update.delta_y;
+    } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+      if (message_loop_runner_->loop_running())
+        message_loop_runner_->Quit();
+      DCHECK_EQ(0, remaining_delta_x_);
+      DCHECK_EQ(0, remaining_delta_y_);
+      scroll_end_received_ = true;
+    }
+  }
+
+  void Wait() {
+    if (!scroll_end_received_) {
+      message_loop_runner_->Run();
+    }
+  }
+
+  void Reset(double delta_x, double delta_y) {
+    message_loop_runner_ = new content::MessageLoopRunner;
+    remaining_delta_x_ = delta_x;
+    remaining_delta_y_ = delta_y;
+    scroll_end_received_ = false;
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  double remaining_delta_x_;
+  double remaining_delta_y_;
+  bool scroll_end_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollObserver);
+};
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ScrollBubblingFromNestedOOPIFTest) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
@@ -1422,6 +1464,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       ack_observer.get());
 
+  std::unique_ptr<ScrollObserver> scroll_observer;
+  if (root_view->wheel_scroll_latching_enabled()) {
+    // All GSU events will be wrapped between a single GSB-GSE pair. The
+    // expected delta value is equal to summation of all scroll update deltas.
+    scroll_observer = base::MakeUnique<ScrollObserver>(0, 15);
+  } else {
+    // Each GSU will be wrapped betweeen its own GSB-GSE pair. The expected
+    // delta value is the delta of the first GSU event.
+    scroll_observer = base::MakeUnique<ScrollObserver>(0, 5);
+  }
+  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+      scroll_observer.get());
+
   // Now scroll the nested frame upward, this must bubble all the way up to the
   // root.
   blink::WebMouseWheelEvent scroll_event(
@@ -1440,6 +1495,32 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.has_precise_scrolling_deltas = true;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   ack_observer->Wait();
+
+  // When wheel scroll latching is disabled, each wheel event will have its own
+  // complete scroll seqeunce.
+  if (!root_view->wheel_scroll_latching_enabled())
+    scroll_observer->Wait();
+
+  // Send 10 wheel events with delta_y = 1 to the nested oopif. When scroll
+  // latching is disabled, each wheel event will have its own scroll sequence.
+  scroll_event.delta_y = 1.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  for (int i = 0; i < 10; i++) {
+    if (!root_view->wheel_scroll_latching_enabled())
+      scroll_observer->Reset(0, 1);
+    rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+    if (!root_view->wheel_scroll_latching_enabled())
+      scroll_observer->Wait();
+  }
+
+  // Send a wheel end event to complete the scrolling sequence when wheel scroll
+  // latching is enabled.
+  if (root_view->wheel_scroll_latching_enabled()) {
+    scroll_event.delta_y = 0.0f;
+    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+    scroll_observer->Wait();
+  }
 }
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
