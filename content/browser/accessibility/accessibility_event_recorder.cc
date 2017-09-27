@@ -9,9 +9,9 @@
 namespace content {
 
 AccessibilityEventRecorder::AccessibilityEventRecorder(
-    BrowserAccessibilityManager* manager)
-    : manager_(manager) {
-}
+    BrowserAccessibilityManager* manager,
+    base::ProcessId pid)
+    : manager_(manager), callback_(nullptr) {}
 
 AccessibilityEventRecorder::~AccessibilityEventRecorder() {
 }
@@ -19,9 +19,16 @@ AccessibilityEventRecorder::~AccessibilityEventRecorder() {
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
 // static
 AccessibilityEventRecorder* AccessibilityEventRecorder::Create(
-    BrowserAccessibilityManager* manager) {
-  return new AccessibilityEventRecorder(manager);
+    BrowserAccessibilityManager* manager,
+    base::ProcessId pid) {
+  return new AccessibilityEventRecorder(manager, pid);
 }
 #endif
+
+void AccessibilityEventRecorder::OnEvent(std::string event) {
+  event_logs_.push_back(event);
+  if (callback_)
+    callback_(event);
+}
 
 }  // namespace content

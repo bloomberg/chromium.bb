@@ -396,6 +396,10 @@ group("gn_all") {
     ]
   }
 
+  if (is_win || is_mac) {
+    deps += [ "//tools/accessibility/inspect:ax_dump_events" ]
+  }
+
   if (is_linux) {
     # The following are definitely linux-only.
     deps += [

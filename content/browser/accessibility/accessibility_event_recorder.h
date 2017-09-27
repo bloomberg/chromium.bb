@@ -8,10 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 
 namespace content {
+
+typedef void (*AccessibilityEventCallback)(std::string);
 
 class BrowserAccessibilityManager;
 
@@ -32,19 +36,30 @@ class AccessibilityEventRecorder {
  public:
   // Construct the right platform-specific subclass.
   static AccessibilityEventRecorder* Create(
-      BrowserAccessibilityManager* manager);
+      BrowserAccessibilityManager* manager,
+      base::ProcessId pid);
   virtual ~AccessibilityEventRecorder();
+
+  void ListenToEvents(AccessibilityEventCallback callback) {
+    callback_ = callback;
+  }
 
   // Access the vector of human-readable event logs, one string per event.
   const std::vector<std::string>& event_logs() { return event_logs_; }
 
  protected:
-  explicit AccessibilityEventRecorder(BrowserAccessibilityManager* manager);
+  explicit AccessibilityEventRecorder(BrowserAccessibilityManager* manager,
+                                      base::ProcessId pid);
+
+  void OnEvent(std::string event);
 
   BrowserAccessibilityManager* manager_;
-  std::vector<std::string> event_logs_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorder);
+
+ private:
+  std::vector<std::string> event_logs_;
+  AccessibilityEventCallback callback_;
 };
 
 }  // namespace content
