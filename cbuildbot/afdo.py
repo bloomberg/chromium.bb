@@ -356,8 +356,10 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
     gs_context: GS context to retrieve data.
 
   Returns:
-    The name of the AFDO profile file if a suitable one was found.
-    None otherwise.
+    The first return value is the name of the AFDO profile file found. None
+    otherwise.
+    The second return value indicates whether the profile found is expired or
+    not. False when no profile is found.
   """
   latest_afdo_url = _gsurls['latest_chrome_afdo'] % afdo_release_spec
 
@@ -366,7 +368,7 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
     latest_detail = gs_context.List(latest_afdo_url, details=True)
   except gs.GSNoSuchKey:
     logging.info('Could not find latest AFDO info file %s' % latest_afdo_url)
-    return None
+    return None, False
 
   # Then get the name of the latest valid AFDO profile file.
   local_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
@@ -386,9 +388,9 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
       (curr_build - cand_build) > AFDO_ALLOWED_STALE_BUILDS):
     logging.info('Found latest AFDO info file %s but it is too old' %
                  latest_afdo_url)
-    return None
+    return cand, True
 
-  return cand
+  return cand, False
 
 
 def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
@@ -416,9 +418,15 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
                        'arch': generator_arch,
                        'release': current_release,
                        'build': current_build}
-  afdo_file = VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context)
-  if afdo_file:
+  afdo_file, expired = VerifyLatestAFDOFile(afdo_release_spec, buildroot,
+                                            gs_context)
+  if afdo_file and not expired:
     return afdo_file
+
+  # The profile found in current release is too old. This clearly is a sign of
+  # problem. Therefore, don't try to find another one in previous branch.
+  if expired:
+    return None
 
   # Could not find suitable AFDO file for the current release.
   # Let's see if there is one from the previous release.
@@ -427,7 +435,11 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
                        'arch': generator_arch,
                        'release': previous_release,
                        'build': current_build}
-  return VerifyLatestAFDOFile(prev_release_spec, buildroot, gs_context)
+  afdo_file, expired = VerifyLatestAFDOFile(prev_release_spec, buildroot,
+                                            gs_context)
+  if expired:
+    return None
+  return afdo_file
 
 
 def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
