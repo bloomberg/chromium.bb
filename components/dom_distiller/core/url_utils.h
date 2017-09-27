@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/strings/string_piece_forward.h"
+
 class GURL;
 
 namespace dom_distiller {
@@ -48,7 +50,7 @@ bool IsDistilledPage(const GURL& url);
 
 // Returns a JavaScript snippet that returns whether or not a page should be
 // used with DomDistillerService and can be executed in a live page.
-std::string GetIsDistillableJs();
+base::StringPiece GetIsDistillableJs();
 
 }  // namespace url_utils
 
