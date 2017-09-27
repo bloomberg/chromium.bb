@@ -670,6 +670,13 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
         // the scroll events.
         return;
       }
+
+      // Don't bubble the GSE events that are generated and sent to intermediate
+      // bubbling targets.
+      if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+          target_view != first_bubbling_scroll_target_.target) {
+        return;
+      }
     }
 
     bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
