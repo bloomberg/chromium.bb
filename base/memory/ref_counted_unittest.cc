@@ -115,6 +115,26 @@ class Other : public base::RefCounted<Other> {
   ~Other() {}
 };
 
+class HasPrivateDestructorWithDeleter;
+
+struct Deleter {
+  static void Destruct(const HasPrivateDestructorWithDeleter* x);
+};
+
+class HasPrivateDestructorWithDeleter
+    : public base::RefCounted<HasPrivateDestructorWithDeleter, Deleter> {
+ public:
+  HasPrivateDestructorWithDeleter() {}
+
+ private:
+  friend struct Deleter;
+  ~HasPrivateDestructorWithDeleter() {}
+};
+
+void Deleter::Destruct(const HasPrivateDestructorWithDeleter* x) {
+  delete x;
+}
+
 scoped_refptr<Other> Overloaded(scoped_refptr<Other> other) {
   return other;
 }
@@ -591,4 +611,11 @@ TEST(RefCountedDeathTest, TestAdoptRef) {
   scoped_refptr<InitialRefCountIsOne> obj =
       base::MakeRefCounted<InitialRefCountIsOne>();
   EXPECT_DCHECK_DEATH(base::AdoptRef(obj.get()));
+}
+
+TEST(RefCountedUnitTest, TestPrivateDestructorWithDeleter) {
+  // Ensure that RefCounted doesn't need the access to the pointee dtor when
+  // a custom deleter is given.
+  scoped_refptr<HasPrivateDestructorWithDeleter> obj =
+      base::MakeRefCounted<HasPrivateDestructorWithDeleter>();
 }
