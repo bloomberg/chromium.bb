@@ -2951,15 +2951,12 @@ cr.define('login', function() {
 
     /**
      * Return true if user pod row has only single user pod in it, which should
-     * always be focused except desktop and tablet modes.
+     * always be focused except desktop mode.
      * @type {boolean}
      */
     get alwaysFocusSinglePod() {
-      var isDesktopUserManager = Oobe.getInstance().displayType ==
-          DISPLAY_TYPE.DESKTOP_USER_MANAGER;
-
-      return (isDesktopUserManager || this.tabletModeEnabled_) ?
-          false :
+      return Oobe.getInstance().displayType !=
+          DISPLAY_TYPE.DESKTOP_USER_MANAGER &&
           this.pods.length == 1;
     },
 
