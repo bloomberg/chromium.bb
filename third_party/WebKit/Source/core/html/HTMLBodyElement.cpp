@@ -115,6 +115,16 @@ void HTMLBodyElement::ParseAttribute(
     SetNeedsStyleRecalc(kSubtreeStyleChange,
                         StyleChangeReasonForTracing::Create(
                             StyleChangeReason::kLinkColorChange));
+  } else if (name == onafterprintAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        EventTypeNames::afterprint,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
+  } else if (name == onbeforeprintAttr) {
+    GetDocument().SetWindowAttributeEventListener(
+        EventTypeNames::beforeprint,
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
+                                     EventParameterName()));
   } else if (name == onloadAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::load,

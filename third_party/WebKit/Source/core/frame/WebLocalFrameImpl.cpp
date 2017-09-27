@@ -1379,7 +1379,7 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
   is_in_printing_ = true;
 #endif
 
-  // TODO(tkent): Dispatch the event. crbug.com/218205
+  DispatchPrintEventRecursively(EventTypeNames::beforeprint);
 }
 
 void WebLocalFrameImpl::DispatchAfterPrintEvent() {
@@ -1389,7 +1389,25 @@ void WebLocalFrameImpl::DispatchAfterPrintEvent() {
   is_in_printing_ = false;
 #endif
 
-  // TODO(tkent): Dispatch the event. crbug.com/218205
+  if (View())
+    DispatchPrintEventRecursively(EventTypeNames::afterprint);
+}
+
+void WebLocalFrameImpl::DispatchPrintEventRecursively(
+    const AtomicString& event_type) {
+  HeapVector<Member<Frame>> frames;
+  for (Frame* frame = frame_; frame; frame = frame->Tree().TraverseNext(frame_))
+    frames.push_back(frame);
+
+  for (auto& frame : frames) {
+    if (frame->IsRemoteFrame()) {
+      // TODO(tkent): Support remote frames. crbug.com/455764.
+      continue;
+    }
+    if (!frame->Tree().IsDescendantOf(frame_))
+      continue;
+    ToLocalFrame(frame)->DomWindow()->DispatchEvent(Event::Create(event_type));
+  }
 }
 
 int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,

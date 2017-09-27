@@ -465,6 +465,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Returns true if the frame is focused.
   bool IsFocused() const;
 
+  // A helper for DispatchBeforePrintEvent() and DispatchAfterPrintEvent().
+  void DispatchPrintEventRecursively(const AtomicString& event_type);
+
   Member<LocalFrameClient> local_frame_client_;
 
   // The embedder retains a reference to the WebCore LocalFrame while it is

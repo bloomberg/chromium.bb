@@ -1704,6 +1704,8 @@ interface HTMLBodyElement : HTMLElement
     getter background
     getter bgColor
     getter link
+    getter onafterprint
+    getter onbeforeprint
     getter onbeforeunload
     getter onblur
     getter onerror
@@ -1731,6 +1733,8 @@ interface HTMLBodyElement : HTMLElement
     setter background
     setter bgColor
     setter link
+    setter onafterprint
+    setter onbeforeprint
     setter onbeforeunload
     setter onblur
     setter onerror
@@ -2151,6 +2155,8 @@ interface HTMLFrameElement : HTMLElement
 interface HTMLFrameSetElement : HTMLElement
     attribute @@toStringTag
     getter cols
+    getter onafterprint
+    getter onbeforeprint
     getter onbeforeunload
     getter onblur
     getter onerror
@@ -2174,6 +2180,8 @@ interface HTMLFrameSetElement : HTMLElement
     getter rows
     method constructor
     setter cols
+    setter onafterprint
+    setter onbeforeprint
     setter onbeforeunload
     setter onblur
     setter onerror
@@ -7987,12 +7995,14 @@ interface webkitURL
     getter navigator
     getter offscreenBuffering
     getter onabort
+    getter onafterprint
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
     getter onappinstalled
     getter onauxclick
     getter onbeforeinstallprompt
+    getter onbeforeprint
     getter onbeforeunload
     getter onblur
     getter oncancel
@@ -8166,12 +8176,14 @@ interface webkitURL
     setter name
     setter offscreenBuffering
     setter onabort
+    setter onafterprint
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
     setter onappinstalled
     setter onauxclick
     setter onbeforeinstallprompt
+    setter onbeforeprint
     setter onbeforeunload
     setter onblur
     setter oncancel
