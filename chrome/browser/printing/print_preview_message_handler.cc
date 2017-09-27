@@ -227,6 +227,7 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   if (handled)
     return true;
 
+  handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
                         OnDidGetPreviewPageCount)
