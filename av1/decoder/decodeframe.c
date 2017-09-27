@@ -2655,6 +2655,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
 
   seg->update_map = 0;
   seg->update_data = 0;
+  seg->temporal_update = 0;
 
   seg->enabled = aom_rb_read_bit(rb);
   if (!seg->enabled) return;
