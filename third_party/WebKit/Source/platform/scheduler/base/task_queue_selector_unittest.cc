@@ -106,7 +106,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
         new VirtualTimeDomain(base::TimeTicks()));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       std::unique_ptr<TaskQueueImpl> task_queue =
-          base::MakeUnique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
+          std::make_unique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
                                           TaskQueue::Spec("test"));
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(std::move(task_queue));
@@ -129,7 +129,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
   }
 
   std::unique_ptr<TaskQueueImpl> NewTaskQueueWithBlockReporting() {
-    return base::MakeUnique<TaskQueueImpl>(
+    return std::make_unique<TaskQueueImpl>(
         nullptr, virtual_time_domain_.get(),
         TaskQueue::Spec("test").SetShouldReportWhenExecutionBlocked(true));
   }

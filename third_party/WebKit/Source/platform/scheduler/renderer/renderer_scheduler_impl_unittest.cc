@@ -4,11 +4,11 @@
 
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -293,15 +293,15 @@ class RendererSchedulerImplTest : public ::testing::Test {
   void SetUp() override {
     if (message_loop_) {
       main_task_runner_ = SchedulerTqmDelegateImpl::Create(
-          message_loop_.get(), base::MakeUnique<TestTimeSource>(clock_.get()));
+          message_loop_.get(), std::make_unique<TestTimeSource>(clock_.get()));
     } else {
       mock_task_runner_ = make_scoped_refptr(
           new cc::OrderedSimpleTaskRunner(clock_.get(), false));
       main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-          mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
+          mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     }
     Initialize(
-        base::MakeUnique<RendererSchedulerImplForTest>(main_task_runner_));
+        std::make_unique<RendererSchedulerImplForTest>(main_task_runner_));
   }
 
   void Initialize(std::unique_ptr<RendererSchedulerImplForTest> scheduler) {
@@ -1856,7 +1856,7 @@ class RendererSchedulerImplWithMockSchedulerTest
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
+        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
     Initialize(base::WrapUnique(mock_scheduler_));
   }

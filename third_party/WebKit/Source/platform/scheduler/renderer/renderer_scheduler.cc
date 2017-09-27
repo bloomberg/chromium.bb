@@ -4,8 +4,8 @@
 
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
+#include <memory>
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/default_tick_clock.h"
@@ -37,7 +37,7 @@ std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   base::MessageLoop* message_loop = base::MessageLoop::current();
   std::unique_ptr<RendererSchedulerImpl> scheduler(
       new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-          message_loop, base::MakeUnique<base::DefaultTickClock>())));
+          message_loop, std::make_unique<base::DefaultTickClock>())));
   return base::WrapUnique<RendererScheduler>(scheduler.release());
 }
 

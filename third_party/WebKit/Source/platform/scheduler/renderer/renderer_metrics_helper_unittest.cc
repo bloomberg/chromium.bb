@@ -4,8 +4,8 @@
 
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
 
+#include <memory>
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
@@ -30,12 +30,12 @@ class RendererMetricsHelperTest : public ::testing::Test {
 
   void SetUp() {
     histogram_tester_.reset(new base::HistogramTester());
-    clock_ = base::MakeUnique<base::SimpleTestTickClock>();
+    clock_ = std::make_unique<base::SimpleTestTickClock>();
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
     delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
-    scheduler_ = base::MakeUnique<RendererSchedulerImpl>(delegate_);
+        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
+    scheduler_ = std::make_unique<RendererSchedulerImpl>(delegate_);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
 

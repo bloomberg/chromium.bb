@@ -5,11 +5,10 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 
 #include <stddef.h>
-
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -109,9 +108,9 @@ class TaskQueueManagerTest : public ::testing::Test {
         new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
     main_task_runner_ = TaskQueueManagerDelegateForTest::Create(
         test_task_runner_.get(),
-        base::MakeUnique<TestTimeSource>(now_src_.get()));
+        std::make_unique<TestTimeSource>(now_src_.get()));
 
-    manager_ = base::MakeUnique<TaskQueueManagerForTest>(main_task_runner_);
+    manager_ = std::make_unique<TaskQueueManagerForTest>(main_task_runner_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(CreateTaskQueue());
@@ -121,7 +120,7 @@ class TaskQueueManagerTest : public ::testing::Test {
     now_src_.reset(new base::SimpleTestTickClock());
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     InitializeWithClock(num_queues,
-                        base::MakeUnique<TestTimeSource>(now_src_.get()));
+                        std::make_unique<TestTimeSource>(now_src_.get()));
   }
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
@@ -130,7 +129,7 @@ class TaskQueueManagerTest : public ::testing::Test {
     // A null clock triggers some assertions.
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     manager_ =
-        base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+        std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
             base::WrapUnique(new TestTimeSource(now_src_.get()))));
 
     for (size_t i = 0; i < num_queues; i++)
@@ -227,7 +226,7 @@ TEST_F(TaskQueueManagerTest,
       new TestCountUsesTimeSource();
 
   manager_ =
-      base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+      std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
           base::WrapUnique(test_count_uses_time_source)));
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
@@ -258,7 +257,7 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
       new TestCountUsesTimeSource();
 
   manager_ =
-      base::MakeUnique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
+      std::make_unique<TaskQueueManagerForTest>(MessageLoopTaskRunner::Create(
           base::WrapUnique(test_count_uses_time_source)));
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -1802,7 +1801,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
   Mock::VerifyAndClearExpectations(&observer);
 
   std::unique_ptr<TimeDomain> mock_time_domain =
-      base::MakeUnique<RealTimeDomain>();
+      std::make_unique<RealTimeDomain>();
   manager_->RegisterTimeDomain(mock_time_domain.get());
 
   now_src_->Advance(delay10s);

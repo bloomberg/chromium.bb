@@ -4,7 +4,8 @@
 
 #include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 namespace scheduler {
 
 std::unique_ptr<RendererScheduler> CreateRendererSchedulerForTests() {
-  return base::MakeUnique<scheduler::RendererSchedulerImpl>(
+  return std::make_unique<scheduler::RendererSchedulerImpl>(
       scheduler::LazySchedulerMessageLoopDelegateForTests::Create());
 }
 

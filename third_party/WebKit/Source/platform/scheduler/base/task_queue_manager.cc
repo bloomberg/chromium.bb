@@ -4,6 +4,7 @@
 
 #include "platform/scheduler/base/task_queue_manager.h"
 
+#include <memory>
 #include <queue>
 #include <set>
 
@@ -16,7 +17,6 @@
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/base/work_queue_sets.h"
-#include "platform/wtf/PtrUtil.h"
 
 static const double kLongTaskTraceEventThreshold = 0.05;
 
@@ -100,7 +100,7 @@ std::unique_ptr<internal::TaskQueueImpl> TaskQueueManager::CreateTaskQueueImpl(
   TimeDomain* time_domain =
       spec.time_domain ? spec.time_domain : real_time_domain_.get();
   DCHECK(time_domains_.find(time_domain) != time_domains_.end());
-  return WTF::MakeUnique<internal::TaskQueueImpl>(this, time_domain, spec);
+  return std::make_unique<internal::TaskQueueImpl>(this, time_domain, spec);
 }
 
 void TaskQueueManager::RegisterTaskQueue(scoped_refptr<TaskQueue> task_queue) {

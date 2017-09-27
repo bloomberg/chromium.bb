@@ -4,6 +4,8 @@
 
 #include "platform/scheduler/child/worker_scheduler_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -13,7 +15,6 @@
 #include "platform/scheduler/base/time_converter.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 namespace scheduler {
@@ -36,7 +37,8 @@ void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<WorkerSchedulerHelper>(main_task_runner)),
+    : WorkerScheduler(
+          std::make_unique<WorkerSchedulerHelper>(main_task_runner)),
       idle_helper_(helper_.get(),
                    this,
                    "WorkerSchedulerIdlePeriod",

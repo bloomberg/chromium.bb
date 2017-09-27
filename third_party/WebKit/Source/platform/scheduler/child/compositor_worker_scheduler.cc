@@ -4,6 +4,7 @@
 
 #include "platform/scheduler/child/compositor_worker_scheduler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -12,7 +13,6 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 namespace scheduler {
@@ -20,7 +20,8 @@ namespace scheduler {
 CompositorWorkerScheduler::CompositorWorkerScheduler(
     base::Thread* thread,
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-    : WorkerScheduler(WTF::MakeUnique<WorkerSchedulerHelper>(main_task_runner)),
+    : WorkerScheduler(
+          std::make_unique<WorkerSchedulerHelper>(main_task_runner)),
       thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() {}

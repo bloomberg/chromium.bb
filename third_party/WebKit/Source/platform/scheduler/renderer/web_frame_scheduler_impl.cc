@@ -4,6 +4,7 @@
 
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
+#include <memory>
 #include "base/trace_event/blame_context.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
@@ -394,7 +395,7 @@ void WebFrameSchedulerImpl::OnFirstMeaningfulPaint() {
 
 std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
 WebFrameSchedulerImpl::OnActiveConnectionCreated() {
-  return base::MakeUnique<WebFrameSchedulerImpl::ActiveConnectionHandleImpl>(
+  return std::make_unique<WebFrameSchedulerImpl::ActiveConnectionHandleImpl>(
       this);
 }
 

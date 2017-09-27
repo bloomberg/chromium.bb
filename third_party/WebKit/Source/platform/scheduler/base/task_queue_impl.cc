@@ -4,10 +4,10 @@
 
 #include "platform/scheduler/base/task_queue_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
@@ -799,7 +799,7 @@ TaskQueueImpl::CreateQueueEnabledVoter(scoped_refptr<TaskQueue> task_queue) {
   DCHECK_EQ(task_queue->GetTaskQueueImpl(), this);
   main_thread_only().voter_refcount++;
   main_thread_only().is_enabled_refcount++;
-  return base::MakeUnique<QueueEnabledVoterImpl>(task_queue);
+  return std::make_unique<QueueEnabledVoterImpl>(task_queue);
 }
 
 void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {

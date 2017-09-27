@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
@@ -47,8 +47,8 @@ class IdleTimeEstimatorTest : public ::testing::Test {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
-    manager_ = base::MakeUnique<TaskQueueManager>(main_task_runner_);
+        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
+    manager_ = std::make_unique<TaskQueueManager>(main_task_runner_);
     compositor_task_queue_ =
         manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("test_tq"));
     estimator_.reset(new IdleTimeEstimatorForTest(
