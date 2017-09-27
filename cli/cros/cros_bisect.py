@@ -142,6 +142,17 @@ that is close to the failure point, in particular from the corresponding branch.
         '--eval-repeat', type=int, default=3,
         help='Repeat evaluate commit for N times to calculate mean and '
              'standard deviation. Default 3.')
+    parser.add_argument(
+        '--cros-flash-retry', type=int, default=3,
+        help='Max #retry for "cros flash" command. Default 3.')
+    parser.add_argument(
+        '--cros-flash-sleep', type=int, default=60,
+        help='Wait #seconds before retry. See cros-flash-backoff for detail.')
+    parser.add_argument(
+        '--cros-flash-backoff', type=float, default=1,
+        help='Backoff factor for sleep between "cros flash" retry. If backoff '
+             'factor is 1, sleep_duration = sleep * num_retry. Otherwise, '
+             'sleep_duration = sleep * (backoff_factor) ** (num_retry - 1)')
 
   def ProcessOptions(self):
     """Process self.options.

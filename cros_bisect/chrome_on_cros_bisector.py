@@ -14,6 +14,7 @@ from chromite.cros_bisect import git_bisector
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
+from chromite.lib import retry_util
 
 
 REGEX_CROS_VERSION = re.compile(r'[Rr]?(\d+)[.-](\d+)\.(\d+)\.(\d+)$')
@@ -42,11 +43,21 @@ class ChromeOnCrosBisector(git_bisector.GitBisector):
     """Constructor.
 
     Args:
-      options: An argparse.Namespace to hold command line arguments.
+      options: An argparse.Namespace to hold command line arguments. Should
+        contain:
+        * cros_flash_retry: Max retry for "cros flash" command.
+        * cros_flash_sleep: #seconds to wait between retry.
+        * cros_flash_backoff: backoff factor. Must be >=1. If backoff factor
+            is 1, sleep_duration = sleep * num_retry. Otherwise,
+            sleep_duration = sleep * (backoff_factor) ** (num_retry - 1)
       builder: Builder to build/deploy image. Should contain repo_dir.
       evaluator: Evaluator to get score
     """
     super(ChromeOnCrosBisector, self).__init__(options, builder, evaluator)
+    self.cros_flash_retry = max(0, options.cros_flash_retry)
+    self.cros_flash_sleep = max(0, options.cros_flash_sleep)
+    self.cros_flash_backoff = max(1, options.cros_flash_backoff)
+
     self.good_cros_version = None
     self.bad_cros_version = None
     self.bisect_between_cros_version = False
@@ -183,8 +194,14 @@ class ChromeOnCrosBisector(git_bisector.GitBisector):
       xbuddy_path: xbuddy path to CrOS image to flash.
     """
     logging.notice('cros flash %s', xbuddy_path)
-    flash.Flash(self.remote, xbuddy_path, board=self.board,
-                clobber_stateful=True, disable_rootfs_verification=True)
+    @retry_util.WithRetry(
+        self.cros_flash_retry, log_all_retries=True,
+        sleep=self.cros_flash_sleep,
+        backoff_factor=self.cros_flash_backoff)
+    def do_flash():
+      flash.Flash(self.remote, xbuddy_path, board=self.board,
+                  clobber_stateful=True, disable_rootfs_verification=True)
+    do_flash()
 
   def CrosVersionToChromeCommit(self, cros_version):
     """Resolves head commit of the Chrome used by the CrOS version.

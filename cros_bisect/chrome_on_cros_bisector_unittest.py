@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import copy
 import mock
+import itertools
 import os
 
 from chromite.cli import flash
@@ -95,7 +96,8 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
     self.options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, reuse_repo=True,
         good=self.GOOD_COMMIT_SHA1, bad=self.BAD_COMMIT_SHA1, remote=self.DUT,
-        eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False)
+        eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False,
+        cros_flash_sleep=0.01, cros_flash_retry=3, cros_flash_backoff=1)
 
     self.repo_dir = os.path.join(self.tempdir,
                                  builder_module.Builder.DEFAULT_REPO_DIR)
@@ -314,6 +316,35 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
     flash_mock = self.PatchObject(flash, 'Flash')
     xbuddy_path = self.bisector.GetCrosXbuddyPath(self.GOOD_CROS_VERSION)
     self.bisector.FlashCrosImage(xbuddy_path)
+    flash_mock.assert_called_with(
+        self.DUT, xbuddy_path, board=self.BOARD, clobber_stateful=True,
+        disable_rootfs_verification=True)
+
+  def testFlashImageRetry(self):
+    """Tests FlashImage() with retry success."""
+
+    flash_mock_call_counter = itertools.count()
+    def flash_mock_return(*unused_args, **unused_kwargs):
+      nth_call = flash_mock_call_counter.next()
+      if nth_call < 3:
+        raise flash.FlashError('Flash failed.')
+      return
+
+    flash_mock = self.PatchObject(flash, 'Flash')
+    flash_mock.side_effect = flash_mock_return
+    xbuddy_path = self.bisector.GetCrosXbuddyPath(self.GOOD_CROS_VERSION)
+    self.bisector.FlashCrosImage(xbuddy_path)
+    flash_mock.assert_called_with(
+        self.DUT, xbuddy_path, board=self.BOARD, clobber_stateful=True,
+        disable_rootfs_verification=True)
+
+  def testFlashImageRetryFailed(self):
+    """Tests FlashImage() with retry failed."""
+    flash_mock = self.PatchObject(flash, 'Flash')
+    flash_mock.side_effect = flash.FlashError('Flash failed.')
+    xbuddy_path = self.bisector.GetCrosXbuddyPath(self.GOOD_CROS_VERSION)
+    with self.assertRaises(flash.FlashError):
+      self.bisector.FlashCrosImage(xbuddy_path)
     flash_mock.assert_called_with(
         self.DUT, xbuddy_path, board=self.BOARD, clobber_stateful=True,
         disable_rootfs_verification=True)
