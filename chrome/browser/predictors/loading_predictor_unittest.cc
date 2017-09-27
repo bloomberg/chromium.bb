@@ -25,11 +25,36 @@ using testing::StrictMock;
 namespace predictors {
 
 namespace {
+
 // First two are prefetchable, last one is not (see SetUp()).
 const char kUrl[] = "http://www.google.com/cats";
 const char kUrl2[] = "http://www.google.com/dogs";
 const char kUrl3[] = "https://unknown.website/catsanddogs";
-}
+
+class MockPreconnectManager : public PreconnectManager {
+ public:
+  MockPreconnectManager(
+      base::WeakPtr<Delegate> delegate,
+      scoped_refptr<net::URLRequestContextGetter> context_getter);
+
+  MOCK_METHOD3(Start,
+               void(const GURL& url,
+                    const std::vector<GURL>& preconnect_origins,
+                    const std::vector<GURL>& preresolve_hosts));
+  MOCK_METHOD1(StartPreresolveHost, void(const GURL& url));
+  MOCK_METHOD1(StartPreresolveHosts,
+               void(const std::vector<std::string>& hostnames));
+  MOCK_METHOD2(StartPreconnectUrl,
+               void(const GURL& url, bool allow_credentials));
+  MOCK_METHOD1(Stop, void(const GURL& url));
+};
+
+MockPreconnectManager::MockPreconnectManager(
+    base::WeakPtr<Delegate> delegate,
+    scoped_refptr<net::URLRequestContextGetter> context_getter)
+    : PreconnectManager(delegate, context_getter) {}
+
+}  // namespace
 
 class LoadingPredictorTest : public testing::Test {
  public:
@@ -39,6 +64,8 @@ class LoadingPredictorTest : public testing::Test {
   void TearDown() override;
 
  protected:
+  virtual LoadingPredictorConfig CreateConfig();
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<LoadingPredictor> predictor_;
@@ -50,8 +77,7 @@ LoadingPredictorTest::LoadingPredictorTest()
 LoadingPredictorTest::~LoadingPredictorTest() = default;
 
 void LoadingPredictorTest::SetUp() {
-  LoadingPredictorConfig config;
-  PopulateTestConfig(&config);
+  auto config = CreateConfig();
   predictor_ = base::MakeUnique<LoadingPredictor>(config, profile_.get());
 
   auto mock = base::MakeUnique<StrictMock<MockResourcePrefetchPredictor>>(
@@ -70,12 +96,43 @@ void LoadingPredictorTest::SetUp() {
       .WillRepeatedly(Return(false));
 
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
+
   predictor_->StartInitialization();
   content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void LoadingPredictorTest::TearDown() {
   predictor_->Shutdown();
+}
+
+LoadingPredictorConfig LoadingPredictorTest::CreateConfig() {
+  LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+  return config;
+}
+
+class LoadingPredictorPreconnectTest : public LoadingPredictorTest {
+ public:
+  void SetUp() override;
+
+ protected:
+  LoadingPredictorConfig CreateConfig() override;
+  StrictMock<MockPreconnectManager>* mock_preconnect_manager_;
+};
+
+void LoadingPredictorPreconnectTest::SetUp() {
+  LoadingPredictorTest::SetUp();
+  auto mock_preconnect_manager =
+      base::MakeUnique<StrictMock<MockPreconnectManager>>(
+          predictor_->GetWeakPtr(), profile_->GetRequestContext());
+  mock_preconnect_manager_ = mock_preconnect_manager.get();
+  predictor_->set_mock_preconnect_manager(std::move(mock_preconnect_manager));
+}
+
+LoadingPredictorConfig LoadingPredictorPreconnectTest::CreateConfig() {
+  LoadingPredictorConfig config = LoadingPredictorTest::CreateConfig();
+  config.mode |= LoadingPredictorConfig::PRECONNECT;
+  return config;
 }
 
 TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {
@@ -206,6 +263,36 @@ TEST_F(LoadingPredictorTest, TestDontTrackNonPrefetchableUrls) {
   const GURL url3 = GURL(kUrl3);
   predictor_->PrepareForPageLoad(url3, HintOrigin::EXTERNAL);
   EXPECT_TRUE(predictor_->active_hints_.empty());
+}
+
+TEST_F(LoadingPredictorTest, TestDontPredictOmniboxHints) {
+  const GURL omnibox_suggestion = GURL("http://search.com/kittens");
+  // We expect that no prediction will be requested.
+  predictor_->PrepareForPageLoad(omnibox_suggestion, HintOrigin::OMNIBOX);
+  EXPECT_TRUE(predictor_->active_hints_.empty());
+}
+
+TEST_F(LoadingPredictorPreconnectTest, TestHandleOmniboxHint) {
+  const GURL preconnect_suggestion = GURL("http://search.com/kittens");
+  EXPECT_CALL(*mock_preconnect_manager_,
+              StartPreconnectUrl(preconnect_suggestion, true));
+  predictor_->PrepareForPageLoad(preconnect_suggestion, HintOrigin::OMNIBOX,
+                                 true);
+  // The second suggestion for the same host should be filtered out.
+  const GURL preconnect_suggestion2 = GURL("http://search.com/puppies");
+  predictor_->PrepareForPageLoad(preconnect_suggestion2, HintOrigin::OMNIBOX,
+                                 true);
+
+  const GURL preresolve_suggestion = GURL("http://en.wikipedia.org/wiki/main");
+  EXPECT_CALL(*mock_preconnect_manager_,
+              StartPreresolveHost(preresolve_suggestion));
+  predictor_->PrepareForPageLoad(preresolve_suggestion, HintOrigin::OMNIBOX,
+                                 false);
+  // The second suggestions should be filtered out as well.
+  const GURL preresolve_suggestion2 =
+      GURL("http://en.wikipedia.org/wiki/random");
+  predictor_->PrepareForPageLoad(preresolve_suggestion2, HintOrigin::OMNIBOX,
+                                 false);
 }
 
 }  // namespace predictors
