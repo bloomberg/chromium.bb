@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -11,9 +12,9 @@
   <template>
     <style include="md-select cr-hidden-style">
       .shortcut-card {
+        @apply(--cr-primary-text);
         @apply(--shadow-elevation-2dp);
         background-color: white;
-        color: var(--paper-grey-600);
         margin: 0 auto 16px auto;
         max-width: 928px;
         min-width: 600px;
@@ -24,26 +25,35 @@
       .command-entry {
         align-items: center;
         display: flex;
-        height: 48px;
+        height: var(--cr-section-min-height);
       }
 
       .command-name {
-        color: var(--paper-grey-900);
         flex: 1;
       }
 
       .command-entry .md-select-wrapper {
-        -webkit-margin-start: 40px;
+        -webkit-margin-start: var(--cr-section-padding);
+      }
+
+      /* Vertically align with paper-input. */
+      .command-entry .md-select {
+        /* TODO(scottchen): line-height needs adjustment to fix large fonts,
+         * same for paper-input. */
+        line-height: 22px;
+        /* Below rules help align md-select and paper-input underline. */
+        margin-top: 3px;
+        padding-bottom: 0;
+        padding-top: 0;
       }
 
       .card-title {
         align-items: center;
-        border-bottom: 1px solid var(--paper-grey-400);
+        border-bottom: var(--cr-separator-line);
         display: flex;
-        font-size: 14px;
-        font-weight: 500;
         margin-bottom: 9px;
-        padding: 16px 20px;
+        padding: 16px var(--cr-section-padding);
+        @apply(--cr-title-text);
       }
 
       .icon {

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_input_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -20,7 +21,8 @@
 
       #input {
         --paper-input-container: {
-          margin-bottom: 12px;
+          margin-bottom: 0px;
+          margin-top: 2px;  /* Offset underline spacing. */
           padding: 0;
           @apply(--cr-primary-text);
         };
@@ -35,7 +37,8 @@
     </style>
     <div id="main">
       <paper-input id="input" placeholder="$i18n{shortcutTypeAShortcut}"
-        value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]">
+        value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]"
+        no-label-float>
       </paper-input>
       <button id="clear" is="paper-icon-button-light"
           class="icon-clear no-overlap" on-tap="onClearTap_"
