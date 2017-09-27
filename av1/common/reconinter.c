@@ -995,7 +995,6 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif
   DECLARE_ALIGNED(16, uint8_t,
                   tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
-  const int tmp_buf_stride = MAX_SB_SIZE;
 #undef INTER_PRED_BYTES_PER_PIXEL
 
 #if CONFIG_HIGHBITDEPTH
@@ -1009,6 +1008,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif
 
 #if CONFIG_CONVOLVE_ROUND
+  const int tmp_buf_stride = MAX_SB_SIZE;
   const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
