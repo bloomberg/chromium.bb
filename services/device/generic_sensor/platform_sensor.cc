@@ -138,9 +138,8 @@ bool PlatformSensor::UpdateSensorInternal(const ConfigMap& configurations) {
 
     const auto& conf_list = pair.second;
     for (const auto& configuration : conf_list) {
-      if (!optimal_configuration || configuration > *optimal_configuration) {
+      if (!optimal_configuration || configuration > *optimal_configuration)
         optimal_configuration = &configuration;
-      }
     }
   }
 
