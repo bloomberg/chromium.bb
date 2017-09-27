@@ -164,6 +164,12 @@ struct ImageOptionalHeader64 {
 static_assert(sizeof(ImageOptionalHeader64) == 0xF0,
               "Optional header (64) size should be 0xF0 bytes");
 
+struct RelocHeader {
+  uint32_t rva_hi;
+  uint32_t size;
+};
+static_assert(sizeof(RelocHeader) == 8, "RelocHeader size should be 8 bytes");
+
 #pragma pack(pop)
 
 }  // namespace pe
