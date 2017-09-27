@@ -34,37 +34,28 @@ const char kNormalScriptURL[] = "https://example.com/normal.js";
 // ServiceWorkerScriptURLLoader.
 class MockHTTPServer {
  public:
-  void AddResponse(const GURL& url,
-                   const std::string& headers,
-                   const std::string& body) {
-    auto result =
-        responses_.emplace(std::make_pair(url, MockResponse(headers, body)));
+  struct Response {
+    Response(const std::string& headers, const std::string& body)
+        : headers(headers), body(body) {}
+
+    const std::string headers;
+    const std::string body;
+    bool has_certificate_error = false;
+  };
+
+  void Add(const GURL& url, const Response& response) {
+    auto result = responses_.emplace(std::make_pair(url, response));
     ASSERT_TRUE(result.second);
   }
 
-  const std::string& GetHeaders(const GURL& url) {
+  const Response& Get(const GURL& url) {
     auto found = responses_.find(url);
-    if (found == responses_.end())
-      return base::EmptyString();
-    return found->second.headers;
-  }
-
-  const std::string& GetBody(const GURL& url) {
-    auto found = responses_.find(url);
-    if (found == responses_.end())
-      return base::EmptyString();
-    return found->second.body;
+    EXPECT_TRUE(found != responses_.end());
+    return found->second;
   }
 
  private:
-  struct MockResponse {
-    MockResponse(const std::string& headers, const std::string& body)
-        : headers(headers), body(body) {}
-    std::string headers;
-    std::string body;
-  };
-
-  std::map<GURL, MockResponse> responses_;
+  std::map<GURL, Response> responses_;
 };
 
 // A URLLoaderFactory that returns a mocked response provided by MockHTTPServer.
@@ -87,21 +78,30 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                             mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
-    const std::string& headers = mock_server_->GetHeaders(url_request.url);
+    const MockHTTPServer::Response& response =
+        mock_server_->Get(url_request.url);
+
+    // Pass the response header to the client.
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-    ResourceResponseHead response;
-    response.headers = info.headers;
-    response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response, base::nullopt, nullptr);
+        net::HttpUtil::AssembleRawHeaders(response.headers.c_str(),
+                                          response.headers.size()));
+    ResourceResponseHead response_head;
+    response_head.headers = info.headers;
+    response_head.headers->GetMimeType(&response_head.mime_type);
+    base::Optional<net::SSLInfo> ssl_info;
+    if (response.has_certificate_error) {
+      ssl_info.emplace();
+      ssl_info->cert_status = net::CERT_STATUS_DATE_INVALID;
+    }
+    client->OnReceiveResponse(response_head, ssl_info, nullptr);
 
+    // Pass the response body to the client.
     // TODO(nhiroki): Add test cases where the body size is bigger than the
     // buffer size used in ServiceWorkerScriptURLLoader.
-    const std::string& body = mock_server_->GetBody(url_request.url);
-    uint32_t bytes_written = body.size();
+    uint32_t bytes_written = response.body.size();
     mojo::DataPipe data_pipe;
-    data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
+    data_pipe.producer_handle->WriteData(response.body.data(), &bytes_written,
                                          MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
@@ -136,10 +136,11 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     InitializeStorage();
 
-    mock_server_->AddResponse(GURL(kNormalScriptURL),
-                              std::string("HTTP/1.1 200 OK\n"
-                                          "Content-Type: text/javascript\n\n"),
-                              std::string("this body came from the network"));
+    mock_server_->Add(GURL(kNormalScriptURL),
+                      MockHTTPServer::Response(
+                          std::string("HTTP/1.1 200 OK\n"
+                                      "Content-Type: text/javascript\n\n"),
+                          std::string("this body came from the network")));
 
     // Initialize URLLoaderFactory.
     mojom::URLLoaderFactoryPtr test_loader_factory;
@@ -219,7 +220,7 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
 
     // Verify the response body.
     {
-      const std::string& expected_body = mock_server_->GetBody(url);
+      const std::string& expected_body = mock_server_->Get(url).body;
       std::unique_ptr<ServiceWorkerResponseReader> reader =
           helper_->context()->storage()->CreateResponseReader(
               cache_resource_id);
@@ -266,20 +267,21 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
-  EXPECT_EQ(mock_server_->GetBody(script_url), response);
+  EXPECT_EQ(mock_server_->Get(script_url).body, response);
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(script_url));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
-  const GURL kEmptyScriptURL("https://example.com/empty.js");
-  mock_server_->AddResponse(kEmptyScriptURL,
-                            std::string("HTTP/1.1 200 OK\n"
-                                        "Content-Type: text/javascript\n\n"),
-                            std::string());
-  SetUpRegistration(kEmptyScriptURL);
-  DoRequest(kEmptyScriptURL);
+  const GURL kScriptURL("https://example.com/empty.js");
+  mock_server_->Add(
+      kScriptURL,
+      MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
+                                           "Content-Type: text/javascript\n\n"),
+                               std::string()));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
   client_.RunUntilComplete();
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
 
@@ -292,16 +294,16 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   EXPECT_TRUE(response.empty());
 
   // The response should also be stored in the storage.
-  EXPECT_TRUE(VerifyStoredResponse(kEmptyScriptURL));
+  EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
-  const GURL kNonExistentScriptURL("https://example.com/nonexistent.js");
-  mock_server_->AddResponse(kNonExistentScriptURL,
-                            std::string("HTTP/1.1 404 Not Found\n\n"),
-                            std::string());
-  SetUpRegistration(kNonExistentScriptURL);
-  DoRequest(kNonExistentScriptURL);
+  const GURL kScriptURL("https://example.com/nonexistent.js");
+  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+                                    std::string("HTTP/1.1 404 Not Found\n\n"),
+                                    std::string()));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
   client_.RunUntilComplete();
 
   // The request should be failed because of the 404 response.
@@ -309,16 +311,36 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(kNonExistentScriptURL));
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
+}
+
+TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
+  // Serve a response with a certificate error.
+  const GURL kScriptURL("https://example.com/certificate-error.js");
+  MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
+                                    std::string("body"));
+  response.has_certificate_error = true;
+  mock_server_->Add(kScriptURL, response);
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
+  client_.RunUntilComplete();
+
+  // The request should be failed because of the response with the certificate
+  // error.
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_FALSE(client_.has_received_response());
+
+  // The response shouldn't be stored in the storage.
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
-  const GURL kNoMimeTypeScriptURL("https://example.com/no-mime-type.js");
-  mock_server_->AddResponse(kNoMimeTypeScriptURL,
-                            std::string("HTTP/1.1 200 OK\n\n"),
-                            std::string("body with no MIME type"));
-  SetUpRegistration(kNoMimeTypeScriptURL);
-  DoRequest(kNoMimeTypeScriptURL);
+  const GURL kScriptURL("https://example.com/no-mime-type.js");
+  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+                                    std::string("HTTP/1.1 200 OK\n\n"),
+                                    std::string("body with no MIME type")));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
   client_.RunUntilComplete();
 
   // The request should be failed because of the response with no MIME type.
@@ -326,17 +348,17 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(kNoMimeTypeScriptURL));
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
-  const GURL kBadMimeTypeScriptURL("https://example.com/bad-mime-type.js");
-  mock_server_->AddResponse(kBadMimeTypeScriptURL,
-                            std::string("HTTP/1.1 200 OK\n"
-                                        "Content-Type: text/css\n\n"),
-                            std::string("body with bad MIME type"));
-  SetUpRegistration(kBadMimeTypeScriptURL);
-  DoRequest(kBadMimeTypeScriptURL);
+  const GURL kScriptURL("https://example.com/bad-mime-type.js");
+  mock_server_->Add(kScriptURL, MockHTTPServer::Response(
+                                    std::string("HTTP/1.1 200 OK\n"
+                                                "Content-Type: text/css\n\n"),
+                                    std::string("body with bad MIME type")));
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
   client_.RunUntilComplete();
 
   // The request should be failed because of the response with the bad MIME
@@ -345,7 +367,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(kBadMimeTypeScriptURL));
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
@@ -353,12 +375,12 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
   // Service-Worker-Allowed header allows it.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->AddResponse(
-      kScriptURL,
-      std::string("HTTP/1.1 200 OK\n"
-                  "Content-Type: text/javascript\n"
-                  "Service-Worker-Allowed: /in-scope/\n\n"),
-      std::string());
+  mock_server_->Add(kScriptURL,
+                    MockHTTPServer::Response(
+                        std::string("HTTP/1.1 200 OK\n"
+                                    "Content-Type: text/javascript\n"
+                                    "Service-Worker-Allowed: /in-scope/\n\n"),
+                        std::string()));
   SetUpRegistration(kScriptURL, kScope);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
@@ -370,7 +392,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
   std::string response;
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
-  EXPECT_EQ(mock_server_->GetBody(kScriptURL), response);
+  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
@@ -381,10 +403,11 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
   // Service-Worker-Allowed header is not specified.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->AddResponse(kScriptURL,
-                            std::string("HTTP/1.1 200 OK\n"
-                                        "Content-Type: text/javascript\n\n"),
-                            std::string());
+  mock_server_->Add(
+      kScriptURL,
+      MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
+                                           "Content-Type: text/javascript\n\n"),
+                               std::string()));
   SetUpRegistration(kScriptURL, kScope);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
@@ -398,9 +421,9 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
 }
 
 TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
-  GURL script_url(kNormalScriptURL);
-  SetUpRegistration(script_url);
-  DoRequest(script_url);
+  const GURL kScriptURL(kNormalScriptURL);
+  SetUpRegistration(kScriptURL);
+  DoRequest(kScriptURL);
 
   // Make the service worker redundant.
   version_->Doom();
@@ -413,7 +436,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
-  EXPECT_FALSE(VerifyStoredResponse(script_url));
+  EXPECT_FALSE(VerifyStoredResponse(kScriptURL));
 }
 
 }  // namespace content
