@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
+#include "base/i18n/rtl.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -63,6 +64,47 @@ TEST(VectorIconTest, RelativeMoveToAfterClose) {
   EXPECT_TRUE(mock.paths()[0].getLastPt(&last_point));
   EXPECT_EQ(SkIntToScalar(74), last_point.x());
   EXPECT_EQ(SkIntToScalar(77), last_point.y());
+}
+
+TEST(VectorIconTest, FlipsInRtl) {
+  // Set the locale to a rtl language otherwise FLIPS_IN_RTL will do nothing.
+  base::i18n::SetICUDefaultLocale("he");
+  ASSERT_TRUE(base::i18n::IsRTL());
+
+  const int canvas_size = 20;
+  const SkColor color = SK_ColorWHITE;
+
+  Canvas canvas(gfx::Size(canvas_size, canvas_size), 1.0f, true);
+
+  // Create a 20x20 square icon which has FLIPS_IN_RTL, and CANVAS_DIMENSIONS
+  // are twice as large as |canvas|.
+  const PathElement elements[] = {
+      CANVAS_DIMENSIONS, 2 * canvas_size,
+      FLIPS_IN_RTL,
+      MOVE_TO, 10, 10,
+      R_H_LINE_TO, 20,
+      R_V_LINE_TO, 20,
+      R_H_LINE_TO, -20,
+      CLOSE,
+      END,
+  };
+  const VectorIcon icon = {elements, nullptr};
+  PaintVectorIcon(&canvas, icon, canvas_size, color);
+
+  // Count the number of pixels in the canvas.
+  auto bitmap = canvas.GetBitmap();
+  int colored_pixel_count = 0;
+  for (int i = 0; i < bitmap.width(); ++i) {
+    for (int j = 0; j < bitmap.height(); ++j) {
+      if (bitmap.getColor(i, j) == color)
+        colored_pixel_count++;
+    }
+  }
+
+  // Verify that the amount of colored pixels on the canvas bitmap should be a
+  // quarter of the original icon, since each side should be scaled down by a
+  // factor of two.
+  EXPECT_EQ(100, colored_pixel_count);
 }
 
 }  // namespace
