@@ -47,7 +47,7 @@ class CORE_EXPORT NGPhysicalFragment
     // enough to store.
   };
 
-  ~NGPhysicalFragment();
+  virtual ~NGPhysicalFragment();
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
   bool IsContainer() const {
