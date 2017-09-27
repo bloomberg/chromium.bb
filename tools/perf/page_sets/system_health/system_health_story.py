@@ -54,7 +54,8 @@ class SystemHealthStory(page.Page):
   TAGS = None
   PLATFORM_SPECIFIC = False
 
-  def __init__(self, story_set, take_memory_measurement):
+  def __init__(self, story_set, take_memory_measurement,
+      extra_browser_args=None):
     case, group, _ = self.NAME.split(':')
     tags = []
     if self.TAGS:
@@ -66,7 +67,8 @@ class SystemHealthStory(page.Page):
         page_set=story_set, name=self.NAME, url=self.URL, tags=tags,
         credentials_path='../data/credentials.json',
         grouping_keys={'case': case, 'group': group},
-        platform_specific=self.PLATFORM_SPECIFIC)
+        platform_specific=self.PLATFORM_SPECIFIC,
+        extra_browser_args=extra_browser_args)
     self._take_memory_measurement = take_memory_measurement
 
   @classmethod

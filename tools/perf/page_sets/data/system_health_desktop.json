@@ -60,6 +60,12 @@
         "browse:social:twitter_infinite_scroll": {
             "DEFAULT": "system_health_desktop_054.wprgo"
         },
+        "browse_accessibility:tech:codesearch": {
+            "DEFAULT": "system_health_desktop_059.wprgo"
+        },
+        "browse_accessibility:tools:gmail_compose": {
+            "DEFAULT": "system_health_desktop_059.wprgo"
+        },
         "load:games:alphabetty": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
@@ -185,6 +191,12 @@
         },
         "load:tools:weather": {
             "DEFAULT": "system_health_desktop_004.wprgo"
+        },
+        "load_accessibility:media:wikipedia": {
+            "DEFAULT": "system_health_desktop_059.wprgo"
+        },
+        "load_accessibility:shopping:amazon": {
+            "DEFAULT": "system_health_desktop_059.wprgo"
         },
         "long_running:tools:gmail-background": {
             "DEFAULT": "system_health_desktop_028.wprgo"
