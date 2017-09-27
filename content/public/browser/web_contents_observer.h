@@ -337,10 +337,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
                                 const std::string& name) {}
 
-  // This methods is invoked when the title of the WebContents is set. If the
-  // title was explicitly set, |explicit_set| is true, otherwise the title was
-  // synthesized and |explicit_set| is false.
-  virtual void TitleWasSet(NavigationEntry* entry, bool explicit_set) {}
+  // This methods is invoked when the title of the WebContents is set.
+  virtual void TitleWasSet(NavigationEntry* entry) {}
 
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}

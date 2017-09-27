@@ -523,7 +523,7 @@ gfx::Size Shell::GetShellDefaultSize() {
   return default_shell_size;
 }
 
-void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
+void Shell::TitleWasSet(NavigationEntry* entry) {
   if (entry)
     PlatformSetTitle(entry->GetTitle());
 }

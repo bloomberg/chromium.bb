@@ -187,8 +187,7 @@ void WebAuthFlow::DidGetRedirectForResourceRequest(
   BeforeUrlLoaded(details.new_url);
 }
 
-void WebAuthFlow::TitleWasSet(content::NavigationEntry* entry,
-                              bool explicit_set) {
+void WebAuthFlow::TitleWasSet(content::NavigationEntry* entry) {
   if (delegate_)
     delegate_->OnAuthFlowTitleChange(base::UTF16ToUTF8(entry->GetTitle()));
 }

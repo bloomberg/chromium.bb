@@ -27,7 +27,7 @@ class WebContentsForcedTitle
                          const base::string16& title);
 
   // content::WebContentsObserver:
-  void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
 
   base::string16 title_;
 

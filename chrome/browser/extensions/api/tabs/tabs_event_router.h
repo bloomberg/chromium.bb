@@ -169,8 +169,7 @@ class TabsEventRouter : public TabStripModelObserver,
     // content::WebContentsObserver:
     void NavigationEntryCommitted(
         const content::LoadCommittedDetails& load_details) override;
-    void TitleWasSet(content::NavigationEntry* entry,
-                     bool explicit_set) override;
+    void TitleWasSet(content::NavigationEntry* entry) override;
     void WebContentsDestroyed() override;
 
    private:

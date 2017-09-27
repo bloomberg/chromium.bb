@@ -58,7 +58,7 @@ class WebContentsEntry : public content::WebContentsObserver {
   void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
 
   void RenderFrameReady(int process_routing_id, int frame_routing_id);
 
@@ -249,8 +249,7 @@ void WebContentsEntry::DidFinishNavigation(
   }));
 }
 
-void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
-                                   bool explicit_set) {
+void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry) {
   ForEachTask(base::Bind([](RendererTask* task) {
     task->UpdateTitle();
     task->UpdateFavicon();

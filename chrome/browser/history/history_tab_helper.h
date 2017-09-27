@@ -45,7 +45,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
+  void TitleWasSet(content::NavigationEntry* entry) override;
   void WebContentsDestroyed() override;
 
   // Helper function to return the history service.  May return NULL.

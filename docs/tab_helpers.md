@@ -53,7 +53,7 @@ class TitleLoggerTabHelper
   ~TitleLoggerTabHelper() override;
 
   // content::WebContentsObserver
-  void TitleWasSet(NavigationEntry* entry, bool explicit_set) override {
+  void TitleWasSet(NavigationEntry* entry) override {
       LOG(INFO) << "Title: " << entry->GetTitle();
   }
 

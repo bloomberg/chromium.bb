@@ -1553,7 +1553,7 @@ void TitleWatcher::DidStopLoading() {
   TestTitle();
 }
 
-void TitleWatcher::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
+void TitleWatcher::TitleWasSet(NavigationEntry* entry) {
   TestTitle();
 }
 
