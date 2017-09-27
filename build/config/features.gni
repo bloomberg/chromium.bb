@@ -16,6 +16,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/gclient_args.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -24,10 +25,15 @@ declare_args() {
   # Enables Native Client support.
   # Temporarily disable nacl on arm64 linux to get rid of compilation errors.
   # TODO(mcgrathr): When mipsel-nacl-clang is available, drop the exclusion.
-  enable_nacl = !is_ios && !is_android && !is_fuchsia && !is_chromecast &&
+  enable_nacl = checkout_nacl &&
+                !is_ios && !is_android && !is_fuchsia && !is_chromecast &&
                 current_cpu != "mipsel" && current_cpu != "mips64el" &&
                 !(is_linux && target_cpu == "arm64")
+}
 
+assert(!enable_nacl || checkout_nacl)
+
+declare_args() {
   # Non-SFI is not yet supported on mipsel
   enable_nacl_nonsfi = current_cpu != "mipsel" && current_cpu != "mips64el"
 
