@@ -863,12 +863,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(component_updater::CrOSComponent::GetInstalledComponents),
       base::BindOnce(component_updater::CrOSComponent::RegisterComponents));
-
-  if (base::FeatureList::IsEnabled(features::kCrOSContainer)) {
-    // Force cros-termina component install (or update if installed).
-    component_updater::CrOSComponent::LoadComponent(
-        "cros-termina", base::Callback<void(const std::string&)>());
-  }
 }
 
 class GuestLanguageSetCallbackData {
