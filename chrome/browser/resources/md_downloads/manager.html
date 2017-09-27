@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
@@ -38,19 +39,12 @@
       }
 
       #toolbar::after {
-        box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
         content: '';
-        display: block;
-        height: 6px;
-        opacity: 0;
-        position: absolute;
-        top: 100%;
-        transition: opacity 500ms;
-        width: 100%;
+        @apply(--cr-container-shadow);
       }
 
       :host([has-shadow_]) #toolbar::after {
-        opacity: 1;
+        opacity: var(--cr-container-shadow-max-opacity);
       }
 
       #downloads-list {
