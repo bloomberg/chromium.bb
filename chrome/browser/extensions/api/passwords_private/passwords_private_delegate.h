@@ -60,6 +60,9 @@ class PasswordsPrivateDelegate : public KeyedService {
   // |index| The index for the exception url entry being removed.
   virtual void RemovePasswordException(size_t index) = 0;
 
+  // Undoes the last removal of a saved password or exception.
+  virtual void UndoRemoveSavedPasswordOrException() = 0;
+
   // Requests the plain text password for entry corresponding to the |index|
   // generated for each entry of the password list.
   // |index| the index created when going over the list of saved passwords.

@@ -45,6 +45,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const ExceptionEntriesCallback& callback) override;
   void RemoveSavedPassword(size_t index) override;
   void RemovePasswordException(size_t index) override;
+  void UndoRemoveSavedPasswordOrException() override;
   void RequestShowPassword(size_t index,
                            content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
@@ -80,6 +81,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   void RemoveSavedPasswordInternal(size_t index);
   void RemovePasswordExceptionInternal(size_t index);
+  void UndoRemoveSavedPasswordOrExceptionInternal();
   void RequestShowPasswordInternal(size_t index,
                                    content::WebContents* web_contents);
 

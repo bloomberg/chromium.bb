@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
@@ -97,6 +97,7 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
     // Since this is just mock data, remove the first entry regardless of
     // the data contained.
+    last_deleted_entry_ = std::move(current_entries_.front());
     current_entries_.erase(current_entries_.begin());
     SendSavedPasswordsList();
   }
@@ -107,8 +108,24 @@ class TestDelegate : public PasswordsPrivateDelegate {
 
     // Since this is just mock data, remove the first entry regardless of
     // the data contained.
+    last_deleted_exception_ = std::move(current_exceptions_.front());
     current_exceptions_.erase(current_exceptions_.begin());
     SendPasswordExceptionsList();
+  }
+
+  // Simplified version of undo logic, only use for testing.
+  void UndoRemoveSavedPasswordOrException() override {
+    if (last_deleted_entry_) {
+      current_entries_.insert(current_entries_.begin(),
+                              std::move(*last_deleted_entry_));
+      last_deleted_entry_ = base::nullopt;
+      SendSavedPasswordsList();
+    } else if (last_deleted_exception_) {
+      current_exceptions_.insert(current_exceptions_.begin(),
+                                 std::move(*last_deleted_exception_));
+      last_deleted_exception_ = base::nullopt;
+      SendPasswordExceptionsList();
+    }
   }
 
   void RequestShowPassword(size_t index,
@@ -148,6 +165,11 @@ class TestDelegate : public PasswordsPrivateDelegate {
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
   std::vector<api::passwords_private::ExceptionEntry> current_exceptions_;
+  // Simplified version of a undo manager that only allows undoing and redoing
+  // the very last deletion.
+  base::Optional<api::passwords_private::PasswordUiEntry> last_deleted_entry_;
+  base::Optional<api::passwords_private::ExceptionEntry>
+      last_deleted_exception_;
   Profile* profile_;
 };
 
@@ -208,12 +230,16 @@ TestDelegate* PasswordsPrivateApiTest::s_test_delegate_ = nullptr;
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RemoveSavedPassword) {
-  EXPECT_TRUE(RunPasswordsSubtest("removeSavedPassword")) << message_;
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RemoveAndUndoRemoveSavedPassword) {
+  EXPECT_TRUE(RunPasswordsSubtest("removeAndUndoRemoveSavedPassword"))
+      << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RemovePasswordException) {
-  EXPECT_TRUE(RunPasswordsSubtest("removePasswordException")) << message_;
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       RemoveAndUndoRemovePasswordException) {
+  EXPECT_TRUE(RunPasswordsSubtest("removeAndUndoRemovePasswordException"))
+      << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestPlaintextPassword) {

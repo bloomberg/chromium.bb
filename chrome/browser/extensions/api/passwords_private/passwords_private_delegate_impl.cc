@@ -91,6 +91,17 @@ void PasswordsPrivateDelegateImpl::RemovePasswordExceptionInternal(
   password_manager_presenter_->RemovePasswordException(index);
 }
 
+void PasswordsPrivateDelegateImpl::UndoRemoveSavedPasswordOrException() {
+  ExecuteFunction(base::Bind(
+      &PasswordsPrivateDelegateImpl::UndoRemoveSavedPasswordOrExceptionInternal,
+      base::Unretained(this)));
+}
+
+void PasswordsPrivateDelegateImpl::
+    UndoRemoveSavedPasswordOrExceptionInternal() {
+  password_manager_presenter_->UndoRemoveSavedPasswordOrException();
+}
+
 void PasswordsPrivateDelegateImpl::RequestShowPassword(
     size_t index,
     content::WebContents* web_contents) {
