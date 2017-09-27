@@ -1,9 +1,5 @@
 Tests that stepping into custom element methods will lead to a pause in the callbacks.
 
-[page] Invoked createdCallback.
-[page] Invoked attributeChangedCallback.
-[page] Invoked attachedCallback.
-[page] Invoked detachedCallback.
 Set timer for test function.
 Stepping to constructor...
 Stepping into constructor...
@@ -17,4 +13,8 @@ PASS: Did step into event listener(attachedCallback).
 Stepping to detachedCallback...
 Stepping into detachedCallback...
 PASS: Did step into event listener(detachedCallback).
+[page] Invoked createdCallback.
+[page] Invoked attributeChangedCallback.
+[page] Invoked attachedCallback.
+[page] Invoked detachedCallback.
 

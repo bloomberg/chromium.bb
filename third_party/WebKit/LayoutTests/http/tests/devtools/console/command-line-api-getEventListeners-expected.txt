@@ -1,7 +1,5 @@
-CONSOLE ERROR: line 25: Uncaught SyntaxError: Unexpected identifier
 Tests getEventListeners() method of console command line API.
 
- 
 [page] - inner -
 [page] keydown: {
 [page]     0: {
@@ -95,15 +93,6 @@ Tests getEventListeners() method of console command line API.
 [page]     }
 [page] }
 [page] - window -
-[page] load: {
-[page]     0: {
-[page]         listener: function onload(event) { runTest() }
-[page]         once: false
-[page]         passive: false
-[page]         type: "load"
-[page]         useCapture: false
-[page]     }
-[page] }
 [page] popstate: {
 [page]     0: {
 [page]         listener: function listener1() { }
