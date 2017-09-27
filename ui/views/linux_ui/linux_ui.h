@@ -140,9 +140,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual void RemoveWindowButtonOrderObserver(
       WindowButtonOrderObserver* observer) = 0;
 
-  // Determines whether the user's window manager is Unity.
-  virtual bool UnityIsRunning() = 0;
-
   // What action we should take when the user middle clicks on non-client
   // area. The default is lowering the window.
   virtual NonClientMiddleClickAction GetNonClientMiddleClickAction() = 0;

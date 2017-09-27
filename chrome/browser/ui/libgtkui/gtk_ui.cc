@@ -776,10 +776,6 @@ ui::SelectFileDialog* GtkUi::CreateSelectFileDialog(
   return SelectFileDialogImpl::Create(listener, std::move(policy));
 }
 
-bool GtkUi::UnityIsRunning() {
-  return unity::IsRunning();
-}
-
 views::LinuxUI::NonClientMiddleClickAction
 GtkUi::GetNonClientMiddleClickAction() {
   return middle_click_action_;
