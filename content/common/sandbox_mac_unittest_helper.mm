@@ -15,8 +15,8 @@ extern "C" {
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "content/common/sandbox_mac.h"
-#include "content/public/common/sandbox_type.h"
 #include "content/test/test_content_client.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace content {
@@ -54,13 +54,14 @@ bool MacSandboxTest::RunTestInAllSandboxTypes(const char* test_name,
                                               const char* test_data) {
   // Go through all the sandbox types, and run the test case in each of them
   // if one fails, abort.
-  for(int i = static_cast<int>(SANDBOX_TYPE_FIRST_TYPE);
-      i < SANDBOX_TYPE_AFTER_LAST_TYPE;
-      ++i) {
-    if (IsUnsandboxedSandboxType(static_cast<SandboxType>(i)))
+  for (int i = static_cast<int>(service_manager::SANDBOX_TYPE_FIRST_TYPE);
+       i < service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE; ++i) {
+    if (service_manager::IsUnsandboxedSandboxType(
+            static_cast<service_manager::SandboxType>(i))) {
       continue;
-
-    if (!RunTestInSandbox(static_cast<SandboxType>(i), test_name, test_data)) {
+    }
+    if (!RunTestInSandbox(static_cast<service_manager::SandboxType>(i),
+                          test_name, test_data)) {
       LOG(ERROR) << "Sandboxed test (" << test_name << ")"
                  << "Failed in sandbox type " << i << "user data: ("
                  << test_data << ")";
@@ -70,7 +71,7 @@ bool MacSandboxTest::RunTestInAllSandboxTypes(const char* test_name,
   return true;
 }
 
-bool MacSandboxTest::RunTestInSandbox(SandboxType sandbox_type,
+bool MacSandboxTest::RunTestInSandbox(service_manager::SandboxType sandbox_type,
                                       const char* test_name,
                                       const char* test_data) {
   std::stringstream s;
@@ -129,7 +130,8 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     LOG(ERROR) << "Sandbox type not specified";
     return -1;
   }
-  SandboxType sandbox_type = static_cast<SandboxType>(atoi(sandbox_type_str));
+  auto sandbox_type =
+      static_cast<service_manager::SandboxType>(atoi(sandbox_type_str));
   char* sandbox_test_name = getenv(kSandboxTestNameKey);
   if (!sandbox_test_name) {
     LOG(ERROR) << "Sandbox test name not specified";

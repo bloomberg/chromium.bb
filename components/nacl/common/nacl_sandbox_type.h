@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_H_
 #define COMPONENTS_NACL_COMMON_NACL_SANDBOX_TYPE_H_
 
-#include "content/public/common/sandbox_type.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 enum NaClSandboxType {
-  NACL_SANDBOX_TYPE_FIRST_TYPE = content::SANDBOX_TYPE_AFTER_LAST_TYPE,
+  NACL_SANDBOX_TYPE_FIRST_TYPE = service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE,
 
   NACL_SANDBOX_TYPE_NACL_LOADER = NACL_SANDBOX_TYPE_FIRST_TYPE,
 };

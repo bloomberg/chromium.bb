@@ -1481,7 +1481,6 @@ test("content_unittests") {
     "../network/network_context_unittest.cc",
     "../network/network_service_unittest.cc",
     "../network/url_loader_unittest.cc",
-    "../public/common/sandbox_type_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
     "../public/common/url_utils_unittest.cc",
     "../public/test/referrer_unittest.cc",

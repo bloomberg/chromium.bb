@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
 #define CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
 
-#include "content/public/common/sandbox_type.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
 struct LaunchOptions;
@@ -17,7 +17,7 @@ namespace content {
 // appropriate for the sandbox |type|. The caller may then add any
 // descriptors or handles afterward to grant additional capabiltiies to the new
 // process.
-void UpdateLaunchOptionsForSandbox(content::SandboxType type,
+void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
                                    base::LaunchOptions* options);
 
 }  // namespace content

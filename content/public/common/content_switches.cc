@@ -933,10 +933,6 @@ const char kUtilityProcessAllowedDir[]      = "utility-allowed-dir";
 
 const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
 
-// Type of sandbox to apply to the utility process. Options are "none",
-// "network", or "utility" (the default).
-const char kUtilityProcessSandboxType[] = "utility-sandbox-type";
-
 // Causes the utility process to display a dialog on launch.
 const char kUtilityStartupDialog[] = "utility-startup-dialog";
 

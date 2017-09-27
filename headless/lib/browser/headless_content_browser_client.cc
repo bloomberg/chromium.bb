@@ -158,9 +158,8 @@ HeadlessContentBrowserClient::GetServiceManifestOverlay(
 void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-  (*services)[printing::mojom::kServiceName] = {
-      base::ASCIIToUTF16("PDF Compositor Service"),
-      content::SANDBOX_TYPE_UTILITY};
+  (*services)[printing::mojom::kServiceName] =
+      base::ASCIIToUTF16("PDF Compositor Service");
 #endif
 }
 

@@ -383,6 +383,7 @@ source_set("common") {
     "//cc",
     "//gpu/command_buffer/common",
     "//ipc",
+    "//services/service_manager/sandbox",
     "//third_party/WebKit/public:blink_headers",
   ]
   deps = [

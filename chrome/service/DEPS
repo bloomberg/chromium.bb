@@ -7,4 +7,5 @@ include_rules = [
   "+mojo/edk/embedder",
   "+sandbox/win/src",
   "+services/service_manager/public",
+  "+services/service_manager/sandbox",
 ]

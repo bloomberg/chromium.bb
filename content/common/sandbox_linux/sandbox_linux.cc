@@ -37,7 +37,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
-#include "content/public/common/sandbox_type.h"
 #include "gpu/config/gpu_info.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -46,6 +45,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 #if defined(ANY_OF_AMTLU_SANITIZER)
@@ -388,9 +388,10 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   (void) process_type;
 #if !defined(ANY_OF_AMTLU_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (SandboxTypeFromCommandLine(*command_line) == SANDBOX_TYPE_NO_SANDBOX)
+  if (service_manager::SandboxTypeFromCommandLine(*command_line) ==
+      service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     return false;
-
+  }
   // Limit the address space to 4GB.
   // This is in the hope of making some kernel exploits more complex and less
   // reliable. It also limits sprays a little on 64-bit.

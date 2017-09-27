@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/sandbox_type.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
+
 #include "base/command_line.h"
-#include "content/public/common/content_switches.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

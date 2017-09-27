@@ -15,6 +15,7 @@
 #include "content/common/mac/font_descriptor.h"
 #include "content/common/mac/font_loader.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -122,8 +123,9 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
       fileno(temp_file), static_cast<const char*>(result->font_data.memory()),
       result->font_data_size);
 
-  ASSERT_TRUE(RunTestInSandbox(SANDBOX_TYPE_RENDERER,
-                  "FontLoadingTestCase", temp_file_path.value().c_str()));
+  ASSERT_TRUE(RunTestInSandbox(service_manager::SANDBOX_TYPE_RENDERER,
+                               "FontLoadingTestCase",
+                               temp_file_path.value().c_str()));
   temp_file_closer.reset();
   ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
 }

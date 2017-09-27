@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/sandbox_compiler.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
 #include "ui/gl/init/gl_factory.h"
@@ -48,7 +49,7 @@ namespace {
 bool gSandboxIsActive = false;
 
 struct SandboxTypeToResourceIDMapping {
-  SandboxType sandbox_type;
+  service_manager::SandboxType sandbox_type;
   int sandbox_profile_resource_id;
 };
 
@@ -56,17 +57,17 @@ struct SandboxTypeToResourceIDMapping {
 // profile for all process types known to content.
 // TODO(tsepez): Implement profile for SANDBOX_TYPE_NETWORK.
 SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
-    {SANDBOX_TYPE_NO_SANDBOX, -1},
-    {SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE},
-    {SANDBOX_TYPE_UTILITY, IDR_UTILITY_SANDBOX_PROFILE},
-    {SANDBOX_TYPE_GPU, IDR_GPU_SANDBOX_PROFILE},
-    {SANDBOX_TYPE_PPAPI, IDR_PPAPI_SANDBOX_PROFILE},
-    {SANDBOX_TYPE_NETWORK, -1},
-    {SANDBOX_TYPE_CDM, IDR_PPAPI_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_NO_SANDBOX, -1},
+    {service_manager::SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_UTILITY, IDR_UTILITY_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_GPU, IDR_GPU_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_PPAPI, IDR_PPAPI_SANDBOX_PROFILE},
+    {service_manager::SANDBOX_TYPE_NETWORK, -1},
+    {service_manager::SANDBOX_TYPE_CDM, IDR_PPAPI_SANDBOX_PROFILE},
 };
 
-static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
-              size_t(SANDBOX_TYPE_AFTER_LAST_TYPE), \
+static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) ==
+                  size_t(service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE),
               "sandbox type to resource id mapping incorrect");
 
 }  // namespace
@@ -155,13 +156,13 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   }
 
   // Process-type dependent warm-up.
-  if (sandbox_type == SANDBOX_TYPE_UTILITY) {
+  if (sandbox_type == service_manager::SANDBOX_TYPE_UTILITY) {
     // CFTimeZoneCopyZone() tries to read /etc and /private/etc/localtime - 10.8
     // Needed by Media Galleries API Picasa - crbug.com/151701
     CFTimeZoneCopySystem();
   }
 
-  if (sandbox_type == SANDBOX_TYPE_GPU) {
+  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU) {
     // Preload either the desktop GL or the osmesa so, depending on the
     // --use-gl flag.
     gl::init::InitializeGLOneOff();
@@ -170,7 +171,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     media::InitializeVideoToolbox();
   }
 
-  if (sandbox_type == SANDBOX_TYPE_PPAPI) {
+  if (sandbox_type == service_manager::SANDBOX_TYPE_PPAPI) {
     // Preload AppKit color spaces used for Flash/ppapi. http://crbug.com/348304
     NSColor* color = [NSColor controlTextColor];
     [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
@@ -233,8 +234,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
                             const base::FilePath& allowed_dir) {
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
-  if (sandbox_type < SANDBOX_TYPE_AFTER_LAST_TYPE &&
-      sandbox_type != SANDBOX_TYPE_UTILITY) {
+  if (sandbox_type < service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE &&
+      sandbox_type != service_manager::SANDBOX_TYPE_UTILITY) {
     DCHECK(allowed_dir.empty())
         << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
   }

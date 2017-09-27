@@ -441,7 +441,9 @@ class RendererSandboxedProcessLauncherDelegate
   }
 #endif  // OS_WIN
 
-  SandboxType GetSandboxType() override { return SANDBOX_TYPE_RENDERER; }
+  service_manager::SandboxType GetSandboxType() override {
+    return service_manager::SANDBOX_TYPE_RENDERER;
+  }
 };
 
 const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";

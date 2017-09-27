@@ -30,6 +30,7 @@ if (enable_nacl) {
       ":minimal_content_dummy",
       ":switches",
       "//ipc",
+      "//services/service_manager/sandbox",
     ]
 
     deps = [
@@ -53,7 +54,6 @@ if (enable_nacl) {
       "//content/public/common/content_switches.h",
       "//content/public/common/mojo_channel_switches.h",
       "//content/public/common/process_type.h",
-      "//content/public/common/sandbox_type.h",
     ]
 
     # Deps required by the above headers.
