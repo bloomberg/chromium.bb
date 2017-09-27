@@ -208,6 +208,10 @@ class InstallableManager
   // this object is scoped to.
   content::ServiceWorkerContext* service_worker_context_;
 
+  // True if for the current page load we have in queue or completed a task
+  // which queries the full PWA parameters.
+  bool has_pwa_check_;
+
   base::WeakPtrFactory<InstallableManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallableManager);

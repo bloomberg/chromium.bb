@@ -687,44 +687,101 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckNavigationWithoutRunning) {
   // Verify that we record "not started" metrics if we don't run the installable
   // manager and navigate away.
-  base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
+  {
+    base::HistogramTester histograms;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
 
-  InstallableManager* manager = GetManager();
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-  manager->RecordAddToHomescreenManifestAndIconTimeout();
-  manager->RecordAddToHomescreenInstallabilityTimeout();
-  manager->RecordAddToHomescreenInstallabilityTimeout();
+    InstallableManager* manager = GetManager();
+    manager->RecordMenuOpenHistogram();
+    manager->RecordMenuOpenHistogram();
+    manager->RecordMenuItemAddToHomescreenHistogram();
+    manager->RecordMenuItemAddToHomescreenHistogram();
+    manager->RecordAddToHomescreenInstallabilityTimeout();
+    manager->RecordAddToHomescreenInstallabilityTimeout();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-  histograms.ExpectUniqueSample(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
+    histograms.ExpectUniqueSample(
+        "Webapp.InstallabilityCheckStatus.MenuOpen",
+        static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
 
-  histograms.ExpectUniqueSample(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
+    histograms.ExpectUniqueSample(
+        "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
+        static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
 
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-      static_cast<int>(
-          AddToHomescreenTimeoutStatus::TIMEOUT_MANIFEST_FETCH_UNKNOWN),
-      1);
+    histograms.ExpectBucketCount(
+        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
+        static_cast<int>(
+            AddToHomescreenTimeoutStatus::TIMEOUT_INSTALLABILITY_CHECK_UNKNOWN),
+        2);
 
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-      static_cast<int>(
-          AddToHomescreenTimeoutStatus::TIMEOUT_INSTALLABILITY_CHECK_UNKNOWN),
-      2);
+    histograms.ExpectTotalCount(
+        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout", 2);
+  }
 
-  histograms.ExpectTotalCount(
-      "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout", 3);
+  {
+    // Expect the call to ManifestAndIconTimeout to kick off an installable
+    // check and fail it on a not installable page.
+    base::HistogramTester histograms;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
+
+    InstallableManager* manager = GetManager();
+    manager->RecordAddToHomescreenManifestAndIconTimeout();
+
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    // Set up a GetData call which will not record an installable metric to
+    // ensure we wait until the previous check has finished.
+    manager->GetData(GetManifestParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    run_loop.Run();
+
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+    histograms.ExpectUniqueSample(
+        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
+        static_cast<int>(AddToHomescreenTimeoutStatus::
+                             TIMEOUT_MANIFEST_FETCH_NON_PROGRESSIVE_WEB_APP),
+        1);
+  }
+
+  {
+    // Expect the call to ManifestAndIconTimeout to kick off an installable
+    // check and pass it on an installable page.
+    base::HistogramTester histograms;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+
+    InstallableManager* manager = GetManager();
+    manager->RecordAddToHomescreenManifestAndIconTimeout();
+
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    // Set up a GetData call which will not record an installable metric to
+    // ensure we wait until the previous check has finished.
+    manager->GetData(GetManifestParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    run_loop.Run();
+
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+    histograms.ExpectUniqueSample(
+        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
+        static_cast<int>(AddToHomescreenTimeoutStatus::
+                             TIMEOUT_MANIFEST_FETCH_PROGRESSIVE_WEB_APP),
+        1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebappInIframe) {

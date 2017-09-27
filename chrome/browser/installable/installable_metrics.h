@@ -37,7 +37,7 @@ class InstallableMetrics {
    public:
     virtual ~Recorder() {}
     virtual void Resolve(bool check_passed) {}
-    virtual void Flush(bool has_paused) {}
+    virtual void Flush(bool waiting_for_service_worker) {}
 
     virtual void RecordMenuOpen() = 0;
     virtual void RecordMenuItemAddToHomescreen() = 0;
@@ -74,7 +74,7 @@ class InstallableMetrics {
   void Resolve(bool check_passed);
 
   // Called to save any queued metrics.
-  void Flush(bool has_paused);
+  void Flush(bool waiting_for_service_worker);
 
   // Called to indicate that the InstallableManager has started working on the
   // current page.
