@@ -5,21 +5,8 @@
 
 """Tool to move Blink source from third_party/WebKit to third_party/blink.
 
-How to use:
-1. third_party/blink/tools/move_blink_source.py update --run
- (It would take a few minutes to complete this command.)
-2. git cl format
-3. git commit -a
-4. Land the commit
-
-5. third_party/blink/tools/move_blink_source.py move --git
- (It would take an hour to complete this command.)
-6. third_party/WebKit/Tools/Scripts/run-bindings-test --reset-results
-7. git commit -a
-8. Land the commit
-9. Pray for successful build!
-
-TODO(tkent): More automation.
+See https://docs.google.com/document/d/1l3aPv1Wx__SpRkdOhvJz8ciEGigNT3wFKv78XiuW0Tw/edit?usp=sharing#heading=h.o225wrxp242h
+for the details.
 """
 
 import argparse
