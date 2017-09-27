@@ -82,9 +82,9 @@ void DefaultGpuHost::CreateFrameSinkManager(
 }
 
 GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
-  auto client(base::MakeUnique<GpuClient>(next_client_id_++, &gpu_info_,
-                                          gpu_memory_buffer_manager_.get(),
-                                          gpu_service_.get()));
+  auto client(base::MakeUnique<GpuClient>(
+      next_client_id_++, &gpu_info_, &gpu_feature_info_,
+      gpu_memory_buffer_manager_.get(), gpu_service_.get()));
   GpuClient* client_ref = client.get();
   gpu_bindings_.AddBinding(std::move(client), std::move(request));
   return client_ref;
@@ -100,6 +100,7 @@ void DefaultGpuHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info) {
   gpu_info_ = gpu_info;
+  gpu_feature_info_ = gpu_feature_info;
   delegate_->OnGpuServiceInitialized();
 }
 

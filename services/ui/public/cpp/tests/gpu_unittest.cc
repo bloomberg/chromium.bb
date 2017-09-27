@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +43,8 @@ class TestGpuImpl : public mojom::Gpu {
     if (success)
       handle = std::move(mojo::MessagePipe().handle0);
     base::ResetAndReturn(&establish_channel_callback_)
-        .Run(client_id, std::move(handle), gpu::GPUInfo());
+        .Run(client_id, std::move(handle), gpu::GPUInfo(),
+             gpu::GpuFeatureInfo());
     return true;
   }
 

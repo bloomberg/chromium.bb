@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "media/gpu/mojo/jpeg_decoder.mojom";
@@ -18,7 +19,8 @@ interface Gpu {
   [Sync]
   EstablishGpuChannel() => (int32 client_id,
                             handle<message_pipe>? channel_handle,
-                            gpu.mojom.GpuInfo gpu_info);
+                            gpu.mojom.GpuInfo gpu_info,
+                            gpu.mojom.GpuFeatureInfo gpu_feature_info);
 
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
   CreateJpegDecodeAccelerator(media.mojom.GpuJpegDecodeAccelerator& jda);

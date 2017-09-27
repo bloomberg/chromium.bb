@@ -22,10 +22,12 @@ namespace ws {
 GpuClient::GpuClient(
     int client_id,
     gpu::GPUInfo* gpu_info,
+    gpu::GpuFeatureInfo* gpu_feature_info,
     viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
     viz::mojom::GpuService* gpu_service)
     : client_id_(client_id),
       gpu_info_(gpu_info),
+      gpu_feature_info_(gpu_feature_info),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       gpu_service_(gpu_service),
       weak_factory_(this) {
@@ -40,7 +42,8 @@ GpuClient::~GpuClient() {
 void GpuClient::OnGpuChannelEstablished(
     const EstablishGpuChannelCallback& callback,
     mojo::ScopedMessagePipeHandle channel_handle) {
-  callback.Run(client_id_, std::move(channel_handle), *gpu_info_);
+  callback.Run(client_id_, std::move(channel_handle), *gpu_info_,
+               *gpu_feature_info_);
 }
 
 // mojom::Gpu overrides:

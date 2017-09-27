@@ -42,11 +42,13 @@ void GpuClient::OnEstablishGpuChannel(
     const EstablishGpuChannelCallback& callback,
     const IPC::ChannelHandle& channel,
     const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     GpuProcessHost::EstablishChannelStatus status) {
   if (status == GpuProcessHost::EstablishChannelStatus::GPU_ACCESS_DENIED) {
     // GPU access is not allowed. Notify the client immediately.
     DCHECK(!channel.mojo_handle.is_valid());
-    callback.Run(render_process_id_, mojo::ScopedMessagePipeHandle(), gpu_info);
+    callback.Run(render_process_id_, mojo::ScopedMessagePipeHandle(), gpu_info,
+                 gpu_feature_info);
     return;
   }
 
@@ -59,7 +61,8 @@ void GpuClient::OnEstablishGpuChannel(
   DCHECK(channel.mojo_handle.is_valid());
   mojo::ScopedMessagePipeHandle channel_handle;
   channel_handle.reset(channel.mojo_handle);
-  callback.Run(render_process_id_, std::move(channel_handle), gpu_info);
+  callback.Run(render_process_id_, std::move(channel_handle), gpu_info,
+               gpu_feature_info);
 }
 
 void GpuClient::OnCreateGpuMemoryBuffer(
@@ -73,7 +76,7 @@ void GpuClient::EstablishGpuChannel(
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     OnEstablishGpuChannel(
-        callback, IPC::ChannelHandle(), gpu::GPUInfo(),
+        callback, IPC::ChannelHandle(), gpu::GPUInfo(), gpu::GpuFeatureInfo(),
         GpuProcessHost::EstablishChannelStatus::GPU_ACCESS_DENIED);
     return;
   }

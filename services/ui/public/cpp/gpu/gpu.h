@@ -65,7 +65,8 @@ class Gpu : public gpu::GpuChannelHostFactory,
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
   void OnEstablishedGpuChannel(int client_id,
                                mojo::ScopedMessagePipeHandle channel_handle,
-                               const gpu::GPUInfo& gpu_info);
+                               const gpu::GPUInfo& gpu_info,
+                               const gpu::GpuFeatureInfo& gpu_feature_info);
 
   // gpu::GpuChannelHostFactory overrides:
   bool IsMainThread() override;
