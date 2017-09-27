@@ -224,9 +224,11 @@ class CONTENT_EXPORT MediaStreamManager
   void OnSuspend() override;
   void OnResume() override;
 
-  // Called by the tests to specify a fake UI that should be used for next
-  // generated stream (or when using --use-fake-ui-for-media-stream).
-  void UseFakeUIForTests(std::unique_ptr<FakeMediaStreamUIProxy> fake_ui);
+  // Called by the tests to specify a factory for creating
+  // FakeMediaStreamUIProxys to be used for generated streams.
+  void UseFakeUIFactoryForTests(
+      base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+          fake_ui_factory);
 
   // Register and unregister a new callback for receiving native log entries.
   // The registered callback will be invoked on the IO thread.
@@ -425,8 +427,8 @@ class CONTENT_EXPORT MediaStreamManager
   // All non-closed request. Must be accessed on IO thread.
   DeviceRequests requests_;
 
-  bool use_fake_ui_;
-  std::unique_ptr<FakeMediaStreamUIProxy> fake_ui_;
+  base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+      fake_ui_factory_;
 
   // Maps render process hosts to log callbacks. Used on the IO thread.
   std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;

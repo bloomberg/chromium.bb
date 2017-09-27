@@ -22,6 +22,23 @@
 
 namespace content {
 
+bool IsFeatureEnabled(RenderFrameHost* rfh,
+                      bool tests_use_fake_render_frame_hosts,
+                      blink::WebFeaturePolicyFeature feature) {
+  if (!base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions))
+    return true;
+
+  // Some tests don't (or can't) set up the RenderFrameHost. In these cases we
+  // just ignore feature policy checks (there is no feature policy to test).
+  if (!rfh && tests_use_fake_render_frame_hosts)
+    return true;
+
+  if (!rfh)
+    return false;
+
+  return rfh->IsFeatureEnabled(feature);
+}
+
 void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* rfh =
@@ -60,6 +77,7 @@ class MediaStreamUIProxy::Core {
                                     std::unique_ptr<MediaStreamUI> stream_ui);
 
  private:
+  friend class FakeMediaStreamUIProxy;
   void ProcessStopRequestFromUI();
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
@@ -67,6 +85,7 @@ class MediaStreamUIProxy::Core {
   base::WeakPtr<MediaStreamUIProxy> proxy_;
   std::unique_ptr<MediaStreamUI> ui_;
 
+  bool tests_use_fake_render_frame_hosts_;
   RenderFrameHostDelegate* const test_render_delegate_;
 
   // WeakPtr<> is used to RequestMediaAccessPermission() because there is no way
@@ -79,9 +98,9 @@ class MediaStreamUIProxy::Core {
 MediaStreamUIProxy::Core::Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
                                RenderFrameHostDelegate* test_render_delegate)
     : proxy_(proxy),
+      tests_use_fake_render_frame_hosts_(test_render_delegate != nullptr),
       test_render_delegate_(test_render_delegate),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MediaStreamUIProxy::Core::~Core() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -128,28 +147,25 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   MediaStreamDevices filtered_devices;
-  if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions)) {
-    RenderFrameHost* host =
-        RenderFrameHost::FromID(render_process_id, render_frame_id);
-    for (const MediaStreamDevice& device : devices) {
-      if (device.type == MEDIA_DEVICE_AUDIO_CAPTURE &&
-          !host->IsFeatureEnabled(
-              blink::WebFeaturePolicyFeature::kMicrophone)) {
-        continue;
-      }
-
-      if (device.type == MEDIA_DEVICE_VIDEO_CAPTURE &&
-          !host->IsFeatureEnabled(blink::WebFeaturePolicyFeature::kCamera)) {
-        continue;
-      }
-
-      filtered_devices.push_back(device);
+  RenderFrameHost* host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  for (const MediaStreamDevice& device : devices) {
+    if (device.type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+        !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
+                          blink::WebFeaturePolicyFeature::kMicrophone)) {
+      continue;
     }
-    if (filtered_devices.empty() && result == MEDIA_DEVICE_OK)
-      result = MEDIA_DEVICE_PERMISSION_DENIED;
-  } else {
-    filtered_devices = devices;
+
+    if (device.type == MEDIA_DEVICE_VIDEO_CAPTURE &&
+        !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
+                          blink::WebFeaturePolicyFeature::kCamera)) {
+      continue;
+    }
+
+    filtered_devices.push_back(device);
   }
+  if (filtered_devices.empty() && result == MEDIA_DEVICE_OK)
+    result = MEDIA_DEVICE_PERMISSION_DENIED;
 
   ui_ = std::move(stream_ui);
   BrowserThread::PostTask(
@@ -252,10 +268,10 @@ void MediaStreamUIProxy::OnWindowId(WindowIdCallback window_id_callback,
     std::move(window_id_callback).Run(*window_id);
 }
 
-FakeMediaStreamUIProxy::FakeMediaStreamUIProxy()
-  : MediaStreamUIProxy(NULL),
-    mic_access_(true),
-    camera_access_(true) {
+FakeMediaStreamUIProxy::FakeMediaStreamUIProxy(
+    bool tests_use_fake_render_frame_hosts)
+    : MediaStreamUIProxy(nullptr), mic_access_(true), camera_access_(true) {
+  core_->tests_use_fake_render_frame_hosts_ = tests_use_fake_render_frame_hosts;
 }
 
 FakeMediaStreamUIProxy::~FakeMediaStreamUIProxy() {}

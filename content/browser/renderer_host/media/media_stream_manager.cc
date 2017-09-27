@@ -415,8 +415,16 @@ MediaStreamManager::MediaStreamManager(
 #if defined(OS_WIN)
       video_capture_thread_("VideoCaptureThread"),
 #endif
-      use_fake_ui_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      fake_ui_factory_() {
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
+    fake_ui_factory_ = base::Bind([] {
+      return std::make_unique<FakeMediaStreamUIProxy>(
+          /*tests_use_fake_render_frame_hosts=*/false);
+    });
+  }
+
   DCHECK(audio_system_);
 
   if (!video_capture_provider) {
@@ -981,10 +989,8 @@ void MediaStreamManager::PostRequestToUI(
   // If using the fake UI, it will just auto-select from the available devices.
   // The fake UI doesn't work for desktop sharing requests since we can't see
   // its devices from here; always use the real UI for such requests.
-  if (use_fake_ui_ && request->video_type() != MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    if (!fake_ui_)
-      fake_ui_.reset(new FakeMediaStreamUIProxy());
-
+  if (fake_ui_factory_ &&
+      request->video_type() != MEDIA_DESKTOP_VIDEO_CAPTURE) {
     MediaStreamDevices devices = ConvertToMediaStreamDevices(
         request->audio_type(), enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]);
     MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
@@ -992,9 +998,10 @@ void MediaStreamManager::PostRequestToUI(
     devices.reserve(devices.size() + video_devices.size());
     devices.insert(devices.end(), video_devices.begin(), video_devices.end());
 
-    fake_ui_->SetAvailableDevices(devices);
+    std::unique_ptr<FakeMediaStreamUIProxy> fake_ui = fake_ui_factory_.Run();
+    fake_ui->SetAvailableDevices(devices);
 
-    request->ui_proxy = std::move(fake_ui_);
+    request->ui_proxy = std::move(fake_ui);
   } else {
     request->ui_proxy = MediaStreamUIProxy::Create();
   }
@@ -1440,11 +1447,11 @@ void MediaStreamManager::OnResume() {
   SendMessageToNativeLog("Power state resumed.");
 }
 
-void MediaStreamManager::UseFakeUIForTests(
-    std::unique_ptr<FakeMediaStreamUIProxy> fake_ui) {
+void MediaStreamManager::UseFakeUIFactoryForTests(
+    base::Callback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
+        fake_ui_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  use_fake_ui_ = true;
-  fake_ui_ = std::move(fake_ui);
+  fake_ui_factory_ = fake_ui_factory;
 }
 
 void MediaStreamManager::RegisterNativeLogCallback(
