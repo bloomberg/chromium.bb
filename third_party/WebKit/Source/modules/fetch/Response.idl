@@ -16,8 +16,8 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     Exposed=(Window,Worker),
     RaisesException=Constructor
 ] interface Response {
-    [CallWith=ScriptState] static Response error();
-    [CallWith=ScriptState, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);
+    [CallWith=ScriptState, NewObject] static Response error();
+    [CallWith=ScriptState, NewObject, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);
     readonly attribute ResponseType type;
     readonly attribute USVString url;
     readonly attribute boolean redirected;
@@ -26,7 +26,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     readonly attribute ByteString statusText;
     readonly attribute Headers headers;
 
-    [RaisesException, CallWith=ScriptState] Response clone();
+    [RaisesException, CallWith=ScriptState, DoNotTestNewObject, NewObject] Response clone();
 
     [CallWith=ScriptState, MeasureAs=FetchBodyStream] readonly attribute any body;
 };
