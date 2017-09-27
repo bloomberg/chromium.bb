@@ -12,7 +12,7 @@ ROLE_SYSTEM_DOCUMENT READONLY
 ++ROLE_SYSTEM_TEXT name='Readonly-false contenteditable textbox'
 ++ROLE_SYSTEM_TEXT name='Readonly-true contenteditable textbox' READONLY
 ++ROLE_SYSTEM_CHECKBUTTON name='Readonly checkbox' READONLY
-++ROLE_SYSTEM_COMBOBOX name='Readonly combobox' READONLY HASPOPUP IA2_STATE_EDITABLE
+++ROLE_SYSTEM_COMBOBOX name='Readonly combobox' READONLY
 ++ROLE_SYSTEM_LIST name='Readonly listbox' READONLY
 ++ROLE_SYSTEM_GROUPING name='Readonly radiogroup' READONLY
 ++ROLE_SYSTEM_SLIDER name='Readonly slider' READONLY

@@ -78,7 +78,7 @@ TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
   auto* axTextBox = cache->GetOrCreate(textbox);
-  EXPECT_EQ(kTextFieldWithComboBoxRole, axTextBox->RoleValue());
+  EXPECT_EQ(kComboBoxRole, axTextBox->RoleValue());
   AXNameFrom name_from;
   AXObject::AXObjectVector name_objects;
   EXPECT_EQ("Combo", axTextBox->GetName(name_from, &name_objects));

@@ -12,7 +12,7 @@ android.webkit.WebView focusable focused scrollable
 ++android.widget.EditText clickable editable_text focusable name='Readonly-false contenteditable textbox'
 ++android.widget.EditText clickable editable_text focusable name='Readonly-true contenteditable textbox'
 ++android.widget.CheckBox role_description='checkbox' checkable clickable name='Readonly checkbox'
-++android.widget.EditText clickable editable_text focusable name='Readonly combobox' input_type=1
+++android.widget.Spinner role_description='combo box' clickable editable_text name='Readonly combobox'
 ++android.widget.ListView role_description='list box' clickable collection name='Readonly listbox'
 ++android.view.View role_description='radio group' name='Readonly radiogroup'
 ++android.widget.SeekBar role_description='slider' range name='Readonly slider' item_count=100 range_max=100

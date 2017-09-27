@@ -64,10 +64,8 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("ColumnHeader");
     case blink::kWebAXRoleColumn:
       return result.append("Column");
-    case blink::kWebAXRoleComboBoxGrouping:
-      return result.append("ComboBoxGrouping");
-    case blink::kWebAXRoleComboBoxMenuButton:
-      return result.append("ComboBoxMenuButton");
+    case blink::kWebAXRoleComboBox:
+      return result.append("ComboBox");
     case blink::kWebAXRoleComplementary:
       return result.append("Complementary");
     case blink::kWebAXRoleContentInfo:
@@ -232,8 +230,6 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("Table");
     case blink::kWebAXRoleTextField:
       return result.append("TextField");
-    case blink::kWebAXRoleTextFieldWithComboBox:
-      return result.append("TextFieldWithComboBox");
     case blink::kWebAXRoleTime:
       return result.append("Time");
     case blink::kWebAXRoleTimer:

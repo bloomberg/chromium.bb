@@ -349,7 +349,7 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
     HTMLInputElement& input = toHTMLInputElement(*GetNode());
     const AtomicString& type = input.type();
     if (input.DataList())
-      return kTextFieldWithComboBoxRole;
+      return kComboBoxRole;
     if (type == InputTypeNames::button) {
       if ((GetNode()->parentNode() &&
            isHTMLMenuElement(GetNode()->parentNode())) ||
@@ -627,7 +627,7 @@ bool AXNodeObject::IsTextControl() const {
 
   switch (RoleValue()) {
     case kTextFieldRole:
-    case kTextFieldWithComboBoxRole:
+    case kComboBoxRole:
     case kSearchBoxRole:
     // TODO(dmazzoni): kSpinButtonRole might need to be removed.
     case kSpinButtonRole:
@@ -1146,24 +1146,16 @@ unsigned AXNodeObject::HierarchicalLevel() const {
   return level;
 }
 
-// TODO: rename this just AutoComplete, it's not only ARIA.
 String AXNodeObject::AriaAutoComplete() const {
-  if (IsARIATextControl()) {
-    const AtomicString& aria_auto_complete =
-        GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
-            .DeprecatedLower();
-    // Illegal values must be passed through, according to CORE-AAM.
-    if (!aria_auto_complete.IsNull())
-      return aria_auto_complete == "none" ? String() : aria_auto_complete;
-  }
+  if (!IsARIATextControl())
+    return String();
 
-  if (GetNode() && isHTMLInputElement(*GetNode())) {
-    HTMLInputElement& input = toHTMLInputElement(*GetNode());
-    if (input.DataList())
-      return "list";
-  }
+  const AtomicString& aria_auto_complete =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
+          .DeprecatedLower();
 
-  return String();
+  // Illegal values must be passed through, according to CORE-AAM.
+  return aria_auto_complete == "none" ? String() : aria_auto_complete;
 }
 
 namespace {
@@ -1233,8 +1225,7 @@ AccessibilityOrientation AXNodeObject::Orientation() const {
     orientation = kAccessibilityOrientationVertical;
 
   switch (RoleValue()) {
-    case kComboBoxGroupingRole:
-    case kComboBoxMenuButtonRole:
+    case kComboBoxRole:
     case kListBoxRole:
     case kMenuRole:
     case kScrollBarRole:

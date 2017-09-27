@@ -280,7 +280,7 @@ bool AXPlatformNodeBase::IsSimpleTextControl() const {
   // Time fields, color wells and spinner buttons might also use text fields as
   // constituent parts, but they are not considered text fields as a whole.
   switch (GetData().role) {
-    case AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
+    case AX_ROLE_COMBO_BOX:
     case AX_ROLE_SEARCH_BOX:
       return true;
     case AX_ROLE_TEXT_FIELD:
