@@ -62,12 +62,11 @@ CGFloat StatusBarHeight() {
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
 
-  // iPhone X doesn't have the same statusBarFrame issues as previous phones
-  // (see below), so it's possible to use this here, rather than a static
-  // value like below.
   if (IsIPhoneX()) {
-    CGRect statusBarFrame = [UIApplication sharedApplication].statusBarFrame;
-    return CGRectGetHeight(statusBarFrame);
+    // Return the height of the portrait status bar even in landscape because
+    // the Toolbar does not properly layout itself if the status bar height
+    // changes.
+    return 44;
   }
 
   // Checking [UIApplication sharedApplication].statusBarFrame will return the
