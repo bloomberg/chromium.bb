@@ -87,7 +87,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual bool IsDedicatedWorkerGlobalScope() const { return false; }
   virtual bool IsSharedWorkerGlobalScope() const { return false; }
   virtual bool IsServiceWorkerGlobalScope() const { return false; }
-  virtual bool IsCompositorWorkerGlobalScope() const { return false; }
   virtual bool IsAnimationWorkletGlobalScope() const { return false; }
   virtual bool IsAudioWorkletGlobalScope() const { return false; }
   virtual bool IsPaintWorkletGlobalScope() const { return false; }

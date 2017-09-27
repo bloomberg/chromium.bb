@@ -110,7 +110,7 @@ ProxyImpl::~ProxyImpl() {
 
 void ProxyImpl::InitializeMutatorOnImpl(
     std::unique_ptr<LayerTreeMutator> mutator) {
-  TRACE_EVENT0("cc,compositor-worker", "ProxyImpl::InitializeMutatorOnImpl");
+  TRACE_EVENT0("cc", "ProxyImpl::InitializeMutatorOnImpl");
   DCHECK(IsImplThread());
   host_impl_->SetLayerTreeMutator(std::move(mutator));
 }

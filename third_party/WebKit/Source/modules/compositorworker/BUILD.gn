@@ -6,8 +6,6 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("compositorworker") {
   sources = [
-    "AbstractAnimationWorkletThread.cpp",
-    "AbstractAnimationWorkletThread.h",
     "AnimationWorklet.cpp",
     "AnimationWorklet.h",
     "AnimationWorkletGlobalScope.cpp",
@@ -22,16 +20,6 @@ blink_modules_sources("compositorworker") {
     "Animator.h",
     "AnimatorDefinition.cpp",
     "AnimatorDefinition.h",
-    "CompositorWorker.cpp",
-    "CompositorWorker.h",
-    "CompositorWorkerGlobalScope.cpp",
-    "CompositorWorkerGlobalScope.h",
-    "CompositorWorkerMessagingProxy.cpp",
-    "CompositorWorkerMessagingProxy.h",
-    "CompositorWorkerProxyClientImpl.cpp",
-    "CompositorWorkerProxyClientImpl.h",
-    "CompositorWorkerThread.cpp",
-    "CompositorWorkerThread.h",
     "WindowAnimationWorklet.cpp",
     "WindowAnimationWorklet.h",
     "WorkletAnimation.cpp",

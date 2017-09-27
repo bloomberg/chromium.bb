@@ -905,7 +905,7 @@ void RenderWidgetCompositor::ClearSelection() {
 
 void RenderWidgetCompositor::SetMutatorClient(
     std::unique_ptr<blink::WebCompositorMutatorClient> client) {
-  TRACE_EVENT0("compositor-worker", "RenderWidgetCompositor::setMutatorClient");
+  TRACE_EVENT0("cc", "RenderWidgetCompositor::setMutatorClient");
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 

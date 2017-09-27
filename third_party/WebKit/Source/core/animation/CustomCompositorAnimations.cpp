@@ -87,7 +87,7 @@ static Animation* CreateOrUpdateAnimation(Animation* animation,
 void CustomCompositorAnimations::ApplyUpdate(
     Element& element,
     const CompositorMutation& mutation) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc"),
                "CustomCompositorAnimations::applyUpdate");
 
   if (mutation.IsOpacityMutated()) {

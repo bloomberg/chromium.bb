@@ -18,7 +18,7 @@ class PLATFORM_EXPORT CompositorMutator
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   // Called from compositor thread to run the animation frame callbacks from all
-  // connected CompositorWorkers and AnimationWorklets.
+  // connected AnimationWorklets.
   // Returns true if any animation callbacks requested an animation frame
   // (i.e. should be reinvoked next frame).
   virtual bool Mutate(double monotonic_time_now) = 0;

@@ -57,7 +57,7 @@ ScrollTimeline::ScrollTimeline(const Document& document,
     : scroll_source_(scroll_source),
       orientation_(orientation),
       time_range_(time_range) {
-  DCHECK(RuntimeEnabledFeatures::CompositorWorkerEnabled());
+  DCHECK(RuntimeEnabledFeatures::AnimationWorkletEnabled());
 }
 
 double ScrollTimeline::currentTime(bool& is_null) {

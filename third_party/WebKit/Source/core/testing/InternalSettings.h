@@ -72,7 +72,7 @@ class InternalSettings final : public InternalSettingsGenerated,
     String default_video_poster_url_;
     ImageAnimationPolicy original_image_animation_policy_;
     bool original_scroll_top_left_interop_enabled_;
-    bool original_compositor_worker_enabled_;
+    bool original_animation_worklet_enabled_;
   };
 
   static InternalSettings* Create(Page& page) {
@@ -124,7 +124,7 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setViewportEnabled(bool, ExceptionState&);
   void setViewportMetaEnabled(bool, ExceptionState&);
   void setViewportStyle(const String& preference, ExceptionState&);
-  void setCompositorWorkerEnabled(bool, ExceptionState&);
+  void setAnimationWorkletEnabled(bool, ExceptionState&);
   void setPresentationReceiver(bool, ExceptionState&);
   void setAutoplayPolicy(const String&, ExceptionState&);
 

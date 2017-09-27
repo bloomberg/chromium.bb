@@ -1139,7 +1139,7 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
 }
 
 void Element::UpdateFromCompositorMutation(const CompositorMutation& mutation) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc"),
                "Element::updateFromCompositorMutation");
   if (mutation.IsOpacityMutated() || mutation.IsTransformMutated())
     EnsureElementAnimations().GetCustomCompositorAnimations().ApplyUpdate(

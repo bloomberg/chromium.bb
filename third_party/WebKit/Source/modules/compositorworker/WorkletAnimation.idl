@@ -11,7 +11,7 @@
                 sequence<(DocumentTimeline or ScrollTimeline)> timelines,
                 SerializedScriptValue options),
     RaisesException=Constructor,
-    RuntimeEnabled=CompositorWorker
+    RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimation {
   readonly attribute AnimationPlayState playState;
   void play();

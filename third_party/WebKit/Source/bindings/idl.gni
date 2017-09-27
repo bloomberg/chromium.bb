@@ -11,7 +11,6 @@ generated_global_constructors_idl_files = [
   "$blink_output_dir/SharedWorkerGlobalScopeConstructors.idl",
   "$blink_output_dir/DedicatedWorkerGlobalScopeConstructors.idl",
   "$blink_output_dir/ServiceWorkerGlobalScopeConstructors.idl",
-  "$blink_output_dir/CompositorWorkerGlobalScopeConstructors.idl",
   "$blink_output_dir/PaintWorkletGlobalScopeConstructors.idl",
 ]
 
@@ -20,6 +19,5 @@ generated_global_constructors_header_files = [
   "$blink_output_dir/SharedWorkerGlobalScopeConstructors.h",
   "$blink_output_dir/DedicatedWorkerGlobalScopeConstructors.h",
   "$blink_output_dir/ServiceWorkerGlobalScopeConstructors.h",
-  "$blink_output_dir/CompositorWorkerGlobalScopeConstructors.h",
   "$blink_output_dir/PaintWorkletGlobalScopeConstructors.h",
 ]

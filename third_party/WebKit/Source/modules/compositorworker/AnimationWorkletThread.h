@@ -5,25 +5,40 @@
 #ifndef AnimationWorkletThread_h
 #define AnimationWorkletThread_h
 
-#include "modules/ModulesExport.h"
-#include "modules/compositorworker/AbstractAnimationWorkletThread.h"
 #include <memory>
+#include "core/workers/WorkerThread.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
+class ThreadableLoadingContext;
 class WorkerReportingProxy;
 
-class MODULES_EXPORT AnimationWorkletThread final
-    : public AbstractAnimationWorkletThread {
+class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
  public:
   static std::unique_ptr<AnimationWorkletThread> Create(
       ThreadableLoadingContext*,
       WorkerReportingProxy&);
   ~AnimationWorkletThread() override;
 
+  WorkerBackingThread& GetWorkerBackingThread() override;
+
+  // The backing thread is cleared by clearSharedBackingThread().
+  void ClearWorkerBackingThread() override {}
+
+  // This may block the main thread.
+  static void CollectAllGarbage();
+
+  static void EnsureSharedBackingThread();
+  static void ClearSharedBackingThread();
+
+  static void CreateSharedBackingThreadForTest();
+
  protected:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) final;
+
+  bool IsOwningBackingThread() const override { return false; }
 
  private:
   AnimationWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);

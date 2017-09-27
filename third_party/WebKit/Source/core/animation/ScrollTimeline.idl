@@ -8,7 +8,7 @@
     Constructor(optional ScrollTimelineOptions options),
     ConstructorCallWith=Document,
     RaisesException=Constructor,
-    RuntimeEnabled=CompositorWorker
+    RuntimeEnabled=AnimationWorklet
 ] interface ScrollTimeline : AnimationTimeline {
     readonly attribute Element? scrollSource;
     readonly attribute ScrollDirection orientation;

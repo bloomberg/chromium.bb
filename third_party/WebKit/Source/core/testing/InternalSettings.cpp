@@ -82,8 +82,8 @@ InternalSettings::Backup::Backup(Settings* settings)
       original_image_animation_policy_(settings->GetImageAnimationPolicy()),
       original_scroll_top_left_interop_enabled_(
           RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled()),
-      original_compositor_worker_enabled_(
-          RuntimeEnabledFeatures::CompositorWorkerEnabled()) {}
+      original_animation_worklet_enabled_(
+          RuntimeEnabledFeatures::AnimationWorkletEnabled()) {}
 
 void InternalSettings::Backup::RestoreTo(Settings* settings) {
   RuntimeEnabledFeatures::SetExperimentalContentSecurityPolicyFeaturesEnabled(
@@ -111,8 +111,6 @@ void InternalSettings::Backup::RestoreTo(Settings* settings) {
   settings->SetImageAnimationPolicy(original_image_animation_policy_);
   RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(
       original_scroll_top_left_interop_enabled_);
-  RuntimeEnabledFeatures::SetCompositorWorkerEnabled(
-      original_compositor_worker_enabled_);
 }
 
 InternalSettings* InternalSettings::From(Page& page) {
@@ -520,11 +518,11 @@ void InternalSettings::SetPreloadLogging(bool enabled,
   GetSettings()->SetLogPreload(enabled);
 }
 
-void InternalSettings::setCompositorWorkerEnabled(
+void InternalSettings::setAnimationWorkletEnabled(
     bool enabled,
     ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();
-  RuntimeEnabledFeatures::SetCompositorWorkerEnabled(enabled);
+  RuntimeEnabledFeatures::SetAnimationWorkletEnabled(enabled);
 }
 
 void InternalSettings::setPresentationReceiver(

@@ -42,8 +42,6 @@ blink_core_sources("dom") {
     "CollectionIndexCache.h",
     "Comment.cpp",
     "Comment.h",
-    "CompositorWorkerProxyClient.cpp",
-    "CompositorWorkerProxyClient.h",
     "ContainerNode.cpp",
     "ContainerNode.h",
     "ContextFeatures.cpp",

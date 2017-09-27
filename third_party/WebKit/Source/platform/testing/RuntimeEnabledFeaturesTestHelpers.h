@@ -37,9 +37,9 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled>
     ScopedCompositeOpaqueScrollersForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::CompositorWorkerEnabled,
-    RuntimeEnabledFeatures::SetCompositorWorkerEnabled>
-    ScopedCompositorWorkerForTest;
+    RuntimeEnabledFeatures::AnimationWorkletEnabled,
+    RuntimeEnabledFeatures::SetAnimationWorkletEnabled>
+    ScopedAnimationWorkleForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::RootLayerScrollingEnabled,
     RuntimeEnabledFeatures::SetRootLayerScrollingEnabled>

@@ -366,8 +366,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* LayerById(int id) const;
 
   // TODO(jaydasika): this is deprecated. It is used by
-  // animation/compositor-worker to look up layers to mutate, but in future, we
-  // will update property trees.
+  // scrolling animation to look up layers to mutate.
   LayerImpl* LayerByElementId(ElementId element_id) const;
   void AddToElementMap(LayerImpl* layer);
   void RemoveFromElementMap(LayerImpl* layer);

@@ -1810,20 +1810,6 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   EXPECT_EQ("text/plain", new_file->type());
 }
 
-class ScopedEnableCompositorWorker {
- public:
-  ScopedEnableCompositorWorker()
-      : was_enabled_(RuntimeEnabledFeatures::CompositorWorkerEnabled()) {
-    RuntimeEnabledFeatures::SetCompositorWorkerEnabled(true);
-  }
-  ~ScopedEnableCompositorWorker() {
-    RuntimeEnabledFeatures::SetCompositorWorkerEnabled(was_enabled_);
-  }
-
- private:
-  bool was_enabled_;
-};
-
 // Decode tests aren't included here because they're slightly non-trivial (an
 // element with the right ID must actually exist) and this feature is both
 // unshipped and likely to not use this mechanism when it does.
