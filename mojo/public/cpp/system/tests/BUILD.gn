@@ -7,11 +7,11 @@ source_set("tests") {
 
   sources = [
     "core_unittest.cc",
-    "data_pipe_string_writer_unittest.cc",
     "file_data_pipe_producer_unittest.cc",
     "handle_signal_tracker_unittest.cc",
     "handle_signals_state_unittest.cc",
     "simple_watcher_unittest.cc",
+    "string_data_pipe_producer_unittest.cc",
     "wait_set_unittest.cc",
     "wait_unittest.cc",
   ]

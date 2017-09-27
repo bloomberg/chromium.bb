@@ -14,8 +14,8 @@
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/data_pipe_string_writer.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -73,102 +73,102 @@ class DataPipeReader {
   DISALLOW_COPY_AND_ASSIGN(DataPipeReader);
 };
 
-class DataPipeStringWriterTest : public testing::Test {
+class StringDataPipeProducerTest : public testing::Test {
  public:
-  DataPipeStringWriterTest() = default;
-  ~DataPipeStringWriterTest() override = default;
+  StringDataPipeProducerTest() = default;
+  ~StringDataPipeProducerTest() override = default;
 
  protected:
-  static void WriteStringThenCloseWriter(
-      std::unique_ptr<DataPipeStringWriter> writer,
+  static void WriteStringThenCloseProducer(
+      std::unique_ptr<StringDataPipeProducer> producer,
       const base::StringPiece& str) {
-    DataPipeStringWriter* raw_writer = writer.get();
-    raw_writer->Write(
-        str, base::BindOnce([](std::unique_ptr<DataPipeStringWriter> writer,
+    StringDataPipeProducer* raw_producer = producer.get();
+    raw_producer->Write(
+        str, base::BindOnce([](std::unique_ptr<StringDataPipeProducer> producer,
                                MojoResult result) {},
-                            std::move(writer)));
+                            std::move(producer)));
   }
 
-  static void WriteStringsThenCloseWriter(
-      std::unique_ptr<DataPipeStringWriter> writer,
+  static void WriteStringsThenCloseProducer(
+      std::unique_ptr<StringDataPipeProducer> producer,
       std::list<base::StringPiece> strings) {
-    DataPipeStringWriter* raw_writer = writer.get();
+    StringDataPipeProducer* raw_producer = producer.get();
     base::StringPiece str = strings.front();
     strings.pop_front();
-    raw_writer->Write(
+    raw_producer->Write(
         str, base::BindOnce(
-                 [](std::unique_ptr<DataPipeStringWriter> writer,
+                 [](std::unique_ptr<StringDataPipeProducer> producer,
                     std::list<base::StringPiece> strings, MojoResult result) {
                    if (!strings.empty())
-                     WriteStringsThenCloseWriter(std::move(writer),
-                                                 std::move(strings));
+                     WriteStringsThenCloseProducer(std::move(producer),
+                                                   std::move(strings));
                  },
-                 std::move(writer), std::move(strings)));
+                 std::move(producer), std::move(strings)));
   }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataPipeStringWriterTest);
+  DISALLOW_COPY_AND_ASSIGN(StringDataPipeProducerTest);
 };
 
-TEST_F(DataPipeStringWriterTest, EqualCapacity) {
+TEST_F(StringDataPipeProducerTest, EqualCapacity) {
   const std::string kTestString = "Hello, world!";
 
   base::RunLoop loop;
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size()));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
-  WriteStringThenCloseWriter(
-      base::MakeUnique<DataPipeStringWriter>(std::move(pipe.producer_handle)),
+  WriteStringThenCloseProducer(
+      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
   EXPECT_EQ(kTestString, reader.data());
 }
 
-TEST_F(DataPipeStringWriterTest, UnderCapacity) {
+TEST_F(StringDataPipeProducerTest, UnderCapacity) {
   const std::string kTestString = "Hello, world!";
 
   base::RunLoop loop;
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size() * 2));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
-  WriteStringThenCloseWriter(
-      base::MakeUnique<DataPipeStringWriter>(std::move(pipe.producer_handle)),
+  WriteStringThenCloseProducer(
+      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
   EXPECT_EQ(kTestString, reader.data());
 }
 
-TEST_F(DataPipeStringWriterTest, OverCapacity) {
+TEST_F(StringDataPipeProducerTest, OverCapacity) {
   const std::string kTestString = "Hello, world!";
 
   base::RunLoop loop;
   mojo::DataPipe pipe(static_cast<uint32_t>(kTestString.size() / 2));
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
-  WriteStringThenCloseWriter(
-      base::MakeUnique<DataPipeStringWriter>(std::move(pipe.producer_handle)),
+  WriteStringThenCloseProducer(
+      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
   EXPECT_EQ(kTestString, reader.data());
 }
 
-TEST_F(DataPipeStringWriterTest, TinyPipe) {
+TEST_F(StringDataPipeProducerTest, TinyPipe) {
   const std::string kTestString = "Hello, world!";
 
   base::RunLoop loop;
   mojo::DataPipe pipe(1);
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
-  WriteStringThenCloseWriter(
-      base::MakeUnique<DataPipeStringWriter>(std::move(pipe.producer_handle)),
+  WriteStringThenCloseProducer(
+      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       kTestString);
   loop.Run();
 
   EXPECT_EQ(kTestString, reader.data());
 }
 
-TEST_F(DataPipeStringWriterTest, MultipleWrites) {
+TEST_F(StringDataPipeProducerTest, MultipleWrites) {
   const std::string kTestString1 = "Hello, world!";
   const std::string kTestString2 = "There is a lot of data coming your way!";
   const std::string kTestString3 = "So many strings!";
@@ -177,8 +177,8 @@ TEST_F(DataPipeStringWriterTest, MultipleWrites) {
   base::RunLoop loop;
   mojo::DataPipe pipe(4);
   DataPipeReader reader(std::move(pipe.consumer_handle), loop.QuitClosure());
-  WriteStringsThenCloseWriter(
-      base::MakeUnique<DataPipeStringWriter>(std::move(pipe.producer_handle)),
+  WriteStringsThenCloseProducer(
+      base::MakeUnique<StringDataPipeProducer>(std::move(pipe.producer_handle)),
       {kTestString1, kTestString2, kTestString3, kTestString4});
   loop.Run();
 
