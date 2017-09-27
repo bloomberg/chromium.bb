@@ -719,7 +719,13 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewAfterNavigation) {
   RunTest("testRemoveWebviewAfterNavigation", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestResizeWebviewResizesContent) {
+#if defined(OS_WIN)
+#define MAYBE_TestResizeWebviewResizesContent \
+  DISABLED_TestResizeWebviewResizesContent
+#else
+#define MAYBE_TestResizeWebviewResizesContent TestResizeWebviewResizesContent
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestResizeWebviewResizesContent) {
   RunTest("testResizeWebviewResizesContent", "web_view/apitest");
 }
 
