@@ -1739,9 +1739,7 @@ void ShelfView::AfterItemSelected(
       ink_drop->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
     }
   }
-  // The menu clears |scoped_root_window_for_new_windows_| in OnMenuClosed.
-  if (!IsShowingMenu())
-    scoped_root_window_for_new_windows_.reset();
+  scoped_root_window_for_new_windows_.reset();
 }
 
 void ShelfView::AfterGetContextMenuItems(
@@ -1835,11 +1833,6 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter_->CreateMenu(), run_types));
 
-  // Place new windows on the same display as the button that spawned the menu.
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  scoped_root_window_for_new_windows_.reset(
-      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
-
   views::MenuAnchorPosition menu_alignment = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor = gfx::Rect(click_point, gfx::Size());
 
@@ -1848,6 +1841,7 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     // Application lists use a bubble.
     // It is possible to invoke the menu while it is sliding into view. To cover
     // that case, the screen coordinates are offsetted by the animation delta.
+    aura::Window* window = GetWidget()->GetNativeWindow();
     anchor = source->GetBoundsInScreen() +
              (window->GetTargetBounds().origin() - window->bounds().origin());
 
@@ -1893,7 +1887,6 @@ void ShelfView::OnMenuClosed(views::InkDrop* ink_drop) {
   launcher_menu_runner_.reset();
   menu_model_adapter_.reset();
   menu_model_.reset();
-  scoped_root_window_for_new_windows_.reset();
 
   // Auto-hide or alignment might have changed, but only for this shelf.
   shelf_->UpdateVisibilityState();
