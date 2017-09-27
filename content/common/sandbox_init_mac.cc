@@ -11,8 +11,8 @@
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/sandbox_type.h"
 #include "sandbox/mac/seatbelt.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace content {
 
@@ -35,7 +35,7 @@ bool InitializeSandbox(int sandbox_type,
 // Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
 // false if the current process type doesn't need to be sandboxed or if the
 // sandbox was disabled from the command line.
-bool GetSandboxInfoFromCommandLine(SandboxType* sandbox_type,
+bool GetSandboxInfoFromCommandLine(service_manager::SandboxType* sandbox_type,
                                    base::FilePath* allowed_dir) {
   DCHECK(sandbox_type);
   DCHECK(allowed_dir);
@@ -49,8 +49,8 @@ bool GetSandboxInfoFromCommandLine(SandboxType* sandbox_type,
         command_line->GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
   }
 
-  *sandbox_type = SandboxTypeFromCommandLine(*command_line);
-  if (IsUnsandboxedSandboxType(*sandbox_type))
+  *sandbox_type = service_manager::SandboxTypeFromCommandLine(*command_line);
+  if (service_manager::IsUnsandboxedSandboxType(*sandbox_type))
     return false;
 
   if (command_line->HasSwitch(switches::kV2SandboxedEnabled)) {
@@ -59,7 +59,7 @@ bool GetSandboxInfoFromCommandLine(SandboxType* sandbox_type,
     return false;
   }
 
-  return *sandbox_type != SANDBOX_TYPE_INVALID;
+  return *sandbox_type != service_manager::SANDBOX_TYPE_INVALID;
 }
 
 }  // namespace
@@ -69,7 +69,8 @@ bool InitializeSandbox(int sandbox_type, const base::FilePath& allowed_dir) {
 }
 
 bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook) {
-  SandboxType sandbox_type = SANDBOX_TYPE_INVALID;
+  service_manager::SandboxType sandbox_type =
+      service_manager::SANDBOX_TYPE_INVALID;
   base::FilePath allowed_dir;
   return !GetSandboxInfoFromCommandLine(&sandbox_type, &allowed_dir) ||
          InitializeSandbox(sandbox_type, allowed_dir, std::move(hook));

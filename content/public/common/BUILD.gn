@@ -220,8 +220,6 @@ source_set("common_sources") {
     "result_codes.h",
     "sandbox_init.h",
     "sandbox_linux.h",
-    "sandbox_type.cc",
-    "sandbox_type.h",
     "sandboxed_process_launcher_delegate.cc",
     "sandboxed_process_launcher_delegate.h",
     "screen_info.cc",

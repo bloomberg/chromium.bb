@@ -28,7 +28,6 @@ component("embedder") {
       "set_process_title.h",
       "set_process_title_linux.h",
       "shared_file_util.h",
-      "switches.h",
     ]
     sources += [
       "main.cc",
@@ -36,7 +35,6 @@ component("embedder") {
       "set_process_title.cc",
       "set_process_title_linux.cc",
       "shared_file_util.cc",
-      "switches.cc",
     ]
   }
 
@@ -67,6 +65,7 @@ component("embedder") {
     ]
 
     public_deps += [
+      ":embedder_switches",
       "//mojo/edk/system",
       "//services/service_manager/background:lib",
       "//services/service_manager/public/cpp/standalone_service",
@@ -76,6 +75,15 @@ component("embedder") {
   }
 
   defines = [ "SERVICE_MANAGER_EMBEDDER_IMPL" ]
+}
+
+component("embedder_switches") {
+  sources = [
+    "service_manager_embedder_switches_export.h",
+    "switches.cc",
+    "switches.h",
+  ]
+  defines = [ "SERVICE_MANAGER_EMBEDDER_SWITCHES_IMPL" ]
 }
 
 source_set("unittests") {

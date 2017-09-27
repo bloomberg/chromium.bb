@@ -47,7 +47,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -65,6 +64,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/color_space_switches.h"
@@ -300,14 +300,14 @@ class GpuSandboxedProcessLauncherDelegate
   }
 #endif  // OS_WIN
 
-  SandboxType GetSandboxType() override {
+  service_manager::SandboxType GetSandboxType() override {
 #if defined(OS_WIN)
     if (cmd_line_.HasSwitch(switches::kDisableGpuSandbox)) {
       DVLOG(1) << "GPU sandbox is disabled";
-      return SANDBOX_TYPE_NO_SANDBOX;
+      return service_manager::SANDBOX_TYPE_NO_SANDBOX;
     }
 #endif
-    return SANDBOX_TYPE_GPU;
+    return service_manager::SANDBOX_TYPE_GPU;
   }
 
  private:

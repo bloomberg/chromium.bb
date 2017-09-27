@@ -13,13 +13,12 @@
 
 namespace content {
 
-void UpdateLaunchOptionsForSandbox(content::SandboxType type,
+void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
                                    base::LaunchOptions* options) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
-    type = SANDBOX_TYPE_NO_SANDBOX;
-  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox))
+    type = service_manager::SANDBOX_TYPE_NO_SANDBOX;
 
-  if (type != SANDBOX_TYPE_NO_SANDBOX) {
+  if (type != service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     options->clone_flags = LP_CLONE_FDIO_STDIO;
   } else {
     options->clone_flags = LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB |

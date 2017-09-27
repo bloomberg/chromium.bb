@@ -8,6 +8,7 @@ include_rules = [
   "+services/network/public/interfaces",
   "+services/resource_coordinator/public/interfaces",
   "+services/service_manager/public/cpp",
+  "+services/service_manager/sandbox",
   "+services/video_capture/public/interfaces",
   "+services/viz/public/interfaces",
 

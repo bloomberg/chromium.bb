@@ -30,12 +30,12 @@
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX)
@@ -114,12 +114,12 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 #endif  // OS_WIN
 
-  SandboxType GetSandboxType() override {
+  service_manager::SandboxType GetSandboxType() override {
 #if defined(OS_WIN)
     if (is_broker_)
-      return SANDBOX_TYPE_NO_SANDBOX;
+      return service_manager::SANDBOX_TYPE_NO_SANDBOX;
 #endif  // OS_WIN
-    return SANDBOX_TYPE_PPAPI;
+    return service_manager::SANDBOX_TYPE_PPAPI;
   }
 
  private:

@@ -88,7 +88,8 @@ void StartServiceInUtilityProcess(
       new UtilityProcessHostImpl(nullptr, nullptr);
   process_host->SetName(process_name);
   process_host->SetServiceIdentity(service_manager::Identity(service_name));
-  process_host->SetSandboxType(UtilitySandboxTypeFromString(sandbox_string));
+  process_host->SetSandboxType(
+      service_manager::UtilitySandboxTypeFromString(sandbox_string));
   process_host->Start();
 
   service_manager::mojom::ServiceFactoryPtr service_factory;

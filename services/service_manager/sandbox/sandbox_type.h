@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SANDBOX_TYPE_H_
-#define CONTENT_PUBLIC_COMMON_SANDBOX_TYPE_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_SANDBOX_TYPE_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_SANDBOX_TYPE_H_
 
 #include <string>
 
 #include "base/command_line.h"
-#include "content/common/content_export.h"
+#include "services/service_manager/sandbox/export.h"
 
-namespace content {
+namespace service_manager {
 
-// Defines the sandbox types known within content. Embedders can add additional
-// sandbox types with IDs starting with SANDBOX_TYPE_AFTER_LAST_TYPE.
-
+// Defines the sandbox types known within the servicemanager.
 enum SandboxType {
   // Not a valid sandbox type.
   SANDBOX_TYPE_INVALID = -1,
@@ -52,16 +50,16 @@ inline bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
          sandbox_type == SANDBOX_TYPE_NETWORK;
 }
 
-CONTENT_EXPORT void SetCommandLineFlagsForSandboxType(
+SERVICE_MANAGER_SANDBOX_EXPORT void SetCommandLineFlagsForSandboxType(
     base::CommandLine* command_line,
     SandboxType sandbox_type);
 
-CONTENT_EXPORT SandboxType
+SERVICE_MANAGER_SANDBOX_EXPORT SandboxType
 SandboxTypeFromCommandLine(const base::CommandLine& command_line);
 
-CONTENT_EXPORT SandboxType
+SERVICE_MANAGER_SANDBOX_EXPORT SandboxType
 UtilitySandboxTypeFromString(const std::string& sandbox_string);
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_PUBLIC_COMMON_SANDBOX_TYPE_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_SANDBOX_TYPE_H_

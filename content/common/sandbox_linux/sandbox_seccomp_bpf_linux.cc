@@ -17,9 +17,9 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/sandbox_type.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/sandbox_features.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
 
@@ -132,12 +132,12 @@ inline bool IsArchitectureArm() {
 }
 
 // If a BPF policy is engaged for |process_type|, run a few sanity checks.
-void RunSandboxSanityChecks(SandboxType sandbox_type) {
+void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
   switch (sandbox_type) {
-    case SANDBOX_TYPE_RENDERER:
-    case SANDBOX_TYPE_GPU:
-    case SANDBOX_TYPE_PPAPI:
-    case SANDBOX_TYPE_CDM: {
+    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SANDBOX_TYPE_PPAPI:
+    case service_manager::SANDBOX_TYPE_CDM: {
       int syscall_ret;
       errno = 0;
 
@@ -181,27 +181,27 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
 }
 
 // Initialize the seccomp-bpf sandbox.
-bool StartBPFSandbox(SandboxType sandbox_type,
+bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
                      base::ScopedFD proc_fd,
                      const SandboxSeccompBPF::Options& options) {
   std::unique_ptr<SandboxBPFBasePolicy> policy;
   switch (sandbox_type) {
-    case SANDBOX_TYPE_GPU:
+    case service_manager::SANDBOX_TYPE_GPU:
       policy = GetGpuProcessSandbox(options.use_amd_specific_policies);
       break;
-    case SANDBOX_TYPE_RENDERER:
+    case service_manager::SANDBOX_TYPE_RENDERER:
       policy = std::make_unique<RendererProcessPolicy>();
       break;
-    case SANDBOX_TYPE_PPAPI:
+    case service_manager::SANDBOX_TYPE_PPAPI:
       policy = std::make_unique<PpapiProcessPolicy>();
       break;
-    case SANDBOX_TYPE_UTILITY:
+    case service_manager::SANDBOX_TYPE_UTILITY:
       policy = std::make_unique<UtilityProcessPolicy>();
       break;
-    case SANDBOX_TYPE_CDM:
+    case service_manager::SANDBOX_TYPE_CDM:
       policy = std::make_unique<CdmProcessPolicy>();
       break;
-    case SANDBOX_TYPE_NO_SANDBOX:
+    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
     default:
       NOTREACHED();
       policy = std::make_unique<AllowAllPolicy>();
@@ -265,9 +265,9 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    CHECK(StartBPFSandbox(
-        SandboxTypeFromCommandLine(*base::CommandLine::ForCurrentProcess()),
-        std::move(proc_fd), options));
+    CHECK(StartBPFSandbox(service_manager::SandboxTypeFromCommandLine(
+                              *base::CommandLine::ForCurrentProcess()),
+                          std::move(proc_fd), options));
     return true;
   }
 #endif

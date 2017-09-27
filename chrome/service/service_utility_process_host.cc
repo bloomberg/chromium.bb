@@ -41,6 +41,7 @@
 #include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {
@@ -82,8 +83,8 @@ class ServiceSandboxedProcessLauncherDelegate
     return true;
   }
 
-  content::SandboxType GetSandboxType() override {
-    return content::SANDBOX_TYPE_UTILITY;
+  service_manager::SandboxType GetSandboxType() override {
+    return service_manager::SANDBOX_TYPE_UTILITY;
   }
 
  private:

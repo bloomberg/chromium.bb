@@ -199,7 +199,6 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/sandbox_type.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -226,6 +225,7 @@
 #include "printing/features/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
@@ -2806,13 +2806,13 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
 
   // TODO(wfh): Add support for more process types here. crbug.com/499523
   switch (sandbox_type) {
-    case content::SANDBOX_TYPE_RENDERER:
+    case service_manager::SANDBOX_TYPE_RENDERER:
       return sid + L"129201922";
-    case content::SANDBOX_TYPE_UTILITY:
+    case service_manager::SANDBOX_TYPE_UTILITY:
       return base::string16();
-    case content::SANDBOX_TYPE_GPU:
+    case service_manager::SANDBOX_TYPE_GPU:
       return base::string16();
-    case content::SANDBOX_TYPE_PPAPI:
+    case service_manager::SANDBOX_TYPE_PPAPI:
       return sid + L"129201925";
 #if BUILDFLAG(ENABLE_NACL)
     case PROCESS_TYPE_NACL_LOADER:
