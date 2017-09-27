@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -23,7 +23,7 @@ TEST(SchedulerTqmDelegateImplTest, TestTaskRunnerOverriding) {
   {
     scoped_refptr<SchedulerTqmDelegateImpl> delegate(
         SchedulerTqmDelegateImpl::Create(
-            &loop, base::MakeUnique<base::DefaultTickClock>()));
+            &loop, std::make_unique<base::DefaultTickClock>()));
     delegate->SetDefaultTaskRunner(custom_runner);
     DCHECK_EQ(custom_runner, loop.task_runner());
   }

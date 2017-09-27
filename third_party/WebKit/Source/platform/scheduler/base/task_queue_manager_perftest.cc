@@ -5,9 +5,9 @@
 #include "platform/scheduler/base/task_queue_manager.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -84,7 +84,7 @@ class TaskQueueManagerPerfTest : public ::testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
-    manager_ = base::MakeUnique<TaskQueueManager>(
+    manager_ = std::make_unique<TaskQueueManager>(
         TaskQueueManagerDelegateForTest::Create(
             message_loop_->task_runner(),
             base::WrapUnique(new base::DefaultTickClock())));

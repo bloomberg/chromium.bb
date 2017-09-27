@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -40,7 +39,7 @@ class WebViewSchedulerImplTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
     delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
+        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     web_view_scheduler_.reset(
         new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(),
@@ -718,7 +717,7 @@ TEST_F(WebViewSchedulerImplTest, BackgroundTimerThrottling) {
       budget_background_throttling_enabler(true);
 
   std::unique_ptr<base::FieldTrialList> field_trial_list =
-      base::MakeUnique<base::FieldTrialList>(nullptr);
+      std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   web_view_scheduler_.reset(
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
@@ -786,7 +785,7 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
       budget_background_throttling_enabler(true);
 
   std::unique_ptr<base::FieldTrialList> field_trial_list =
-      base::MakeUnique<base::FieldTrialList>(nullptr);
+      std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler(
       new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));

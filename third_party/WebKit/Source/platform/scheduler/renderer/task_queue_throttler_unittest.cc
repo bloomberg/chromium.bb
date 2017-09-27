@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/real_time_domain.h"
@@ -86,7 +85,7 @@ class TaskQueueThrottlerTest : public ::testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
     delegate_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
+        mock_task_runner_, std::make_unique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
@@ -132,7 +131,7 @@ class TaskQueueThrottlerTest : public ::testing::Test {
 
  protected:
   virtual std::unique_ptr<AutoAdvancingTestClock> CreateClock() {
-    return base::MakeUnique<AutoAdvancingTestClock>(base::TimeDelta());
+    return std::make_unique<AutoAdvancingTestClock>(base::TimeDelta());
   }
 
   std::unique_ptr<AutoAdvancingTestClock> clock_;
@@ -157,7 +156,7 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
 
  protected:
   std::unique_ptr<AutoAdvancingTestClock> CreateClock() override {
-    return base::MakeUnique<AutoAdvancingTestClock>(
+    return std::make_unique<AutoAdvancingTestClock>(
         auto_advance_time_interval_);
   }
 

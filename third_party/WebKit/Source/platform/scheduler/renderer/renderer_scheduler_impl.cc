@@ -4,10 +4,10 @@
 
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
+#include <memory>
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -252,7 +252,7 @@ void RendererSchedulerImpl::Shutdown() {
 }
 
 std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
-  return base::MakeUnique<WebThreadImplForRendererScheduler>(this);
+  return std::make_unique<WebThreadImplForRendererScheduler>(this);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

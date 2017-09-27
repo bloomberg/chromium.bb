@@ -5,9 +5,9 @@
 #include "platform/scheduler/base/work_queue.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/work_queue_sets.h"
@@ -24,7 +24,7 @@ class WorkQueueTest : public ::testing::Test {
  public:
   void SetUp() override {
     time_domain_.reset(new RealTimeDomain());
-    task_queue_ = base::MakeUnique<TaskQueueImpl>(nullptr, time_domain_.get(),
+    task_queue_ = std::make_unique<TaskQueueImpl>(nullptr, time_domain_.get(),
                                                   TaskQueue::Spec("test"));
 
     work_queue_.reset(new WorkQueue(task_queue_.get(), "test",

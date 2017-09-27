@@ -5,10 +5,10 @@
 #include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -47,7 +47,7 @@ class WebThreadImplForRendererSchedulerTest : public ::testing::Test {
     clock_.reset(new base::SimpleTestTickClock());
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new RendererSchedulerImpl(SchedulerTqmDelegateImpl::Create(
-        &message_loop_, base::MakeUnique<TestTimeSource>(clock_.get()))));
+        &message_loop_, std::make_unique<TestTimeSource>(clock_.get()))));
     default_task_runner_ = scheduler_->DefaultTaskQueue();
     thread_ = scheduler_->CreateMainThread();
   }
