@@ -32,8 +32,12 @@ namespace content {
 
 // Mainline routine for running as the utility process.
 int UtilityMain(const MainFunctionParams& parameters) {
+  const base::MessageLoop::Type message_loop_type =
+      parameters.command_line.HasSwitch(switches::kMessageLoopTypeUi)
+          ? base::MessageLoop::TYPE_UI
+          : base::MessageLoop::TYPE_DEFAULT;
   // The main message loop of the utility process.
-  base::MessageLoop main_message_loop;
+  base::MessageLoop main_message_loop(message_loop_type);
   base::PlatformThread::SetName("CrUtilityMain");
 
   if (parameters.command_line.HasSwitch(switches::kUtilityStartupDialog))

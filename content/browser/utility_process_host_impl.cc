@@ -203,6 +203,11 @@ void UtilityProcessHostImpl::SetName(const base::string16& name) {
   name_ = name;
 }
 
+void UtilityProcessHostImpl::SetServiceIdentity(
+    const service_manager::Identity& identity) {
+  service_identity_ = identity;
+}
+
 bool UtilityProcessHostImpl::StartProcess() {
   if (started_)
     return true;
@@ -303,6 +308,13 @@ bool UtilityProcessHostImpl::StartProcess() {
     if (run_elevated_)
       cmd_line->AppendSwitch(switches::kUtilityProcessRunningElevated);
 #endif
+
+    const bool is_service = service_identity_.has_value();
+    if (is_service) {
+      cmd_line->AppendSwitch(switches::kIsService);
+      GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
+          *service_identity_, cmd_line.get());
+    }
 
     process_->Launch(base::MakeUnique<UtilitySandboxedProcessLauncherDelegate>(
                          exposed_dir_, run_elevated_, sandbox_type_, env_),

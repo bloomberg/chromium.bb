@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/utility_process_host.h"
+#include "services/service_manager/public/cpp/identity.h"
 
 namespace base {
 class FilePath;
@@ -58,6 +60,10 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void SetName(const base::string16& name) override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }
+
+  // Used when the utility process is going to host a service. |identity| is
+  // the identity of the service being launched.
+  void SetServiceIdentity(const service_manager::Identity& identity);
 
  private:
   // Starts the child process if needed, returns true on success.
@@ -108,6 +114,10 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Used in single-process mode instead of |process_|.
   std::unique_ptr<base::Thread> in_process_thread_;
+
+  // If this has a value it indicates the process is going to host a mojo
+  // service.
+  base::Optional<service_manager::Identity> service_identity_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHostImpl> weak_ptr_factory_;

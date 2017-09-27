@@ -74,6 +74,7 @@ class ScopedInterfaceEndpointHandle;
 }
 
 namespace service_manager {
+class Identity;
 class Service;
 struct BindSourceInfo;
 }
@@ -328,6 +329,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) {}
+
+  // Allows the content embedder to adjust the command line arguments for
+  // a utility process started to run a service. This is called on a background
+  // thread.
+  virtual void AdjustUtilityServiceProcessCommandLine(
+      const service_manager::Identity& identity,
+      base::CommandLine* command_line) {}
 
   // Returns the locale used by the application.
   // This is called on the UI and IO threads.
