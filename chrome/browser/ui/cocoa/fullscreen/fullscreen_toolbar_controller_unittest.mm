@@ -90,6 +90,13 @@
 - (void)_unlockMenuPosition;
 @end
 
+#define CHECK_LAYOUT(TOOLBAR_FRACTION, MENUBAR_FRACTION)                       \
+  {                                                                            \
+    FullscreenToolbarLayout layout = [controller_ computeLayout];              \
+    EXPECT_EQ(TOOLBAR_FRACTION, layout.toolbarFraction);                       \
+    EXPECT_EQ(MENUBAR_FRACTION * -[bwc_ menubarHeight], layout.menubarOffset); \
+  }
+
 namespace {
 
 class FullscreenToolbarControllerTest : public testing::Test {
@@ -131,11 +138,6 @@ class FullscreenToolbarControllerTest : public testing::Test {
     [controller_ setToolbarStyle:style];
   }
 
-  void CheckLayout(CGFloat toolbarFraction, CGFloat menubarFraction) {
-    FullscreenToolbarLayout layout = [controller_ computeLayout];
-    EXPECT_EQ(toolbarFraction, layout.toolbarFraction);
-    EXPECT_EQ(menubarFraction * -[bwc_ menubarHeight], layout.menubarOffset);
-  }
 
   // A mock BrowserWindowController object.
   id bwc_;
@@ -156,31 +158,31 @@ class FullscreenToolbarControllerTest : public testing::Test {
 // Tests the toolbar fraction for the TOOLBAR_NONE and TOOLBAR_PRESENT
 // styles.
 TEST_F(FullscreenToolbarControllerTest, TestPresentAndNoneToolbarStyle) {
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   [controller_ setToolbarStyle:FullscreenToolbarStyle::TOOLBAR_NONE];
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   [controller_ setToolbarStyle:FullscreenToolbarStyle::TOOLBAR_PRESENT];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 }
 
 // Basic test that checks if the toolbar fraction for different menubar values.
 // This test simulates the showing and hiding the menubar.
 TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMenubar) {
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   [menubar_tracker_ setMenubarProgress:0.5];
-  CheckLayout(0.5, 0.5);
+  CHECK_LAYOUT(0.5, 0.5);
 
   [menubar_tracker_ setMenubarProgress:1];
-  CheckLayout(1, 1);
+  CHECK_LAYOUT(1, 1);
 
   [menubar_tracker_ setMenubarProgress:0.5];
-  CheckLayout(0.5, 0.5);
+  CHECK_LAYOUT(0.5, 0.5);
 
   [menubar_tracker_ setMenubarProgress:0];
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 }
 
 // Test that checks the visibility lock functions and the toolbar fraction.
@@ -191,30 +193,30 @@ TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithVisibilityLocks) {
   base::scoped_nsobject<NSObject> alt_owner([[NSObject alloc] init]);
 
   [menubar_tracker_ setMenubarProgress:0];
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   // Lock the toolbar visibility. Toolbar should be fully visible.
   [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
   EXPECT_TRUE([locks isToolbarVisibilityLocked]);
   EXPECT_TRUE([locks isToolbarVisibilityLockedForOwner:owner.get()]);
   EXPECT_TRUE(![locks isToolbarVisibilityLockedForOwner:alt_owner.get()]);
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Show the menubar.
   [menubar_tracker_ setMenubarProgress:1];
-  CheckLayout(1, 1);
+  CHECK_LAYOUT(1, 1);
 
   // Hide the menubar. The toolbar should still be fully visible.
   [menubar_tracker_ setMenubarProgress:0.5];
-  CheckLayout(1, 0.5);
+  CHECK_LAYOUT(1, 0.5);
   [menubar_tracker_ setMenubarProgress:0];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Release the lock. Toolbar should now be hidden.
   [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
   EXPECT_TRUE(![locks isToolbarVisibilityLocked]);
   EXPECT_TRUE(![locks isToolbarVisibilityLockedForOwner:owner.get()]);
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   // Lock and release the toolbar visibility with multiple owners.
   [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
@@ -222,36 +224,36 @@ TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithVisibilityLocks) {
   EXPECT_TRUE([locks isToolbarVisibilityLocked]);
   EXPECT_TRUE([locks isToolbarVisibilityLockedForOwner:owner.get()]);
   EXPECT_TRUE([locks isToolbarVisibilityLockedForOwner:alt_owner.get()]);
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
   EXPECT_TRUE([locks isToolbarVisibilityLocked]);
   EXPECT_TRUE(![locks isToolbarVisibilityLockedForOwner:owner.get()]);
   EXPECT_TRUE([locks isToolbarVisibilityLockedForOwner:alt_owner.get()]);
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   [locks releaseToolbarVisibilityForOwner:alt_owner.get() withAnimation:NO];
   EXPECT_TRUE(![locks isToolbarVisibilityLocked]);
   EXPECT_TRUE(![locks isToolbarVisibilityLockedForOwner:alt_owner.get()]);
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 }
 
 // Basic test that checks the toolbar fraction for different mouse tracking
 // values.
 TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMouseTracking) {
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   [mouse_tracker_ setMouseInside:YES];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   [menubar_tracker_ setMenubarProgress:1];
-  CheckLayout(1, 1);
+  CHECK_LAYOUT(1, 1);
 
   [menubar_tracker_ setMenubarProgress:0];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   [mouse_tracker_ setMouseInside:NO];
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 }
 
 // Test that checks the toolbar fraction with mouse tracking, menubar fraction,
@@ -260,43 +262,43 @@ TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMultipleFactors) {
   FullscreenToolbarVisibilityLockController* locks =
       [controller_ visibilityLockController];
   base::scoped_nsobject<NSObject> owner([[NSObject alloc] init]);
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   // Toolbar should be shown with the menubar.
   [menubar_tracker_ setMenubarProgress:1];
-  CheckLayout(1, 1);
+  CHECK_LAYOUT(1, 1);
 
   // Move the mouse to the toolbar and start hiding the menubar. Toolbar
   // should be fully visible.
   [mouse_tracker_ setMouseInside:YES];
-  CheckLayout(1, 1);
+  CHECK_LAYOUT(1, 1);
   [menubar_tracker_ setMenubarProgress:0.5];
-  CheckLayout(1, 0.5);
+  CHECK_LAYOUT(1, 0.5);
 
   // Lock the toolbar's visibility.
   [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-  CheckLayout(1, 0.5);
+  CHECK_LAYOUT(1, 0.5);
 
   // Hide the menubar. Toolbar should be fully visible.
   [menubar_tracker_ setMenubarProgress:0];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Lock the toolbar's visibility. Toolbar should be fully visible.
   [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Move the mouse away from the toolbar. Toolbar should hide.
   [mouse_tracker_ setMouseInside:NO];
-  CheckLayout(0, 0);
+  CHECK_LAYOUT(0, 0);
 
   // Lock the toolbar and move the mouse to it.
   [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
   [mouse_tracker_ setMouseInside:YES];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Move the mouse away from the toolbar. Toolbar should be fully visible.
   [mouse_tracker_ setMouseInside:NO];
-  CheckLayout(1, 0);
+  CHECK_LAYOUT(1, 0);
 
   // Release the toolbar. Toolbar should be hidden.
   [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
