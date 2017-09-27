@@ -87196,6 +87196,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryExternalFragmentationCellSpace" units="%">
+  <obsolete>
+    This histogram has been replaced by V8.MemoryExternalFragmentationOldSpace.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     External memory fragmentation in the cell space after each GC in percent.
@@ -87269,6 +87272,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCellSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the cell space after each GC in percent.
@@ -87276,6 +87282,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionCodeSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the code space after each GC in percent.
@@ -87283,6 +87292,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionLoSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the lo space after each GC in percent.
@@ -87290,6 +87302,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionMapSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the map space after each GC in percent.
@@ -87297,6 +87312,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionNewSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the new space after each GC in percent.
@@ -87305,7 +87323,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="V8.MemoryHeapFractionOldDataSpace" units="%">
   <obsolete>
-    This histogram has been replaced by V8.MemoryHeapFractionOldSpace.
+    Deprecated as of 09/2017.
   </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
@@ -87316,7 +87334,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="V8.MemoryHeapFractionOldPointerSpace" units="%">
   <obsolete>
-    This histogram has been replaced by V8.MemoryHeapFractionOldSpace.
+    Deprecated as of 09/2017.
   </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
@@ -87326,6 +87344,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapFractionOldSpace" units="%">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     Fraction of the total heap used by the old space after each GC in percent.
@@ -87333,6 +87354,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.MemoryHeapSampleCellSpaceCommitted" units="KB">
+  <obsolete>
+    Deprecated as of 09/2017.
+  </obsolete>
   <owner>hpayer@chromium.org</owner>
   <summary>
     The size of committed memory in the cell space after each GC in KB.
