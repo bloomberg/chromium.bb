@@ -149,3 +149,68 @@ def InstallPackage(cipd_path, package, instance_id, destination,
         capture_output=True)
 
   return destination
+
+
+def CreatePackage(cipd_path, package, in_dir, tags, refs,
+                  cred_path=None):
+  """Create (build and register) a package using cipd.
+
+  Args:
+    cipd_path: The path to a cipd executable. GetCIPDFromCache can give this.
+    package: A package name.
+    in_dir: The directory to create the package from.
+    tags: A mapping of tags to apply to the package.
+    refs: An Iterable of refs to apply to the package.
+    cred_path: The path of the service account credentials.
+  """
+  args = [
+      cipd_path, 'create',
+      '-name', package,
+      '-in', in_dir,
+  ]
+  for key, value in tags.iteritems():
+    args.extend(['-tag', '%s:%s' % (key, value)])
+  for ref in refs:
+    args.extend(['-ref', ref])
+  if cred_path:
+    args.extend(['-service_account_json', cred_path])
+
+  cros_build_lib.RunCommand(args, capture_output=True)
+
+
+def BuildPackage(cipd_path, package, in_dir, outfile):
+  """Build a package using cipd.
+
+  Args:
+    cipd_path: The path to a cipd executable. GetCIPDFromCache can give this.
+    package: A package name.
+    in_dir: The directory to create the package from.
+    outfile: Output file.  Should have extension .cipd
+  """
+  args = [
+      cipd_path, 'pkg-build',
+      '-name', package,
+      '-in', in_dir,
+      '-out', outfile,
+  ]
+  cros_build_lib.RunCommand(args, capture_output=True)
+
+
+def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
+  """Register and upload a package using cipd.
+
+  Args:
+    cipd_path: The path to a cipd executable. GetCIPDFromCache can give this.
+    package_file: The path to a .cipd package file.
+    tags: A mapping of tags to apply to the package.
+    refs: An Iterable of refs to apply to the package.
+    cred_path: The path of the service account credentials.
+  """
+  args = [cipd_path, 'pkg-register', package_file]
+  for key, value in tags.iteritems():
+    args.extend(['-tag', '%s:%s' % (key, value)])
+  for ref in refs:
+    args.extend(['-ref', ref])
+  if cred_path:
+    args.extend(['-service_account_json', cred_path])
+  cros_build_lib.RunCommand(args, capture_output=True)

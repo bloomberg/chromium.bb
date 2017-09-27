@@ -29,5 +29,6 @@ class InfraGoBuilder(generic_builders.Builder):
     """Build and upload infra Go binaries."""
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(infra_stages.BuildInfraGoBinariesStage)
-    self._RunStage(infra_stages.UploadInfraGoBinariesStage)
+    self._RunStage(infra_stages.EmergeInfraGoBinariesStage)
+    self._RunStage(infra_stages.PackageInfraGoBinariesStage)
+    self._RunStage(infra_stages.RegisterInfraGoPackagesStage)
