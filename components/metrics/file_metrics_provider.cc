@@ -533,10 +533,10 @@ void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
 void FileMetricsProvider::OnDidCreateMetricsLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Schedule a check to see if there are new metrics to load. If so, they
-  // will be reported during the next collection run after this one. The
-  // check is run off of the worker-pool so as to not cause delays on the
-  // main UI thread (which is currently where metric collection is done).
+  // Schedule a check to see if there are new metrics to load. If so, they will
+  // be reported during the next collection run after this one. The check is run
+  // off of a MayBlock() TaskRunner so as to not cause delays on the main UI
+  // thread (which is currently where metric collection is done).
   ScheduleSourcesCheck();
 
   // Clear any data for initial metrics since they're always reported

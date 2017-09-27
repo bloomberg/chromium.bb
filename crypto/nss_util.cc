@@ -34,7 +34,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/nss_util_internal.h"
