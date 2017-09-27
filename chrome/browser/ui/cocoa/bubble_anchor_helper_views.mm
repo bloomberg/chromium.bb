@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/save_credit_card_decoration.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 

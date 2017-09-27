@@ -14,6 +14,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 class CommandUpdater;
+class LocationBarBubbleDelegateView;
 
 namespace gfx {
 struct VectorIcon;
@@ -29,6 +30,9 @@ class BubbleIconView : public views::InkDropHostView,
                        public views::WidgetObserver {
  public:
   void Init();
+
+  // Invoked when a bubble for this icon is created.
+  void OnBubbleCreated(LocationBarBubbleDelegateView* bubble);
 
  protected:
   enum ExecuteSource {
