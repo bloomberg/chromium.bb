@@ -60,7 +60,7 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
 }
 
 void WebServiceWorkerImpl::OnStateChanged(
-    blink::WebServiceWorkerState new_state) {
+    blink::mojom::ServiceWorkerState new_state) {
   state_ = new_state;
 
   // TODO(nhiroki): This is a quick fix for http://crbug.com/507110
@@ -81,7 +81,7 @@ blink::WebURL WebServiceWorkerImpl::Url() const {
   return handle_ref_->url();
 }
 
-blink::WebServiceWorkerState WebServiceWorkerImpl::GetState() const {
+blink::mojom::ServiceWorkerState WebServiceWorkerImpl::GetState() const {
   return state_;
 }
 

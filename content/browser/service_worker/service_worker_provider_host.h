@@ -298,7 +298,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerVersion* active_version);
   void SendServiceWorkerStateChangedMessage(
       int worker_handle_id,
-      blink::WebServiceWorkerState state);
+      blink::mojom::ServiceWorkerState state);
 
   // Sets the worker thread id and flushes queued events.
   void SetReadyToSendMessagesToWorker(int render_thread_id);

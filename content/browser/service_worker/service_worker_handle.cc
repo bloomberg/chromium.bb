@@ -7,36 +7,12 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_worker_modes.h"
 
 namespace content {
-
-namespace {
-
-blink::WebServiceWorkerState
-GetWebServiceWorkerState(ServiceWorkerVersion* version) {
-  DCHECK(version);
-  switch (version->status()) {
-    case ServiceWorkerVersion::NEW:
-      return blink::kWebServiceWorkerStateUnknown;
-    case ServiceWorkerVersion::INSTALLING:
-      return blink::kWebServiceWorkerStateInstalling;
-    case ServiceWorkerVersion::INSTALLED:
-      return blink::kWebServiceWorkerStateInstalled;
-    case ServiceWorkerVersion::ACTIVATING:
-      return blink::kWebServiceWorkerStateActivating;
-    case ServiceWorkerVersion::ACTIVATED:
-      return blink::kWebServiceWorkerStateActivated;
-    case ServiceWorkerVersion::REDUNDANT:
-      return blink::kWebServiceWorkerStateRedundant;
-  }
-  NOTREACHED() << version->status();
-  return blink::kWebServiceWorkerStateUnknown;
-}
-
-}  // namespace
 
 std::unique_ptr<ServiceWorkerHandle> ServiceWorkerHandle::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -68,17 +44,20 @@ ServiceWorkerHandle::~ServiceWorkerHandle() {
 }
 
 void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
+  DCHECK(version);
   if (!provider_host_)
     return;
   provider_host_->SendServiceWorkerStateChangedMessage(
-      handle_id_, GetWebServiceWorkerState(version));
+      handle_id_,
+      mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version->status()));
 }
 
 ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
   ServiceWorkerObjectInfo info;
   info.handle_id = handle_id_;
   info.url = version_->script_url();
-  info.state = GetWebServiceWorkerState(version_.get());
+  info.state =
+      mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version_->status());
   info.version_id = version_->version_id();
   return info;
 }

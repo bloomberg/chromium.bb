@@ -23,8 +23,8 @@
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom.h"
 #include "url/gurl.h"
 
 // This file is to have common definitions that are to be shared by
@@ -180,7 +180,7 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
 
   int handle_id;
   GURL url;
-  blink::WebServiceWorkerState state;
+  blink::mojom::ServiceWorkerState state;
   int64_t version_id;
 };
 

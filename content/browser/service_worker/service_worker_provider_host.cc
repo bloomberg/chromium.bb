@@ -768,7 +768,7 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
 
 void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
     int worker_handle_id,
-    blink::WebServiceWorkerState state) {
+    blink::mojom::ServiceWorkerState state) {
   if (!dispatcher_host_)
     return;
 
@@ -779,8 +779,8 @@ void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
     return;
   }
 
-  Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(
-      render_thread_id_, worker_handle_id, state));
+  Send(new ServiceWorkerMsg_ServiceWorkerStateChanged(render_thread_id_,
+                                                      worker_handle_id, state));
 }
 
 void ServiceWorkerProviderHost::SetReadyToSendMessagesToWorker(

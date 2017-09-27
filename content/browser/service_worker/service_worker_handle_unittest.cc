@@ -23,8 +23,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom.h"
 
 namespace content {
 
@@ -33,8 +33,8 @@ namespace {
 const int kRenderFrameId = 44;  // A dummy ID for testing.
 
 void VerifyStateChangedMessage(int expected_handle_id,
-                              blink::WebServiceWorkerState expected_state,
-                              const IPC::Message* message) {
+                               blink::mojom::ServiceWorkerState expected_state,
+                               const IPC::Message* message) {
   ASSERT_TRUE(message != NULL);
   ServiceWorkerMsg_ServiceWorkerStateChanged::Param param;
   ASSERT_TRUE(ServiceWorkerMsg_ServiceWorkerStateChanged::Read(
@@ -165,7 +165,8 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
 
   // StateChanged (state == Installed).
   VerifyStateChangedMessage(handle->handle_id(),
-                            blink::kWebServiceWorkerStateInstalled, message);
+                            blink::mojom::ServiceWorkerState::kInstalled,
+                            message);
 }
 
 }  // namespace content

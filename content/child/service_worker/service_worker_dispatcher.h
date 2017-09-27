@@ -22,8 +22,8 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -205,7 +205,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       const std::string& message);
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
-                                   blink::WebServiceWorkerState state);
+                                   blink::mojom::ServiceWorkerState state);
   void OnSetVersionAttributes(int thread_id,
                               int registration_handle_id,
                               int changed_mask,

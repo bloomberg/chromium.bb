@@ -135,7 +135,7 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
 
 ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
     : handle_id(kInvalidServiceWorkerHandleId),
-      state(blink::kWebServiceWorkerStateUnknown),
+      state(blink::mojom::ServiceWorkerState::kUnknown),
       version_id(kInvalidServiceWorkerVersionId) {}
 
 bool ServiceWorkerObjectInfo::IsValid() const {
