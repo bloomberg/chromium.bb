@@ -11,13 +11,12 @@
 
 namespace policy {
 
-// Remove |policies_to_remove| fields from |policies|.
-// Vector |policies_to_remove| contains device policy names from
-// ChromeDeviceSettingsProto.
-// Implementation of this method is generated
+// Remove |policy_proto_tags_to_remove| fields from |policies|.
+// Vector |policy_proto_tags_to_remove| contains device policy proto tags
+// from ChromeDeviceSettingsProto. Implementation of this method is generated
 // automatically by generate_device_policy_remover.py.
 void RemovePolicies(enterprise_management::ChromeDeviceSettingsProto* policies,
-                    const std::vector<std::string>& policies_to_remove);
+                    const std::vector<int>& policy_proto_tags_to_remove);
 
 }  // namespace policy
 
