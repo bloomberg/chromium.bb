@@ -24,11 +24,6 @@
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/cdm_paths.h"
 
-#if defined(POSIX_WITH_ZYGOTE)
-#include "content/common/pepper_plugin_list.h"
-#include "content/public/common/pepper_plugin_info.h"
-#endif
-
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace content {
@@ -74,28 +69,6 @@ base::FilePath GetCdmPath(const base::FilePath& cdm_adapter_path) {
       base::GetNativeLibraryName(cdm_file_name));
 }
 
-#if defined(POSIX_WITH_ZYGOTE)
-// From the list of registered plugins, finds all registered CDMs and fills
-// |cdm_adapter_paths| with found CDM adapters paths.
-void GetRegisteredCdms(std::vector<base::FilePath>* cdm_adapter_paths) {
-  std::vector<PepperPluginInfo> plugins;
-  ComputePepperPluginList(&plugins);
-  for (const auto& plugin : plugins) {
-    // CDM is not an internal plugin.
-    if (plugin.is_internal)
-      continue;
-
-    if (IsCdm(plugin.path))
-      cdm_adapter_paths->push_back(plugin.path);
-  }
-}
-
-// A global instance used on platforms where we have to open the files in the
-// Zygote process.
-base::LazyInstance<std::unique_ptr<CdmHostFiles>>::DestructorAtExit
-    g_cdm_host_files = LAZY_INSTANCE_INITIALIZER;
-#endif
-
 }  // namespace
 
 CdmHostFiles::CdmHostFiles() {
@@ -105,24 +78,6 @@ CdmHostFiles::CdmHostFiles() {
 CdmHostFiles::~CdmHostFiles() {
   DVLOG(1) << __func__;
 }
-
-#if defined(POSIX_WITH_ZYGOTE)
-// static
-void CdmHostFiles::CreateGlobalInstance() {
-  DVLOG(1) << __func__;
-  DCHECK(!g_cdm_host_files.Get().get());
-
-  std::unique_ptr<CdmHostFiles> cdm_host_files =
-      base::MakeUnique<CdmHostFiles>();
-  cdm_host_files->OpenFilesForAllRegisteredCdms();
-  g_cdm_host_files.Get().reset(cdm_host_files.release());
-}
-
-// static
-std::unique_ptr<CdmHostFiles> CdmHostFiles::TakeGlobalInstance() {
-  return std::move(g_cdm_host_files.Get());
-}
-#endif
 
 // static
 std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
@@ -207,22 +162,6 @@ CdmHostFiles::Status CdmHostFiles::InitVerification(
   CloseAllFiles();
   return Status::kSuccess;
 }
-
-#if defined(POSIX_WITH_ZYGOTE)
-void CdmHostFiles::OpenFilesForAllRegisteredCdms() {
-  std::vector<base::FilePath> cdm_adapter_paths;
-  GetRegisteredCdms(&cdm_adapter_paths);
-  if (cdm_adapter_paths.empty()) {
-    DVLOG(1) << "No CDM registered.";
-    return;
-  }
-
-  for (auto& cdm_adapter_path : cdm_adapter_paths)
-    OpenCdmFiles(cdm_adapter_path);
-
-  OpenCommonFiles();
-}
-#endif
 
 void CdmHostFiles::OpenFiles(const base::FilePath& cdm_adapter_path) {
   OpenCdmFiles(cdm_adapter_path);

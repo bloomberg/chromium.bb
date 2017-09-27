@@ -18,17 +18,8 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "content/common/media/cdm_host_file.h"
-#include "content/common/pepper_plugin_list.h"
-#include "content/public/common/pepper_plugin_info.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/cdm_paths.h"
-
-// On systems that use the zygote process to spawn child processes, we must
-// open files in the zygote process.
-#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_MACOSX) && \
-    !defined(OS_ANDROID)
-#define POSIX_WITH_ZYGOTE 1
-#endif
 
 namespace base {
 class FilePath;
@@ -41,17 +32,6 @@ class CdmHostFiles {
  public:
   CdmHostFiles();
   ~CdmHostFiles();
-
-#if defined(POSIX_WITH_ZYGOTE)
-  // Opens CDM host files for all registered CDMs and set the global
-  // CdmHostFiles instance.  On any failure, the global instance will not be
-  // set and no file will be left open.
-  static void CreateGlobalInstance();
-
-  // Takes and returns the global CdmHostFiles instance. The return value could
-  // be nullptr if CreateGlobalInstance() failed.
-  static std::unique_ptr<CdmHostFiles> TakeGlobalInstance();
-#endif
 
   // Opens CDM host files for the CDM adapter at |cdm_adapter_path| and returns
   // the created CdmHostFiles instance. Returns nullptr if any of the files
@@ -78,11 +58,6 @@ class CdmHostFiles {
                           const base::FilePath& cdm_adapter_path);
 
  private:
-#if defined(POSIX_WITH_ZYGOTE)
-  // Opens all common files and CDM specific files for all registered CDMs.
-  void OpenFilesForAllRegisteredCdms();
-#endif
-
   // Opens all common files and CDM specific files for the CDM adapter
   // registered at |cdm_adapter_path|.
   void OpenFiles(const base::FilePath& cdm_adapter_path);

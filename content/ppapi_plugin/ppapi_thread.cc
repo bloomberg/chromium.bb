@@ -362,15 +362,9 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   std::unique_ptr<CdmHostFiles> cdm_host_files;
   CdmHostFiles::Status cdm_status = CdmHostFiles::Status::kNotCalled;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   // Open CDM host files before the process is sandboxed.
   if (!is_broker_ && IsCdm(path))
     cdm_host_files = CdmHostFiles::Create(path);
-#elif defined(OS_LINUX)
-  cdm_host_files = CdmHostFiles::TakeGlobalInstance();
-  if (is_broker_ || !IsCdm(path))
-    cdm_host_files.reset();  // Close all opened files.
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_WIN)
   // On Windows, initialize CDM host verification unsandboxed. On other
