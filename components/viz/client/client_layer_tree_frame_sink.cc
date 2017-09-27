@@ -170,6 +170,7 @@ void ClientLayerTreeFrameSink::ReclaimResources(
 }
 
 void ClientLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  needs_begin_frames_ = needs_begin_frames;
   compositor_frame_sink_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
