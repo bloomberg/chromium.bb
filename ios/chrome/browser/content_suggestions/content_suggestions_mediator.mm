@@ -347,9 +347,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     self.readingListNeedsReload = NO;
   }
 
-  [self.dataSink
-      dataAvailableForSection:self.sectionInformationByCategory[wrapper]
-                  forceReload:forceReload];
+  if (ntp_snippets::IsCategoryStatusAvailable(
+          self.contentService->GetCategoryStatus(category))) {
+    [self.dataSink
+        dataAvailableForSection:self.sectionInformationByCategory[wrapper]
+                    forceReload:forceReload];
+  }
 }
 
 - (void)contentSuggestionsService:
