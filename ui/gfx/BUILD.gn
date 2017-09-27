@@ -816,7 +816,7 @@ if (is_android) {
   }
 }
 
-fuzzer_test("color_transform_fuzztest") {
+fuzzer_test("color_transform_fuzzer") {
   sources = [
     "color_transform_fuzzer.cc",
   ]
