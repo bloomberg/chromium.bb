@@ -37,6 +37,5 @@ EXPORTS
 
   ; From chrome_elf/blacklist.cc
   AddDllToBlacklist
-  GetBlacklistIndex
   IsBlacklistInitialized
   SuccessfullyBlocked

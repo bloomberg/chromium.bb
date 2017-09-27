@@ -1304,8 +1304,8 @@ TEST_F(IncidentReportingServiceTest, UploadsWithBothDownloadTypes) {
 // Test that a profile's prune state is properly cleaned upon load.
 TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   CreateIncidentReportingService();
-  const std::string omnibox_type(base::IntToString(
-      static_cast<int32_t>(safe_browsing::IncidentType::OMNIBOX_INTERACTION)));
+  const std::string blacklist_load_type(base::IntToString(static_cast<int32_t>(
+      safe_browsing::IncidentType::OBSOLETE_BLACKLIST_LOAD)));
   const std::string preference_type(base::IntToString(
       static_cast<int32_t>(safe_browsing::IncidentType::TRACKED_PREFERENCE)));
 
@@ -1314,7 +1314,8 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
       new base::DictionaryValue());
   auto type_dict = base::MakeUnique<base::DictionaryValue>();
   type_dict->SetKey("foo", base::Value("47"));
-  incidents_sent->SetWithoutPathExpansion(omnibox_type, std::move(type_dict));
+  incidents_sent->SetWithoutPathExpansion(blacklist_load_type,
+                                          std::move(type_dict));
   type_dict = base::MakeUnique<base::DictionaryValue>();
   type_dict->SetKey("bar", base::Value("43"));
   incidents_sent->SetWithoutPathExpansion(preference_type,
@@ -1331,7 +1332,7 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   const base::DictionaryValue* new_state =
       profile->GetPrefs()->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
   // The legacy value must be gone.
-  ASSERT_FALSE(new_state->HasKey(omnibox_type));
+  ASSERT_FALSE(new_state->HasKey(blacklist_load_type));
   // But other data must be untouched.
   ASSERT_TRUE(new_state->HasKey(preference_type));
 }
