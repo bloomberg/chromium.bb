@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -108,12 +109,43 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   //     uint32 - |offset| Offset from start of message
   bool ReadSecurityBuffer(SecurityBuffer* sec_buf) WARN_UNUSED_RESULT;
 
+  // Reads an AvPair header. AvPairs appear sequentially, terminated by a
+  // special EOL AvPair, in the target info payload of the Challenge message.
+  // See [MS-NLMP] Section 2.2.2.1.
+  //
+  // An AvPair contains an inline payload, and has the structure below (
+  // little endian fields):
+  //    uint16      - AvID: Identifies the type of the payload.
+  //    uint16      - AvLen: The length of the following payload.
+  //    (variable)  - Payload: Variable length payload. The content and
+  //                  format are determined by the AvId.
+  bool ReadAvPairHeader(ntlm::TargetInfoAvId* avid,
+                        uint16_t* avlen) WARN_UNUSED_RESULT;
+
   // There are 3 message types Negotiate (sent by client), Challenge (sent by
   // server), and Authenticate (sent by client).
   //
   // This reads the message type from the header and will return false if the
   // value is invalid.
   bool ReadMessageType(MessageType* message_type) WARN_UNUSED_RESULT;
+
+  // Reads |target_info_len| bytes and parses them as a sequence of Av Pairs.
+  // |av_pairs| should be empty on entry to this function. If |ReadTargetInfo|
+  // returns false, the content of |av_pairs| is in an undefined state and
+  // should be discarded.
+  bool ReadTargetInfo(size_t target_info_len,
+                      std::vector<ntlm::AvPair>* av_pairs) WARN_UNUSED_RESULT;
+
+  // Reads a security buffer, then parses the security buffer payload as a
+  // target info. The target info is returned as a sequence of AvPairs, with
+  // the terminating AvPair omitted. A zero length payload is valid and will
+  // result in an empty list in |av_pairs|. Any non-zero length payload must
+  // have a terminating AvPair.
+  // |av_pairs| should be empty on entry to this function. If |ReadTargetInfo|
+  // returns false, the content of |av_pairs| is in an undefined state and
+  // should be discarded.
+  bool ReadTargetInfoPayload(std::vector<ntlm::AvPair>* av_pairs)
+      WARN_UNUSED_RESULT;
 
   // Skips over a security buffer field without reading the fields. This is
   // the equivalent of advancing the cursor 8 bytes. Returns false if there
