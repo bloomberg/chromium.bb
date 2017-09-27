@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
@@ -254,13 +255,23 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetPasswordExceptionList) {
   EXPECT_TRUE(RunPasswordsSubtest("getPasswordExceptionList")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ImportPasswords) {
+#if defined(OS_WIN)
+#define MAYBE_ImportPasswords DISABLED_ImportPasswords
+#else
+#define MAYBE_ImportPasswords ImportPasswords
+#endif
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, MAYBE_ImportPasswords) {
   EXPECT_FALSE(importPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("importPasswords")) << message_;
   EXPECT_TRUE(importPasswordsWasTriggered());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ExportPasswords) {
+#if defined(OS_WIN)
+#define MAYBE_ExportPasswords DISABLED_ExportPasswords
+#else
+#define MAYBE_ExportPasswords ExportPasswords
+#endif
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, MAYBE_ExportPasswords) {
   EXPECT_FALSE(exportPasswordsWasTriggered());
   EXPECT_TRUE(RunPasswordsSubtest("exportPasswords")) << message_;
   EXPECT_TRUE(exportPasswordsWasTriggered());
