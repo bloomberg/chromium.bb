@@ -728,5 +728,31 @@ TEST_P(SurfaceTest, SendsBeginFrameAcks) {
   // TODO(eseckler): Add test for DidNotProduceFrame plumbing.
 }
 
+TEST_P(SurfaceTest, RemoveSubSurface) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+
+  // Create a subsurface:
+  gfx::Size child_buffer_size(64, 128);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_surface = std::make_unique<Surface>();
+  auto sub_surface =
+      std::make_unique<SubSurface>(child_surface.get(), surface.get());
+  sub_surface->SetPosition(gfx::Point(20, 10));
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+  surface->Commit();
+  RunAllPendingInMessageLoop();
+
+  // Remove the subsurface by destroying it. This should damage |surface|.
+  sub_surface.reset();
+  EXPECT_TRUE(surface->HasPendingDamageForTesting(gfx::Rect(20, 10, 64, 128)));
+}
+
 }  // namespace
 }  // namespace exo
