@@ -1386,7 +1386,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 
 	    for (snamei = 0; snamei < snamec; snamei++)
 	    {
-		FcChar8		*utf8, *pp;
 		const FcChar8	*lang;
 		const char	*elt = 0, *eltlang = 0;
 		int		*np = 0, *nlangp = 0;
@@ -1430,11 +1429,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		    if (sp != NUM_PLATFORM_ORDER)
 			continue;
 		}
-		utf8 = FcSfntNameTranscode (&sname);
-		lang = FcSfntNameLanguage (&sname);
-
-		if (!utf8)
-		    continue;
 
 		switch (sname.name_id) {
 #ifdef TT_NAME_ID_WWS_FAMILY
@@ -1446,10 +1440,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		case TT_NAME_ID_UNIQUE_ID:
 #endif
 		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found family (n %2d p %d e %d l 0x%04x) %s\n",
+			printf ("found family (n %2d p %d e %d l 0x%04x)",
 				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id,
-				utf8);
+				sname.encoding_id, sname.language_id);
 
 		    elt = FC_FAMILY;
 		    eltlang = FC_FAMILYLANG;
@@ -1459,10 +1452,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		case TT_NAME_ID_MAC_FULL_NAME:
 		case TT_NAME_ID_FULL_NAME:
 		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found full   (n %2d p %d e %d l 0x%04x) %s\n",
+			printf ("found full   (n %2d p %d e %d l 0x%04x)",
 				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id,
-				utf8);
+				sname.encoding_id, sname.language_id);
 
 		    elt = FC_FULLNAME;
 		    eltlang = FC_FULLNAMELANG;
@@ -1477,10 +1469,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		    if (variable)
 			break;
 		    if (FcDebug () & FC_DBG_SCANV)
-			printf ("found style  (n %2d p %d e %d l 0x%04x) %s\n",
+			printf ("found style  (n %2d p %d e %d l 0x%04x) ",
 				sname.name_id, sname.platform_id,
-				sname.encoding_id, sname.language_id,
-				utf8);
+				sname.encoding_id, sname.language_id);
 
 		    elt = FC_STYLE;
 		    eltlang = FC_STYLELANG;
@@ -1491,11 +1482,27 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		case TT_NAME_ID_MANUFACTURER:
 		    /* If the foundry wasn't found in the OS/2 table, look here */
 		    if(!foundry)
+		    {
+			FcChar8 *utf8;
+			utf8 = FcSfntNameTranscode (&sname);
 			foundry = FcNoticeFoundry((FT_String *) utf8);
+			free (utf8);
+		    }
 		    break;
 		}
 		if (elt)
 		{
+		    FcChar8		*utf8, *pp;
+
+		    utf8 = FcSfntNameTranscode (&sname);
+		    lang = FcSfntNameLanguage (&sname);
+
+		    if (FcDebug () & FC_DBG_SCANV)
+			printf ("%s\n", utf8);
+
+		    if (!utf8)
+			continue;
+
 		    /* Trim surrounding whitespace. */
 		    pp = utf8;
 		    while (*pp == ' ')
@@ -1535,8 +1542,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		    }
 		    ++*np;
 		}
-		else
-		    free (utf8);
 	    }
 	}
     }
