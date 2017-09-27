@@ -108,9 +108,10 @@ class SpellCheckRequester final
   void TimerFiredToProcessQueuedRequest(TimerBase*);
   void InvokeRequest(SpellCheckRequest*);
   void EnqueueRequest(SpellCheckRequest*);
+  bool EnsureValidRequestQueueFor(int sequence);
   void DidCheckSucceed(int sequence, const Vector<TextCheckingResult>&);
   void DidCheckCancel(int sequence);
-  void DidCheck(int sequence, const Vector<TextCheckingResult>&);
+  void DidCheck(int sequence);
 
   void ClearProcessingRequest();
 
