@@ -146,21 +146,15 @@ public class NtpUiCaptureTestData {
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.ARTICLES, Arrays.asList(FAKE_ARTICLE_SUGGESTIONS));
         suggestionsSource.setFaviconForId("suggestion0", NEWS_ICON);
-        suggestionsSource.setThumbnailForId(
-                "suggestion0", decodeFile(getTestFilePath("/android/UiCapture/conductor.jpg")));
+        suggestionsSource.setThumbnailForId("suggestion0", "/android/UiCapture/conductor.jpg");
         suggestionsSource.setFaviconForId("suggestion2", ENTERTAINMENT_ICON);
-        suggestionsSource.setThumbnailForId(
-                "suggestion2", decodeFile(getTestFilePath("/android/UiCapture/gig.jpg")));
-        suggestionsSource.setThumbnailForId(
-                "suggestion3", decodeFile(getTestFilePath("/android/UiCapture/bench.jpg")));
+        suggestionsSource.setThumbnailForId("suggestion2", "/android/UiCapture/gig.jpg");
+        suggestionsSource.setThumbnailForId("suggestion3", "/android/UiCapture/bench.jpg");
         suggestionsSource.setFaviconForId("suggestion5", NEWS_ICON);
-        suggestionsSource.setThumbnailForId(
-                "suggestion5", decodeFile(getTestFilePath("/android/UiCapture/violin.jpg")));
+        suggestionsSource.setThumbnailForId("suggestion5", "/android/UiCapture/violin.jpg");
         suggestionsSource.setFaviconForId("suggestion6", ENTERTAINMENT_ICON);
-        suggestionsSource.setThumbnailForId(
-                "suggestion6", decodeFile(getTestFilePath("/android/UiCapture/freelancer.jpg")));
-        suggestionsSource.setThumbnailForId(
-                "suggestion7", decodeFile(getTestFilePath("/android/UiCapture/dog.jpg")));
+        suggestionsSource.setThumbnailForId("suggestion6", "/android/UiCapture/freelancer.jpg");
+        suggestionsSource.setThumbnailForId("suggestion7", "/android/UiCapture/dog.jpg");
         suggestionsSource.setFaviconForId("suggestion8", NEWS_ICON);
     }
 
@@ -168,8 +162,7 @@ public class NtpUiCaptureTestData {
         ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.BOOKMARKS);
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.BOOKMARKS, Arrays.asList(FAKE_BOOKMARK_SUGGESTIONS));
-        suggestionsSource.setThumbnailForId(
-                "bookmark1", decodeFile(getTestFilePath("/android/UiCapture/fire.jpg")));
+        suggestionsSource.setThumbnailForId("bookmark1", "/android/UiCapture/fire.jpg");
     }
 
     private static long getTimestamp(int year, int month, int day) {
