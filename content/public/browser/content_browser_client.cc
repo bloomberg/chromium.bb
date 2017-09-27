@@ -518,4 +518,18 @@ bool ContentBrowserClient::OverrideLegacySymantecCertConsoleMessage(
   return false;
 }
 
+#if defined(OS_ANDROID)
+bool ContentBrowserClient::ShouldOverrideUrlLoading(
+    int frame_tree_node_id,
+    bool browser_initiated,
+    const GURL& gurl,
+    const std::string& request_method,
+    bool has_user_gesture,
+    bool is_redirect,
+    bool is_main_frame,
+    ui::PageTransition transition) {
+  return false;
+}
+#endif
+
 }  // namespace content
