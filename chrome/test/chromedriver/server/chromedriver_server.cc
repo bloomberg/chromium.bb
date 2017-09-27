@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -335,7 +336,13 @@ int main(int argc, char *argv[]) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
   }
+
+  base::TaskScheduler::CreateAndStartWithDefaultParams("ChromeDriver");
+
   RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port,
             std::move(port_server));
+
+  // clean up
+  base::TaskScheduler::GetInstance()->Shutdown();
   return 0;
 }
