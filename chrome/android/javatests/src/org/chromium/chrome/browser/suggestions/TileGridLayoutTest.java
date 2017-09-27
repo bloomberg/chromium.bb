@@ -13,11 +13,11 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -32,7 +32,6 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -148,7 +147,6 @@ public class TileGridLayoutTest {
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -170,7 +168,6 @@ public class TileGridLayoutTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome(false)
-    @RetryOnFailure
     public void testTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -207,7 +204,6 @@ public class TileGridLayoutTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome(false)
-    @RetryOnFailure
     public void testTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
@@ -258,26 +254,43 @@ public class TileGridLayoutTest {
         return ntp;
     }
 
-    private boolean isLandscape(Activity activity) {
-        // Using Configuration#orientation does not yield reliable results (often returning
-        // ActivityInfo#SCREEN_ORIENTATION_USER for example) so we use the screen dimensions
-        // to find the orientation.
-        DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
-        return metrics.widthPixels > metrics.heightPixels;
-    }
+    private void setOrientation(int requestedOrientation, Activity activity) {
+        if (orientationMatchesRequest(activity, requestedOrientation)) return;
 
-    private void setOrientation(int orientation, Activity activity) {
-        boolean requestedLandscape = orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        if (isLandscape(activity) == requestedLandscape) return;
-
-        ThreadUtils.runOnUiThreadBlocking(() -> activity.setRequestedOrientation(orientation));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> activity.setRequestedOrientation(requestedOrientation));
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return isLandscape(activity) == requestedLandscape;
+                return orientationMatchesRequest(activity, requestedOrientation);
             }
         });
+    }
+
+    /**
+     * Checks whether the requested orientation matches the current one.
+     * @param activity Activity to check the orientation from. We pull its {@link Configuration}.
+     * @param requestedOrientation The requested orientation, as used in
+     *         {@link ActivityInfo#screenOrientation}. Note: This value is different from the one we
+     *         check against from {@link Configuration#orientation}. The constants used to represent
+     *         the values are not the same.
+     */
+    public boolean orientationMatchesRequest(Activity activity, int requestedOrientation) {
+        int currentOrientation = activity.getResources().getConfiguration().orientation;
+
+        // 1 => 1
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            return currentOrientation == Configuration.ORIENTATION_PORTRAIT;
+        }
+
+        // 0 => 2
+        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+            return currentOrientation == Configuration.ORIENTATION_LANDSCAPE;
+        }
+
+        throw new IllegalArgumentException(
+                "unexpected orientation requested: " + requestedOrientation);
     }
 
     private TileGridLayout getTileGridLayout(NewTabPage ntp) {
