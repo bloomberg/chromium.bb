@@ -21,7 +21,7 @@ namespace policy {
 // Return DictionaryValue in format:
 // { "timezone" : string,
 //   "intervals" : list of "OffHours" Intervals,
-//   "ignored_policies" : string list }
+//   "ignored_policy_proto_tags" : integer list }
 // "OffHours" Interval dictionary format:
 // { "start" : WeeklyTime,
 //   "end" : WeeklyTime }
@@ -35,8 +35,8 @@ std::unique_ptr<base::DictionaryValue> ConvertOffHoursProtoToValue(
     const enterprise_management::DeviceOffHoursProto& container);
 
 // Apply "OffHours" policy for proto which contains device policies. Return
-// ChromeDeviceSettingsProto without |ignored_policies|. The system will revert
-// to the default behavior for the removed policies.
+// ChromeDeviceSettingsProto without policies from |ignored_policy_proto_tags|.
+// The system will revert to the default behavior for the removed policies.
 std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
 ApplyOffHoursPolicyToProto(
     const enterprise_management::ChromeDeviceSettingsProto& input_policies);

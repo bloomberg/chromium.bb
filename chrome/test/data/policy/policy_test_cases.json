@@ -3288,6 +3288,6 @@
 
   "DeviceOffHours": {
     "os": ["chromeos"],
-    "test_policy": {"DeviceOffHours": {"intervals": [{"start" : {"day_of_week" : 1, "time": 12840000}, "end": {"day_of_week" : 1, "time": 21720000}}], "timezone" : "GMT", "ignored_policies": ["allow_new_users", "guest_mode_enabled"]}}
+    "test_policy": {"DeviceOffHours": {"intervals": [{"start" : {"day_of_week" : 1, "time": 12840000}, "end": {"day_of_week" : 1, "time": 21720000}}], "timezone" : "GMT", "ignored_policy_proto_tags": [8, 3]}}
   }
 }

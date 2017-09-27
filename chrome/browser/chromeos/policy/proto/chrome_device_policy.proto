@@ -853,13 +853,13 @@ message DeviceOffHoursProto {
   // Timezone in the same format as SystemTimezoneProto.timezone.
   // If timezone isn't set then "GMT" will be used
   optional string timezone = 2;
-  // List of policies which settings are ignored during OffHours mode.
-  // List contains policy names from ChromeDeviceSettingsProto
-  // (i.e. "device_policy_refresh_rate")
+  // List of policy proto tags which settings are ignored during OffHours
+  // mode. List contains policy proto tags from ChromeDeviceSettingsProto
+  // (i.e. proto tag = 1 means device_policy_refresh_rate policy).
+  // Proto tags are used because they are consistent identifiers.
   // During OffHoursMode default settings of ignored policies are used.
-  repeated string ignored_policies = 3;
+  repeated int32 ignored_policy_proto_tags = 3;
 }
-
 // The url and hash that specified in JSON format that can be used to retrieve
 // the device-level printers configuration file.
 message DeviceNativePrintersProto {
