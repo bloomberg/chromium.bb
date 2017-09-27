@@ -138,7 +138,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("boundsWidth", bounds.width());
   dict->SetInteger("boundsHeight", bounds.height());
 
-  gfx::Rect page_bounds = node.GetPageBoundsRect();
+  bool offscreen = false;
+  gfx::Rect page_bounds = node.GetPageBoundsRect(&offscreen);
   dict->SetInteger("pageBoundsX", page_bounds.x());
   dict->SetInteger("pageBoundsY", page_bounds.y());
   dict->SetInteger("pageBoundsWidth", page_bounds.width());
@@ -151,10 +152,15 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   for (int state_index = ui::AX_STATE_NONE;
        state_index <= ui::AX_STATE_LAST;
        ++state_index) {
+    if (state_index == ui::AX_STATE_OFFSCREEN)
+      continue;
     auto state = static_cast<ui::AXState>(state_index);
     if (node.HasState(state))
       dict->SetBoolean(ui::ToString(state), true);
   }
+
+  if (offscreen)
+    dict->SetBoolean(ui::ToString(ui::AX_STATE_OFFSCREEN), true);
 
   for (int attr_index = ui::AX_STRING_ATTRIBUTE_NONE;
        attr_index <= ui::AX_STRING_ATTRIBUTE_LAST;

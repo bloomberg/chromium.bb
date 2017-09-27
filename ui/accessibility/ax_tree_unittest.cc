@@ -44,6 +44,13 @@ std::string GetBoundsAsString(const AXTree& tree, int32_t id) {
                             bounds.y(), bounds.width(), bounds.height());
 }
 
+bool IsNodeOffscreen(const AXTree& tree, int32_t id) {
+  AXNode* node = tree.GetFromId(id);
+  bool result = false;
+  tree.GetTreeBounds(node, &result);
+  return result;
+}
+
 class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
   FakeAXTreeDelegate()
@@ -827,6 +834,30 @@ TEST(AXTreeTest, EmptyNodeBoundsIsUnionOfChildren) {
   EXPECT_EQ("(100, 10) size (500 x 40)", GetBoundsAsString(tree, 2));
 }
 
+// If a node doesn't specify its location but at least one child does have
+// a location, it will be offscreen if all of its children are offscreen.
+TEST(AXTreeTest, EmptyNodeOffscreenWhenAllChildrenOffscreen) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF();  // Deliberately empty.
+  tree_update.nodes[1].child_ids.push_back(3);
+  tree_update.nodes[1].child_ids.push_back(4);
+  // Both children are offscreen
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(900, 10, 400, 20);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(1000, 30, 400, 20);
+
+  AXTree tree(tree_update);
+  EXPECT_TRUE(IsNodeOffscreen(tree, 2));
+}
+
 // Test that getting the bounds of a node works when there's a transform.
 TEST(AXTreeTest, GetBoundsWithTransform) {
   AXTreeUpdate tree_update;
@@ -945,6 +976,37 @@ TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
   EXPECT_EQ("(700, 500) size (100 x 100)", GetBoundsAsString(tree, 3));
   EXPECT_EQ("(50, 0) size (150 x 1)", GetBoundsAsString(tree, 4));
   EXPECT_EQ("(50, 599) size (150 x 1)", GetBoundsAsString(tree, 5));
+}
+
+TEST(AXTreeTest, GetBoundsUpdatesOffscreen) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[0].child_ids.push_back(3);
+  tree_update.nodes[0].child_ids.push_back(4);
+  tree_update.nodes[0].child_ids.push_back(5);
+  // Fully onscreen
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(10, 10, 150, 150);
+  // Cropped in the bottom right
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(700, 500, 150, 150);
+  // Offscreen on the top
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(50, -200, 150, 150);
+  // Offscreen on the bottom
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].location = gfx::RectF(50, 700, 150, 150);
+
+  AXTree tree(tree_update);
+  EXPECT_FALSE(IsNodeOffscreen(tree, 2));
+  EXPECT_FALSE(IsNodeOffscreen(tree, 3));
+  EXPECT_TRUE(IsNodeOffscreen(tree, 4));
+  EXPECT_TRUE(IsNodeOffscreen(tree, 5));
 }
 
 TEST(AXTreeTest, IntReverseRelations) {
