@@ -208,12 +208,6 @@ Tree: v1.2.0
 Revision: 691638ca9b922411926b916a592f01a5f25c1af8
 Tree link: https://github.com/PolymerElements/paper-fab/tree/v1.2.0
 
-Name: paper-header-panel
-Repository: https://github.com/PolymerElements/paper-header-panel.git
-Tree: v1.1.6
-Revision: 3bf4e4f22eb12dd98039bad0eaaa942c2e869961
-Tree link: https://github.com/PolymerElements/paper-header-panel/tree/v1.1.6
-
 Name: paper-icon-button
 Repository: https://github.com/PolymerElements/paper-icon-button.git
 Tree: v1.1.6
