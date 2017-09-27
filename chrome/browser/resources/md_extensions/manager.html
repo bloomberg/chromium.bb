@@ -1,13 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://extensions/detail_view.html">
 <link rel="import" href="chrome://extensions/drop_overlay.html">
 <link rel="import" href="chrome://extensions/error_page.html">
@@ -26,19 +26,21 @@
 
 <dom-module id="extensions-manager">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-shared-style">
       :host {
+        display: flex;
+        flex-direction: column;
         height: 100%;
-      }
-
-      #panel {
-        --paper-header-panel-standard-container: {
-          display: flex;
-        };
       }
 
       extensions-sidebar {
         flex-basis: 256px;
+      }
+
+      #container {
+        flex: 1;
+        overflow: overlay;
+        position: relative;
       }
 
       #viewManager {
@@ -55,18 +57,17 @@
       }
     </style>
     <extensions-drop-overlay></extensions-drop-overlay>
-    <paper-header-panel id="panel">
-      <extensions-toolbar class="paper-header" in-dev-mode="[[inDevMode]]"
-          on-pack-tap="onPackTap_" delegate="[[delegate]]"
-          on-cr-toolbar-menu-tap="onMenuButtonTap_"
-          on-search-changed="onFilterChanged_">
-      </extensions-toolbar>
-      <dialog id="drawer" is="cr-drawer" heading="$i18n{toolbarTitle}"
-          align="$i18n{textdirection}">
-        <div class="drawer-content">
-          <extensions-sidebar id="sidebar"></extensions-sidebar>
-        </div>
-      </dialog>
+    <extensions-toolbar in-dev-mode="[[inDevMode]]"
+        on-pack-tap="onPackTap_" delegate="[[delegate]]"
+        on-cr-toolbar-menu-tap="onMenuButtonTap_"
+        on-search-changed="onFilterChanged_">
+    </extensions-toolbar>
+    <dialog id="drawer" is="cr-drawer" align="$i18n{textdirection}">
+      <div class="drawer-content">
+        <extensions-sidebar id="sidebar"></extensions-sidebar>
+      </div>
+    </dialog>
+    <div id="container">
       <extensions-view-manager id="viewManager">
         <extensions-item-list id="items-list"
             items="[[itemsList_]]"
@@ -90,7 +91,7 @@
       </extensions-pack-dialog>
       <extensions-load-error id="load-error" delegate="[[delegate]]">
       </extensions-load-error>
-    </paper-header-panel>
+    </div>
   </template>
   <script src="chrome://extensions/manager.js"></script>
 </dom-module>

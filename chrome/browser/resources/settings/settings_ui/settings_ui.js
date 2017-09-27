@@ -20,7 +20,7 @@ settings.defaultResourceLoaded = true;
 Polymer({
   is: 'settings-ui',
 
-  behaviors: [settings.RouteObserverBehavior],
+  behaviors: [settings.RouteObserverBehavior, CrContainerShadowBehavior],
 
   properties: {
     /**
@@ -141,9 +141,6 @@ Polymer({
     });
   },
 
-  /** @private {?IntersectionObserver} */
-  intersectionObserver_: null,
-
   /** @override */
   attached: function() {
     document.documentElement.classList.remove('loading');
@@ -157,27 +154,11 @@ Polymer({
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
     settings.setGlobalScrollTarget(this.$.container);
-
-    // Setup drop shadow logic.
-    var callback = entries => {
-      this.$.dropShadow.classList.toggle(
-          'has-shadow', entries[entries.length - 1].intersectionRatio == 0);
-    };
-
-    this.intersectionObserver_ = new IntersectionObserver(
-        callback,
-        /** @type {IntersectionObserverInit} */ ({
-          root: this.$.container,
-          threshold: 0,
-        }));
-    this.intersectionObserver_.observe(this.$.intersectionProbe);
   },
 
   /** @override */
   detached: function() {
     settings.resetRouteForTesting();
-    this.intersectionObserver_.disconnect();
-    this.intersectionObserver_ = null;
   },
 
   /** @param {!settings.Route} route */

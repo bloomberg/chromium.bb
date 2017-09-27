@@ -27,5 +27,9 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'cr_container_shadow_behavior',
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ]
 }

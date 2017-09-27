@@ -7,6 +7,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_ACTION_MENU_JS"
              file="../../webui/resources/cr_elements/cr_action_menu/cr_action_menu.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_CONTAINER_SHADOW_BEHAVIOR_HTML"
+             file="../../webui/resources/cr_elements/cr_container_shadow_behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_CONTAINER_SHADOW_BEHAVIOR_JS"
+             file="../../webui/resources/cr_elements/cr_container_shadow_behavior.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_SCROLLABLE_BEHAVIOR_HTML"
              file="../../webui/resources/cr_elements/cr_scrollable_behavior.html"
              type="chrome_html" />

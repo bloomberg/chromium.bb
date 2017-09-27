@@ -87,6 +87,15 @@
       [selectable] > * {
         @apply(--cr-actionable);
       }
+
+      /** Styles for elements that implement the CrContainerShadowBehavior */
+      #cr-container-shadow {
+        @apply(--cr-container-shadow);
+      }
+
+      #cr-container-shadow.has-shadow {
+        opacity: var(--cr-container-shadow-max-opacity);
+      }
     </style>
   </template>
 </dom-module>
