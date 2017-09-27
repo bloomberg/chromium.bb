@@ -672,7 +672,7 @@ class IDLParser(object):
     if len(p) > 1:
       p[0] = p[1]
     else:
-      p[0] = '_unnamed_'
+      p[0] = ''
 
   def p_ArgumentList(self, p):
     """ArgumentList : Argument Arguments

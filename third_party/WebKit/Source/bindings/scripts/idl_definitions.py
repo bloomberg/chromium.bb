@@ -555,10 +555,7 @@ class IdlOperation(TypedObject):
         if not node:
             return
 
-        self.name = node.GetName()  # FIXME: should just be: or ''
-        # FIXME: AST should use None internally
-        if self.name == '_unnamed_':
-            self.name = ''
+        self.name = node.GetName()
 
         self.is_static = bool(node.GetProperty('STATIC'))
         property_dictionary = node.GetProperties()
