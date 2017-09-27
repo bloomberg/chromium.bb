@@ -148,17 +148,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       AnimateInkDrop(views::InkDropState::HIDDEN, event);
-      shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      shelf_view_->PointerDraggedOnButton(this, ShelfView::TOUCH, *event);
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-      shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
-      event->SetHandled();
+      ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
