@@ -81,10 +81,19 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 }
 
 // Matcher for the return key on the keyboard.
-id<GREYMatcher> KeyboardReturnKey(NSString* label) {
-  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(label),
+id<GREYMatcher> KeyboardReturnKey(NSString* accessibilityID) {
+  return grey_allOf(grey_accessibilityID(accessibilityID),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey),
                     grey_sufficientlyVisible(), nil);
+}
+
+id<GREYMatcher> KeyboardNextKey() {
+  if (@available(iOS 10, *)) {
+    return KeyboardReturnKey(@"Next:");
+  } else {
+    return KeyboardReturnKey(@"Next");
+  }
 }
 
 }  // namespace
@@ -302,7 +311,7 @@ id<GREYMatcher> KeyboardReturnKey(NSString* label) {
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Name_textField");
 
   // Press the return key.
-  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+  [[EarlGrey selectElementWithMatcher:KeyboardNextKey()]
       performAction:grey_tap()];
 
   // Assert the province textfield is focused.
@@ -325,7 +334,7 @@ id<GREYMatcher> KeyboardReturnKey(NSString* label) {
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Address_textField");
 
   // Press the return key.
-  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+  [[EarlGrey selectElementWithMatcher:KeyboardNextKey()]
       performAction:grey_tap()];
 
   if (IsIPadIdiom()) {
@@ -340,7 +349,7 @@ id<GREYMatcher> KeyboardReturnKey(NSString* label) {
   AssertTextFieldWithAccessibilityIDIsFirstResponder(@"Postal Code_textField");
 
   // Press the return key.
-  [[EarlGrey selectElementWithMatcher:KeyboardReturnKey(@"Next")]
+  [[EarlGrey selectElementWithMatcher:KeyboardNextKey()]
       performAction:grey_tap()];
 
   // Expect non of the textfields to be focused.
