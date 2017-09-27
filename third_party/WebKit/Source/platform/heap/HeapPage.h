@@ -128,9 +128,10 @@ const uint8_t kReuseForbiddenZapValue = 0x2c;
 class NormalPageArena;
 class PageMemory;
 
-// HeapObjectHeader is a 64-bit object that has the following layout:
+// HeapObjectHeader is a 64-bit (64-bit platforms) or 32-bit (32-bit platforms)
+// object that has the following layout:
 //
-// | random magic value (32 bits) |
+// | random magic value (32 bits) | <- present on 64-bit platforms only
 // | gcInfoIndex (14 bits)        |
 // | DOM mark bit (1 bit)         |
 // | size (14 bits)               |
@@ -176,12 +177,12 @@ class PLATFORM_EXPORT HeapObjectHeader {
   NO_SANITIZE_ADDRESS
   HeapObjectHeader(size_t size, size_t gc_info_index) {
     // sizeof(HeapObjectHeader) must be equal to or smaller than
-    // |allocationGranularity|, because |HeapObjectHeader| is used as a header
+    // |kAllocationGranularity|, because |HeapObjectHeader| is used as a header
     // for a freed entry. Given that the smallest entry size is
-    // |allocationGranurarity|, |HeapObjectHeader| must fit into the size.
+    // |kAllocationGranurarity|, |HeapObjectHeader| must fit into the size.
     static_assert(
         sizeof(HeapObjectHeader) <= kAllocationGranularity,
-        "size of HeapObjectHeader must be smaller than allocationGranularity");
+        "size of HeapObjectHeader must be smaller than kAllocationGranularity");
 #if defined(ARCH_CPU_64_BITS)
     static_assert(sizeof(HeapObjectHeader) == 8,
                   "sizeof(HeapObjectHeader) must be 8 bytes");
@@ -238,8 +239,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Finalize(Address, size_t);
   static HeapObjectHeader* FromPayload(const void*);
 
-  // Some callers formerly called |fromPayload| only for its side-effect of
-  // calling |checkHeader| (which is now private). This function does that, but
+  // Some callers formerly called |FromPayload| only for its side-effect of
+  // calling |CheckHeader| (which is now private). This function does that, but
   // its explanatory name makes the intention at the call sites easier to
   // understand, and is public.
   static void CheckFromPayload(const void*);
