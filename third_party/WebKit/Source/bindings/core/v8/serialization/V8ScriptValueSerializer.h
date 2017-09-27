@@ -14,6 +14,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -113,6 +114,9 @@ class CORE_EXPORT V8ScriptValueSerializer
   bool serialize_invoked_ = false;
 #endif
 };
+
+// For code testing V8ScriptValueSerializer
+RefPtr<SerializedScriptValue> SerializedValue(const Vector<uint8_t>& bytes);
 
 }  // namespace blink
 
