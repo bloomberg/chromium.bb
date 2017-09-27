@@ -1189,6 +1189,8 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
+crbug.com/769357 [ Win7 Debug ] virtual/mojo-loading/http/tests/misc/webtiming-slow-load.php [ Failure Pass ]
+
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
