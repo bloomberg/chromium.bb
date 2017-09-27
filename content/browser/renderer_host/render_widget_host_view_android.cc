@@ -1430,6 +1430,8 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
   return selection_popup_controller_->CreateTouchHandleDrawable();
 }
 
+void RenderWidgetHostViewAndroid::DidScroll() {}
+
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,

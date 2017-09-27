@@ -85,6 +85,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
+  void DidScroll() override;
 
   // ui::TouchSelectionMenuClient:
   bool IsCommandIdEnabled(int command_id) const override;
@@ -107,6 +108,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
                                   const gfx::PointF& extent) final;
     void OnSelectionEvent(ui::SelectionEventType event) final;
     std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() final;
+    void DidScroll() override;
 
    private:
     RenderWidgetHostViewAura* rwhva_;

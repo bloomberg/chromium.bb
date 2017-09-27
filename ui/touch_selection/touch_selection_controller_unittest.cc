@@ -106,6 +106,8 @@ class TouchSelectionControllerTest : public testing::Test,
     return base::MakeUnique<MockTouchHandleDrawable>(&dragging_enabled_);
   }
 
+  void DidScroll() override {}
+
   void EnableLongPressDragSelection() {
     TouchSelectionController::Config config = DefaultConfig();
     config.enable_longpress_drag_selection = true;

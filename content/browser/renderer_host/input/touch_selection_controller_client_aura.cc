@@ -167,6 +167,7 @@ void TouchSelectionControllerClientAura::OnScrollStarted() {
 
 void TouchSelectionControllerClientAura::OnScrollCompleted() {
   scroll_in_progress_ = false;
+  active_client_->DidScroll();
   rwhva_->selection_controller()->SetTemporarilyHidden(false);
   UpdateQuickMenu();
 }
@@ -428,11 +429,19 @@ TouchSelectionControllerClientAura::CreateDrawable() {
       new ui::TouchHandleDrawableAura(rwhva_->GetNativeView()));
 }
 
+void TouchSelectionControllerClientAura::DidScroll() {}
+
 std::unique_ptr<ui::TouchHandleDrawable>
 TouchSelectionControllerClientAura::InternalClient::CreateDrawable() {
   NOTREACHED();
   return nullptr;
 }
+
+// Since the top-level client can only ever have its selection position changed
+// by a mainframe scroll, or an actual change in the selection, and since both
+// of these will initiate a compositor frame and thus the regular update
+// process, there is nothing to do here.
+void TouchSelectionControllerClientAura::InternalClient::DidScroll() {}
 
 bool TouchSelectionControllerClientAura::IsCommandIdEnabled(
     int command_id) const {

@@ -67,6 +67,25 @@ void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
       transformed_selection.end != selection_end_) {
     selection_start_ = transformed_selection.start;
     selection_end_ = transformed_selection.end;
+    view_origin_at_last_update_ = origin;
+    manager_->UpdateClientSelectionBounds(selection_start_, selection_end_,
+                                          this, this);
+  }
+}
+
+// Since an active touch selection in a child frame can have its screen position
+// changed by a scroll in a containing frame (and thus without the child frame
+// sending a new compositor frame), we must manually recompute the screen
+// position if requested to do so and it has changed.
+void TouchSelectionControllerClientChildFrame::DidScroll() {
+  gfx::Point origin = rwhv_->GetViewOriginInRoot();
+  if (origin != view_origin_at_last_update_) {
+    gfx::Vector2dF delta = origin - view_origin_at_last_update_;
+    selection_start_.SetEdge(selection_start_.edge_top() + delta,
+                             selection_start_.edge_bottom() + delta);
+    selection_end_.SetEdge(selection_end_.edge_top() + delta,
+                           selection_end_.edge_bottom() + delta);
+    view_origin_at_last_update_ = origin;
     manager_->UpdateClientSelectionBounds(selection_start_, selection_end_,
                                           this, this);
   }

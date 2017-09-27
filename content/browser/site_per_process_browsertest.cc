@@ -1002,60 +1002,6 @@ class InputEventAckWaiter
   DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
 };
 
-// Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
-class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
- public:
-  FrameRectChangedMessageFilter()
-      : content::BrowserMessageFilter(FrameMsgStart),
-        message_loop_runner_(new content::MessageLoopRunner),
-        frame_rect_received_(false) {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(FrameRectChangedMessageFilter, message)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
-    IPC_END_MESSAGE_MAP()
-    return false;
-  }
-
-  gfx::Rect last_rect() const { return last_rect_; }
-
-  void Wait() {
-    message_loop_runner_->Run();
-  }
-
-  void Reset() {
-    last_rect_ = gfx::Rect();
-    message_loop_runner_ = new content::MessageLoopRunner;
-    frame_rect_received_ = false;
-  }
-
- private:
-  ~FrameRectChangedMessageFilter() override {}
-
-  void OnFrameRectChanged(const gfx::Rect& rect,
-                          const viz::LocalSurfaceId& local_surface_id) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&FrameRectChangedMessageFilter::OnFrameRectChangedOnUI,
-                       this, rect, local_surface_id));
-  }
-
-  void OnFrameRectChangedOnUI(const gfx::Rect& rect,
-                              const viz::LocalSurfaceId& local_surface_id) {
-    last_rect_ = rect;
-    if (!frame_rect_received_) {
-      frame_rect_received_ = true;
-      message_loop_runner_->Quit();
-    }
-  }
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool frame_rect_received_;
-  gfx::Rect last_rect_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameRectChangedMessageFilter);
-};
-
 // Test that the view bounds for an out-of-process iframe are set and updated
 // correctly, including accounting for local frame offsets in the parent and
 // scroll positions.
@@ -11752,6 +11698,8 @@ class TouchSelectionControllerClientTestWrapper
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override {
     return client_->CreateDrawable();
   }
+
+  void DidScroll() override {}
 
   ui::SelectionEventType expected_event_;
   std::unique_ptr<base::RunLoop> run_loop_;

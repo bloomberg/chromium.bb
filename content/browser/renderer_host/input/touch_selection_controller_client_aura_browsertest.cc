@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -431,6 +432,189 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
             parent_view->selection_controller()->active_status());
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+}
+
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
+                       BasicSelectionIsolatedScrollMainframe) {
+  GURL test_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(
+      " Site A\n"
+      "   +--Site A\n"
+      "Where A = http://a.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Make sure mainframe can scroll.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.body.style.height = '900px'; "
+                            "document.body.style.overFlowY = 'scroll';"));
+
+  RenderWidgetHostViewAura* parent_view =
+      static_cast<RenderWidgetHostViewAura*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  TestTouchSelectionControllerClientAura* parent_selection_controller_client =
+      new TestTouchSelectionControllerClientAura(parent_view);
+  parent_view->SetSelectionControllerClientForTest(
+      base::WrapUnique(parent_selection_controller_client));
+
+  // We need to load the desired subframe and then wait until it's stable, i.e.
+  // generates no new frames for some reasonable time period: a stray frame
+  // between touch selection's pre-handling of GestureLongPress and the
+  // expected frame containing the selected region can confuse the
+  // TouchSelectionController, causing it to fail to show selection handles.
+  // Note this is an issue with the TouchSelectionController in general, and
+  // not a property of this test.
+  GURL child_url(
+      embedded_test_server()->GetURL("b.com", "/touch_selection.html"));
+  NavigateFrameToURL(child, child_url);
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
+
+  // The child will change with the cross-site navigation. It shouldn't change
+  // after this.
+  child = root->child_at(0);
+  WaitForChildFrameSurfaceReady(child->current_frame_host());
+
+  RenderWidgetHostViewChildFrame* child_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_EQ(child_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  FrameStableObserver child_frame_stable_observer(child_view,
+                                                  TestTimeouts::tiny_timeout());
+  child_frame_stable_observer.WaitUntilStable();
+
+  ui::TouchSelectionController* selection_controller =
+      parent_view->selection_controller();
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            selection_controller->active_status());
+
+  ui::TouchSelectionControllerTestApi selection_controller_test_api(
+      selection_controller);
+
+  scoped_refptr<FrameRectChangedMessageFilter> filter =
+      new FrameRectChangedMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Find the location of some text to select.
+  gfx::PointF point_f;
+  std::string str;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(child->current_frame_host(),
+                                            "get_point_inside_text()", &str));
+  JSONToPoint(str, &point_f);
+  gfx::Point origin = child_view->GetViewOriginInRoot();
+  gfx::Vector2dF origin_vec(origin.x(), origin.y());
+  point_f += origin_vec;
+
+  // Initiate selection with a sequence of events that go through the targeting
+  // system.
+  parent_selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_SHOWN);
+
+  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()));
+
+  parent_selection_controller_client->Wait();
+
+  // Check that selection is active and the quick menu is showing.
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            selection_controller->active_status());
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  gfx::Point scroll_start_position(10, 10);
+  gfx::Point scroll_end_position(10, 0);
+  // Initiate a touch scroll of the main frame, and make sure when the selection
+  // handles re-appear make sure they have the correct location.
+  // 1) Send touch-down.
+  ui::TouchEvent touch_down(
+      ui::ET_TOUCH_PRESSED, scroll_start_position, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  parent_view->OnTouchEvent(&touch_down);
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            selection_controller->active_status());
+  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+  gfx::PointF initial_start_handle_position =
+      selection_controller->GetStartPosition();
+
+  // 2) Send touch-move.
+  ui::TouchEvent touch_move(
+      ui::ET_TOUCH_MOVED, scroll_end_position, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  parent_view->OnTouchEvent(&touch_move);
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            selection_controller->active_status());
+  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Start scrolling: touch handles should get hidden, while touch selection is
+  // still active.
+  ui::GestureEventDetails scroll_begin_details(ui::ET_GESTURE_SCROLL_BEGIN);
+  scroll_begin_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent scroll_begin(scroll_start_position.x(),
+                                scroll_start_position.y(), 0,
+                                ui::EventTimeForNow(), scroll_begin_details);
+  parent_view->OnGestureEvent(&scroll_begin);
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            parent_view->selection_controller()->active_status());
+  EXPECT_TRUE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // GestureScrollUpdate
+  gfx::Vector2dF scroll_delta = scroll_end_position - scroll_start_position;
+  ui::GestureEventDetails scroll_update_details(
+      ui::ET_GESTURE_SCROLL_UPDATE, scroll_delta.x(), scroll_delta.y());
+  scroll_update_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent scroll_update(scroll_start_position.x(),
+                                 scroll_start_position.y(), 0,
+                                 ui::EventTimeForNow(), scroll_update_details);
+  parent_view->OnGestureEvent(&scroll_update);
+  EXPECT_TRUE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Make sure we wait for the scroll to actually happen.
+  filter->Wait();
+
+  // End scrolling: touch handles should re-appear.
+  ui::GestureEventDetails scroll_end_details(ui::ET_GESTURE_SCROLL_END);
+  scroll_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent scroll_end(scroll_end_position.x(), scroll_end_position.y(),
+                              0, ui::EventTimeForNow(), scroll_end_details);
+  parent_view->OnGestureEvent(&scroll_end);
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            parent_view->selection_controller()->active_status());
+  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // 3) Send touch-end.
+  ui::TouchEvent touch_up(
+      ui::ET_TOUCH_RELEASED, scroll_end_position, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  parent_view->OnTouchEvent(&touch_up);
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            selection_controller->active_status());
+  EXPECT_FALSE(selection_controller_test_api.temporarily_hidden());
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Make sure handles have moved.
+  gfx::PointF final_start_handle_position =
+      selection_controller->GetStartPosition();
+  EXPECT_EQ(scroll_delta,
+            final_start_handle_position - initial_start_handle_position);
 }
 
 // Tests that tapping in a textfield brings up the insertion handle, but not the

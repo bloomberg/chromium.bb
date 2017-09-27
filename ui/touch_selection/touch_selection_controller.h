@@ -34,6 +34,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
                                         const gfx::PointF& extent) = 0;
   virtual void OnSelectionEvent(SelectionEventType event) = 0;
   virtual std::unique_ptr<TouchHandleDrawable> CreateDrawable() = 0;
+  virtual void DidScroll() = 0;
 };
 
 // Controller for manipulating text selection via touch input.

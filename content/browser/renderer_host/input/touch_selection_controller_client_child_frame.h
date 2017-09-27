@@ -46,6 +46,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
+  void DidScroll() override;
 
   // ui::TouchSelectionMenuClient:
   bool IsCommandIdEnabled(int command_id) const override;
@@ -61,6 +62,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
   // The last selection bounds reported by the view.
   gfx::SelectionBound selection_start_;
   gfx::SelectionBound selection_end_;
+  // Keep track of the view origin as of the last time selection was updated.
+  gfx::Point view_origin_at_last_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientChildFrame);
 };
