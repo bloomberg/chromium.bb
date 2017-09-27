@@ -77,7 +77,7 @@ CREATE TABLE `buildRequestTable` (
   `request_build_config` varchar(80) NOT NULL,
   `request_build_args` varchar(240) DEFAULT NULL,
   `request_buildbucket_id` varchar(80) DEFAULT NULL,
-  `request_reason` enum('sanity-pre-cq') NOT NULL,
+  `request_reason` enum('sanity-pre-cq','important_cq_slave','exprimental_cq_slave') NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `build_id` (`build_id`),
