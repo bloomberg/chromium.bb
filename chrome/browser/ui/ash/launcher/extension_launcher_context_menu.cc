@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 
+#include "ash/scoped_root_window_for_new_windows.h"  // mash-ok
+#include "ash/shell.h"                               // mash-ok
 #include "base/bind.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -149,6 +152,15 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
                                                   int event_flags) {
   if (ExecuteCommonCommand(command_id, event_flags))
     return;
+
+  // Place new windows on the same display as the context menu.
+  // TODO(crbug.com/768908): Fix this in mash (where Chrome can't use Shell).
+  std::unique_ptr<ash::ScopedRootWindowForNewWindows> scoped_root;
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+    aura::Window* root = ash::Shell::GetRootWindowForDisplayId(display_id());
+    scoped_root = std::make_unique<ash::ScopedRootWindowForNewWindows>(root);
+  }
+
   switch (static_cast<MenuItem>(command_id)) {
     case LAUNCH_TYPE_PINNED_TAB:
       SetLaunchType(extensions::LAUNCH_TYPE_PINNED);

@@ -56,6 +56,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // Helper method to execute common commands. Returns true if handled.
   bool ExecuteCommonCommand(int command_id, int event_flags);
 
+  int64_t display_id() const { return display_id_; }
+
  private:
   ChromeLauncherController* controller_;
 
