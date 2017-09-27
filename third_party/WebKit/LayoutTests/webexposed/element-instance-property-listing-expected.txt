@@ -373,6 +373,8 @@ html element body
     property background
     property bgColor
     property link
+    property onafterprint
+    property onbeforeprint
     property onbeforeunload
     property onhashchange
     property onlanguagechange
@@ -522,6 +524,8 @@ html element frame
     property src
 html element frameset
     property cols
+    property onafterprint
+    property onbeforeprint
     property onbeforeunload
     property onhashchange
     property onlanguagechange

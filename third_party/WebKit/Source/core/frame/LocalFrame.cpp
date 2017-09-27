@@ -505,6 +505,7 @@ void LocalFrame::SetPrinting(bool printing,
   // Subframes of the one we're printing don't lay out to the page size.
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
+    // TODO(tkent): Support remote frames. crbug.com/455764.
     if (child->IsLocalFrame())
       ToLocalFrame(child)->SetPrinting(printing, FloatSize(), FloatSize(), 0);
   }

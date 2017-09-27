@@ -34,8 +34,8 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject // Always used on target of 'implements'
 ] interface WindowEventHandlers {
-    //attribute EventHandler onafterprint;
-    //attribute EventHandler onbeforeprint;
+    attribute EventHandler onafterprint;
+    attribute EventHandler onbeforeprint;
     // FIXME: onbeforeunload should be an OnBeforeUnloadEventHandler.
     attribute EventHandler onbeforeunload;
     attribute EventHandler onhashchange;
