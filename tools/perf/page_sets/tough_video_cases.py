@@ -24,15 +24,13 @@ _PAGE_TAGS_LIST = [
     'is_4k',
     # Play action:
     'seek',
-    'normal_play',
+    'beginning_to_end',
     'background',
     # Add javascript load
     'busyjs'
 ]
 
 
-# TODO(crouleau): Make a class for each of the page actions: regular, seeking,
-# and background. This will simplify page declarations.
 class ToughVideoCasesPage(page_module.Page):
 
   def __init__(self, url, page_set, tags, extra_browser_args=None):
@@ -43,7 +41,17 @@ class ToughVideoCasesPage(page_module.Page):
         url=url, page_set=page_set, tags=tags, name=url.split('/')[-1],
         extra_browser_args=extra_browser_args)
 
-  def PlayAction(self, action_runner):
+
+class BeginningToEndPlayPage(ToughVideoCasesPage):
+  """A normal play page simply plays the given media until the end."""
+
+  def __init__(self, url, page_set, tags, extra_browser_args=None):
+    tags.append('beginning_to_end')
+    self.add_browser_metrics = True
+    super(BeginningToEndPlayPage, self).__init__(
+        url, page_set, tags, extra_browser_args)
+
+  def RunPageInteractions(self, action_runner):
     # Play the media until it has finished or it times out.
     action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
                             ended_event_timeout_in_seconds=60)
@@ -51,9 +59,19 @@ class ToughVideoCasesPage(page_module.Page):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-  def SeekBeforeAndAfterPlayhead(self, action_runner,
-                                 action_timeout_in_seconds=60):
-    timeout = action_timeout_in_seconds
+class SeekPage(ToughVideoCasesPage):
+  """A seek page seeks twice in the video and measures the seek time."""
+
+  def __init__(self, url, page_set, tags, extra_browser_args=None,
+               action_timeout_in_seconds=60):
+    tags.append('seek')
+    self.skip_basic_metrics = True
+    self._action_timeout = action_timeout_in_seconds
+    super(SeekPage, self).__init__(
+        url, page_set, tags, extra_browser_args)
+
+  def RunPageInteractions(self, action_runner):
+    timeout = self._action_timeout
     # Start the media playback.
     action_runner.PlayMedia(
         playing_event_timeout_in_seconds=timeout)
@@ -69,18 +87,36 @@ class ToughVideoCasesPage(page_module.Page):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-  def PlayInBackgroundTab(self, action_runner, background_time=10):
+class BackgroundPlaybackPage(ToughVideoCasesPage):
+  """A Background playback page plays the given media in a background tab.
+
+  The motivation for this test case is crbug.com/678663.
+  """
+
+  def __init__(self, url, page_set, tags, extra_browser_args=None,
+               background_time=10):
+    self._background_time = background_time
+    self.skip_basic_metrics = True
+    tags.append('background')
+    # disable-media-suspend is required since for Android background playback
+    # gets suspended. This flag makes Android work the same way as desktop and
+    # not turn off video playback in the background.
+    extra_browser_args = extra_browser_args or []
+    extra_browser_args.append('--disable-media-suspend')
+    super(BackgroundPlaybackPage, self).__init__(
+        url, page_set, tags, extra_browser_args)
+
+  def RunPageInteractions(self, action_runner):
     # Steps:
     # 1. Play a video
     # 2. Open new tab overtop to obscure the video
     # 3. Close the tab to go back to the tab that is playing the video.
-    # The motivation for this test case is crbug.com/678663.
     action_runner.PlayMedia(
         playing_event_timeout_in_seconds=60)
     action_runner.Wait(.5)
     new_tab = action_runner.tab.browser.tabs.New()
     new_tab.Activate()
-    action_runner.Wait(background_time)
+    action_runner.Wait(self._background_time)
     new_tab.Close()
     action_runner.Wait(.5)
     # Generate memory dump for memoryMetric.
@@ -88,7 +124,7 @@ class ToughVideoCasesPage(page_module.Page):
       action_runner.MeasureMemory()
 
 
-class Page2(ToughVideoCasesPage):
+class Page2(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page2, self).__init__(
@@ -96,279 +132,179 @@ class Page2(ToughVideoCasesPage):
       page_set=page_set,
       tags=['vorbis', 'audio_only'])
 
-    self.add_browser_metrics = True
 
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
-
-
-class Page4(ToughVideoCasesPage):
+class Page4(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page4, self).__init__(
       url='file://tough_video_cases/video.html?src=crowd1080.webm',
       page_set=page_set,
-      tags=['is_50fps', 'vp8', 'vorbis', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['is_50fps', 'vp8', 'vorbis', 'audio_video'])
 
 
-class Page7(ToughVideoCasesPage):
+class Page7(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page7, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.ogg&type=audio',
       page_set=page_set,
-      tags=['vorbis', 'audio_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['vorbis', 'audio_only'])
 
 
-class Page8(ToughVideoCasesPage):
+class Page8(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page8, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.wav&type=audio',
       page_set=page_set,
-      tags=['pcm', 'audio_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['pcm', 'audio_only'])
 
 
-class Page11(ToughVideoCasesPage):
+class Page11(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page11, self).__init__(
       url='file://tough_video_cases/video.html?src=crowd1080.mp4',
       page_set=page_set,
-      tags=['is_50fps', 'h264', 'aac', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['is_50fps', 'h264', 'aac', 'audio_video'])
 
 
-class Page12(ToughVideoCasesPage):
+class Page12(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page12, self).__init__(
       url='file://tough_video_cases/video.html?src=crowd2160.mp4',
       page_set=page_set,
-      tags=['is_4k', 'is_50fps', 'h264', 'aac', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['is_4k', 'is_50fps', 'h264', 'aac', 'audio_video'])
 
 
-class Page13(ToughVideoCasesPage):
+class Page13(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page13, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.mp3&type=audio',
       page_set=page_set,
-      tags=['mp3', 'audio_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['mp3', 'audio_only'])
 
 
-class Page14(ToughVideoCasesPage):
+class Page14(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page14, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.mp4',
       page_set=page_set,
-      tags=['h264', 'aac', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['h264', 'aac', 'audio_video'])
 
 
-class Page15(ToughVideoCasesPage):
+class Page15(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page15, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.m4a&type=audio',
       page_set=page_set,
-      tags=['aac', 'audio_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['aac', 'audio_only'])
 
 
-class Page16(ToughVideoCasesPage):
+class Page16(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page16, self).__init__(
       url='file://tough_video_cases/video.html?src=garden2_10s.webm',
       page_set=page_set,
-      tags=['is_4k', 'vp8', 'vorbis', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['is_4k', 'vp8', 'vorbis', 'audio_video'])
 
 
-class Page17(ToughVideoCasesPage):
+class Page17(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page17, self).__init__(
       url='file://tough_video_cases/video.html?src=garden2_10s.mp4',
       page_set=page_set,
-      tags=['is_4k', 'h264', 'aac', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['is_4k', 'h264', 'aac', 'audio_video'])
 
 
-class Page19(ToughVideoCasesPage):
+class Page19(SeekPage):
 
   def __init__(self, page_set):
     super(Page19, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.ogg&type=audio&seek',
       page_set=page_set,
-      tags=['vorbis', 'audio_only', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['vorbis', 'audio_only'])
 
 
-class Page20(ToughVideoCasesPage):
+class Page20(SeekPage):
 
   def __init__(self, page_set):
     super(Page20, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.wav&type=audio&seek',
       page_set=page_set,
-      tags=['pcm', 'audio_only', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['pcm', 'audio_only'])
 
 
-class Page23(ToughVideoCasesPage):
+class Page23(SeekPage):
 
   def __init__(self, page_set):
     super(Page23, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.mp3&type=audio&seek',
       page_set=page_set,
-      tags=['mp3', 'audio_only', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['mp3', 'audio_only'])
 
 
-class Page24(ToughVideoCasesPage):
+class Page24(SeekPage):
 
   def __init__(self, page_set):
     super(Page24, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.mp4&seek',
       page_set=page_set,
-      tags=['h264', 'aac', 'audio_video', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['h264', 'aac', 'audio_video'])
 
 
-class Page25(ToughVideoCasesPage):
+class Page25(SeekPage):
 
   def __init__(self, page_set):
     super(Page25, self).__init__(
       url='file://tough_video_cases/video.html?src=garden2_10s.webm&seek',
       page_set=page_set,
-      tags=['is_4k', 'vp8', 'vorbis', 'audio_video', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['is_4k', 'vp8', 'vorbis', 'audio_video'])
 
 
-class Page26(ToughVideoCasesPage):
+class Page26(SeekPage):
 
   def __init__(self, page_set):
     super(Page26, self).__init__(
       url='file://tough_video_cases/video.html?src=garden2_10s.mp4&seek',
       page_set=page_set,
-      tags=['is_4k', 'h264', 'aac', 'audio_video', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['is_4k', 'h264', 'aac', 'audio_video'])
 
 
-class Page30(ToughVideoCasesPage):
+class Page30(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page30, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.vp9.webm',
       page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['vp9', 'opus', 'audio_video'])
 
 
-class Page31(ToughVideoCasesPage):
+class Page31(SeekPage):
 
   def __init__(self, page_set):
     super(Page31, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.vp9.webm&seek',
       page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video', 'seek'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+      tags=['vp9', 'opus', 'audio_video'])
 
 
-class Page32(ToughVideoCasesPage):
+class Page32(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page32, self).__init__(
       url='file://tough_video_cases/video.html?src=crowd1080_vp9.webm',
       page_set=page_set,
-      tags=['vp9', 'video_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['vp9', 'video_only'])
 
 
-class Page33(ToughVideoCasesPage):
+class Page33(SeekPage):
 
   def __init__(self, page_set):
     super(Page33, self).__init__(
@@ -376,70 +312,43 @@ class Page33(ToughVideoCasesPage):
       page_set=page_set,
       tags=['vp9', 'video_only', 'seek'])
 
-    self.skip_basic_metrics = True
 
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
-
-
-class Page34(ToughVideoCasesPage):
+class Page34(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page34, self).__init__(
       url='file://tough_video_cases/video.html?src=crowd720_vp9.webm',
       page_set=page_set,
-      tags=['vp9', 'video_only', 'normal_play'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['vp9', 'video_only'])
 
 
-class Page36(ToughVideoCasesPage):
+class Page36(SeekPage):
 
   def __init__(self, page_set):
     super(Page36, self).__init__(
       url=('file://tough_video_cases/video.html?src='
            'smpte_3840x2160_60fps_vp9.webm&seek'),
       page_set=page_set,
-      tags=['is_4k', 'vp9', 'video_only', 'seek'])
+      tags=['is_4k', 'vp9', 'video_only'],
+      action_timeout_in_seconds=120)
 
-    self.add_browser_metrics = True
 
-  def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner,
-                                    action_timeout_in_seconds=120)
-
-class Page37(ToughVideoCasesPage):
+class Page37(BackgroundPlaybackPage):
 
   def __init__(self, page_set):
     super(Page37, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.vp9.webm&background',
       page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video', 'background'],
-      # disable-media-suspend is required since for Android background playback
-      # gets suspended. This flag makes Android work the same way as desktop and
-      # not turn off video playback in the background.
-      extra_browser_args=['--disable-media-suspend'])
+      tags=['vp9', 'opus', 'audio_video'])
 
-    self.skip_basic_metrics = True
 
-  def RunPageInteractions(self, action_runner):
-    self.PlayInBackgroundTab(action_runner)
-
-class Page38(ToughVideoCasesPage):
+class Page38(BeginningToEndPlayPage):
 
   def __init__(self, page_set):
     super(Page38, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.mp4&busyjs',
       page_set=page_set,
-      tags=['h264', 'aac', 'audio_video', 'normal_play', 'busyjs'])
-
-    self.add_browser_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.PlayAction(action_runner)
+      tags=['h264', 'aac', 'audio_video', 'busyjs'])
 
 
 class ToughVideoCasesPageSet(story.StorySet):
