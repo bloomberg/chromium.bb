@@ -88,7 +88,7 @@ struct TraversalLeft {
   }
 
   static int ForwardGraphemeBoundaryOf(TextDirection direction,
-                                       Node* node,
+                                       const Node& node,
                                        int offset) {
     if (direction == TextDirection::kLtr)
       return PreviousGraphemeBoundaryOf(node, offset);
@@ -180,7 +180,7 @@ struct TraversalRight {
   }
 
   static int ForwardGraphemeBoundaryOf(TextDirection direction,
-                                       Node* node,
+                                       const Node& node,
                                        int offset) {
     if (direction == TextDirection::kLtr)
       return NextGraphemeBoundaryOf(node, offset);
@@ -275,7 +275,7 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
       }
 
       offset = Traversal::ForwardGraphemeBoundaryOf(
-          box->Direction(), line_layout_item.GetNode(), offset);
+          box->Direction(), *line_layout_item.GetNode(), offset);
 
       const int caret_min_offset = box->CaretMinOffset();
       const int caret_max_offset = box->CaretMaxOffset();

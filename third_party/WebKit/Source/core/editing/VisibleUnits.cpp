@@ -1150,8 +1150,8 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
       // Return false for offsets inside composed characters.
       return text_offset == text_layout_object->CaretMinOffset() ||
              text_offset == NextGraphemeBoundaryOf(
-                                anchor_node, PreviousGraphemeBoundaryOf(
-                                                 anchor_node, text_offset));
+                                *anchor_node, PreviousGraphemeBoundaryOf(
+                                                  *anchor_node, text_offset));
     }
   }
 
