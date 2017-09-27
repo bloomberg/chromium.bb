@@ -70,13 +70,13 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     helper_ = BrowsingDataFileSystemHelper::Create(
         BrowserContext::GetDefaultStoragePartition(profile_.get())->
             GetFileSystemContext());
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   ~BrowsingDataFileSystemHelperTest() override {
     // Avoid memory leaks.
     profile_.reset();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   TestingProfile* GetProfile() {
@@ -86,7 +86,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Blocks on the run_loop quits.
   void BlockUntilQuit(base::RunLoop& run_loop) {
     run_loop.Run();                               // Won't return until Quit().
-    content::RunAllBlockingPoolTasksUntilIdle();  // Flush other runners.
+    content::RunAllTasksUntilIdle();              // Flush other runners.
   }
 
   // Callback that should be executed in response to

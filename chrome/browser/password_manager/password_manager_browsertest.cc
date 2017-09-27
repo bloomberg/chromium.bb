@@ -3394,7 +3394,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
                                                        "var noop = 'noop';"));
   // Ensure the warning was not triggered.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   ASSERT_FALSE(observing_autofill_client->popup_shown());
   // Ensure the histogram remains empty.
   histograms.ExpectTotalCount(kHistogram, 0);

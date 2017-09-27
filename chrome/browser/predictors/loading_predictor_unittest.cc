@@ -98,7 +98,7 @@ void LoadingPredictorTest::SetUp() {
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
 
   predictor_->StartInitialization();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void LoadingPredictorTest::TearDown() {

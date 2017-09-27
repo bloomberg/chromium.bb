@@ -116,7 +116,7 @@ TEST_F(VisitedLink, TestAddAndQuery) {
   VisitedLinkMaster master(new DummyVisitedLinkEventListener(),
                            NULL, true, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   TimeLogger timer("Visited_link_add_and_query");
 
@@ -151,7 +151,7 @@ TEST_F(VisitedLink, TestLoad) {
     // time init with empty table
     TimeLogger initTimer("Empty_visited_link_init");
     bool success = master.Init();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     initTimer.Done();
     ASSERT_TRUE(success);
 
@@ -191,7 +191,7 @@ TEST_F(VisitedLink, TestLoad) {
                                db_path_,
                                0);
       bool success = master.Init();
-      content::RunAllBlockingPoolTasksUntilIdle();
+      content::RunAllTasksUntilIdle();
       TimeDelta elapsed = cold_timer.Elapsed();
       ASSERT_TRUE(success);
 
@@ -209,7 +209,7 @@ TEST_F(VisitedLink, TestLoad) {
                                db_path_,
                                0);
       bool success = master.Init();
-      content::RunAllBlockingPoolTasksUntilIdle();
+      content::RunAllTasksUntilIdle();
       TimeDelta elapsed = hot_timer.Elapsed();
       ASSERT_TRUE(success);
 

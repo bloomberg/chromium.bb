@@ -48,7 +48,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
 
   // Skip the following step when TaskScheduler isn't managed by this
   // TestBrowserThreadBundle, otherwise it can hang (e.g.
-  // RunAllBlockingPoolTasksUntilIdle() hangs when the TaskScheduler is managed
+  // RunAllTasksUntilIdle() hangs when the TaskScheduler is managed
   // by an external ScopedTaskEnvironment with ExecutionMode::QUEUED). This is
   // fine as (1) it's rare and (2) it mimics production where BrowserThreads are
   // shutdown before TaskScheduler.
@@ -60,7 +60,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
     // merely uncover more issues (e.g. if a bad tasks is posted but never
     // blocked upon it could make a test flaky whereas by flushing we guarantee
     // it will blow up).
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     CHECK(base::MessageLoop::current()->IsIdleForTesting());
   }
 

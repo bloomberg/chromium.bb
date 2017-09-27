@@ -350,7 +350,7 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       ContentSettingsPattern::FromString("https://example.com"),
       ContentSettingsPattern(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(), new base::Value(CONTENT_SETTING_ALLOW));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Emulate user blocking the channel.
   fake_bridge_->SetChannelStatus("https://example.com",
@@ -362,12 +362,12 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       OnContentSettingChanged(_, _, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
   channels_provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                       std::string(), false /* incognito */);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Observer should not be notified the second time.
   channels_provider_->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                       std::string(), false /* incognito */);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(NotificationChannelsProviderAndroidTest,

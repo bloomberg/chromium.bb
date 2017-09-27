@@ -2727,7 +2727,7 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
 
   void ForceBlacklistUpdate() {
     service()->OnBlacklistUpdated();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   syncer::FakeSyncChangeProcessor* processor() { return processor_raw_; }

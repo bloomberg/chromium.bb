@@ -126,7 +126,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
       non_drive_path,
       &download_item_,
       google_apis::test_util::CreateCopyResultCallback(&substituted_path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   EXPECT_EQ(non_drive_path, substituted_path);
@@ -146,7 +146,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
       drive_path,
       &download_item_,
       google_apis::test_util::CreateCopyResultCallback(&substituted_path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   EXPECT_TRUE(temp_dir_.GetPath().IsParent(substituted_path));
@@ -168,7 +168,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
       drive_path,
       &download_item_,
       google_apis::test_util::CreateCopyResultCallback(&substituted_path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   EXPECT_TRUE(substituted_path.empty());
@@ -187,7 +187,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
       drive_path,
       NULL,  // DownloadItem is not available at this moment.
       google_apis::test_util::CreateCopyResultCallback(&substituted_path));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result of SubstituteDriveDownloadPath().
   EXPECT_TRUE(temp_dir_.GetPath().IsParent(substituted_path));
@@ -220,7 +220,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
   download_handler_->CheckForFileExistence(
       &download_item_,
       google_apis::test_util::CreateCopyResultCallback(&file_exists));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   EXPECT_TRUE(file_exists);
@@ -232,7 +232,7 @@ TEST_F(DownloadHandlerTest, CheckForFileExistence) {
   download_handler_->CheckForFileExistence(
       &download_item_,
       google_apis::test_util::CreateCopyResultCallback(&file_exists));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Check the result.
   EXPECT_FALSE(file_exists);

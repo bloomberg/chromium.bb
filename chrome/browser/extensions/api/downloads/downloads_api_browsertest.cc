@@ -1005,7 +1005,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   download_item->Cancel(true);
   ASSERT_FALSE(download_item->GetTargetFilePath().empty());
   // Let cleanup complete on blocking threads.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // Check the path passed to the icon extractor post-cancellation.
   EXPECT_TRUE(RunFunctionAndReturnString(MockedGetFileIconFunction(
           download_item->GetTargetFilePath(), IconLoader::NORMAL, "foo"),

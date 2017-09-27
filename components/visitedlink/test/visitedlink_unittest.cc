@@ -169,7 +169,7 @@ class VisitedLinkTest : public testing::Test {
     bool result = master_->Init();
     if (result && wait_for_io_complete) {
       // Wait for all pending file I/O to be completed.
-      content::RunAllBlockingPoolTasksUntilIdle();
+      content::RunAllTasksUntilIdle();
     }
     return result;
   }
@@ -181,7 +181,7 @@ class VisitedLinkTest : public testing::Test {
       master_.reset(NULL);
 
     // Wait for all pending file I/O to be completed.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   // Loads the database from disk and makes sure that the same URLs are present
@@ -683,7 +683,7 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
 
 TEST_F(VisitedLinkEventsTest, Coalescence) {
   // Waiting complete rebuild the table.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
@@ -744,7 +744,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
       base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
 
   // Waiting complete rebuild the table.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
@@ -776,7 +776,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
       base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
 
   // Waiting complete rebuild the table.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // After rebuild table expect reset event.
   EXPECT_EQ(1, context()->reset_event_count());
@@ -861,17 +861,17 @@ class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {
                               &delegate_, true, true, visited_file, 0));
     master->Init();
     // Waiting complete create the table.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     master.reset();
     // Wait for all pending file I/O to be completed.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 };
 
 TEST_F(VisitedLinkCompletelyResetEventTest, LoadTable) {
   // Waiting complete loading the table.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   context()->binding().FlushForTesting();
 

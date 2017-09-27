@@ -153,7 +153,7 @@ class PasswordStoreWinTest : public testing::Test {
       wdbs_->ShutdownDatabase();
       wdbs_ = nullptr;
     }
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   base::FilePath test_login_db_file_path() const {
@@ -195,7 +195,7 @@ TEST_F(PasswordStoreWinTest, ReportIE7NoImport) {
 
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_));
   store_->GetLogins(observed_form, &consumer);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.IE7LookupResult",
       password_manager::metrics_util::IE7_RESULTS_ABSENT, 1);
@@ -222,7 +222,7 @@ TEST_F(PasswordStoreWinTest, ReportIE7Import) {
 
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_));
   store_->GetLogins(observed_form, &consumer);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.IE7LookupResult",
       password_manager::metrics_util::IE7_RESULTS_PRESENT, 1);
@@ -283,7 +283,7 @@ TEST_F(PasswordStoreWinTest, ConvertIE7Login) {
                             UnorderedPasswordFormElementsAre(&expected_forms)));
 
   store_->GetLogins(form, &consumer);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
@@ -316,7 +316,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   wdbs_->ShutdownDatabase();
   wdbs_ = nullptr;
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentSequences) {
@@ -375,7 +375,7 @@ TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentSequences) {
   EXPECT_CALL(wds_consumer, OnWebDataServiceRequestDoneStub());
   wds_->GetIE7Login(password_info, &wds_consumer);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
@@ -401,7 +401,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   store_->GetLogins(form, &consumer);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
@@ -412,7 +412,7 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   store_->GetBlacklistLogins(&consumer);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
@@ -423,5 +423,5 @@ TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   store_->GetAutofillableLogins(&consumer);
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }

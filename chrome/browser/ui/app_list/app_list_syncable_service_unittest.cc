@@ -270,7 +270,7 @@ TEST_F(AppListSyncableServiceTest, InitialMerge) {
       syncer::APP_LIST, sync_list,
       base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
       base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId1));
   EXPECT_EQ("item_name1", GetSyncItem(kItemId1)->item_name);
@@ -294,7 +294,7 @@ TEST_F(AppListSyncableServiceTest, InitialMerge_BadData) {
       syncer::APP_LIST, sync_list,
       base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
       base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Invalid item_ordinal and item_pin_ordinal.
   // Invalid item_ordinal is fixed up.
@@ -349,7 +349,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate) {
       syncer::APP_LIST, sync_list,
       base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
       base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId1));
   ASSERT_TRUE(GetSyncItem(kItemId2));
@@ -366,7 +366,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate) {
 
   app_list_syncable_service()->ProcessSyncChanges(base::Location(),
                                                   change_list);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId1));
   EXPECT_EQ("item_name1x", GetSyncItem(kItemId1)->item_name);
@@ -394,7 +394,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
       syncer::APP_LIST, sync_list,
       base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
       base::MakeUnique<syncer::SyncErrorFactoryMock>());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId));
 
@@ -409,7 +409,7 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
   // Validate items with bad data are processed without crashing.
   app_list_syncable_service()->ProcessSyncChanges(base::Location(),
                                                   change_list);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kItemId));
 }

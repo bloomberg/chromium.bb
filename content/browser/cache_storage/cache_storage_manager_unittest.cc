@@ -131,7 +131,7 @@ class CacheStorageManagerTest : public testing::Test {
   void TearDown() override {
     DestroyStorageManager();
     disk_cache::FlushCacheThreadForTesting();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   virtual bool MemoryOnly() { return false; }

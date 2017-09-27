@@ -509,7 +509,7 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   run_loop.Run();
   // Also ensure that we wait until the mock cleaner process has finished and
   // that all tasks that posted by ChromeCleanerRunner have run.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_NE(cleaner_process_status_.exit_code,
             MockChromeCleanerProcess::kInternalTestFailureExitCode);

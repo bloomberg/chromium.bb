@@ -65,7 +65,7 @@ void LoadingStatsCollectorTest::SetUp() {
   stats_collector_ =
       base::MakeUnique<LoadingStatsCollector>(mock_predictor_.get(), config);
   histogram_tester_ = base::MakeUnique<base::HistogramTester>();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void LoadingStatsCollectorTest::TestRedirectStatusHistogram(

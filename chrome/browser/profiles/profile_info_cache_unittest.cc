@@ -111,7 +111,7 @@ void ProfileInfoCacheTest::SetUp() {
 void ProfileInfoCacheTest::TearDown() {
   // Drain remaining tasks to make sure all tasks are completed. This prevents
   // memory leaks.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 ProfileInfoCache* ProfileInfoCacheTest::GetCache() {
@@ -425,7 +425,7 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
@@ -434,7 +434,7 @@ TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
   // Try to get the GAIA picture. This should return NULL until the read from
   // disk is done.
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(gfx::test::AreImagesEqual(
     gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
@@ -640,7 +640,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   profile_info_cache.AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
       std::string(), base::string16(), kIconIndex, std::string());
   EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // We haven't downloaded any high-res avatars yet.
   EXPECT_EQ(0U, profile_info_cache.cached_avatar_images_.size());
@@ -680,7 +680,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
       profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
 
   // Make sure everything has completed, and the file has been written to disk.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Clean up.
   EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(file_name));
@@ -703,7 +703,7 @@ TEST_F(ProfileInfoCacheTest, NothingToDownloadHighResAvatarTest) {
                                        std::string(), base::string16(),
                                        kIconIndex, std::string());
   EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // We haven't tried to download any high-res avatars as the specified icon is
   // just a placeholder.
@@ -787,7 +787,7 @@ TEST_F(ProfileInfoCacheTest, GetGaiaImageForAvatarMenu) {
   GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
 
   // Make sure everything has completed, and the file has been written to disk.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Make sure this profile is using GAIA picture.
   EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(0));
@@ -807,7 +807,7 @@ TEST_F(ProfileInfoCacheTest, GetGaiaImageForAvatarMenu) {
   EXPECT_FALSE(gfx::test::AreImagesEqual(gaia_image, image_loaded));
 
   // Wait until the async image load finishes.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Since the GAIA image is loaded now, we can get it this time.
   EXPECT_EQ(AvatarMenu::ImageLoadStatus::LOADED,

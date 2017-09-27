@@ -97,7 +97,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
     predictor_ = base::MakeUnique<AutocompleteActionPredictor>(profile_.get());
     predictor_->CreateLocalCachesFromDatabase();
     profile_->BlockUntilHistoryProcessesPendingRequests();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     CHECK(predictor_->initialized_);
     CHECK(db_cache()->empty());
@@ -106,7 +106,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   ~AutocompleteActionPredictorTest() override {
     // Wait for all pending tasks on the DB sequence.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     // Since we instantiated the predictor instead of going through a factory
     // and dependencies, no one else is going to call Shutdown(), which is
     // supposed to be called as part of being a KeyedService. The behavior of

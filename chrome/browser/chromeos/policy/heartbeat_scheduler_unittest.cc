@@ -132,9 +132,7 @@ class HeartbeatSchedulerTest : public testing::Test {
     settings_helper_.ReplaceProvider(chromeos::kHeartbeatEnabled);
   }
 
-  void TearDown() override {
-    content::RunAllBlockingPoolTasksUntilIdle();
-  }
+  void TearDown() override { content::RunAllTasksUntilIdle(); }
 
   void CheckPendingTaskDelay(base::Time last_heartbeat,
                              base::TimeDelta expected_delay) {

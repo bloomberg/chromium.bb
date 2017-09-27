@@ -410,7 +410,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void DeleteServiceWorkerAndStartOver() {
     helper_->context()->ScheduleDeleteAndStartOver();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   int MaxTagLength() const { return BackgroundSyncManager::kMaxTagLength; }

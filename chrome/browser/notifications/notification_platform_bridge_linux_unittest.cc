@@ -213,7 +213,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
 
   void TearDown() override {
     notification_bridge_linux_->CleanUp();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     notification_bridge_linux_.reset();
     mock_notification_proxy_ = nullptr;
     mock_bus_ = nullptr;
@@ -268,7 +268,7 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
         base::BindOnce(&NotificationPlatformBridgeLinuxTest::
                            MockableNotificationBridgeReadyCallback,
                        base::Unretained(this)));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   MOCK_METHOD1(MockableNotificationBridgeReadyCallback, void(bool));

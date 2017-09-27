@@ -208,7 +208,7 @@ class UserScriptListenerTest : public testing::Test {
         .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
         .AppendASCII("1.0.0.0");
     UnpackedInstaller::Create(service_)->Load(extension_path);
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   void UnloadTestExtension() {

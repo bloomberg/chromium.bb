@@ -118,7 +118,7 @@ void WaitForIconCreation(ArcAppListPrefs* prefs,
   // Process pending tasks. This performs multiple thread hops, so we need
   // to run it continuously until it is resolved.
   do {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   } while (!base::PathExists(icon_path));
 }
 
@@ -970,7 +970,7 @@ TEST_P(ArcAppModelBuilderTest, RequestIcons) {
 
       // This does not result in an icon being loaded, so WaitForIconUpdates
       // cannot be used.
-      content::RunAllBlockingPoolTasksUntilIdle();
+      content::RunAllTasksUntilIdle();
     }
   }
 
@@ -1126,7 +1126,7 @@ TEST_P(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
   // Process pending tasks. This performs multiple thread hops, so we need
   // to run it continuously until it is resolved.
   do {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   } while (IsIconCreated(prefs, app_id, scale_factor));
 }
 
@@ -1383,7 +1383,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
       fake_apps().begin(), fake_apps().begin() + 1));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Store number of requests generated during the App List item creation. Same
   // request will not be re-sent without clearing the request record in
@@ -1398,7 +1398,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
       ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
   app_instance()->SendInstallShortcuts(shortcuts);
   const std::string shortcut_id = ArcAppTest::GetAppId(shortcuts[0]);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   const std::string id_shortcut_exist =
       arc::ArcAppShelfId("arc_test_shelf_group", app_id).ToString();
@@ -1415,7 +1415,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   delegate.WaitForIconUpdates(ui::GetSupportedScaleFactors().size());
   EXPECT_EQ(id_shortcut_exist, delegate.app_id());
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   const size_t shortcut_request_cnt =
       app_instance()->shortcut_icon_requests().size();
   EXPECT_NE(0U, shortcut_request_cnt);
@@ -1431,7 +1431,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
   icon_loader.FetchImage(id_shortcut_absent);
   // Expected default update.
   EXPECT_EQ(update_image_count_before + 1, delegate.update_image_cnt());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(app_instance()->icon_requests().size() >
               initial_icon_request_count);
   EXPECT_EQ(shortcut_request_cnt,
@@ -1455,7 +1455,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   app_instance()->RefreshAppList();
   app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
       fake_apps().begin(), fake_apps().begin() + 1));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Store number of requests generated during the App List item creation. Same
   // request will not be re-sent without clearing the request record in

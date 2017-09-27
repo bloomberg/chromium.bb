@@ -61,7 +61,7 @@ TEST_F(IsDirectoryUtilTest, CollectForEntriesPaths) {
   std::set<base::FilePath> result;
   collector.CollectForEntriesPaths(
       paths, base::Bind(&OnCollectForEntriesPath, &result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(1u, result.size());
   EXPECT_GT(result.count(dir_path_), 0u);

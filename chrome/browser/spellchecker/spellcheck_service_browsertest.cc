@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   // Check the received event. Also we check if Chrome has successfully deleted
   // the corrupted dictionary. We delete the corrupted dictionary to avoid
   // leaking it when this test fails.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(SpellcheckService::BDICT_CORRUPTED,
             SpellcheckService::GetStatusEvent());
   base::ThreadRestrictions::ScopedAllowIO allow_io;

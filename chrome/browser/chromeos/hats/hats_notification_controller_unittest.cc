@@ -76,7 +76,7 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
         new HatsNotificationController(&profile_);
 
     // HatsController::IsNewDevice() is run on a blocking thread.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     // Send a callback to the observer to simulate internet connectivity is
     // present on device.

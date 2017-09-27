@@ -154,7 +154,7 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
   RunThisRunLoop(&run_loop);
 }
 
-void RunAllBlockingPoolTasksUntilIdle() {
+void RunAllTasksUntilIdle() {
   while (true) {
     // Setup a task observer to determine if MessageLoop tasks run in the
     // current loop iteration. This must be done before
@@ -162,8 +162,6 @@ void RunAllBlockingPoolTasksUntilIdle() {
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
 
-    // Since all blocking pool call sites are being migrated to TaskScheduler,
-    // flush TaskScheduler in addition to the blocking pool.
     base::TaskScheduler::GetInstance()->FlushForTesting();
 
     base::RunLoop().RunUntilIdle();

@@ -140,7 +140,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     delegate_.set_os_state(os_state);
     ExternalProtocolHandler::LaunchUrlWithDelegate(
         url, 0, 0, ui::PAGE_TRANSITION_LINK, true, &delegate_);
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
     EXPECT_EQ(expected_action == Action::LAUNCH, delegate_.has_launched());

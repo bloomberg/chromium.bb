@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInBackgroundPage) {
                                                     false);
     BrowserActionTestUtil(browser()).Press(0);
     nacl_module_loaded.WaitUntilSatisfied();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
   }
 

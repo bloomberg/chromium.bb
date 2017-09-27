@@ -38,7 +38,7 @@ class LoadingDataCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
-    content::RunAllBlockingPoolTasksUntilIdle();  // Runs the DB lookup.
+    content::RunAllTasksUntilIdle();  // Runs the DB lookup.
 
     url_request_job_factory_.Reset();
     url_request_context_.set_job_factory(&url_request_job_factory_);

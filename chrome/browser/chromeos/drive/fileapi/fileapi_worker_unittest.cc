@@ -175,7 +175,7 @@ TEST_F(FileApiWorkerTest, OpenFileForCreateWrite) {
            base::File::FLAG_CREATE | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -197,7 +197,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenAlwaysWrite) {
            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -219,7 +219,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenTruncatedWrite) {
            base::File::FLAG_OPEN_TRUNCATED | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -241,7 +241,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenCreateAlwaysWrite) {
            base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -260,7 +260,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenRead) {
            base::File::FLAG_OPEN | base::File::FLAG_READ,
            base::Bind(&VerifyRead, kInitialData),
            &file_system);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 

@@ -159,7 +159,7 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
   }
 
   // Runs all tasks posted to the test thread's message loop.
-  void RunAllTasks() { content::RunAllBlockingPoolTasksUntilIdle(); }
+  void RunAllTasks() { content::RunAllTasksUntilIdle(); }
 
   // Adds a DownloadManager for the test profile. The DownloadMetadataManager's
   // observer is stashed for later use. Only call once per call to

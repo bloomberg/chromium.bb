@@ -699,7 +699,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   // handles the response on the main thread. This method flushes both the
   // thread pool backing the background task runner and the main thread.
   void WaitForGetKeyboardLayoutsForLocaleToFinish() {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     // Verify that the construction of the keyboard layout list did not affect
     // the current ICU locale.

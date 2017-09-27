@@ -196,7 +196,7 @@ TEST_F(SessionManagerOperationTest, RestartLoad) {
 
   EXPECT_CALL(*this, OnOperationCompleted(&op, _)).Times(0);
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   device_settings_test_helper_.FlushRetrieve();
   EXPECT_TRUE(op.public_key().get());
   EXPECT_TRUE(op.public_key()->is_loaded());

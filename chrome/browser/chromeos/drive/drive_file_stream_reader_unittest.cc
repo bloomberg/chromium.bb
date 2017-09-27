@@ -505,7 +505,7 @@ TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
         "EmptyFile.txt",
         false,  // shared_with_me
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(entry);
     ASSERT_EQ(0, entry->file_size());

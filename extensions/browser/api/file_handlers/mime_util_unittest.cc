@@ -78,7 +78,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
     GetMimeTypeForLocalPath(browser_context(), base::FilePath::FromUTF8Unsafe(
                                                    kJPEGExtensionFilePath),
                             base::Bind(&OnMimeTypeResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
 
@@ -88,7 +88,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
         browser_context(),
         base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath),
         base::Bind(&OnMimeTypeResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
 
@@ -96,7 +96,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
     std::string result;
     GetMimeTypeForLocalPath(browser_context(), html_mime_file_path_,
                             base::Bind(&OnMimeTypeResult, &result));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     EXPECT_EQ("text/html", result);
   }
 }
@@ -116,7 +116,7 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
 
   std::vector<std::string> result;
   collector.CollectForURLs(urls, base::Bind(&OnMimeTypesCollected, &result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);
@@ -136,7 +136,7 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   std::vector<std::string> result;
   collector.CollectForLocalPaths(local_paths,
                                  base::Bind(&OnMimeTypesCollected, &result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);

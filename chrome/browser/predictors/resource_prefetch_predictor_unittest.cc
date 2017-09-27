@@ -200,7 +200,7 @@ void ResourcePrefetchPredictorTest::SetUp() {
   // for the |profile_|. The PredictorDatabase is initialized asynchronously and
   // we have to wait for the initialization completion even though the database
   // object is later replaced by a mock object.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   CHECK_EQ(predictor_->initialization_state_,
            ResourcePrefetchPredictor::NOT_INITIALIZED);
   InitializePredictor();

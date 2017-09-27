@@ -67,7 +67,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   ~IndexedDBQuotaClientTest() override {
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     idb_context_ = NULL;
     browser_context_.reset();
     base::RunLoop().RunUntilIdle();
@@ -82,7 +82,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     EXPECT_GT(usage_, -1);
     return usage_;
   }
@@ -94,7 +94,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         type,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     return origins_;
   }
 
@@ -107,7 +107,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         host,
         base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
                    weak_factory_.GetWeakPtr()));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     return origins_;
   }
 
@@ -119,7 +119,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         kTemp,
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     return delete_status_;
   }
 

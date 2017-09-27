@@ -38,7 +38,7 @@ struct DestroyHelperForTests {
   void operator()(T* object) const {
     if (object) {
       object->Destroy();
-      content::RunAllBlockingPoolTasksUntilIdle();  // Finish destruction.
+      content::RunAllTasksUntilIdle();  // Finish destruction.
     }
   }
 };

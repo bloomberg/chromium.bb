@@ -23,7 +23,7 @@
 // ... until there are no undelayed tasks in the shared MessageLoop, in
 // TaskScheduler (excluding tasks not posted from the shared MessageLoop's
 // thread or TaskScheduler):
-//    content::RunAllBlockingPoolTasksUntilIdle();
+//    content::RunAllTasksUntilIdle();
 //
 // ... until a condition is met:
 //    base::RunLoop run_loop;

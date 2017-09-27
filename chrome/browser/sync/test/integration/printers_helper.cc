@@ -75,7 +75,7 @@ chromeos::SyncedPrintersManager* GetPrinterStore(
   // Must wait for ModelTypeStore initialization. It is fairly difficult to get
   // to the particular SequencedTaskRunner created inside of ModelTypeStoreImpl,
   // so run everything!
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // Wait for UI thread task completion to make sure PrintersSyncBridge received
   // ModelTypeStore.
   base::RunLoop().RunUntilIdle();

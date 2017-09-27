@@ -22,12 +22,12 @@ TemplateURLServiceFactoryTestUtil::TemplateURLServiceFactoryTestUtil(
 
 TemplateURLServiceFactoryTestUtil::~TemplateURLServiceFactoryTestUtil() {
   // Flush the message loop to make application verifiers happy.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void TemplateURLServiceFactoryTestUtil::VerifyLoad() {
   model()->Load();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 TemplateURLService* TemplateURLServiceFactoryTestUtil::model() const {

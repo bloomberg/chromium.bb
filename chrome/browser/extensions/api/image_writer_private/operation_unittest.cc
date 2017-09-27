@@ -255,7 +255,7 @@ TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
 
   operation_->Start();
   operation_->VerifyWrite(base::Bind(&base::DoNothing));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 #endif  // !defined(OS_CHROMEOS)
 

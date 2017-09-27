@@ -39,7 +39,7 @@ TEST_F(SearchOperationTest, ContentSearch) {
   operation.Search("Directory", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -61,7 +61,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
       fake_service()->GetRootResourceId(), "New Directory 1!",
       AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_CREATED, status);
 
   // As the result of the first Search(), only entries in the current file
@@ -78,7 +78,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -99,7 +99,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -121,7 +121,7 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
   operation.Search("\"no-match query\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -144,13 +144,13 @@ TEST_F(SearchOperationTest, Lock) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_FAILED, error);
   EXPECT_FALSE(results);
 
   // Unlock, this should resume the pending search.
   lock.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(results);
   EXPECT_EQ(1u, results->size());

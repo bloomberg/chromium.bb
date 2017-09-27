@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
   EXPECT_TRUE(browser_actions_bar()->HasPopup());
   // Cleanup the popup (to avoid having windows open at tear down).
   browser_actions_bar()->HidePopup();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(browser_actions_bar()->HasPopup());
 }
 

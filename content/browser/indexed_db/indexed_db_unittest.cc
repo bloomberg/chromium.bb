@@ -78,11 +78,11 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   EXPECT_TRUE(base::DirectoryExists(normal_path));
   EXPECT_FALSE(base::DirectoryExists(session_only_path));
@@ -207,7 +207,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
           base::MakeRefCounted<ForceCloseDBCallbacks>(idb_context, kTestOrigin),
           base::MakeRefCounted<ForceCloseDBCallbacks>(idb_context, kTestOrigin),
           kTestOrigin));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
@@ -232,7 +232,7 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
       &IndexedDBContextImpl::DeleteForOrigin;
   idb_context->TaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(delete_for_origin, idb_context, kTestOrigin));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   EXPECT_TRUE(base::DirectoryExists(test_path));
 }
@@ -289,7 +289,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
 
           base::MakeRefCounted<MockIndexedDBCallbacks>(),
           base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>()));
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 }  // namespace content

@@ -86,7 +86,7 @@ void DownloadPathReservationTrackerTest::SetUp() {
 }
 
 void DownloadPathReservationTrackerTest::TearDown() {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 MockDownloadItem* DownloadPathReservationTrackerTest::CreateDownloadItem(
@@ -109,7 +109,7 @@ base::FilePath DownloadPathReservationTrackerTest::GetPathInDownloadsDirectory(
 
 bool DownloadPathReservationTrackerTest::IsPathInUse(
     const base::FilePath& path) {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   return DownloadPathReservationTracker::IsPathInUseForTesting(path);
 }
 
@@ -129,7 +129,7 @@ void DownloadPathReservationTrackerTest::CallGetReservedPath(
       conflict_action,
       base::Bind(&DownloadPathReservationTrackerTest::TestReservedPathCallback,
                  weak_ptr_factory.GetWeakPtr(), return_path, return_result));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void DownloadPathReservationTrackerTest::TestReservedPathCallback(
@@ -179,7 +179,7 @@ TEST_F(DownloadPathReservationTrackerTest, BasicReservation) {
   // Destroying the item should release the reservation.
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
   item.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPathInUse(path));
 }
 
@@ -203,7 +203,7 @@ TEST_F(DownloadPathReservationTrackerTest, InterruptedDownload) {
 
   // Once the download is interrupted, the path should become available again.
   SetDownloadItemState(item.get(), DownloadItem::INTERRUPTED);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPathInUse(path));
 }
 
@@ -230,7 +230,7 @@ TEST_F(DownloadPathReservationTrackerTest, CompleteDownload) {
   // The path wouldn't be available since it is occupied on disk by the
   // completed download.
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPathInUse(path));
 }
 
@@ -267,7 +267,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingFiles) {
 
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
   item.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_FALSE(IsPathInUse(reserved_path));
 }
@@ -296,7 +296,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingFiles_Overwrite) {
 
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
   item.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 // If the source is a file:// URL that is in the download directory, then Chrome
@@ -321,7 +321,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictWithSource) {
 
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
   item.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 // Multiple reservations for the same path should uniquify around each other.
@@ -357,7 +357,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
     EXPECT_EQ(uniquified_path.value(), reserved_path2.value());
     SetDownloadItemState(item2.get(), DownloadItem::COMPLETE);
   }
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_FALSE(IsPathInUse(uniquified_path));
 
@@ -373,7 +373,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
     EXPECT_EQ(uniquified_path.value(), reserved_path2.value());
     SetDownloadItemState(item2.get(), DownloadItem::COMPLETE);
   }
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Now acquire an overwriting reservation. We should end up with the same
   // non-uniquified path for both reservations.
@@ -559,7 +559,7 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
   // this state, we shouldn't lose the reservation.
   ASSERT_EQ(base::FilePath::StringType(), item->GetTargetFilePath().value());
   item->NotifyObserversDownloadUpdated();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsPathInUse(path));
 
   // If the target path changes, we should update the reservation to match.
@@ -569,14 +569,14 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillRepeatedly(ReturnRef(new_target_path));
   item->NotifyObserversDownloadUpdated();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPathInUse(path));
   EXPECT_TRUE(IsPathInUse(new_target_path));
 
   // Destroying the item should release the reservation.
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
   item.reset();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPathInUse(new_target_path));
 }
 

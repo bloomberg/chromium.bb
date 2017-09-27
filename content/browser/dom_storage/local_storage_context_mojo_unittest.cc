@@ -1130,7 +1130,7 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
   context = nullptr;
   base::RunLoop().RunUntilIdle();
   // Also flush Task Scheduler tasks to make sure the leveldb is fully closed.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   // Delete manifest files to mess up opening DB.
   base::FilePath db_path =

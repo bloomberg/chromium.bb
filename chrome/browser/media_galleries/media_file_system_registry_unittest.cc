@@ -471,7 +471,7 @@ ProfileState::~ProfileState() {
   shared_web_contents2_.reset();
   profile_.reset();
 
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 MediaGalleriesPreferences* ProfileState::GetMediaGalleriesPrefs() {
@@ -499,7 +499,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (no permission)", test.c_str()),
                  base::ConstRef(empty_names),
                  base::ConstRef(empty_expectation)));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // Read permission only.
@@ -509,7 +509,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (regular permission)", test.c_str()),
                  base::ConstRef(compare_names_read_),
                  base::ConstRef(regular_extension_galleries)));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
   // All galleries permission.
@@ -519,7 +519,7 @@ void ProfileState::CheckGalleries(
                  base::StringPrintf("%s (all permission)", test.c_str()),
                  base::ConstRef(compare_names_all_),
                  base::ConstRef(all_extension_galleries)));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 }
 
@@ -530,7 +530,7 @@ FSInfoMap ProfileState::GetGalleriesInfo(extensions::Extension* extension) {
   registry->GetMediaFileSystemsForExtension(
       single_web_contents_.get(), extension,
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   return results;
 }
 
@@ -646,14 +646,14 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   base::string16 label = location.BaseName().LossyDisplayName();
   ProcessAttach(device_id, label, location.value());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   return device_id;
 }
 
 void MediaFileSystemRegistryTest::DetachDevice(const std::string& device_id) {
   DCHECK(StorageInfo::IsRemovableDevice(device_id));
   ProcessDetach(device_id);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 void MediaFileSystemRegistryTest::SetGalleryPermission(
@@ -896,7 +896,7 @@ TEST_F(MediaFileSystemRegistryTest,
       break;
     }
   }
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(forget_gallery);
   EXPECT_EQ(gallery_count, GetAutoAddedGalleries(profile_state).size());
 

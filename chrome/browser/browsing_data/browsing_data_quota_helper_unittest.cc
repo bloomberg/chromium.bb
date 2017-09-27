@@ -45,7 +45,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     helper_ = nullptr;
     quota_manager_ = nullptr;
     quota_info_.clear();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
@@ -123,7 +123,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
 TEST_F(BrowsingDataQuotaHelperTest, Empty) {
   StartFetching();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());
   EXPECT_TRUE(quota_info().empty());
 }
@@ -139,7 +139,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 
   RegisterClient(kOrigins, arraysize(kOrigins));
   StartFetching();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());
 
   std::set<QuotaInfo> expected, actual;
@@ -168,7 +168,7 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
 
   RegisterClient(kOrigins, arraysize(kOrigins));
   StartFetching();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());
 
   std::set<QuotaInfo> expected, actual;
@@ -184,16 +184,16 @@ TEST_F(BrowsingDataQuotaHelperTest, RevokeHostQuota) {
 
   SetPersistentHostQuota(kHost1, 1);
   SetPersistentHostQuota(kHost2, 10);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   RevokeHostQuota(kHost1);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   GetPersistentHostQuota(kHost1);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(0, quota());
 
   GetPersistentHostQuota(kHost2);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(10, quota());
 }

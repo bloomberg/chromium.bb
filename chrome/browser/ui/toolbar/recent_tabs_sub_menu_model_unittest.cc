@@ -205,9 +205,7 @@ class RecentTabsSubMenuModelTest
     BrowserWithTestWindowTest::TearDown();
   }
 
-  void WaitForLoadFromLastSession() {
-    content::RunAllBlockingPoolTasksUntilIdle();
-  }
+  void WaitForLoadFromLastSession() { content::RunAllTasksUntilIdle(); }
 
   void DisableSync() {
     EXPECT_CALL(*mock_sync_service_, IsSyncActive())
@@ -408,7 +406,7 @@ TEST_F(RecentTabsSubMenuModelTest,
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(), RecentTabsSubMenuModelTest::GetTabRestoreService);
   // Let the shutdown of previous TabRestoreService run.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   TestRecentTabsSubMenuModel model(nullptr, browser());
   TestRecentTabsMenuModelDelegate delegate(&model);

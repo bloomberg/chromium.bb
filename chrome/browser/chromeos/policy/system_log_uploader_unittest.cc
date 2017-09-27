@@ -152,7 +152,7 @@ class SystemLogUploaderTest : public testing::Test {
 
   void TearDown() override {
     settings_helper_.RestoreProvider();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   // Given a pending task to upload system logs.

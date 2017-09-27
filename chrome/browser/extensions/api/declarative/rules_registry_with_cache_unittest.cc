@@ -255,7 +255,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   value->AppendBoolean(true);
   cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_TRUE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   TestingValueStore* store = env_.GetExtensionSystem()->value_store();
   ASSERT_TRUE(store);
   EXPECT_EQ(1, store->write_count());
@@ -264,7 +264,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   value.reset(new base::ListValue);
   cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   // No rules currently, but previously there were, so we expect a write.
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
@@ -272,7 +272,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   value.reset(new base::ListValue);
   cache_delegate->WriteToStorage(extension1_->id(), std::move(value));
   EXPECT_FALSE(cache_delegate->GetDeclarativeRulesStored(extension1_->id()));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(write_count, store->write_count());
 
   // 3. Test reading behavior.
@@ -280,13 +280,13 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
 
   cache_delegate->SetDeclarativeRulesStored(extension1_->id(), false);
   cache_delegate->ReadFromStorage(extension1_->id());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(read_count, store->read_count());
   read_count = store->read_count();
 
   cache_delegate->SetDeclarativeRulesStored(extension1_->id(), true);
   cache_delegate->ReadFromStorage(extension1_->id());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(read_count + 1, store->read_count());
 }
 
@@ -359,7 +359,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   AddRule(extension1_->id(), kRuleId, registry.get());
 
   // Posted tasks store the added rule.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetNumberOfRules(extension1_->id(), registry.get()));
 
   // 3. Restart the TestRulesRegistry and see the rule still there.
@@ -369,7 +369,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
                             cache_delegate.get(), kRulesRegistryID);
 
   // Posted tasks retrieve the stored rule.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetNumberOfRules(extension1_->id(), registry.get()));
 }
 
@@ -385,7 +385,7 @@ TEST_F(RulesRegistryWithCacheTest, ConcurrentStoringOfRules) {
   EXPECT_EQ("", AddRule(extension1_->id(), kRuleId));
   EXPECT_EQ("", AddRule(extension2_->id(), kRule2Id));
   env_.GetExtensionSystem()->SetReady();
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(write_count + 2, system->value_store()->write_count());
 }
 

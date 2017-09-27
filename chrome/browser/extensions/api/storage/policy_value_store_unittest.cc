@@ -117,7 +117,7 @@ class PolicyValueStoreTest : public testing::Test {
         FROM_HERE,
         base::Bind(&PolicyValueStoreTest::SetCurrentPolicyOnBackendSequence,
                    base::Unretained(this), base::Passed(policies.DeepCopy())));
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   void SetCurrentPolicyOnBackendSequence(

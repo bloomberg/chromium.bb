@@ -73,11 +73,11 @@ void DeviceSettingsTestHelper::FlushRetrieve() {
 
 void DeviceSettingsTestHelper::Flush() {
   do {
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     FlushStore();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
     FlushRetrieve();
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   } while (HasPendingOperations());
 }
 

@@ -109,7 +109,7 @@ void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(
 void SessionServiceTestHelper::SetService(SessionService* service) {
   service_.reset(service);
   // Execute IO tasks posted by the SessionService.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
 }
 
 SessionService* SessionServiceTestHelper::ReleaseService() {

@@ -72,7 +72,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
     ExtensionGarbageCollector::Get(profile_.get())
         ->GarbageCollectExtensionsForTest();
     // Wait for GarbageCollectExtensions task to complete.
-    content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllTasksUntilIdle();
   }
 
   base::FilePath CreateSharedExtensionDir(const std::string& id,

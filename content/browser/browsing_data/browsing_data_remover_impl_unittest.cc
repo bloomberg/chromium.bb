@@ -497,7 +497,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
     // destroyed, and that the message loop is cleared out, before destroying
     // the threads and loop. Otherwise we leak memory.
     browser_context_.reset();
-    RunAllBlockingPoolTasksUntilIdle();
+    RunAllTasksUntilIdle();
   }
 
   void BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
@@ -1368,7 +1368,7 @@ TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
   // sure we do not complete asynchronously before ContinueToCompletion() is
   // called.
   completion_inhibitor.BlockUntilNearCompletion();
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 
   // Verify that the removal has not yet been completed and the observer has
   // not been called.
@@ -1577,7 +1577,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   EXPECT_FALSE(remover->is_removing());
 
   // Run clean up tasks.
-  RunAllBlockingPoolTasksUntilIdle();
+  RunAllTasksUntilIdle();
 }
 
 // The previous test, BrowsingDataRemoverTest.MultipleTasks, tests that the

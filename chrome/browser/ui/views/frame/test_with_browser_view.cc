@@ -94,7 +94,7 @@ void TestWithBrowserView::TearDown() {
   // the Profile.
   browser_view_->GetWidget()->CloseNow();
   browser_view_ = nullptr;
-  content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllTasksUntilIdle();
   BrowserWithTestWindowTest::TearDown();
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();

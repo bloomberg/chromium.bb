@@ -31,7 +31,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
     run_loop_.reset(new base::RunLoop());
   }
 
-  void TearDown() override { content::RunAllBlockingPoolTasksUntilIdle(); }
+  void TearDown() override { content::RunAllTasksUntilIdle(); }
 
   TestingProfile* profile() { return &profile_; }
 
