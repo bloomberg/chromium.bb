@@ -27,6 +27,8 @@ class TouchHudApplication : public service_manager::Service,
   TouchHudApplication();
   ~TouchHudApplication() override;
 
+  void set_running_standalone(bool value) { running_standalone_ = value; }
+
  private:
   // service_manager::Service:
   void OnStart() override;
@@ -44,6 +46,8 @@ class TouchHudApplication : public service_manager::Service,
   views::Widget* widget_ = nullptr;
 
   std::unique_ptr<views::AuraInit> aura_init_;
+
+  bool running_standalone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudApplication);
 };

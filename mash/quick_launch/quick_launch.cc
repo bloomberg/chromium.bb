@@ -173,9 +173,11 @@ void QuickLaunch::OnStart() {
   // If AuraInit was unable to initialize there is no longer a peer connection.
   // The ServiceManager is in the process of shutting down, however we haven't
   // been notified yet. Close our ServiceContext and shutdown.
+  const bool register_path_provider = running_standalone_;
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
-      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS,
+      register_path_provider);
   if (!aura_init_) {
     context()->QuitNow();
     return;

@@ -90,9 +90,11 @@ AutoclickApplication::AutoclickApplication()
 AutoclickApplication::~AutoclickApplication() {}
 
 void AutoclickApplication::OnStart() {
+  const bool register_path_provider = running_standalone_;
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
-      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS,
+      register_path_provider);
   if (!aura_init_) {
     context()->QuitNow();
     return;

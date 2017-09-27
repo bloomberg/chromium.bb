@@ -7,7 +7,9 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(
-      new ash::touch_hud::TouchHudApplication);
+  ash::touch_hud::TouchHudApplication* app =
+      new ash::touch_hud::TouchHudApplication;
+  app->set_running_standalone(true);
+  service_manager::ServiceRunner runner(app);
   return runner.Run(service_request_handle);
 }

@@ -7,6 +7,8 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new mash::quick_launch::QuickLaunch);
+  mash::quick_launch::QuickLaunch* app = new mash::quick_launch::QuickLaunch;
+  app->set_running_standalone(true);
+  service_manager::ServiceRunner runner(app);
   return runner.Run(service_request_handle);
 }
