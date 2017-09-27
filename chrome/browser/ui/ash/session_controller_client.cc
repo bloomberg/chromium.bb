@@ -241,7 +241,7 @@ void SessionControllerClient::CycleActiveUser(
 }
 
 void SessionControllerClient::ShowMultiProfileLogin() {
-  if (!IsMultiProfileEnabled())
+  if (!IsMultiProfileAvailable())
     return;
 
   // Only regular non-supervised users could add other users to current session.
@@ -280,24 +280,14 @@ void SessionControllerClient::ShowMultiProfileLogin() {
 }
 
 // static
-bool SessionControllerClient::IsMultiProfileEnabled() {
+bool SessionControllerClient::IsMultiProfileAvailable() {
   if (!profiles::IsMultipleProfilesEnabled() || !UserManager::IsInitialized())
     return false;
-  size_t admitted_users_to_be_added =
+  size_t users_logged_in = UserManager::Get()->GetLoggedInUsers().size();
+  // Does not include users that are logged in.
+  size_t users_available_to_add =
       UserManager::Get()->GetUsersAllowedForMultiProfile().size();
-  size_t logged_in_users = UserManager::Get()->GetLoggedInUsers().size();
-  if (logged_in_users == 0) {
-    // The shelf gets created on the login screen and as such we have to create
-    // all multi profile items of the the system tray menu before the user logs
-    // in. For special cases like Kiosk mode and / or guest mode this isn't a
-    // problem since either the browser gets restarted and / or the flag is not
-    // allowed, but for an "ephermal" user (see crbug.com/312324) it is not
-    // decided yet if they could add other users to their session or not.
-    // TODO(skuhne): As soon as the issue above needs to be resolved, this logic
-    // should change.
-    logged_in_users = 1;
-  }
-  return (admitted_users_to_be_added + logged_in_users) > 1;
+  return (users_logged_in + users_available_to_add) > 1;
 }
 
 void SessionControllerClient::ActiveUserChanged(const User* active_user) {

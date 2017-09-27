@@ -21,6 +21,11 @@ class MessageCenterController {
   MessageCenterController();
   ~MessageCenterController();
 
+  InactiveUserNotificationBlocker*
+  inactive_user_notification_blocker_for_testing() {
+    return &inactive_user_notification_blocker_;
+  }
+
  private:
   FullscreenNotificationBlocker fullscreen_notification_blocker_;
   InactiveUserNotificationBlocker inactive_user_notification_blocker_;

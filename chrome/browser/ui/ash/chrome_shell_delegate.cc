@@ -363,10 +363,6 @@ service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
 }
 
-bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
-  return SessionControllerClient::IsMultiProfileEnabled();
-}
-
 bool ChromeShellDelegate::IsIncognitoAllowed() const {
   return AccessibilityManager::Get()->IsIncognitoAllowed();
 }

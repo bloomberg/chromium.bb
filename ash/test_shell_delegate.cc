@@ -27,10 +27,6 @@ bool TestShellDelegate::IsIncognitoAllowed() const {
   return true;
 }
 
-bool TestShellDelegate::IsMultiProfilesEnabled() const {
-  return multi_profiles_enabled_;
-}
-
 bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }

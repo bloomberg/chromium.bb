@@ -649,8 +649,7 @@ void HandleSuspend() {
 }
 
 bool CanHandleCycleUser() {
-  return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
-         Shell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
+  return Shell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
 }
 
 void HandleCycleUser(CycleUserDirection direction) {

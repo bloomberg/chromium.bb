@@ -18,6 +18,10 @@ ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
 
 ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
 
+MessageCenterController* ShellTestApi::message_center_controller() {
+  return shell_->message_center_controller_.get();
+}
+
 SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
   return shell_->system_gesture_filter_.get();
 }

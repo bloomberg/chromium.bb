@@ -75,7 +75,9 @@ class SessionControllerClient
   void CycleActiveUser(ash::CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;
 
-  static bool IsMultiProfileEnabled();
+  // Returns true if a multi-profile user can be added to the session or if
+  // multiple users are already signed in.
+  static bool IsMultiProfileAvailable();
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;

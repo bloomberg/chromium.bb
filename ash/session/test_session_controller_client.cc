@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/session_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -78,6 +79,12 @@ void TestSessionControllerClient::SetCanLockScreen(bool can_lock) {
 void TestSessionControllerClient::SetShouldLockScreenAutomatically(
     bool should_lock) {
   session_info_->should_lock_screen_automatically = should_lock;
+  controller_->SetSessionInfo(session_info_->Clone());
+}
+
+void TestSessionControllerClient::SetAddUserSessionPolicy(
+    AddUserSessionPolicy policy) {
+  session_info_->add_user_session_policy = policy;
   controller_->SetSessionInfo(session_info_->Clone());
 }
 
