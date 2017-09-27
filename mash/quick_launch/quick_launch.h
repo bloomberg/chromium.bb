@@ -29,6 +29,8 @@ class QuickLaunch : public service_manager::Service,
 
   void RemoveWindow(views::Widget* window);
 
+  void set_running_standalone(bool value) { running_standalone_ = value; }
+
  private:
   // service_manager::Service:
   void OnStart() override;
@@ -47,6 +49,8 @@ class QuickLaunch : public service_manager::Service,
   service_manager::BinderRegistry registry_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
+
+  bool running_standalone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(QuickLaunch);
 };
