@@ -99,6 +99,7 @@ class TextSuggestionHostAndroid : public RenderWidgetHostConnector,
   // Used by the spell check menu timer to notify Blink that the timer has
   // expired.
   void OnSuggestionMenuTimeout();
+  double DpToPxIfNeeded(double value);
 
   service_manager::BinderRegistry registry_;
   // Current RenderWidgetHostView connected to this instance. Can be null.
