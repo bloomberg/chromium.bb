@@ -18,6 +18,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -642,35 +643,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // XMLHttpRequests.
 // See https://crbug.com/762945.
 IN_PROC_BROWSER_TEST_F(
-    RenderFrameHostImplBrowserTest,
+    ContentBrowserTest,
     AbortedRendererInitiatedNavigationDoNotCancelPendingXHR) {
+  ControllableHttpResponse xhr_response(embedded_test_server(), "/xhr_request");
+  EXPECT_TRUE(embedded_test_server()->Start());
+
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // 1) Send an XHR that is slow to complete.
-  const char* send_slow_XHR =
+  // 1) Send an xhr request, but do not send its response for the moment.
+  const char* send_slow_xhr =
       "var request = new XMLHttpRequest();"
-      "request.addEventListener('abort', () => document.title = 'XHR aborted');"
-      "request.addEventListener('load', () => document.title = 'XHR loaded');"
+      "request.addEventListener('abort', () => document.title = 'xhr aborted');"
+      "request.addEventListener('load', () => document.title = 'xhr loaded');"
       "request.open('GET', '%s');"
       "request.send();";
-  const GURL slow_url = embedded_test_server()->GetURL("/slow?1");
+  const GURL slow_url = embedded_test_server()->GetURL("/xhr_request");
   EXPECT_TRUE(content::ExecuteScript(
-      shell(), base::StringPrintf(send_slow_XHR, slow_url.spec().c_str())));
+      shell(), base::StringPrintf(send_slow_xhr, slow_url.spec().c_str())));
+  xhr_response.WaitForRequest();
 
   // 2) In the meantime, create a renderer-initiated navigation. It will be
   // aborted.
+  TestNavigationManager observer(shell()->web_contents(),
+                                 GURL("customprotocol:aborted"));
   EXPECT_TRUE(content::ExecuteScript(
       shell(), "window.location = 'customprotocol:aborted'"));
+  EXPECT_FALSE(observer.WaitForResponse());
+  observer.WaitForNavigationFinished();
 
-  // 3) Wait for the XHR request to complete.
-  const base::string16 XHR_aborted = base::ASCIIToUTF16("XHR aborted");
-  const base::string16 XHR_loaded = base::ASCIIToUTF16("XHR loaded");
-  TitleWatcher watcher(shell()->web_contents(), XHR_loaded);
-  watcher.AlsoWaitForTitle(XHR_aborted);
+  // 3) Send the response for the XHR requests.
+  xhr_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Connection: close\r\n"
+      "Content-Length: 2\r\n"
+      "Content-Type: text/plain; charset=utf-8\r\n"
+      "\r\n"
+      "OK");
+  xhr_response.Done();
 
-  EXPECT_EQ(XHR_loaded, watcher.WaitAndGetTitle());
+  // 4) Wait for the XHR request to complete.
+  const base::string16 xhr_aborted_title = base::ASCIIToUTF16("xhr aborted");
+  const base::string16 xhr_loaded_title = base::ASCIIToUTF16("xhr loaded");
+  TitleWatcher watcher(shell()->web_contents(), xhr_loaded_title);
+  watcher.AlsoWaitForTitle(xhr_aborted_title);
+
+  EXPECT_EQ(xhr_loaded_title, watcher.WaitAndGetTitle());
 }
 
 }  // namespace content

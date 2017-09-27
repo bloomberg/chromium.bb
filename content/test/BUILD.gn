@@ -66,6 +66,8 @@ static_library("test_support") {
     "../public/test/cancelling_navigation_throttle.h",
     "../public/test/content_test_suite_base.cc",
     "../public/test/content_test_suite_base.h",
+    "../public/test/controllable_http_response.cc",
+    "../public/test/controllable_http_response.h",
     "../public/test/download_test_observer.cc",
     "../public/test/download_test_observer.h",
     "../public/test/fake_download_item.cc",
