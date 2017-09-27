@@ -1379,6 +1379,7 @@ jumbo_source_set("unit_tests") {
     "css/parser/SizesAttributeParserTest.cpp",
     "css/parser/SizesCalcParserTest.cpp",
     "css/resolver/FontBuilderTest.cpp",
+    "css/resolver/FontStyleResolverTest.cpp",
     "css/resolver/MatchResultTest.cpp",
     "css/resolver/ScopedStyleResolverTest.cpp",
     "css/resolver/StyleAdjusterTest.cpp",

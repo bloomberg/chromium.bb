@@ -1,0 +1,61 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/css/resolver/FontStyleResolver.h"
+
+#include "core/css/parser/CSSParser.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace blink {
+
+TEST(FontStyleResolverTest, Simple) {
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLStandardMode);
+  CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true);
+
+  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+
+  EXPECT_EQ(desc.SpecifiedSize(), 15);
+  EXPECT_EQ(desc.ComputedSize(), 15);
+  EXPECT_EQ(desc.Family().Family(), "Ahem");
+}
+
+TEST(FontStyleResolverTest, InvalidSize) {
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLStandardMode);
+  CSSParser::ParseValue(style, CSSPropertyFont, "-1px Ahem", true);
+
+  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+
+  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.SpecifiedSize(), 0);
+  EXPECT_EQ(desc.ComputedSize(), 0);
+}
+
+TEST(FontStyleResolverTest, InvalidWeight) {
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLStandardMode);
+  CSSParser::ParseValue(style, CSSPropertyFont, "wrong 1px Ahem", true);
+
+  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+
+  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.SpecifiedSize(), 0);
+  EXPECT_EQ(desc.ComputedSize(), 0);
+}
+
+TEST(FontStyleResolverTest, InvalidEverything) {
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLStandardMode);
+  CSSParser::ParseValue(style, CSSPropertyFont, "wrong wrong wrong 1px Ahem",
+                        true);
+
+  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+
+  EXPECT_EQ(desc.Family().Family(), nullptr);
+  EXPECT_EQ(desc.SpecifiedSize(), 0);
+  EXPECT_EQ(desc.ComputedSize(), 0);
+}
+
+}  // namespace blink
