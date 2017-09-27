@@ -23,8 +23,9 @@ bool PlatformSensorFusionAlgorithm::IsReadingSignificantlyDifferent(
     const SensorReading& reading2) {
   for (size_t i = 0; i < SensorReadingRaw::kValuesCount; ++i) {
     if (std::fabs(reading1.raw.values[i] - reading2.raw.values[i]) >=
-        threshold_)
+        threshold_) {
       return true;
+    }
   }
   return false;
 }
