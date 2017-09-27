@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,7 +25,6 @@ class Window;
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
       public ash::ImmersiveFullscreenControllerDelegate,
-      public ash::wm::WindowStateObserver,
       public content::NotificationObserver,
       public aura::WindowObserver {
  public:
@@ -72,11 +70,6 @@ class ImmersiveModeControllerAsh
   void OnImmersiveFullscreenExited() override;
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
-
-  // ash::wm::WindowStateObserver override:
-  void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override;
 
   // content::NotificationObserver override:
   void Observe(int type,
