@@ -424,7 +424,8 @@ void NavigationSimulator::Commit() {
 
 void NavigationSimulator::Fail(int error_code) {
   CHECK_LE(state_, STARTED) << "NavigationSimulator::Fail can only be "
-                               "called.";
+                               "called once, and cannot be called after "
+                               "NavigationSimulator::ReadyToCommit";
   CHECK_EQ(0, num_did_finish_navigation_called_)
       << "NavigationSimulator::Fail cannot be called after the "
          "navigation has finished";
