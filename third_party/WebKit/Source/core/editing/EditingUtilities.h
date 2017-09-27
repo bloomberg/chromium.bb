@@ -240,8 +240,8 @@ CORE_EXPORT PositionInFlatTree PreviousPositionOf(const PositionInFlatTree&,
 CORE_EXPORT PositionInFlatTree NextPositionOf(const PositionInFlatTree&,
                                               PositionMoveType);
 
-CORE_EXPORT int PreviousGraphemeBoundaryOf(const Node*, int current);
-CORE_EXPORT int NextGraphemeBoundaryOf(const Node*, int current);
+CORE_EXPORT int PreviousGraphemeBoundaryOf(const Node&, int current);
+CORE_EXPORT int NextGraphemeBoundaryOf(const Node&, int current);
 
 // comparision functions on Position
 
