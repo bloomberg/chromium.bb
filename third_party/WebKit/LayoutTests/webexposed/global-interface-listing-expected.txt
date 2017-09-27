@@ -1063,15 +1063,6 @@ interface CompositionEvent : UIEvent
     getter data
     method constructor
     method initCompositionEvent
-interface CompositorWorker : EventTarget
-    attribute @@toStringTag
-    getter onerror
-    getter onmessage
-    method constructor
-    method postMessage
-    method terminate
-    setter onerror
-    setter onmessage
 interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset

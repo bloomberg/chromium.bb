@@ -2864,11 +2864,6 @@ crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Cras
 # Failures when using libc++.  Rebaseline after landing https://codereview.chromium.org/2933573002/
 crbug.com/734873 [ Linux ] fast/backgrounds/size/contain-and-cover.html [ Pass Failure ]
 
-# Compositor worker tests are flaky, crashing and timing out
-crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Pass Failure Timeout Crash ]
-crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/request-animation-frame.html [ Pass Failure Timeout Crash ]
-crbug.com/727991 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/visual-update.html [ Pass Failure Timeout Crash ]
-
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 
 # More flaky tests on Mac

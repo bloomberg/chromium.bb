@@ -462,7 +462,7 @@ void ProxyMain::Stop() {
 }
 
 void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
-  TRACE_EVENT0("compositor-worker", "ThreadProxy::SetMutator");
+  TRACE_EVENT0("cc", "ThreadProxy::SetMutator");
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
                                 base::Unretained(proxy_impl_.get()),

@@ -3,13 +3,6 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-file.js"></script>
-<script>
-// This should not be necessary, but due to crbug.com/372245 style
-// gets dirtied during layout in LayoutTextTrackContainer which
-// causes assertions to fail when Document::scrollingElement is
-// queried during compositing update (a valid request).
-internals.settings.setCompositorWorkerEnabled(false);
-</script>
 <video>
     <track src="captions-webvtt/metadata.vtt">
 </video>

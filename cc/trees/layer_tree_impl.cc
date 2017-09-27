@@ -548,7 +548,7 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
   if (!element_id)
     return;
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::AddToElementMap", "element",
                element_id.AsValue().release(), "layer_id", layer->id());
 
@@ -570,7 +570,7 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
   if (!layer->element_id())
     return;
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("layer-element"),
                "LayerTreeImpl::RemoveFromElementMap", "element",
                layer->element_id().AsValue().release(), "layer_id",
                layer->id());

@@ -53,7 +53,6 @@ interface InternalSettings : InternalSettingsGenerated {
     [RaisesException] void setAvailableHoverTypes(DOMString types);
     [RaisesException] void setPrimaryHoverType(DOMString type);
     [RaisesException] void setImageAnimationPolicy(DOMString policy);
-    [RaisesException] void setCompositorWorkerEnabled(boolean enabled);
     [RaisesException] void setPresentationReceiver(boolean enabled);
     [RaisesException] void setAutoplayPolicy(DOMString policy);
 

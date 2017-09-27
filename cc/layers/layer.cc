@@ -1422,8 +1422,8 @@ void Layer::SetElementId(ElementId id) {
   if ((layer_tree_host_ && layer_tree_host_->IsUsingLayerLists()) ||
       inputs_.element_id == id)
     return;
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
-               "Layer::SetElementId", "element", id.AsValue().release());
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "Layer::SetElementId",
+               "element", id.AsValue().release());
   if (inputs_.element_id && layer_tree_host()) {
     layer_tree_host_->UnregisterElement(inputs_.element_id,
                                         ElementListType::ACTIVE);
@@ -1443,7 +1443,7 @@ void Layer::SetMutableProperties(uint32_t properties) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.mutable_properties == properties)
     return;
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "Layer::SetMutableProperties", "properties", properties);
   inputs_.mutable_properties = properties;
   SetNeedsCommit();

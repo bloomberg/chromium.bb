@@ -255,7 +255,6 @@ jumbo_source_set("unit_tests") {
     "canvas2d/CanvasRenderingContext2DTest.cpp",
     "compositorworker/AnimationWorkletGlobalScopeTest.cpp",
     "compositorworker/AnimationWorkletThreadTest.cpp",
-    "compositorworker/CompositorWorkerThreadTest.cpp",
     "credentialmanager/CredentialsContainerTest.cpp",
     "credentialmanager/PasswordCredentialTest.cpp",
     "csspaint/PaintRenderingContext2DTest.cpp",

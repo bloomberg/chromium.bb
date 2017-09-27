@@ -831,8 +831,6 @@ function startWorker(testScriptURL, workerType)
     var worker;
     if (workerType == 'shared')
         worker = new SharedWorker(testScriptURL, "Shared Worker");
-    else if (workerType == 'compositor')
-        worker = new CompositorWorker(testScriptURL);
     else
         worker = new Worker(testScriptURL);
     worker.onmessage = function(event)

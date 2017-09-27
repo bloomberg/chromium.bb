@@ -36,8 +36,7 @@
 #include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
 #include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
-#include "modules/compositorworker/AbstractAnimationWorkletThread.h"
-#include "modules/compositorworker/CompositorWorkerThread.h"
+#include "modules/compositorworker/AnimationWorkletThread.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/device_orientation/DeviceMotionController.h"
@@ -278,7 +277,7 @@ void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
 }
 
 void ModulesInitializer::CollectAllGarbageForAnimationWorklet() const {
-  AbstractAnimationWorkletThread::CollectAllGarbage();
+  AnimationWorkletThread::CollectAllGarbage();
 }
 
 }  // namespace blink

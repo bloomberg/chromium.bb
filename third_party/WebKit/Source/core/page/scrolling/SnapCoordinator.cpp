@@ -61,8 +61,6 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
 void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
                                              ScrollSnapType scroll_snap_type) {
   if (scroll_snap_type.is_none) {
-    // TODO(majidvp): Track and report these removals to CompositorWorker
-    // instance responsible for snapping
     snap_containers_.erase(&snap_container);
     snap_container.ClearSnapAreas();
   } else {

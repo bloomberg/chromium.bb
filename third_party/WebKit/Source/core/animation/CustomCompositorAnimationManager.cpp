@@ -18,8 +18,7 @@ CustomCompositorAnimationManager::~CustomCompositorAnimationManager() {}
 
 void CustomCompositorAnimationManager::ApplyMutations(
     CompositorMutations* mutations) {
-  TRACE_EVENT0("compositor-worker",
-               "CustomCompositorAnimationManager::applyMutations");
+  TRACE_EVENT0("cc", "CustomCompositorAnimationManager::applyMutations");
   for (const auto& entry : mutations->map) {
     int element_id = entry.key;
     const CompositorMutation& mutation = *entry.value;

@@ -12,7 +12,6 @@ blink_modules_output_dir = "$root_gen_dir/blink/modules"
 
 modules_core_global_constructors_original_interfaces = [
   "AudioWorkletGlobalScope",
-  "CompositorWorkerGlobalScope",
   "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
 ]
@@ -20,14 +19,12 @@ modules_core_global_constructors_original_interfaces = [
 # The size and the order in the following list must match to the previous one.
 modules_core_global_constructors_original_interface_basenames = [
   "audio_worklet_global_scope",
-  "compositor_worker_global_scope",
   "paint_worklet_global_scope",
   "service_worker_global_scope",
 ]
 
 modules_global_constructors_original_interfaces = [
   "AudioWorkletGlobalScope",
-  "CompositorWorkerGlobalScope",
   "DedicatedWorkerGlobalScope",
   "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
@@ -38,7 +35,6 @@ modules_global_constructors_original_interfaces = [
 # The size and the order in the following list must match to the previous one.
 modules_global_constructors_original_interface_basenames = [
   "audio_worklet_global_scope",
-  "compositor_worker_global_scope",
   "dedicated_worker_global_scope",
   "paint_worklet_global_scope",
   "service_worker_global_scope",
@@ -88,8 +84,6 @@ modules_idl_files =
                     "canvas2d/CanvasRenderingContext2D.idl",
                     "canvas2d/Path2D.idl",
                     "compositorworker/AnimationWorkletGlobalScope.idl",
-                    "compositorworker/CompositorWorker.idl",
-                    "compositorworker/CompositorWorkerGlobalScope.idl",
                     "compositorworker/WorkletAnimation.idl",
                     "credentialmanager/AuthenticatorAssertionResponse.idl",
                     "credentialmanager/AuthenticatorAttestationResponse.idl",
