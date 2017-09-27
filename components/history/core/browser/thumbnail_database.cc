@@ -414,21 +414,16 @@ void ThumbnailDatabase::TrimMemory(bool aggressively) {
 
 std::map<favicon_base::FaviconID, IconMappingsForExpiry>
 ThumbnailDatabase::GetOldOnDemandFavicons(base::Time threshold) {
-  // Restrict to on-demand bitmaps (i.e. with last_requested != 0). This is
-  // called rarely during history expiration cleanup and hence not worth
+  // Restrict to on-demand bitmaps (i.e. with last_requested != 0).
+  // This is called rarely during history expiration cleanup and hence not worth
   // caching.
-  // TODO(jkrcal): In M63, remove the "(last_requested=0 AND last_updated=0)"
-  // clause which is only transitional - to clean up expired icons (previously,
-  // on-demand favicons were stored as expired on-visit favicons).
   sql::Statement old_icons(db_.GetUniqueStatement(
       "SELECT favicons.id, favicons.url, icon_mapping.page_url "
       "FROM favicons "
       "JOIN favicon_bitmaps ON (favicon_bitmaps.icon_id = favicons.id) "
       "JOIN icon_mapping ON (icon_mapping.icon_id = favicon_bitmaps.icon_id) "
-      "WHERE ((favicon_bitmaps.last_requested = 0 AND "
-      "        favicon_bitmaps.last_updated = 0) OR "
-      "       (favicon_bitmaps.last_requested > 0 AND "
-      "        favicon_bitmaps.last_requested < ?))"));
+      "WHERE (favicon_bitmaps.last_requested > 0 AND "
+      "       favicon_bitmaps.last_requested < ?)"));
   old_icons.BindInt64(0, threshold.ToInternalValue());
 
   std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings;
