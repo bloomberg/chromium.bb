@@ -159,6 +159,11 @@ stage_install_common() {
     install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
     install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
   fi
+  # V8 context snapshot file; it will replace V8's snapshot_blob.bin
+  # TODO(peria): Remove snapshot_blob.bin when dependencies are resolved.
+  if [ -f "${BUILDDIR}/v8_context_snapshot.bin" ]; then
+    install -m 644 "${BUILDDIR}/v8_context_snapshot.bin" "${STAGEDIR}/${INSTALLDIR}/"
+  fi
 
   # sandbox
   # Rename sandbox binary with hyphen instead of underscore because that's what
