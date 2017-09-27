@@ -334,6 +334,7 @@ gl_renderer_la_SOURCES =			\
 	libweston/gl-renderer.c			\
 	libweston/vertex-clipping.c		\
 	libweston/vertex-clipping.h		\
+	libweston/weston-sync-file.h		\
 	shared/helpers.h
 endif
 
