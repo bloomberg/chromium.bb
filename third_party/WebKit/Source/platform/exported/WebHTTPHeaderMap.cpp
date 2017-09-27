@@ -4,8 +4,8 @@
 
 #include "public/platform/WebHTTPHeaderMap.h"
 
+#include <memory>
 #include <string>
-#include "base/memory/ptr_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -53,15 +53,15 @@ class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
 WebHTTPHeaderMap::~WebHTTPHeaderMap(){};
 
 WebHTTPHeaderMap::WebHTTPHeaderMap(const HTTPHeaderMap& map) {
-  implementation_ = base::MakeUnique<WebHTTPHeaderMapImpl>(map);
+  implementation_ = std::make_unique<WebHTTPHeaderMapImpl>(map);
 }
 
 WebHTTPHeaderMap::WebHTTPHeaderMap(const net::HttpResponseHeaders* headers) {
-  implementation_ = base::MakeUnique<WebHTTPHeaderMapImpl>(headers);
+  implementation_ = std::make_unique<WebHTTPHeaderMapImpl>(headers);
 }
 
 WebHTTPHeaderMap::WebHTTPHeaderMap(const net::HttpRequestHeaders* headers) {
-  implementation_ = base::MakeUnique<WebHTTPHeaderMapImpl>(headers);
+  implementation_ = std::make_unique<WebHTTPHeaderMapImpl>(headers);
 }
 
 const HTTPHeaderMap& WebHTTPHeaderMap::GetHTTPHeaderMap() const {

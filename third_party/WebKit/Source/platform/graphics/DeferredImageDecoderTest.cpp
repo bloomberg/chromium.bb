@@ -91,7 +91,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
     actual_decoder_->SetSize(1, 1);
     lazy_decoder_ = DeferredImageDecoder::CreateForTesting(std::move(decoder));
     bitmap_.allocPixels(SkImageInfo::MakeN32Premul(100, 100));
-    canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
+    canvas_ = std::make_unique<cc::SkiaPaintCanvas>(bitmap_);
     decode_request_count_ = 0;
     repetition_count_ = kAnimationNone;
     status_ = ImageFrame::kFrameComplete;

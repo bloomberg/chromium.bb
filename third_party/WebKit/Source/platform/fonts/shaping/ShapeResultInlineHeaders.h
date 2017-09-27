@@ -32,11 +32,11 @@
 #ifndef ShapeResultInlineHeaders_h
 #define ShapeResultInlineHeaders_h
 
+#include <hb.h>
+#include <memory>
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-
-#include <hb.h>
 
 namespace blink {
 
@@ -124,7 +124,7 @@ struct ShapeResult::RunInfo {
           });
     }
 
-    auto run = base::MakeUnique<RunInfo>(font_data_.Get(), direction_, script_,
+    auto run = std::make_unique<RunInfo>(font_data_.Get(), direction_, script_,
                                          start_index_ + start, number_of_glyphs,
                                          number_of_characters);
 
