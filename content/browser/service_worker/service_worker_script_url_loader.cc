@@ -16,6 +16,7 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/resource_response.h"
+#include "net/cert/cert_status_flags.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 
 namespace content {
@@ -158,7 +159,17 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
     return;
   }
 
-  // TODO(nhiroki): Check the SSL certificate.
+  // Check the certificate error.
+  // TODO(nhiroki): Ignore the certificate error when the
+  // --ignore-certificate-errors flag etc are specified.
+  // See ShouldIgnoreSSLError() in service_worker_write_to_cache_job.cc.
+  if (net::IsCertStatusError(response_head.cert_status)) {
+    // TODO(nhiroki): Show an error message equivalent to kSSLError in
+    // service_worker_write_to_cache_job.cc.
+    CommitCompleted(
+        ResourceRequestCompletionStatus(net::ERR_INSECURE_RESPONSE));
+    return;
+  }
 
   if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
     if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
