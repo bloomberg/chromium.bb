@@ -319,6 +319,20 @@ function test() {
       childWidget.show(container1);
       childWidget.show(container2);
       next();
+    },
+
+    function testDetachChildWidgetsRemovesHiddenChildren(next) {
+      var parentWidget = new TestWidget('Parent');
+      var visibleChild = new TestWidget('visibleChild');
+      var hiddenChild = new TestWidget('hiddenChild');
+      parentWidget.show(UI.inspectorView.element);
+      visibleChild.show(parentWidget.element);
+      hiddenChild.show(parentWidget.element);
+      hiddenChild.hideWidget();
+      parentWidget.detachChildWidgets();
+      var count = parentWidget.element.childElementCount;
+      TestRunner.addResult(`Parent element has ${count} child elements`);
+      next();
     }
   ]);
 }

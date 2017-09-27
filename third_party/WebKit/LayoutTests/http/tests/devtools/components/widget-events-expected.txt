@@ -250,3 +250,22 @@ Child.show()
 Child.show()
   Child.onResize()
 
+Running: testDetachChildWidgetsRemovesHiddenChildren
+Parent()
+visibleChild()
+hiddenChild()
+Parent.show()
+  Parent.wasShown()
+  Parent.onResize()
+visibleChild.show()
+  visibleChild.wasShown()
+  visibleChild.onResize()
+hiddenChild.show()
+  hiddenChild.wasShown()
+  hiddenChild.onResize()
+  hiddenChild.willHide()
+visibleChild.detach()
+  visibleChild.willHide()
+hiddenChild.detach()
+Parent element has 0 child elements
+
