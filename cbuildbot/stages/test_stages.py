@@ -25,6 +25,7 @@ from chromite.lib import gs
 from chromite.lib import hwtest_results
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
@@ -670,5 +671,30 @@ class ChromiteTestStage(generic_stages.BuilderStage):
   """Stage that runs Chromite tests, including network tests."""
 
   def PerformStage(self):
-    """Run the cros-signing unittests."""
-    commands.RunChromiteTests(self._build_root, network=False)
+    """Run the chromite unittests."""
+    buildroot_chromite = path_util.ToChrootPath(
+        os.path.join(self._build_root, 'chromite'))
+
+    cmd = [
+        os.path.join(buildroot_chromite, 'cbuildbot', 'run_tests'),
+        # TODO(crbug.com/682381): When tests can pass, add '--network',
+    ]
+    # TODO: Remove enter_chroot=True when we have virtualenv support.
+    # Until then, we skip all chromite tests outside the chroot.
+    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+
+
+class CidbIntegrationTestStage(generic_stages.BuilderStage):
+  """Stage that runs the CIDB integration tests."""
+
+  def PerformStage(self):
+    """Run the CIDB integration tests."""
+    buildroot_chromite = path_util.ToChrootPath(
+        os.path.join(self._build_root, 'chromite'))
+
+    cmd = [
+        os.path.join(buildroot_chromite, 'lib', 'cidb_integration_test'),
+        '-v',
+        # '--network'  Doesn't work in a build, yet.
+    ]
+    cros_build_lib.RunCommand(cmd, enter_chroot=True)
