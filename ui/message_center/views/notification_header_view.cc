@@ -57,7 +57,7 @@ constexpr int kExpandIconSize = 8;
 // Paddings of the expand buttons.
 // Top: 13px = 15px (from the mock) - 2px (outer padding)
 // Bottom: 9px from the mock
-constexpr gfx::Insets kExpandIconViewPadding(13, 0, 9, 0);
+constexpr gfx::Insets kExpandIconViewPadding(13, 2, 9, 0);
 
 // Bullet character. The divider symbol between different parts of the header.
 constexpr wchar_t kNotificationHeaderDivider[] = L" \u2022 ";
