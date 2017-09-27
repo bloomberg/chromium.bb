@@ -521,7 +521,7 @@ static void predict_and_reconstruct_intra_block(
   if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
     cfl_store_tx(xd, row, col, tx_size, mbmi->sb_type);
   }
-#endif  // CONFIG_CFL && CONFIG_COEFF_INTERLEAVE
+#endif  // CONFIG_CFL
 }
 
 #if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
