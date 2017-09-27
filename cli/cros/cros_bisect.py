@@ -154,6 +154,13 @@ that is close to the failure point, in particular from the corresponding branch.
         help='Backoff factor for sleep between "cros flash" retry. If backoff '
              'factor is 1, sleep_duration = sleep * num_retry. Otherwise, '
              'sleep_duration = sleep * (backoff_factor) ** (num_retry - 1)')
+    parser.add_argument(
+        '--eval-passing-only', action='store_true',
+        help='If set, use existing perf result only if test was passing.')
+    parser.add_argument(
+        '--eval-raise-on-error', action='store_true',
+        help='If set, stop bisect if it fails to evaluate a commit. '
+             'Otherwise, the failed commit is labeled as bad.')
 
   def ProcessOptions(self):
     """Process self.options.

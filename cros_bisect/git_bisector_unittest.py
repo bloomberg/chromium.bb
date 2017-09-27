@@ -99,7 +99,8 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     self.options = cros_test_lib.EasyAttr(
         base_dir=self.tempdir, board=self.BOARD, reuse_repo=True,
         good=self.GOOD_COMMIT_SHA1, bad=self.BAD_COMMIT_SHA1, remote=self.DUT,
-        eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False)
+        eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False,
+        eval_raise_on_error=False)
 
     self.evaluator = evaluator_module.Evaluator(self.options)
     self.builder = builder_module.Builder(self.options)
@@ -551,7 +552,11 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     mocks['Evaluate'].assert_called_with(self.DUT, eval_label, self.REPEAT)
 
   def testBuildDeployEvalRaiseNoScore(self):
-    """Tests BuildDeployEval() when Evaluate() failed to obtain score."""
+    """Tests BuildDeployEval() without score with eval_raise_on_error set."""
+    self.options.eval_raise_on_error = True
+    self.bisector = git_bisector.GitBisector(self.options, self.builder,
+                                             self.evaluator)
+
     mocks = self.PatchObjectForBuildDeployEval()
 
     # Inject this as UpdateCurrentCommit's side effect.
@@ -565,7 +570,7 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     self.AssertBuildDeployEvalMocksAllCalled(mocks)
 
   def testBuildDeployEvalSuppressRaiseNoScore(self):
-    """Tests BuildDeployEval() with raise_on_error unset."""
+    """Tests BuildDeployEval() without score with eval_raise_on_error unset."""
     mocks = self.PatchObjectForBuildDeployEval()
 
     # Inject this as UpdateCurrentCommit's side effect.
@@ -574,7 +579,7 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     mocks['CheckLastEvaluate'].return_value = common.Score()
     mocks['Evaluate'].return_value = common.Score()
 
-    self.assertFalse(self.bisector.BuildDeployEval(raise_on_error=False))
+    self.assertFalse(self.bisector.BuildDeployEval())
     self.assertFalse(self.bisector.current_commit.score)
     self.AssertBuildDeployEvalMocksAllCalled(mocks)
 

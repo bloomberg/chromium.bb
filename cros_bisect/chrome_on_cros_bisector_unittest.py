@@ -98,7 +98,8 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
         base_dir=self.tempdir, board=self.BOARD, reuse_repo=True,
         good=self.GOOD_COMMIT_SHA1, bad=self.BAD_COMMIT_SHA1, remote=self.DUT,
         eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False,
-        cros_flash_sleep=0.01, cros_flash_retry=3, cros_flash_backoff=1)
+        cros_flash_sleep=0.01, cros_flash_retry=3, cros_flash_backoff=1,
+        eval_raise_on_error=False)
 
     self.repo_dir = os.path.join(self.tempdir,
                                  builder_module.Builder.DEFAULT_REPO_DIR)

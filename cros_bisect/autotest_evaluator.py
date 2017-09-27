@@ -35,7 +35,7 @@ class AutotestEvaluator(evaluator.Evaluator):
   AUTOTEST_CLIENT = os.path.join(AUTOTEST_BASE, 'bin/autotest_client')
   REQUIRED_ARGS = evaluator.Evaluator.REQUIRED_ARGS + (
       'board', 'chromium_dir', 'cros_dir', 'test_name', 'metric',
-      'metric_take_average')
+      'metric_take_average', 'eval_passing_only')
   CROS_DIR = 'cros'
   RESULT_FILENAME = 'results-chart.json'
 
@@ -53,12 +53,15 @@ class AutotestEvaluator(evaluator.Evaluator):
         * test_name: Autotest name to run.
         * metric: Metric to look up.
         * metric_take_average: If set, take average value of the metric.
+        * eval_passing_only: If set, use existing perf result only if test was
+            passing.
     """
     super(AutotestEvaluator, self).__init__(options)
     self.board = options.board
     self.test_name = options.test_name
     self.metric = options.metric
     self.metric_take_average = options.metric_take_average
+    self.eval_passing_only = options.eval_passing_only
     # Used for entering chroot. Some autotest depends on CHROME_ROOT being set.
     if options.chromium_dir:
       self.chromium_dir = options.chromium_dir
@@ -82,33 +85,61 @@ class AutotestEvaluator(evaluator.Evaluator):
       report_file: Benchmark report to store (host side).
 
     Returns:
-      True if autotest ran successfully.
+      False if sanity check fails, i.e. autotest control file missing.
+      If autotest ran successfully, or --eval-failsafe is set, it returns
+      if the test report is retrieved from DUT. Otherwise, False.
     """
+    def RetrieveReport(dut):
+      """Retrieves report from DUT to local.
+
+      Args:
+        dut: a RemoteAccess object to access DUT.
+
+      Returns:
+        True if a report is copied from DUT to local path (report_file).
+      """
+      remote_report_file = '%s/results/default/%s/results/%s' % (
+          self.AUTOTEST_BASE, self.test_name, self.RESULT_FILENAME)
+      logging.info('Copy report from DUT(%s:%s) to %s',
+                   dut.remote_host, remote_report_file, report_file)
+      scp_result = dut.ScpToLocal(remote_report_file, report_file)
+      if scp_result.returncode != 0:
+        logging.error('Failed to copy report from DUT(%s:%s) to host(%s)',
+                      dut.remote_host, remote_report_file, report_file)
+        return False
+      return True
+
     # TODO(deanliao): Deal with the case that test control file is not the
     #     same as below.
     test_target = '%s/tests/%s/control' % (self.AUTOTEST_BASE, self.test_name)
-    remote_report_file = '%s/results/default/%s/results/%s' % (
-        self.AUTOTEST_BASE, self.test_name, self.RESULT_FILENAME)
 
     with osutils.TempDir() as temp_dir:
-      command = [self.AUTOTEST_CLIENT, test_target]
-      logging.info('Run autotest from DUT %s: %s', remote.raw,
-                   cros_build_lib.CmdToStr(command))
       dut = remote_access.RemoteAccess(
           remote.hostname, temp_dir, port=remote.port, username=remote.username)
-      command_result = dut.RemoteSh(command, error_code_ok=True)
-      if command_result.returncode == 0:
-        logging.info('Ran successfully. Copy report from %s:%s to %s',
-                     remote.raw, remote_report_file, report_file)
-        command_result = dut.ScpToLocal(remote_report_file, report_file)
-        if command_result.returncode != 0:
-          logging.info('Failed to copy report from DUT(%s:%s) to host(%s)',
-                       remote.raw, remote_report_file, report_file)
-      else:
-        logging.info('Failed to run autotest from DUT. returncode: %d',
-                     command_result.returncode)
 
-    return command_result.returncode == 0
+      run_test_command = [self.AUTOTEST_CLIENT, test_target]
+      logging.info('Run autotest from DUT %s: %s', dut.remote_host,
+                   cros_build_lib.CmdToStr(run_test_command))
+
+      # Make sure that both self.AUTOTEST_CLIENT and test_target exist.
+      sanity_check_result = dut.RemoteSh(['ls'] + run_test_command,
+                                         error_code_ok=True)
+      if sanity_check_result.returncode != 0:
+        logging.info('Failed to run autotest from DUT %s: One of %s does not '
+                     'exist.', dut.remote_host, run_test_command)
+        return False
+
+      run_test_result = dut.RemoteSh(run_test_command, error_code_ok=True)
+      run_test_returncode = run_test_result.returncode
+      if run_test_returncode == 0:
+        logging.info('Ran successfully.')
+        return RetrieveReport(dut)
+      else:
+        logging.info('Run failed (returncode: %d)', run_test_returncode)
+        if self.eval_passing_only:
+          return False
+        else:
+          return RetrieveReport(dut)
 
   def LookupReportFile(self):
     """Looks up autotest report file.
@@ -228,7 +259,9 @@ class AutotestEvaluator(evaluator.Evaluator):
       report_file_to_store: Benchmark report to store.
 
     Returns:
-      True if autotest ran successfully.
+      False if sanity check fails, i.e. setup_board inside chroot fails.
+      If autotest ran successfully inside chroot, or --eval-failsafe is set, it
+      returns if the test report is retrieved from chroot. Otherwise, False.
     """
     if not self.MaySetupBoard():
       return False
@@ -243,15 +276,21 @@ class AutotestEvaluator(evaluator.Evaluator):
     try:
       self.RunCommandInsideCrosSdk(run_autotest)
     except cros_build_lib.RunCommandError as e:
-      logging.error('Failed to run autotest: %s', e)
-      return False
+      if self.eval_passing_only:
+        logging.error('Failed to run autotest: %s', e)
+        return False
 
     report_file_in_chroot = self.LookupReportFile()
     if not report_file_in_chroot:
       logging.error('Failed to run autotest: report file not found')
       return False
 
-    shutil.copyfile(report_file_in_chroot, report_file_to_store)
+    try:
+      shutil.copyfile(report_file_in_chroot, report_file_to_store)
+    except Exception as e:
+      logging.error('Failed to retrieve report from chroot %s to %s',
+                    report_file_in_chroot, report_file_to_store)
+      return False
     return True
 
   def GetAutotestMetricValue(self, report_file):

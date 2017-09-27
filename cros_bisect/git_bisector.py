@@ -15,6 +15,11 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 
+class GitBisectorException(Exception):
+  """Exception raised for GitBisector error."""
+  pass
+
+
 class GitBisector(common.OptionsChecker):
   """Bisects suspicious commits in a git repository.
 
@@ -32,7 +37,7 @@ class GitBisector(common.OptionsChecker):
   """
 
   REQUIRED_ARGS = ('good', 'bad', 'remote', 'eval_repeat', 'auto_threshold',
-                   'board')
+                   'board', 'eval_raise_on_error')
 
   def __init__(self, options, builder, evaluator):
     """Constructor.
@@ -46,6 +51,7 @@ class GitBisector(common.OptionsChecker):
         * eval_repeat: Run test for N times. None means 1.
         * auto_threshold: True to set threshold automatically without prompt.
         * board: board name of the DUT.
+        * eval_raise_on_error: If set, raises if evaluation failed.
       builder: Builder to build/deploy image. Should contain repo_dir.
       evaluator: Evaluator to get score
     """
@@ -59,6 +65,7 @@ class GitBisector(common.OptionsChecker):
     self.repo_dir = self.builder.repo_dir
     self.auto_threshold = options.auto_threshold
     self.board = options.board
+    self.eval_raise_on_error = options.eval_raise_on_error
 
     # Initialized in ObtainBisectBoundaryScore().
     self.good_commit_info = None
@@ -302,12 +309,10 @@ class GitBisector(common.OptionsChecker):
     build_to_deploy = self.builder.Build(build_label)
     self.builder.Deploy(self.remote, build_to_deploy, build_label)
 
-  def BuildDeployEval(self, raise_on_error=True, eval_label=None,
-                      customize_build_deploy=None):
+  def BuildDeployEval(self, eval_label=None, customize_build_deploy=None):
     """Builds the image, deploys to DUT and evaluates performance.
 
     Args:
-      raise_on_error: If set, raises Exception if score is unable to get.
       build_deploy: If set, builds current commit and deploys it to DUT.
       eval_label: Label for the evaluation. Default: current commit SHA1.
       customize_build_deploy: Method object if specified, call it instead of
@@ -317,7 +322,7 @@ class GitBisector(common.OptionsChecker):
       Evaluation result.
 
     Raises:
-      Exception if raise_on_error and score is unable to get.
+      GitBisectorException if self.eval_raise_on_error and score is empty.
     """
     self.UpdateCurrentCommit()
     if not eval_label:
@@ -333,13 +338,12 @@ class GitBisector(common.OptionsChecker):
         customize_build_deploy()
       else:
         self.BuildDeploy()
-
       self.current_commit.score = self.evaluator.Evaluate(
           self.remote, eval_label, self.eval_repeat)
-      if not self.current_commit.score and raise_on_error:
-        raise Exception('Unable to obtain evaluation score')
 
     self.bisect_log.append(self.current_commit)
+    if not self.current_commit.score and self.eval_raise_on_error:
+      raise GitBisectorException('Unable to obtain evaluation score')
     return self.current_commit.score
 
   def LabelBuild(self, score):
