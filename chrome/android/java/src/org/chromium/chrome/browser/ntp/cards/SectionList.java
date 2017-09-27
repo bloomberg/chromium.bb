@@ -88,8 +88,7 @@ public class SectionList
         SuggestionsSection section = mSections.get(category);
 
         // Do not show an empty section if not allowed.
-        if (suggestions.isEmpty() && !info.showIfEmpty() && !alwaysAllowEmptySections
-                && !SnippetsBridge.isCategoryLoading(categoryStatus)) {
+        if (suggestions.isEmpty() && !info.showIfEmpty() && !alwaysAllowEmptySections) {
             mBlacklistedCategories.add(category);
             if (section != null) removeSection(section);
             return;
