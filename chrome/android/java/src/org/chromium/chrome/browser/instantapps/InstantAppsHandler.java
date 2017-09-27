@@ -289,19 +289,9 @@ public class InstantAppsHandler {
     }
 
     /**
-     * Checks if an Instant App banner should be shown for the page we are loading.
-     */
-    @Deprecated
-    protected boolean startCheckForInstantApps(Context context, String url, Uri referrer, Tab tab) {
-        return false;
-    }
-
-    /**
      * Shows an Instant App banner if necessary for the page we're loading.
      */
-    protected void maybeShowInstantAppBanner(Context context, String url, Uri referrer, Tab tab) {
-        startCheckForInstantApps(context, url, referrer, tab);
-    }
+    protected void maybeShowInstantAppBanner(Context context, String url, Uri referrer, Tab tab) {}
 
     /**
      * Launches an Instant App immediately, if possible.
