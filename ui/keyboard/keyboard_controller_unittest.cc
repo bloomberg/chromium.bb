@@ -209,7 +209,7 @@ class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
 
 // Test parameter indicates if the new window behavior for the accessibility
 // keyboard should be used.
-class KeyboardControllerTest : public testing::TestWithParam<bool>,
+class KeyboardControllerTest : public testing::Test,
                                public KeyboardControllerObserver {
  public:
   KeyboardControllerTest()
@@ -239,12 +239,6 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
                                    aura_test_helper_->host()->GetInputMethod()),
                                layout_delegate_.get()));
     controller()->AddObserver(this);
-
-    if (!GetParam()) {
-      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(
-          ::switches::kDisableNewVirtualKeyboardBehavior);
-    }
   }
 
   void TearDown() override {
@@ -327,13 +321,7 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 
-// Run all KeyboardControllerTest with and without
-// "use-new-virtual-keyboard-behavior" flag.
-INSTANTIATE_TEST_CASE_P(NewAndOldBehavior,
-                        KeyboardControllerTest,
-                        testing::Bool());
-
-TEST_P(KeyboardControllerTest, KeyboardSize) {
+TEST_F(KeyboardControllerTest, KeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetContentsWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
@@ -379,11 +367,7 @@ TEST_P(KeyboardControllerTest, KeyboardSize) {
 #define MAYBE_KeyboardSizeMultiRootWindow KeyboardSizeMultiRootWindow
 #endif
 
-// Since TEST_P does concatenation, macro prescan only occurs if it's invoked
-// indirectly.
-#define TEST_P_INDIRECT(a, b) TEST_P(a, b)
-
-TEST_P_INDIRECT(KeyboardControllerTest, MAYBE_KeyboardSizeMultiRootWindow) {
+TEST_F(KeyboardControllerTest, MAYBE_KeyboardSizeMultiRootWindow) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(ui()->GetContentsWindow());
   gfx::Rect screen_bounds = root_window()->bounds();
@@ -416,7 +400,7 @@ TEST_P_INDIRECT(KeyboardControllerTest, MAYBE_KeyboardSizeMultiRootWindow) {
 }
 
 // Tests that tapping/clicking inside the keyboard does not give it focus.
-TEST_P(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
+TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
@@ -459,7 +443,7 @@ TEST_P(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard_container->RemovePreTargetHandler(&observer);
 }
 
-TEST_P(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
+TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
@@ -501,13 +485,7 @@ TEST_P(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
 // hide. Refer to crbug.com/401670 for more context.
-TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
-  // If overscroll mode is disabled by the command line argument, skip the test.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableNewVirtualKeyboardBehavior)) {
-    return;
-  }
-
+TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -529,7 +507,7 @@ TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   EXPECT_TRUE(ShouldEnableInsets(ui()->GetContentsWindow()));
 }
 
-TEST_P(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
+TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
@@ -570,7 +548,7 @@ TEST_P(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
 }
 
 // Tests that deactivates keyboard will get closed event.
-TEST_P(KeyboardControllerTest, CloseKeyboard) {
+TEST_F(KeyboardControllerTest, CloseKeyboard) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   root_window()->AddChild(keyboard_container);
@@ -616,14 +594,7 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAnimationTest);
 };
 
-// Run all KeyboardControllerAnimationTest with and without
-// "use-new-virtual-keyboard-behavior flag.
-INSTANTIATE_TEST_CASE_P(NewAndOldBehavior,
-                        KeyboardControllerAnimationTest,
-                        testing::Bool());
-
-// Tests virtual keyboard has correct show and hide animation.
-TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
+TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::Layer* layer = keyboard_container()->layer();
   EXPECT_EQ(gfx::Rect(), notified_bounds());
@@ -674,7 +645,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerAnimation) {
 // Show keyboard during keyboard hide animation should abort the hide animation
 // and the keyboard should animate in.
 // Test for crbug.com/333284.
-TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
+TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::Layer* layer = keyboard_container()->layer();
   ShowKeyboard();
@@ -690,7 +661,7 @@ TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(1.0, layer->opacity());
 }
 
-TEST_P(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
+TEST_F(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
 
   // Ensure keyboard ui is populated
@@ -711,7 +682,7 @@ TEST_P(KeyboardControllerAnimationTest, SetBoundsOnOldKeyboardUiReference) {
   controller()->ui()->GetContentsWindow()->SetBounds(gfx::Rect());
 }
 
-TEST_P(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
+TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
