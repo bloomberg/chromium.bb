@@ -621,27 +621,46 @@ public class UrlBar extends AutocompleteEditText {
 
     /**
      * Scroll to ensure the TLD is visible.
-     * @return Whether the TLD was discovered and successfully scrolled to.
      */
-    public boolean scrollToTLD() {
+    public void scrollToTLD() {
         if (isLayoutRequested()) {
             mPendingScrollTLD = true;
-            return true;
         } else {
-            return scrollToTLDInternal();
+            scrollToTLDInternal();
         }
     }
 
-    private boolean scrollToTLDInternal() {
-        if (mFocused) return false;
+    private void scrollToTLDInternal() {
+        if (mFocused) return;
+
+        String previousTldScrollText = mPreviousTldScrollText;
+        int previousTldScrollViewWidth = mPreviousTldScrollViewWidth;
+        int previousTldScrollResultXPosition = mPreviousTldScrollResultXPosition;
+
+        mPreviousTldScrollText = null;
+        mPreviousTldScrollViewWidth = 0;
+        mPreviousTldScrollResultXPosition = 0;
 
         Editable url = getText();
-        if (url == null || url.length() < 1) return false;
+        if (url == null || url.length() < 1) {
+            int scrollX = 0;
+            if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+                // Compared to below that uses getPrimaryHorizontal(1) due to 0 returning an
+                // invalid value, if the text is empty, getPrimaryHorizontal(0) returns the actual
+                // max scroll amount.
+                scrollX = (int) getLayout().getPrimaryHorizontal(0) - getMeasuredWidth();
+            }
+            scrollTo(scrollX, getScrollY());
+            return;
+        }
         String urlString = url.toString();
         Pair<String, String> urlComponents =
                 LocationBarLayout.splitPathFromUrlDisplayText(urlString);
 
-        if (TextUtils.isEmpty(urlComponents.first)) return false;
+        if (TextUtils.isEmpty(urlComponents.first)) {
+            scrollTo(0, getScrollY());
+            return;
+        }
 
         // Do not scroll to the end of the host for URLs such as data:, javascript:, etc...
         if (urlComponents.second == null) {
@@ -649,15 +668,16 @@ public class UrlBar extends AutocompleteEditText {
             String scheme = uri.getScheme();
             if (!TextUtils.isEmpty(scheme)
                     && LocationBarLayout.UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
-                return false;
+                scrollTo(0, getScrollY());
+                return;
             }
         }
 
         int measuredWidth = getMeasuredWidth();
-        if (TextUtils.equals(url, mPreviousTldScrollText)
-                && measuredWidth == mPreviousTldScrollViewWidth) {
-            scrollTo(mPreviousTldScrollResultXPosition, getScrollY());
-            return true;
+        if (TextUtils.equals(url, previousTldScrollText)
+                && measuredWidth == previousTldScrollViewWidth) {
+            scrollTo(previousTldScrollResultXPosition, getScrollY());
+            return;
         }
 
         assert getLayout().getLineCount() == 1;
@@ -684,8 +704,6 @@ public class UrlBar extends AutocompleteEditText {
         mPreviousTldScrollText = url.toString();
         mPreviousTldScrollViewWidth = measuredWidth;
         mPreviousTldScrollResultXPosition = (int) scrollPos;
-
-        return true;
     }
 
     @Override
