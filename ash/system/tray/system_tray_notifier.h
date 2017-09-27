@@ -26,7 +26,7 @@ class NetworkObserver;
 class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
 class ScreenShareObserver;
-class StatusAreaFocusObserver;
+class SystemTrayFocusObserver;
 class TracingObserver;
 class VirtualKeyboardObserver;
 
@@ -97,9 +97,9 @@ class ASH_EXPORT SystemTrayNotifier {
                               const base::string16& helper_name);
   void NotifyScreenShareStop();
 
-  // Status area focus.
-  void AddStatusAreaFocusObserver(StatusAreaFocusObserver* observer);
-  void RemoveStatusAreaFocusObserver(StatusAreaFocusObserver* observer);
+  // System tray focus.
+  void AddSystemTrayFocusObserver(SystemTrayFocusObserver* observer);
+  void RemoveSystemTrayFocusObserver(SystemTrayFocusObserver* observer);
   void NotifyFocusOut(bool reverse);
 
   // Tracing.
@@ -123,7 +123,7 @@ class ASH_EXPORT SystemTrayNotifier {
       network_portal_detector_observers_;
   base::ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   base::ObserverList<ScreenShareObserver> screen_share_observers_;
-  base::ObserverList<StatusAreaFocusObserver> status_area_focus_observers_;
+  base::ObserverList<SystemTrayFocusObserver> system_tray_focus_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 

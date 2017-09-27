@@ -7,6 +7,7 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/login_shelf_view.h"
@@ -18,17 +19,36 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
+namespace {
+
+// Return the first or last focusable child of |root|.
+views::View* FindFirstOrLastFocusableChild(views::View* root,
+                                           bool find_last_child) {
+  views::FocusSearch search(root, find_last_child /*cycle*/,
+                            false /*accessibility_mode*/);
+  views::FocusTraversable* dummy_focus_traversable;
+  views::View* dummy_focus_traversable_view;
+  return search.FindNextFocusableView(
+      root, find_last_child, views::FocusSearch::DOWN,
+      false /*check_starting_view*/, &dummy_focus_traversable,
+      &dummy_focus_traversable_view);
+}
+
+}  // namespace
 
 // The contents view of the Shelf. This view contains ShelfView and
 // sizes it to the width of the shelf minus the size of the status area.
@@ -42,13 +62,18 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void set_focus_cycler(FocusCycler* focus_cycler) {
     focus_cycler_ = focus_cycler;
   }
+
   FocusCycler* focus_cycler() { return focus_cycler_; }
 
   ui::Layer* opaque_background() { return &opaque_background_; }
 
   void SetParentLayer(ui::Layer* layer);
 
-  // views::WidgetDelegateView overrides:
+  void set_default_last_focusable_child(bool default_last_focusable_child) {
+    default_last_focusable_child_ = default_last_focusable_child;
+  }
+
+  // views::WidgetDelegateView:
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
@@ -56,6 +81,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void ReorderChildLayers(ui::Layer* parent_layer) override;
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
+
+  // views::AccessiblePaneView:
+  views::View* GetDefaultFocusableChild() override;
 
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
@@ -66,6 +94,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
+
+  // When true, the default focus of the shelf is the last focusable child.
+  bool default_last_focusable_child_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
@@ -81,6 +112,16 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 }
 
 ShelfWidget::DelegateView::~DelegateView() {}
+
+// static
+bool ShelfWidget::IsUsingMdLoginShelf() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kShowMdLogin) &&
+         (Shell::Get()->session_controller()->GetSessionState() ==
+              session_manager::SessionState::LOCKED ||
+          Shell::Get()->session_controller()->GetSessionState() ==
+              session_manager::SessionState::LOGIN_SECONDARY);
+}
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&opaque_background_);
@@ -99,6 +140,15 @@ void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_background_.SetBounds(GetLocalBounds());
+}
+
+views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
+  // If views-based login shelf is shown, we want to focus either its first or
+  // last child, otherwise focus on the first child as default.
+  if (IsUsingMdLoginShelf())
+    return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
+                                         default_last_focusable_child_);
+  return GetFirstFocusableChild();
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
@@ -282,6 +332,12 @@ AppListButton* ShelfWidget::GetAppListButton() const {
 app_list::ApplicationDragAndDropHost*
 ShelfWidget::GetDragAndDropHostForAppList() {
   return shelf_view_;
+}
+
+void ShelfWidget::set_default_last_focusable_child(
+    bool default_last_focusable_child) {
+  delegate_view_->set_default_last_focusable_child(
+      default_last_focusable_child);
 }
 
 void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,

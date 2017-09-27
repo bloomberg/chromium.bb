@@ -5,7 +5,10 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -179,12 +182,8 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);
 
-  if (!ash_util::IsRunningInMash() &&
-      ash::Shell::Get()->HasPrimaryStatusArea()) {
-    ash::Shell::Get()->system_tray_notifier()->AddStatusAreaFocusObserver(this);
-  } else {
-    NOTIMPLEMENTED();
-  }
+  if (!ash_util::IsRunningInMash())
+    ash::Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
 }
 
 WebUILoginView::~WebUILoginView() {
@@ -197,14 +196,9 @@ WebUILoginView::~WebUILoginView() {
   if (keyboard::KeyboardController::GetInstance())
     keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
 
-  if (!ash_util::IsRunningInMash() &&
-      ash::Shell::Get()->HasPrimaryStatusArea()) {
-    ash::Shell::Get()->system_tray_notifier()->RemoveStatusAreaFocusObserver(
+  if (!ash_util::IsRunningInMash()) {
+    ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
         this);
-    ash::StatusAreaWidgetDelegate::GetPrimaryInstance()
-        ->set_default_last_focusable_child(false);
-  } else {
-    NOTIMPLEMENTED();
   }
 
   // Clear any delegates we have set on the WebView.
@@ -594,7 +588,7 @@ void WebUILoginView::HandleLockScreenAppFocusOut(bool reverse) {
   AboutToRequestFocusFromTabTraversal(reverse);
 }
 
-void WebUILoginView::OnFocusOut(bool reverse) {
+void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
   if (!reverse && !lock_screen_app_focus_handler_.is_null()) {
     lock_screen_app_focus_handler_.Run(reverse);
     return;
@@ -609,14 +603,27 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   if (ash_util::IsRunningInMash())
     return true;
 
-  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
+  // If shift+tab is used (|reverse| is true) and views-based shelf is shown,
+  // focus goes to the shelf widget. If views-based shelf is disabled, focus
+  // goes to the system tray, because the web-UI shelf has already been
+  // traversed when we reach here.
+  ash::Shelf* shelf = ash::Shelf::ForWindow(GetWidget()->GetNativeWindow());
+  if (!reverse && ash::ShelfWidget::IsUsingMdLoginShelf()) {
+    shelf->shelf_widget()->set_default_last_focusable_child(reverse);
+    ash::Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+    return true;
+  }
+
+  ash::SystemTray* tray =
+      ash::RootWindowController::ForWindow(GetWidget()->GetNativeWindow())
+          ->GetSystemTray();
   if (!tray || !tray->GetWidget()->IsVisible() || !tray->visible())
     return false;
 
-  ash::StatusAreaWidgetDelegate::GetPrimaryInstance()
+  shelf->GetStatusAreaWidget()
+      ->status_area_widget_delegate()
       ->set_default_last_focusable_child(reverse);
-  ash::Shell::Get()->focus_cycler()->RotateFocus(
-      reverse ? ash::FocusCycler::BACKWARD : ash::FocusCycler::FORWARD);
+  ash::Shell::Get()->focus_cycler()->FocusWidget(shelf->GetStatusAreaWidget());
   return true;
 }
 

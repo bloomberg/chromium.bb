@@ -49,15 +49,6 @@ class StatusAreaWidgetDelegateAnimationSettings
 
 namespace ash {
 
-// static
-StatusAreaWidgetDelegate* StatusAreaWidgetDelegate::GetPrimaryInstance() {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-  return tray ? tray->shelf()
-                    ->GetStatusAreaWidget()
-                    ->status_area_widget_delegate()
-              : nullptr;
-}
-
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
     : shelf_(shelf), focus_cycler_for_testing_(nullptr) {
   DCHECK(shelf_);

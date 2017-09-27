@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/non_accessible_view.h"
-#include "ash/system/status_area_focus_observer.h"
+#include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -35,7 +35,7 @@ class LoginUserView;
 // at a time.
 class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                     public LoginDataDispatcher::Observer,
-                                    public StatusAreaFocusObserver,
+                                    public SystemTrayFocusObserver,
                                     public display::DisplayObserver {
  public:
   // TestApi is used for tests to get internal implementation details.
@@ -65,8 +65,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
 
-  // StatusAreaFocusObserver:
-  void OnFocusOut(bool reverse) override;
+  // SystemTrayFocusObserver:
+  void OnFocusLeavingSystemTray(bool reverse) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

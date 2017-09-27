@@ -4,18 +4,26 @@
 
 #include "ash/shelf/login_shelf_view.h"
 
+#include "ash/focus_cycler.h"
 #include "ash/login/mock_lock_screen_client.h"
+#include "ash/login/ui/login_test_base.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shutdown_controller.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/label_button.h"
 
 using session_manager::SessionState;
@@ -23,26 +31,44 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
-class LoginShelfViewTest : public AshTestBase {
+// Returns true if |view| or any child of it has focus.
+bool HasFocusInAnyChildView(views::View* view) {
+  if (view->HasFocus())
+    return true;
+  for (int i = 0; i < view->child_count(); ++i) {
+    if (HasFocusInAnyChildView(view->child_at(i)))
+      return true;
+  }
+  return false;
+}
+
+void ExpectFocused(views::View* view) {
+  EXPECT_TRUE(view->GetWidget()->IsActive());
+  EXPECT_TRUE(HasFocusInAnyChildView(view));
+}
+
+void ExpectNotFocused(views::View* view) {
+  EXPECT_FALSE(view->GetWidget()->IsActive());
+  EXPECT_FALSE(HasFocusInAnyChildView(view));
+}
+
+class LoginShelfViewTest : public LoginTestBase {
  public:
   LoginShelfViewTest() {}
   ~LoginShelfViewTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    LoginTestBase::SetUp();
     login_shelf_view_ = GetPrimaryShelf()->GetLoginShelfViewForTesting();
     Shell::Get()->tray_action()->SetClient(
         tray_action_client_.CreateInterfacePtrAndBind(),
         mojom::TrayActionState::kNotAvailable);
+    // Set initial states.
+    NotifySessionStateChanged(SessionState::OOBE);
+    NotifyShutdownPolicyChanged(false);
   }
 
  protected:
-  void SetInitialStates() {
-    NotifySessionStateChanged(SessionState::OOBE);
-    NotifyShutdownPolicyChanged(false);
-    NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
-  }
-
   void NotifySessionStateChanged(SessionState state) {
     GetSessionControllerClient()->SetSessionState(state);
   }
@@ -90,7 +116,6 @@ class LoginShelfViewTest : public AshTestBase {
 
 // Checks the login shelf updates UI after session state changes.
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterSessionStateChange) {
-  SetInitialStates();
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
@@ -118,7 +143,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterSessionStateChange) {
 // screen is locked.
 TEST_F(LoginShelfViewTest,
        ShouldUpdateUiAfterShutdownPolicyChangeAtLockScreen) {
-  SetInitialStates();
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   NotifySessionStateChanged(SessionState::LOCKED);
@@ -138,7 +162,6 @@ TEST_F(LoginShelfViewTest,
 // will be reflected when the screen becomes locked.
 TEST_F(LoginShelfViewTest, ShouldUpdateUiBasedOnShutdownPolicyInActiveSession) {
   // The initial state of |reboot_on_shutdown| is false.
-  SetInitialStates();
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   NotifySessionStateChanged(SessionState::ACTIVE);
@@ -151,7 +174,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiBasedOnShutdownPolicyInActiveSession) {
 
 // Checks the login shelf updates UI after lock screen note state changes.
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
-  SetInitialStates();
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   NotifySessionStateChanged(SessionState::LOCKED);
@@ -220,6 +242,51 @@ TEST_F(LoginShelfViewTest, ClickCancelButton) {
   std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
   EXPECT_CALL(*client, CancelAddUser());
   Click(LoginShelfView::kCancel);
+}
+
+TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
+  NotifySessionStateChanged(SessionState::LOCKED);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+
+  gfx::NativeWindow window = login_shelf_view_->GetWidget()->GetNativeWindow();
+  views::View* shelf =
+      Shelf::ForWindow(window)->shelf_widget()->GetContentsView();
+  views::View* status_area = RootWindowController::ForWindow(window)
+                                 ->GetSystemTray()
+                                 ->GetWidget()
+                                 ->GetContentsView();
+
+  // Give focus to the shelf. The tabbing between lock screen and shelf is
+  // verified by |LockScreenSanityTest::TabGoesFromLockToShelfAndBackToLock|.
+  Shelf::ForWindow(window)->shelf_widget()->set_default_last_focusable_child(
+      false /*reverse*/);
+  Shell::Get()->focus_cycler()->FocusWidget(
+      Shelf::ForWindow(window)->shelf_widget());
+  // The first shelf button has focus.
+  ExpectFocused(shelf);
+  ExpectNotFocused(status_area);
+  EXPECT_TRUE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kShutdown)->HasFocus());
+
+  // Focus from the first button to the second button.
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  ExpectFocused(shelf);
+  ExpectNotFocused(status_area);
+  EXPECT_TRUE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
+
+  // Focus from the second button to the status area.
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
+  ExpectNotFocused(shelf);
+  ExpectFocused(status_area);
+
+  // A single shift+tab brings focus back to the second shelf button.
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  ExpectFocused(shelf);
+  ExpectNotFocused(status_area);
+  EXPECT_TRUE(
+      login_shelf_view_->GetViewByID(LoginShelfView::kSignOut)->HasFocus());
 }
 
 }  // namespace
