@@ -405,6 +405,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             // that support all origins.
             if (method.supportsAllOrigins) {
                 Set<ResolveInfo> supportedApps = mMethodToSupportedAppsMapping.get(methodName);
+                if (supportedApps == null) continue;
                 for (ResolveInfo supportedApp : supportedApps) {
                     onValidPaymentAppForPaymentMethodName(supportedApp, methodName.toString());
                 }
