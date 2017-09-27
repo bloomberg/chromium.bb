@@ -374,7 +374,8 @@ void LinkStyle::Process() {
     }
   }
 
-  if (!owner_->LoadLink(type, as, media, owner_->GetReferrerPolicy(), href))
+  if (!owner_->LoadLink(type, as, media, owner_->nonce(),
+                        owner_->GetReferrerPolicy(), href))
     return;
 
   if (LoadStylesheetIfNeeded(href, charset, type) == kNotNeeded && sheet_) {
