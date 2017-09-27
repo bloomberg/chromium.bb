@@ -79,7 +79,11 @@ class ThreadSafeRefCounted : public ThreadSafeRefCountedBase {
 
  private:
   friend struct DefaultThreadSafeRefCountedTraits<T>;
-  static void DeleteInternal(const T* x) { delete x; }
+
+  template <typename U>
+  static void DeleteInternal(const U* x) {
+    delete x;
+  }
 };
 
 }  // namespace WTF

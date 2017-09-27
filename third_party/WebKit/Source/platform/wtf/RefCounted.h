@@ -158,7 +158,11 @@ class RefCounted : public RefCountedBase {
 
  private:
   friend struct DefaultRefCountedTraits<T>;
-  static void DeleteInternal(const T* x) { delete x; }
+
+  template <typename U>
+  static void DeleteInternal(const U* x) {
+    delete x;
+  }
 };
 
 // Allows subclasses to use the default copy constructor.
