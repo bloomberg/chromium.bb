@@ -2,8 +2,6 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import logging
-
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
@@ -689,13 +687,7 @@ class GoogleMapsStory(_BrowsingStory):
           != null)
     '''
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
-
-  def CanRunOnBrowser(self, browser_info, _):
-    if not browser_info.HasWebGLSupport():
-      logging.warning('Browser does not support webgl, skipping test')
-      return False
-    return True
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL]
 
   def _DidLoadDocument(self, action_runner):
     # Click on the search box.
@@ -783,13 +775,7 @@ class GoogleEarthStory(_BrowsingStory):
   _EARTH_BUTTON_SELECTOR = '[aria-labelledby="widget-minimap-caption"]'
   _EARTH_ZOOM_IN_SELECTOR = '[aria-label="Zoom in"]'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY]
-
-  def CanRunOnBrowser(self, browser_info, _):
-    if not browser_info.HasWebGLSupport():
-      logging.warning('Browser does not support webgl, skipping test')
-      return False
-    return True
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL]
 
   def _DidLoadDocument(self, action_runner):
     # Zommin three times.
