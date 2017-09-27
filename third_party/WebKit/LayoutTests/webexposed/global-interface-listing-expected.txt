@@ -6575,6 +6575,7 @@ interface Selection
 interface Sensor : EventTarget
     attribute @@toStringTag
     getter activated
+    getter hasReading
     getter onactivate
     getter onerror
     getter onreading

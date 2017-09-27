@@ -86,7 +86,7 @@ void OrientationSensor::PopulateMatrixInternal(
         "Target buffer must have at least 16 elements.");
     return;
   }
-  if (!CanReturnReadings()) {
+  if (!hasReading()) {
     exception_state.ThrowDOMException(kNotReadableError,
                                       "Sensor data is not available.");
     return;
@@ -111,7 +111,7 @@ void OrientationSensor::populateMatrix(
 }
 
 bool OrientationSensor::isReadingDirty() const {
-  return reading_dirty_ || !CanReturnReadings();
+  return reading_dirty_ || !hasReading();
 }
 
 OrientationSensor::OrientationSensor(ExecutionContext* execution_context,

@@ -214,10 +214,11 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     return testPromise;
   }, prefix + 'Test that addConfiguration and removeConfiguration is called.');
 
-  function checkOnChangeIsCalledAndReadingIsValid(sensor) {
+  function checkOnReadingIsCalledAndReadingIsValid(sensor) {
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
-    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+    assert_false(sensorObject.hasReading);
+    return sensor.mockSensorProvider.getCreatedSensor()
         .then(mockSensor => {
           return mockSensor.setUpdateSensorReadingFunction(updateReading);
         })
@@ -225,8 +226,10 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           return new Promise((resolve, reject) => {
             let wrapper = new CallbackWrapper(() => {
               assert_true(verifyReading(sensorObject));
+              assert_true(sensorObject.hasReading);
               sensorObject.stop();
               assert_true(verifyReading(sensorObject, true /*should be null*/));
+              assert_false(sensorObject.hasReading);
               resolve(mockSensor);
             }, reject);
 
@@ -235,18 +238,16 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           });
         })
         .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
-
-      return testPromise;
   }
 
   sensor_test(sensor => {
-    return checkOnChangeIsCalledAndReadingIsValid(sensor);
-  }, prefix + 'Test that onChange is called and sensor reading is valid (onreading reporting).');
+    return checkOnReadingIsCalledAndReadingIsValid(sensor);
+  }, prefix + 'Test that onreading is called and sensor reading is valid (onchange reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();
-    return checkOnChangeIsCalledAndReadingIsValid(sensor);
-  }, prefix + 'Test that onChange is called and sensor reading is valid (continuous reporting).');
+    return checkOnReadingIsCalledAndReadingIsValid(sensor);
+  }, prefix + 'Test that onreading is called and sensor reading is valid (continuous reporting).');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType;
@@ -407,7 +408,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   sensor_test(sensor => {
     return checkFrequencyHintWorks(sensor);
-  }, prefix + 'Test that frequency hint works (onreading reporting).');
+  }, prefix + 'Test that frequency hint works (onchange reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();

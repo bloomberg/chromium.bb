@@ -49,6 +49,7 @@ class Sensor : public EventTargetWithInlineData,
 
   // Getters
   bool activated() const;
+  bool hasReading() const;
   DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
@@ -74,7 +75,6 @@ class Sensor : public EventTargetWithInlineData,
   // parameters if needed.
   virtual SensorConfigurationPtr CreateSensorConfig();
 
-  bool CanReturnReadings() const;
   bool IsActivated() const { return state_ == SensorState::kActivated; }
   bool IsIdleOrErrored() const;
   const SensorProxy* proxy() const { return sensor_proxy_; }
@@ -124,7 +124,7 @@ class Sensor : public EventTargetWithInlineData,
 // To be used in getters in concrete sensors
 // bindings code.
 #define INIT_IS_NULL_AND_RETURN(is_null, x) \
-  is_null = !CanReturnReadings();           \
+  is_null = !hasReading();                  \
   if (is_null)                              \
   return (x)
 

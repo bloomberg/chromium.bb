@@ -83,9 +83,16 @@ bool Sensor::activated() const {
   return state_ == SensorState::kActivated;
 }
 
+bool Sensor::hasReading() const {
+  if (!IsActivated())
+    return false;
+  DCHECK(sensor_proxy_);
+  return sensor_proxy_->reading().timestamp() != 0.0;
+}
+
 DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
                                       bool& is_null) const {
-  if (!CanReturnReadings()) {
+  if (!hasReading()) {
     is_null = true;
     return 0.0;
   }
@@ -317,7 +324,7 @@ void Sensor::NotifyActivated() {
   DCHECK_EQ(state_, SensorState::kActivating);
   state_ = SensorState::kActivated;
 
-  if (CanReturnReadings()) {
+  if (hasReading()) {
     // If reading has already arrived, send initial 'reading' notification
     // right away.
     DCHECK(!pending_reading_notification_.IsActive());
@@ -335,13 +342,6 @@ void Sensor::NotifyError(DOMException* error) {
   DCHECK_NE(state_, SensorState::kIdle);
   state_ = SensorState::kIdle;
   DispatchEvent(SensorErrorEvent::Create(EventTypeNames::error, error));
-}
-
-bool Sensor::CanReturnReadings() const {
-  if (!IsActivated())
-    return false;
-  DCHECK(sensor_proxy_);
-  return sensor_proxy_->reading().timestamp() != 0.0;
 }
 
 bool Sensor::IsIdleOrErrored() const {
