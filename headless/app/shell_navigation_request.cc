@@ -46,7 +46,7 @@ void ShellNavigationRequest::StartProcessingOnUiThread(
       ->GetNetwork()
       ->GetExperimental()
       ->ContinueInterceptedRequest(
-          headless::network::ContinueInterceptedRequestParams::Builder()
+          network::ContinueInterceptedRequestParams::Builder()
               .SetInterceptionId(interception_id)
               .Build(),
           base::Bind(&ShellNavigationRequest::ContinueInterceptedRequestResult,

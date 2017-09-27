@@ -59,7 +59,7 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   }
 
   void SetVirtualTimePolicyDone(
-      std::unique_ptr<headless::emulation::SetVirtualTimePolicyResult>) {
+      std::unique_ptr<emulation::SetVirtualTimePolicyResult>) {
     // Virtual time is paused, so start navigating.
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/virtual_time_test.html").spec());

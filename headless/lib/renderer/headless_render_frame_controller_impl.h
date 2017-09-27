@@ -23,7 +23,7 @@ class HeadlessRenderFrameControllerImpl : public HeadlessRenderFrameController,
   ~HeadlessRenderFrameControllerImpl() override;
 
   void OnRenderFrameControllerRequest(
-      headless::HeadlessRenderFrameControllerRequest request);
+      HeadlessRenderFrameControllerRequest request);
 
   // HeadlessRenderFrameController implementation:
   void InstallTabSocket(int32_t v8_execution_context_id,
@@ -45,14 +45,14 @@ class HeadlessRenderFrameControllerImpl : public HeadlessRenderFrameController,
 
   void OnDestruct() override;
 
-  headless::TabSocketPtr& EnsureTabSocketPtr();
+  TabSocketPtr& EnsureTabSocketPtr();
 
  private:
   content::RenderFrame* const render_frame_;  // NOT OWNED
-  mojo::BindingSet<headless::HeadlessRenderFrameController>
+  mojo::BindingSet<HeadlessRenderFrameController>
       headless_render_frame_controller_bindings_;
   std::map<int, HeadlessTabSocketBindings> tab_socket_bindings_;
-  headless::TabSocketPtr tab_socket_ptr_;
+  TabSocketPtr tab_socket_ptr_;
   InstallMainWorldTabSocketCallback
       pending_install_main_world_tab_socket_callback_;
   service_manager::BinderRegistry registry_;

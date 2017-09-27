@@ -186,7 +186,7 @@ void HeadlessShell::DevToolsTargetReady() {
     devtools_client_->GetNetwork()
         ->GetExperimental()
         ->SetRequestInterceptionEnabled(
-            headless::network::SetRequestInterceptionEnabledParams::Builder()
+            network::SetRequestInterceptionEnabledParams::Builder()
                 .SetEnabled(true)
                 .Build());
   }
@@ -198,7 +198,7 @@ void HeadlessShell::DevToolsTargetReady() {
     uint32_t color;
     CHECK(base::HexStringToUInt(color_hex, &color))
         << "Expected a hex value for --default-background-color=";
-    auto rgba = headless::dom::RGBA::Builder()
+    auto rgba = dom::RGBA::Builder()
                     .SetR((color & 0xff000000) >> 24)
                     .SetG((color & 0x00ff0000) >> 16)
                     .SetB((color & 0x0000ff00) >> 8)
@@ -207,10 +207,9 @@ void HeadlessShell::DevToolsTargetReady() {
     devtools_client_->GetEmulation()
         ->GetExperimental()
         ->SetDefaultBackgroundColorOverride(
-            headless::emulation::SetDefaultBackgroundColorOverrideParams::
-                Builder()
-                    .SetColor(std::move(rgba))
-                    .Build());
+            emulation::SetDefaultBackgroundColorOverrideParams::Builder()
+                .SetColor(std::move(rgba))
+                .Build());
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -307,7 +306,7 @@ void HeadlessShell::OnLoadEventFired(const page::LoadEventFiredParams& params) {
 
 // network::Observer implementation:
 void HeadlessShell::OnRequestIntercepted(
-    const headless::network::RequestInterceptedParams& params) {
+    const network::RequestInterceptedParams& params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (params.GetIsNavigationRequest()) {
     deterministic_dispatcher_->NavigationRequested(
@@ -316,7 +315,7 @@ void HeadlessShell::OnRequestIntercepted(
     return;
   }
   devtools_client_->GetNetwork()->GetExperimental()->ContinueInterceptedRequest(
-      headless::network::ContinueInterceptedRequestParams::Builder()
+      network::ContinueInterceptedRequestParams::Builder()
           .SetInterceptionId(params.GetInterceptionId())
           .Build());
 }

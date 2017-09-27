@@ -60,7 +60,7 @@ int RunContentMain(
 
   std::unique_ptr<HeadlessBrowserImpl> browser(
       new HeadlessBrowserImpl(on_browser_start_callback, std::move(options)));
-  headless::HeadlessContentMainDelegate delegate(std::move(browser));
+  HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(params);
 }

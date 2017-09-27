@@ -241,7 +241,7 @@ class ClientApiGeneratorTest(unittest.TestCase):
     client_api_generator.CreateTypeDefinitions(json_api)
     type = json_api['domains'][0]['types'][0]
     resolved = client_api_generator.ResolveType(type)
-    self.assertEqual('headless::domain::TestType', resolved['raw_type'])
+    self.assertEqual('::headless::domain::TestType', resolved['raw_type'])
 
   def test_SynthesizeCommandTypes(self):
     json_api = {
