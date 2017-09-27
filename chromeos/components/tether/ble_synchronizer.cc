@@ -90,8 +90,9 @@ void BleSynchronizer::RegisterAdvertisement(
     const device::BluetoothAdapter::CreateAdvertisementCallback& callback,
     const device::BluetoothAdapter::AdvertisementErrorCallback&
         error_callback) {
-  command_queue_.emplace_back(base::MakeUnique<RegisterArgs>(
-      std::move(advertisement_data), callback, error_callback));
+  command_queue_.emplace_back(
+      base::MakeUnique<Command>(base::MakeUnique<RegisterArgs>(
+          std::move(advertisement_data), callback, error_callback)));
   ProcessQueue();
 }
 
@@ -99,16 +100,17 @@ void BleSynchronizer::UnregisterAdvertisement(
     scoped_refptr<device::BluetoothAdvertisement> advertisement,
     const device::BluetoothAdvertisement::SuccessCallback& callback,
     const device::BluetoothAdvertisement::ErrorCallback& error_callback) {
-  command_queue_.emplace_back(base::MakeUnique<UnregisterArgs>(
-      std::move(advertisement), callback, error_callback));
+  command_queue_.emplace_back(
+      base::MakeUnique<Command>(base::MakeUnique<UnregisterArgs>(
+          std::move(advertisement), callback, error_callback)));
   ProcessQueue();
 }
 
 void BleSynchronizer::StartDiscoverySession(
     const device::BluetoothAdapter::DiscoverySessionCallback& callback,
     const device::BluetoothAdapter::ErrorCallback& error_callback) {
-  command_queue_.emplace_back(
-      base::MakeUnique<StartDiscoveryArgs>(callback, error_callback));
+  command_queue_.emplace_back(base::MakeUnique<Command>(
+      base::MakeUnique<StartDiscoveryArgs>(callback, error_callback)));
   ProcessQueue();
 }
 
@@ -116,13 +118,14 @@ void BleSynchronizer::StopDiscoverySession(
     base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
     const base::Closure& callback,
     const device::BluetoothDiscoverySession::ErrorCallback& error_callback) {
-  command_queue_.emplace_back(base::MakeUnique<StopDiscoveryArgs>(
-      discovery_session, callback, error_callback));
+  command_queue_.emplace_back(
+      base::MakeUnique<Command>(base::MakeUnique<StopDiscoveryArgs>(
+          discovery_session, callback, error_callback)));
   ProcessQueue();
 }
 
 void BleSynchronizer::ProcessQueue() {
-  if (command_queue_.empty())
+  if (current_command_ || command_queue_.empty())
     return;
 
   // If the timer is already running, there is nothing to do until the timer
@@ -131,14 +134,14 @@ void BleSynchronizer::ProcessQueue() {
     return;
 
   base::Time current_timestamp = clock_->Now();
-  base::TimeDelta time_since_last_command =
-      current_timestamp - last_command_timestamp_;
+  base::TimeDelta time_since_last_command_ended =
+      current_timestamp - last_command_end_timestamp_;
 
-  // If we have issued a Bluetooth command in the last kTimeBetweenEachCommandMs
-  // milliseconds, wait. Sending commands too frequently can cause race
-  // conditions. See crbug.com/760792.
-  if (!last_command_timestamp_.is_null() &&
-      time_since_last_command <
+  // If we have finished a Bluetooth command in the last
+  // kTimeBetweenEachCommandMs milliseconds, wait. Sending commands too
+  // frequently can cause race conditions. See crbug.com/760792.
+  if (!last_command_end_timestamp_.is_null() &&
+      time_since_last_command_ended <
           base::TimeDelta::FromMilliseconds(kTimeBetweenEachCommandMs)) {
     timer_->Start(FROM_HERE,
                   base::TimeDelta::FromMilliseconds(kTimeBetweenEachCommandMs),
@@ -147,28 +150,34 @@ void BleSynchronizer::ProcessQueue() {
     return;
   }
 
-  last_command_timestamp_ = current_timestamp;
+  current_command_ = std::move(command_queue_.front());
+  command_queue_.pop_front();
 
-  switch (command_queue_.front().command_type) {
+  switch (current_command_->command_type) {
     case CommandType::REGISTER_ADVERTISEMENT: {
-      RegisterArgs* register_args = command_queue_.front().register_args.get();
+      RegisterArgs* register_args = current_command_->register_args.get();
       DCHECK(register_args);
       bluetooth_adapter_->RegisterAdvertisement(
-          std::move(register_args->advertisement_data), register_args->callback,
-          register_args->error_callback);
+          std::move(register_args->advertisement_data),
+          base::Bind(&BleSynchronizer::OnAdvertisementRegistered,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BleSynchronizer::OnErrorRegisteringAdvertisement,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::UNREGISTER_ADVERTISEMENT: {
-      UnregisterArgs* unregister_args =
-          command_queue_.front().unregister_args.get();
+      UnregisterArgs* unregister_args = current_command_->unregister_args.get();
       DCHECK(unregister_args);
       unregister_args->advertisement->Unregister(
-          unregister_args->callback, unregister_args->error_callback);
+          base::Bind(&BleSynchronizer::OnAdvertisementUnregistered,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BleSynchronizer::OnErrorUnregisteringAdvertisement,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::START_DISCOVERY: {
       StartDiscoveryArgs* start_discovery_args =
-          command_queue_.front().start_discovery_args.get();
+          current_command_->start_discovery_args.get();
       DCHECK(start_discovery_args);
 
       // Note: Ideally, we would use a filter for only LE devices here. However,
@@ -178,12 +187,15 @@ void BleSynchronizer::ProcessQueue() {
       // TODO(mcchou): Once these issues have been resolved, add the filter
       // back. See crbug.com/759091.
       bluetooth_adapter_->StartDiscoverySession(
-          start_discovery_args->callback, start_discovery_args->error_callback);
+          base::Bind(&BleSynchronizer::OnDiscoverySessionStarted,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BleSynchronizer::OnErrorStartingDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::STOP_DISCOVERY: {
       StopDiscoveryArgs* stop_discovery_args =
-          command_queue_.front().stop_discovery_args.get();
+          current_command_->stop_discovery_args.get();
       DCHECK(stop_discovery_args);
 
       // If the discovery session has been deleted, there is nothing to stop.
@@ -191,27 +203,98 @@ void BleSynchronizer::ProcessQueue() {
         PA_LOG(WARNING) << "Could not process \"stop discovery\" command "
                         << "because the DiscoverySession object passed is "
                         << "deleted.";
+        current_command_.reset();
+        ProcessQueue();
         break;
       }
 
       stop_discovery_args->discovery_session->Stop(
-          stop_discovery_args->callback, stop_discovery_args->error_callback);
+          base::Bind(&BleSynchronizer::OnDiscoverySessionStopped,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BleSynchronizer::OnErrorStoppingDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     default:
       NOTREACHED();
       return;
   }
-
-  command_queue_.pop_front();
-
-  ProcessQueue();
 }
 
 void BleSynchronizer::SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
                                      std::unique_ptr<base::Clock> test_clock) {
   timer_ = std::move(test_timer);
   clock_ = std::move(test_clock);
+}
+
+void BleSynchronizer::OnAdvertisementRegistered(
+    scoped_refptr<device::BluetoothAdvertisement> advertisement) {
+  RegisterArgs* register_args = current_command_->register_args.get();
+  DCHECK(register_args);
+  register_args->callback.Run(std::move(advertisement));
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnErrorRegisteringAdvertisement(
+    device::BluetoothAdvertisement::ErrorCode error_code) {
+  RegisterArgs* register_args = current_command_->register_args.get();
+  DCHECK(register_args);
+  register_args->error_callback.Run(error_code);
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnAdvertisementUnregistered() {
+  UnregisterArgs* unregister_args = current_command_->unregister_args.get();
+  DCHECK(unregister_args);
+  unregister_args->callback.Run();
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnErrorUnregisteringAdvertisement(
+    device::BluetoothAdvertisement::ErrorCode error_code) {
+  UnregisterArgs* unregister_args = current_command_->unregister_args.get();
+  DCHECK(unregister_args);
+  unregister_args->error_callback.Run(error_code);
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnDiscoverySessionStarted(
+    std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
+  StartDiscoveryArgs* start_discovery_args =
+      current_command_->start_discovery_args.get();
+  DCHECK(start_discovery_args);
+  start_discovery_args->callback.Run(std::move(discovery_session));
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnErrorStartingDiscoverySession() {
+  StartDiscoveryArgs* start_discovery_args =
+      current_command_->start_discovery_args.get();
+  DCHECK(start_discovery_args);
+  start_discovery_args->error_callback.Run();
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnDiscoverySessionStopped() {
+  StopDiscoveryArgs* stop_discovery_args =
+      current_command_->stop_discovery_args.get();
+  DCHECK(stop_discovery_args);
+  stop_discovery_args->callback.Run();
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::OnErrorStoppingDiscoverySession() {
+  StopDiscoveryArgs* stop_discovery_args =
+      current_command_->stop_discovery_args.get();
+  DCHECK(stop_discovery_args);
+  stop_discovery_args->error_callback.Run();
+  CompleteCurrentCommand();
+}
+
+void BleSynchronizer::CompleteCurrentCommand() {
+  current_command_.reset();
+  last_command_end_timestamp_ = clock_->Now();
+  ProcessQueue();
 }
 
 }  // namespace tether

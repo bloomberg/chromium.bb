@@ -123,7 +123,9 @@ class BleSynchronizer {
 
   virtual void ProcessQueue();
 
-  const std::deque<Command>& command_queue() { return command_queue_; }
+  const std::deque<std::unique_ptr<Command>>& command_queue() {
+    return command_queue_;
+  }
 
  private:
   friend class BleSynchronizerTest;
@@ -131,12 +133,28 @@ class BleSynchronizer {
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
                       std::unique_ptr<base::Clock> test_clock);
 
+  void OnAdvertisementRegistered(
+      scoped_refptr<device::BluetoothAdvertisement> advertisement);
+  void OnErrorRegisteringAdvertisement(
+      device::BluetoothAdvertisement::ErrorCode error_code);
+  void OnAdvertisementUnregistered();
+  void OnErrorUnregisteringAdvertisement(
+      device::BluetoothAdvertisement::ErrorCode error_code);
+  void OnDiscoverySessionStarted(
+      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
+  void OnErrorStartingDiscoverySession();
+  void OnDiscoverySessionStopped();
+  void OnErrorStoppingDiscoverySession();
+
+  void CompleteCurrentCommand();
+
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
-  std::deque<Command> command_queue_;
+  std::unique_ptr<Command> current_command_;
+  std::deque<std::unique_ptr<Command>> command_queue_;
   std::unique_ptr<base::Timer> timer_;
   std::unique_ptr<base::Clock> clock_;
-  base::Time last_command_timestamp_;
+  base::Time last_command_end_timestamp_;
   base::WeakPtrFactory<BleSynchronizer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleSynchronizer);

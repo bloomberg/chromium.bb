@@ -463,9 +463,15 @@ TEST_F(BleSynchronizerTest, TestStopError) {
 TEST_F(BleSynchronizerTest, TestStop_DeletedDiscoverySession) {
   // Simulate an invalidated WeakPtr being processed.
   StopDiscoverySession(base::WeakPtr<device::MockBluetoothDiscoverySession>());
+  RegisterAdvertisement(kId1);
 
   // Stop() should not have been called.
   EXPECT_TRUE(stop_discovery_args_list_.empty());
+
+  // The RegisterAdvertisement() command should be sent without the need for a
+  // delay, since the previous command was not actually sent.
+  InvokeRegisterCallback(true /* success */, kId1, 0u /* reg_arg_index */);
+  EXPECT_EQ(1, num_register_success_);
 }
 
 TEST_F(BleSynchronizerTest, TestThrottling) {
