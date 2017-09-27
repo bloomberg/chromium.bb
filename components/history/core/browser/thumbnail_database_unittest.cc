@@ -413,7 +413,7 @@ TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsReturnsOld) {
 // if the on-visit icons have expired. We need this behavior in order to delete
 // icons stored via HistoryService::SetOnDemandFavicons() prior to on-demand
 // icons setting the "last_requested" time.
-TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsReturnsExpired) {
+TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsDoesNotReturnExpired) {
   ThumbnailDatabase db(nullptr);
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
   db.BeginTransaction();
@@ -432,14 +432,11 @@ TEST_F(ThumbnailDatabaseTest, GetOldOnDemandFaviconsReturnsExpired) {
   ASSERT_NE(0, db.AddIconMapping(page_url, icon));
   ASSERT_TRUE(db.SetFaviconOutOfDate(icon));
 
-  // The threshold is ignored for expired icons.
-  auto map = db.GetOldOnDemandFavicons(/*threshold=*/base::Time::Now());
+  base::Time get_older_than = start + base::TimeDelta::FromSeconds(1);
+  auto map = db.GetOldOnDemandFavicons(get_older_than);
 
-  // The icon is returned.
-  EXPECT_THAT(map, ElementsAre(Pair(
-                       icon, AllOf(Field(&IconMappingsForExpiry::icon_url, url),
-                                   Field(&IconMappingsForExpiry::page_urls,
-                                         ElementsAre(page_url))))));
+  // No icon is returned.
+  EXPECT_TRUE(map.empty());
 }
 
 // Test that ThumbnailDatabase::GetOldOnDemandFavicons() does not return
