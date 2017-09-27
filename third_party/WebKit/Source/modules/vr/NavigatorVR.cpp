@@ -62,6 +62,10 @@ NavigatorVR& NavigatorVR::From(Navigator& navigator) {
 }
 
 VR* NavigatorVR::vr(Navigator& navigator) {
+  // Always return null when the navigator is detached.
+  if (!navigator.GetFrame())
+    return nullptr;
+
   return NavigatorVR::From(navigator).vr();
 }
 
