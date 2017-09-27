@@ -42,6 +42,7 @@ int32_t ClampMin(int32_t value) {
   return value < kMinInt32Value ? kMinInt32Value : value;
 }
 
+// Return kDataFormatNumFormats if format/type combination is invalid.
 WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
                                                GLenum destination_type) {
   WebGLImageConversion::DataFormat dst_format =
@@ -66,7 +67,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA8_S;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_UNSIGNED_BYTE:
@@ -97,7 +98,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA8;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_SHORT:
@@ -113,7 +114,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
         case GL_RGBA_INTEGER:
           dst_format = WebGLImageConversion::kDataFormatRGBA16_S;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_UNSIGNED_SHORT:
@@ -134,7 +135,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA16;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_INT:
@@ -152,7 +153,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA32_S;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_UNSIGNED_INT:
@@ -173,7 +174,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA32;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
@@ -199,7 +200,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA16F;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_FLOAT:  // OES_texture_float
@@ -227,7 +228,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA32F;
           break;
         default:
-          NOTREACHED();
+          return WebGLImageConversion::kDataFormatNumFormats;
       }
       break;
     case GL_UNSIGNED_SHORT_4_4_4_4:
@@ -252,7 +253,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
       dst_format = WebGLImageConversion::kDataFormatRGBA2_10_10_10;
       break;
     default:
-      NOTREACHED();
+      return WebGLImageConversion::kDataFormatNumFormats;
   }
   return dst_format;
 }
@@ -3035,6 +3036,8 @@ bool WebGLImageConversion::ExtractTextureData(unsigned width,
                                               Vector<uint8_t>& data) {
   // Assumes format, type, etc. have already been validated.
   DataFormat source_data_format = GetDataFormat(format, type);
+  if (source_data_format == kDataFormatNumFormats)
+    return false;
 
   // Resize the output buffer.
   unsigned int components_per_pixel, bytes_per_component;
@@ -3081,6 +3084,8 @@ bool WebGLImageConversion::PackPixels(const uint8_t* source_data,
 
   DataFormat dst_data_format =
       GetDataFormat(destination_format, destination_type);
+  if (dst_data_format == kDataFormatNumFormats)
+    return false;
   int dst_stride =
       source_data_sub_rectangle.Width() * TexelBytesForFormat(dst_data_format);
   if (flip_y) {

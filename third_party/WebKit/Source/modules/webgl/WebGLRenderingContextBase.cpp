@@ -4654,8 +4654,11 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
     if (source_type == kTex2D) {
       if (!WebGLImageConversion::ExtractTextureData(
               width, height, format, type, unpack_alignment_, unpack_flip_y_,
-              unpack_premultiply_alpha_, data, temp_data))
+              unpack_premultiply_alpha_, data, temp_data)) {
+        SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                          "Invalid format/type combination.");
         return;
+      }
       data = temp_data.data();
     }
     change_unpack_alignment = true;
