@@ -22,13 +22,13 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_service_registry.h"
-#include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -84,9 +84,10 @@ void StartServiceInUtilityProcess(
     service_manager::mojom::ConnectResult query_result,
     const std::string& sandbox_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UtilityProcessHost* process_host =
-      UtilityProcessHost::Create(nullptr, nullptr);
+  UtilityProcessHostImpl* process_host =
+      new UtilityProcessHostImpl(nullptr, nullptr);
   process_host->SetName(process_name);
+  process_host->SetServiceIdentity(service_manager::Identity(service_name));
   process_host->SetSandboxType(UtilitySandboxTypeFromString(sandbox_string));
   process_host->Start();
 

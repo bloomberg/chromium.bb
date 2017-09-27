@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "content/public/common/content_switches.h"
+
+#include "build/build_config.h"
 #include "media/media_features.h"
 
 namespace switches {
@@ -624,6 +625,9 @@ const char kIsolateOrigins[] = "isolate-origins";
 // Chrome is running in Mash.
 const char kIsRunningInMash[] = "is-running-in-mash";
 
+// If true indicates the process was created to host a service.
+const char kIsService[] = "is-service";
+
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";
@@ -657,6 +661,9 @@ const char kMainFrameResizesAreOrientationChanges[] =
 // Sets the width and height above which a composited layer will get tiled.
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
+
+// Indicates the utility process should run with a message loop type of UI.
+const char kMessageLoopTypeUi[] = "message-loop-type-ui";
 
 // Sets options for MHTML generator to skip no-store resources:
 //   "skip-nostore-main" - fails to save a page if main frame is 'no-store'
