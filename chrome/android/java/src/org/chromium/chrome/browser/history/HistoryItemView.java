@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -147,7 +148,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     }
 
     @Override
-    protected void onClick() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public void onClick() {
         if (getItem() != null) getItem().open();
     }
 
