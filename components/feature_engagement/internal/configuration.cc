@@ -7,8 +7,25 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/optional.h"
 
 namespace feature_engagement {
+namespace {
+std::ostream& operator<<(std::ostream& os, const SessionRateImpact::Type type) {
+  switch (type) {
+    case SessionRateImpact::Type::ALL:
+      return os << "ALL";
+    case SessionRateImpact::Type::NONE:
+      return os << "NONE";
+    case SessionRateImpact::Type::EXPLICIT:
+      return os << "EXPLICIT";
+    default:
+      // All cases should be covered.
+      NOTREACHED();
+      return os;
+  }
+}
+}  // namespace
 
 Comparator::Comparator() : type(ANY), value(0) {}
 
@@ -78,6 +95,36 @@ std::ostream& operator<<(std::ostream& os, const EventConfig& event_config) {
             << ", comparator: " << event_config.comparator
             << ", window: " << event_config.window
             << ", storage: " << event_config.storage << " }";
+}
+
+SessionRateImpact::SessionRateImpact()
+    : type(SessionRateImpact::Type::ALL), affected_features() {}
+
+SessionRateImpact::SessionRateImpact(const SessionRateImpact& other) = default;
+
+SessionRateImpact::~SessionRateImpact() = default;
+
+std::ostream& operator<<(std::ostream& os, const SessionRateImpact& impact) {
+  os << "{ type: " << impact.type << ", affected_features: ";
+  if (!impact.affected_features.has_value())
+    return os << "NO VALUE }";
+
+  os << "[";
+  bool first = true;
+  for (const auto& affected_feature : impact.affected_features.value()) {
+    if (first) {
+      first = false;
+      os << affected_feature;
+    } else {
+      os << ", " << affected_feature;
+    }
+  }
+  return os << "] }";
+}
+
+bool operator==(const SessionRateImpact& lhs, const SessionRateImpact& rhs) {
+  return std::tie(lhs.type, lhs.affected_features) ==
+         std::tie(rhs.type, rhs.affected_features);
 }
 
 FeatureConfig::FeatureConfig() : valid(false) {}

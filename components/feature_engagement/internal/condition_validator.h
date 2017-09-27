@@ -9,6 +9,7 @@
 
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -79,7 +80,10 @@ class ConditionValidator {
                                  uint32_t current_day) const = 0;
 
   // Must be called to notify that the |feature| is currently showing.
-  virtual void NotifyIsShowing(const base::Feature& feature) = 0;
+  virtual void NotifyIsShowing(
+      const base::Feature& feature,
+      const FeatureConfig& config,
+      const std::vector<std::string>& all_feature_names) = 0;
 
   // Must be called to notify that the |feature| is no longer showing.
   virtual void NotifyDismissed(const base::Feature& feature) = 0;

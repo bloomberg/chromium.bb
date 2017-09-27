@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -31,10 +32,14 @@ const char kComparatorTypeGreaterThanOrEqual[] = ">=";
 const char kComparatorTypeEqual[] = "==";
 const char kComparatorTypeNotEqual[] = "!=";
 
+const char kSessionRateImpactTypeAll[] = "all";
+const char kSessionRateImpactTypeNone[] = "none";
+
 const char kEventConfigUsedKey[] = "event_used";
 const char kEventConfigTriggerKey[] = "event_trigger";
 const char kEventConfigKeyPrefix[] = "event_";
 const char kSessionRateKey[] = "session_rate";
+const char kSessionRateImpactKey[] = "session_rate_impact";
 const char kAvailabilityKey[] = "availability";
 const char kIgnoredKeyPrefix[] = "x_";
 
@@ -49,7 +54,7 @@ namespace feature_engagement {
 
 namespace {
 
-bool ParseComparatorSubstring(base::StringPiece definition,
+bool ParseComparatorSubstring(const base::StringPiece& definition,
                               Comparator* comparator,
                               ComparatorType type,
                               uint32_t type_len) {
@@ -64,7 +69,8 @@ bool ParseComparatorSubstring(base::StringPiece definition,
   return true;
 }
 
-bool ParseComparator(base::StringPiece definition, Comparator* comparator) {
+bool ParseComparator(const base::StringPiece& definition,
+                     Comparator* comparator) {
   if (base::LowerCaseEqualsASCII(definition, kComparatorTypeAny)) {
     comparator->type = ANY;
     comparator->value = 0;
@@ -106,7 +112,8 @@ bool ParseComparator(base::StringPiece definition, Comparator* comparator) {
   return false;
 }
 
-bool ParseEventConfig(base::StringPiece definition, EventConfig* event_config) {
+bool ParseEventConfig(const base::StringPiece& definition,
+                      EventConfig* event_config) {
   // Support definitions with at least 4 tokens.
   auto tokens = base::SplitStringPiece(definition, ";", base::TRIM_WHITESPACE,
                                        base::SPLIT_WANT_ALL);
@@ -188,6 +195,72 @@ bool ParseEventConfig(base::StringPiece definition, EventConfig* event_config) {
   return has_name && has_comparator && has_window && has_storage;
 }
 
+bool IsKnownFeature(const base::StringPiece& feature_name,
+                    const FeatureVector& features) {
+  for (const auto* feature : features) {
+    if (feature->name == feature_name.as_string())
+      return true;
+  }
+  return false;
+}
+
+bool ParseSessionRateImpact(const base::StringPiece& definition,
+                            SessionRateImpact* session_rate_impact,
+                            const base::Feature* this_feature,
+                            const FeatureVector& all_features) {
+  base::StringPiece trimmed_def =
+      base::TrimWhitespaceASCII(definition, base::TRIM_ALL);
+
+  if (trimmed_def.length() == 0)
+    return false;
+
+  if (base::LowerCaseEqualsASCII(trimmed_def, kSessionRateImpactTypeAll)) {
+    session_rate_impact->type = SessionRateImpact::Type::ALL;
+    return true;
+  }
+
+  if (base::LowerCaseEqualsASCII(trimmed_def, kSessionRateImpactTypeNone)) {
+    session_rate_impact->type = SessionRateImpact::Type::NONE;
+    return true;
+  }
+
+  auto parsed_feature_names = base::SplitStringPiece(
+      trimmed_def, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (parsed_feature_names.empty())
+    return false;
+
+  std::vector<std::string> affected_features;
+  for (const auto& feature_name : parsed_feature_names) {
+    if (feature_name.length() == 0) {
+      DVLOG(1) << "Empty feature name when parsing session_rate_impact "
+               << "for feature " << this_feature->name;
+      continue;
+    }
+    if (base::LowerCaseEqualsASCII(feature_name, kSessionRateImpactTypeAll) ||
+        base::LowerCaseEqualsASCII(feature_name, kSessionRateImpactTypeNone)) {
+      DVLOG(1) << "Illegal feature name when parsing session_rate_impact "
+               << "for feature " << this_feature->name << ": " << feature_name;
+      return false;
+    }
+    if (!IsKnownFeature(feature_name, all_features)) {
+      DVLOG(1) << "Unknown feature name found when parsing session_rate_impact "
+               << "for feature " << this_feature->name << ": " << feature_name;
+      stats::RecordConfigParsingEvent(
+          stats::ConfigParsingEvent::
+              FAILURE_SESSION_RATE_IMPACT_UNKNOWN_FEATURE);
+      continue;
+    }
+    affected_features.push_back(feature_name.as_string());
+  }
+
+  if (affected_features.empty())
+    return false;
+
+  session_rate_impact->type = SessionRateImpact::Type::EXPLICIT;
+  session_rate_impact->affected_features = std::move(affected_features);
+  return true;
+}
+
 }  // namespace
 
 ChromeVariationsConfiguration::ChromeVariationsConfiguration() = default;
@@ -195,14 +268,15 @@ ChromeVariationsConfiguration::ChromeVariationsConfiguration() = default;
 ChromeVariationsConfiguration::~ChromeVariationsConfiguration() = default;
 
 void ChromeVariationsConfiguration::ParseFeatureConfigs(
-    FeatureVector features) {
+    const FeatureVector& features) {
   for (auto* feature : features) {
-    ParseFeatureConfig(feature);
+    ParseFeatureConfig(feature, features);
   }
 }
 
 void ChromeVariationsConfiguration::ParseFeatureConfig(
-    const base::Feature* feature) {
+    const base::Feature* feature,
+    const FeatureVector& all_features) {
   DCHECK(feature);
   DCHECK(configs_.find(feature->name) == configs_.end());
 
@@ -253,6 +327,16 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
         continue;
       }
       config.session_rate = comparator;
+    } else if (key == kSessionRateImpactKey) {
+      SessionRateImpact impact;
+      if (!ParseSessionRateImpact(params[key], &impact, feature,
+                                  all_features)) {
+        stats::RecordConfigParsingEvent(
+            stats::ConfigParsingEvent::FAILURE_SESSION_RATE_IMPACT_PARSE);
+        ++parse_errors;
+        continue;
+      }
+      config.session_rate_impact = impact;
     } else if (key == kAvailabilityKey) {
       Comparator comparator;
       if (!ParseComparator(params[key], &comparator)) {
@@ -327,8 +411,16 @@ const FeatureConfig& ChromeVariationsConfiguration::GetFeatureConfigByName(
 }
 
 const Configuration::ConfigMap&
-ChromeVariationsConfiguration::GetRegisteredFeatures() const {
+ChromeVariationsConfiguration::GetRegisteredFeatureConfigs() const {
   return configs_;
+}
+
+const std::vector<std::string>
+ChromeVariationsConfiguration::GetRegisteredFeatures() const {
+  std::vector<std::string> features;
+  for (const auto& element : configs_)
+    features.push_back(element.first);
+  return features;
 }
 
 }  // namespace feature_engagement

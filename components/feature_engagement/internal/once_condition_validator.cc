@@ -34,7 +34,10 @@ ConditionValidator::Result OnceConditionValidator::MeetsConditions(
   return result;
 }
 
-void OnceConditionValidator::NotifyIsShowing(const base::Feature& feature) {
+void OnceConditionValidator::NotifyIsShowing(
+    const base::Feature& feature,
+    const FeatureConfig& config,
+    const std::vector<std::string>& all_feature_names) {
   DCHECK(currently_showing_feature_.empty());
   DCHECK(shown_features_.find(feature.name) == shown_features_.end());
   shown_features_.insert(feature.name);

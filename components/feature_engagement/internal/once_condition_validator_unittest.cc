@@ -72,7 +72,7 @@ TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
                   .MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
                                    event_model_, availability_model_, 0u)
                   .NoErrors());
-  validator_.NotifyIsShowing(kTestFeatureFoo);
+  validator_.NotifyIsShowing(kTestFeatureFoo, FeatureConfig(), {""});
   ConditionValidator::Result result =
       validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
                                  event_model_, availability_model_, 0u);
@@ -125,7 +125,7 @@ TEST_F(OnceConditionValidatorTest, OnlyTriggerWhenModelIsReady) {
 }
 
 TEST_F(OnceConditionValidatorTest, OnlyTriggerIfNothingElseIsShowing) {
-  validator_.NotifyIsShowing(kTestFeatureBar);
+  validator_.NotifyIsShowing(kTestFeatureBar, FeatureConfig(), {""});
   ConditionValidator::Result result =
       validator_.MeetsConditions(kTestFeatureFoo, kValidFeatureConfig,
                                  event_model_, availability_model_, 0u);

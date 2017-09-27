@@ -174,7 +174,9 @@ bool TrackerImpl::ShouldTriggerHelpUI(const base::Feature& feature) {
       feature, configuration_->GetFeatureConfig(feature), *event_model_,
       *availability_model_, time_provider_->GetCurrentDay());
   if (result.NoErrors()) {
-    condition_validator_->NotifyIsShowing(feature);
+    condition_validator_->NotifyIsShowing(
+        feature, configuration_->GetFeatureConfig(feature),
+        configuration_->GetRegisteredFeatures());
     FeatureConfig feature_config = configuration_->GetFeatureConfig(feature);
     DCHECK_NE("", feature_config.trigger.name);
     event_model_->IncrementEvent(feature_config.trigger.name,

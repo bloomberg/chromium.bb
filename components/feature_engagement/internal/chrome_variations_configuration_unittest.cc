@@ -35,6 +35,14 @@ const char kQuxTrialName[] = "QuxTrial";
 const char kGroupName[] = "Group1";
 const char kConfigParseEventName[] = "InProductHelp.Config.ParsingEvent";
 
+SessionRateImpact CreateSessionRateImpactExplicit(
+    std::vector<std::string> affected_features) {
+  SessionRateImpact impact;
+  impact.type = SessionRateImpact::Type::EXPLICIT;
+  impact.affected_features = affected_features;
+  return impact;
+}
+
 class ChromeVariationsConfigurationTest : public ::testing::Test {
  public:
   ChromeVariationsConfigurationTest() : field_trials_(nullptr) {
@@ -70,7 +78,6 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
   }
 
- protected:
   void SetFeatureParams(const base::Feature& feature,
                         std::map<std::string, std::string> params) {
     ASSERT_TRUE(
@@ -83,6 +90,7 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
     EXPECT_EQ(params, actualParams);
   }
 
+ protected:
   void VerifyInvalid(const std::string& event_config) {
     std::map<std::string, std::string> foo_params;
     foo_params["event_used"] = "name:u;comparator:any;window:0;storage:1";
@@ -235,6 +243,268 @@ TEST_F(ChromeVariationsConfigurationTest, OnlyTriggerAndUsedIsValid) {
   histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
 }
 
+void RunSessionRateImpactTest(ChromeVariationsConfigurationTest* test,
+                              ChromeVariationsConfiguration* configuration,
+                              std::vector<const base::Feature*> features,
+                              std::string session_rate_impact_param_value,
+                              SessionRateImpact expected_impact,
+                              bool is_valid) {
+  std::map<std::string, std::string> foo_params;
+  foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
+  foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
+  foo_params["session_rate_impact"] = session_rate_impact_param_value;
+  test->SetFeatureParams(kTestFeatureFoo, foo_params);
+
+  configuration->ParseFeatureConfigs(features);
+  FeatureConfig foo = configuration->GetFeatureConfig(kTestFeatureFoo);
+  EXPECT_EQ(is_valid, foo.valid);
+
+  FeatureConfig expected_foo;
+  expected_foo.valid = is_valid;
+  expected_foo.used = EventConfig("eu", Comparator(ANY, 0), 0, 360);
+  expected_foo.trigger = EventConfig("et", Comparator(ANY, 0), 0, 360);
+  expected_foo.session_rate_impact =
+      is_valid ? expected_impact : SessionRateImpact();
+  EXPECT_EQ(expected_foo, foo);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactAll) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(this, &configuration_, {&kTestFeatureFoo}, "all",
+                           SessionRateImpact(), true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactNone) {
+  base::HistogramTester histogram_tester;
+  SessionRateImpact impact;
+  impact.type = SessionRateImpact::Type::NONE;
+  RunSessionRateImpactTest(this, &configuration_, {&kTestFeatureFoo}, "none",
+                           impact, true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitSelf) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      this, &configuration_, {&kTestFeatureFoo}, "test_foo",
+      CreateSessionRateImpactExplicit({kTestFeatureFoo.name}),
+      true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitOther) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      this, &configuration_, {&kTestFeatureFoo, &kTestFeatureBar}, "test_bar",
+      CreateSessionRateImpactExplicit({kTestFeatureBar.name}),
+      true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  // bar has no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitMultiple) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      this, &configuration_,
+      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      "test_bar,test_qux",
+      CreateSessionRateImpactExplicit(
+          {kTestFeatureBar.name, kTestFeatureQux.name}),
+      true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  // bar and qux have no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 2);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 3);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitAtLeastOneValidFeature) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      this, &configuration_,
+      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      "test_foo,no_feature",
+      CreateSessionRateImpactExplicit(
+          {kTestFeatureBar.name, kTestFeatureQux.name}),
+      true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::
+                           FAILURE_SESSION_RATE_IMPACT_UNKNOWN_FEATURE),
+      1);
+  // bar and qux have no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 2);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 4);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitAtLeastOneValidFeaturePlusEmpty) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      this, &configuration_,
+      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux}, "test_foo, ",
+      CreateSessionRateImpactExplicit(
+          {kTestFeatureBar.name, kTestFeatureQux.name}),
+      true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  // bar and qux have no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 2);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 3);
+}
+
+void TestInvalidSessionRateImpactParamValue(
+    ChromeVariationsConfigurationTest* test,
+    ChromeVariationsConfiguration* configuration,
+    std::string session_rate_impact_param_value,
+    uint32_t parse_errors,
+    uint32_t unknown_features) {
+  base::HistogramTester histogram_tester;
+  RunSessionRateImpactTest(
+      test, configuration,
+      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      session_rate_impact_param_value, SessionRateImpact(),
+      false /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  if (parse_errors > 0) {
+    histogram_tester.ExpectBucketCount(
+        kConfigParseEventName,
+        static_cast<int>(
+            stats::ConfigParsingEvent::FAILURE_SESSION_RATE_IMPACT_PARSE),
+        parse_errors);
+  }
+  if (unknown_features > 0) {
+    histogram_tester.ExpectBucketCount(
+        kConfigParseEventName,
+        static_cast<int>(stats::ConfigParsingEvent::
+                             FAILURE_SESSION_RATE_IMPACT_UNKNOWN_FEATURE),
+        unknown_features);
+  }
+  // bar and qux has no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 2);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName,
+                                    3 + parse_errors + unknown_features);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitEmpty) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "", 1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitEmptyWhitespace) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "   ", 1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitOnlySeparator) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, ",", 1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitOnlySeparatorWhitespace) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, " ,  ", 1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitOnlyUnknownFeature) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "not_feature",
+                                         1, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitOnlyMultipleUnknownFeatures) {
+  TestInvalidSessionRateImpactParamValue(
+      this, &configuration_, "not_feature,another_not_feature", 1, 2);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitOnlyUnknownFeaturePlusEmpty) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "not_feature, ",
+                                         1, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameAllFirst) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "all,test_foo",
+                                         1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameAllLast) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "test_foo,all",
+                                         1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameAllLastInvalidFirst) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_,
+                                         "not_feature,all", 1, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameNoneFirst) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "none,test_foo",
+                                         1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameNoneLast) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_, "test_foo,none",
+                                         1, 0);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameNoneLastInvalidFirst) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_,
+                                         "not_feature,none", 1, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       SessionRateImpactExplicitInvalidFeatureNameFromCodeReview) {
+  TestInvalidSessionRateImpactParamValue(this, &configuration_,
+                                         "test_foo,all,none,mwahahaha", 1, 0);
+}
+
 TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] =
@@ -249,9 +519,12 @@ TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
   foo_params["event_5"] = "name:e5;comparator: <=\r6 ;window:8;storage:390";
   foo_params["event_6"] = "name:e6;comparator:\n<=7;window:9;storage:400";
   foo_params["event_7"] = "name:e7;comparator:<=8\n;window:10;storage:410";
+  foo_params["session_rate_impact"] = " test_bar, test_qux ";
   SetFeatureParams(kTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  base::HistogramTester histogram_tester;
+  std::vector<const base::Feature*> features = {
+      &kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux};
   configuration_.ParseFeatureConfigs(features);
 
   FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
@@ -277,7 +550,17 @@ TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
       EventConfig("e6", Comparator(LESS_THAN_OR_EQUAL, 7), 9, 400));
   expected_foo.event_configs.insert(
       EventConfig("e7", Comparator(LESS_THAN_OR_EQUAL, 8), 10, 410));
+  expected_foo.session_rate_impact = CreateSessionRateImpactExplicit(
+      {kTestFeatureBar.name, kTestFeatureQux.name});
   EXPECT_EQ(expected_foo, foo);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  // bar and qux have no configuration.
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL), 2);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 3);
 }
 
 TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidConfigKeys) {

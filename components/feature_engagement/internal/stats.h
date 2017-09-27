@@ -20,6 +20,7 @@ namespace stats {
 // Most of the fields maps to |ConditionValidator::Result|.
 // The failure reasons are not mutually exclusive.
 // Out-dated entries shouldn't be deleted but marked as obselete.
+// Keep this synced with the enum in //tools/metrics/histograms/enums.xml.
 enum class TriggerHelpUIResult {
   // The help UI is triggered.
   SUCCESS = 0,
@@ -64,6 +65,7 @@ enum class TriggerHelpUIResult {
 // Used in the metrics to track the configuration parsing event.
 // The failure reasons are not mutually exclusive.
 // Out-dated entries shouldn't be deleted but marked as obsolete.
+// Keep this synced with the enum in //tools/metrics/histograms/enums.xml.
 enum class ConfigParsingEvent {
   // The configuration is parsed correctly.
   SUCCESS = 0,
@@ -98,8 +100,14 @@ enum class ConfigParsingEvent {
   // UnKnown key in configuration parameters.
   FAILURE_UNKNOWN_KEY = 10,
 
+  // Fails to parse the session rate impact.
+  FAILURE_SESSION_RATE_IMPACT_PARSE = 11,
+
+  // Fails to parse the session rate impact.
+  FAILURE_SESSION_RATE_IMPACT_UNKNOWN_FEATURE = 12,
+
   // Last entry for the enum.
-  COUNT = 11,
+  COUNT = 13,
 };
 
 // Used in metrics to track database states. Each type will match to a suffix

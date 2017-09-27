@@ -26,8 +26,13 @@ const FeatureConfig& SingleInvalidConfiguration::GetFeatureConfigByName(
 }
 
 const Configuration::ConfigMap&
-SingleInvalidConfiguration::GetRegisteredFeatures() const {
+SingleInvalidConfiguration::GetRegisteredFeatureConfigs() const {
   return configs_;
+}
+
+const std::vector<std::string>
+SingleInvalidConfiguration::GetRegisteredFeatures() const {
+  return {};
 }
 
 }  // namespace feature_engagement

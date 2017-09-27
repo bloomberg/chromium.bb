@@ -28,14 +28,16 @@ class ChromeVariationsConfiguration : public Configuration {
       const base::Feature& feature) const override;
   const FeatureConfig& GetFeatureConfigByName(
       const std::string& feature_name) const override;
-  const Configuration::ConfigMap& GetRegisteredFeatures() const override;
+  const Configuration::ConfigMap& GetRegisteredFeatureConfigs() const override;
+  const std::vector<std::string> GetRegisteredFeatures() const override;
 
   // Parses the variations configuration for all of the given |features| and
   // stores the result. It is only valid to call ParseFeatureConfig once.
-  void ParseFeatureConfigs(FeatureVector features);
+  void ParseFeatureConfigs(const FeatureVector& features);
 
  private:
-  void ParseFeatureConfig(const base::Feature* feature);
+  void ParseFeatureConfig(const base::Feature* feature,
+                          const FeatureVector& all_features);
 
   // The current configurations.
   ConfigMap configs_;
