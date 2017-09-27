@@ -1012,7 +1012,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
   const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
-  CONV_BUF_TYPE *tmp_buf32 = (CONV_BUF_TYPE *)tmp_dst;
+  CONV_BUF_TYPE *tmp_buf32 = (CONV_BUF_TYPE *)tmp_buf;
   if (is_conv_no_round) {
     conv_params->dst = tmp_buf32;
     conv_params->dst_stride = tmp_buf_stride;
