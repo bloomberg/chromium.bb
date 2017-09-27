@@ -30,7 +30,7 @@ public class TextSuggestionHost {
 
     @CalledByNative
     private void showSpellCheckSuggestionMenu(
-            double caretXDp, double caretY, String markedText, String[] suggestions) {
+            double caretXPx, double caretYPx, String markedText, String[] suggestions) {
         if (!mContentViewCore.isAttachedToWindow()) {
             // This can happen if a new browser window is opened immediately after tapping a spell
             // check underline, before the timer to open the menu fires.
@@ -42,15 +42,14 @@ public class TextSuggestionHost {
         mSpellCheckPopupWindow = new SpellCheckPopupWindow(mContentViewCore.getContext(), this,
                 mContentViewCore.getContainerView(), mContentViewCore);
 
-        float density = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
-        mSpellCheckPopupWindow.show(density * caretXDp,
-                density * caretY + mContentViewCore.getRenderCoordinates().getContentOffsetYPix(),
+        mSpellCheckPopupWindow.show(caretXPx,
+                caretYPx + mContentViewCore.getRenderCoordinates().getContentOffsetYPix(),
                 markedText, suggestions);
     }
 
     @CalledByNative
     private void showTextSuggestionMenu(
-            double caretXDp, double caretYDp, String markedText, SuggestionInfo[] suggestions) {
+            double caretXPx, double caretYPx, String markedText, SuggestionInfo[] suggestions) {
         if (!mContentViewCore.isAttachedToWindow()) {
             // This can happen if a new browser window is opened immediately after tapping a spell
             // check underline, before the timer to open the menu fires.
@@ -62,9 +61,8 @@ public class TextSuggestionHost {
         mTextSuggestionsPopupWindow = new TextSuggestionsPopupWindow(mContentViewCore.getContext(),
                 this, mContentViewCore.getContainerView(), mContentViewCore);
 
-        float density = mContentViewCore.getRenderCoordinates().getDeviceScaleFactor();
-        mTextSuggestionsPopupWindow.show(density * caretXDp,
-                density * caretYDp + mContentViewCore.getRenderCoordinates().getContentOffsetYPix(),
+        mTextSuggestionsPopupWindow.show(caretXPx,
+                caretYPx + mContentViewCore.getRenderCoordinates().getContentOffsetYPix(),
                 markedText, suggestions);
     }
 
