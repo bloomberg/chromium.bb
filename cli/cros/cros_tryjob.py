@@ -113,7 +113,10 @@ def RunRemote(options, patch_pool):
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
 
-  if not options.production:
+  if options.production:
+    display_group = 'Production Tryjob'
+  else:
+    display_group = 'Tryjob'
     args.append('--remote-trybot')
 
   # Figure out the tryjob description.
@@ -124,12 +127,19 @@ def RunRemote(options, patch_pool):
         options.gerrit_patches+options.local_patches)
 
   print('Submitting tryjob...')
-  tryjob = remote_try.RemoteTryJob(options.build_configs,
-                                   patch_pool.local_patches,
-                                   args,
-                                   description,
-                                   options.committer_email,
-                                   options.swarming)
+  tryjob = remote_try.RemoteTryJob(
+      build_configs=options.build_configs,
+      display_group=display_group,
+      remote_description=description,
+      branch=options.branch,
+      pass_through_args=args,
+      production_cidb=options.production,
+      local_patches=patch_pool.local_patches,
+      committer_email=options.committer_email,
+      swarming=options.swarming,
+      master_buildbucket_id='',  # TODO: Add new option to populate.
+  )
+
   tryjob.Submit(dryrun=False)
   print('Tryjob submitted!')
   print('To view your tryjobs, visit:')
@@ -166,7 +176,7 @@ Production Examples (danger, can break production if misused):
         'build_configs', nargs='*',
         help='One or more configs to build.')
     parser.add_argument(
-        '-b', '--branch',
+        '-b', '--branch', default='master',
         help='The manifest branch to test.  The branch to '
              'check the buildroot out to.')
     parser.add_argument(

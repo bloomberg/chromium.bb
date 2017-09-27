@@ -43,10 +43,11 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
     description = remote_try.DefaultDescription(self.branch, self.patches)
 
     return remote_try.RemoteTryJob(
-        self.BOTS, [],
-        self.pass_through_args,
-        description,
-        self.committer_email)
+        build_configs=self.BOTS,
+        display_group='Unittest Display Group',
+        pass_through_args=self.pass_through_args,
+        remote_description=description,
+        committer_email=self.committer_email)
 
   def testSimpleTryJob(self):
     """Test that a tryjob spec file is created and pushed properly."""
@@ -72,5 +73,7 @@ class RemoteTryJobTests(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(auth, 'Token')
     self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
     remote_try_job = remote_try.RemoteTryJob(
-        'build_config', [], [], self.tempdir, 'description')
+        build_configs='build_config',
+        display_group='Unittest Display Group',
+        remote_description='description')
     remote_try_job._PostConfigsToBuildBucket(testjob=True, dryrun=True)

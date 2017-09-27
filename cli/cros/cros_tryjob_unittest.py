@@ -39,7 +39,7 @@ class TryjobTestParsing(TryjobTest):
     self.expected = {
         'remote': True,
         'swarming': False,
-        'branch': None,
+        'branch': 'master',
         'production': False,
         'yes': False,
         'list': False,
@@ -77,7 +77,7 @@ class TryjobTestParsing(TryjobTest):
     self.expected.update({
         'remote': False,
         'swarming': False,
-        'branch': None,
+        'branch': 'master',
         'yes': True,
         'list': True,
         'list_all': True,
@@ -114,7 +114,7 @@ class TryjobTestParsing(TryjobTest):
     self.expected.update({
         'remote': True,
         'swarming': True,
-        'branch': None,
+        'branch': 'master',
         'yes': True,
         'list': True,
         'list_all': True,
@@ -270,14 +270,16 @@ class TryjobTestCbuildbotArgs(TryjobTest):
   def testCbuildbotArgsMinimal(self):
     result = self.helperOptionsToCbuildbotArgs([
         'foo-build'])
-    self.assertEqual(result, [])
+    self.assertEqual(result, [
+        '-b', 'master',
+    ])
 
   def testCbuildbotArgsSimple(self):
     result = self.helperOptionsToCbuildbotArgs([
-        '-g', '123', 'foo-build',
+        '-b', 'master', '-g', '123', 'foo-build',
     ])
     self.assertEqual(result, [
-        '-g', '123',
+        '-b', 'master', '-g', '123',
     ])
 
   def testCbuildbotArgsComplex(self):
@@ -296,7 +298,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         'lumpy-paladin', 'lumpy-release',
     ])
     self.assertEqual(result, [
-        '--debug', '--no-buildbot-tags',
+        '--debug', '--no-buildbot-tags', '-b', 'master',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
@@ -312,5 +314,5 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--production', 'foo-build',
     ])
     self.assertEqual(result, [
-        '--buildbot',
+        '--buildbot', '-b', 'master',
     ])

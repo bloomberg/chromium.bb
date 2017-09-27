@@ -87,36 +87,52 @@ class RemoteTryJob(object):
                                  '[buildbucket_bucket:%s] '
                                  'with [config:%s] [buildbucket_id:%s].')
 
-  def __init__(self, build_configs, local_patches,
-               pass_through_args,
+  def __init__(self,
+               build_configs,
+               display_group,
                remote_description,
+               branch='master',
+               pass_through_args=(),
+               production_cidb=False,
+               local_patches=(),
                committer_email=None,
-               swarming=False):
+               swarming=False,
+               master_buildbucket_id=''):
     """Construct the object.
 
     Args:
       build_configs: A list of configs to run tryjobs for.
-      local_patches: A list of LocalPatch objects.
-      pass_through_args: Command line arguments to pass to cbuildbot in job.
+      display_group: String describing how build group on waterfall.
       remote_description: Requested tryjob description.
+      branch: Name of branch to build for.
+      pass_through_args: Command line arguments to pass to cbuildbot in job.
+      production_cidb: Boolean. Use production CIDB or debug.
+      local_patches: A list of LocalPatch objects.
       committer_email: Email address of person requesting job, or None.
       swarming: Boolean, do we use a swarming build?
+      master_buildbucket_id: String with buildbucket id of scheduling builder.
     """
     self.user = getpass.getuser()
-    cwd = os.path.dirname(os.path.realpath(__file__))
     if committer_email is not None:
       self.user_email = committer_email
     else:
+      cwd = os.path.dirname(os.path.realpath(__file__))
       self.user_email = git.GetProjectUserEmail(cwd)
     logging.info('Using email:%s', self.user_email)
+
     # Name of the job that appears on the waterfall.
-    self.name = remote_description
     self.build_configs = build_configs[:]
-    self.description = ('name: %s' % self.name)
+    self.display_group = display_group
     self.extra_args = pass_through_args
+    self.name = remote_description
+    self.branch = branch
+    self.production_cidb = production_cidb
     self.local_patches = local_patches
-    self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     self.swarming = swarming
+    self.master_buildbucket_id = master_buildbucket_id
+
+    # Needed for handling local patches.
+    self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
 
     # List of buildbucket_ids for submitted jobs.
     self.buildbucket_ids = []
@@ -180,52 +196,16 @@ class RemoteTryJob(object):
 
   def _GetBuilder(self, bot):
     """Find and return the builder for bot."""
+    if self.swarming:
+      return 'Generic'
+
     if bot in site_config and site_config[bot]['_template']:
       return site_config[bot]['_template']
 
     # Default to etc builder.
     return 'etc'
 
-  def _GetRequestProperties(self, bot):
-    """Construct and return properties for buildbucket request.
-
-    Args:
-      bot: The bot config to put.
-    """
-    return {
-        'bot' : self.build_configs,
-        'email' : [self.user_email],
-        'extra_args' : self.extra_args,
-        'name' : self.name,
-        'user' : self.user,
-        'cbb_config': bot,
-        'cbb_extra_args': self.extra_args,
-        'owners': [self.user_email]
-    }
-
-  def _GetBuildbotRequestBody(self, bot):
-    """Generate the request body for a buildbot buildbucket request.
-
-    Args:
-      bot: The bot config to put.
-
-    Returns:
-      buildbucket request properties as a python dict.
-    """
-    properties = self._GetRequestProperties(bot)
-
-    return {
-        'bucket': constants.TRYSERVER_BUILDBUCKET_BUCKET,
-        'parameters_json': json.dumps({
-            'builder_name': self._GetBuilder(bot),
-            'properties': properties,
-        }),
-        'tags':[
-            'build_type:%s' % constants.TRYJOB_TYPE,
-        ]
-    }
-
-  def _GetSwarmingRequestBody(self, bot):
+  def _GetRequestBody(self, bot):
     """Generate the request body for a swarming buildbucket request.
 
     Args:
@@ -234,17 +214,35 @@ class RemoteTryJob(object):
     Returns:
       buildbucket request properties as a python dict.
     """
-    properties = self._GetRequestProperties(bot)
+    if self.swarming:
+      bucket = constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET
+    else:
+      bucket = constants.TRYSERVER_BUILDBUCKET_BUCKET
 
     return {
-        'bucket': constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
+        'bucket': bucket,
         'parameters_json': json.dumps({
             'builder_name': 'Generic',
-            'properties': properties,
+            'properties': {
+                'bot' : self.build_configs,
+                'email' : [self.user_email],
+                'extra_args' : self.extra_args,
+                'name' : self.name,
+                'user' : self.user,
+                'cbb_config': bot,
+                'cbb_extra_args': self.extra_args,
+                'owners': [self.user_email],
+                'production_cidb': self.production_cidb,
+            },
         }),
-        'tags':[
-            'build_type:%s' % constants.TRYJOB_TYPE,
-        ]
+        # These tags are indexed and searchable in buildbucket.
+        'tags': [
+            'cbb_display_group:%s' % self.display_group,
+            'cbb_branch:%s' % self.branch,
+            'cbb_config:%s' % bot,
+            'cbb_master_build_id:%s' % self.master_buildbucket_id,
+            'cbb_email:%s' % self.user_email,
+        ],
     }
 
   def _PutConfigToBuildBucket(self, buildbucket_client, bot, dryrun):
@@ -255,11 +253,7 @@ class RemoteTryJob(object):
       bot: The bot config to put.
       dryrun: Whether a dryrun.
     """
-    if self.swarming:
-      request_body = self._GetSwarmingRequestBody(bot)
-    else:
-      request_body = self._GetBuildbotRequestBody(bot)
-
+    request_body = self._GetRequestBody(bot)
     content = buildbucket_client.PutBuildRequest(
         json.dumps(request_body), dryrun)
 
