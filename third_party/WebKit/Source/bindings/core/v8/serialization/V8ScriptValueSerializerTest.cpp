@@ -27,7 +27,6 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
-#include "bindings/core/v8/serialization/V8ScriptValueSerializerTest.h"
 #include "build/build_config.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
@@ -125,9 +124,10 @@ RefPtr<SerializedScriptValue> SerializedValue(const Vector<uint8_t>& bytes) {
 }
 
 // Checks for a DOM exception, including a rethrown one.
-::testing::AssertionResult HadDOMException(const StringView& name,
-                                           ScriptState* script_state,
-                                           ExceptionState& exception_state) {
+::testing::AssertionResult HadDOMExceptionInCoreTest(
+    const StringView& name,
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!exception_state.HadException())
     return ::testing::AssertionFailure() << "no exception thrown";
   DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
@@ -169,7 +169,8 @@ TEST(V8ScriptValueSerializerTest, ThrowsDataCloneError) {
   DCHECK(symbol->IsSymbol());
   ASSERT_FALSE(
       V8ScriptValueSerializer(script_state).Serialize(symbol, exception_state));
-  ASSERT_TRUE(HadDOMException("DataCloneError", script_state, exception_state));
+  ASSERT_TRUE(HadDOMExceptionInCoreTest("DataCloneError", script_state,
+                                        exception_state));
   DOMException* dom_exception =
       V8DOMException::ToImpl(exception_state.GetException().As<v8::Object>());
   EXPECT_TRUE(dom_exception->message().Contains("postMessage"));
@@ -222,8 +223,8 @@ TEST(V8ScriptValueSerializerTest, NeuteringHappensAfterSerialization) {
 
   RoundTrip(object, scope, &exception_state, &transferables);
   ASSERT_TRUE(exception_state.HadException());
-  EXPECT_FALSE(HadDOMException("DataCloneError", scope.GetScriptState(),
-                               exception_state));
+  EXPECT_FALSE(HadDOMExceptionInCoreTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
   EXPECT_FALSE(array_buffer->IsNeutered());
 }
 
@@ -933,8 +934,8 @@ TEST(V8ScriptValueSerializerTest, NeuteredMessagePortThrowsDataCloneError) {
   transferables.message_ports.push_back(port);
 
   RoundTrip(wrapper, scope, &exception_state, &transferables);
-  ASSERT_TRUE(HadDOMException("DataCloneError", scope.GetScriptState(),
-                              exception_state));
+  ASSERT_TRUE(HadDOMExceptionInCoreTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
 }
 
 TEST(V8ScriptValueSerializerTest,
@@ -951,8 +952,8 @@ TEST(V8ScriptValueSerializerTest,
   Transferables transferables;
 
   RoundTrip(wrapper, scope, &exception_state, &transferables);
-  ASSERT_TRUE(HadDOMException("DataCloneError", scope.GetScriptState(),
-                              exception_state));
+  ASSERT_TRUE(HadDOMExceptionInCoreTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
 }
 
 TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {

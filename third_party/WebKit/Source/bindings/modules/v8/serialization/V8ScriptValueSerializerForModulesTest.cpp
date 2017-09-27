@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8DOMException.h"
-#include "bindings/core/v8/serialization/V8ScriptValueSerializerTest.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 #include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
@@ -47,6 +46,24 @@ v8::Local<v8::Value> RoundTripForModules(v8::Local<v8::Value> value,
   return V8ScriptValueDeserializerForModules(script_state,
                                              serialized_script_value)
       .Deserialize();
+}
+
+// Checks for a DOM exception, including a rethrown one.
+::testing::AssertionResult HadDOMExceptionInModulesTest(
+    const StringView& name,
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  if (!exception_state.HadException())
+    return ::testing::AssertionFailure() << "no exception thrown";
+  DOMException* dom_exception = V8DOMException::ToImplWithTypeCheck(
+      script_state->GetIsolate(), exception_state.GetException());
+  if (!dom_exception) {
+    return ::testing::AssertionFailure()
+           << "exception thrown was not a DOMException";
+  }
+  if (dom_exception->name() != name)
+    return ::testing::AssertionFailure() << "was " << dom_exception->name();
+  return ::testing::AssertionSuccess();
 }
 
 static const char kEcdsaPrivateKey[] =
@@ -870,8 +887,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())
                    .Serialize(wrapper, exception_state));
-  EXPECT_TRUE(HadDOMException("DataCloneError", scope.GetScriptState(),
-                              exception_state));
+  EXPECT_TRUE(HadDOMExceptionInModulesTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
