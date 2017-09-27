@@ -2231,7 +2231,6 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
-    params.frame_unique_name = unique_name;
     params.did_create_new_entry = false;
     params.url = subframe_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2254,7 +2253,6 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   const GURL url2("http://foo2");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2309,7 +2307,6 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
-    params.frame_unique_name = unique_name0;
     params.did_create_new_entry = false;
     params.url = url2;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2354,7 +2351,6 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
-    params.frame_unique_name = unique_name1;
     params.did_create_new_entry = false;
     params.url = url3;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2404,7 +2400,6 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
-    params.frame_unique_name = unique_name2;
     params.did_create_new_entry = false;
     params.url = url4;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2467,7 +2462,6 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   {
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
-    params.frame_unique_name = unique_name;
     params.did_create_new_entry = false;
     params.url = subframe_url;
     params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2495,7 +2489,6 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   int64_t document_sequence_number2 = GenerateSequenceNumber();
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2525,7 +2518,6 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   int64_t item_sequence_number3 = GenerateSequenceNumber();
   int64_t document_sequence_number3 = GenerateSequenceNumber();
   params.nav_entry_id = 0;
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = true;
   params.url = url3;
   params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
@@ -2549,7 +2541,6 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // Go back one.
   controller.GoBack();
   params.nav_entry_id = entry2->GetUniqueID();
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -2570,7 +2561,6 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   // Go back one more.
   controller.GoBack();
   params.nav_entry_id = entry1->GetUniqueID();
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -3866,7 +3856,6 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   const GURL subframe_url("http://www.google.com/#");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = subframe_url;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
@@ -4041,7 +4030,6 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   const GURL url1_sub("http://foo/subframe");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
-  params.frame_unique_name = unique_name;
   params.did_create_new_entry = false;
   params.url = url1_sub;
   params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;

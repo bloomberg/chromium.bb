@@ -216,7 +216,6 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
-  IPC_STRUCT_TRAITS_MEMBER(frame_unique_name)
   IPC_STRUCT_TRAITS_MEMBER(item_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(document_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(url)

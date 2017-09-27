@@ -5006,7 +5006,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   if (params->method == "POST")
     params->post_id = ExtractPostId(current_history_item_);
 
-  params->frame_unique_name = current_history_item_.Target().Utf8();
   params->item_sequence_number = current_history_item_.ItemSequenceNumber();
   params->document_sequence_number =
       current_history_item_.DocumentSequenceNumber();
