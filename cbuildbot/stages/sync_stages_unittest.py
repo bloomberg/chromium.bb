@@ -28,6 +28,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_requests
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cl_messages
@@ -685,14 +686,14 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
             'bot hostname')
         self.fake_db.FinishBuild(pre_cq, status=constants.BUILDER_STATUS_FAILED)
 
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'lumpy-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_1', timestamp=datetime.datetime.now())
+    build_req_1 = build_requests.BuildRequest(
+        None, self.build_id, 'lumpy-pre-cq', None, 'bb_id_1', 'sanity-pre-cq',
+        datetime.datetime.now())
+    build_req_2 = build_requests.BuildRequest(
+        None, self.build_id, 'cyan-pre-cq', None, 'bb_id_2', 'sanity-pre-cq',
+        datetime.datetime.now() - datetime.timedelta(hours=10))
 
-    stale_timestamp = datetime.datetime.now() - datetime.timedelta(hours=10)
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'cyan-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_2', timestamp=stale_timestamp)
+    self.fake_db.InsertBuildRequests([build_req_1, build_req_2])
 
     sanity_check_build_configs = self.sync_stage._GetBuildConfigsToSanityCheck(
         self.fake_db, build_configs)

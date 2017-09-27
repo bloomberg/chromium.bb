@@ -249,36 +249,29 @@ class FakeCIDBConnection(object):
 
     return len(hwTestResults)
 
-  def InsertBuildRequest(self, build_id, request_build_config, request_reason,
-                         request_build_args=None, request_buildbucket_id=None,
-                         timestamp=None):
-    """Insert a build request.
+  def InsertBuildRequests(self, build_reqs):
+    """Insert a list of build requests.
 
     Args:
-      build_id: build_id (int) of the build which sends the request.
-      request_build_config: build_config (string) of the requested build.
-      request_reason: reason (must be a member of
-        build_requests.BUILD_REQUEST_REASONS) of the request.
-      request_build_args: build_args (string) of the requested build, default to
-        None.
-      request_buildbucket_id: buildbucket_id (string) of the requested build,
-        default to None.
-      timestamp: timestamp of the build request when it's created.
+      build_reqs: A list of build_requests.BuildRequest instances.
 
     Returns:
-       Integer primary key of the inserted row.
+       The number of inserted rows.
     """
     request_id = len(self.buildRequestTable)
+    for build_req in build_reqs:
+      values = {
+          'id': request_id,
+          'build_id': build_req.build_id,
+          'request_build_config': build_req.request_build_config,
+          'request_build_args': build_req.request_build_args,
+          'request_buildbucket_id': build_req.request_buildbucket_id,
+          'request_reason': build_req.request_reason,
+          'timestamp': build_req.timestamp or datetime.datetime.now()}
+      self.buildRequestTable[request_id] = values
+      request_id = request_id + 1
 
-    values = {'id': request_id,
-              'build_id': build_id,
-              'request_build_config': request_build_config,
-              'request_build_args': request_build_args,
-              'request_buildbucket_id': request_buildbucket_id,
-              'request_reason': request_reason,
-              'timestamp': timestamp or datetime.datetime.now()}
-    self.buildRequestTable[request_id] = values
-    return request_id
+    return len(build_reqs)
 
   def GetBuildMessages(self, build_id):
     """Get the build messages of the given build id.

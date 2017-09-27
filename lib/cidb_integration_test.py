@@ -15,6 +15,7 @@ import shutil
 import time
 
 from chromite.lib.const import waterfall
+from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
@@ -1054,41 +1055,90 @@ class HWTestResultTableTest(CIDBIntegrationTest):
 class BuildRequestTableTest(CIDBIntegrationTest):
   """Tests for BuildRequestTable."""
 
+  def _InsertCQBuildRequests(self, bot_db):
+    b_id = bot_db.InsertBuild(
+        'master-paladin', constants.WATERFALL_INTERNAL, _random(),
+        'master-paladin', 'bot_hostname')
+
+    build_req_1 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test1-paladin',
+        request_build_args='test_build_args_1',
+        request_buildbucket_id='test_bb_id_1',
+        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
+        timestamp=None)
+    build_req_2 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test1-paladin',
+        request_build_args='test_build_args_2',
+        request_buildbucket_id='test_bb_id_2',
+        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
+        timestamp=None)
+    build_req_3 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test1-paladin',
+        request_build_args='test_build_args_3',
+        request_buildbucket_id='test_bb_id_3',
+        request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE,
+        timestamp=None)
+    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
+
+    return b_id
+
+  def _InsertPreCQBuildRequests(self, bot_db, current_ts):
+    new_timestamp = current_ts.strftime('%Y-%m-%d %H:%M:%S')
+    old_ts = current_ts - datetime.timedelta(hours=2)
+    old_timestamp = old_ts.strftime('%Y-%m-%d %H:%M:%S')
+
+    b_id = bot_db.InsertBuild(
+        'pre_cq_launcher', constants.WATERFALL_INTERNAL, _random(),
+        'pre_cq_launcher', 'bot_hostname')
+
+    build_req_1 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test_pre_cq_1',
+        request_build_args='test_build_args_1',
+        request_buildbucket_id='test_bb_id_1',
+        request_reason=build_requests.REASON_SANITY_PRE_CQ,
+        timestamp=old_timestamp)
+    build_req_2 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test_pre_cq_1',
+        request_build_args='test_build_args_2',
+        request_buildbucket_id='test_bb_id_2',
+        request_reason=build_requests.REASON_SANITY_PRE_CQ,
+        timestamp=new_timestamp)
+    build_req_3 = build_requests.BuildRequest(
+        id=None, build_id=b_id,
+        request_build_config='test_pre_cq_2',
+        request_build_args='test_build_args_3',
+        request_buildbucket_id='test_bb_id_3',
+        request_reason=build_requests.REASON_SANITY_PRE_CQ,
+        timestamp=new_timestamp)
+    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
+
+    return b_id
+
   def testBuildRequests(self):
     """Test insert and get operations on BuildRequestTable."""
     self._PrepareDatabase()
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
-    b_id_1 = bot_db.InsertBuild(
+    bot_db.InsertBuild(
         'pre_cq_launcher', constants.WATERFALL_INTERNAL, _random(),
         'pre_cq_launcher', 'bot_hostname')
 
-    ts_now = datetime.datetime.now()
-    format_ts_now = ts_now.strftime('%Y-%m-%d %H:%M:%S')
-    ts_old = ts_now - datetime.timedelta(hours=2)
-    format_ts_old = ts_old.strftime('%Y-%m-%d %H:%M:%S')
-    ts_start = ts_now - datetime.timedelta(hours=1)
-    format_ts_start = ts_start.strftime('%Y-%m-%d %H:%M:%S')
+    current_ts = datetime.datetime.now()
+    start_ts = current_ts - datetime.timedelta(hours=1)
+    start_timestamp = start_ts.strftime('%Y-%m-%d %H:%M:%S')
 
-    bot_db.InsertBuildRequest(
-        b_id_1, 'test_pre_cq_1', 'sanity-pre-cq',
-        request_build_args='test_build_args_1',
-        request_buildbucket_id='test_bb_id_1',
-        timestamp=format_ts_old)
-    bot_db.InsertBuildRequest(
-        b_id_1, 'test_pre_cq_1', 'sanity-pre-cq',
-        request_build_args='test_build_args_2',
-        request_buildbucket_id='test_bb_id_2',
-        timestamp=format_ts_now)
-    bot_db.InsertBuildRequest(
-        b_id_1, 'test_pre_cq_2', 'sanity-pre-cq',
-        request_build_args='test_build_args_3',
-        request_buildbucket_id='test_bb_id_3',
-        timestamp=format_ts_now)
+    self._InsertPreCQBuildRequests(bot_db, current_ts)
+    self._InsertCQBuildRequests(bot_db)
 
     requests = bot_db.GetBuildRequestsForBuildConfig(
         'test_pre_cq_1', num_results=1)
     self.assertEqual(len(requests), 1)
+    self.assertEqual(requests[0].id, 2)
     self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
     self.assertEqual(requests[0].request_buildbucket_id, 'test_bb_id_2')
 
@@ -1097,17 +1147,25 @@ class BuildRequestTableTest(CIDBIntegrationTest):
 
     requests = bot_db.GetBuildRequestsForBuildConfig('test_pre_cq_2')
     self.assertEqual(len(requests), 1)
+    self.assertEqual(requests[0].id, 3)
     self.assertEqual(requests[0].request_build_config, 'test_pre_cq_2')
     self.assertEqual(requests[0].request_buildbucket_id, 'test_bb_id_3')
 
     requests = bot_db.GetBuildRequestsForBuildConfigs(
         ['test_pre_cq_1', 'test_pre_cq_2'], num_results=10)
-    self.assertEqual(len(requests), 3)
+    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+                          ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
 
     requests = bot_db.GetBuildRequestsForBuildConfigs(
-        ['test_pre_cq_1', 'test_pre_cq_2'], start_time=format_ts_start,
+        ['test_pre_cq_1', 'test_pre_cq_2'], start_time=start_timestamp,
         num_results=10)
-    self.assertEqual(len(requests), 2)
+    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+                          ['test_bb_id_2', 'test_bb_id_3'])
+
+    requests = bot_db.GetBuildRequestsForBuildConfigs(
+        ['test1-paladin', 'test2-paladin', 'test3-paladin'])
+    self.assertItemsEqual([r.request_buildbucket_id for r in requests],
+                          ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
 
 
 class CLActionTableTest(CIDBIntegrationTest):

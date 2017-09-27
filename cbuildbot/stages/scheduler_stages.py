@@ -12,6 +12,7 @@ import time
 
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
@@ -46,7 +47,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     return bucket
 
   def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, buildset_tag, dryrun):
+                                  master_build_id, buildset_tag,
+                                  dryrun=False):
     """Send a Put slave build request to Buildbucket.
 
     Args:
@@ -55,7 +57,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       master_build_id: Master build id of the slave build.
       buildset_tag: The buildset tag for strong consistent tag queries.
                     More context: crbug.com/661689
-      dryrun: Whether a dryrun.
+      dryrun: Whether a dryrun, default to False.
     """
     tags = ['buildset:%s' % buildset_tag,
             'build_type:%s' % build_config.build_type,
@@ -92,18 +94,20 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return (buildbucket_id, created_ts)
 
-  def ScheduleSlaveBuildsViaBuildbucket(self, important_only, dryrun):
+  def ScheduleSlaveBuildsViaBuildbucket(self, important_only=False,
+                                        dryrun=False):
     """Schedule slave builds by sending PUT requests to Buildbucket.
 
     Args:
-      important_only: Whether only schedule important slave builds.
-      dryrun: Whether a dryrun.
+      important_only: Whether only schedule important slave builds, default to
+        False.
+      dryrun: Whether a dryrun, default to False.
     """
     if self.buildbucket_client is None:
       logging.info('No buildbucket_client. Skip scheduling slaves.')
       return
 
-    build_id, _ = self._run.GetCIDBHandle()
+    build_id, db = self._run.GetCIDBHandle()
     if build_id is None:
       logging.info('No build id. Skip scheduling slaves.')
       return
@@ -114,30 +118,41 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     scheduled_important_slave_builds = []
     scheduled_experimental_slave_builds = []
     unscheduled_slave_builds = []
+    scheduled_build_reqs = []
 
     # Get all active slave build configs.
     slave_config_map = self._GetSlaveConfigMap(important_only)
-    for slave_name, slave_config in slave_config_map.iteritems():
+    for slave_config_name, slave_config in slave_config_map.iteritems():
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_name, slave_config, build_id, buildset_tag, dryrun)
+            slave_config_name, slave_config, build_id, buildset_tag,
+            dryrun=dryrun)
+        request_reason = None
 
         if slave_config.important:
           scheduled_important_slave_builds.append(
-              (slave_name, buildbucket_id, created_ts))
+              (slave_config_name, buildbucket_id, created_ts))
+          request_reason = build_requests.REASON_IMPORTANT_CQ_SLAVE
         else:
           scheduled_experimental_slave_builds.append(
-              (slave_name, buildbucket_id, created_ts))
+              (slave_config_name, buildbucket_id, created_ts))
+          request_reason = build_requests.REASON_EXPERIMENTAL_CQ_SLAVE
 
+        scheduled_build_reqs.append(build_requests.BuildRequest(
+            None, build_id, slave_config_name, None, buildbucket_id,
+            request_reason, None))
       except buildbucket_lib.BuildbucketResponseException as e:
         # Use 16-digit ts to be consistent with the created_ts from Buildbucket
         current_ts = int(round(time.time() * 1000000))
-        unscheduled_slave_builds.append((slave_name, None, current_ts))
+        unscheduled_slave_builds.append((slave_config_name, None, current_ts))
         if important_only or slave_config.important:
           raise
         else:
           logging.warning('Failed to schedule %s current timestamp %s: %s'
-                          % (slave_name, current_ts, e))
+                          % (slave_config_name, current_ts, e))
+
+    if config_lib.IsMasterCQ(self._run.config) and db and scheduled_build_reqs:
+      db.InsertBuildRequests(scheduled_build_reqs)
 
     self._run.attrs.metadata.ExtendKeyListWithList(
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES,

@@ -1492,7 +1492,7 @@ class PreCQLauncherStage(SyncStage):
 
     Args:
       build_id: build_id (string) of the pre-cq-launcher build.
-      db: An instance of cidb.CIDBConnection.
+      db: An instance of cidb.CIDBConnection or None.
       pool: An instance of ValidationPool.validation_pool.
       configs: A set of pre-cq config names to launch.
     """
@@ -1503,12 +1503,15 @@ class PreCQLauncherStage(SyncStage):
     if not config_buildbucket_id_map:
       return
 
-    # Update cidb buildRequestTable.
-    for config in configs:
-      if config in config_buildbucket_id_map:
-        db.InsertBuildRequest(
-            build_id, config, build_requests.REASON_SANITY_PRE_CQ,
-            request_buildbucket_id=config_buildbucket_id_map[config])
+    if db:
+      launched_build_reqs = []
+      for config in configs:
+        launched_build_reqs.append(build_requests.BuildRequest(
+            None, build_id, config, None, config_buildbucket_id_map[config],
+            build_requests.REASON_SANITY_PRE_CQ, None))
+
+      if launched_build_reqs:
+        db.InsertBuildRequests(launched_build_reqs)
 
   def GetDisjointTransactionsToTest(self, pool, progress_map):
     """Get the list of disjoint transactions to test.
