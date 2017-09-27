@@ -41,10 +41,9 @@ test(function() {
     assert_equals(document.activeElement, document.querySelector('#submit'));
 }, 'Calling focus() on an inert label should still send focus to its target.');
 
-test(function() {
-    clickOn(label).then(() => {
-        assert_equals(document.activeElement, document.body);
-    });
+promise_test(async () => {
+    await clickOn(label);
+    assert_equals(document.activeElement, document.body);
 }, 'Clicking on an inert label should send focus to document.body.');
 </script>
 </html>

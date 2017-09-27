@@ -3654,6 +3654,7 @@ crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/ti
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.html [ Pass Timeout ]
 
 crbug.com/761891 [ Win7 Debug ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure Timeout ]
+crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
