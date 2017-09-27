@@ -2,7 +2,9 @@ include_rules = [
   "+cc/blink/web_layer_impl.h",
   "+cc/layers/video_frame_provider.h",
   "+cc/layers/video_layer.h",
+  "+cc/test/test_context_provider.h",
   "+components/scheduler",  # Only allowed in tests.
+  "+components/viz/common/gpu/context_provider.h",
   "+components/viz/common/surfaces/frame_sink_id.h",
   "+gin",
   "+media",

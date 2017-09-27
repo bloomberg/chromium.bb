@@ -17,7 +17,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    const Context3DCB& context_3d_cb,
     const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
     blink::WebContentDecryptionModule* initial_cdm,
     SurfaceManager* surface_manager,
@@ -30,14 +29,14 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     mojom::WatchTimeRecorderProvider* provider,
     CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
     base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-        blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback)
+        blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback,
+    scoped_refptr<viz::ContextProvider> context_provider)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(std::move(media_log)),
       media_task_runner_(media_task_runner),
       worker_task_runner_(worker_task_runner),
       compositor_task_runner_(compositor_task_runner),
-      context_3d_cb_(context_3d_cb),
       adjust_allocated_memory_cb_(adjust_allocated_memory_cb),
       initial_cdm_(initial_cdm),
       surface_manager_(surface_manager),
@@ -52,7 +51,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       watch_time_recorder_provider_(provider),
       create_capabilities_recorder_cb_(
           std::move(create_capabilities_recorder_cb)),
-      create_bridge_callback_(create_bridge_callback) {}
+      create_bridge_callback_(create_bridge_callback),
+      context_provider_(std::move(context_provider)) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}
 

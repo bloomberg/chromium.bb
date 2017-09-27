@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/test/test_context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
@@ -266,15 +267,14 @@ class WebMediaPlayerImplTest : public testing::Test {
             std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
             scoped_refptr<SwitchableAudioRendererSink>(),
             media_thread_.task_runner(), message_loop_.task_runner(),
-            message_loop_.task_runner(), WebMediaPlayerParams::Context3DCB(),
-            base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr,
-            RequestRoutingTokenCallback(), nullptr,
+            message_loop_.task_runner(), base::Bind(&OnAdjustAllocatedMemory),
+            nullptr, nullptr, RequestRoutingTokenCallback(), nullptr,
             kMaxKeyframeDistanceToDisableBackgroundVideo,
             kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
-            provider_.get(),
-            base::Bind(&CreateCapabilitiesRecorder),
+            provider_.get(), base::Bind(&CreateCapabilitiesRecorder),
             base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
-                       base::Unretained(this))));
+                       base::Unretained(this)),
+            cc::TestContextProvider::Create()));
 }
 
   ~WebMediaPlayerImplTest() override {

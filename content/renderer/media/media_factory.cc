@@ -134,13 +134,6 @@ void MediaFactory::SetupMojo() {
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 }
 
-media::Context3D GetSharedMainThreadContext3D(
-    scoped_refptr<ui::ContextProviderCommandBuffer> provider) {
-  if (!provider)
-    return media::Context3D();
-  return media::Context3D(provider->ContextGL(), provider->GrContext());
-}
-
 #if defined(OS_ANDROID)
 // Returns true if the MediaPlayerRenderer should be used for playback, false
 // if the default renderer should be used instead.
@@ -201,14 +194,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       AudioDeviceFactory::NewSwitchableAudioRendererSink(
           AudioDeviceFactory::kSourceMediaElement,
           render_frame_->GetRoutingID(), 0, sink_id.Utf8(), security_origin);
-  // We need to keep a reference to the context provider (see crbug.com/610527)
-  // but media/ can't depend on cc/, so for now, just keep a reference in the
-  // callback.
-  // TODO(piman): replace media::Context3D to scoped_refptr<ContextProvider> in
-  // media/ once ContextProvider is in gpu/.
-  media::WebMediaPlayerParams::Context3DCB context_3d_cb = base::Bind(
-      &GetSharedMainThreadContext3D,
-      RenderThreadImpl::current()->SharedMainThreadContextProvider());
 
   const WebPreferences webkit_preferences =
       render_frame_->GetWebkitPreferences();
@@ -278,7 +263,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
                      GetWebMediaPlayerDelegate()->has_played_media()),
           audio_renderer_sink, render_thread->GetMediaThreadTaskRunner(),
           render_thread->GetWorkerTaskRunner(),
-          render_thread->compositor_task_runner(), context_3d_cb,
+          render_thread->compositor_task_runner(),
           base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                      base::Unretained(blink::MainThreadIsolate())),
           initial_cdm, media_surface_manager_, request_routing_token_cb_,
@@ -288,7 +273,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           watch_time_recorder_provider_.get(),
           base::Bind(&MediaFactory::CreateVideoDecodeStatsRecorder,
                      base::Unretained(this)),
-          base::Bind(&blink::WebSurfaceLayerBridge::Create, layer_tree_view)));
+          base::Bind(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
+          RenderThreadImpl::current()->SharedMainThreadContextProvider()));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       web_frame, client, encrypted_client, GetWebMediaPlayerDelegate(),
