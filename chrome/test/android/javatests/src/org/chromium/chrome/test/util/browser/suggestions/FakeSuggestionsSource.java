@@ -7,10 +7,12 @@ package org.chromium.chrome.test.util.browser.suggestions;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -32,6 +34,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     private ObserverList<Observer> mObserverList = new ObserverList<>();
     private final List<Integer> mCategories = new ArrayList<>();
     private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
+    private final List<SnippetArticle> mContextualSuggestions = new ArrayList<>();
     private final Map<Integer, Integer> mCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
 
@@ -48,6 +51,14 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     private final Map<Integer, SuggestionsCategoryInfo> mDismissedCategoryInfo = new HashMap<>();
 
     private boolean mRemoteSuggestionsEnabled = true;
+
+    /**
+     * Sets contextual suggestions to be shown in the suggestions carousel.
+     */
+    public void setContextualSuggestions(List<SnippetArticle> suggestions) {
+        mContextualSuggestions.clear();
+        mContextualSuggestions.addAll(suggestions);
+    }
 
     /**
      * Sets the status to be returned for a given category.
@@ -107,9 +118,23 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     /**
      * Sets the bitmap to be returned when the thumbnail is requested for a suggestion with that
      * (within-category) id.
+     * Note: Does not check for categories, try to not have overlapping ids across categories while
+     * creating test data.
      */
     public void setThumbnailForId(String id, Bitmap bitmap) {
         mThumbnails.put(id, bitmap);
+    }
+
+    /**
+     * Sets the bitmap to be returned when the thumbnail is requested for a suggestion with that
+     * (within-category) id.
+     * Note: Does not check for categories, try to not have overlapping ids across categories while
+     * creating test data.
+     * @param id Id of the suggestion ({@link SnippetArticle#mIdWithinCategory}).
+     * @param thumbnailPath Path to the file within the test resources directory.
+     */
+    public void setThumbnailForId(String id, String thumbnailPath) {
+        setThumbnailForId(id, BitmapFactory.decodeFile(UrlUtils.getTestFilePath(thumbnailPath)));
     }
 
     /**
@@ -212,12 +237,8 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     public void fetchSuggestionImage(
             final SnippetArticle suggestion, final Callback<Bitmap> callback) {
         if (mThumbnails.containsKey(suggestion.mIdWithinCategory)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(mThumbnails.get(suggestion.mIdWithinCategory));
-                }
-            });
+            ThreadUtils.postOnUiThread(
+                    () -> callback.onResult(mThumbnails.get(suggestion.mIdWithinCategory)));
         }
     }
 
@@ -225,14 +246,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     public void fetchSuggestionFavicon(final SnippetArticle suggestion, int minimumSizePx,
             int desiredSizePx, final Callback<Bitmap> callback) {
         final Bitmap favicon = getFaviconForId(suggestion.mIdWithinCategory);
-        if (favicon != null) {
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(favicon);
-                }
-            });
-        }
+        if (favicon != null) ThreadUtils.postOnUiThread(() -> callback.onResult(favicon));
     }
 
     private Bitmap getFaviconForId(String id) {
@@ -248,13 +262,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
 
     @Override
     public void fetchContextualSuggestions(String url, Callback<List<SnippetArticle>> callback) {
-        throw new UnsupportedOperationException();
+        callback.onResult(mContextualSuggestions);
     }
 
     @Override
     public void fetchContextualSuggestionImage(
             SnippetArticle suggestion, Callback<Bitmap> callback) {
-        throw new UnsupportedOperationException();
+        fetchSuggestionImage(suggestion, callback);
     }
 
     @Override
