@@ -39,9 +39,8 @@ void OnReleaseTexture(
   gl->ShallowFlushCHROMIUM();
 }
 
-GLES2Interface* GLCBShim(
-    const WebMediaPlayerParams::Context3DCB& context_3d_cb) {
-  return context_3d_cb.Run().gl;
+GLES2Interface* GLCBShim(scoped_refptr<viz::ContextProvider> context_provider) {
+  return context_provider->ContextGL();
 }
 
 }  // namespace
@@ -153,8 +152,10 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
 WebMediaPlayerCast::WebMediaPlayerCast(
     WebMediaPlayerImpl* impl,
     blink::WebMediaPlayerClient* client,
-    const WebMediaPlayerParams::Context3DCB& context_3d_cb)
-    : webmediaplayer_(impl), client_(client), context_3d_cb_(context_3d_cb) {}
+    scoped_refptr<viz::ContextProvider> context_provider)
+    : webmediaplayer_(impl),
+      client_(client),
+      context_provider_(context_provider) {}
 
 WebMediaPlayerCast::~WebMediaPlayerCast() {
   if (player_manager_) {
@@ -361,7 +362,7 @@ scoped_refptr<VideoFrame> WebMediaPlayerCast::GetCastingBanner() {
 
   return MakeTextFrameForCast(remote_playback_message_, canvas_size,
                               webmediaplayer_->NaturalSize(),
-                              base::Bind(&GLCBShim, context_3d_cb_));
+                              base::Bind(&GLCBShim, context_provider_));
 }
 
 void WebMediaPlayerCast::setPoster(const blink::WebURL& poster) {

@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -218,7 +219,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       delegate_(delegate),
       delegate_id_(0),
       defer_load_cb_(params->defer_load_cb()),
-      context_3d_cb_(params->context_3d_cb()),
       adjust_allocated_memory_cb_(params->adjust_allocated_memory_cb()),
       last_reported_memory_usage_(0),
       supports_save_(true),
@@ -228,8 +228,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr()),
           tick_clock_.get()),
       url_index_(url_index),
+      context_provider_(params->context_provider()),
 #if defined(OS_ANDROID)  // WMPI_CAST
-      cast_impl_(this, client_, params->context_3d_cb()),
+      cast_impl_(this, client_, params->context_provider()),
 #endif
       volume_(1.0),
       volume_multiplier_(1.0),
@@ -1027,8 +1028,10 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
   gfx::Rect gfx_rect(rect);
   Context3D context_3d;
   if (video_frame.get() && video_frame->HasTextures()) {
-    if (!context_3d_cb_.is_null())
-      context_3d = context_3d_cb_.Run();
+    if (context_provider_) {
+      context_3d = Context3D(context_provider_->ContextGL(),
+                             context_provider_->GrContext());
+    }
     if (!context_3d.gl)
       return;  // Unable to get/create a shared main thread context.
     if (!context_3d.gr_context)
@@ -1127,8 +1130,10 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
   }
 
   Context3D context_3d;
-  if (!context_3d_cb_.is_null())
-    context_3d = context_3d_cb_.Run();
+  if (context_provider_) {
+    context_3d = Context3D(context_provider_->ContextGL(),
+                           context_provider_->GrContext());
+  }
   return skcanvas_video_renderer_.CopyVideoFrameTexturesToGLTexture(
       context_3d, gl, video_frame.get(), target, texture, internal_format,
       format, type, level, premultiply_alpha, flip_y);
