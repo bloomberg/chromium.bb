@@ -84530,6 +84530,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TrackedObjects.GetRetiredOrCreateThreadData" units="ms">
+  <obsolete>
+    Deprecated as of 09/2017. Code measured by this histogram no longer exists.
+  </obsolete>
   <owner>fdoray@chromium.org</owner>
   <summary>
     Time spent in base::ThreadData::GetRetiredOrCreateThreadData(). This method
