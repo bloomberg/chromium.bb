@@ -129,7 +129,7 @@ Output.ROLE_INFO_ = {
   buttonDropDown: {msgId: 'role_button', earconId: 'BUTTON'},
   checkBox: {msgId: 'role_checkbox'},
   columnHeader: {msgId: 'role_columnheader', inherits: 'cell'},
-  comboBoxMenuButton: {msgId: 'role_combobox', earconId: 'LISTBOX'},
+  comboBox: {msgId: 'role_combobox', earconId: 'LISTBOX'},
   complementary: {msgId: 'role_complementary', inherits: 'abstractContainer'},
   contentInfo: {msgId: 'role_contentinfo', inherits: 'abstractContainer'},
   date: {msgId: 'input_type_date', inherits: 'abstractContainer'},
@@ -196,9 +196,8 @@ Output.ROLE_INFO_ = {
   tab: {msgId: 'role_tab'},
   tabList: {msgId: 'role_tablist', inherits: 'abstractContainer'},
   tabPanel: {msgId: 'role_tabpanel'},
-  searchBox: {msgId: 'role_search', earconId: 'EDITABLE_TEXT'},
+  textBox: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
   textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
-  textFieldWithComboBox: {msgId: 'role_combobox', earconId: 'EDITABLE_TEXT'},
   time: {msgId: 'tag_time', inherits: 'abstractContainer'},
   timer: {msgId: 'role_timer'},
   toolbar: {msgId: 'role_toolbar', ignoreAncestry: true},
@@ -331,7 +330,7 @@ Output.RULES = {
           $name $role $checked $description $state $restriction`
     },
     client: {speak: `$name`},
-    comboBoxMenuButton: {
+    comboBox: {
       speak: `$name $value $node(activeDescendant)
           $state $restriction $role $description`,
     },

@@ -18,7 +18,7 @@ rootWebArea
 ++textField name='Readonly-false contenteditable textbox'
 ++textField name='Readonly-true contenteditable textbox' restriction=readOnly
 ++checkBox name='Readonly checkbox' restriction=readOnly
-++textFieldWithComboBox haspopup name='Readonly combobox' restriction=readOnly
+++comboBox name='Readonly combobox' restriction=readOnly
 ++listBox name='Readonly listbox' restriction=readOnly
 ++radioGroup name='Readonly radiogroup' restriction=readOnly
 ++slider horizontal name='Readonly slider' restriction=readOnly

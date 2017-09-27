@@ -115,8 +115,6 @@ def Run():
     if builder['result'] == 'FAILURE':
       url = builder['url']
       tokens = url.split('/')
-      if len(tokens) < 9:
-        continue
       bucket = tokens[4]
       platform = tokens[6]
       build = tokens[8]

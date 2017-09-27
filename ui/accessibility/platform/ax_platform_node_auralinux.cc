@@ -415,9 +415,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_PUSH_BUTTON;
     case ui::AX_ROLE_CHECK_BOX:
       return ATK_ROLE_CHECK_BOX;
-    case ui::AX_ROLE_COMBO_BOX_GROUPING:
-    case ui::AX_ROLE_COMBO_BOX_MENU_BUTTON:
-    case ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
+    case ui::AX_ROLE_COMBO_BOX:
       return ATK_ROLE_COMBO_BOX;
     case ui::AX_ROLE_DIALOG:
       return ATK_ROLE_DIALOG;

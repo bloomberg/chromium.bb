@@ -17,7 +17,7 @@ test(function(t) {
 }, "Make sure that Accessibility Object Model is enabled");
 </script>
 
-<input role="combobox" id="autocomplete">
+<div role="combobox" id="autocomplete"></div>
 
 <script>
 test(function(t) {
@@ -168,7 +168,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXButton");
     node.accessibleNode.role = "combobox";
-    assert_equals(axNode.role, "AXRole: AXComboBoxGrouping");
+    assert_equals(axNode.role, "AXRole: AXComboBox");
     node.accessibleNode.role = "banana button";
     assert_equals(axNode.role, "AXRole: AXButton");
 }, "AccessibleNode.role");

@@ -24,7 +24,7 @@ PASS elem.role is "AXRole: AXDetails"
 summary_id
 PASS elem.role is "AXRole: AXDisclosureTriangle"
 input_datalist_id
-PASS elem.role is "AXRole: AXTextFieldWithComboBox"
+PASS elem.role is "AXRole: AXComboBox"
 input_button_id
 PASS elem.role is "AXRole: AXButton"
 input_checkbox_id

@@ -67,6 +67,9 @@ BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
   BrowserAccessibilityAndroid* android_focus =
       static_cast<BrowserAccessibilityAndroid*>(focus);
+  // This is a temporary workaround because we're not distinguishing
+  // between text fields with a role of combobox, and pop-up menu buttons.
+  // TODO(dmazzoni): Handle different types of combo boxes correctly.
   if (!android_focus->IsEditableText())
     return GetActiveDescendant(focus);
   return focus;
