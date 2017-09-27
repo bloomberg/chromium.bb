@@ -227,52 +227,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'ScopedAllowIO',
-      (
-       'New production code should not use ScopedAllowIO (using it in',
-       'tests is fine). Post a task to a MayBlock task runner instead.',
-      ),
-      True,
-      (
-        r"^.*(browser|unit)(|_)test[a-z_]*\.cc$",
-        r"^base[\\\/]memory[\\\/]shared_memory_posix\.cc$",
-        r"^base[\\\/]process[\\\/]internal_aix\.cc$",
-        r"^base[\\\/]process[\\\/]process_linux\.cc$",
-        r"^base[\\\/]process[\\\/]process_metrics_linux\.cc$",
-        r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]boot_times_recorder\.cc$",
-        r"^chrome[\\\/]browser[\\\/]extensions[\\\/]" +
-            r"chrome_test_extension_loader.cc$",
-        r"^chrome[\\\/]browser[\\\/]lifetime[\\\/]application_lifetime\.cc$",
-        r"^components[\\\/]crash[\\\/]app[\\\/]breakpad_mac\.mm$",
-        r"^content[\\\/]shell[\\\/]browser[\\\/]layout_test[\\\/]" +
-            r"test_info_extractor\.cc$",
-        r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
-        r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
-        r"^content[\\\/]test[\\\/]ppapi[\\\/]ppapi_test\.cc$",
-        r"^media[\\\/]cast[\\\/]test[\\\/]utility[\\\/]" +
-            r"standalone_cast_environment\.cc$",
-        r"^mojo[\\\/]edk[\\\/]embedder[\\\/]" +
-            r"simple_platform_shared_buffer_posix\.cc$",
-        r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
-        r"^net[\\\/]cert[\\\/]test_root_certs\.cc$",
-        r"^net[\\\/]test[\\\/]embedded_test_server[\\\/]" +
-            r"embedded_test_server\.cc$",
-        r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]local_test_server\.cc$",
-        r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]" +
-            r"remote_test_server_config\.cc$",
-        r"^net[\\\/]test[\\\/]test_data_directory\.cc$",
-        r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
-        r"^remoting[\\\/]protocol[\\\/]webrtc_transport\.cc$",
-        r"^ui[\\\/]base[\\\/]material_design[\\\/]"
-            "material_design_controller\.cc$",
-        r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_mac\.cc$",
-        r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_win\.cc$",
-        r"^ui[\\\/]gl[\\\/]init[\\\/]gl_initializer_x11\.cc$",
-        r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
-            "drm_display_host_manager\.cc$",
-      ),
-    ),
-    (
       'setMatrixClip',
       (
         'Overriding setMatrixClip() is prohibited; ',
@@ -462,7 +416,16 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (),
-    )
+    ),
+    (
+      (r'/base::ThreadRestrictions::(ScopedAllowIO|AssertIOAllowed|'
+       r'DisallowWaiting|AssertWaitAllowed|SetWaitAllowed|ScopedAllowWait)'),
+      (
+        'Use the new API in base/threading/thread_restrictions.h.',
+      ),
+      True,
+      (),
+    ),
 )
 
 
