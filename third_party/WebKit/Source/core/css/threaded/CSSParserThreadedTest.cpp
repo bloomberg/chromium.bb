@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
 
+#include "core/CSSPropertyNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/threaded/MultiThreadedTestUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +57,16 @@ TSAN_TEST_F(CSSParserThreadedTest, ValuePropertyFont) {
     MutableStylePropertySet* v = TestValue(CSSPropertyFont, "15px arial");
     EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontFamily), "arial");
     EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontSize), "15px");
+  });
+}
+
+TSAN_TEST_F(CSSParserThreadedTest, FontFaceDescriptor) {
+  RunOnThreads([]() {
+    CSSParserContext* ctx = CSSParserContext::Create(kCSSFontFaceRuleMode);
+    const CSSValue* v = CSSParser::ParseFontFaceDescriptor(
+        CSSPropertySrc, "url(myfont.ttf)", ctx);
+    ASSERT_TRUE(v);
+    EXPECT_EQ(v->CssText(), "url(\"myfont.ttf\")");
   });
 }
 
