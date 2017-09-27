@@ -7,6 +7,7 @@
 #define LayoutFullScreenItem_h
 
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "core/layout/api/LayoutBlockItem.h"
 
 namespace blink {
