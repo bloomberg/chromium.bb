@@ -761,7 +761,7 @@ TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
   EXPECT_EQ(ASCIIToUTF16("Apr"), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillSelectControlWithFullMonthName) {
+TEST_F(AutofillFieldTest, FillSelectControlWithMonthName) {
   std::vector<const char*> kMonthsFull = {
       "January", "February", "March",     "April",   "May",      "June",
       "July",    "August",   "September", "October", "November", "December",
@@ -775,7 +775,49 @@ TEST_F(AutofillFieldTest, FillSelectControlWithFullMonthName) {
   EXPECT_EQ(ASCIIToUTF16("April"), field.value);
 }
 
-TEST_F(AutofillFieldTest, FillSelectControlWithFrenchMonthName) {
+TEST_F(AutofillFieldTest, FillSelectControlWithMonthNameAndDigits) {
+  std::vector<const char*> kMonthsFullWithDigits = {
+      "January (01)",   "February (02)", "March (03)",    "April (04)",
+      "May (05)",       "June (06)",     "July (07)",     "August (08)",
+      "September (09)", "October (10)",  "November (11)", "December (12)",
+  };
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsFullWithDigits, &field);
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", "en-US",
+                               &field);
+  EXPECT_EQ(ASCIIToUTF16("April (04)"), field.value);
+}
+
+TEST_F(AutofillFieldTest, FillSelectControlWithMonthNameAndDigits_French) {
+  std::vector<const char*> kMonthsFullWithDigits = {
+      "01 - JANVIER",
+      "02 - FÉVRIER",
+      "03 - MARS",
+      "04 - AVRIL",
+      "05 - MAI",
+      "06 - JUIN",
+      "07 - JUILLET",
+      "08 - AOÛT",
+      "09 - SEPTEMBRE",
+      "10 - OCTOBRE",
+      "11 - NOVEMBRE",
+      "12 - DECEMBRE" /* Intentionally not including accent in DÉCEMBRE */,
+  };
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsFullWithDigits, &field);
+  field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
+
+  AutofillField::FillFormField(field, ASCIIToUTF16("08"), "fr-FR", "fr-FR",
+                               &field);
+  EXPECT_EQ(UTF8ToUTF16("08 - AOÛT"), field.value);
+  AutofillField::FillFormField(field, ASCIIToUTF16("12"), "fr-FR", "fr-FR",
+                               &field);
+  EXPECT_EQ(UTF8ToUTF16("12 - DECEMBRE"), field.value);
+}
+
+TEST_F(AutofillFieldTest, FillSelectControlWithMonthName_French) {
   std::vector<const char*> kMonthsFrench = {"JANV", "FÉVR.", "MARS",
                                             "décembre"};
   AutofillField field;

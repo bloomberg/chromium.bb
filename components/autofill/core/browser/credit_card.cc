@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/i18n/string_search.h"
 #include "base/i18n/time_formatting.h"
 #include "base/i18n/unicodestring.h"
 #include "base/logging.h"
@@ -31,7 +32,6 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
@@ -916,34 +916,36 @@ bool CreditCard::ConvertMonth(const base::string16& month,
     return false;
 
   // Otherwise, try parsing the |month| as a named month, e.g. "January" or
-  // "Jan".
-  l10n::CaseInsensitiveCompare compare;
+  // "Jan" in the user's locale.
   UErrorCode status = U_ZERO_ERROR;
   icu::Locale locale(app_locale.c_str());
   icu::DateFormatSymbols date_format_symbols(locale, status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING);
-
+  // Full months (January, Janvier, etc.)
   int32_t num_months;
   const icu::UnicodeString* months = date_format_symbols.getMonths(num_months);
   for (int32_t i = 0; i < num_months; ++i) {
     const base::string16 icu_month(
         base::i18n::UnicodeStringToString16(months[i]));
-    if (compare.StringsEqual(icu_month, month)) {
+    // We look for the ICU-defined month in |month|.
+    if (base::i18n::StringSearchIgnoringCaseAndAccents(icu_month, month,
+                                                       nullptr, nullptr)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
     }
   }
-
+  // Abbreviated months (jan., janv., fév.) Some abbreviations have . at the end
+  // (e.g., "janv." in French). The period is removed.
   months = date_format_symbols.getShortMonths(num_months);
-  // Some abbreviations have . at the end (e.g., "janv." in French). We don't
-  // care about matching that.
   base::string16 trimmed_month;
   base::TrimString(month, ASCIIToUTF16("."), &trimmed_month);
   for (int32_t i = 0; i < num_months; ++i) {
     base::string16 icu_month(base::i18n::UnicodeStringToString16(months[i]));
     base::TrimString(icu_month, ASCIIToUTF16("."), &icu_month);
-    if (compare.StringsEqual(icu_month, trimmed_month)) {
+    // We look for the ICU-defined month in |trimmed_month|.
+    if (base::i18n::StringSearchIgnoringCaseAndAccents(icu_month, trimmed_month,
+                                                       nullptr, nullptr)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
     }
