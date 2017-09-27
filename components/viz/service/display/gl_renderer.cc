@@ -178,7 +178,10 @@ const size_t kMaxPendingSyncQueries = 16;
 // Parameters needed to draw a RenderPassDrawQuad.
 struct DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
-  ~DrawRenderPassDrawQuadParams() {}
+  ~DrawRenderPassDrawQuadParams() {
+    // Don't leak the texture.
+    DCHECK(!background_texture);
+  }
 
   // Required Inputs.
   const RenderPassDrawQuad* quad = nullptr;
@@ -221,9 +224,7 @@ struct DrawRenderPassDrawQuadParams {
       mask_resource_lock;
 
   // Original background texture.
-  std::unique_ptr<cc::ScopedResource> background_texture;
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
-      shader_background_sampler_lock;
+  uint32_t background_texture = 0;
 
   // Backdrop bounding box.
   gfx::Rect background_rect;
@@ -655,15 +656,16 @@ void GLRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
 }
 
-static sk_sp<SkImage> WrapTexture(
-    const cc::DisplayResourceProvider::ScopedReadLockGL& lock,
-    GrContext* context,
-    bool flip_texture) {
-  // Wrap a given texture in a Ganesh backend texture.
+// Wrap a given texture in a Ganesh backend texture.
+static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
+                                  uint32_t target,
+                                  const gfx::Size& size,
+                                  GrContext* context,
+                                  bool flip_texture) {
   GrGLTextureInfo texture_info;
-  texture_info.fTarget = lock.target();
-  texture_info.fID = lock.texture_id();
-  GrBackendTexture backend_texture(lock.size().width(), lock.size().height(),
+  texture_info.fTarget = target;
+  texture_info.fID = texture_id;
+  GrBackendTexture backend_texture(size.width(), size.height(),
                                    kSkia8888_GrPixelConfig, texture_info);
   GrSurfaceOrigin origin =
       flip_texture ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
@@ -686,8 +688,9 @@ static sk_sp<SkImage> ApplyImageFilter(
   if (!filter || !use_gr_context)
     return nullptr;
 
-  sk_sp<SkImage> src_image =
-      WrapTexture(source_texture_lock, use_gr_context->context(), flip_texture);
+  sk_sp<SkImage> src_image = WrapTexture(
+      source_texture_lock.texture_id(), source_texture_lock.target(),
+      source_texture_lock.size(), use_gr_context->context(), flip_texture);
 
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
@@ -908,37 +911,60 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   return backdrop_rect;
 }
 
-std::unique_ptr<cc::ScopedResource> GLRenderer::GetBackdropTexture(
-    const gfx::Rect& bounding_rect) {
-  auto device_background_texture =
-      base::MakeUnique<cc::ScopedResource>(resource_provider_);
-  // CopyTexImage2D fails when called on a texture having immutable storage.
-  device_background_texture->Allocate(
-      bounding_rect.size(), cc::ResourceProvider::TEXTURE_HINT_DEFAULT,
-      BackbufferFormat(), current_frame()->current_render_pass->color_space);
-  {
-    cc::ResourceProvider::ScopedWriteLockGL lock(
-        resource_provider_, device_background_texture->id());
-    GetFramebufferTexture(lock.GetTexture(), bounding_rect);
-  }
-  return device_background_texture;
+GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
+  // If copying a non-root renderpass then use the format of the bound
+  // texture. Otherwise, we use the format of the default framebuffer. But
+  // whatever the format is, convert it to a valid format for CopyTexSubImage2D.
+  GLenum format;
+  if (!current_framebuffer_lock_)
+    format = output_surface_->GetFramebufferCopyTextureFormat();
+  else
+    format = GLCopyTextureInternalFormat(current_framebuffer_format_);
+  // Verify the format is valid for GLES2's glCopyTexSubImage2D.
+  DCHECK(format == GL_ALPHA || format == GL_LUMINANCE ||
+         format == GL_LUMINANCE_ALPHA || format == GL_RGB || format == GL_RGBA)
+      << format;
+  return format;
+}
+
+uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
+  DCHECK_GE(window_rect.x(), 0);
+  DCHECK_GE(window_rect.y(), 0);
+  DCHECK_LE(window_rect.right(), current_surface_size_.width());
+  DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
+
+  uint32_t texture_id;
+  gl_->GenTextures(1, &texture_id);
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
+                      window_rect.x(), window_rect.y(), window_rect.width(),
+                      window_rect.height(), 0);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+  return texture_id;
 }
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
     const cc::FilterOperations& background_filters,
-    cc::ScopedResource* background_texture,
-    const gfx::RectF& rect,
-    const gfx::RectF& unclipped_rect) {
+    uint32_t background_texture,
+    const gfx::Rect& rect,
+    const gfx::Rect& unclipped_rect) {
   DCHECK(ShouldApplyBackgroundFilters(quad, &background_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
-  gfx::Vector2dF clipping_offset =
+  gfx::Vector2d clipping_offset =
       (rect.top_right() - unclipped_rect.top_right()) +
       (rect.bottom_left() - unclipped_rect.bottom_left());
   sk_sp<SkImageFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      background_filters, gfx::SizeF(background_texture->size()),
-      clipping_offset);
+      background_filters, gfx::SizeF(rect.size()),
+      gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
   // makeWithFilter fast-path, and go back to calling ApplyImageFilter().
@@ -946,12 +972,10 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   if (!filter || !use_gr_context)
     return nullptr;
 
-  cc::DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                                     background_texture->id());
-
   bool flip_texture = true;
   sk_sp<SkImage> src_image =
-      WrapTexture(lock, use_gr_context->context(), flip_texture);
+      WrapTexture(background_texture, GL_TEXTURE_2D, rect.size(),
+                  use_gr_context->context(), flip_texture);
   if (!src_image) {
     TRACE_EVENT_INSTANT0(
         "cc", "ApplyBackgroundFilters wrap background texture failed",
@@ -1094,6 +1118,10 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     params.contents_texture = contents_texture;
     DrawRenderPassQuadInternal(&params);
   }
+  if (params.background_texture) {
+    gl_->DeleteTextures(1, &params.background_texture);
+    params.background_texture = 0;
+  }
 }
 
 void GLRenderer::DrawRenderPassQuadInternal(
@@ -1197,8 +1225,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
-            quad, *params->background_filters, params->background_texture.get(),
-            gfx::RectF(params->background_rect), gfx::RectF(unclipped_rect));
+            quad, *params->background_filters, params->background_texture,
+            params->background_rect, unclipped_rect);
         if (params->background_image) {
           params->background_image_id =
               skia::GrBackendObjectToGrGLTextureInfo(
@@ -1214,21 +1242,31 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       DCHECK(!params->background_image_id);
       params->use_shaders_for_blending = false;
     } else if (params->background_image_id) {
-      // Reset original background texture if there is not any mask
-      if (!quad->mask_resource_id())
-        params->background_texture.reset();
+      // Reset original background texture if there is not any mask.
+      if (!quad->mask_resource_id()) {
+        gl_->DeleteTextures(1, &params->background_texture);
+        params->background_texture = 0;
+      }
     } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
                ShouldApplyBackgroundFilters(quad, params->background_filters)) {
       // Something went wrong with applying background filters to the backdrop.
       params->use_shaders_for_blending = false;
-      params->background_texture.reset();
+      gl_->DeleteTextures(1, &params->background_texture);
+      params->background_texture = 0;
     }
   }
+
   // Need original background texture for mask?
   params->mask_for_background =
-      params->background_texture &&   // Have original background texture
-      params->background_image_id &&  // Have filtered background texture
-      quad->mask_resource_id();       // Have mask texture
+      params->background_texture &&  // Have original background texture
+      params->background_image_id;   // Have mask texture
+  // If we have background texture + background image, then we also have mask
+  // resource.
+  if (params->background_texture && params->background_image_id) {
+    DCHECK(params->mask_for_background);
+    DCHECK(quad->mask_resource_id());
+  }
+
   DCHECK_EQ(params->background_texture || params->background_image_id,
             params->use_shaders_for_blending);
 }
@@ -1457,28 +1495,35 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     DCHECK_NE(current_program_->backdrop_location(), 0);
     DCHECK_NE(current_program_->backdrop_rect_location(), 0);
 
-    gl_->Uniform1i(current_program_->backdrop_location(), ++last_texture_unit);
+    ++last_texture_unit;
+    gl_->Uniform1i(current_program_->backdrop_location(), last_texture_unit);
 
     gl_->Uniform4f(current_program_->backdrop_rect_location(),
                    params->background_rect.x(), params->background_rect.y(),
                    params->background_rect.width(),
                    params->background_rect.height());
 
+    // Either |background_image_id| or |background_texture| will be the
+    // |backdrop_location| in the shader.
     if (params->background_image_id) {
       gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
       gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
       gl_->ActiveTexture(GL_TEXTURE0);
-      if (params->mask_for_background)
-        gl_->Uniform1i(current_program_->original_backdrop_location(),
-                       ++last_texture_unit);
+    }
+    // If |mask_for_background| then we have both |background_image_id| and
+    // |background_texture|, and the latter will be the
+    // |original_backdrop_location| in the shader.
+    if (params->mask_for_background) {
+      DCHECK(params->background_image_id);
+      DCHECK(params->background_texture);
+      ++last_texture_unit;
+      gl_->Uniform1i(current_program_->original_backdrop_location(),
+                     last_texture_unit);
     }
     if (params->background_texture) {
-      params->shader_background_sampler_lock =
-          base::MakeUnique<cc::DisplayResourceProvider::ScopedSamplerGL>(
-              resource_provider_, params->background_texture->id(),
-              GL_TEXTURE0 + last_texture_unit, GL_LINEAR);
-      DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
-                params->shader_background_sampler_lock->target());
+      gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
+      gl_->BindTexture(GL_TEXTURE_2D, params->background_texture);
+      gl_->ActiveTexture(GL_TEXTURE0);
     }
   }
 
@@ -2856,7 +2901,13 @@ void GLRenderer::GetFramebufferPixelsAsync(
         texture_id =
             gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
       }
-      GetFramebufferTexture(texture_id, window_rect);
+      gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+      // Note: This redefines the format of the texture if it was passed in from
+      // the client to be the best match based on the source of the copy.
+      gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
+                          window_rect.x(), window_rect.y(), window_rect.width(),
+                          window_rect.height(), 0);
+      gl_->BindTexture(GL_TEXTURE_2D, 0);
 
       const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
       gl_->ShallowFlushCHROMIUM();
@@ -3005,31 +3056,6 @@ void GLRenderer::FinishedReadback(
   // |iter|. The difference |-1| is due to the fact of correspondence of end()
   // with rbegin().
   pending_async_read_pixels_.erase(iter.base() - 1);
-}
-
-void GLRenderer::GetFramebufferTexture(unsigned texture_id,
-                                       const gfx::Rect& window_rect) {
-  DCHECK(texture_id);
-  DCHECK_GE(window_rect.x(), 0);
-  DCHECK_GE(window_rect.y(), 0);
-  DCHECK_LE(window_rect.right(), current_surface_size_.width());
-  DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
-
-  // If copying a non-root renderpass then use the format of the bound
-  // texture. Otherwise, we use the format of the default framebuffer.
-  GLenum format = current_framebuffer_lock_
-                      ? GLCopyTextureInternalFormat(current_framebuffer_format_)
-                      : output_surface_->GetFramebufferCopyTextureFormat();
-  // Verify the format is valid for GLES2's glCopyTexImage2D.
-  DCHECK(format == GL_ALPHA || format == GL_LUMINANCE ||
-         format == GL_LUMINANCE_ALPHA || format == GL_RGB || format == GL_RGBA)
-      << format;
-
-  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, format, window_rect.x(),
-                      window_rect.y(), window_rect.width(),
-                      window_rect.height(), 0);
-  gl_->BindTexture(GL_TEXTURE_2D, 0);
 }
 
 void GLRenderer::BindFramebufferToOutputSurface() {
@@ -3594,6 +3620,10 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   gl_->Viewport(0, 0, updated_dst_rect.width(), updated_dst_rect.height());
 
   DrawRPDQ(params);
+  if (params.background_texture) {
+    gl_->DeleteTextures(1, &params.background_texture);
+    params.background_texture = 0;
+  }
   gl_->DeleteFramebuffers(1, &temp_fbo);
 }
 
