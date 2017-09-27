@@ -1115,6 +1115,10 @@
     "label": "//chrome/browser/vr:vr_common_unittests",
     "type": "console_test_launcher",
   },
+  "wayland_client_perftests": {
+    "label": "//components/exo/wayland:wayland_client_perftests",
+    "type": "windowed_test_launcher",
+  },
   "webapk_client_junit_tests": {
     "label": "//chrome/android/webapk/libs/client:webapk_client_junit_tests",
     "type": "junit_test",
