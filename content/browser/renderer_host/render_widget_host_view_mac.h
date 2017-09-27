@@ -22,6 +22,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -482,6 +484,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   NSView* BrowserCompositorMacGetNSView() const override;
   SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
   void BrowserCompositorMacOnBeginFrame() override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
 
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;
@@ -605,6 +608,16 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
   std::unique_ptr<CursorManager> cursor_manager_;
+
+  // The size associated with the current LocalSurfaceId if any.
+  gfx::Size last_size_;
+
+  // The last device scale factor associated with the current
+  // LocalSurfaceId if any.
+  float last_device_scale_factor_ = 0.f;
+
+  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

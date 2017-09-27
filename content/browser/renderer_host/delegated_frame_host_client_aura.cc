@@ -73,6 +73,10 @@ DelegatedFrameHostClientAura::DelegatedFrameHostCreateResizeLock() {
   return base::MakeUnique<CompositorResizeLock>(this, desired_size);
 }
 
+viz::LocalSurfaceId DelegatedFrameHostClientAura::GetLocalSurfaceId() const {
+  return render_widget_host_view_->GetLocalSurfaceId();
+}
+
 void DelegatedFrameHostClientAura::OnBeginFrame() {
   render_widget_host_view_->OnBeginFrame();
 }

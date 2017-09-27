@@ -31,7 +31,9 @@ namespace {
 class MockRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
   MockRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host, is_guest_view_hack),
+      : RenderWidgetHostViewAura(host,
+                                 is_guest_view_hack,
+                                 false /* enable_surface_synchronization */),
         host_(RenderWidgetHostImpl::From(host)) {}
   ~MockRenderWidgetHostView() override {
     if (mouse_locked_)

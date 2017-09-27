@@ -68,6 +68,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
   virtual std::unique_ptr<CompositorResizeLock>
   DelegatedFrameHostCreateResizeLock() = 0;
+  virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
 
   virtual void OnBeginFrame() = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
@@ -87,7 +88,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
-                     DelegatedFrameHostClient* client);
+                     DelegatedFrameHostClient* client,
+                     bool enable_surface_synchronization);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -181,7 +183,7 @@ class CONTENT_EXPORT DelegatedFrameHost
     return viz::SurfaceId(frame_sink_id_, local_surface_id_);
   }
 
-  bool HasFrameForTesting() const { return has_frame_; }
+  bool HasPrimarySurfaceForTesting() const { return has_primary_surface_; }
 
   void OnCompositingDidCommitForTesting(ui::Compositor* compositor) {
     OnCompositingDidCommit(compositor);
@@ -260,6 +262,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   const viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;
+  const bool enable_surface_synchronization_;
   ui::Compositor* compositor_;
 
   // The vsync manager we are observing for changes, if any.
@@ -286,9 +289,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // State for rendering into a Surface.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-  gfx::Size current_surface_size_;
-  float current_scale_factor_;
-  std::vector<viz::ReturnedResource> surface_returned_resources_;
 
   // This lock is the one waiting for a frame of the right size to come back
   // from the renderer/GPU process. It is set from the moment the aura window
@@ -322,7 +322,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   bool needs_begin_frame_ = false;
 
-  bool has_frame_ = false;
+  bool has_primary_surface_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

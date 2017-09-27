@@ -36,6 +36,7 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   bool DelegatedFrameCanCreateResizeLock() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void OnBeginFrame() override;
   bool IsAutoResizeEnabled() const override;
 

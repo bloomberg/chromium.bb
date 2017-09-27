@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -27,6 +28,7 @@ class BrowserCompositorMacClient {
   virtual NSView* BrowserCompositorMacGetNSView() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
   virtual void BrowserCompositorMacOnBeginFrame() = 0;
+  virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
 };
 
 // This class owns a DelegatedFrameHost, and will dynamically attach and
@@ -104,6 +106,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;
   gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
   void OnBeginFrame() override;
