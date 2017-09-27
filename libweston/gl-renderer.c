@@ -231,6 +231,11 @@ struct gl_renderer {
 	int has_dmabuf_import_modifiers;
 	PFNEGLQUERYDMABUFFORMATSEXTPROC query_dmabuf_formats;
 	PFNEGLQUERYDMABUFMODIFIERSEXTPROC query_dmabuf_modifiers;
+
+	int has_native_fence_sync;
+	PFNEGLCREATESYNCKHRPROC create_sync;
+	PFNEGLDESTROYSYNCKHRPROC destroy_sync;
+	PFNEGLDUPNATIVEFENCEFDANDROIDPROC dup_native_fence_fd;
 };
 
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
@@ -3027,6 +3032,17 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 
 	if (weston_check_egl_extension(extensions, "GL_EXT_texture_rg"))
 		gr->has_gl_texture_rg = 1;
+
+	if (weston_check_egl_extension(extensions, "EGL_KHR_fence_sync") &&
+	    weston_check_egl_extension(extensions, "EGL_ANDROID_native_fence_sync")) {
+		gr->create_sync =
+			(void *) eglGetProcAddress("eglCreateSyncKHR");
+		gr->destroy_sync =
+			(void *) eglGetProcAddress("eglDestroySyncKHR");
+		gr->dup_native_fence_fd =
+			(void *) eglGetProcAddress("eglDupNativeFenceFDANDROID");
+		gr->has_native_fence_sync = 1;
+	}
 
 	renderer_setup_egl_client_extensions(gr);
 

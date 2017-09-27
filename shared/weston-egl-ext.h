@@ -176,6 +176,22 @@ typedef EGLSurface (EGLAPIENTRYP PFNEGLCREATEPLATFORMPIXMAPSURFACEEXTPROC) (EGLD
 #define EGL_PLATFORM_X11_KHR 0x31D5
 #endif
 
+#ifndef EGL_KHR_cl_event2
+#define EGL_KHR_cl_event2 1
+typedef void *EGLSyncKHR;
+#endif /* EGL_KHR_cl_event2 */
+
+#ifndef EGL_KHR_fence_sync
+#define EGL_KHR_fence_sync 1
+typedef EGLSyncKHR (EGLAPIENTRYP PFNEGLCREATESYNCKHRPROC) (EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLDESTROYSYNCKHRPROC) (EGLDisplay dpy, EGLSyncKHR sync);
+#endif /* EGL_KHR_fence_sync */
+
+#ifndef EGL_ANDROID_native_fence_sync
+#define EGL_ANDROID_native_fence_sync 1
+typedef EGLint (EGLAPIENTRYP PFNEGLDUPNATIVEFENCEFDANDROIDPROC) (EGLDisplay dpy, EGLSyncKHR sync);
+#endif /* EGL_ANDROID_native_fence_sync */
+
 #else /* ENABLE_EGL */
 
 /* EGL platform definition are keept to allow compositor-xx.c to build */
