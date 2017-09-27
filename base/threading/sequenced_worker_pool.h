@@ -65,11 +65,6 @@ template <class T> class DeleteHelper;
 // for CONTINUE_ON_SHUTDOWN behavior and is required for BLOCK_SHUTDOWN
 // behavior.
 //
-// Implementation note: This does not use a base::WorkerPool since that does
-// not enforce shutdown semantics or allow us to specify how many worker
-// threads to run. For the typical use case of random background work, we don't
-// necessarily want to be super aggressive about creating threads.
-//
 // Note that SequencedWorkerPool is RefCountedThreadSafe (inherited
 // from TaskRunner).
 //

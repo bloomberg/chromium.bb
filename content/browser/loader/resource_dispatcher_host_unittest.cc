@@ -3496,9 +3496,9 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   OnMessageReceived(request_msg, filter_.get());
 
   // Running the message loop until idle does not work because
-  // RedirectToFileResourceHandler posts things to base::WorkerPool. Instead,
-  // wait for the ResourceMsg_RequestComplete to go out. Then run the event loop
-  // until idle so the loader is gone.
+  // ResourceDispatcherHostImpl posts tasks to TaskScheduler. Instead, wait for
+  // the ResourceMsg_RequestComplete to go out. Then, wait until no
+  // TaskScheduler or main thread tasks remain.
   WaitForRequestComplete();
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(0, host_.pending_requests());
