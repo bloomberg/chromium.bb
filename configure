@@ -333,6 +333,7 @@ EXPERIMENT_LIST="
     frame_sign_bias
     ext_skip
     obu
+    add_4bytes_obusize
     amvr
     lpf_sb
     opt_ref_mv

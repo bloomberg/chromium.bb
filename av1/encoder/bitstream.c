@@ -3361,7 +3361,12 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     }
   } else {
 #endif  // CONFIG_EXT_TILE
+
+#if !CONFIG_OBU
     write_uncompressed_header_frame(cpi, &wb);
+#else
+  write_uncompressed_header_obu(cpi, &wb);
+#endif
 
     if (cm->show_existing_frame) {
       total_size = aom_wb_bytes_written(&wb);
@@ -4781,12 +4786,15 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
 #endif
 
 #if CONFIG_OBU
-static uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
-                                 uint8_t *const dst) {
+
+uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
+                          uint8_t *const dst) {
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
 
-  aom_wb_write_literal(&wb, (int)obu_type, 5);
+  // first bit is obu_forbidden_bit according to R19
+  aom_wb_write_literal(&wb, 0, 1);
+  aom_wb_write_literal(&wb, (int)obu_type, 4);
   aom_wb_write_literal(&wb, 0, 2);
   aom_wb_write_literal(&wb, obu_extension ? 1 : 0, 1);
   if (obu_extension) {
@@ -4796,8 +4804,6 @@ static uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
   size = aom_wb_bytes_written(&wb);
   return size;
 }
-
-static uint32_t write_temporal_delimiter_obu() { return 0; }
 
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5036,7 +5042,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
         if (new_tg) {
           if (insert_frame_header_obu_flag && tile_idx) {
-            // insert a copy of frame header OBU (including 4-byte size),
+            // insert a copy of frame header OBU (including
+            // PRE_OBU_SIZE_BYTES-byte size),
             // except before the first tile group
             data = dst + total_size;
             memmove(data, frame_header_obu_location, frame_header_obu_size);
@@ -5045,13 +5052,14 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           data = dst + total_size;
           // A new tile group begins at this tile.  Write the obu header and
           // tile group header
-          curr_tg_data_size = write_obu_header(OBU_TILE_GROUP, 0, data + 4);
+          curr_tg_data_size =
+              write_obu_header(OBU_TILE_GROUP, 0, data + PRE_OBU_SIZE_BYTES);
           if (n_log2_tiles)
             curr_tg_data_size += write_tile_group_header(
-                data + curr_tg_data_size + 4, tile_idx,
+                data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
                 AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
                 n_log2_tiles);
-          total_size += curr_tg_data_size + 4;
+          total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
           new_tg = 0;
           tile_count = 0;
         }
@@ -5070,8 +5078,12 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
         buf->data = dst + total_size;
 
-        // The last tile of the tile group does not have a header.
+// The last tile of the tile group does not have a header.
+#if CONFIG_ADD_4BYTES_OBUSIZE
         if (!is_last_tile_in_tg) total_size += 4;
+#else
+      total_size += 4;
+#endif
 
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
@@ -5110,8 +5122,12 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // size of this tile
           mem_put_le32(buf->data, tile_size);
         } else {
+#if CONFIG_ADD_4BYTES_OBUSIZE
           // write current tile group size
           mem_put_le32(data, curr_tg_data_size);
+#else
+        mem_put_le32(buf->data, tile_size);
+#endif
         }
 
         total_size += tile_size;
@@ -5154,45 +5170,51 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif
 
 #if CONFIG_OBU
-  // write temporal delimiter obu, preceded by 4-byte size
-  obu_size = write_obu_header(OBU_TD, 0, data + 4);
-  obu_size += write_temporal_delimiter_obu(/*data + 4 + obu_size*/);
-  mem_put_le32(data, obu_size);
-  data += obu_size + 4;
+  // The TD is now written outside the frame encode loop
 
   // write sequence header obu if KEY_FRAME, preceded by 4-byte size
   if (cm->frame_type == KEY_FRAME) {
-    obu_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data + 4);
-    obu_size += write_sequence_header_obu(cpi, data + 4 + obu_size);
+    obu_size =
+        write_obu_header(OBU_SEQUENCE_HEADER, 0, data + PRE_OBU_SIZE_BYTES);
+    obu_size +=
+        write_sequence_header_obu(cpi, data + PRE_OBU_SIZE_BYTES + obu_size);
+#if CONFIG_ADD_4BYTES_OBUSIZE
     mem_put_le32(data, obu_size);
-    data += obu_size + 4;
+#endif
+    data += obu_size + PRE_OBU_SIZE_BYTES;
   }
 
   // write frame header obu, preceded by 4-byte size
-  frame_header_location = data + 4;
+  frame_header_location = data + PRE_OBU_SIZE_BYTES;
   obu_size = write_obu_header(OBU_FRAME_HEADER, 0, frame_header_location);
-  frame_header_size = write_frame_header_obu(cpi, data + 4 + obu_size);
+  frame_header_size =
+      write_frame_header_obu(cpi, data + PRE_OBU_SIZE_BYTES + obu_size);
   obu_size += frame_header_size;
+#if CONFIG_ADD_4BYTES_OBUSIZE
   mem_put_le32(data, obu_size);
-  data += obu_size + 4;
+#endif
+  data += obu_size + PRE_OBU_SIZE_BYTES;
 
   if (cm->show_existing_frame) {
     data_size = 0;
   } else {
     //  Each tile group obu will be preceded by 4-byte size of the tile group
     //  obu
-    data_size =
-        write_tiles_in_tg_obus(cpi, data, &max_tile_size, &max_tile_col_size,
-                               frame_header_location - 4, obu_size + 4,
-                               1 /* cm->error_resilient_mode */);
+    data_size = write_tiles_in_tg_obus(
+        cpi, data, &max_tile_size, &max_tile_col_size,
+        frame_header_location - PRE_OBU_SIZE_BYTES,
+        obu_size + PRE_OBU_SIZE_BYTES, 1 /* cm->error_resilient_mode */);
   }
 
 #endif
 
 #if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
-    // Write the uncompressed header
+#if !CONFIG_OBU
     write_uncompressed_header_frame(cpi, &wb);
+#else
+    write_uncompressed_header_obu(cpi, &wb);
+#endif
 
     if (cm->show_existing_frame) {
       *size = aom_wb_bytes_written(&wb);

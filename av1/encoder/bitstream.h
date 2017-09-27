@@ -25,6 +25,11 @@ void write_sequence_header(AV1_COMMON *const cm,
                            struct aom_write_bit_buffer *wb);
 #endif
 
+#if CONFIG_OBU
+uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
+                          uint8_t *const dst);
+#endif
+
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 
 void av1_encode_token_init(void);

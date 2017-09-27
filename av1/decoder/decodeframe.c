@@ -2128,7 +2128,12 @@ static void get_tile_buffer(const uint8_t *const data_end,
       aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile size");
   } else {
+#if !CONFIG_OBU || CONFIG_ADD_4BYTES_OBUSIZE
     size = data_end - *data;
+#else
+    size = mem_get_varsize(*data, tile_size_bytes);
+    *data += tile_size_bytes;
+#endif
   }
 
   buf->data = *data;
@@ -3928,7 +3933,10 @@ static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
 
   *header_size = 1;
 
-  obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 5);
+  // first bit is obu_forbidden_bit (0) according to R19
+  aom_rb_read_bit(rb);
+
+  obu_type = (OBU_TYPE)aom_rb_read_literal(rb, 4);
   aom_rb_read_literal(rb, 2);  // reserved
   obu_extension_flag = aom_rb_read_bit(rb);
   if (obu_extension_flag) {
@@ -4024,6 +4032,55 @@ static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
   return header_size + tg_payload_size;
 }
 
+static void read_metadata_private_data(const uint8_t *data, uint32_t sz) {
+  int i;
+
+  for (i = 0; i < (int)sz; i++) {
+    mem_get_le16(data);
+    data += 2;
+  }
+}
+
+static void read_metadata_hdr_cll(const uint8_t *data) {
+  mem_get_le16(data);
+  mem_get_le16(data + 2);
+}
+
+static void read_metadata_hdr_mdcv(const uint8_t *data) {
+  int i;
+
+  for (i = 0; i < 3; i++) {
+    mem_get_le16(data);
+    data += 2;
+    mem_get_le16(data);
+    data += 2;
+  }
+
+  mem_get_le16(data);
+  data += 2;
+  mem_get_le16(data);
+  data += 2;
+  mem_get_le16(data);
+  data += 2;
+  mem_get_le16(data);
+}
+
+static uint32_t read_metadata(const uint8_t *data, uint32_t sz) {
+  METADATA_TYPE metadata_type;
+
+  metadata_type = (METADATA_TYPE)mem_get_le16(data);
+
+  if (metadata_type == METADATA_TYPE_PRIVATE_DATA) {
+    read_metadata_private_data(data + 2, sz - 2);
+  } else if (metadata_type == METADATA_TYPE_HDR_CLL) {
+    read_metadata_hdr_cll(data + 2);
+  } else if (metadata_type == METADATA_TYPE_HDR_MDCV) {
+    read_metadata_hdr_mdcv(data + 2);
+  }
+
+  return sz;
+}
+
 void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,
                                 const uint8_t **p_data_end) {
@@ -4040,13 +4097,19 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     uint32_t obu_size, obu_header_size, obu_payload_size = 0;
     OBU_TYPE obu_type;
 
-    init_read_bit_buffer(pbi, &rb, data + 4, data_end, clear_data);
+    init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end,
+                         clear_data);
 
-    // every obu is preceded by 4-byte size of obu (obu header + payload size)
-    // The obu size is only needed for tile group OBUs
+// every obu is preceded by PRE_OBU_SIZE_BYTES-byte size of obu (obu header +
+// payload size)
+// The obu size is only needed for tile group OBUs
+#if CONFIG_ADD_4BYTES_OBUSIZE
     obu_size = mem_get_le32(data);
+#else
+    obu_size = data_end - data;
+#endif
     obu_type = read_obu_header(&rb, &obu_header_size);
-    data += (4 + obu_header_size);
+    data += (PRE_OBU_SIZE_BYTES + obu_header_size);
 
     switch (obu_type) {
       case OBU_TD: obu_payload_size = read_temporal_delimiter_obu(); break;
@@ -4069,6 +4132,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
             pbi, &rb, is_first_tg_obu_received, data, data + obu_size - 1,
             p_data_end, &frame_decoding_finished);
         is_first_tg_obu_received = 0;
+        break;
+      case OBU_METADATA:
+        obu_payload_size = read_metadata(data, obu_size);
         break;
       default: break;
     }
