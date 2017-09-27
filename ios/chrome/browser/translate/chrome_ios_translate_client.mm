@@ -111,8 +111,7 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
       NOTREACHED();
   }
   infobar->SetController(controller);
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(infobar);
+  return infobar;
 }
 
 void ChromeIOSTranslateClient::RecordTranslateEvent(

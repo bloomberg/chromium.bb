@@ -48,9 +48,7 @@ WebViewTranslateRankerFactory::BuildServiceInstanceFor(
           nullptr /* ukm::UkmRecorder */);
   // WebView has no consumer of translate ranker events, so don't generate them.
   ranker->EnableLogging(false);
-
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(ranker);
+  return ranker;
 }
 
 }  // namespace ios_web_view

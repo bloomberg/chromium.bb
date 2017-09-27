@@ -135,14 +135,10 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
       ntp_snippets::BuildSelectedCategoryRanker(
           prefs, base::MakeUnique<base::DefaultClock>(),
           /*is_chrome_home_enabled=*/false);
-  std::unique_ptr<ContentSuggestionsService> service =
-      base::MakeUnique<ContentSuggestionsService>(
-          State::ENABLED, signin_manager, history_service, large_icon_service,
-          prefs, std::move(category_ranker), std::move(user_classifier),
-          std::move(scheduler), std::move(debug_logger));
-
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return base::MakeUnique<ContentSuggestionsService>(
+      State::ENABLED, signin_manager, history_service, large_icon_service,
+      prefs, std::move(category_ranker), std::move(user_classifier),
+      std::move(scheduler), std::move(debug_logger));
 }
 
 void RegisterReadingListProvider(ContentSuggestionsService* service,

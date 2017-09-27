@@ -62,8 +62,7 @@ AuthenticationServiceFactory::BuildServiceInstanceFor(
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state)));
   service->Initialize();
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(service);
+  return service;
 }
 
 void AuthenticationServiceFactory::RegisterBrowserStatePrefs(

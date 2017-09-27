@@ -59,8 +59,7 @@ ShellWebClient::~ShellWebClient() {
 std::unique_ptr<web::WebMainParts> ShellWebClient::CreateWebMainParts() {
   auto web_main_parts = base::MakeUnique<ShellWebMainParts>();
   web_main_parts_ = web_main_parts.get();
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(web_main_parts);
+  return web_main_parts;
 }
 
 ShellBrowserState* ShellWebClient::browser_state() const {

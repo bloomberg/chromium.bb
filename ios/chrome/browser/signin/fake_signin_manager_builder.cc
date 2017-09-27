@@ -30,8 +30,7 @@ std::unique_ptr<KeyedService> BuildFakeSigninManager(
   manager->Initialize(nullptr);
   ios::SigninManagerFactory::GetInstance()
       ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
-  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-  return std::move(manager);
+  return manager;
 }
 
 }  // namespace ios
