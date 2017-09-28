@@ -86,15 +86,26 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
 // static
 void Referrer::SetReferrerForRequest(net::URLRequest* request,
                                      const Referrer& referrer) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string referrer_string;
+  net::URLRequest::ReferrerPolicy referrer_policy;
+  ComputeReferrerInfo(&referrer_string, &referrer_policy, referrer);
+  request->SetReferrer(referrer_string);
+  request->set_referrer_policy(referrer_policy);
+}
+
+// static
+void Referrer::ComputeReferrerInfo(std::string* out_referrer_string,
+                                   net::URLRequest::ReferrerPolicy* out_policy,
+                                   const Referrer& referrer) {
   if (!referrer.url.is_valid() ||
-      command_line->HasSwitch(switches::kNoReferrers)) {
-    request->SetReferrer(std::string());
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoReferrers)) {
+    *out_referrer_string = std::string();
   } else {
-    request->SetReferrer(referrer.url.spec());
+    *out_referrer_string = referrer.url.spec();
   }
 
-  request->set_referrer_policy(ReferrerPolicyForUrlRequest(referrer));
+  *out_policy = ReferrerPolicyForUrlRequest(referrer);
 }
 
 // static
