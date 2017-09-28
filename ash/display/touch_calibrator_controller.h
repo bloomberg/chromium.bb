@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -23,17 +24,20 @@ namespace ash {
 
 class TouchCalibratorView;
 
-// TouchCalibratorController is responsible for collecting the touch calibration
-// associated data from the user. It instantiates TouchCalibratorView classes to
-// present an interface the user can interact with for calibration.
-// Touch calibration is restricted to calibrate only one display at a time.
+// TouchCalibratorController is responsible for managing the touch calibration
+// process. In case of native touch calibration it is also responsible for
+// collecting the touch calibration associated data from the user. It
+// instantiates TouchCalibratorView classes to present the native UX interface
+// the user can interact with for calibration.
+// This controller ensures that only one instance of calibration is running at
+// any given time.
 class ASH_EXPORT TouchCalibratorController
     : public ui::EventHandler,
       public WindowTreeHostManager::Observer {
  public:
   using CalibrationPointPairQuad =
       display::TouchCalibrationData::CalibrationPointPairQuad;
-  using TouchCalibrationCallback = base::Callback<void(bool)>;
+  using TouchCalibrationCallback = base::OnceCallback<void(bool)>;
 
   static const base::TimeDelta kTouchIntervalThreshold;
 
@@ -48,19 +52,48 @@ class ASH_EXPORT TouchCalibratorController
   void OnDisplayConfigurationChanged() override;
 
   // Starts the calibration process for the given |target_display|.
+  // |opt_callback| is an optional callback that if provided is executed
+  // with the success or failure of the calibration as a boolean argument.
   void StartCalibration(const display::Display& target_display,
-                        const TouchCalibrationCallback& callback);
+                        bool is_custom_calibration,
+                        TouchCalibrationCallback opt_callback);
 
-  // Stops any ongoing calibration process.
-  void StopCalibration();
+  // Stops any ongoing calibration process. This is a hard stop which does not
+  // save any calibration data. Call CompleteCalibration() if you wish to save
+  // calibration data.
+  void StopCalibrationAndResetParams();
 
-  bool is_calibrating() { return is_calibrating_; }
+  // Completes the touch calibration by storing the calibration data for the
+  // display.
+  void CompleteCalibration(const CalibrationPointPairQuad& pairs,
+                           const gfx::Size& display_size);
+
+  // Returns true if any type of touch calibration is active.
+  bool IsCalibrating() const;
 
  private:
   friend class TouchCalibratorControllerTest;
   FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest, StartCalibration);
   FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest, KeyEventIntercept);
   FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest, TouchThreshold);
+  FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest, TouchDeviceIdIsSet);
+  FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest, CustomCalibration);
+  FRIEND_TEST_ALL_PREFIXES(TouchCalibratorControllerTest,
+                           CustomCalibrationInvalidTouchId);
+
+  enum class CalibrationState {
+    // Indicates that the touch calibration is currently active with the built
+    // in native UX.
+    kNativeCalibration = 0,
+
+    // Indicates that the touch calibration is currently active with a custom
+    // UX via the extensions API.
+    kCustomCalibration,
+
+    // Indicates that touch calibration is currently inactive.
+    kInactive
+  };
+  CalibrationState state_ = CalibrationState::kInactive;
 
   // A map for TouchCalibrator view with the key as display id of the display
   // it is present in.
@@ -75,15 +108,16 @@ class ASH_EXPORT TouchCalibratorController
   // was received.
   base::Time last_touch_timestamp_;
 
-  // Is true if a touch calibration is already underprocess.
-  bool is_calibrating_ = false;
+  // This is populated during calibration, based on the source id of the device
+  // the events are originating from.
+  int touch_device_id_ = ui::InputDevice::kInvalidId;
 
   // An array of Calibration point pairs. This stores all the 4 display and
   // touch input point pairs that will be used for calibration.
   CalibrationPointPairQuad touch_point_quad_;
 
   // A callback to be called when touch calibration completes.
-  TouchCalibrationCallback callback_;
+  TouchCalibrationCallback opt_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchCalibratorController);
 };

@@ -41,6 +41,15 @@ struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
                : pair_1.first.x() < pair_2.first.x();
   }
 
+  // Returns a hash that can be used as a key for storing display preferences
+  // for a display associated with a touch device.
+  static uint32_t GenerateTouchDeviceIdentifier(const std::string& device_name,
+                                                uint16_t vendor_id,
+                                                uint16_t product_id);
+
+  // Returns a touch device identifier used as a default or a fallback option.
+  static uint32_t GetFallbackTouchDeviceIdentifier();
+
   bool operator==(TouchCalibrationData other) const;
 
   // Calibration point pairs used during calibration. Each point pair contains a
@@ -272,14 +281,19 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // display.
   void SetManagedDisplayModes(const ManagedDisplayModeList& display_modes);
 
-
-  // Sets/Gets the touch calibration data for the display.
-  void SetTouchCalibrationData(const TouchCalibrationData& calibration_data);
-  TouchCalibrationData
-      GetTouchCalibrationData() const & { return touch_calibration_data_; }
-  bool has_touch_calibration_data() const
-      { return has_touch_calibration_data_; }
-  void clear_touch_calibration_data() { has_touch_calibration_data_ = false; }
+  void SetTouchCalibrationData(uint32_t touch_device_identifier,
+                               const TouchCalibrationData& calibration_data);
+  const TouchCalibrationData& GetTouchCalibrationData(
+      uint32_t touch_device_identifier) const;
+  const std::map<uint32_t, TouchCalibrationData>& touch_calibration_data_map()
+      const {
+    return touch_calibration_data_map_;
+  }
+  void SetTouchCalibrationDataMap(
+      const std::map<uint32_t, TouchCalibrationData>& data_map);
+  bool HasTouchCalibrationData(uint32_t touch_device_identifier) const;
+  void ClearTouchCalibrationData(uint32_t touch_device_identifier);
+  void ClearAllTouchCalibrationData();
 
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
@@ -321,7 +335,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   std::map<Display::RotationSource, Display::Rotation> rotations_;
   Display::RotationSource active_rotation_source_;
   Display::TouchSupport touch_support_;
-  bool has_touch_calibration_data_;
 
   // The set of input devices associated with this display.
   std::vector<int> input_devices_;
@@ -368,8 +381,10 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;
 
-  // Information associated to touch calibration for the display.
-  TouchCalibrationData touch_calibration_data_;
+  // Information associated to touch calibration for the display. Stores a
+  // mapping of each touch device, identified by its unique touch device
+  // identifier, with the touch calibration data associated with the display.
+  std::map<uint32_t, TouchCalibrationData> touch_calibration_data_map_;
 
   // If you add a new member, you need to update Copy().
 };

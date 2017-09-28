@@ -775,7 +775,7 @@ bool DisplayInfoProviderChromeOS::OverscanCalibrationComplete(
 bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
     const std::string& id,
     std::string* error,
-    const DisplayInfoProvider::TouchCalibrationCallback& callback) {
+    DisplayInfoProvider::TouchCalibrationCallback callback) {
   if (ash_util::IsRunningInMash()) {
     // TODO(crbug.com/682402): Mash support.
     NOTIMPLEMENTED();
@@ -795,7 +795,8 @@ bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
     return false;
   }
 
-  GetTouchCalibrator()->StartCalibration(display, callback);
+  GetTouchCalibrator()->StartCalibration(
+      display, false /* is_custom_calibration */, std::move(callback));
   return true;
 }
 
@@ -817,8 +818,8 @@ bool DisplayInfoProviderChromeOS::StartCustomTouchCalibration(
   touch_calibration_target_id_ = id;
   custom_touch_calibration_active_ = true;
 
-  // Enable un-transformed touch input.
-  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(true);
+  GetTouchCalibrator()->StartCalibration(
+      display, true /* is_custom_calibration */, base::Callback<void(bool)>());
   return true;
 }
 
@@ -881,8 +882,7 @@ bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
   }
 
   gfx::Size display_size(bounds.width, bounds.height);
-  ash::Shell::Get()->display_manager()->SetTouchCalibrationData(
-      display.id(), calibration_points, display_size);
+  GetTouchCalibrator()->CompleteCalibration(calibration_points, display_size);
   return true;
 }
 
@@ -901,14 +901,15 @@ bool DisplayInfoProviderChromeOS::ClearTouchCalibration(const std::string& id,
     return false;
   }
 
-  ash::Shell::Get()->display_manager()->ClearTouchCalibrationData(display.id());
+  ash::Shell::Get()->display_manager()->ClearTouchCalibrationData(
+      display.id(), base::nullopt);
   return true;
 }
 
 bool DisplayInfoProviderChromeOS::IsNativeTouchCalibrationActive(
     std::string* error) {
   // If native touch calibration UX is active, set error and return false.
-  if (GetTouchCalibrator()->is_calibrating()) {
+  if (GetTouchCalibrator()->IsCalibrating()) {
     *error = kNativeTouchCalibrationActiveError;
     return true;
   }

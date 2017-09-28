@@ -292,9 +292,9 @@ SystemDisplayShowNativeTouchCalibrationFunction::Run() {
 
   if (!DisplayInfoProvider::Get()->ShowNativeTouchCalibration(
           params->id, &error,
-          base::Bind(&SystemDisplayShowNativeTouchCalibrationFunction::
-                         OnCalibrationComplete,
-                     this))) {
+          base::BindOnce(&SystemDisplayShowNativeTouchCalibrationFunction::
+                             OnCalibrationComplete,
+                         this))) {
     return RespondNow(Error(error));
   }
   return RespondLater();
