@@ -48,6 +48,8 @@ static_library("ntp_snippets") {
     "contextual/contextual_content_suggestions_service.h",
     "contextual/contextual_json_request.cc",
     "contextual/contextual_json_request.h",
+    "contextual/contextual_suggestion.cc",
+    "contextual/contextual_suggestion.h",
     "contextual/contextual_suggestions_fetcher.h",
     "contextual/contextual_suggestions_fetcher_impl.cc",
     "contextual/contextual_suggestions_fetcher_impl.h",

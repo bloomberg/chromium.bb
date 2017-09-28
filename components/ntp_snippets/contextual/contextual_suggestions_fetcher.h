@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
-#include "components/ntp_snippets/remote/remote_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/status.h"
 
 namespace ntp_snippets {
@@ -21,7 +21,7 @@ namespace ntp_snippets {
 // Fetches contextual suggestions from the server.
 class ContextualSuggestionsFetcher {
  public:
-  using OptionalSuggestions = base::Optional<RemoteSuggestion::PtrVector>;
+  using OptionalSuggestions = base::Optional<ContextualSuggestion::PtrVector>;
 
   // If fetching fails, the optional will be empty.
   using SuggestionsAvailableCallback =

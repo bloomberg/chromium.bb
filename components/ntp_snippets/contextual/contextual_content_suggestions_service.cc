@@ -66,10 +66,9 @@ void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
     ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions) {
   std::vector<ContentSuggestion> suggestions;
   if (fetched_suggestions.has_value()) {
-    for (const std::unique_ptr<RemoteSuggestion>& suggestion :
+    for (const std::unique_ptr<ContextualSuggestion>& suggestion :
          fetched_suggestions.value()) {
-      suggestions.emplace_back(suggestion->ToContentSuggestion(
-          Category::FromKnownCategory(KnownCategories::CONTEXTUAL)));
+      suggestions.emplace_back(suggestion->ToContentSuggestion());
       ContentSuggestion::ID id = suggestions.back().id();
       GURL image_url = suggestion->salient_image_url();
       image_url_by_id_[id.id_within_category()] = image_url;
