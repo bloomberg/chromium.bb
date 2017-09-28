@@ -4,10 +4,9 @@
 <script src="../../inspector/network-test.js"></script>
 <script>
 async function test() {
-  function createNetworkRequest(mimeType, content, statusCode) {
-    TestRunner.addResult('Creating a NetworkRequest with mimeType: ' + mimeType);
+  function createNetworkRequest(mimeType, content, statusCode, resourceType) {
     var request = new SDK.NetworkRequest(0, 'http://localhost');
-    TestRunner.addResult('Content: ' + content.replace(/\0/g, '**NULL**'));
+    request._resourceType = resourceType;
     request.mimeType = mimeType;
     request._contentData = Promise.resolve({error: null, content: content, encoded: false});
     if (statusCode !== undefined)
@@ -23,11 +22,23 @@ async function test() {
     return previewer.contentElement.className;
   }
 
-  async function testPreviewer(contentType, content, statusCode) {
-    var request = createNetworkRequest(contentType, content, statusCode);
-    var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
-    previewView.wasShown();
-    TestRunner.addResult('Its previewer type: ' + getViewName(await previewView._contentViewPromise));
+  async function testPreviewer(mimeType, content, statusCode) {
+    var testResourceTypes = [
+      Common.resourceTypes.XHR,
+      Common.resourceTypes.Fetch,
+      Common.resourceTypes.Document,
+      Common.resourceTypes.Other
+    ];
+    TestRunner.addResult('Testing with MimeType: ' + mimeType + ', and StatusCode: ' + statusCode);
+    TestRunner.addResult('Content: ' + content.replace(/\0/g, '**NULL**'));
+    TestRunner.addResult('');
+    for (var resourceType of testResourceTypes) {
+      var request = createNetworkRequest(mimeType, content, statusCode, resourceType);
+      var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
+      previewView.wasShown();
+      TestRunner.addResult('ResourceType(' + resourceType.name() + '): ' + getViewName(await previewView._contentViewPromise));
+    }
+    TestRunner.addResult('');
   }
 
   TestRunner.addResult('Simple JSON');
@@ -41,6 +52,18 @@ async function test() {
 
   TestRunner.addResult('XML MIME But JSON');
   await testPreviewer('text/xml', '{foo0: \'barr\', \'barr\': \'fooo\'}', 200);
+
+  TestRunner.addResult('HTML MIME But JSON');
+  await testPreviewer('text/html', '{hi: "hi"}', 200);
+
+  TestRunner.addResult('TEXT MIME But JSON');
+  await testPreviewer('text/html', '{hi: "hi"}', 200);
+
+  TestRunner.addResult('HTML MIME With 500 error');
+  await testPreviewer('text/html', 'This\n<b>is a </b><br /><br />test.', 500);
+
+  TestRunner.addResult('Plain Text MIME But HTML/XML');
+  await testPreviewer('text/plain', 'This\n<b>is a </b><br /><br />test.', 200);
 
   TestRunner.addResult('XML With Unknown MIME');
   await testPreviewer('text/foobar', '<bar><foo/></bar>', 200);
