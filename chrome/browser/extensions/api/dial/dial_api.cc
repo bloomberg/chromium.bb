@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 using base::TimeDelta;
@@ -34,6 +36,7 @@ DialAPI::DialAPI(Profile* profile)
     : RefcountedKeyedService(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       profile_(profile),
+      system_request_context_(g_browser_process->system_request_context()),
       dial_registry_(nullptr),
       num_on_device_list_listeners_(0) {
   EventRouter::Get(profile)->RegisterObserver(
@@ -53,6 +56,8 @@ DialRegistry* DialAPI::dial_registry() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!dial_registry_) {
     dial_registry_ = media_router::DialRegistry::GetInstance();
+    dial_registry_->SetNetLog(
+        system_request_context_->GetURLRequestContext()->net_log());
     dial_registry_->RegisterObserver(this);
     if (test_device_data_) {
       dial_registry_->AddDeviceForTest(*test_device_data_);
