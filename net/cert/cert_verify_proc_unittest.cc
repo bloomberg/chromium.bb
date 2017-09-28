@@ -273,16 +273,16 @@ class CertVerifyProcInternalTest
   }
 
   bool SupportsCRLSet() const {
-    // TODO(crbug.com/649017): Return true for CERT_VERIFY_PROC_BUILTIN.
     return verify_proc_type() == CERT_VERIFY_PROC_NSS ||
            verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-           verify_proc_type() == CERT_VERIFY_PROC_MAC;
+           verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+           verify_proc_type() == CERT_VERIFY_PROC_BUILTIN;
   }
 
   bool SupportsCRLSetsInPathBuilding() const {
-    // TODO(crbug.com/649017): Return true for CERT_VERIFY_PROC_BUILTIN.
     return verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-           verify_proc_type() == CERT_VERIFY_PROC_NSS;
+           verify_proc_type() == CERT_VERIFY_PROC_NSS ||
+           verify_proc_type() == CERT_VERIFY_PROC_BUILTIN;
   }
 
   bool SupportsEV() const {
