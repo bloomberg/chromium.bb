@@ -46,6 +46,8 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   CGSize _keyboardSize;
   BOOL _surfaceCreated;
   HostSettings* _settings;
+
+  // Only change this by calling setFabIsRight:.
   BOOL _fabIsRight;
   NSArray<NSLayoutConstraint*>* _fabLeftConstraints;
   NSArray<NSLayoutConstraint*>* _fabRightConstraints;
@@ -86,13 +88,11 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     [_surfaceSizeAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
                                     forMode:NSDefaultRunLoopMode];
 
-    if ([UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
+    BOOL fabIsRight =
+        [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
                     self.view.semanticContentAttribute] ==
-        UIUserInterfaceLayoutDirectionRightToLeft) {
-      _fabIsRight = NO;
-    } else {
-      _fabIsRight = YES;
-    }
+        UIUserInterfaceLayoutDirectionLeftToRight;
+    [self setFabIsRight:fabIsRight shouldLayout:NO];
   }
   return self;
 }
@@ -241,8 +241,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   _surfaceSizeAnimationLink.paused = NO;
 
   [self resizeHostToFitIfNeeded];
-
-  [self updateFABConstraintsAnimated:NO];
 }
 
 #pragma mark - Keyboard Notifications
@@ -332,13 +330,14 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 }
 
 - (void)moveFAB {
-  _fabIsRight = !_fabIsRight;
-  [self updateFABConstraintsAnimated:YES];
+  [self setFabIsRight:!_fabIsRight shouldLayout:YES];
 }
 
 #pragma mark - Private
 
-- (void)updateFABConstraintsAnimated:(BOOL)animated {
+- (void)setFabIsRight:(BOOL)fabIsRight shouldLayout:(BOOL)shouldLayout {
+  _fabIsRight = fabIsRight;
+
   [NSLayoutConstraint deactivateConstraints:_fabRightConstraints];
   [NSLayoutConstraint deactivateConstraints:_fabLeftConstraints];
   if (_fabIsRight) {
@@ -347,13 +346,11 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     [NSLayoutConstraint activateConstraints:_fabLeftConstraints];
   }
 
-  if (animated) {
+  if (shouldLayout) {
     [UIView animateWithDuration:kMoveFABAnimationTime
                      animations:^{
                        [self.view layoutIfNeeded];
                      }];
-  } else {
-    [self.view layoutIfNeeded];
   }
 }
 
