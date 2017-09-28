@@ -7,17 +7,14 @@
 
 #import <Cocoa/Cocoa.h>
 
-class FullscreenToolbarAnimationController;
 @class FullscreenToolbarController;
 
 // Class that tracks mouse interactions with the fullscreen toolbar.
 @interface FullscreenToolbarMouseTracker : NSObject
 
 // Designated initializer.
-- (instancetype)
-initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
-                animationController:
-                    (FullscreenToolbarAnimationController*)animationController;
+- (instancetype)initWithFullscreenToolbarController:
+    (FullscreenToolbarController*)owner;
 
 // Updates the tracking area's frame to the given toolbar frame.
 - (void)updateToolbarFrame:(NSRect)frame;
@@ -27,9 +24,6 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
 
 // Removes the tracking area.
 - (void)removeTrackingArea;
-
-// Returns YES if the mouse is inside the tracking area.
-- (BOOL)mouseInsideTrackingArea;
 
 @end
 

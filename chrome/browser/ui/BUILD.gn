@@ -2434,6 +2434,8 @@ split_static_library("ui") {
       "cocoa/profiles/profile_menu_controller.mm",
       "cocoa/renderer_context_menu/render_view_context_menu_mac.h",
       "cocoa/renderer_context_menu/render_view_context_menu_mac.mm",
+      "cocoa/scoped_menu_bar_lock.h",
+      "cocoa/scoped_menu_bar_lock.mm",
       "cocoa/status_icons/status_icon_mac.h",
       "cocoa/status_icons/status_icon_mac.mm",
       "cocoa/status_icons/status_tray_mac.h",
