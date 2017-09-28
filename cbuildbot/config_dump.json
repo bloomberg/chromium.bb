@@ -12428,6 +12428,79 @@
             "chrome_internal"
         ]
     },
+    "kevin-bertha-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "kevin-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kevin-bertha-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "kevin-bertha"
+        ]
+    },
+    "kevin-bertha-full": {
+        "_template": "full",
+        "boards": [
+            "kevin-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kevin-bertha-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "kevin-bertha"
+        ]
+    },
+    "kevin-bertha-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "kevin-bertha"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "kevin-bertha-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "kevin-bertha"
+        ]
+    },
+    "kevin-bertha-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "kevin-bertha"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
+    },
+    "kevin-bertha-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "kevin-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "kevin-bertha-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "kevin-bertha"
+        ]
+    },
     "kevin-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -15741,6 +15814,7 @@
             "jecht-release",
             "kahlee-release",
             "kefka-release",
+            "kevin-bertha-release",
             "kevin-release",
             "kip-release",
             "lakitu-gpu-release",
