@@ -104,6 +104,8 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
+  extra_js_files = [ "//chrome/browser/resources/md_downloads/constants.js" ]
+
   if (is_chromeos) {
     sources += [
       "settings/easy_unlock_browsertest_chromeos.js",
