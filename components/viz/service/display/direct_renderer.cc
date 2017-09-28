@@ -682,8 +682,8 @@ gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
 cc::ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
     const RenderPass* render_pass) {
   return render_pass->generate_mipmap
-             ? cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER
-             : cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER;
+             ? cc::ResourceProvider::TEXTURE_HINT_MIPMAP_FRAMEBUFFER
+             : cc::ResourceProvider::TEXTURE_HINT_FRAMEBUFFER;
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {

@@ -59,6 +59,17 @@ class SharedBitmapManager;
 namespace cc {
 class TextureIdAllocator;
 
+// This class provides abstractions for allocating and transferring resources
+// between modules/threads/processes. It abstracts away GL textures vs
+// GpuMemoryBuffers vs software bitmaps behind a single ResourceId so that
+// code in common can hold onto ResourceIds, as long as the code using them
+// knows the correct type.
+//
+// The resource's underlying type is accessed through Read and Write locks that
+// help to safeguard correct usage with DCHECKs. All resources held in
+// ResourceProvider are immutable - they can not change format or size once
+// they are created, only their contents.
+//
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
 class CC_EXPORT ResourceProvider
@@ -71,13 +82,10 @@ class CC_EXPORT ResourceProvider
   using ResourceIdMap = std::unordered_map<viz::ResourceId, viz::ResourceId>;
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
-    TEXTURE_HINT_IMMUTABLE = 0x1,
-    TEXTURE_HINT_MIPMAP = 0x2,
-    TEXTURE_HINT_FRAMEBUFFER = 0x4,
-    TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER =
-        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_FRAMEBUFFER,
-    TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER =
-        TEXTURE_HINT_IMMUTABLE | TEXTURE_HINT_MIPMAP | TEXTURE_HINT_FRAMEBUFFER
+    TEXTURE_HINT_MIPMAP = 0x1,
+    TEXTURE_HINT_FRAMEBUFFER = 0x2,
+    TEXTURE_HINT_MIPMAP_FRAMEBUFFER =
+        TEXTURE_HINT_MIPMAP | TEXTURE_HINT_FRAMEBUFFER
   };
   enum ResourceType {
     RESOURCE_TYPE_GPU_MEMORY_BUFFER,
@@ -136,7 +144,6 @@ class CC_EXPORT ResourceProvider
   }
   ResourceType GetResourceType(viz::ResourceId id);
   GLenum GetResourceTextureTarget(viz::ResourceId id);
-  bool IsImmutable(viz::ResourceId id);
   TextureHint GetTextureHint(viz::ResourceId id);
 
   // Creates a resource of the default resource type.

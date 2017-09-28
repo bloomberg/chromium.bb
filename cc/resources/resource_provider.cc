@@ -231,7 +231,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       filter(filter),
       min_filter(filter),
       image_id(0),
-      hint(TEXTURE_HINT_IMMUTABLE),
+      hint(TEXTURE_HINT_DEFAULT),
       type(RESOURCE_TYPE_BITMAP),
       buffer_format(gfx::BufferFormat::RGBA_8888),
       format(viz::RGBA_8888),
@@ -269,7 +269,7 @@ ResourceProvider::Resource::Resource(const viz::SharedBitmapId& bitmap_id,
       filter(filter),
       min_filter(filter),
       image_id(0),
-      hint(TEXTURE_HINT_IMMUTABLE),
+      hint(TEXTURE_HINT_DEFAULT),
       type(RESOURCE_TYPE_BITMAP),
       buffer_format(gfx::BufferFormat::RGBA_8888),
       format(viz::RGBA_8888),
@@ -650,7 +650,7 @@ viz::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
         id, Resource(0, mailbox.size_in_pixels(), Resource::EXTERNAL,
                      mailbox.target(),
                      mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
-                     TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
+                     TEXTURE_HINT_DEFAULT, RESOURCE_TYPE_GL_TEXTURE,
                      viz::RGBA_8888));
   } else {
     DCHECK(mailbox.IsSharedMemory());
@@ -811,16 +811,6 @@ ResourceProvider::ResourceType ResourceProvider::GetResourceType(
 
 GLenum ResourceProvider::GetResourceTextureTarget(viz::ResourceId id) {
   return GetResource(id)->target;
-}
-
-bool ResourceProvider::IsImmutable(viz::ResourceId id) {
-  if (IsGpuResourceType(settings_.default_resource_type)) {
-    return GetTextureHint(id) == TEXTURE_HINT_IMMUTABLE;
-  } else {
-    // Software resources are immutable; they cannot change format or be
-    // resized.
-    return true;
-  }
 }
 
 ResourceProvider::TextureHint ResourceProvider::GetTextureHint(
@@ -1087,8 +1077,7 @@ void ResourceProvider::ScopedWriteLockGL::AllocateTexture(
   gl->BindTexture(target_, texture_id);
   const ResourceProvider::Settings& settings = resource_provider_->settings_;
   if (settings.use_texture_storage_ext &&
-      IsFormatSupportedForStorage(format_, settings.use_texture_format_bgra) &&
-      (hint_ & ResourceProvider::TEXTURE_HINT_IMMUTABLE)) {
+      IsFormatSupportedForStorage(format_, settings.use_texture_format_bgra)) {
     GLenum storage_format = TextureToStorageFormat(format_);
     GLint levels = 1;
     if (settings.use_texture_npot &&
