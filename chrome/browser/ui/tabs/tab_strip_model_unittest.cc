@@ -34,6 +34,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -185,8 +186,8 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     WebContents::CreateParams create_params(
         profile(), web_contents->GetRenderViewHost()->GetSiteInstance());
     WebContents* retval = WebContents::Create(create_params);
-    EXPECT_EQ(retval->GetRenderProcessHost(),
-              web_contents->GetRenderProcessHost());
+    EXPECT_EQ(retval->GetMainFrame()->GetProcess(),
+              web_contents->GetMainFrame()->GetProcess());
     return retval;
   }
 
@@ -1885,7 +1886,7 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
     tabstrip.CloseAllTabs();
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
-    EXPECT_TRUE(contents1->GetRenderProcessHost()->FastShutdownStarted());
+    EXPECT_TRUE(contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
     EXPECT_EQ(2, tabstrip.count());
 
     delegate.set_run_unload_listener(false);
@@ -1906,7 +1907,8 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
     tabstrip.AppendWebContents(contents2, true);
 
     tabstrip.CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
-    EXPECT_FALSE(contents1->GetRenderProcessHost()->FastShutdownStarted());
+    EXPECT_FALSE(
+        contents1->GetMainFrame()->GetProcess()->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
     tabstrip.CloseAllTabs();

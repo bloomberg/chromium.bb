@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/grit/devtools_resources_map.h"
 #include "content/common/devtools_messages.h"
@@ -69,7 +71,7 @@ DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {
 }
 
 void DevToolsFrontendHostImpl::BadMessageRecieved() {
-  bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
+  bad_message::ReceivedBadMessage(web_contents()->GetMainFrame()->GetProcess(),
                                   bad_message::DFH_BAD_EMBEDDER_MESSAGE);
 }
 

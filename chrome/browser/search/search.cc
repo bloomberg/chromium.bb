@@ -25,6 +25,7 @@
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -218,7 +219,7 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
 bool IsRenderedInInstantProcess(const content::WebContents* contents,
                                 Profile* profile) {
   const content::RenderProcessHost* process_host =
-      contents->GetRenderProcessHost();
+      contents->GetMainFrame()->GetProcess();
   if (!process_host)
     return false;
 

@@ -667,7 +667,7 @@ void SavePackage::CheckFinish() {
       FROM_HERE,
       base::BindOnce(&SaveFileManager::RenameAllFiles, file_manager_,
                      final_names, dir,
-                     web_contents()->GetRenderProcessHost()->GetID(),
+                     web_contents()->GetMainFrame()->GetProcess()->GetID(),
                      web_contents()->GetMainFrame()->GetRoutingID(), id()));
 }
 

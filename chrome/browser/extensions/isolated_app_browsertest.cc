@@ -484,25 +484,42 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, MAYBE_IsolatedAppProcessModel) {
   // We should now have four tabs, the first and third sharing a process.
   // The second one is an independent instance in a separate process.
   ASSERT_EQ(4, browser()->tab_strip_model()->count());
-  int process_id_0 = browser()->tab_strip_model()->GetWebContentsAt(0)->
-      GetRenderProcessHost()->GetID();
-  int process_id_1 = browser()->tab_strip_model()->GetWebContentsAt(1)->
-      GetRenderProcessHost()->GetID();
+  int process_id_0 = browser()
+                         ->tab_strip_model()
+                         ->GetWebContentsAt(0)
+                         ->GetMainFrame()
+                         ->GetProcess()
+                         ->GetID();
+  int process_id_1 = browser()
+                         ->tab_strip_model()
+                         ->GetWebContentsAt(1)
+                         ->GetMainFrame()
+                         ->GetProcess()
+                         ->GetID();
   EXPECT_NE(process_id_0, process_id_1);
-  EXPECT_EQ(process_id_0,
-            browser()->tab_strip_model()->GetWebContentsAt(2)->
-                GetRenderProcessHost()->GetID());
-  EXPECT_NE(process_id_0,
-            browser()->tab_strip_model()->GetWebContentsAt(3)->
-                GetRenderProcessHost()->GetID());
+  EXPECT_EQ(process_id_0, browser()
+                              ->tab_strip_model()
+                              ->GetWebContentsAt(2)
+                              ->GetMainFrame()
+                              ->GetProcess()
+                              ->GetID());
+  EXPECT_NE(process_id_0, browser()
+                              ->tab_strip_model()
+                              ->GetWebContentsAt(3)
+                              ->GetMainFrame()
+                              ->GetProcess()
+                              ->GetID());
 
   // Navigating the second tab out of the app should cause a process swap.
   const GURL& non_app_url(base_url.Resolve("non_app/main.html"));
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(1),
                      non_app_url);
-  EXPECT_NE(process_id_1,
-            browser()->tab_strip_model()->GetWebContentsAt(1)->
-                GetRenderProcessHost()->GetID());
+  EXPECT_NE(process_id_1, browser()
+                              ->tab_strip_model()
+                              ->GetWebContentsAt(1)
+                              ->GetMainFrame()
+                              ->GetProcess()
+                              ->GetID());
 }
 
 // This test no longer passes, since we don't properly isolate sessionStorage

@@ -45,6 +45,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -911,8 +912,8 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
         new TestWebContentsObserver(web_contents_.get()));
     web_contents_filter_ = new TestFilterSpecifyingChild(
         browser_context_->GetResourceContext(),
-        web_contents_->GetRenderProcessHost()->GetID());
-    child_ids_.insert(web_contents_->GetRenderProcessHost()->GetID());
+        web_contents_->GetMainFrame()->GetProcess()->GetID());
+    child_ids_.insert(web_contents_->GetMainFrame()->GetProcess()->GetID());
     request_context_getter_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI));
@@ -1204,7 +1205,7 @@ void ResourceDispatcherHostTest::
                                                          const GURL& url,
                                                          ResourceType type) {
   ResourceRequest request = CreateResourceRequest("GET", type, url);
-  request.origin_pid = web_contents_->GetRenderProcessHost()->GetID();
+  request.origin_pid = web_contents_->GetMainFrame()->GetProcess()->GetID();
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
   ResourceHostMsg_RequestResource msg(
       web_contents_->GetRenderViewHost()->GetRoutingID(), request_id, request,
@@ -1246,7 +1247,7 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
   DownloadManagerImpl::BeginDownloadRequest(
       std::move(request), Referrer(), browser_context_->GetResourceContext(),
       false,  // is_content_initiated
-      web_contents_->GetRenderProcessHost()->GetID(),
+      web_contents_->GetRenderViewHost()->GetProcess()->GetID(),
       web_contents_->GetRenderViewHost()->GetRoutingID(),
       web_contents_->GetMainFrame()->GetRoutingID(), false);
 }

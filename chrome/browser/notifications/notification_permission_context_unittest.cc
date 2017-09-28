@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/notification_permission_context.h"
 
+#include <memory>
+#include <string>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -18,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -287,9 +291,9 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
@@ -353,9 +357,9 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
-                               web_contents()->GetMainFrame()->GetRoutingID(),
-                               -1);
+  const PermissionRequestID id(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
   base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
@@ -387,12 +391,12 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
   NavigateAndCommit(url);
   web_contents()->WasShown();
 
-  const PermissionRequestID id0(web_contents()->GetRenderProcessHost()->GetID(),
-                                web_contents()->GetMainFrame()->GetRoutingID(),
-                                0);
-  const PermissionRequestID id1(web_contents()->GetRenderProcessHost()->GetID(),
-                                web_contents()->GetMainFrame()->GetRoutingID(),
-                                1);
+  const PermissionRequestID id0(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), 0);
+  const PermissionRequestID id1(
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), 1);
 
   base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 

@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -264,15 +265,15 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
   {
     CommitBeforeSwapAckSentHelper commit_helper(web_contents);
     EXPECT_TRUE(WaitForLoadStop(web_contents));
-    EXPECT_NE(web_contents->GetRenderProcessHost(),
-              new_web_contents->GetRenderProcessHost());
+    EXPECT_NE(web_contents->GetMainFrame()->GetProcess(),
+              new_web_contents->GetMainFrame()->GetProcess());
   }
 
   // Go back and verify that the renderer continues to draw new frames.
   shell()->GoBackOrForward(-1);
   EXPECT_TRUE(WaitForLoadStop(web_contents));
-  EXPECT_EQ(web_contents->GetRenderProcessHost(),
-            new_web_contents->GetRenderProcessHost());
+  EXPECT_EQ(web_contents->GetMainFrame()->GetProcess(),
+            new_web_contents->GetMainFrame()->GetProcess());
   FrameWatcher(web_contents).WaitFrames(5);
 }
 

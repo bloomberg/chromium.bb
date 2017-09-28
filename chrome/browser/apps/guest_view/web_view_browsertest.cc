@@ -55,6 +55,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -680,8 +681,10 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
     guest_observer.Wait();
     content::Source<content::NavigationController> source =
         guest_observer.source();
-    EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-        IsForGuestsOnly());
+    EXPECT_TRUE(source->GetWebContents()
+                    ->GetMainFrame()
+                    ->GetProcess()
+                    ->IsForGuestsOnly());
 
     content::WebContents* guest_web_contents = source->GetWebContents();
     return guest_web_contents;
@@ -718,7 +721,8 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
     // Wait for interstitial page to be shown in guest.
     content::WebContents* guest_web_contents =
         GetGuestViewManager()->WaitForSingleGuestCreated();
-    ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsForGuestsOnly());
+    ASSERT_TRUE(
+        guest_web_contents->GetMainFrame()->GetProcess()->IsForGuestsOnly());
     content::WaitForInterstitialAttach(guest_web_contents);
   }
 
@@ -1666,8 +1670,10 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 
   content::Source<content::NavigationController> source =
       guest_observer.source();
-  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-      IsForGuestsOnly());
+  EXPECT_TRUE(source->GetWebContents()
+                  ->GetMainFrame()
+                  ->GetProcess()
+                  ->IsForGuestsOnly());
 
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 
@@ -2612,19 +2618,19 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   // 1. Guest requests a download that its embedder denies.
   EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
                                      "startDownload('download-link-1')"));
-  mock_delegate->WaitForCanDownload(false); // Expect to not allow.
+  mock_delegate->WaitForCanDownload(false);  // Expect to not allow.
   mock_delegate->Reset();
 
   // 2. Guest requests a download that its embedder allows.
   EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
                                      "startDownload('download-link-2')"));
-  mock_delegate->WaitForCanDownload(true); // Expect to allow.
+  mock_delegate->WaitForCanDownload(true);  // Expect to allow.
   mock_delegate->Reset();
 
   // 3. Guest requests a download that its embedder ignores, this implies deny.
   EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
                                      "startDownload('download-link-3')"));
-  mock_delegate->WaitForCanDownload(false); // Expect to not allow.
+  mock_delegate->WaitForCanDownload(false);  // Expect to not allow.
   completion_observer->WaitForFinished();
 }
 
@@ -3231,7 +3237,7 @@ IN_PROC_BROWSER_TEST_P(
   Profile* profile = browser()->profile();
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_web_contents()->GetRenderProcessHost()->GetID(),
+          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
           guest->view_instance_id());
 
   extensions::RulesRegistryService* registry_service =
@@ -3246,7 +3252,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // Kill the embedder's render process, so the webview will go as well.
   base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-        embedder_web_contents->GetRenderProcessHost()->GetHandle());
+      embedder_web_contents->GetMainFrame()->GetProcess()->GetHandle());
   process.Terminate(0, false);
   observer->WaitForEmbedderRenderProcessTerminate();
 
@@ -3268,7 +3274,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
       extensions::RulesRegistryService::Get(profile);
   int rules_registry_id =
       extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
-          guest->owner_web_contents()->GetRenderProcessHost()->GetID(),
+          guest->owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
           guest->view_instance_id());
 
   // Get an existing registered rule for the guest.
@@ -3655,9 +3661,9 @@ class WebViewGuestScrollTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollTest);
-
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollTest);
 };
 
 class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
@@ -3866,7 +3872,7 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestTouchFocusTest,
     gfx::Point point(10, 10);
     FocusChangeWaiter focus_waiter(guest_contents, false);
     SendRoutedTouchTapSequence(embedder_contents, point);
-    SendRoutedGestureTapSequence(embedder_contents,point);
+    SendRoutedGestureTapSequence(embedder_contents, point);
     focus_waiter.WaitForFocusChange();
     EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));
   }

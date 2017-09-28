@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/interstitial_page_impl.h"
 
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -170,7 +172,8 @@ InterstitialPageImpl::InterstitialPageImpl(
           this,
           this,
           static_cast<WebContentsImpl*>(web_contents))),
-      original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
+      original_child_id_(
+          web_contents->GetRenderViewHost()->GetProcess()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
       should_revert_web_contents_title_(false),
       resource_dispatcher_host_notified_(false),
@@ -211,7 +214,7 @@ void InterstitialPageImpl::Show() {
       // So we should not discard that new pending navigation entry.
       // See http://crbug.com/9791
       if (new_navigation_ && interstitial->new_navigation_)
-        interstitial->should_discard_pending_nav_entry_= false;
+        interstitial->should_discard_pending_nav_entry_ = false;
       interstitial->DontProceed();
     }
   }

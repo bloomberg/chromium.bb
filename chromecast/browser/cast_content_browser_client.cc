@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -476,7 +477,7 @@ void CastContentBrowserClient::SelectClientCertificate(
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
           base::Unretained(this), requesting_url,
-          web_contents->GetRenderProcessHost()->GetID(),
+          web_contents->GetMainFrame()->GetProcess()->GetID(),
           base::SequencedTaskRunnerHandle::Get(),
           base::Bind(
               &content::ClientCertificateDelegate::ContinueWithCertificate,

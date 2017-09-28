@@ -16,6 +16,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -156,8 +157,8 @@ class HungRendererWebContentsObserverBridge
 
 - (IBAction)kill:(id)sender {
   if (hungContents_) {
-    hungContents_->GetRenderProcessHost()->Shutdown(content::RESULT_CODE_HUNG,
-                                                    false);
+    hungContents_->GetMainFrame()->GetProcess()->Shutdown(
+        content::RESULT_CODE_HUNG, false);
   }
   // Cannot call performClose:, because the close button is disabled.
   [self close];
@@ -225,7 +226,8 @@ class HungRendererWebContentsObserverBridge
   base::scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   base::scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
+    if (it->GetMainFrame()->GetProcess() ==
+        hungContents_->GetMainFrame()->GetProcess()) {
       base::string16 title = it->GetTitle();
       if (title.empty())
         title = CoreTabHelper::GetDefaultTitle();
@@ -245,8 +247,8 @@ class HungRendererWebContentsObserverBridge
 - (void)endForWebContents:(WebContents*)contents {
   DCHECK(contents);
   DCHECK(hungContents_);
-  if (hungContents_ && hungContents_->GetRenderProcessHost() ==
-      contents->GetRenderProcessHost()) {
+  if (hungContents_ && hungContents_->GetMainFrame()->GetProcess() ==
+                           contents->GetMainFrame()->GetProcess()) {
     // Cannot call performClose:, because the close button is disabled.
     [self close];
   }
