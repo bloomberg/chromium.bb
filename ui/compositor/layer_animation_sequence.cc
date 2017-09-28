@@ -195,9 +195,10 @@ bool LayerAnimationSequence::HasConflictingProperty(
   return (properties_ & other) != LayerAnimationElement::UNKNOWN;
 }
 
-bool LayerAnimationSequence::IsFirstElementThreaded() const {
+bool LayerAnimationSequence::IsFirstElementThreaded(
+    LayerAnimationDelegate* delegate) const {
   if (!elements_.empty())
-    return elements_[0]->IsThreaded();
+    return elements_[0]->IsThreaded(delegate);
 
   return false;
 }
