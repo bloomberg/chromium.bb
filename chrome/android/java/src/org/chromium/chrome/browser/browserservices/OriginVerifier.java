@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
+package org.chromium.chrome.browser.browserservices;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -50,7 +50,7 @@ import java.util.Set;
  * {@link OriginVerifier#cleanUp()} for proper cleanup of dependencies.
  */
 @JNINamespace("customtabs")
-class OriginVerifier {
+public class OriginVerifier {
     private static final String TAG = "OriginVerifier";
     private static final char[] HEX_CHAR_LOOKUP = "0123456789ABCDEF".toCharArray();
     private static final String USE_AS_ORIGIN = "delegate_permission/common.use_as_origin";
@@ -85,7 +85,7 @@ class OriginVerifier {
 
     /** Clears all known relations. */
     @VisibleForTesting
-    static void reset() {
+    public static void reset() {
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins != null) sPackageToCachedOrigins.clear();
     }
@@ -96,7 +96,7 @@ class OriginVerifier {
      * @param origin The origin to add as verified.
      * @param relation The Digital Asset Links relation verified.
      */
-    static void addVerifiedOriginForPackage(
+    public static void addVerifiedOriginForPackage(
             String packageName, Uri origin, @Relation int relation) {
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins == null) sPackageToCachedOrigins = new HashMap<>();
@@ -120,7 +120,7 @@ class OriginVerifier {
      * @param origin The origin to verify
      * @param relation The Digital Asset Links relation to verify for.
      */
-    static boolean isValidOrigin(String packageName, Uri origin, @Relation int relation) {
+    public static boolean isValidOrigin(String packageName, Uri origin, @Relation int relation) {
         ThreadUtils.assertOnUiThread();
         if (sPackageToCachedOrigins == null) return false;
         Set<Uri> cachedOrigins =

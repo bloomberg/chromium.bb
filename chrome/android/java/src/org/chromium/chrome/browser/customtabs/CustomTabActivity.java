@@ -18,12 +18,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
@@ -38,7 +36,6 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -53,6 +50,8 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
+import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -92,7 +91,6 @@ import java.util.concurrent.TimeUnit;
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends ChromeActivity {
-
     private static final String TAG = "CustomTabActivity";
     private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
@@ -110,11 +108,9 @@ public class CustomTabActivity extends ChromeActivity {
     private static final int CONNECTION_STATUS_CONNECTED_KEEP_ALIVE = 3;
     private static final int CONNECTION_STATUS_MAX = 4;
 
-    private static CustomTabContentHandler sActiveContentHandler;
-
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
-    private CustomTabContentHandler mCustomTabContentHandler;
+    private BrowserSessionContentHandler mBrowserSessionContentHandler;
     private Tab mMainTab;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
     private CustomTabTabPersistencePolicy mTabPersistencePolicy;
@@ -253,118 +249,6 @@ public class CustomTabActivity extends ChromeActivity {
             PageLoadMetrics.removeObserver(mMetricsObserver);
         }
     };
-
-    /**
-     * Sets the currently active {@link CustomTabContentHandler} in focus.
-     * @param contentHandler {@link CustomTabContentHandler} to set.
-     */
-    public static void setActiveContentHandler(CustomTabContentHandler contentHandler) {
-        sActiveContentHandler = contentHandler;
-    }
-
-    /**
-     * Called when a CustomTabs intent is handled.
-     *
-     * Used to check whether an incoming intent can be handled by the current
-     * {@link CustomTabContentHandler}, and to perform action on new Intent.
-     *
-     * @return Whether the active {@link CustomTabContentHandler} has handled the intent.
-     */
-    public static boolean handleInActiveContentIfNeeded(Intent intent) {
-        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-
-        String url = IntentHandler.getUrlFromIntent(intent);
-        if (TextUtils.isEmpty(url)) return false;
-        CustomTabsConnection.getInstance().onHandledIntent(session, url, intent);
-
-        if (sActiveContentHandler == null) return false;
-        if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
-        if (sActiveContentHandler.shouldIgnoreIntent(intent)) {
-            Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
-            return false;
-        }
-        sActiveContentHandler.loadUrlAndTrackFromTimestamp(new LoadUrlParams(url),
-                IntentHandler.getTimestampFromIntent(intent));
-        return true;
-    }
-
-    /**
-     * @return Whether the given session is the currently active session.
-     */
-    public static boolean isActiveSession(CustomTabsSessionToken session) {
-        if (sActiveContentHandler == null) return false;
-        if (session == null || sActiveContentHandler.getSession() == null) return false;
-        return sActiveContentHandler.getSession().equals(session);
-    }
-
-    /**
-     * Checks whether the given referrer can be used as valid within the Activity launched by the
-     * given intent. For this to be true, the intent should be for a {@link CustomTabsSessionToken}
-     * that is the currently in focus custom tab and also the related client should have a verified
-     * relationship with the referrer origin. This can only be true for https:// origins.
-     *
-     * @param intent The intent that was used to launch the Activity in question.
-     * @param referrer The referrer url that is to be used.
-     * @return Whether the given referrer is a valid first party url to the client that launched
-     *         the activity.
-     */
-    public static boolean canActiveContentHandlerUseReferrer(Intent intent, Uri referrer) {
-        if (sActiveContentHandler == null) return false;
-        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
-        String packageName =
-                CustomTabsConnection.getInstance().getClientPackageNameForSession(session);
-        if (TextUtils.isEmpty(packageName)) return false;
-        boolean valid = OriginVerifier.isValidOrigin(
-                packageName, referrer, CustomTabsService.RELATION_USE_AS_ORIGIN);
-
-        // OriginVerifier should only be allowing https schemes.
-        assert valid == UrlConstants.HTTPS_SCHEME.equals(referrer.getScheme());
-
-        return valid;
-    }
-
-    /**
-     * @return The url for the page displayed using the current {@link CustomTabContentHandler}.
-     */
-    public static String getCurrentUrlForActiveCustomTabSession() {
-        if (sActiveContentHandler == null) return null;
-        return sActiveContentHandler.getCurrentUrl();
-    }
-
-    /**
-     * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
-     * if true, update toolbar's custom button.
-     * @param session     The {@link IBinder} that the calling client represents.
-     * @param bitmap      The new icon for action button.
-     * @param description The new content description for the action button.
-     * @return Whether the update is successful.
-     */
-    static boolean updateCustomButton(
-            CustomTabsSessionToken session, int id, Bitmap bitmap, String description) {
-        ThreadUtils.assertOnUiThread();
-        // Do nothing if there is no activity or the activity does not belong to this session.
-        if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
-            return false;
-        }
-        return sActiveContentHandler.updateCustomButton(id, bitmap, description);
-    }
-
-    /**
-     * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
-     * if true, updates {@link RemoteViews} on the secondary toolbar.
-     * @return Whether the update is successful.
-     */
-    static boolean updateRemoteViews(
-            CustomTabsSessionToken session, RemoteViews remoteViews, int[] clickableIDs,
-            PendingIntent pendingIntent) {
-        ThreadUtils.assertOnUiThread();
-        // Do nothing if there is no activity or the activity does not belong to this session.
-        if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
-            return false;
-        }
-        return sActiveContentHandler.updateRemoteViews(remoteViews, clickableIDs, pendingIntent);
-    }
 
     @Override
     protected Drawable getBackgroundDrawable() {
@@ -551,7 +435,7 @@ public class CustomTabActivity extends ChromeActivity {
                     }
                 });
 
-        mCustomTabContentHandler = new CustomTabContentHandler() {
+        mBrowserSessionContentHandler = new BrowserSessionContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
                 if (!TextUtils.isEmpty(params.getUrl())) {
@@ -758,7 +642,7 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        setActiveContentHandler(mCustomTabContentHandler);
+        BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
         if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
     }
 
@@ -804,7 +688,7 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        setActiveContentHandler(null);
+        BrowserSessionContentUtils.setActiveContentHandler(null);
         if (mIsClosing) {
             getTabModelSelector().closeAllTabs(true);
             mTabPersistencePolicy.deleteMetadataStateFileAsync();
@@ -1296,7 +1180,8 @@ public class CustomTabActivity extends ChromeActivity {
         // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
         if (IntentHandler.isIntentChromeOrFirstParty(intent)
                 && IntentUtils.safeGetIntExtra(intent, CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                           CUSTOM_TABS_UI_TYPE_DEFAULT) == CUSTOM_TABS_UI_TYPE_INFO_PAGE) {
+                           CUSTOM_TABS_UI_TYPE_DEFAULT)
+                        == CUSTOM_TABS_UI_TYPE_INFO_PAGE) {
             return false;
         }
 

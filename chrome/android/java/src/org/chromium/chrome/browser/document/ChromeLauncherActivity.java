@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
@@ -386,7 +387,7 @@ public class ChromeLauncherActivity extends Activity
      * in the same task.
      */
     private void launchCustomTabActivity() {
-        boolean handled = CustomTabActivity.handleInActiveContentIfNeeded(getIntent());
+        boolean handled = BrowserSessionContentUtils.handleInActiveContentIfNeeded(getIntent());
         if (handled) return;
 
         maybePrefetchDnsInBackground();

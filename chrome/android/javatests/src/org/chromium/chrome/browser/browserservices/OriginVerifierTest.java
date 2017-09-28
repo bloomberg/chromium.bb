@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
+package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
 import android.support.customtabs.CustomTabsService;
@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.chrome.browser.customtabs.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
