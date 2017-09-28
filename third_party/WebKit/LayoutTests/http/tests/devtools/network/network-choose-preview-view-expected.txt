@@ -1,39 +1,122 @@
 Tests to make sure the proper view is used for the data that is received in network panel.
 
 Simple JSON
-Creating a NetworkRequest with mimeType: application/json
+Testing with MimeType: application/json, and StatusCode: 200
 Content: [533,3223]
-Its previewer type: SearchableView > widget vbox json-view
+
+ResourceType(xhr): SearchableView > widget vbox json-view
+ResourceType(fetch): SearchableView > widget vbox json-view
+ResourceType(document): SearchableView > widget vbox json-view
+ResourceType(other): SearchableView > widget vbox json-view
+
 MIME JSON
-Creating a NetworkRequest with mimeType: application/vnd.document+json
+Testing with MimeType: application/vnd.document+json, and StatusCode: 200
 Content: {foo0foo: 123}
-Its previewer type: SearchableView > widget vbox json-view
+
+ResourceType(xhr): SearchableView > widget vbox json-view
+ResourceType(fetch): SearchableView > widget vbox json-view
+ResourceType(document): SearchableView > widget vbox json-view
+ResourceType(other): SearchableView > widget vbox json-view
+
 Simple XML
-Creating a NetworkRequest with mimeType: text/xml
+Testing with MimeType: text/xml, and StatusCode: 200
 Content: <bar><foo/></bar>
-Its previewer type: SearchableView > widget shadow-xml-view source-code
+
+ResourceType(xhr): SearchableView > widget shadow-xml-view source-code
+ResourceType(fetch): SearchableView > widget shadow-xml-view source-code
+ResourceType(document): SearchableView > widget shadow-xml-view source-code
+ResourceType(other): SearchableView > widget shadow-xml-view source-code
+
 XML MIME But JSON
-Creating a NetworkRequest with mimeType: text/xml
+Testing with MimeType: text/xml, and StatusCode: 200
 Content: {foo0: 'barr', 'barr': 'fooo'}
-Its previewer type: SearchableView > widget vbox json-view
+
+ResourceType(xhr): SearchableView > widget vbox json-view
+ResourceType(fetch): SearchableView > widget vbox json-view
+ResourceType(document): SearchableView > widget vbox json-view
+ResourceType(other): SearchableView > widget vbox json-view
+
+HTML MIME But JSON
+Testing with MimeType: text/html, and StatusCode: 200
+Content: {hi: "hi"}
+
+ResourceType(xhr): SearchableView > widget vbox json-view
+ResourceType(fetch): SearchableView > widget vbox json-view
+ResourceType(document): SearchableView > widget vbox json-view
+ResourceType(other): SearchableView > widget vbox json-view
+
+TEXT MIME But JSON
+Testing with MimeType: text/html, and StatusCode: 200
+Content: {hi: "hi"}
+
+ResourceType(xhr): SearchableView > widget vbox json-view
+ResourceType(fetch): SearchableView > widget vbox json-view
+ResourceType(document): SearchableView > widget vbox json-view
+ResourceType(other): SearchableView > widget vbox json-view
+
+HTML MIME With 500 error
+Testing with MimeType: text/html, and StatusCode: 500
+Content: This
+<b>is a </b><br /><br />test.
+
+ResourceType(xhr): widget vbox html request-view
+ResourceType(fetch): widget vbox html request-view
+ResourceType(document): widget vbox html request-view
+ResourceType(other): widget vbox html request-view
+
+Plain Text MIME But HTML/XML
+Testing with MimeType: text/plain, and StatusCode: 200
+Content: This
+<b>is a </b><br /><br />test.
+
+ResourceType(xhr): SearchableView > widget vbox
+ResourceType(fetch): SearchableView > widget vbox
+ResourceType(document): SearchableView > widget vbox
+ResourceType(other): SearchableView > widget vbox
+
 XML With Unknown MIME
-Creating a NetworkRequest with mimeType: text/foobar
+Testing with MimeType: text/foobar, and StatusCode: 200
 Content: <bar><foo/></bar>
-Its previewer type: SearchableView > widget vbox
+
+ResourceType(xhr): SearchableView > widget vbox
+ResourceType(fetch): SearchableView > widget vbox
+ResourceType(document): SearchableView > widget vbox
+ResourceType(other): SearchableView > widget vbox
+
 XML With Error 500
-Creating a NetworkRequest with mimeType: text/xml
+Testing with MimeType: text/xml, and StatusCode: 500
 Content: <bar><foo/></bar>
-Its previewer type: SearchableView > widget shadow-xml-view source-code
+
+ResourceType(xhr): SearchableView > widget shadow-xml-view source-code
+ResourceType(fetch): SearchableView > widget shadow-xml-view source-code
+ResourceType(document): SearchableView > widget shadow-xml-view source-code
+ResourceType(other): SearchableView > widget shadow-xml-view source-code
+
 Unknown MIME Text With Error 500
-Creating a NetworkRequest with mimeType: text/foobar
+Testing with MimeType: text/foobar, and StatusCode: 500
 Content: Foo Bar
-Its previewer type: SearchableView > widget vbox
+
+ResourceType(xhr): SearchableView > widget vbox
+ResourceType(fetch): SearchableView > widget vbox
+ResourceType(document): SearchableView > widget vbox
+ResourceType(other): SearchableView > widget vbox
+
 Binary Image File
-Creating a NetworkRequest with mimeType: image/png
+Testing with MimeType: image/png, and StatusCode: 200
 Content: Bin**NULL**ary File**NULL****NULL**
-Its previewer type: SearchableView > widget vbox
+
+ResourceType(xhr): SearchableView > widget vbox
+ResourceType(fetch): SearchableView > widget vbox
+ResourceType(document): SearchableView > widget vbox
+ResourceType(other): SearchableView > widget vbox
+
 Binary Blank Image File
-Creating a NetworkRequest with mimeType: image/png
+Testing with MimeType: image/png, and StatusCode: 200
 Content: 
-Its previewer type: widget vbox empty-view-scroller
+
+ResourceType(xhr): widget vbox empty-view-scroller
+ResourceType(fetch): widget vbox empty-view-scroller
+ResourceType(document): widget vbox empty-view-scroller
+ResourceType(other): widget vbox empty-view-scroller
+
 
