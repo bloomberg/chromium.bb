@@ -45,6 +45,10 @@ Polymer({
     },
   },
 
+  focus: function() {
+    this.$.resetDialog.focus();
+  },
+
   /** @private */
   isState_: function(uiState_, state_) {
     return uiState_ == state_;
