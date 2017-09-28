@@ -72,7 +72,7 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kValidPolicies) {
     messages.clear();
-    ParseFeaturePolicy(policy_string, origin_a_.Get(), origin_b_.Get(),
+    ParseFeaturePolicy(policy_string, origin_a_.get(), origin_b_.get(),
                        &messages, test_feature_name_map);
     EXPECT_EQ(0UL, messages.size());
   }
@@ -82,7 +82,7 @@ TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kInvalidPolicies) {
     messages.clear();
-    ParseFeaturePolicy(policy_string, origin_a_.Get(), origin_b_.Get(),
+    ParseFeaturePolicy(policy_string, origin_a_.get(), origin_b_.get(),
                        &messages, test_feature_name_map);
     EXPECT_NE(0UL, messages.size());
   }
@@ -93,12 +93,12 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Empty policy.
   WebParsedFeaturePolicy parsed_policy = ParseFeaturePolicy(
-      "", origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
+      "", origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(0UL, parsed_policy.size());
 
   // Simple policy with 'self'.
   parsed_policy =
-      ParseFeaturePolicy("vibrate 'self'", origin_a_.Get(), origin_b_.Get(),
+      ParseFeaturePolicy("vibrate 'self'", origin_a_.get(), origin_b_.get(),
                          &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
@@ -109,7 +109,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsed_policy[0].origins[0].Get()));
   // Simple policy with *.
   parsed_policy =
-      ParseFeaturePolicy("vibrate *", origin_a_.Get(), origin_b_.Get(),
+      ParseFeaturePolicy("vibrate *", origin_a_.get(), origin_b_.get(),
                          &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
@@ -121,7 +121,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       "vibrate *; "
       "fullscreen https://example.net https://example.org; "
       "payment 'self'",
-      origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
+      origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
@@ -144,7 +144,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       "vibrate * https://example.net; "
       "fullscreen https://example.net none https://example.org,"
       "payment 'self' badorigin",
-      origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
+      origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
@@ -166,7 +166,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   messages.clear();
   parsed_policy =
       ParseFeaturePolicy("vibrate badname fullscreen payment", nullptr,
-                         origin_a_.Get(), &messages, test_feature_name_map);
+                         origin_a_.get(), &messages, test_feature_name_map);
   // Expect 2 messages: one about deprecation warning, one about unrecognized
   // feature name.
   EXPECT_EQ(2UL, messages.size());
@@ -189,7 +189,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Header policies with no optional origin lists.
   parsed_policy =
-      ParseFeaturePolicy("vibrate;fullscreen;payment", origin_a_.Get(), nullptr,
+      ParseFeaturePolicy("vibrate;fullscreen;payment", origin_a_.get(), nullptr,
                          &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);

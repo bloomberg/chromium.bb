@@ -238,7 +238,7 @@ bool DecodeImageData(SharedBuffer* data,
     position += length;
 
     bool all_data_received = position == data->size();
-    decoder->SetData(packet_data.Get(), all_data_received);
+    decoder->SetData(packet_data.get(), all_data_received);
 
     size_t frame_count = decoder->FrameCount();
     for (; next_frame_to_decode < frame_count; ++next_frame_to_decode) {
@@ -315,7 +315,7 @@ int Main(int argc, char* argv[]) {
   // segments into one, contiguous block of memory.
 
   RefPtr<SharedBuffer> data = ReadFile(argv[1]);
-  if (!data.Get() || !data->size()) {
+  if (!data.get() || !data->size()) {
     fprintf(stderr, "Error reading image data from [%s]\n", argv[1]);
     exit(2);
   }
@@ -324,7 +324,7 @@ int Main(int argc, char* argv[]) {
 
   // Warm-up: throw out the first iteration for more consistent results.
 
-  if (!DecodeImageData(data.Get(), apply_color_correction, packet_size)) {
+  if (!DecodeImageData(data.get(), apply_color_correction, packet_size)) {
     fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
     exit(3);
   }
@@ -336,7 +336,7 @@ int Main(int argc, char* argv[]) {
   for (size_t i = 0; i < iterations; ++i) {
     double start_time = GetCurrentTime();
     bool decoded =
-        DecodeImageData(data.Get(), apply_color_correction, packet_size);
+        DecodeImageData(data.get(), apply_color_correction, packet_size);
     double elapsed_time = GetCurrentTime() - start_time;
     total_time += elapsed_time;
     if (!decoded) {

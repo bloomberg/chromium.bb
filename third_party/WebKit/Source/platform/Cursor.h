@@ -110,7 +110,7 @@ class PLATFORM_EXPORT Cursor {
     DCHECK_LE(type_, kCustom);
     return type_;
   }
-  Image* GetImage() const { return image_.Get(); }
+  Image* GetImage() const { return image_.get(); }
   const IntPoint& HotSpot() const { return hot_spot_; }
   // Image scale in image pixels per logical (UI) pixel.
   float ImageScaleFactor() const { return image_scale_factor_; }

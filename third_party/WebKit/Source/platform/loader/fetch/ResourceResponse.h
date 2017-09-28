@@ -381,7 +381,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetDownloadedFilePath(const String&);
 
   // Extra data associated with this response.
-  ExtraData* GetExtraData() const { return extra_data_.Get(); }
+  ExtraData* GetExtraData() const { return extra_data_.get(); }
   void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }

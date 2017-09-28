@@ -374,7 +374,7 @@ WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
   RefPtr<ResourceRequest::ExtraData> data = resource_request_->GetExtraData();
   if (!data)
     return 0;
-  return static_cast<URLRequestExtraDataContainer*>(data.Get())->GetExtraData();
+  return static_cast<URLRequestExtraDataContainer*>(data.get())->GetExtraData();
 }
 
 void WebURLRequest::SetExtraData(WebURLRequest::ExtraData* extra_data) {

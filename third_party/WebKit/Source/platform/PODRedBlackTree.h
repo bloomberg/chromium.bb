@@ -158,7 +158,7 @@ class PODRedBlackTree {
     root_ = 0;
   }
 
-  bool IsInitialized() const { return arena_.Get(); }
+  bool IsInitialized() const { return arena_.get(); }
 
   void InitIfNeeded() {
     if (!arena_)

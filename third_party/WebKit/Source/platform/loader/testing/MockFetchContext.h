@@ -40,7 +40,7 @@ class MockFetchContext : public FetchContext {
   long long GetTransferSize() const { return transfer_size_; }
 
   SecurityOrigin* GetSecurityOrigin() const override {
-    return security_origin_.Get();
+    return security_origin_.get();
   }
 
   void SetSecurityOrigin(RefPtr<SecurityOrigin> security_origin) {

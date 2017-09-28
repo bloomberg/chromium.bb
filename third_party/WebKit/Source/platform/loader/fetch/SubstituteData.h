@@ -51,9 +51,9 @@ class SubstituteData {
         text_encoding_(text_encoding),
         failing_url_(failing_url) {}
 
-  bool IsValid() const { return content_.Get(); }
+  bool IsValid() const { return content_.get(); }
 
-  SharedBuffer* Content() const { return content_.Get(); }
+  SharedBuffer* Content() const { return content_.get(); }
   const AtomicString& MimeType() const { return mime_type_; }
   const AtomicString& TextEncoding() const { return text_encoding_; }
   const KURL& FailingURL() const { return failing_url_; }

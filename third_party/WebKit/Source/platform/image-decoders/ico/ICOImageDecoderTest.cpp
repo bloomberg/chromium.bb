@@ -29,11 +29,11 @@ TEST(ICOImageDecoderTests, trunctedIco) {
       SharedBuffer::Create(data.data(), data.size() / 2);
   auto decoder = CreateICODecoder();
 
-  decoder->SetData(truncated_data.Get(), false);
+  decoder->SetData(truncated_data.get(), false);
   decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_FALSE(decoder->Failed());
 
-  decoder->SetData(truncated_data.Get(), true);
+  decoder->SetData(truncated_data.get(), true);
   decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(decoder->Failed());
 }
@@ -54,7 +54,7 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
                         data.size() - kCrcOffset - kCrcSize);
 
   auto decoder = CreateICODecoder();
-  decoder->SetData(modified_data.Get(), true);
+  decoder->SetData(modified_data.get(), true);
 
   // ICOImageDecoder reports the frame count based on whether enough data has
   // been received according to the icon directory. So even though the
@@ -100,7 +100,7 @@ TEST(ICOImageDecoderTests, NullData) {
       SharedBuffer::Create(ico_file_data->Data(), kSizeOfBadBlock);
   auto decoder = CreateICODecoder();
 
-  decoder->SetData(truncated_data.Get(), false);
+  decoder->SetData(truncated_data.get(), false);
   decoder->SetMemoryAllocator(nullptr);
   EXPECT_FALSE(decoder->Failed());
 

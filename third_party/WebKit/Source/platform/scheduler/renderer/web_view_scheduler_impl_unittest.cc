@@ -95,7 +95,7 @@ WTF::Closure MakeRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
 void RunRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
                       int* run_count) {
   ++*run_count;
-  blink::WebTaskRunner* task_runner_ptr = task_runner.Get();
+  blink::WebTaskRunner* task_runner_ptr = task_runner.get();
   task_runner_ptr->PostDelayedTask(
       BLINK_FROM_HERE, MakeRepeatingTask(std::move(task_runner), run_count),
       TimeDelta::FromMilliseconds(1));

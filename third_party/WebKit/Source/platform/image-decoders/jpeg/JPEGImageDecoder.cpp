@@ -376,7 +376,7 @@ class JPEGImageReader final {
   }
 
   void SetData(SegmentReader* data) {
-    if (data_.Get() == data)
+    if (data_.get() == data)
       return;
 
     data_ = data;
@@ -1033,7 +1033,7 @@ void JPEGImageDecoder::Decode(bool only_size) {
 
   if (!reader_) {
     reader_ = WTF::MakeUnique<JPEGImageReader>(this);
-    reader_->SetData(data_.Get());
+    reader_->SetData(data_.get());
   }
 
   // If we couldn't decode the image but have received all the data, decoding

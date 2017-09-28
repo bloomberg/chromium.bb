@@ -74,12 +74,12 @@ TransformOperations TransformOperations::BlendByMatchingOperations(
   unsigned size = std::max(from_size, to_size);
   for (unsigned i = 0; i < size; i++) {
     RefPtr<TransformOperation> from_operation =
-        (i < from_size) ? from.Operations()[i].Get() : 0;
+        (i < from_size) ? from.Operations()[i].get() : 0;
     RefPtr<TransformOperation> to_operation =
-        (i < to_size) ? Operations()[i].Get() : 0;
+        (i < to_size) ? Operations()[i].get() : 0;
     RefPtr<TransformOperation> blended_operation =
         to_operation
-            ? to_operation->Blend(from_operation.Get(), progress)
+            ? to_operation->Blend(from_operation.get(), progress)
             : (from_operation ? from_operation->Blend(0, progress, true)
                               : nullptr);
     if (blended_operation)
@@ -288,7 +288,7 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
     TransformOperation::OperationType interpolation_type =
         to_operation ? to_operation->GetType() : from_operation->GetType();
     if (from_operation && to_operation &&
-        !from_operation->CanBlendWith(*to_operation.Get()))
+        !from_operation->CanBlendWith(*to_operation.get()))
       return false;
 
     switch (interpolation_type) {
@@ -312,15 +312,15 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
         RefPtr<TransformOperation> from_transform;
         RefPtr<TransformOperation> to_transform;
         if (!to_operation) {
-          from_transform = from_operation->Blend(to_operation.Get(),
+          from_transform = from_operation->Blend(to_operation.get(),
                                                  1 - min_progress, false);
-          to_transform = from_operation->Blend(to_operation.Get(),
+          to_transform = from_operation->Blend(to_operation.get(),
                                                1 - max_progress, false);
         } else {
           from_transform =
-              to_operation->Blend(from_operation.Get(), min_progress, false);
+              to_operation->Blend(from_operation.get(), min_progress, false);
           to_transform =
-              to_operation->Blend(from_operation.Get(), max_progress, false);
+              to_operation->Blend(from_operation.get(), max_progress, false);
         }
         if (!from_transform || !to_transform)
           continue;
@@ -345,14 +345,14 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
         const RotateTransformOperation* to_rotation = nullptr;
         if (from_operation) {
           from_rotation = static_cast<const RotateTransformOperation*>(
-              from_operation.Get());
+              from_operation.get());
           if (from_rotation->Axis().IsZero())
             from_rotation = nullptr;
         }
 
         if (to_operation) {
           to_rotation =
-              static_cast<const RotateTransformOperation*>(to_operation.Get());
+              static_cast<const RotateTransformOperation*>(to_operation.get());
           if (to_rotation->Axis().IsZero())
             to_rotation = nullptr;
         }
@@ -370,7 +370,7 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
               axis.X(), axis.Y(), axis.Z(), 0,
               from_operation ? from_operation->GetType()
                              : to_operation->GetType());
-          from_rotation = identity_rotation.Get();
+          from_rotation = identity_rotation.get();
         }
 
         if (!to_rotation) {
@@ -379,7 +379,7 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
                 axis.X(), axis.Y(), axis.Z(), 0,
                 from_operation ? from_operation->GetType()
                                : to_operation->GetType());
-          to_rotation = identity_rotation.Get();
+          to_rotation = identity_rotation.get();
         }
 
         FloatBox from_box = *bounds;

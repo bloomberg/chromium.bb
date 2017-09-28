@@ -577,7 +577,7 @@ void Resource::SetResponse(const ResourceResponse& response) {
   response_ = response;
   if (this->GetResponse().WasFetchedViaServiceWorker()) {
     cache_handler_ = ServiceWorkerResponseCachedMetadataHandler::Create(
-        this, fetcher_security_origin_.Get());
+        this, fetcher_security_origin_.get());
   }
 }
 

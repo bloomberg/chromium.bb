@@ -42,7 +42,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // TODO (scroggo): Also test ImageDecoder::AlphaNotPremultiplied?
   auto decoder = CreateDecoder(ImageDecoder::kAlphaPremultiplied);
   const bool kAllDataReceived = true;
-  decoder->SetData(buffer.Get(), kAllDataReceived);
+  decoder->SetData(buffer.get(), kAllDataReceived);
   decoder->FrameCount();
   if (decoder->Failed())
     return 0;

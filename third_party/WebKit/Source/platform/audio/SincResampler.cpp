@@ -144,7 +144,7 @@ void SincResampler::ConsumeSource(float* buffer,
   // FIXME: Find a way to make the following const-correct:
   bus->SetChannelMemory(0, buffer, number_of_source_frames);
 
-  source_provider_->ProvideInput(bus.Get(), number_of_source_frames);
+  source_provider_->ProvideInput(bus.get(), number_of_source_frames);
 }
 
 namespace {

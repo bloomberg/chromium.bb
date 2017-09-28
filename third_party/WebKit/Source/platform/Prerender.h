@@ -78,7 +78,7 @@ class PLATFORM_EXPORT Prerender final
   void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
-  ExtraData* GetExtraData() { return extra_data_.Get(); }
+  ExtraData* GetExtraData() { return extra_data_.get(); }
 
   void DidStartPrerender();
   void DidStopPrerender();

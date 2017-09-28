@@ -45,13 +45,9 @@ class FIFOClient {
   virtual void Stop(int callback_counter) = 0;
   virtual void RunTask() = 0;
 
-  void Pull(size_t frames_to_pull) {
-    fifo_->Pull(bus_.Get(), frames_to_pull);
-  }
+  void Pull(size_t frames_to_pull) { fifo_->Pull(bus_.get(), frames_to_pull); }
 
-  void Push() {
-    fifo_->Push(bus_.Get());
-  }
+  void Push() { fifo_->Push(bus_.get()); }
 
  private:
   void RunTaskOnOwnThread() {

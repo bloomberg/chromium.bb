@@ -63,11 +63,11 @@ void WebSchedulerImpl::PostNonNestableIdleTask(
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::LoadingTaskRunner() {
-  return loading_web_task_runner_.Get();
+  return loading_web_task_runner_.get();
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
-  return timer_web_task_runner_.Get();
+  return timer_web_task_runner_.get();
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {

@@ -240,7 +240,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   // Extra data associated with this request.
-  ExtraData* GetExtraData() const { return extra_data_.Get(); }
+  ExtraData* GetExtraData() const { return extra_data_.get(); }
   void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }

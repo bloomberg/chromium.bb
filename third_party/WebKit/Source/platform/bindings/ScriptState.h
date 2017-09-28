@@ -180,8 +180,8 @@ class ScriptStateProtectingContext {
       context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
   }
 
-  ScriptState* operator->() const { return script_state_.Get(); }
-  ScriptState* Get() const { return script_state_.Get(); }
+  ScriptState* operator->() const { return script_state_.get(); }
+  ScriptState* Get() const { return script_state_.get(); }
   void Clear() {
     script_state_ = nullptr;
     context_.Clear();

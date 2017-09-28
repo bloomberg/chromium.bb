@@ -130,7 +130,7 @@ class PODArena final : public RefCounted<PODArena> {
       if (rounded_size > current_chunk_size_)
         current_chunk_size_ = rounded_size;
       chunks_.push_back(
-          WTF::WrapUnique(new Chunk(allocator_.Get(), current_chunk_size_)));
+          WTF::WrapUnique(new Chunk(allocator_.get(), current_chunk_size_)));
       current_ = chunks_.back().get();
       ptr = current_->Allocate(rounded_size);
     }

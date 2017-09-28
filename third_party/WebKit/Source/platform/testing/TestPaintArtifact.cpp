@@ -56,8 +56,8 @@ TestPaintArtifact& TestPaintArtifact::Chunk(
     RefPtr<const TransformPaintPropertyNode> transform,
     RefPtr<const ClipPaintPropertyNode> clip,
     RefPtr<const EffectPaintPropertyNode> effect) {
-  PropertyTreeState property_tree_state(transform.Get(), clip.Get(),
-                                        effect.Get());
+  PropertyTreeState property_tree_state(transform.get(), clip.get(),
+                                        effect.get());
   PaintChunkProperties properties(property_tree_state);
   return Chunk(client, properties);
 }

@@ -239,7 +239,7 @@ class BidiResolver final {
     nested_isolate_count_ = nested_isolated_count;
   }
 
-  BidiContext* Context() const { return status_.context.Get(); }
+  BidiContext* Context() const { return status_.context.get(); }
   void SetContext(RefPtr<BidiContext> c) { status_.context = std::move(c); }
 
   void SetLastDir(WTF::Unicode::CharDirection last_dir) {
@@ -621,9 +621,10 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
         level = NextGreaterOddLevel(level);
       else
         level = NextGreaterEvenLevel(level);
-      if (level < BidiContext::kMaxLevel)
+      if (level < BidiContext::kMaxLevel) {
         to_context = BidiContext::Create(level, direction, override,
-                                         embedding.Source(), to_context.Get());
+                                         embedding.Source(), to_context.get());
+      }
     }
   }
 

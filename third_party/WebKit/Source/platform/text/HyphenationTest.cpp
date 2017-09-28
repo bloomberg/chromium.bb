@@ -33,7 +33,7 @@ class NoHyphenation : public Hyphenation {
 TEST(HyphenationTest, Get) {
   RefPtr<Hyphenation> hyphenation = WTF::AdoptRef(new NoHyphenation);
   LayoutLocale::SetHyphenationForTesting("en-US", hyphenation);
-  EXPECT_EQ(hyphenation.Get(), LayoutLocale::Get("en-US")->GetHyphenation());
+  EXPECT_EQ(hyphenation.get(), LayoutLocale::Get("en-US")->GetHyphenation());
 
   LayoutLocale::SetHyphenationForTesting("en-UK", nullptr);
   EXPECT_EQ(nullptr, LayoutLocale::Get("en-UK")->GetHyphenation());

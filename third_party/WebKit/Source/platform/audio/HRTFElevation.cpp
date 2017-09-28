@@ -169,9 +169,9 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   unsigned start_frame = index * kResponseFrameSize;
   unsigned stop_frame = start_frame + kResponseFrameSize;
   RefPtr<AudioBus> pre_sample_rate_converted_response(
-      AudioBus::CreateBufferFromRange(bus.Get(), start_frame, stop_frame));
+      AudioBus::CreateBufferFromRange(bus.get(), start_frame, stop_frame));
   RefPtr<AudioBus> response(AudioBus::CreateBySampleRateConverting(
-      pre_sample_rate_converted_response.Get(), false, sample_rate));
+      pre_sample_rate_converted_response.get(), false, sample_rate));
   AudioChannel* left_ear_impulse_response =
       response->Channel(AudioBus::kChannelLeft);
   AudioChannel* right_ear_impulse_response =
