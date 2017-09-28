@@ -21,7 +21,6 @@ namespace {
 Buffer GenerateAuthMsg(const NtlmClient& client, const Buffer& challenge_msg) {
   return client.GenerateAuthenticateMessage(
       test::kNtlmDomain, test::kUser, test::kPassword, test::kHostnameAscii,
-      test::kChannelBindings, test::kNtlmSpn, test::kClientTimestamp,
       test::kClientChallenge, challenge_msg);
 }
 
@@ -87,16 +86,8 @@ bool ReadString16Payload(NtlmBufferReader* reader, base::string16* str) {
 
 }  // namespace
 
-TEST(NtlmClientTest, SimpleConstructionV1) {
-  NtlmClient client(NtlmFeatures(false));
-
-  ASSERT_FALSE(client.IsNtlmV2());
-  ASSERT_FALSE(client.IsEpaEnabled());
-  ASSERT_FALSE(client.IsMicEnabled());
-}
-
 TEST(NtlmClientTest, VerifyNegotiateMessageV1) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   Buffer result = client.GetNegotiateMessage();
 
@@ -106,7 +97,7 @@ TEST(NtlmClientTest, VerifyNegotiateMessageV1) {
 }
 
 TEST(NtlmClientTest, MinimalStructurallyValidChallenge) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   NtlmBufferWriter writer(kMinChallengeHeaderLen);
   ASSERT_TRUE(
@@ -116,7 +107,7 @@ TEST(NtlmClientTest, MinimalStructurallyValidChallenge) {
 }
 
 TEST(NtlmClientTest, MinimalStructurallyValidChallengeZeroOffset) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // The spec (2.2.1.2) states that the length SHOULD be 0 and the offset
   // SHOULD be where the payload would be if it was present. This is the
@@ -136,7 +127,7 @@ TEST(NtlmClientTest, MinimalStructurallyValidChallengeZeroOffset) {
 }
 
 TEST(NtlmClientTest, ChallengeMsgTooShort) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // Fail because the minimum size valid message is 32 bytes.
   NtlmBufferWriter writer(kMinChallengeHeaderLen - 1);
@@ -146,7 +137,7 @@ TEST(NtlmClientTest, ChallengeMsgTooShort) {
 }
 
 TEST(NtlmClientTest, ChallengeMsgNoSig) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // Fail because the first 8 bytes don't match "NTLMSSP\0"
   uint8_t raw[kMinChallengeHeaderLen];
@@ -161,7 +152,7 @@ TEST(NtlmClientTest, ChallengeMsgNoSig) {
 }
 
 TEST(NtlmClientTest, ChallengeMsgWrongMessageType) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // Fail because the message type should be MessageType::kChallenge
   // (0x00000002)
@@ -178,7 +169,7 @@ TEST(NtlmClientTest, ChallengeMsgWrongMessageType) {
 }
 
 TEST(NtlmClientTest, ChallengeWithNoTargetName) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // The spec (2.2.1.2) states that the length SHOULD be 0 and the offset
   // SHOULD be where the payload would be if it was present. This is the
@@ -198,7 +189,7 @@ TEST(NtlmClientTest, ChallengeWithNoTargetName) {
 }
 
 TEST(NtlmClientTest, Type2MessageWithTargetName) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // One extra byte is provided for target name.
   uint8_t raw[kMinChallengeHeaderLen + 1];
@@ -217,11 +208,12 @@ TEST(NtlmClientTest, Type2MessageWithTargetName) {
 
   NtlmBufferWriter writer(kChallengeHeaderLen + 1);
   ASSERT_TRUE(writer.WriteBytes(raw, arraysize(raw)));
+
   ASSERT_TRUE(GetAuthMsgResult(client, writer));
 }
 
 TEST(NtlmClientTest, NoTargetNameOverflowFromOffset) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   uint8_t raw[kMinChallengeHeaderLen];
   memcpy(raw, test::kMinChallengeMessage, kMinChallengeHeaderLen);
@@ -244,7 +236,7 @@ TEST(NtlmClientTest, NoTargetNameOverflowFromOffset) {
 }
 
 TEST(NtlmClientTest, NoTargetNameOverflowFromLength) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   // Message has 1 extra byte of space after the header for the target name.
   // One extra byte is provided for target name.
@@ -272,20 +264,19 @@ TEST(NtlmClientTest, NoTargetNameOverflowFromLength) {
 }
 
 TEST(NtlmClientTest, Type3UnicodeWithSessionSecuritySpecTest) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   Buffer result = GenerateAuthMsg(client, test::kChallengeMsgV1,
                                   arraysize(test::kChallengeMsgV1));
 
   ASSERT_FALSE(result.empty());
-  ASSERT_EQ(arraysize(test::kExpectedAuthenticateMsgSpecResponseV1),
-            result.size());
-  ASSERT_EQ(0, memcmp(test::kExpectedAuthenticateMsgSpecResponseV1,
-                      result.data(), result.size()));
+  ASSERT_EQ(arraysize(test::kExpectedAuthenticateMsgV1), result.size());
+  ASSERT_EQ(0, memcmp(test::kExpectedAuthenticateMsgV1, result.data(),
+                      result.size()));
 }
 
 TEST(NtlmClientTest, Type3WithoutUnicode) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   Buffer result = GenerateAuthMsg(client, test::kMinChallengeMessageNoUnicode,
                                   kMinChallengeHeaderLen);
@@ -328,7 +319,7 @@ TEST(NtlmClientTest, Type3WithoutUnicode) {
 }
 
 TEST(NtlmClientTest, ClientDoesNotDowngradeSessionSecurity) {
-  NtlmClient client(NtlmFeatures(false));
+  NtlmClient client;
 
   Buffer result = GenerateAuthMsg(client, test::kMinChallengeMessageNoSS,
                                   kMinChallengeHeaderLen);
@@ -372,59 +363,6 @@ TEST(NtlmClientTest, ClientDoesNotDowngradeSessionSecurity) {
   ASSERT_EQ(NegotiateFlags::kUnicode, flags & NegotiateFlags::kUnicode);
   ASSERT_EQ(NegotiateFlags::kExtendedSessionSecurity,
             flags & NegotiateFlags::kExtendedSessionSecurity);
-}
-
-// ------------------------------------------------
-// NTLM V2 specific tests.
-// ------------------------------------------------
-
-TEST(NtlmClientTest, SimpleConstructionV2) {
-  NtlmClient client(NtlmFeatures(true));
-
-  ASSERT_TRUE(client.IsNtlmV2());
-  ASSERT_TRUE(client.IsEpaEnabled());
-  ASSERT_TRUE(client.IsMicEnabled());
-}
-
-TEST(NtlmClientTest, VerifyNegotiateMessageV2) {
-  NtlmClient client(NtlmFeatures(true));
-
-  Buffer result = client.GetNegotiateMessage();
-  ASSERT_FALSE(result.empty());
-  ASSERT_EQ(arraysize(test::kExpectedNegotiateMsg), result.size());
-  ASSERT_EQ(0,
-            memcmp(test::kExpectedNegotiateMsg, result.data(), result.size()));
-}
-
-TEST(NtlmClientTest, VerifyAuthenticateMessageV2) {
-  // Generate the auth message from the client based on the test challenge
-  // message.
-  NtlmClient client(NtlmFeatures(true));
-  Buffer result = GenerateAuthMsg(client, test::kChallengeMsgFromSpecV2,
-                                  arraysize(test::kChallengeMsgFromSpecV2));
-  ASSERT_FALSE(result.empty());
-  ASSERT_EQ(arraysize(test::kExpectedAuthenticateMsgSpecResponseV2),
-            result.size());
-  ASSERT_EQ(0, memcmp(test::kExpectedAuthenticateMsgSpecResponseV2,
-                      result.data(), result.size()));
-}
-
-TEST(NtlmClientTest,
-     VerifyAuthenticateMessageInResponseToChallengeWithoutTargetInfoV2) {
-  // Test how the V2 client responds when the server sends a challenge that
-  // does not contain target info. eg. Windows 2003 and earlier do not send
-  // this. See [MS-NLMP] Appendix B Item 8. These older Windows servers
-  // support NTLMv2 but don't send target info. Other implementations may
-  // also be affected.
-  NtlmClient client(NtlmFeatures(true));
-  Buffer result = GenerateAuthMsg(client, test::kChallengeMsgV1,
-                                  arraysize(test::kChallengeMsgV1));
-  ASSERT_FALSE(result.empty());
-
-  ASSERT_EQ(arraysize(test::kExpectedAuthenticateMsgToOldV1ChallegeV2),
-            result.size());
-  ASSERT_EQ(0, memcmp(test::kExpectedAuthenticateMsgToOldV1ChallegeV2,
-                      result.data(), result.size()));
 }
 
 }  // namespace ntlm

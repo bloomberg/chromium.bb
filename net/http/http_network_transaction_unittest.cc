@@ -648,11 +648,6 @@ void FillLargeHeadersString(std::string* str, int size) {
 }
 
 #if defined(NTLM_PORTABLE)
-uint64_t MockGetMSTime() {
-  // Tue, 23 May 2017 20:13:07 +0000
-  return 131400439870000000;
-}
-
 // Alternative functions that eliminate randomness and dependency on the local
 // host name so that the generated NTLM messages are reproducible.
 void MockGenerateRandom(uint8_t* output, size_t n) {
@@ -5953,8 +5948,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1) {
   // to other auth schemes.
   request.load_flags = LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
 
-  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(
-      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom,
+                                                    MockGetHostName);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Generate the NTLM messages based on known test data.
@@ -5972,9 +5967,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1) {
                      &challenge_msg);
   base::Base64Encode(
       base::StringPiece(
-          reinterpret_cast<const char*>(
-              ntlm::test::kExpectedAuthenticateMsgSpecResponseV1),
-          arraysize(ntlm::test::kExpectedAuthenticateMsgSpecResponseV1)),
+          reinterpret_cast<const char*>(ntlm::test::kExpectedAuthenticateMsgV1),
+          arraysize(ntlm::test::kExpectedAuthenticateMsgV1)),
       &authenticate_msg);
 
   MockWrite data_writes1[] = {
@@ -6103,8 +6097,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1WrongThenRightPassword) {
   request.method = "GET";
   request.url = GURL("https://172.22.68.17/kids/login.aspx");
 
-  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(
-      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom,
+                                                    MockGetHostName);
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Generate the NTLM messages based on known test data.
@@ -6122,9 +6116,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1WrongThenRightPassword) {
                      &challenge_msg);
   base::Base64Encode(
       base::StringPiece(
-          reinterpret_cast<const char*>(
-              ntlm::test::kExpectedAuthenticateMsgSpecResponseV1),
-          arraysize(ntlm::test::kExpectedAuthenticateMsgSpecResponseV1)),
+          reinterpret_cast<const char*>(ntlm::test::kExpectedAuthenticateMsgV1),
+          arraysize(ntlm::test::kExpectedAuthenticateMsgV1)),
       &authenticate_msg);
 
   // The authenticate message when |kWrongPassword| is sent.
@@ -6137,7 +6130,6 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1WrongThenRightPassword) {
   // 24 bytes (32 encoded chars) of the NTLM Response.
   ASSERT_EQ(authenticate_msg.length(),
             wrong_password_authenticate_msg.length());
-  ASSERT_EQ(authenticate_msg.length(), 200u);
   ASSERT_EQ(base::StringPiece(authenticate_msg.data(), 117),
             base::StringPiece(wrong_password_authenticate_msg.data(), 117));
   ASSERT_EQ(
@@ -6330,8 +6322,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuthV1WrongThenRightPassword) {
 // Server requests NTLM authentication, which is not supported over HTTP/2.
 // Subsequent request with authorization header should be sent over HTTP/1.1.
 TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
-  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(
-      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom,
+                                                    MockGetHostName);
 
   const char* kUrl = "https://172.22.68.17/kids/login.aspx";
 
@@ -6368,9 +6360,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
                      &challenge_msg);
   base::Base64Encode(
       base::StringPiece(
-          reinterpret_cast<const char*>(
-              ntlm::test::kExpectedAuthenticateMsgSpecResponseV1),
-          arraysize(ntlm::test::kExpectedAuthenticateMsgSpecResponseV1)),
+          reinterpret_cast<const char*>(ntlm::test::kExpectedAuthenticateMsgV1),
+          arraysize(ntlm::test::kExpectedAuthenticateMsgV1)),
       &authenticate_msg);
 
   // Retry with authorization header.

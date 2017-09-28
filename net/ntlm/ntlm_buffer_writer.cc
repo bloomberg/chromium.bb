@@ -59,8 +59,9 @@ bool NtlmBufferWriter::WriteBytes(const uint8_t* buffer, size_t len) {
   return true;
 }
 
-bool NtlmBufferWriter::WriteBytes(const Buffer& bytes) {
-  return WriteBytes(bytes.data(), bytes.length());
+bool NtlmBufferWriter::WriteBytes(base::StringPiece bytes) {
+  return WriteBytes(reinterpret_cast<const uint8_t*>(bytes.data()),
+                    bytes.length());
 }
 
 bool NtlmBufferWriter::WriteZeros(size_t count) {
@@ -75,34 +76,6 @@ bool NtlmBufferWriter::WriteZeros(size_t count) {
 bool NtlmBufferWriter::WriteSecurityBuffer(SecurityBuffer sec_buf) {
   return WriteUInt16(sec_buf.length) && WriteUInt16(sec_buf.length) &&
          WriteUInt32(sec_buf.offset);
-}
-
-bool NtlmBufferWriter::WriteAvPairHeader(ntlm::TargetInfoAvId avid,
-                                         uint16_t avlen) {
-  if (!CanWrite(ntlm::kAvPairHeaderLen))
-    return false;
-
-  bool result = WriteUInt16(static_cast<uint16_t>(avid)) && WriteUInt16(avlen);
-
-  DCHECK(result);
-  return result;
-}
-
-bool NtlmBufferWriter::WriteAvPairTerminator() {
-  return WriteAvPairHeader(ntlm::TargetInfoAvId::kEol, 0);
-}
-
-bool NtlmBufferWriter::WriteAvPair(const AvPair& pair) {
-  if (!WriteAvPairHeader(pair))
-    return false;
-
-  if (pair.avid == TargetInfoAvId::kFlags) {
-    if (pair.avlen != sizeof(uint32_t))
-      return false;
-    return WriteUInt32(static_cast<uint32_t>(pair.flags));
-  } else {
-    return WriteBytes(pair.buffer);
-  }
 }
 
 bool NtlmBufferWriter::WriteUtf8String(const std::string& str) {
