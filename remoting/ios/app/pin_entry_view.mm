@@ -67,6 +67,7 @@ static const int kMinPinLength = 6;
         setImage:[RemotingTheme
                          .arrowIcon imageFlippedForRightToLeftLayoutDirection]
         forState:UIControlStateNormal];
+    _pinButton.accessibilityLabel = l10n_util::GetNSString(IDS_CONTINUE_BUTTON);
     [_pinButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
                           forState:UIControlStateNormal];
     [_pinButton setDisabledAlpha:0.7];

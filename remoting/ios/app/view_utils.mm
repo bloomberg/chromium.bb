@@ -46,4 +46,13 @@ UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view) {
   }
 }
 
+void SetAccessibilityInfoFromImage(UIBarButtonItem* button) {
+  button.accessibilityLabel = button.image.accessibilityLabel;
+}
+
+void SetAccessibilityInfoFromImage(UIButton* button) {
+  button.accessibilityLabel =
+      [button imageForState:UIControlStateNormal].accessibilityLabel;
+}
+
 }  // namespace remoting

@@ -152,6 +152,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                                    primaryImage:RemotingTheme.menuIcon
                                     activeImage:RemotingTheme.closeIcon];
   [_floatingButton addSubview:_actionImageView];
+  // TODO(yuweih): The accessibility label should be changed to "Close" when
+  // the FAB is open.
+  _floatingButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_ACTIONBAR_MENU);
   [self.view addSubview:_floatingButton];
 
   [self applyInputMode];

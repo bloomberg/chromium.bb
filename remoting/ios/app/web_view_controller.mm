@@ -11,6 +11,7 @@
 #import <WebKit/WebKit.h>
 
 #import "remoting/ios/app/remoting_theme.h"
+#import "remoting/ios/app/view_utils.h"
 
 @interface WebViewController () {
   NSString* _urlString;
@@ -54,6 +55,8 @@
                                          style:UIBarButtonItemStylePlain
                                         target:self
                                         action:@selector(didTapClose:)];
+    remoting::SetAccessibilityInfoFromImage(
+        self.navigationItem.leftBarButtonItem);
   }
 }
 

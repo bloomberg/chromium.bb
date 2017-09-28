@@ -13,6 +13,7 @@
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/setting_option.h"
+#import "remoting/ios/app/view_utils.h"
 
 #include "base/logging.h"
 #include "remoting/base/string_resources.h"
@@ -61,12 +62,12 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
   self.collectionView.backgroundColor = RemotingTheme.menuBlueColor;
 
-  // TODO(nicholss): X should be an image.
   UIBarButtonItem* closeButton =
       [[UIBarButtonItem alloc] initWithImage:RemotingTheme.closeIcon
                                        style:UIBarButtonItemStyleDone
                                       target:self
                                       action:@selector(didTapClose:)];
+  remoting::SetAccessibilityInfoFromImage(closeButton);
   self.navigationItem.leftBarButtonItem = nil;
   self.navigationItem.rightBarButtonItem = closeButton;
 
