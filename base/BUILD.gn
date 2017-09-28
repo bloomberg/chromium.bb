@@ -1581,6 +1581,7 @@ component("base") {
       "process/process_posix.cc",
       "sync_socket.h",
       "sync_socket_posix.cc",
+      "synchronization/waitable_event_watcher.h",
     ]
     sources += [
       "base_paths_mac.h",
@@ -1621,7 +1622,6 @@ component("base") {
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
-      "synchronization/waitable_event_watcher_mac.cc",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
@@ -2309,6 +2309,7 @@ test("base_unittests") {
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
       "sync_socket_unittest.cc",
+      "synchronization/waitable_event_watcher_unittest.cc",
     ]
 
     # Pull in specific Mac files for iOS (which have been filtered out by file
