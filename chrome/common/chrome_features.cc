@@ -61,6 +61,16 @@ const base::Feature kArcMemoryManagement{
 const base::Feature kAssetDownloadSuggestionsFeature{
     "NTPAssetDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the built-in DNS resolver.
+const base::Feature kAsyncDns {
+  "AsyncDns",
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 // Enables automatic tab discarding, when the system is in low memory state.
 const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",

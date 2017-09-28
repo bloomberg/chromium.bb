@@ -3514,6 +3514,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSpeculativePreconnectFeatureVariations,
                                     "SpeculativePreconnectValidation")},
 
+#if defined(OS_ANDROID)
+    {"enable-async-dns", flag_descriptions::kAsyncDnsName,
+     flag_descriptions::kAsyncDnsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAsyncDns)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -40,6 +40,8 @@ extern const base::Feature kArcMemoryManagement;
 
 extern const base::Feature kAssetDownloadSuggestionsFeature;
 
+extern const base::Feature kAsyncDns;
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 extern const base::Feature kAutomaticTabDiscarding;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

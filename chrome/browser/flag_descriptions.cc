@@ -1554,6 +1554,9 @@ const char kAndroidViewPasswordsName[] = "Copy and view passwords for Android";
 const char kAndroidViewPasswordsDescription[] =
     "Enables copying and viewing passwords in settings.";
 
+const char kAsyncDnsName[] = "Async DNS resolver";
+const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
+
 const char kAutofillAccessoryViewName[] =
     "Autofill suggestions as keyboard accessory view";
 const char kAutofillAccessoryViewDescription[] =
