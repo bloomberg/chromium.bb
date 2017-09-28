@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 
+#include "base/ios/block_types.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
@@ -18,6 +19,8 @@
 @property(nonatomic, strong)
     RecentTabsHandsetViewController* recentTabsViewController;
 @property(nonatomic, strong) RecentTabsTableCoordinator* tableCoordinator;
+// Completion block called once the recentTabsViewController is dismissed.
+@property(nonatomic, assign) ProceduralBlock completion;
 
 @end
 
@@ -28,6 +31,7 @@
 @synthesize browserState = _browserState;
 @synthesize dispatcher = _dispatcher;
 @synthesize loader = _loader;
+@synthesize completion = _completion;
 
 - (void)start {
   DCHECK(self.browserState);
@@ -53,7 +57,8 @@
 
 - (void)stop {
   [self.recentTabsViewController dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                                                    completion:self.completion];
+  self.completion = nil;
   [self.tableCoordinator dismissKeyboard];
   [self.tableCoordinator dismissModals];
   [self.tableCoordinator stop];
@@ -63,7 +68,8 @@
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
-- (void)dismissRecentTabs {
+- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
+  self.completion = completion;
   [self stop];
 }
 
