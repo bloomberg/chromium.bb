@@ -529,23 +529,20 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   it->second->set_show_for_user(account_id);
 
-  // Show avatar icon on the teleported window.
-  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_ON) {
-    // Tests could either not have a UserManager or the UserManager does not
-    // know the window owner.
-    const user_manager::User* const window_owner =
-        user_manager::UserManager::IsInitialized()
-            ? user_manager::UserManager::Get()->FindUser(owner)
-            : nullptr;
+  // Tests could either not have a UserManager or the UserManager does not
+  // know the window owner.
+  const user_manager::User* const window_owner =
+      user_manager::UserManager::IsInitialized()
+          ? user_manager::UserManager::Get()->FindUser(owner)
+          : nullptr;
 
-    const bool teleported = !IsWindowOnDesktopOfUser(window, owner);
-    if (window_owner && teleported) {
-      window->SetProperty(
-          aura::client::kAvatarIconKey,
-          new gfx::ImageSkia(GetAvatarImageForUser(window_owner)));
-    } else {
-      window->ClearProperty(aura::client::kAvatarIconKey);
-    }
+  const bool teleported = !IsWindowOnDesktopOfUser(window, owner);
+  if (window_owner && teleported) {
+    window->SetProperty(
+        aura::client::kAvatarIconKey,
+        new gfx::ImageSkia(GetAvatarImageForUser(window_owner)));
+  } else {
+    window->ClearProperty(aura::client::kAvatarIconKey);
   }
 
   // Show the window if the added user is the current one.

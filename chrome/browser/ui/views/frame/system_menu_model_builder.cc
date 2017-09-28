@@ -144,9 +144,6 @@ void SystemMenuModelBuilder::AddFrameToggleItems(ui::SimpleMenuModel* model) {
 void SystemMenuModelBuilder::AppendTeleportMenu(ui::SimpleMenuModel* model) {
 #if defined(OS_CHROMEOS)
   DCHECK(browser()->window());
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_ON)
-    return;
 
   // Don't show the menu for incognito windows.
   if (browser()->profile()->IsOffTheRecord())

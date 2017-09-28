@@ -20,12 +20,6 @@ namespace {
 MultiUserWindowManager* g_instance = nullptr;
 }  // namespace
 
-// Caching the current multi profile mode to avoid expensive detection
-// operations.
-MultiUserWindowManager::MultiProfileMode
-    MultiUserWindowManager::multi_user_mode_ =
-        MultiUserWindowManager::MULTI_PROFILE_MODE_UNINITIALIZED;
-
 // static
 MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
   return g_instance;
@@ -33,7 +27,6 @@ MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
 
 MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   DCHECK(!g_instance);
-  multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
   ash::MultiProfileUMA::SessionMode mode =
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   // TODO(crbug.com/557406): Enable this component in Mash. The object itself
@@ -45,7 +38,6 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
             user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
     g_instance = manager;
     manager->Init();
-    multi_user_mode_ = MULTI_PROFILE_MODE_ON;
     mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   }
   ash::MultiProfileUMA::RecordSessionMode(mode);
@@ -58,30 +50,24 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
 }
 
 // static
-MultiUserWindowManager::MultiProfileMode
-MultiUserWindowManager::GetMultiProfileMode() {
-  return multi_user_mode_;
-}
-
-// static
 bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
-  // Note: In case of the M-31 mode the window manager won't exist.
-  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_ON) {
-    // If the window is shown on a different desktop than the user, it should
-    // have the avatar icon
-    MultiUserWindowManager* instance = GetInstance();
-    return !instance->IsWindowOnDesktopOfUser(window,
-                                              instance->GetWindowOwner(window));
-  }
-  return false;
+  // Session restore can open a window for the first user before the instance
+  // is created.
+  if (!g_instance)
+    return false;
+
+  // Show the avatar icon if the window is on a different desktop than the
+  // window's owner's desktop. The stub implementation does the right thing
+  // for single-user mode.
+  return !g_instance->IsWindowOnDesktopOfUser(
+      window, g_instance->GetWindowOwner(window));
 }
 
 // static
 void MultiUserWindowManager::DeleteInstance() {
   DCHECK(g_instance);
   delete g_instance;
-  g_instance = NULL;
-  multi_user_mode_ = MULTI_PROFILE_MODE_UNINITIALIZED;
+  g_instance = nullptr;
 }
 
 void MultiUserWindowManager::SetInstanceForTest(
@@ -89,7 +75,6 @@ void MultiUserWindowManager::SetInstanceForTest(
   if (g_instance)
     DeleteInstance();
   g_instance = instance;
-  multi_user_mode_ = MULTI_PROFILE_MODE_ON;
 }
 
 }  // namespace chrome
