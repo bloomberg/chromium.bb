@@ -15,7 +15,6 @@ class Document;
 class LocalFrame;
 class LocalFrameView;
 class Node;
-class ScrollManager;
 class WebMouseWheelEvent;
 
 class MouseWheelEventManager final
@@ -23,7 +22,7 @@ class MouseWheelEventManager final
   WTF_MAKE_NONCOPYABLE(MouseWheelEventManager);
 
  public:
-  explicit MouseWheelEventManager(LocalFrame&, ScrollManager&);
+  explicit MouseWheelEventManager(LocalFrame&);
   DECLARE_TRACE();
 
   void Clear();
@@ -37,7 +36,6 @@ class MouseWheelEventManager final
 
   const Member<LocalFrame> frame_;
   Member<Node> wheel_target_;
-  Member<ScrollManager> scroll_manager_;
 };
 
 }  // namespace blink

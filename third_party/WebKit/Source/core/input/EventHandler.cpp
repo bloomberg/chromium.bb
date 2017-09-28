@@ -173,8 +173,7 @@ EventHandler::EventHandler(LocalFrame& frame)
       should_only_fire_drag_over_event_(false),
       scroll_manager_(new ScrollManager(frame)),
       mouse_event_manager_(new MouseEventManager(frame, *scroll_manager_)),
-      mouse_wheel_event_manager_(
-          new MouseWheelEventManager(frame, *scroll_manager_)),
+      mouse_wheel_event_manager_(new MouseWheelEventManager(frame)),
       keyboard_event_manager_(
           new KeyboardEventManager(frame, *scroll_manager_)),
       pointer_event_manager_(
@@ -2050,7 +2049,6 @@ bool EventHandler::PassMousePressEventToScrollbar(
 
   if (!scrollbar || !scrollbar->Enabled())
     return false;
-  scroll_manager_->SetFrameWasScrolledByUser();
   scrollbar->MouseDown(mev.Event());
   return true;
 }

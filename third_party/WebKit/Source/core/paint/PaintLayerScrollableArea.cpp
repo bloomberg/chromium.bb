@@ -419,7 +419,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   LocalFrameView* frame_view = Box().GetFrameView();
   bool is_root_layer = Layer()->IsRootLayer();
-  bool is_main_frame = is_root_layer && frame->IsMainFrame();
 
   TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data",
                InspectorScrollLayerEvent::Data(&Box()));
@@ -509,8 +508,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   if (is_root_layer) {
     frame_view->GetFrame().Loader().SaveScrollState();
     frame_view->DidChangeScrollOffset();
-    // TODO(szager): Clean up was_scrolled_by_user. (crbug.com/732955)
-    if (scroll_type == kCompositorScroll && is_main_frame) {
+    if (scroll_type == kCompositorScroll || scroll_type == kUserScroll) {
       if (DocumentLoader* document_loader = frame->Loader().GetDocumentLoader())
         document_loader->GetInitialScrollState().was_scrolled_by_user = true;
     }

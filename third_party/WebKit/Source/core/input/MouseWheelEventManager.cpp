@@ -10,21 +10,18 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/input/EventHandler.h"
 #include "core/input/EventHandlingUtil.h"
-#include "core/input/ScrollManager.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "public/platform/WebMouseWheelEvent.h"
 
 namespace blink {
-MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame,
-                                               ScrollManager& scroll_manager)
-    : frame_(frame), wheel_target_(nullptr), scroll_manager_(scroll_manager) {}
+MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame)
+    : frame_(frame), wheel_target_(nullptr) {}
 
 DEFINE_TRACE(MouseWheelEventManager) {
   visitor->Trace(frame_);
   visitor->Trace(wheel_target_);
-  visitor->Trace(scroll_manager_);
 }
 
 void MouseWheelEventManager::Clear() {
@@ -98,8 +95,6 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   if (subframe) {
     WebInputEventResult result =
         subframe->GetEventHandler().HandleWheelEvent(event);
-    if (result != WebInputEventResult::kNotHandled)
-      scroll_manager_->SetFrameWasScrolledByUser();
     return result;
   }
 
