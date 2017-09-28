@@ -168,6 +168,8 @@ void HighlighterController::RecognizeGesture() {
                                      base::Unretained(this)));
 
     recognized_gesture_counter_++;
+  } else if (observer_) {
+    observer_->HandleFailedSelection();
   }
 
   gesture_counter_++;

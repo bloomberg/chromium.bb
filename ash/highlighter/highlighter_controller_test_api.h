@@ -6,6 +6,7 @@
 #define ASH_HIGHLIGHTER_HIGHLIGHTER_CONTROLLER_TEST_API_H_
 
 #include "ash/highlighter/highlighter_selection_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -22,6 +23,14 @@ class HighlighterControllerTestApi : public HighlighterSelectionObserver {
   explicit HighlighterControllerTestApi(HighlighterController* instance);
   ~HighlighterControllerTestApi() override;
 
+  void SetMetalayerDone(base::OnceClosure done) {
+    metalayer_done_ = std::move(done);
+  }
+  void CallMetalayerDone() {
+    if (!metalayer_done_.is_null())
+      std::move(metalayer_done_).Run();
+  }
+  void SetViaButton(bool via_button) { via_button_ = via_button; }
   void SetEnabled(bool enabled);
   void DestroyPointerView();
   void SimulateInterruptedStrokeTimeout();
@@ -32,18 +41,29 @@ class HighlighterControllerTestApi : public HighlighterSelectionObserver {
   const FastInkPoints& points() const;
   const FastInkPoints& predicted_points() const;
 
-  void ResetSelection() { handle_selection_called_ = false; }
+  void ResetSelection() {
+    handle_selection_called_ = false;
+    handle_failed_selection_called_ = false;
+  }
   bool handle_selection_called() const { return handle_selection_called_; }
+  bool handle_failed_selection_called() const {
+    return handle_failed_selection_called_;
+  }
   const gfx::Rect& selection() const { return selection_; }
 
  private:
   // HighlighterSelectionObserver:
   void HandleSelection(const gfx::Rect& rect) override;
+  void HandleFailedSelection() override;
 
   HighlighterController* instance_;
 
   bool handle_selection_called_ = false;
+  bool handle_failed_selection_called_ = false;
   gfx::Rect selection_;
+
+  base::OnceClosure metalayer_done_;
+  bool via_button_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterControllerTestApi);
 };

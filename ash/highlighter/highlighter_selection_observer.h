@@ -17,6 +17,7 @@ class HighlighterSelectionObserver {
   virtual ~HighlighterSelectionObserver() {}
 
   virtual void HandleSelection(const gfx::Rect& rect) = 0;
+  virtual void HandleFailedSelection() = 0;
 };
 
 }  // namespace ash

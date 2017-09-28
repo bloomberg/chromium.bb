@@ -85,6 +85,9 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
 
   base::TimeTicks previous_stroke_end_;
 
+  // True when the mode is activated via the stylus barrel button.
+  bool activated_via_button_ = false;
+
   base::WeakPtrFactory<MetalayerMode> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetalayerMode);
