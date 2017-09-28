@@ -1726,7 +1726,7 @@ void LayoutTableSection::SplitEffectiveColumn(unsigned pos, unsigned first) {
     c_col_++;
   for (unsigned row = 0; row < grid_.size(); ++row) {
     auto& grid_cells = grid_[row].grid_cells;
-    EnsureCols(row, pos + 2);
+    EnsureCols(row, pos + 1);
     grid_cells.insert(pos + 1, TableGridCell());
     if (grid_cells[pos].HasCells()) {
       grid_cells[pos + 1].Cells().AppendVector(grid_cells[pos].Cells());
