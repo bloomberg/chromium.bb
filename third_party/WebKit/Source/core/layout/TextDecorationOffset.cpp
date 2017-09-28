@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/layout/TextDecorationOffset.h"
+
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "platform/fonts/FontMetrics.h"
