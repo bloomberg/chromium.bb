@@ -104,11 +104,12 @@ get_version_info() {
 stage_install_common() {
   echo "Staging common install files in '${STAGEDIR}'..."
 
-  # TODO(mmoss) This assumes we built the static binaries. To support shared
-  # builds, we probably want an install target in scons so it can give us all
-  # the right files. See also:
-  # http://code.google.com/p/chromium/issues/detail?id=4451
-  #
+  # Note: Changes here may also need to be applied to ChromeOS's
+  # chromite/lib/chrome_util.py.
+
+  # Note: This only supports static binaries and does not work when the GN
+  # is_component_build flag is true.
+
   # app
   STRIPPEDFILE="${BUILDDIR}/${PROGNAME}.stripped"
   install -m 755 "${STRIPPEDFILE}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
@@ -118,13 +119,11 @@ stage_install_common() {
     "${BUILDDIR}/extensions_shell_and_test.pak" \
     "${STAGEDIR}/${INSTALLDIR}/"
 
-
-  # ICU data file; only necessary when icu_use_data_file_flag is set to 1
-  # in build/common.gypi.
+  # ICU data file; Necessary when the GN icu_use_data_file flag is true.
   install -m 644 "${BUILDDIR}/icudtl.dat" "${STAGEDIR}/${INSTALLDIR}/"
 
-  # V8 snapshot files; only necessary when v8_use_external_startup_data is
-  # set to 1 in build/common.gypi.
+  # V8 snapshot files; Necessary when the GN v8_use_external_startup_data flag
+  # is true.
   if [ -f "${BUILDDIR}/natives_blob.bin" ]; then
     install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
     install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
@@ -149,7 +148,6 @@ stage_install_common() {
 
     install -m 644 -s "${BUILDDIR}/lib/libc++.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
-
 
   # nacl_helper and nacl_helper_bootstrap
   # Don't use "-s" (strip) because this runs binutils "strip", which

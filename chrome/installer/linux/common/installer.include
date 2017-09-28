@@ -126,11 +126,12 @@ get_version_info() {
 stage_install_common() {
   log_cmd echo "Staging common install files in '${STAGEDIR}'..."
 
-  # TODO(mmoss) This assumes we built the static binaries. To support shared
-  # builds, we probably want an install target in scons so it can give us all
-  # the right files. See also:
-  # http://code.google.com/p/chromium/issues/detail?id=4451
-  #
+  # Note: Changes here may also need to be applied to ChromeOS's
+  # chromite/lib/chrome_util.py.
+
+  # Note: This only supports static binaries and does not work when the GN
+  # is_component_build flag is true.
+
   # app
   STRIPPEDFILE="${BUILDDIR}/${PROGNAME}.stripped"
   install -m 755 "${STRIPPEDFILE}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
@@ -149,16 +150,14 @@ stage_install_common() {
     install -m 644 "${BUILDDIR}/ui_resources_100_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
   fi
 
-  # ICU data file; only necessary when icu_use_data_file_flag is set to 1
-  # in build/common.gypi.
+  # ICU data file; Necessary when the GN icu_use_data_file flag is true.
   install -m 644 "${BUILDDIR}/icudtl.dat" "${STAGEDIR}/${INSTALLDIR}/"
 
-  # V8 snapshot files; only necessary when v8_use_external_startup_data is
-  # set to 1 in build/common.gypi.
-  if [ -f "${BUILDDIR}/natives_blob.bin" ]; then
-    install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
-    install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
-  fi
+  # V8 snapshot files; Necessary when the GN v8_use_external_startup_data flag
+  # is true.
+  install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+  install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+
   # V8 context snapshot file; it will replace V8's snapshot_blob.bin
   # TODO(peria): Remove snapshot_blob.bin when dependencies are resolved.
   if [ -f "${BUILDDIR}/v8_context_snapshot.bin" ]; then
@@ -167,7 +166,9 @@ stage_install_common() {
 
   # sandbox
   # Rename sandbox binary with hyphen instead of underscore because that's what
-  # the code looks for, but the build targets can't use hyphens (scons bug?)
+  # the code looks for. Originally, the SCons build system may have had a bug
+  # where it did not support hyphens, so this is stuck as is to avoid breaking
+  # anyone who expects the build artifact to have the underscore.
   install -m 4755 -s "${BUILDDIR}/${PROGNAME}_sandbox" \
     "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}-sandbox"
 
@@ -214,7 +215,6 @@ stage_install_common() {
     install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
     install -m ${SHLIB_PERMS} -s "${BUILDDIR}/lib/libc++.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
-
 
   # nacl_helper and nacl_helper_bootstrap
   # Don't use "-s" (strip) because this runs binutils "strip", which
