@@ -1127,6 +1127,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                const HitTestLocation& location_in_container,
                const LayoutPoint& accumulated_offset,
                HitTestFilter = kHitTestAll);
+  // Returns the node that is ultimately added to the hit test result. Some
+  // objects report a hit testing node that is not their own (such as
+  // continuations and some psuedo elements) and it is important that the
+  // node be consistent between point- and list-based hit test results.
+  virtual Node* NodeForHitTest() const;
   virtual void UpdateHitTestResult(HitTestResult&, const LayoutPoint&);
   virtual bool NodeAtPoint(HitTestResult&,
                            const HitTestLocation& location_in_container,

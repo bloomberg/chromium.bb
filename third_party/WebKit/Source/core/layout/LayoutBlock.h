@@ -409,7 +409,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                        const HitTestLocation& location_in_container,
                        const LayoutPoint& accumulated_offset,
                        HitTestAction) override;
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
   void UpdateAfterLayout() override;
 

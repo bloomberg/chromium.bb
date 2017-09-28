@@ -1089,8 +1089,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }  // Returns -1 if we should skip this box when computing the baseline of an
      // inline-block.
 
-  virtual Node* NodeForHitTest() const { return GetNode(); }
-
   bool ShrinkToAvoidFloats() const;
   virtual bool AvoidsFloats() const;
   bool ShouldBeConsideredAsReplaced() const;

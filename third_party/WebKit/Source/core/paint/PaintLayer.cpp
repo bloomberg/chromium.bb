@@ -2409,8 +2409,8 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
     // to look for it manually like we do here, and give up on setting a local
     // point in the result, because that has bad implications for text selection
     // and caretRangeFromPoint(). See crbug.com/461791
-    if (!result.InnerNode())
-      result.SetInnerNode(e);
+    // This code path only ever hits in fullscreen tests.
+    result.SetInnerNode(e);
   }
   return true;
 }

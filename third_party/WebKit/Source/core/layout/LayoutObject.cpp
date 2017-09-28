@@ -2898,11 +2898,7 @@ bool LayoutObject::HitTest(HitTestResult& result,
   return inside;
 }
 
-void LayoutObject::UpdateHitTestResult(HitTestResult& result,
-                                       const LayoutPoint& point) {
-  if (result.InnerNode())
-    return;
-
+Node* LayoutObject::NodeForHitTest() const {
   Node* node = this->GetNode();
 
   // If we hit the anonymous layoutObjects inside generated content we should
@@ -2913,8 +2909,16 @@ void LayoutObject::UpdateHitTestResult(HitTestResult& result,
       node = layout_object->GetNode();
   }
 
-  if (node)
-    result.SetNodeAndPosition(node, point);
+  return node;
+}
+
+void LayoutObject::UpdateHitTestResult(HitTestResult& result,
+                                       const LayoutPoint& point) {
+  if (result.InnerNode())
+    return;
+
+  if (Node* n = NodeForHitTest())
+    result.SetNodeAndPosition(n, point);
 }
 
 bool LayoutObject::NodeAtPoint(HitTestResult&,
