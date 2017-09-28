@@ -5845,6 +5845,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_CFL
+// TODO(ltrudeau) add support for HBD.
 static int64_t cfl_alpha_dist(const int16_t *pred_buf_q3, const uint8_t *src,
                               int src_stride, int width, int height,
                               int dc_pred, int alpha_q3,
@@ -5872,12 +5873,10 @@ static int64_t cfl_alpha_dist(const int16_t *pred_buf_q3, const uint8_t *src,
       const int uv = src[i];
       const int scaled_luma = get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]);
 
-      // TODO(ltrudeau) add support for HBD.
-      diff = uv - clamp(scaled_luma + dc_pred, 0, 255);
+      diff = uv - clip_pixel(scaled_luma + dc_pred);
       dist += diff * diff;
 
-      // TODO(ltrudeau) add support for HBD.
-      diff = uv - clamp(-scaled_luma + dc_pred, 0, 255);
+      diff = uv - clip_pixel(-scaled_luma + dc_pred);
       dist_neg += diff * diff;
     }
     pred_buf_q3 += MAX_SB_SIZE;
