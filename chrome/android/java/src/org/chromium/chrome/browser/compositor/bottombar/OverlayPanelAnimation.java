@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Ani
 import android.content.Context;
 import android.view.animation.Interpolator;
 
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -73,6 +74,13 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     // ============================================================================================
     // Animation API
     // ============================================================================================
+
+    /**
+     * @return The handler responsible for running compositor animations.
+     */
+    public CompositorAnimationHandler getAnimationHandler() {
+        return mUpdateHost.getAnimationHandler();
+    }
 
     /**
      * Animates the Overlay Panel to its maximized state.

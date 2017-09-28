@@ -159,6 +159,13 @@ abstract class OverlayPanelBase {
     // ============================================================================================
 
     /**
+     * @return An Android {@link Context}.
+     */
+    public Context getContext() {
+        return mContext;
+    }
+
+    /**
      * Animates the Overlay Panel to its closed state.
      * @param reason The reason for the change of panel state.
      * @param animate If the panel should animate closed.
