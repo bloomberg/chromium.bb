@@ -446,3 +446,23 @@ TEST_F(NotificationPlatformBridgeLinuxTest, MissingBodyCapability) {
   CreateNotificationBridgeLinux(std::vector<std::string>{"actions"}, false,
                                 true, false);
 }
+
+TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            EXPECT_EQ("&lt;span id='1' class=\"2\"&gt;&amp;#39;&lt;/span&gt;",
+                      request.body);
+          },
+          1));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("")
+          .SetMessage(
+              base::ASCIIToUTF16("<span id='1' class=\"2\">&#39;</span>"))
+          .GetResult(),
+      nullptr);
+}
