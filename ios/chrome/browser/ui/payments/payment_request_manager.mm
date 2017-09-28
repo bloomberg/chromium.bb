@@ -114,10 +114,6 @@ struct PendingPaymentResponse {
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
 
-  // Maintains a map of web::WebState to a list of payments::PaymentRequest
-  // instances maintained for that WebState.
-  payments::PaymentRequestCache* _paymentRequestCache;
-
   // The observer for |_activeWebState|.
   std::unique_ptr<web::WebStateObserverBridge> _activeWebStateObserver;
 
@@ -153,6 +149,10 @@ struct PendingPaymentResponse {
 
 // Object that manages JavaScript injection into the web view.
 @property(nonatomic, weak) JSPaymentRequestManager* paymentRequestJsManager;
+
+// Maintains a map of web::WebState to a list of payments::PaymentRequest
+// instances maintained for that WebState.
+@property(nonatomic, assign) payments::PaymentRequestCache* paymentRequestCache;
 
 // The payments::PaymentRequest instance currently showing, if any.
 @property(nonatomic, assign) payments::PaymentRequest* pendingPaymentRequest;
@@ -256,6 +256,7 @@ struct PendingPaymentResponse {
 @synthesize activeWebState = _activeWebState;
 @synthesize paymentRequestCoordinator = _paymentRequestCoordinator;
 @synthesize paymentRequestJsManager = _paymentRequestJsManager;
+@synthesize paymentRequestCache = _paymentRequestCache;
 @synthesize pendingPaymentRequest = _pendingPaymentRequest;
 @synthesize dispatcher = _dispatcher;
 @synthesize coordinatorDidStopCallback = _coordinatorDidStopCallback;
@@ -288,7 +289,6 @@ struct PendingPaymentResponse {
 }
 
 - (void)setActiveWebState:(web::WebState*)webState {
-  [self cancelRequest];
   [self disableActiveWebState];
 
   _paymentRequestJsManager = nil;
@@ -307,19 +307,32 @@ struct PendingPaymentResponse {
 }
 
 - (void)stopTrackingWebState:(web::WebState*)webState {
-  for (const auto& paymentRequest :
-       _paymentRequestCache->GetPaymentRequests(_activeWebState)) {
-    if (paymentRequest->state() != payments::PaymentRequest::State::CLOSED) {
-      paymentRequest->journey_logger().SetAborted(
-          payments::JourneyLogger::ABORT_REASON_USER_NAVIGATION);
-      paymentRequest->set_updating(false);
-      paymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
+  __weak PaymentRequestManager* weakSelf = self;
+  ProceduralBlockWithBool callback = ^(BOOL) {
+    for (const auto& paymentRequest :
+         weakSelf.paymentRequestCache->GetPaymentRequests(webState)) {
+      if (paymentRequest->state() != payments::PaymentRequest::State::CLOSED) {
+        paymentRequest->journey_logger().SetAborted(
+            payments::JourneyLogger::ABORT_REASON_USER_NAVIGATION);
+        paymentRequest->set_updating(false);
+        paymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
+      }
     }
+    // The lifetime of a PaymentRequest is tied to the WebState it is associated
+    // with and the current URL. Therefore, PaymentRequest instances should get
+    // destroyed when the WebState goes away.
+    weakSelf.paymentRequestCache->ClearPaymentRequests(webState);
+  };
+
+  // Abort any pending request.
+  if (_pendingPaymentRequest) {
+    [self abortPendingRequestWithReason:payments::JourneyLogger::
+                                            ABORT_REASON_MERCHANT_NAVIGATION
+                           errorMessage:kCancelErrorMessage
+                               callback:callback];
+  } else {
+    callback(YES);
   }
-  // The lifetime of a PaymentRequest is tied to the WebState it is associated
-  // with and the current URL. Therefore, PaymentRequest instances should get
-  // destroyed when the WebState goes away.
-  _paymentRequestCache->ClearPaymentRequests(webState);
 }
 
 - (void)enablePaymentRequest:(BOOL)enabled {
@@ -1087,30 +1100,36 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  // Reset any pending request.
-  if (_pendingPaymentRequest) {
-    _pendingPaymentRequest = nullptr;
-    [self resetIOSPaymentInstrumentLauncherDelegate];
-  }
+  payments::JourneyLogger::AbortReason abortReason =
+      navigation->IsRendererInitiated()
+          ? payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION
+          : payments::JourneyLogger::ABORT_REASON_USER_NAVIGATION;
 
-  [self dismissUIWithCallback:nil];
-
-  for (const auto& paymentRequest :
-       _paymentRequestCache->GetPaymentRequests(_activeWebState)) {
-    if (paymentRequest->state() != payments::PaymentRequest::State::CLOSED) {
-      paymentRequest->journey_logger().SetAborted(
-          navigation->IsRendererInitiated()
-              ? payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION
-              : payments::JourneyLogger::ABORT_REASON_USER_NAVIGATION);
-      paymentRequest->set_updating(false);
-      paymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
+  __weak PaymentRequestManager* weakSelf = self;
+  ProceduralBlockWithBool callback = ^(BOOL) {
+    for (const auto& paymentRequest :
+         weakSelf.paymentRequestCache->GetPaymentRequests(
+             weakSelf.activeWebState)) {
+      if (paymentRequest->state() != payments::PaymentRequest::State::CLOSED) {
+        paymentRequest->journey_logger().SetAborted(abortReason);
+        paymentRequest->set_updating(false);
+        paymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
+      }
     }
-  }
+    // The lifetime of a PaymentRequest is tied to the WebState it is associated
+    // with and the current URL. Therefore, PaymentRequest instances should get
+    // destroyed when the user navigates to a URL.
+    weakSelf.paymentRequestCache->ClearPaymentRequests(weakSelf.activeWebState);
+  };
 
-  // The lifetime of a PaymentRequest is tied to the WebState it is associated
-  // with and the current URL. Therefore, PaymentRequest instances should get
-  // destroyed when the WebState goes away or the user navigates to a URL.
-  _paymentRequestCache->ClearPaymentRequests(_activeWebState);
+  // Abort any pending request.
+  if (_pendingPaymentRequest) {
+    [self abortPendingRequestWithReason:abortReason
+                           errorMessage:kCancelErrorMessage
+                               callback:callback];
+  } else {
+    callback(YES);
+  }
 
   // Set the JS isContextSecure global variable at the earliest opportunity.
   [_paymentRequestJsManager
