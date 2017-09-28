@@ -7,6 +7,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
@@ -35,6 +36,8 @@ void DialMediaSinkServiceImpl::Start() {
 
   dial_registry_ =
       test_dial_registry_ ? test_dial_registry_ : DialRegistry::GetInstance();
+  dial_registry_->SetNetLog(
+      request_context_->GetURLRequestContext()->net_log());
   dial_registry_->RegisterObserver(this);
   dial_registry_->OnListenerAdded();
   MediaSinkServiceBase::StartTimer();
