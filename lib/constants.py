@@ -641,8 +641,6 @@ HWTEST_GTS_POOL = HWTEST_CTS_POOL
 HWTEST_MAX_RETRIES = 5
 
 # Defines for the various hardware test suites:
-#   AU: Blocking suite run against all canaries; tests basic AU
-#       functionality.
 #   BVT:  Basic blocking suite to be run against any build that
 #       requires a HWTest phase.
 #   COMMIT:  Suite of basic tests required for commits to the source
@@ -651,12 +649,14 @@ HWTEST_MAX_RETRIES = 5
 #   CANARY:  Non-blocking suite run only against the canaries.
 #   AFDO:  Non-blocking suite run only AFDO builders.
 #   MOBLAB: Blocking Suite run only on *_moblab builders.
+#   INSTALLER: Blocking suite run against all canaries; tests basic installer
+#              functionality.
 HWTEST_ARC_COMMIT_SUITE = 'bvt-arc'
 HWTEST_ARC_CANARY_SUITE = 'arc-bvt-perbuild'
-HWTEST_AU_SUITE = 'au'
 HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
 HWTEST_CANARY_SUITE = 'bvt-perbuild'
+HWTEST_INSTALLER_SUITE = 'bvt-installer'
 HWTEST_AFDO_SUITE = 'AFDO_record'
 HWTEST_JETSTREAM_COMMIT_SUITE = 'jetstream_cq'
 HWTEST_MOBLAB_SUITE = 'moblab'

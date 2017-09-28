@@ -64,8 +64,8 @@ class HWTestList(object):
     Args:
       *kwargs: overrides for the configs
     """
-    # Number of tests running in parallel in the AU suite.
-    AU_TESTS_NUM = 2
+    # Number of tests running in parallel in the INSTALLER suite.
+    INSTALLER_TESTS_NUM = 2
     # Number of tests running in parallel in the asynchronous canary
     # test suite
     ASYNC_TEST_NUM = 2
@@ -74,16 +74,16 @@ class HWTestList(object):
     # constrained in the number of duts in the lab, only give 1 dut to each.
     if (kwargs.get('num', constants.HWTEST_DEFAULT_NUM) >=
         constants.HWTEST_DEFAULT_NUM):
-      au_dict = dict(num=AU_TESTS_NUM)
+      installer_dict = dict(num=INSTALLER_TESTS_NUM)
       async_dict = dict(num=ASYNC_TEST_NUM)
     else:
-      au_dict = dict(num=1)
+      installer_dict = dict(num=1)
       async_dict = dict(num=1)
 
-    au_kwargs = kwargs.copy()
-    au_kwargs.update(au_dict)
+    installer_kwargs = kwargs.copy()
+    installer_kwargs.update(installer_dict)
     # Force au suite to run first.
-    au_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
+    installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
 
     async_kwargs = kwargs.copy()
     async_kwargs.update(async_dict)
@@ -99,13 +99,13 @@ class HWTestList(object):
       bvt_inline_kwargs['timeout'] = (
           config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT)
 
-    # BVT + AU suite.
+    # BVT + INSTALLER suite.
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                     **bvt_inline_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                     **bvt_inline_kwargs),
-            config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
-                                    blocking=True, **au_kwargs),
+            config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
+                                    blocking=True, **installer_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **async_kwargs),
             config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
@@ -1530,7 +1530,7 @@ def GeneralTemplates(site_config, ge_build_config):
                                   num=1, timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
                                   warn_only=True, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
+          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
                                   warn_only=True, num=1)],
   )
 
@@ -1540,7 +1540,7 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Cheets release builders',
       hw_tests=[
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
-          config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
+          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
                                   warn_only=True, num=1)],
   )
 
@@ -3317,11 +3317,6 @@ def InsertHwTestsOverrideDefaults(build):
       hw_config.pool = constants.HWTEST_TRYBOT_POOL
       hw_config.file_bugs = False
       hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
-
-  # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
-  build['hw_tests_override'] = [
-      hw_config for hw_config in build['hw_tests_override']
-      if hw_config.suite != constants.HWTEST_AU_SUITE]
 
 
 def InsertWaterfallDefaults(site_config, ge_build_config):
