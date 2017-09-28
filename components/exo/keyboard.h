@@ -79,6 +79,14 @@ class Keyboard : public ui::EventHandler,
   // Schedule next call of ProcessExpiredPendingKeyAcks after |delay|
   void ScheduleProcessExpiredPendingKeyAcks(base::TimeDelta delay);
 
+  // Adds/Removes pre or post event handler depending on if key acks are needed.
+  // If key acks are needed, pre target handler will be added because this class
+  // wants to dispatch keys before they are consumed by Chrome. Otherwise, post
+  // target handler will be added because all accelerators should be handled by
+  // Chrome before they are dispatched by this class.
+  void AddEventHandler();
+  void RemoveEventHandler();
+
   // The delegate instance that all events except for events about device
   // configuration are dispatched to.
   KeyboardDelegate* const delegate_;
