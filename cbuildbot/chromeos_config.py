@@ -2144,6 +2144,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _nyc_vmtest_boards = frozenset([
       'betty',
+      'betty-arc64',
   ])
 
   # Android NYC slaves.

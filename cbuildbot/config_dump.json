@@ -3650,6 +3650,24 @@
             "chrome_internal"
         ]
     },
+    "betty-arc64-nyc-android-pfq": {
+        "_template": "nyc_android_pfq",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
+        ]
+    },
     "betty-arc64-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
@@ -15634,6 +15652,7 @@
         "master": true,
         "push_overlays": "both",
         "slave_configs": [
+            "betty-arc64-nyc-android-pfq",
             "betty-nyc-android-pfq",
             "bob-nyc-android-pfq",
             "caroline-nyc-android-pfq",
