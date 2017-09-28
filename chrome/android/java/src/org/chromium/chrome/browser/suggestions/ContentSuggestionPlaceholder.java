@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetrics.DurationTracker;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -22,8 +23,20 @@ public class ContentSuggestionPlaceholder extends OptionalLeaf {
     /** Color used to fill highlighted empty UI elements of the placeholder. */
     private static final @ColorRes int HIGHLIGHT_COLOR = R.color.black_alpha_20;
 
+    private final DurationTracker mVisibilityDurationTracker =
+            SuggestionsMetrics.getPlaceholderVisibilityReporter();
+
     public void setVisible(boolean visible) {
         setVisibilityInternal(visible);
+        if (!visible) mVisibilityDurationTracker.endTracking();
+    }
+
+    /**
+     * Start tracking how long we show the placeholder. When it is hidden, it will report that
+     * duration through UMA.
+     */
+    public void trackVisibilityDuration() {
+        mVisibilityDurationTracker.startTracking();
     }
 
     @Override
