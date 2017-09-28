@@ -48,7 +48,7 @@ void GoogleAssistantHandler::HandleSetGoogleAssistantEnabled(
   auto* service =
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (service)
-    service->SetVoiceInteractionEnabled(enabled);
+    service->SetVoiceInteractionEnabled(enabled, base::BindOnce([](bool) {}));
 }
 
 void GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled(

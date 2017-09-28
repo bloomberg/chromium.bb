@@ -32,7 +32,10 @@ void FakeVoiceInteractionFrameworkInstance::SetMetalayerVisibility(
     bool visible) {}
 
 void FakeVoiceInteractionFrameworkInstance::SetVoiceInteractionEnabled(
-    bool enable) {}
+    bool enable,
+    SetVoiceInteractionEnabledCallback callback) {
+  std::move(callback).Run();
+}
 
 void FakeVoiceInteractionFrameworkInstance::SetVoiceInteractionContextEnabled(
     bool enable) {}

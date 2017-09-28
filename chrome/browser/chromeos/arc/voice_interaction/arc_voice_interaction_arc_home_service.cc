@@ -289,6 +289,8 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
     return;
   }
 
+  VLOG(1) << "Retrieving voice interaction context";
+
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   // Do not process incognito tab.

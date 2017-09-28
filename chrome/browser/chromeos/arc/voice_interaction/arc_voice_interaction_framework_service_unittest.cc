@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/test/base/testing_profile.h"
@@ -106,7 +107,8 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, StartSession) {
 
 TEST_F(ArcVoiceInteractionFrameworkServiceTest, StartSessionWithoutFlag) {
   // Remove the voice interaction enabled flag.
-  framework_service()->SetVoiceInteractionEnabled(false);
+  framework_service()->SetVoiceInteractionEnabled(false,
+                                                  base::BindOnce([](bool) {}));
 
   framework_service()->StartSessionFromUserInteraction(gfx::Rect());
   // The signal should not be sent when voice interaction disabled.
