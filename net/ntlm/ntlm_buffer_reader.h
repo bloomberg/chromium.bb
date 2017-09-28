@@ -47,6 +47,8 @@ namespace ntlm {
 // [2] http://davenport.sourceforge.net/ntlm.html
 class NET_EXPORT_PRIVATE NtlmBufferReader {
  public:
+  NtlmBufferReader();
+  // |buffer| is not copied and must outlive the |NtlmBufferReader|.
   explicit NtlmBufferReader(const Buffer& buffer);
   explicit NtlmBufferReader(base::StringPiece buffer);
 
@@ -98,6 +100,14 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   // not move the cursor.
   bool ReadBytesFrom(const SecurityBuffer& sec_buf,
                      uint8_t* buffer) WARN_UNUSED_RESULT;
+
+  // Reads |sec_buf.length| bytes from offset |sec_buf.offset| and assigns
+  // |reader| an |NtlmBufferReader| representing the payload. If the security
+  //  buffer specifies a payload outside the buffer, then the call fails, and
+  // the state of |reader| is undefined. Unlike the other Read* methods, this
+  // does not move the cursor.
+  bool ReadPayloadAsBufferReader(const SecurityBuffer& sec_buf,
+                                 NtlmBufferReader* reader) WARN_UNUSED_RESULT;
 
   // A security buffer is an 8 byte structure that defines the offset and
   // length of a payload (string, struct or byte array) that appears after the
@@ -198,7 +208,9 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   void AdvanceCursor(size_t count) { SetCursor(GetCursor() + count); }
 
   // Returns a constant pointer to the start of the buffer.
-  const uint8_t* GetBufferPtr() const { return buffer_.data(); }
+  const uint8_t* GetBufferPtr() const {
+    return reinterpret_cast<const uint8_t*>(buffer_.data());
+  }
 
   // Returns a pointer to the underlying buffer at the current cursor
   // position.
@@ -210,10 +222,8 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
     return *(GetBufferAtCursor());
   }
 
-  const Buffer buffer_;
+  base::StringPiece buffer_;
   size_t cursor_;
-
-  DISALLOW_COPY_AND_ASSIGN(NtlmBufferReader);
 };
 
 }  // namespace ntlm

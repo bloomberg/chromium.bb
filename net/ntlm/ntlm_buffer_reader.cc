@@ -11,17 +11,19 @@
 namespace net {
 namespace ntlm {
 
+NtlmBufferReader::NtlmBufferReader() : NtlmBufferReader(nullptr, 0) {}
+
 NtlmBufferReader::NtlmBufferReader(const Buffer& buffer)
-    : buffer_(buffer), cursor_(0) {
-  DCHECK(buffer.data());
-}
+    : NtlmBufferReader(
+          base::StringPiece(reinterpret_cast<const char*>(buffer.data()),
+                            buffer.length())) {}
 
 NtlmBufferReader::NtlmBufferReader(base::StringPiece str)
-    : NtlmBufferReader(reinterpret_cast<const uint8_t*>(str.data()),
-                       str.size()) {}
+    : buffer_(str), cursor_(0) {}
 
 NtlmBufferReader::NtlmBufferReader(const uint8_t* ptr, size_t len)
-    : NtlmBufferReader(Buffer(ptr, len)) {}
+    : NtlmBufferReader(
+          base::StringPiece(reinterpret_cast<const char*>(ptr), len)) {}
 
 NtlmBufferReader::~NtlmBufferReader() {}
 
@@ -80,6 +82,15 @@ bool NtlmBufferReader::ReadBytesFrom(const SecurityBuffer& sec_buf,
   return true;
 }
 
+bool NtlmBufferReader::ReadPayloadAsBufferReader(const SecurityBuffer& sec_buf,
+                                                 NtlmBufferReader* reader) {
+  if (!CanReadFrom(sec_buf))
+    return false;
+
+  *reader = NtlmBufferReader(GetBufferPtr() + sec_buf.offset, sec_buf.length);
+  return true;
+}
+
 bool NtlmBufferReader::ReadSecurityBuffer(SecurityBuffer* sec_buf) {
   return ReadUInt16(&sec_buf->length) && SkipBytes(sizeof(uint16_t)) &&
          ReadUInt32(&sec_buf->offset);
@@ -107,7 +118,11 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
                                       std::vector<ntlm::AvPair>* av_pairs) {
   DCHECK(av_pairs->empty());
 
-  // There has to be at least one terminating header.
+  // A completely empty target info is allowed.
+  if (target_info_len == 0)
+    return true;
+
+  // If there is any content there has to be at least one terminating header.
   if (!CanRead(target_info_len) || target_info_len < ntlm::kAvPairHeaderLen) {
     return false;
   }
@@ -186,24 +201,15 @@ bool NtlmBufferReader::ReadTargetInfoPayload(
   if (!ReadSecurityBuffer(&sec_buf))
     return false;
 
-  // If the security buffer has zero length, an empty av_pairs will be the
-  // result.
-  if (sec_buf.length == 0)
-    return true;
-
-  // If there is a non-zero length payload there has to be at least one
-  // terminating header.
-  if (!CanReadFrom(sec_buf.offset, sec_buf.length) ||
-      sec_buf.length < ntlm::kAvPairHeaderLen)
+  NtlmBufferReader payload_reader;
+  if (!ReadPayloadAsBufferReader(sec_buf, &payload_reader))
     return false;
 
-  size_t old_cursor = GetCursor();
-  SetCursor(sec_buf.offset);
-  if (!ReadTargetInfo(sec_buf.length, av_pairs))
+  if (!payload_reader.ReadTargetInfo(sec_buf.length, av_pairs))
     return false;
 
-  SetCursor(old_cursor);
-  return true;
+  // |ReadTargetInfo| should have consumed the entire contents.
+  return payload_reader.IsEndOfBuffer();
 }
 
 bool NtlmBufferReader::ReadMessageType(MessageType* message_type) {
