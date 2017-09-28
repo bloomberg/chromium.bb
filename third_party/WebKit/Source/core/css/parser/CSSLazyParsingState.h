@@ -33,9 +33,6 @@ class CSSLazyParsingState
   // know the total number of style rules that deferred parsing.
   void FinishInitialParsing();
 
-  void SetHasBeforeOrAfter() { has_before_or_after = true; }
-  bool HasBeforeOrAfter() { return has_before_or_after; }
-
   // Helper method used to bump total_style_rules_.
   CSSLazyPropertyParserImpl* CreateLazyParser(const CSSParserTokenRange& block);
 
@@ -89,10 +86,6 @@ class CSSLazyParsingState
   int style_rules_needed_for_next_milestone_;
 
   int usage_;
-
-  // Used to enable lazy parsing for content attributes inside ::before/::after
-  // blocks
-  bool has_before_or_after = false;
 
   // Whether or not use counting is enabled for parsing. This will usually be
   // true, except for when stylesheets with @imports are removed from the page.
