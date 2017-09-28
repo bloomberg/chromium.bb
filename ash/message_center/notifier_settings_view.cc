@@ -18,7 +18,6 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -33,7 +32,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -200,40 +198,6 @@ void EntryView::OnBlur() {
   View::OnBlur();
   // We render differently when focused.
   SchedulePaint();
-}
-
-// NotifierGroupComboboxModel --------------------------------------------------
-
-class NotifierGroupComboboxModel : public ui::ComboboxModel {
- public:
-  explicit NotifierGroupComboboxModel(
-      NotifierSettingsProvider* notifier_settings_provider);
-  ~NotifierGroupComboboxModel() override;
-
-  // ui::ComboboxModel:
-  int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
-
- private:
-  NotifierSettingsProvider* notifier_settings_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotifierGroupComboboxModel);
-};
-
-NotifierGroupComboboxModel::NotifierGroupComboboxModel(
-    NotifierSettingsProvider* notifier_settings_provider)
-    : notifier_settings_provider_(notifier_settings_provider) {}
-
-NotifierGroupComboboxModel::~NotifierGroupComboboxModel() {}
-
-int NotifierGroupComboboxModel::GetItemCount() const {
-  return notifier_settings_provider_->GetNotifierGroupCount();
-}
-
-base::string16 NotifierGroupComboboxModel::GetItemAt(int index) {
-  const NotifierGroup& group =
-      notifier_settings_provider_->GetNotifierGroupAt(index);
-  return group.login_info.empty() ? group.name : group.login_info;
 }
 
 }  // namespace
@@ -409,7 +373,6 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more) {
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     : title_arrow_(nullptr),
       title_label_(nullptr),
-      notifier_group_combobox_(nullptr),
       scroller_(nullptr),
       provider_(provider) {
   // |provider_| may be null in tests.
@@ -498,32 +461,6 @@ void NotifierSettingsView::UpdateContentsView(
   top_label->SetMultiLine(true);
 
   contents_title_view->AddChildView(top_label);
-
-  // TODO(estade): remove this; there's only ever one notifier group in ash.
-  bool need_account_switcher =
-      provider_ && provider_->GetNotifierGroupCount() > 1;
-  if (need_account_switcher) {
-    const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
-    base::string16 notifier_group_text = active_group.login_info.empty()
-                                             ? active_group.name
-                                             : active_group.login_info;
-    notifier_group_model_.reset(new NotifierGroupComboboxModel(provider_));
-    notifier_group_combobox_ = new views::Combobox(notifier_group_model_.get());
-    notifier_group_combobox_->set_listener(this);
-
-    // Move the combobox over enough to align with the checkboxes.
-    views::View* combobox_spacer = new views::View();
-    combobox_spacer->SetLayoutManager(new views::FillLayout());
-    int padding = views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-                      views::LabelButton::STYLE_TEXTBUTTON)
-                      .left() -
-                  notifier_group_combobox_->border()->GetInsets().left();
-    combobox_spacer->SetBorder(views::CreateEmptyBorder(0, padding, 0, 0));
-    combobox_spacer->AddChildView(notifier_group_combobox_);
-
-    contents_title_view->AddChildView(combobox_spacer);
-  }
-
   contents_view->AddChildView(contents_title_view);
 
   size_t notifier_count = notifiers.size();
@@ -616,12 +553,6 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
   if (provider_)
     provider_->SetNotifierEnabled((*iter)->notifier().notifier_id,
                                   (*iter)->checked());
-}
-
-void NotifierSettingsView::OnPerformAction(views::Combobox* combobox) {
-  provider_->SwitchToNotifierGroup(combobox->selected_index());
-  MessageCenterView* center_view = static_cast<MessageCenterView*>(parent());
-  center_view->OnSettingsChanged();
 }
 
 }  // namespace ash
