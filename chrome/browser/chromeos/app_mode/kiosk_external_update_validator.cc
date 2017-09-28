@@ -70,7 +70,7 @@ void KioskExternalUpdateValidator::OnUnpackSuccess(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &KioskExternalUpdateValidatorDelegate::OnExtenalUpdateUnpackSuccess,
+          &KioskExternalUpdateValidatorDelegate::OnExternalUpdateUnpackSuccess,
           delegate_, crx_file_.extension_id, extension->VersionString(),
           minimum_browser_version, temp_dir));
 }

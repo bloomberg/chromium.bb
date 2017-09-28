@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_external_update_validator.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -72,10 +72,10 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
                      const std::string& device_path) override;
 
   // KioskExternalUpdateValidatorDelegate overrides:
-  void OnExtenalUpdateUnpackSuccess(const std::string& app_id,
-                                    const std::string& version,
-                                    const std::string& min_browser_version,
-                                    const base::FilePath& temp_dir) override;
+  void OnExternalUpdateUnpackSuccess(const std::string& app_id,
+                                     const std::string& version,
+                                     const std::string& min_browser_version,
+                                     const base::FilePath& temp_dir) override;
   void OnExternalUpdateUnpackFailure(const std::string& app_id) override;
 
   // Processes the parsed external update manifest, check |parsing_error| for
@@ -92,11 +92,11 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   void ValidateExternalUpdates();
 
   // Returns true if there are any external updates pending.
-  bool IsExternalUpdatePending();
+  bool IsExternalUpdatePending() const;
 
   // Returns true if all external updates specified in the manifest are
   // completed successfully.
-  bool IsAllExternalUpdatesSucceeded();
+  bool IsAllExternalUpdatesSucceeded() const;
 
   // Returns true if the app with |app_id| should be updated to
   // |external_extension|.
@@ -105,11 +105,11 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
                               const std::string& min_browser_version);
 
   // Installs the validated extension into cache.
-  // |*crx_copied| indicates whether the |crx_file| is copied successfully.
-  void PutValidatedExtension(bool* crx_copied,
-                             const std::string& app_id,
+  // |crx_copied| indicates whether the |crx_file| is copied successfully.
+  void PutValidatedExtension(const std::string& app_id,
                              const base::FilePath& crx_file,
-                             const std::string& version);
+                             const std::string& version,
+                             bool crx_copied);
 
   // Called upon completion of installing the validated external extension into
   // the local cache. |success| is true if the operation succeeded.
@@ -129,7 +129,7 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   void DismissKioskUpdateNotification();
 
   // Return a detailed message for kiosk updating status.
-  base::string16 GetUpdateReportMessage();
+  base::string16 GetUpdateReportMessage() const;
 
   // Task runner for executing file I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
@@ -144,8 +144,9 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   base::FilePath external_update_path_;
 
   // map of app_id: ExternalUpdate
-  typedef std::map<std::string, ExternalUpdate> ExternalUpdateMap;
+  using ExternalUpdateMap = std::map<std::string, ExternalUpdate>;
   ExternalUpdateMap external_updates_;
+
   std::unique_ptr<KioskExternalUpdateNotification> notification_;
 
   base::WeakPtrFactory<KioskExternalUpdater> weak_factory_;
