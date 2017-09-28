@@ -27,58 +27,57 @@ ArcFileSystemOperationRunner* GetArcFileSystemOperationRunner() {
 }
 
 template <typename T>
-void PostToIOThread(const base::Callback<void(T)>& callback, T result) {
+void PostToIOThread(base::OnceCallback<void(T)> callback, T result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(callback, base::Passed(std::move(result))));
+      base::BindOnce(std::move(callback), base::Passed(std::move(result))));
 }
 
-void GetFileSizeOnUIThread(const GURL& url,
-                           const GetFileSizeCallback& callback) {
+void GetFileSizeOnUIThread(const GURL& url, GetFileSizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* runner = GetArcFileSystemOperationRunner();
   if (!runner) {
     DLOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
                 << "File system operations are dropped.";
-    callback.Run(-1);
+    std::move(callback).Run(-1);
     return;
   }
-  runner->GetFileSize(url, callback);
+  runner->GetFileSize(url, std::move(callback));
 }
 
 void OpenFileToReadOnUIThread(const GURL& url,
-                              const OpenFileToReadCallback& callback) {
+                              OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* runner = GetArcFileSystemOperationRunner();
   if (!runner) {
     DLOG(ERROR) << "ArcFileSystemOperationRunner unavailable. "
                 << "File system operations are dropped.";
-    callback.Run(mojo::ScopedHandle());
+    std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  runner->OpenFileToRead(url, callback);
+  runner->OpenFileToRead(url, std::move(callback));
 }
 
 }  // namespace
 
-void GetFileSizeOnIOThread(const GURL& url,
-                           const GetFileSizeCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetFileSizeOnUIThread, url,
-                     base::Bind(&PostToIOThread<int64_t>, callback)));
-}
-
-void OpenFileToReadOnIOThread(const GURL& url,
-                              const OpenFileToReadCallback& callback) {
+void GetFileSizeOnIOThread(const GURL& url, GetFileSizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &OpenFileToReadOnUIThread, url,
-          base::Bind(&PostToIOThread<mojo::ScopedHandle>, callback)));
+          &GetFileSizeOnUIThread, url,
+          base::BindOnce(&PostToIOThread<int64_t>, std::move(callback))));
+}
+
+void OpenFileToReadOnIOThread(const GURL& url,
+                              OpenFileToReadCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&OpenFileToReadOnUIThread, url,
+                     base::BindOnce(&PostToIOThread<mojo::ScopedHandle>,
+                                    std::move(callback))));
 }
 
 }  // namespace file_system_operation_runner_util

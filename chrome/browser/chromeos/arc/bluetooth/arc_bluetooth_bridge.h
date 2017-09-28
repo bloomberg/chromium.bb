@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/queue.h"
 #include "base/timer/timer.h"
 #include "components/arc/common/bluetooth.mojom.h"
@@ -49,6 +49,11 @@ class ArcBluetoothBridge
       public device::BluetoothLocalGattService::Delegate,
       public mojom::BluetoothHost {
  public:
+  using GattStatusCallback =
+      base::OnceCallback<void(mojom::BluetoothGattStatus)>;
+  using AdapterStateCallback =
+      base::OnceCallback<void(mojom::BluetoothAdapterState)>;
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcBluetoothBridge* GetForBrowserContext(
@@ -169,8 +174,8 @@ class ArcBluetoothBridge
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   // Bluetooth Mojo host interface
-  void EnableAdapter(const EnableAdapterCallback& callback) override;
-  void DisableAdapter(const DisableAdapterCallback& callback) override;
+  void EnableAdapter(EnableAdapterCallback callback) override;
+  void DisableAdapter(DisableAdapterCallback callback) override;
 
   void GetAdapterProperty(mojom::BluetoothPropertyType type) override;
   void SetAdapterProperty(mojom::BluetoothPropertyPtr property) override;
@@ -192,56 +197,53 @@ class ArcBluetoothBridge
   void CancelBond(mojom::BluetoothAddressPtr addr) override;
 
   void GetConnectionState(mojom::BluetoothAddressPtr addr,
-                          const GetConnectionStateCallback& callback) override;
+                          GetConnectionStateCallback callback) override;
 
   // Bluetooth Mojo host interface - Bluetooth Gatt Client functions
   void StartLEScan() override;
   void StopLEScan() override;
   void ConnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
   void DisconnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
-  void StartLEListen(const StartLEListenCallback& callback) override;
-  void StopLEListen(const StopLEListenCallback& callback) override;
+  void StartLEListen(StartLEListenCallback callback) override;
+  void StopLEListen(StopLEListenCallback callback) override;
   void SearchService(mojom::BluetoothAddressPtr remote_addr) override;
 
   void GetGattDB(mojom::BluetoothAddressPtr remote_addr) override;
-  void ReadGattCharacteristic(
-      mojom::BluetoothAddressPtr remote_addr,
-      mojom::BluetoothGattServiceIDPtr service_id,
-      mojom::BluetoothGattIDPtr char_id,
-      const ReadGattCharacteristicCallback& callback) override;
+  void ReadGattCharacteristic(mojom::BluetoothAddressPtr remote_addr,
+                              mojom::BluetoothGattServiceIDPtr service_id,
+                              mojom::BluetoothGattIDPtr char_id,
+                              ReadGattCharacteristicCallback callback) override;
   void WriteGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,
       mojom::BluetoothGattIDPtr char_id,
       mojom::BluetoothGattValuePtr value,
-      const WriteGattCharacteristicCallback& callback) override;
+      WriteGattCharacteristicCallback callback) override;
   void ReadGattDescriptor(mojom::BluetoothAddressPtr remote_addr,
                           mojom::BluetoothGattServiceIDPtr service_id,
                           mojom::BluetoothGattIDPtr char_id,
                           mojom::BluetoothGattIDPtr desc_id,
-                          const ReadGattDescriptorCallback& callback) override;
-  void WriteGattDescriptor(
-      mojom::BluetoothAddressPtr remote_addr,
-      mojom::BluetoothGattServiceIDPtr service_id,
-      mojom::BluetoothGattIDPtr char_id,
-      mojom::BluetoothGattIDPtr desc_id,
-      mojom::BluetoothGattValuePtr value,
-      const WriteGattDescriptorCallback& callback) override;
+                          ReadGattDescriptorCallback callback) override;
+  void WriteGattDescriptor(mojom::BluetoothAddressPtr remote_addr,
+                           mojom::BluetoothGattServiceIDPtr service_id,
+                           mojom::BluetoothGattIDPtr char_id,
+                           mojom::BluetoothGattIDPtr desc_id,
+                           mojom::BluetoothGattValuePtr value,
+                           WriteGattDescriptorCallback callback) override;
   void RegisterForGattNotification(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,
       mojom::BluetoothGattIDPtr char_id,
-      const RegisterForGattNotificationCallback& callback) override;
+      RegisterForGattNotificationCallback callback) override;
   void DeregisterForGattNotification(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,
       mojom::BluetoothGattIDPtr char_id,
-      const DeregisterForGattNotificationCallback& callback) override;
+      DeregisterForGattNotificationCallback callback) override;
   void ReadRemoteRssi(mojom::BluetoothAddressPtr remote_addr,
-                      const ReadRemoteRssiCallback& callback) override;
+                      ReadRemoteRssiCallback callback) override;
 
-  void OpenBluetoothSocket(
-      const OpenBluetoothSocketCallback& callback) override;
+  void OpenBluetoothSocket(OpenBluetoothSocketCallback callback) override;
 
   // Bluetooth Mojo host interface - Bluetooth Gatt Server functions
   // Android counterpart link:
@@ -252,61 +254,67 @@ class ArcBluetoothBridge
   //              created in this service
   void AddService(mojom::BluetoothGattServiceIDPtr service_id,
                   int32_t num_handles,
-                  const AddServiceCallback& callback) override;
+                  AddServiceCallback callback) override;
   // Add a characteristic to a service and pass the characteristic handle back.
   void AddCharacteristic(int32_t service_handle,
                          const device::BluetoothUUID& uuid,
                          int32_t properties,
                          int32_t permissions,
-                         const AddCharacteristicCallback& callback) override;
+                         AddCharacteristicCallback callback) override;
   // Add a descriptor to the last characteristic added to the given service
   // and pass the descriptor handle back.
   void AddDescriptor(int32_t service_handle,
                      const device::BluetoothUUID& uuid,
                      int32_t permissions,
-                     const AddDescriptorCallback& callback) override;
+                     AddDescriptorCallback callback) override;
   // Start a local service.
   void StartService(int32_t service_handle,
-                    const StartServiceCallback& callback) override;
+                    StartServiceCallback callback) override;
   // Stop a local service.
   void StopService(int32_t service_handle,
-                   const StopServiceCallback& callback) override;
+                   StopServiceCallback callback) override;
   // Delete a local service.
   void DeleteService(int32_t service_handle,
-                     const DeleteServiceCallback& callback) override;
+                     DeleteServiceCallback callback) override;
   // Send value indication to a remote device.
   void SendIndication(int32_t attribute_handle,
                       mojom::BluetoothAddressPtr address,
                       bool confirm,
                       const std::vector<uint8_t>& value,
-                      const SendIndicationCallback& callback) override;
+                      SendIndicationCallback callback) override;
 
   // Bluetooth Mojo host interface - Bluetooth SDP functions
   void GetSdpRecords(mojom::BluetoothAddressPtr remote_addr,
                      const device::BluetoothUUID& target_uuid) override;
   void CreateSdpRecord(mojom::BluetoothSdpRecordPtr record_mojo,
-                       const CreateSdpRecordCallback& callback) override;
+                       CreateSdpRecordCallback callback) override;
   void RemoveSdpRecord(uint32_t service_handle,
-                       const RemoveSdpRecordCallback& callback) override;
+                       RemoveSdpRecordCallback callback) override;
 
   // Set up or disable multiple advertising.
   void ReserveAdvertisementHandle(
-      const ReserveAdvertisementHandleCallback& callback) override;
+      ReserveAdvertisementHandleCallback callback) override;
   void BroadcastAdvertisement(
       int32_t adv_handle,
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
-      const BroadcastAdvertisementCallback& callback) override;
+      BroadcastAdvertisementCallback callback) override;
   void ReleaseAdvertisementHandle(
       int32_t adv_handle,
-      const ReleaseAdvertisementHandleCallback& callback) override;
+      ReleaseAdvertisementHandleCallback callback) override;
+
+ private:
+  template <typename T>
+  class InstanceObserver;
+  class AppInstanceObserver;
+  class IntentHelperInstanceObserver;
+
+  // Power state change on Bluetooth adapter.
+  enum class AdapterPowerState { TURN_OFF, TURN_ON };
 
   // Chrome observer callbacks
-  void OnPoweredOn(
-      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
-  void OnPoweredOff(
-      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
-  void OnPoweredError(
-      const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
+  void OnPoweredOn(AdapterStateCallback callback) const;
+  void OnPoweredOff(AdapterStateCallback callback) const;
+  void OnPoweredError(AdapterStateCallback callback) const;
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryStopped();
@@ -329,30 +337,21 @@ class ArcBluetoothBridge
       device::BluetoothDevice::ConnectErrorCode error_code) const;
   void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
 
-  void OnStartLEListenDone(const StartLEListenCallback& callback,
+  void OnStartLEListenDone(GattStatusCallback callback,
                            scoped_refptr<device::BluetoothAdvertisement> adv);
   void OnStartLEListenError(
-      const StartLEListenCallback& callback,
+      GattStatusCallback callback,
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  void OnStopLEListenDone(const StopLEListenCallback& callback);
+  void OnStopLEListenDone(GattStatusCallback callback);
   void OnStopLEListenError(
-      const StopLEListenCallback& callback,
+      GattStatusCallback callback,
       device::BluetoothAdvertisement::ErrorCode error_code);
 
   void OnGattNotifyStartDone(
-      const RegisterForGattNotificationCallback& callback,
+      GattStatusCallback callback,
       const std::string char_string_id,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
-
- private:
-  template <typename T>
-  class InstanceObserver;
-  class AppInstanceObserver;
-  class IntentHelperInstanceObserver;
-
-  // Power state change on Bluetooth adapter.
-  enum class AdapterPowerState { TURN_OFF, TURN_ON };
 
   bool IsInstanceUp() const { return is_bluetooth_instance_up_; }
 
@@ -371,7 +370,7 @@ class ArcBluetoothBridge
 
   // Manages the powered change requests received from Android.
   void EnqueueRemotePowerChange(AdapterPowerState powered,
-                                const EnableAdapterCallback& callback);
+                                AdapterStateCallback callback);
   void DequeueRemotePowerChange(AdapterPowerState powered);
 
   std::vector<mojom::BluetoothPropertyPtr> GetDeviceProperties(
@@ -446,31 +445,30 @@ class ArcBluetoothBridge
   // Called when we have an open slot in the advertisement map and want to
   // register the advertisement given by |data| for handle |adv_handle|.
   void OnReadyToRegisterAdvertisement(
-      const BroadcastAdvertisementCallback& callback,
+      GattStatusCallback callback,
       int32_t adv_handle,
       std::unique_ptr<device::BluetoothAdvertisement::Data> data);
   // Called when we've successfully registered a new advertisement for
   // handle |adv_handle|.
   void OnRegisterAdvertisementDone(
-      const BroadcastAdvertisementCallback& callback,
+      GattStatusCallback callback,
       int32_t adv_handle,
       scoped_refptr<device::BluetoothAdvertisement> advertisement);
   // Called when the attempt to register an advertisement for handle
   // |adv_handle| has failed. |adv_handle| remains reserved, but no
   // advertisement is associated with it.
   void OnRegisterAdvertisementError(
-      const BroadcastAdvertisementCallback& callback,
+      GattStatusCallback callback,
       int32_t adv_handle,
       device::BluetoothAdvertisement::ErrorCode error_code);
   // Both of the following are called after we've tried to unregister
   // the advertisement for |adv_handle|. Either way, we will no
   // longer be broadcasting this advertisement, so in either case, the
   // handle can be released.
-  void OnUnregisterAdvertisementDone(
-      const ReleaseAdvertisementHandleCallback& callback,
-      int32_t adv_handle);
+  void OnUnregisterAdvertisementDone(GattStatusCallback callback,
+                                     int32_t adv_handle);
   void OnUnregisterAdvertisementError(
-      const ReleaseAdvertisementHandleCallback& callback,
+      GattStatusCallback callback,
       int32_t adv_handle,
       device::BluetoothAdvertisement::ErrorCode error_code);
   // Find the next free advertisement handle and put it in *adv_handle,

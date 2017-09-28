@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -48,33 +49,30 @@ class ArcNetHostImpl : public KeyedService,
 
   // ARC -> Chrome calls:
 
-  void GetNetworksDeprecated(
-      mojom::GetNetworksRequestType type,
-      const GetNetworksDeprecatedCallback& callback) override;
+  void GetNetworksDeprecated(mojom::GetNetworksRequestType type,
+                             GetNetworksDeprecatedCallback callback) override;
 
   void GetNetworks(mojom::GetNetworksRequestType type,
-                   const GetNetworksCallback& callback) override;
+                   GetNetworksCallback callback) override;
 
-  void GetWifiEnabledState(
-      const GetWifiEnabledStateCallback& callback) override;
+  void GetWifiEnabledState(GetWifiEnabledStateCallback callback) override;
 
-  void SetWifiEnabledState(
-      bool is_enabled,
-      const SetWifiEnabledStateCallback& callback) override;
+  void SetWifiEnabledState(bool is_enabled,
+                           SetWifiEnabledStateCallback callback) override;
 
   void StartScan() override;
 
   void CreateNetwork(mojom::WifiConfigurationPtr cfg,
-                     const CreateNetworkCallback& callback) override;
+                     CreateNetworkCallback callback) override;
 
   void ForgetNetwork(const std::string& guid,
-                     const ForgetNetworkCallback& callback) override;
+                     ForgetNetworkCallback callback) override;
 
   void StartConnect(const std::string& guid,
-                    const StartConnectCallback& callback) override;
+                    StartConnectCallback callback) override;
 
   void StartDisconnect(const std::string& guid,
-                       const StartDisconnectCallback& callback) override;
+                       StartDisconnectCallback callback) override;
 
   void AndroidVpnConnected(mojom::AndroidVpnConfigurationPtr cfg) override;
 
@@ -90,7 +88,7 @@ class ArcNetHostImpl : public KeyedService,
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) override;
   void DeviceListChanged() override;
-  void GetDefaultNetwork(const GetDefaultNetworkCallback& callback) override;
+  void GetDefaultNetwork(GetDefaultNetworkCallback callback) override;
 
   // Overriden from chromeos::NetworkConnectionObserver.
   void DisconnectRequested(const std::string& service_path) override;
@@ -135,12 +133,12 @@ class ArcNetHostImpl : public KeyedService,
   void DisconnectArcVpn();
 
   void CreateNetworkSuccessCallback(
-      const mojom::NetHost::CreateNetworkCallback& mojo_callback,
+      base::OnceCallback<void(const std::string&)> callback,
       const std::string& service_path,
       const std::string& guid);
 
   void CreateNetworkFailureCallback(
-      const mojom::NetHost::CreateNetworkCallback& mojo_callback,
+      base::OnceCallback<void(const std::string&)> callback,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
 

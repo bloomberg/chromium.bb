@@ -46,12 +46,10 @@ class ArcWallpaperService
   void OnInstanceClosed() override;
 
   // mojom::WallpaperHost overrides.
-  // TODO(muyuanli): change callback prototype when use_new_wrapper_types is
-  // updated and merge them with the functions below.
   void SetWallpaper(const std::vector<uint8_t>& data,
                     int32_t wallpaper_id) override;
   void SetDefaultWallpaper() override;
-  void GetWallpaper(const GetWallpaperCallback& callback) override;
+  void GetWallpaper(GetWallpaperCallback callback) override;
 
   // WallpaperControllerObserver implementation.
   void OnWallpaperDataChanged() override;

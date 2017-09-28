@@ -54,7 +54,7 @@ void FakeIntentHelperInstance::AddPreferredPackage(
 
 void FakeIntentHelperInstance::GetFileSizeDeprecated(
     const std::string& url,
-    const GetFileSizeDeprecatedCallback& callback) {}
+    GetFileSizeDeprecatedCallback callback) {}
 
 void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
                                             mojom::ActivityNamePtr activity) {
@@ -73,16 +73,16 @@ void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr) {}
 
 void FakeIntentHelperInstance::OpenFileToReadDeprecated(
     const std::string& url,
-    const OpenFileToReadDeprecatedCallback& callback) {}
+    OpenFileToReadDeprecatedCallback callback) {}
 
 void FakeIntentHelperInstance::RequestActivityIcons(
     std::vector<mojom::ActivityNamePtr> activities,
     ::arc::mojom::ScaleFactor scale_factor,
-    const RequestActivityIconsCallback& callback) {}
+    RequestActivityIconsCallback callback) {}
 
 void FakeIntentHelperInstance::RequestIntentHandlerList(
     mojom::IntentInfoPtr intent,
-    const RequestIntentHandlerListCallback& callback) {
+    RequestIntentHandlerListCallback callback) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   const auto it = intent_handlers_.find(intent->action);
   if (it != intent_handlers_.end()) {
@@ -93,16 +93,17 @@ void FakeIntentHelperInstance::RequestIntentHandlerList(
   }
   // Post the reply to run asynchronously to match the real implementation.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(std::move(handlers))));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::Passed(std::move(handlers))));
 }
 
 void FakeIntentHelperInstance::RequestUrlHandlerList(
     const std::string& url,
-    const RequestUrlHandlerListCallback& callback) {}
+    RequestUrlHandlerListCallback callback) {}
 
 void FakeIntentHelperInstance::RequestUrlListHandlerList(
     std::vector<mojom::UrlWithMimeTypePtr> urls,
-    const RequestUrlListHandlerListCallback& callback) {}
+    RequestUrlListHandlerListCallback callback) {}
 
 void FakeIntentHelperInstance::SendBroadcast(const std::string& action,
                                              const std::string& package_name,

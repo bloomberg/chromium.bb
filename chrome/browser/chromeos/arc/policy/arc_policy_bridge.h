@@ -63,9 +63,9 @@ class ArcPolicyBridge : public KeyedService,
   void OnInstanceClosed() override;
 
   // PolicyHost overrides.
-  void GetPolicies(const GetPoliciesCallback& callback) override;
+  void GetPolicies(GetPoliciesCallback callback) override;
   void ReportCompliance(const std::string& request,
-                        const ReportComplianceCallback& callback) override;
+                        ReportComplianceCallback callback) override;
 
   // PolicyService::Observer overrides.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -80,7 +80,7 @@ class ArcPolicyBridge : public KeyedService,
 
   // Called when the compliance report from ARC is parsed.
   void OnReportComplianceParseSuccess(
-      const ArcPolicyBridge::ReportComplianceCallback& callback,
+      base::OnceCallback<void(const std::string&)> callback,
       std::unique_ptr<base::Value> parsed_json);
 
   void UpdateComplianceReportMetrics(const base::DictionaryValue* report);

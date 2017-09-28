@@ -20,8 +20,8 @@ void FakePolicyInstance::Init(mojom::PolicyHostPtr host_ptr) {
 void FakePolicyInstance::OnPolicyUpdated() {}
 
 void FakePolicyInstance::CallGetPolicies(
-    const mojom::PolicyHost::GetPoliciesCallback& callback) {
-  host_ptr_->GetPolicies(callback);
+    mojom::PolicyHost::GetPoliciesCallback callback) {
+  host_ptr_->GetPolicies(std::move(callback));
   base::RunLoop().RunUntilIdle();
 }
 

@@ -28,7 +28,7 @@ class FakeVoiceInteractionFrameworkInstance
   void StartVoiceInteractionSetupWizard() override;
   void ShowVoiceInteractionSettings() override;
   void GetVoiceInteractionSettings(
-      const GetVoiceInteractionSettingsCallback& callback) override;
+      GetVoiceInteractionSettingsCallback callback) override;
 
   size_t start_session_count() const { return start_session_count_; }
   size_t toggle_session_count() const { return toggle_session_count_; }

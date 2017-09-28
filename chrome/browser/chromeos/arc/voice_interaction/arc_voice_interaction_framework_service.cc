@@ -71,15 +71,14 @@ constexpr base::TimeDelta kMaxTimeSinceUserInteractionForHistogram =
 constexpr int32_t kContextRequestMaxRemainingCount = 2;
 
 void ScreenshotCallback(
-    const mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback&
-        callback,
+    mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback callback,
     scoped_refptr<base::RefCountedMemory> data) {
   if (data.get() == nullptr) {
-    callback.Run(std::vector<uint8_t>{});
+    std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
   std::vector<uint8_t> result(data->front(), data->front() + data->size());
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
@@ -136,22 +135,21 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
 }
 
 void EncodeAndReturnImage(
-    const ArcVoiceInteractionFrameworkService::CaptureFullscreenCallback&
-        callback,
+    ArcVoiceInteractionFrameworkService::CaptureFullscreenCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
     const gfx::Image& image) {
   old_layer_owner.reset();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       base::TaskTraits{base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(
+      base::BindOnce(
           [](const gfx::Image& image) -> std::vector<uint8_t> {
             std::vector<uint8_t> res;
             gfx::JPEG1xEncodedDataFromImage(image, 100, &res);
             return res;
           },
           image),
-      callback);
+      std::move(callback));
 }
 
 // Singleton factory for ArcVoiceInteractionFrameworkService.
@@ -240,11 +238,11 @@ void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
-    const CaptureFocusedWindowCallback& callback) {
+    CaptureFocusedWindowCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!ValidateTimeSinceUserInteraction()) {
-    callback.Run(std::vector<uint8_t>{});
+    std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
 
@@ -252,20 +250,20 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
       ash::Shell::Get()->activation_client()->GetActiveWindow();
 
   if (window == nullptr) {
-    callback.Run(std::vector<uint8_t>{});
+    std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
   ui::GrabWindowSnapshotAsyncJPEG(
       window, gfx::Rect(window->bounds().size()),
-      base::Bind(&ScreenshotCallback, callback));
+      base::Bind(&ScreenshotCallback, base::Passed(std::move(callback))));
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
-    const CaptureFullscreenCallback& callback) {
+    CaptureFullscreenCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!ValidateTimeSinceUserInteraction()) {
-    callback.Run(std::vector<uint8_t>{});
+    std::move(callback).Run(std::vector<uint8_t>{});
     return;
   }
 
@@ -277,7 +275,7 @@ void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
   auto old_layer_owner = CreateLayerTreeForSnapshot(window);
   ui::GrabLayerSnapshotAsync(
       old_layer_owner->root(), gfx::Rect(window->bounds().size()),
-      base::Bind(&EncodeAndReturnImage, callback,
+      base::Bind(&EncodeAndReturnImage, base::Passed(std::move(callback)),
                  base::Passed(std::move(old_layer_owner))));
 }
 

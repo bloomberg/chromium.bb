@@ -157,20 +157,20 @@ void GpuArcVideoDecodeAccelerator::OnOutputFormatChanged(
 void GpuArcVideoDecodeAccelerator::Initialize(
     ::arc::mojom::VideoDecodeAcceleratorConfigPtr config,
     ::arc::mojom::VideoDecodeClientPtr client,
-    const InitializeCallback& callback) {
+    InitializeCallback callback) {
   DVLOG(2) << "Initialize";
   DCHECK(!client_);
   if (config->device_type_deprecated !=
       ::arc::mojom::VideoDecodeAcceleratorConfig::DeviceTypeDeprecated::
           DEVICE_DECODER) {
     LOG(ERROR) << "only decoder is supported";
-    callback.Run(
+    std::move(callback).Run(
         ::arc::mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
   }
   client_ = std::move(client);
   ArcVideoDecodeAccelerator::Result result = accelerator_->Initialize(
       config.To<ArcVideoDecodeAccelerator::Config>(), this);
-  callback.Run(
+  std::move(callback).Run(
       static_cast<::arc::mojom::VideoDecodeAccelerator::Result>(result));
 }
 

@@ -6,6 +6,7 @@
 #define CHROME_GPU_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/files/scoped_file.h"
@@ -45,24 +46,23 @@ class GpuArcVideoEncodeAccelerator
   void NotifyError(Error error) override;
 
   // ::arc::mojom::VideoEncodeAccelerator implementation.
-  void GetSupportedProfiles(
-      const GetSupportedProfilesCallback& callback) override;
+  void GetSupportedProfiles(GetSupportedProfilesCallback callback) override;
   void Initialize(VideoPixelFormat input_format,
                   const gfx::Size& visible_size,
                   VideoEncodeAccelerator::StorageType input_storage,
                   VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   VideoEncodeClientPtr client,
-                  const InitializeCallback& callback) override;
+                  InitializeCallback callback) override;
   void Encode(mojo::ScopedHandle fd,
               std::vector<::arc::VideoFramePlane> planes,
               int64_t timestamp,
               bool force_keyframe,
-              const EncodeCallback& callback) override;
+              EncodeCallback callback) override;
   void UseBitstreamBuffer(mojo::ScopedHandle shmem_fd,
                           uint32_t offset,
                           uint32_t size,
-                          const UseBitstreamBufferCallback& callback) override;
+                          UseBitstreamBufferCallback callback) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
 

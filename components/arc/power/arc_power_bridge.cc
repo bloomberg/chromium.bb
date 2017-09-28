@@ -186,12 +186,12 @@ void ArcPowerBridge::OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) {
   wake_locks_.erase(it);
 }
 
-void ArcPowerBridge::IsDisplayOn(const IsDisplayOnCallback& callback) {
+void ArcPowerBridge::IsDisplayOn(IsDisplayOnCallback callback) {
   bool is_display_on = false;
   // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance())
     is_display_on = ash::Shell::Get()->display_configurator()->IsDisplayOn();
-  callback.Run(is_display_on);
+  std::move(callback).Run(is_display_on);
 }
 
 void ArcPowerBridge::OnScreenBrightnessUpdateRequest(double percent) {

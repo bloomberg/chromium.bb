@@ -62,7 +62,8 @@ void GpuArcVideoEncodeAccelerator::BitstreamBufferReady(
   DCHECK(client_);
   auto iter = use_bitstream_cbs_.find(bitstream_buffer_id);
   DCHECK(iter != use_bitstream_cbs_.end());
-  iter->second.Run(payload_size, key_frame, timestamp.InMicroseconds());
+  std::move(iter->second)
+      .Run(payload_size, key_frame, timestamp.InMicroseconds());
   use_bitstream_cbs_.erase(iter);
 }
 
@@ -74,9 +75,10 @@ void GpuArcVideoEncodeAccelerator::NotifyError(Error error) {
 
 // ::arc::mojom::VideoEncodeAccelerator implementation.
 void GpuArcVideoEncodeAccelerator::GetSupportedProfiles(
-    const GetSupportedProfilesCallback& callback) {
-  callback.Run(media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-      gpu_preferences_));
+    GetSupportedProfilesCallback callback) {
+  std::move(callback).Run(
+      media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
+          gpu_preferences_));
 }
 
 void GpuArcVideoEncodeAccelerator::Initialize(
@@ -86,7 +88,7 @@ void GpuArcVideoEncodeAccelerator::Initialize(
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     VideoEncodeClientPtr client,
-    const InitializeCallback& callback) {
+    InitializeCallback callback) {
   DVLOGF(2) << "visible_size=" << visible_size.ToString()
             << ", profile=" << output_profile;
 
@@ -97,11 +99,11 @@ void GpuArcVideoEncodeAccelerator::Initialize(
       gpu_preferences_);
   if (accelerator_ == nullptr) {
     DLOG(ERROR) << "Failed to create a VideoEncodeAccelerator.";
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   client_ = std::move(client);
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 static void DropShareMemoryAndVideoFrameDoneNotifier(
@@ -115,14 +117,14 @@ void GpuArcVideoEncodeAccelerator::Encode(
     std::vector<::arc::VideoFramePlane> planes,
     int64_t timestamp,
     bool force_keyframe,
-    const EncodeCallback& callback) {
+    EncodeCallback callback) {
   DVLOGF(2) << "timestamp=" << timestamp;
   if (!accelerator_) {
     DLOG(ERROR) << "Accelerator is not initialized.";
     return;
   }
 
-  auto notifier = base::MakeUnique<VideoFrameDoneNotifier>(callback);
+  auto notifier = std::make_unique<VideoFrameDoneNotifier>(std::move(callback));
 
   if (planes.empty()) {  // EOS
     accelerator_->Encode(media::VideoFrame::CreateEOSFrame(), force_keyframe);
@@ -185,7 +187,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
     mojo::ScopedHandle shmem_fd,
     uint32_t offset,
     uint32_t size,
-    const UseBitstreamBufferCallback& callback) {
+    UseBitstreamBufferCallback callback) {
   DVLOGF(2) << "serial=" << bitstream_buffer_serial_;
   if (!accelerator_) {
     DLOG(ERROR) << "Accelerator is not initialized.";
@@ -204,7 +206,7 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
                                       0u, guid);
-  use_bitstream_cbs_[bitstream_buffer_serial_] = callback;
+  use_bitstream_cbs_.emplace(bitstream_buffer_serial_, std::move(callback));
   accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
       bitstream_buffer_serial_, shm_handle, size, offset));
 

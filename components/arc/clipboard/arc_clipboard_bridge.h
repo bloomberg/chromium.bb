@@ -48,7 +48,7 @@ class ArcClipboardBridge
   void SetTextContentDeprecated(const std::string& text) override;
   void GetTextContentDeprecated() override;
   void SetClipContent(mojom::ClipDataPtr clip_data) override;
-  void GetClipContent(const GetClipContentCallback& callback) override;
+  void GetClipContent(GetClipContentCallback callback) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

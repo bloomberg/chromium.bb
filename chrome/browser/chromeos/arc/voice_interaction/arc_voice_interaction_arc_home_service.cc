@@ -81,7 +81,8 @@ mojom::VoiceInteractionStructurePtr CreateVoiceInteractionStructure(
 }
 
 void RequestVoiceInteractionStructureCallback(
-    const base::Callback<void(mojom::VoiceInteractionStructurePtr)>& callback,
+    ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructureCallback
+        callback,
     const gfx::Rect& bounds,
     const std::string& web_url,
     const ui::AXTreeUpdate& update) {
@@ -92,7 +93,7 @@ void RequestVoiceInteractionStructureCallback(
   root->text = base::UTF8ToUTF16(web_url);
   root->children.push_back(CreateVoiceInteractionStructure(
       *ui::AXSnapshotNodeAndroid::Create(update, false)));
-  callback.Run(std::move(root));
+  std::move(callback).Run(std::move(root));
 }
 
 // Singleton factory for ArcVoiceInteractionArcHomeService.
@@ -268,7 +269,7 @@ void ArcVoiceInteractionArcHomeService::OnInstanceClosed() {
 }
 
 void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
-    const GetVoiceInteractionStructureCallback& callback) {
+    GetVoiceInteractionStructureCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
@@ -277,14 +278,14 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
   if (!framework_service->ValidateTimeSinceUserInteraction() ||
       !prefs->GetBoolean(prefs::kVoiceInteractionEnabled) ||
       !prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled)) {
-    callback.Run(mojom::VoiceInteractionStructure::New());
+    std::move(callback).Run(mojom::VoiceInteractionStructure::New());
     return;
   }
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (!browser || !browser->window()->IsActive()) {
     // TODO(muyuanli): retrieve context for apps.
     LOG(ERROR) << "Retrieving context from apps is not implemented.";
-    callback.Run(mojom::VoiceInteractionStructure::New());
+    std::move(callback).Run(mojom::VoiceInteractionStructure::New());
     return;
   }
 
@@ -292,7 +293,7 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
       browser->tab_strip_model()->GetActiveWebContents();
   // Do not process incognito tab.
   if (web_contents->GetBrowserContext()->IsOffTheRecord()) {
-    callback.Run(mojom::VoiceInteractionStructure::New());
+    std::move(callback).Run(mojom::VoiceInteractionStructure::New());
     return;
   }
 
@@ -303,7 +304,8 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
                        ->GetRootTransform();
   float scale_factor = ash::GetScaleFactorForTransform(transform);
   web_contents->RequestAXTreeSnapshot(base::Bind(
-      &RequestVoiceInteractionStructureCallback, callback,
+      &RequestVoiceInteractionStructureCallback,
+      base::Passed(std::move(callback)),
       gfx::ConvertRectToPixel(scale_factor, browser->window()->GetBounds()),
       web_contents->GetLastCommittedURL().spec()));
 }

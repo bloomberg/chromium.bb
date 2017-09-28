@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -252,61 +253,63 @@ const chromeos::NetworkState* GetShillBackedNetwork(
 }
 
 void ForgetNetworkSuccessCallback(
-    const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback) {
-  mojo_callback.Run(arc::mojom::NetworkResult::SUCCESS);
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback) {
+  std::move(callback).Run(arc::mojom::NetworkResult::SUCCESS);
 }
 
 void ForgetNetworkFailureCallback(
-    const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback,
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   VLOG(1) << "ForgetNetworkFailureCallback: " << error_name;
-  mojo_callback.Run(arc::mojom::NetworkResult::FAILURE);
+  std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
 void StartConnectSuccessCallback(
-    const arc::mojom::NetHost::StartConnectCallback& mojo_callback) {
-  mojo_callback.Run(arc::mojom::NetworkResult::SUCCESS);
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback) {
+  std::move(callback).Run(arc::mojom::NetworkResult::SUCCESS);
 }
 
 void StartConnectFailureCallback(
-    const arc::mojom::NetHost::StartConnectCallback& mojo_callback,
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   VLOG(1) << "StartConnectFailureCallback: " << error_name;
-  mojo_callback.Run(arc::mojom::NetworkResult::FAILURE);
+  std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
 void StartDisconnectSuccessCallback(
-    const arc::mojom::NetHost::StartDisconnectCallback& mojo_callback) {
-  mojo_callback.Run(arc::mojom::NetworkResult::SUCCESS);
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback) {
+  std::move(callback).Run(arc::mojom::NetworkResult::SUCCESS);
 }
 
 void StartDisconnectFailureCallback(
-    const arc::mojom::NetHost::StartDisconnectCallback& mojo_callback,
+    base::OnceCallback<void(arc::mojom::NetworkResult)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   VLOG(1) << "StartDisconnectFailureCallback: " << error_name;
-  mojo_callback.Run(arc::mojom::NetworkResult::FAILURE);
+  std::move(callback).Run(arc::mojom::NetworkResult::FAILURE);
 }
 
 void GetDefaultNetworkSuccessCallback(
-    const arc::ArcNetHostImpl::GetDefaultNetworkCallback& callback,
+    base::OnceCallback<void(arc::mojom::NetworkConfigurationPtr,
+                            arc::mojom::NetworkConfigurationPtr)> callback,
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
   // TODO(cernekee): Figure out how to query Chrome for the default physical
   // service if a VPN is connected, rather than just reporting the
   // default logical service in both fields.
-  callback.Run(TranslateONCConfiguration(&dictionary),
-               TranslateONCConfiguration(&dictionary));
+  std::move(callback).Run(TranslateONCConfiguration(&dictionary),
+                          TranslateONCConfiguration(&dictionary));
 }
 
 void GetDefaultNetworkFailureCallback(
-    const arc::ArcNetHostImpl::GetDefaultNetworkCallback& callback,
+    base::OnceCallback<void(arc::mojom::NetworkConfigurationPtr,
+                            arc::mojom::NetworkConfigurationPtr)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   LOG(ERROR) << "Failed to query default logical network";
-  callback.Run(nullptr, nullptr);
+  std::move(callback).Run(nullptr, nullptr);
 }
 
 void DefaultNetworkFailureCallback(
@@ -411,7 +414,7 @@ void ArcNetHostImpl::OnInstanceClosed() {
 
 void ArcNetHostImpl::GetNetworksDeprecated(
     mojom::GetNetworksRequestType type,
-    const GetNetworksDeprecatedCallback& callback) {
+    GetNetworksDeprecatedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   mojom::NetworkDataPtr data = mojom::NetworkData::New();
@@ -484,11 +487,11 @@ void ArcNetHostImpl::GetNetworksDeprecated(
     networks.push_back(std::move(wc));
   }
   data->networks = std::move(networks);
-  callback.Run(std::move(data));
+  std::move(callback).Run(std::move(data));
 }
 
 void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
-                                 const GetNetworksCallback& callback) {
+                                 GetNetworksCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Retrieve list of configured or visible WiFi networks.
@@ -508,12 +511,12 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
     networks.push_back(TranslateONCConfiguration(network_dict));
   }
 
-  callback.Run(mojom::GetNetworksResponseType::New(
+  std::move(callback).Run(mojom::GetNetworksResponseType::New(
       arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
 }
 
 void ArcNetHostImpl::CreateNetworkSuccessCallback(
-    const mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    base::OnceCallback<void(const std::string&)> callback,
     const std::string& service_path,
     const std::string& guid) {
   VLOG(1) << "CreateNetworkSuccessCallback";
@@ -521,21 +524,21 @@ void ArcNetHostImpl::CreateNetworkSuccessCallback(
   cached_guid_ = guid;
   cached_service_path_ = service_path;
 
-  mojo_callback.Run(guid);
+  std::move(callback).Run(guid);
 }
 
 void ArcNetHostImpl::CreateNetworkFailureCallback(
-    const mojom::NetHost::CreateNetworkCallback& mojo_callback,
+    base::OnceCallback<void(const std::string&)> callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   VLOG(1) << "CreateNetworkFailureCallback: " << error_name;
-  mojo_callback.Run("");
+  std::move(callback).Run(std::string());
 }
 
 void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
-                                   const CreateNetworkCallback& callback) {
+                                   CreateNetworkCallback callback) {
   if (!IsDeviceOwner()) {
-    callback.Run("");
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -543,13 +546,13 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   std::unique_ptr<base::DictionaryValue> wifi_dict(new base::DictionaryValue);
 
   if (!cfg->hexssid.has_value() || !cfg->details) {
-    callback.Run("");
+    std::move(callback).Run(std::string());
     return;
   }
   mojom::ConfiguredNetworkDetailsPtr details =
       std::move(cfg->details->get_configured());
   if (!details) {
-    callback.Run("");
+    std::move(callback).Run(std::string());
     return;
   }
 
@@ -571,12 +574,16 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                       std::move(wifi_dict));
 
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
       base::Bind(&ArcNetHostImpl::CreateNetworkSuccessCallback,
-                 weak_factory_.GetWeakPtr(), callback),
+                 weak_factory_.GetWeakPtr(), repeating_callback),
       base::Bind(&ArcNetHostImpl::CreateNetworkFailureCallback,
-                 weak_factory_.GetWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(), repeating_callback));
 }
 
 bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
@@ -597,60 +604,70 @@ bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
 }
 
 void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
-                                   const ForgetNetworkCallback& callback) {
+                                   ForgetNetworkCallback callback) {
   if (!IsDeviceOwner()) {
-    callback.Run(mojom::NetworkResult::FAILURE);
+    std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
-    callback.Run(mojom::NetworkResult::FAILURE);
+    std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
   cached_guid_.clear();
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   GetManagedConfigurationHandler()->RemoveConfiguration(
-      path, base::Bind(&ForgetNetworkSuccessCallback, callback),
-      base::Bind(&ForgetNetworkFailureCallback, callback));
+      path, base::Bind(&ForgetNetworkSuccessCallback, repeating_callback),
+      base::Bind(&ForgetNetworkFailureCallback, repeating_callback));
 }
 
 void ArcNetHostImpl::StartConnect(const std::string& guid,
-                                  const StartConnectCallback& callback) {
+                                  StartConnectCallback callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
-    callback.Run(mojom::NetworkResult::FAILURE);
+    std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->ConnectToNetwork(
-      path, base::Bind(&StartConnectSuccessCallback, callback),
-      base::Bind(&StartConnectFailureCallback, callback), false);
+      path, base::Bind(&StartConnectSuccessCallback, repeating_callback),
+      base::Bind(&StartConnectFailureCallback, repeating_callback), false);
 }
 
 void ArcNetHostImpl::StartDisconnect(const std::string& guid,
-                                     const StartDisconnectCallback& callback) {
+                                     StartDisconnectCallback callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
-    callback.Run(mojom::NetworkResult::FAILURE);
+    std::move(callback).Run(mojom::NetworkResult::FAILURE);
     return;
   }
 
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->DisconnectNetwork(
-      path, base::Bind(&StartDisconnectSuccessCallback, callback),
-      base::Bind(&StartDisconnectFailureCallback, callback));
+      path, base::Bind(&StartDisconnectSuccessCallback, repeating_callback),
+      base::Bind(&StartDisconnectFailureCallback, repeating_callback));
 }
 
-void ArcNetHostImpl::GetWifiEnabledState(
-    const GetWifiEnabledStateCallback& callback) {
+void ArcNetHostImpl::GetWifiEnabledState(GetWifiEnabledStateCallback callback) {
   bool is_enabled = GetStateHandler()->IsTechnologyEnabled(
       chromeos::NetworkTypePattern::WiFi());
-  callback.Run(is_enabled);
+  std::move(callback).Run(is_enabled);
 }
 
-void ArcNetHostImpl::SetWifiEnabledState(
-    bool is_enabled,
-    const SetWifiEnabledStateCallback& callback) {
+void ArcNetHostImpl::SetWifiEnabledState(bool is_enabled,
+                                         SetWifiEnabledStateCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   chromeos::NetworkStateHandler::TechnologyState state =
       GetStateHandler()->GetTechnologyState(
@@ -660,13 +677,13 @@ void ArcNetHostImpl::SetWifiEnabledState(
       (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) ||
       (state == chromeos::NetworkStateHandler::TECHNOLOGY_UNAVAILABLE)) {
     VLOG(1) << "SetWifiEnabledState failed due to WiFi state: " << state;
-    callback.Run(false);
-  } else {
-    GetStateHandler()->SetTechnologyEnabled(
-        chromeos::NetworkTypePattern::WiFi(), is_enabled,
-        chromeos::network_handler::ErrorCallback());
-    callback.Run(true);
+    std::move(callback).Run(false);
+    return;
   }
+  GetStateHandler()->SetTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi(), is_enabled,
+      chromeos::network_handler::ErrorCallback());
+  std::move(callback).Run(true);
 }
 
 void ArcNetHostImpl::StartScan() {
@@ -682,8 +699,7 @@ void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
   net_instance->ScanCompleted();
 }
 
-void ArcNetHostImpl::GetDefaultNetwork(
-    const GetDefaultNetworkCallback& callback) {
+void ArcNetHostImpl::GetDefaultNetwork(GetDefaultNetworkCallback callback) {
   const chromeos::NetworkState* default_network;
 
   // Expose Chrome OS VPNs to Android, but if ARC VPN is active, only expose
@@ -701,16 +717,20 @@ void ArcNetHostImpl::GetDefaultNetwork(
 
   if (!default_network) {
     VLOG(1) << "GetDefaultNetwork: no default network";
-    callback.Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, nullptr);
     return;
   }
   VLOG(1) << "GetDefaultNetwork: default network is "
           << default_network->path();
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, default_network->path(),
-      base::Bind(&GetDefaultNetworkSuccessCallback, callback),
-      base::Bind(&GetDefaultNetworkFailureCallback, callback));
+      base::Bind(&GetDefaultNetworkSuccessCallback, repeating_callback),
+      base::Bind(&GetDefaultNetworkFailureCallback, repeating_callback));
 }
 
 void ArcNetHostImpl::DefaultNetworkSuccessCallback(

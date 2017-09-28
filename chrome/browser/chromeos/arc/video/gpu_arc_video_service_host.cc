@@ -112,7 +112,7 @@ void GpuArcVideoServiceHost::OnInstanceReady() {
 }
 
 void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
-    const OnBootstrapVideoAcceleratorFactoryCallback& callback) {
+    OnBootstrapVideoAcceleratorFactoryCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Hardcode pid 0 since it is unused in mojo.
@@ -133,12 +133,12 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
       channel_pair.PassClientHandle(), &wrapped_handle);
   if (wrap_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Pipe failed to wrap handles. Closing: " << wrap_result;
-    callback.Run(mojo::ScopedHandle(), std::string());
+    std::move(callback).Run(mojo::ScopedHandle(), std::string());
     return;
   }
   mojo::ScopedHandle child_handle{mojo::Handle(wrapped_handle)};
 
-  callback.Run(std::move(child_handle), token);
+  std::move(callback).Run(std::move(child_handle), token);
 
   mojo::MakeStrongBinding(
       base::MakeUnique<VideoAcceleratorFactoryService>(),

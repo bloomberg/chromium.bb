@@ -63,7 +63,7 @@ class ArcVoiceInteractionArcHomeService
 
   // Gets view hierarchy from current focused app and send it to ARC.
   void GetVoiceInteractionStructure(
-      const GetVoiceInteractionStructureCallback& callback) override;
+      GetVoiceInteractionStructureCallback callback) override;
   void OnVoiceInteractionOobeSetupComplete() override;
 
   static mojom::VoiceInteractionStructurePtr
