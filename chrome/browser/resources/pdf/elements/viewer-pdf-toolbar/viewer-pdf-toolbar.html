@@ -73,6 +73,17 @@
         color: rgb(241, 241, 241);
         display: flex;
         height: 48px;
+        padding: 0 16px;
+      }
+
+      #progress-container {
+        bottom: 0;
+        left: 0;
+        margin: 0;
+        position: absolute;
+        right: 0;
+        top: auto;
+        width: auto;
       }
 
       .invisible {
@@ -104,7 +115,7 @@
       }
     </style>
     <div id="toolbar">
-      <div id="aligner" class="middle">
+      <div id="aligner">
         <span id="title" title="{{docTitle}}">
           <span>{{docTitle}}</span>
         </span>
@@ -145,7 +156,7 @@
           </viewer-toolbar-dropdown>
         </div>
       </div>
-      <div class="bottom fit">
+      <div id="progress-container">
         <paper-progress id="progress" value="{{loadProgress}}"></paper-progress>
       </div>
     </div>
