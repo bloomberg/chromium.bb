@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "ui/base/ui_features.h"
 #include "url/origin.h"
@@ -95,6 +96,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Called during the destruction of the observer subclass.
   virtual void RemoveObserver(Observer* observer);
+
+  // Starts collecting threat details if user has extended reporting enabled and
+  // is not in incognito mode.
+  void MaybeStartThreatDetailsCollection(content::WebContents* web_contents,
+                                         const std::string& token);
+
+  // Sends threat details if user has extended reporting enabled and is not in
+  // incognito mode.
+  void MaybeFinishCollectingThreatDetails(content::WebContents* web_contents,
+                                          bool did_proceed);
 
   const std::map<Origin, int64_t>& unhandled_password_reuses() const {
     return unhandled_password_reuses_;
@@ -197,6 +208,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       scoped_refptr<SafeBrowsingUIManager> ui_manager);
 
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  TriggerManager* trigger_manager_;
   // Profile associated with this instance.
   Profile* profile_;
   // AccountInfo associated with this |profile_|.

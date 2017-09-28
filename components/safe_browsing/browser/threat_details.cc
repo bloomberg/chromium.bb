@@ -85,6 +85,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_MALWARE;
     case SB_THREAT_TYPE_AD_SAMPLE:
       return ClientSafeBrowsingReportRequest::AD_SAMPLE;
+    case SB_THREAT_TYPE_PASSWORD_REUSE:
+      return ClientSafeBrowsingReportRequest::URL_PASSWORD_PROTECTION_PHISHING;
     default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type "
                    << threat_type;

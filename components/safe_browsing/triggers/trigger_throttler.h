@@ -21,6 +21,7 @@ extern const char kTriggerTypeAndQuotaParam[];
 enum class TriggerType {
   SECURITY_INTERSTITIAL = 1,
   AD_SAMPLE = 2,
+  GAIA_PASSWORD_REUSE = 3,
 };
 
 struct TriggerTypeHash {
