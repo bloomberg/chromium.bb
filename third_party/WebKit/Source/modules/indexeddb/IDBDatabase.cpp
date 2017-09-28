@@ -566,7 +566,7 @@ void IDBDatabase::RevertObjectStoreMetadata(
   DCHECK(!version_change_transaction_->IsActive())
       << "Object store metadata reverted when versionchange transaction is "
          "still active";
-  DCHECK(old_metadata.Get());
+  DCHECK(old_metadata.get());
   metadata_.object_stores.Set(old_metadata->id, std::move(old_metadata));
 }
 

@@ -1303,7 +1303,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
       [this, &image_source, &image, &src_rect, dst_rect](
           PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
-        DrawImageInternal(c, image_source, image.Get(), src_rect, dst_rect,
+        DrawImageInternal(c, image_source, image.get(), src_rect, dst_rect,
                           flags);
       },
       [this, &dst_rect](const SkIRect& clip_bounds)  // overdraw test lambda

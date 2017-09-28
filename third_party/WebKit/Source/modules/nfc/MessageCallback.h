@@ -21,7 +21,7 @@ class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
   void SetScriptState(ScriptState* script_state) {
     script_state_ = script_state;
   }
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
  private:
   RefPtr<ScriptState> script_state_;

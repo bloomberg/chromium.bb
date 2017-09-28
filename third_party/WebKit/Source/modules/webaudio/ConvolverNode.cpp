@@ -138,7 +138,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
 
   // Create the reverb with the given impulse response.
   std::unique_ptr<Reverb> reverb = WTF::WrapUnique(new Reverb(
-      buffer_bus.Get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
+      buffer_bus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
       Context() && Context()->HasRealtimeConstraint(), normalize_));
 
   {

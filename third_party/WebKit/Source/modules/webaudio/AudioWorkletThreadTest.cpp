@@ -46,7 +46,7 @@ class AudioWorkletThreadTest : public ::testing::Test {
         WTF::MakeUnique<GlobalScopeCreationParams>(
             KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
             nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            security_origin_.Get(), nullptr, kWebAddressSpaceLocal, nullptr,
+            security_origin_.get(), nullptr, kWebAddressSpaceLocal, nullptr,
             nullptr, kV8CacheOptionsDefault),
         WTF::nullopt, ParentFrameTaskRunners::Create());
     return thread;

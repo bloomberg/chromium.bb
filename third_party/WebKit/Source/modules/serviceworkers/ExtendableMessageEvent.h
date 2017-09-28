@@ -39,7 +39,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
                                         WaitUntilObserver*);
 
   SerializedScriptValue* SerializedData() const {
-    return serialized_data_.Get();
+    return serialized_data_.get();
   }
   void SetSerializedData(RefPtr<SerializedScriptValue> serialized_data) {
     serialized_data_ = std::move(serialized_data);

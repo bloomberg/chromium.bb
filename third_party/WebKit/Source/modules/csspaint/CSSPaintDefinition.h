@@ -62,7 +62,7 @@ class CSSPaintDefinition final
     return context_settings_;
   }
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   v8::Local<v8::Function> PaintFunctionForTesting(v8::Isolate* isolate) {
     return paint_.NewLocal(isolate);

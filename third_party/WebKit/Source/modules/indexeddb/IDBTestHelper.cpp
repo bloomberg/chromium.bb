@@ -41,7 +41,7 @@ RefPtr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
       WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
   DCHECK_EQ(create_wrapped_value,
-            IDBValueUnwrapper::IsWrapped(idb_value.Get()));
+            IDBValueUnwrapper::IsWrapped(idb_value.get()));
   return idb_value;
 }
 

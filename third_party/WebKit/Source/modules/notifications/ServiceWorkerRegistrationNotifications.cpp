@@ -191,7 +191,7 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
   DCHECK(notification_manager);
 
   notification_manager->ShowPersistent(
-      WebSecurityOrigin(origin.Get()), data, loader->GetResources(),
+      WebSecurityOrigin(origin.get()), data, loader->GetResources(),
       registration_->WebRegistration(), std::move(callbacks));
   loaders_.erase(loader);
 }

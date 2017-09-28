@@ -259,7 +259,7 @@ void IDBRequest::SetResultCursor(IDBCursor* cursor,
   cursor_key_ = key;
   cursor_primary_key_ = primary_key;
   cursor_value_ = std::move(value);
-  AckReceivedBlobs(cursor_value_.Get());
+  AckReceivedBlobs(cursor_value_.get());
 
   EnqueueResultInternal(IDBAny::Create(cursor));
 }
@@ -274,7 +274,7 @@ void IDBRequest::AckReceivedBlobs(const IDBValue* value) {
 
 void IDBRequest::AckReceivedBlobs(const Vector<RefPtr<IDBValue>>& values) {
   for (size_t i = 0; i < values.size(); ++i)
-    AckReceivedBlobs(values[i].Get());
+    AckReceivedBlobs(values[i].get());
 }
 
 bool IDBRequest::ShouldEnqueueEvent() const {
@@ -347,7 +347,7 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
                                 RefPtr<IDBValue>&& value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.Get());
+  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
     return EnqueueResponse(std::move(backend), key, primary_key,
                            std::move(value));
@@ -361,7 +361,7 @@ void IDBRequest::HandleResponse(std::unique_ptr<WebIDBCursor> backend,
 void IDBRequest::HandleResponse(RefPtr<IDBValue>&& value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.Get());
+  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(value));
   transaction_->EnqueueResult(WTF::MakeUnique<IDBRequestQueueItem>(
@@ -387,7 +387,7 @@ void IDBRequest::HandleResponse(IDBKey* key,
                                 RefPtr<IDBValue>&& value) {
   DCHECK(transit_blob_handles_.IsEmpty());
   DCHECK(transaction_);
-  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.Get());
+  bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(key, primary_key, std::move(value));
 
@@ -511,7 +511,7 @@ void IDBRequest::EnqueueResponse(RefPtr<IDBValue>&& value) {
     return;
   }
 
-  AckReceivedBlobs(value.Get());
+  AckReceivedBlobs(value.get());
 
   if (pending_cursor_) {
     // Value should be null, signifying the end of the cursor's range.

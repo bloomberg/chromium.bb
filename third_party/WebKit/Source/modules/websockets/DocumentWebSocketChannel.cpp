@@ -252,7 +252,7 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
       loading_context_->GetExecutionContext()->UserAgent(), this,
       TaskRunnerHelper::Get(TaskType::kNetworking,
                             loading_context_->GetExecutionContext())
-          .Get());
+          .get());
 
   // TODO(ricea): Maybe lookup GetDocument()->GetFrame() less often?
   if (handshake_throttle_ && GetDocument() && GetDocument()->GetFrame() &&
@@ -585,7 +585,7 @@ void DocumentWebSocketChannel::DidStartOpeningHandshake(
         TRACE_EVENT_SCOPE_THREAD, "data",
         InspectorWebSocketEvent::Data(GetDocument(), identifier_));
     probe::willSendWebSocketHandshakeRequest(GetDocument(), identifier_,
-                                             request.Get());
+                                             request.get());
   }
   handshake_request_ = std::move(request);
 }
@@ -604,7 +604,7 @@ void DocumentWebSocketChannel::DidFinishOpeningHandshake(
         TRACE_EVENT_SCOPE_THREAD, "data",
         InspectorWebSocketEvent::Data(GetDocument(), identifier_));
     probe::didReceiveWebSocketHandshakeResponse(
-        GetDocument(), identifier_, handshake_request_.Get(), response);
+        GetDocument(), identifier_, handshake_request_.get(), response);
   }
   handshake_request_ = nullptr;
 }

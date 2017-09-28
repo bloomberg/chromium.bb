@@ -133,7 +133,7 @@ AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
   RefPtr<AudioBus> bus =
       CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
   if (bus) {
-    AudioBuffer* buffer = new AudioBuffer(bus.Get());
+    AudioBuffer* buffer = new AudioBuffer(bus.get());
     if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
       return buffer;
   }

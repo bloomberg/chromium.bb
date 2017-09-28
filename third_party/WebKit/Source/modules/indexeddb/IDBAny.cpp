@@ -93,7 +93,7 @@ const IDBKey* IDBAny::Key() const {
 
 IDBValue* IDBAny::Value() const {
   DCHECK_EQ(type_, kIDBValueType);
-  return idb_value_.Get();
+  return idb_value_.get();
 }
 
 const Vector<RefPtr<IDBValue>>* IDBAny::Values() const {

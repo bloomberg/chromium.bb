@@ -85,7 +85,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
         WTF::MakeUnique<GlobalScopeCreationParams>(
             KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
             nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            security_origin_.Get(), clients, kWebAddressSpaceLocal, nullptr,
+            security_origin_.get(), clients, kWebAddressSpaceLocal, nullptr,
             nullptr, kV8CacheOptionsDefault),
         WTF::nullopt, ParentFrameTaskRunners::Create());
     return thread;

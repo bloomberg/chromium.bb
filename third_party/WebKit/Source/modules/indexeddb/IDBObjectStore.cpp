@@ -70,7 +70,7 @@ IDBObjectStore::IDBObjectStore(RefPtr<IDBObjectStoreMetadata> metadata,
                                IDBTransaction* transaction)
     : metadata_(std::move(metadata)), transaction_(transaction) {
   DCHECK(transaction_);
-  DCHECK(metadata_.Get());
+  DCHECK(metadata_.get());
 }
 
 DEFINE_TRACE(IDBObjectStore) {
@@ -658,7 +658,7 @@ class IndexPopulator final : public EventListener {
         transaction_id_(transaction_id),
         object_store_id_(object_store_id),
         index_metadata_(std::move(index_metadata)) {
-    DCHECK(index_metadata_.Get());
+    DCHECK(index_metadata_.get());
   }
 
   const IDBIndexMetadata& IndexMetadata() const { return *index_metadata_; }
@@ -668,7 +668,7 @@ class IndexPopulator final : public EventListener {
       return;
     IDB_TRACE("IDBObjectStore::IndexPopulator::handleEvent");
 
-    DCHECK_EQ(ExecutionContext::From(script_state_.Get()), execution_context);
+    DCHECK_EQ(ExecutionContext::From(script_state_.get()), execution_context);
     DCHECK_EQ(event->type(), EventTypeNames::success);
     EventTarget* target = event->target();
     IDBRequest* request = static_cast<IDBRequest*>(target);
@@ -676,7 +676,7 @@ class IndexPopulator final : public EventListener {
     if (!database_->Backend())  // If database is stopped?
       return;
 
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
 
     IDBAny* cursor_any = request->ResultAsAny();
     IDBCursorWithValue* cursor = nullptr;
@@ -690,7 +690,7 @@ class IndexPopulator final : public EventListener {
                        ASSERT_NO_EXCEPTION);
 
       IDBKey* primary_key = cursor->IdbPrimaryKey();
-      ScriptValue value = cursor->value(script_state_.Get());
+      ScriptValue value = cursor->value(script_state_.get());
 
       IndexKeys index_keys;
       GenerateIndexKeysForValue(script_state_->GetIsolate(), IndexMetadata(),
@@ -823,7 +823,7 @@ IDBIndex* IDBObjectStore::index(const String& name,
 
   DCHECK(Metadata().indexes.Contains(index_id));
   RefPtr<IDBIndexMetadata> index_metadata = Metadata().indexes.at(index_id);
-  DCHECK(index_metadata.Get());
+  DCHECK(index_metadata.get());
   IDBIndex* index =
       IDBIndex::Create(std::move(index_metadata), this, transaction_.Get());
   index_map_.Set(name, index);
@@ -1034,7 +1034,7 @@ void IDBObjectStore::RevertMetadata(
     RefPtr<IDBObjectStoreMetadata> old_metadata) {
   DCHECK(transaction_->IsVersionChange());
   DCHECK(!transaction_->IsActive());
-  DCHECK(old_metadata.Get());
+  DCHECK(old_metadata.get());
   DCHECK(Id() == old_metadata->id);
 
   for (auto& index : index_map_.Values()) {
