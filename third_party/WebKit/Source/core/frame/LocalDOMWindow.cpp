@@ -125,12 +125,12 @@ class PostMessageTimer final
   }
 
   MessageEvent* Event() const { return event_; }
-  SecurityOrigin* TargetOrigin() const { return target_origin_.Get(); }
+  SecurityOrigin* TargetOrigin() const { return target_origin_.get(); }
   std::unique_ptr<SourceLocation> TakeLocation() {
     return std::move(location_);
   }
   UserGestureToken* GetUserGestureToken() const {
-    return user_gesture_token_.Get();
+    return user_gesture_token_.get();
   }
   void ContextDestroyed(ExecutionContext* destroyed_context) override {
     SuspendableTimer::ContextDestroyed(destroyed_context);

@@ -6135,7 +6135,7 @@ void Document::InitContentSecurityPolicy(
 
 bool Document::IsSecureTransitionTo(const KURL& url) const {
   RefPtr<SecurityOrigin> other = SecurityOrigin::Create(url);
-  return GetSecurityOrigin()->CanAccess(other.Get());
+  return GetSecurityOrigin()->CanAccess(other.get());
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {

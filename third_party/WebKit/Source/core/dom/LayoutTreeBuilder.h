@@ -91,7 +91,7 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
       CreateLayoutObject();
   }
 
-  ComputedStyle* ResolvedStyle() const { return style_.Get(); }
+  ComputedStyle* ResolvedStyle() const { return style_.get(); }
 
  private:
   LayoutObject* ParentLayoutObject() const;

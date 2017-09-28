@@ -42,7 +42,7 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
 
  private:
   // Implements Modulator:
-  ScriptState* GetScriptState() override { return script_state_.Get(); }
+  ScriptState* GetScriptState() override { return script_state_.get(); }
 
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
 
@@ -50,8 +50,8 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
     return ScriptModuleState::kInstantiated;
   }
   ScriptValue GetError(const ModuleScript* module_script) override {
-    ScriptState::Scope scope(script_state_.Get());
-    return ScriptValue(script_state_.Get(),
+    ScriptState::Scope scope(script_state_.get());
+    return ScriptValue(script_state_.get(),
                        module_script->CreateError(script_state_->GetIsolate()));
   }
 

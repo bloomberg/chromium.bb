@@ -95,7 +95,7 @@ void SecurityContext::EnforceSuborigin(const Suborigin& suborigin) {
 
   DCHECK(!suborigin.GetName().IsEmpty());
   DCHECK(RuntimeEnabledFeatures::SuboriginsEnabled());
-  DCHECK(security_origin_.Get());
+  DCHECK(security_origin_.get());
   DCHECK(!security_origin_->HasSuborigin() ||
          security_origin_->GetSuborigin()->GetName() == suborigin.GetName());
   security_origin_->AddSuborigin(suborigin);

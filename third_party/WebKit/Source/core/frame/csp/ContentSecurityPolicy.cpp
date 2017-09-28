@@ -294,7 +294,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
     return true;
   }
 
-  if (parent_origin->CanAccess(SecurityOrigin::Create(response.Url()).Get()))
+  if (parent_origin->CanAccess(SecurityOrigin::Create(response.Url()).get()))
     return true;
 
   String header = response.HttpHeaderField(HTTPNames::Allow_CSP_From);
@@ -303,7 +303,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
     return true;
   if (RefPtr<SecurityOrigin> child_origin =
           SecurityOrigin::CreateFromString(header)) {
-    return parent_origin->CanAccess(child_origin.Get());
+    return parent_origin->CanAccess(child_origin.get());
   }
 
   return false;

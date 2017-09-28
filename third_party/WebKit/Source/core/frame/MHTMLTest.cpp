@@ -304,16 +304,16 @@ TEST_F(MHTMLTest, MHTMLFromScheme) {
 
   // MHTMLArchives can only be initialized from local schemes, http/https
   // schemes, and content scheme(Android specific).
-  EXPECT_NE(nullptr, MHTMLArchive::Create(http_url, data.Get()));
+  EXPECT_NE(nullptr, MHTMLArchive::Create(http_url, data.get()));
 #if defined(OS_ANDROID)
-  EXPECT_NE(nullptr, MHTMLArchive::Create(content_url, data.Get()));
+  EXPECT_NE(nullptr, MHTMLArchive::Create(content_url, data.get()));
 #else
-  EXPECT_EQ(nullptr, MHTMLArchive::Create(content_url, data.Get()));
+  EXPECT_EQ(nullptr, MHTMLArchive::Create(content_url, data.get()));
 #endif
-  EXPECT_NE(nullptr, MHTMLArchive::Create(file_url, data.Get()));
-  EXPECT_EQ(nullptr, MHTMLArchive::Create(special_scheme_url, data.Get()));
+  EXPECT_NE(nullptr, MHTMLArchive::Create(file_url, data.get()));
+  EXPECT_EQ(nullptr, MHTMLArchive::Create(special_scheme_url, data.get()));
   SchemeRegistry::RegisterURLSchemeAsLocal("fooscheme");
-  EXPECT_NE(nullptr, MHTMLArchive::Create(special_scheme_url, data.Get()));
+  EXPECT_NE(nullptr, MHTMLArchive::Create(special_scheme_url, data.get()));
 }
 
 // Checks that full sandboxing protection has been turned on.

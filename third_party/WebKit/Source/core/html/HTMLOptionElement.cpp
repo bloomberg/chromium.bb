@@ -94,7 +94,7 @@ void HTMLOptionElement::AttachLayoutTree(AttachContext& context) {
     if (HTMLSelectElement* select = OwnerSelectElement())
       select->UpdateListOnLayoutObject();
     resolved_style = OriginalStyleForLayoutObject();
-    option_context.resolved_style = resolved_style.Get();
+    option_context.resolved_style = resolved_style.get();
   }
   HTMLElement::AttachLayoutTree(option_context);
 }

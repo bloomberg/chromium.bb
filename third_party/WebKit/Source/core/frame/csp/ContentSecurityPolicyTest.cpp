@@ -942,29 +942,29 @@ TEST_F(ContentSecurityPolicyTest, ShouldEnforceEmbeddersPolicy) {
     ResourceResponse response;
     response.SetURL(KURL(kParsedURLString, test.resource_url));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-                  response, secure_origin.Get()),
+                  response, secure_origin.get()),
               test.inherits);
 
     response.SetHTTPHeaderField(HTTPNames::Allow_CSP_From, AtomicString("*"));
     EXPECT_TRUE(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-        response, secure_origin.Get()));
+        response, secure_origin.get()));
 
     response.SetHTTPHeaderField(HTTPNames::Allow_CSP_From,
                                 AtomicString("* not a valid header"));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-                  response, secure_origin.Get()),
+                  response, secure_origin.get()),
               test.inherits);
 
     response.SetHTTPHeaderField(HTTPNames::Allow_CSP_From,
                                 AtomicString("http://example.test"));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-                  response, secure_origin.Get()),
+                  response, secure_origin.get()),
               test.inherits);
 
     response.SetHTTPHeaderField(HTTPNames::Allow_CSP_From,
                                 AtomicString("https://example.test"));
     EXPECT_TRUE(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
-        response, secure_origin.Get()));
+        response, secure_origin.get()));
   }
 }
 

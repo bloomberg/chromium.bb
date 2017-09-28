@@ -43,10 +43,10 @@ class ModulatorImplBase : public Modulator {
   ScriptModuleResolver* GetScriptModuleResolver() override {
     return script_module_resolver_.Get();
   }
-  WebTaskRunner* TaskRunner() override { return task_runner_.Get(); }
+  WebTaskRunner* TaskRunner() override { return task_runner_.get(); }
   ReferrerPolicy GetReferrerPolicy() override;
   SecurityOrigin* GetSecurityOrigin() override;
-  ScriptState* GetScriptState() override { return script_state_.Get(); }
+  ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(ModuleScript*,

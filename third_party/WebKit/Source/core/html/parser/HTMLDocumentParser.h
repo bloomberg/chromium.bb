@@ -109,7 +109,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void SuspendScheduledTasks() final;
   void ResumeScheduledTasks() final;
 
-  HTMLParserReentryPermit* ReentryPermit() { return reentry_permit_.Get(); }
+  HTMLParserReentryPermit* ReentryPermit() { return reentry_permit_.get(); }
 
   struct TokenizedChunk {
     USING_FAST_MALLOC(TokenizedChunk);

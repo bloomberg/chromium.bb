@@ -38,7 +38,7 @@ FileChooser* FileChooserClient::NewFileChooser(
     chooser_->DisconnectClient();
 
   chooser_ = FileChooser::Create(this, params);
-  return chooser_.Get();
+  return chooser_.get();
 }
 
 inline FileChooser::FileChooser(FileChooserClient* client,

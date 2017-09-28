@@ -88,7 +88,7 @@ UserGestureToken* UserGestureIndicator::root_token_ = nullptr;
 
 void UserGestureIndicator::UpdateRootToken() {
   if (!root_token_) {
-    root_token_ = token_.Get();
+    root_token_ = token_.get();
   } else {
     RecordUserGestureMerge(*root_token_, *token_);
     token_->TransferGestureTo(root_token_);

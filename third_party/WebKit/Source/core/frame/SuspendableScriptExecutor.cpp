@@ -217,7 +217,7 @@ void SuspendableScriptExecutor::ExecuteAndDestroySelf() {
   if (callback_)
     callback_->WillExecute();
 
-  ScriptState::Scope script_scope(script_state_.Get());
+  ScriptState::Scope script_scope(script_state_.get());
   Vector<v8::Local<v8::Value>> results =
       executor_->Execute(ToDocument(GetExecutionContext())->GetFrame());
 

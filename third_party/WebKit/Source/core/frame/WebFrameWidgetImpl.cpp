@@ -819,7 +819,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   }
 
   if (view_impl->GetPagePopup() && page_popup &&
-      view_impl->GetPagePopup()->HasSamePopupClient(page_popup.Get())) {
+      view_impl->GetPagePopup()->HasSamePopupClient(page_popup.get())) {
     // That click triggered a page popup that is the same as the one we just
     // closed.  It needs to be closed.
     view_impl->HidePopups();

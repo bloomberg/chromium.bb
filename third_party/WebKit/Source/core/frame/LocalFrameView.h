@@ -725,23 +725,23 @@ class CORE_EXPORT LocalFrameView final
     pre_translation_ = std::move(pre_translation);
   }
   TransformPaintPropertyNode* PreTranslation() const {
-    return pre_translation_.Get();
+    return pre_translation_.get();
   }
   void SetScrollNode(RefPtr<ScrollPaintPropertyNode> scroll_node) {
     scroll_node_ = std::move(scroll_node);
   }
-  ScrollPaintPropertyNode* ScrollNode() const { return scroll_node_.Get(); }
+  ScrollPaintPropertyNode* ScrollNode() const { return scroll_node_.get(); }
   void SetScrollTranslation(
       RefPtr<TransformPaintPropertyNode> scroll_translation) {
     scroll_translation_ = std::move(scroll_translation);
   }
   TransformPaintPropertyNode* ScrollTranslation() const {
-    return scroll_translation_.Get();
+    return scroll_translation_.get();
   }
   void SetContentClip(RefPtr<ClipPaintPropertyNode> content_clip) {
     content_clip_ = std::move(content_clip);
   }
-  ClipPaintPropertyNode* ContentClip() const { return content_clip_.Get(); }
+  ClipPaintPropertyNode* ContentClip() const { return content_clip_.get(); }
 
   // The property tree state that should be used for painting contents. These
   // properties are either created by this LocalFrameView or are inherited from

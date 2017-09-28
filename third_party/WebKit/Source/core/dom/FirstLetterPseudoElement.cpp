@@ -143,7 +143,7 @@ LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
               ? ToLayoutTextFragment(first_letter_text_layout_object)
                     ->CompleteText()
               : ToLayoutText(first_letter_text_layout_object)->OriginalText();
-      if (FirstLetterLength(str.Get()) ||
+      if (FirstLetterLength(str.get()) ||
           IsInvalidFirstLetterLayoutObject(first_letter_text_layout_object))
         break;
       first_letter_text_layout_object =

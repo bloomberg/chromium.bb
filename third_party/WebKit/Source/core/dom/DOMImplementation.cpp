@@ -242,7 +242,7 @@ Document* DOMImplementation::createDocument(const String& type,
     // For that reason, the origin must be retrieved directly from init.url().
     if (init.GetFrame()->IsMainFrame()) {
       RefPtr<SecurityOrigin> origin = SecurityOrigin::Create(init.Url());
-      plugin_data = init.GetFrame()->GetPage()->GetPluginData(origin.Get());
+      plugin_data = init.GetFrame()->GetPage()->GetPluginData(origin.get());
     } else {
       plugin_data =
           init.GetFrame()->GetPage()->GetPluginData(init.GetFrame()
