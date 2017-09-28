@@ -239,8 +239,10 @@ public interface WebContents extends Parcelable {
      * amount moves the selection towards the end of the document.
      * @param startAdjust The amount to adjust the start of the selection.
      * @param endAdjust The amount to adjust the end of the selection.
+     * @param showSelectionMenu if true, show selection menu after adjustment.
      */
-    public void adjustSelectionByCharacterOffset(int startAdjust, int endAdjust);
+    public void adjustSelectionByCharacterOffset(
+            int startAdjust, int endAdjust, boolean showSelectionMenu);
 
     /**
      * Gets the last committed URL. It represents the current page that is

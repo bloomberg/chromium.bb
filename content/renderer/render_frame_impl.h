@@ -923,7 +923,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDelete();
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
-  void OnAdjustSelectionByCharacterOffset(int start_adjust, int end_adjust);
+  void OnAdjustSelectionByCharacterOffset(int start_adjust,
+                                          int end_adjust,
+                                          bool show_selection_menu);
   void OnCollapseSelection();
   void OnMoveRangeSelectionExtent(const gfx::Point& point);
   void OnReplace(const base::string16& text);

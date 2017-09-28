@@ -430,8 +430,10 @@ void WebContentsAndroid::AdjustSelectionByCharacterOffset(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint start_adjust,
-    jint end_adjust) {
-  web_contents_->AdjustSelectionByCharacterOffset(start_adjust, end_adjust);
+    jint end_adjust,
+    jboolean show_selection_menu) {
+  web_contents_->AdjustSelectionByCharacterOffset(start_adjust, end_adjust,
+                                                  show_selection_menu);
 }
 
 void WebContentsAndroid::EvaluateJavaScript(
