@@ -47,8 +47,11 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
   DCHECK_GE(constraint_space.PercentageResolutionSize().inline_size,
             LayoutUnit());
-  DCHECK_EQ(constraint_space.WritingMode(),
-            FromPlatformWritingMode(style.GetWritingMode()));
+  if (type != LengthResolveType::kMarginBorderPaddingSize) {
+    // Margins and padding always get computed relative to the inline size.
+    DCHECK_EQ(constraint_space.WritingMode(),
+              FromPlatformWritingMode(style.GetWritingMode()));
+  }
 
   if (constraint_space.IsAnonymous())
     return constraint_space.AvailableSize().inline_size;
