@@ -262,7 +262,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
         cache_handler ? cache_handler->GetCachedMetadata(
                             V8ScriptRunner::TagForCodeCache(cache_handler))
                       : nullptr);
-    if (code_cache.Get()) {
+    if (code_cache.get()) {
       // The resource has a code cache, so it's unnecessary to stream and
       // parse the code. Cancel the streaming and resume the non-streaming
       // code path.
@@ -528,7 +528,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
     source_ = WTF::WrapUnique(
         new v8::ScriptCompiler::StreamedSource(stream_, encoding_));
 
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
         script_streaming_task(
             WTF::WrapUnique(v8::ScriptCompiler::StartStreamingScript(

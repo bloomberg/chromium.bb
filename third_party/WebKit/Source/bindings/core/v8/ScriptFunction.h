@@ -60,7 +60,7 @@ class CORE_EXPORT ScriptFunction
   explicit ScriptFunction(ScriptState* script_state)
       : script_state_(script_state) {}
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   v8::Local<v8::Function> BindToV8Function();
 

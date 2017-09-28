@@ -44,7 +44,7 @@ bool ScriptCustomElementDefinitionBuilder::CheckConstructorIntrinsics() {
 }
 
 bool ScriptCustomElementDefinitionBuilder::CheckConstructorNotRegistered() {
-  if (!ScriptCustomElementDefinition::ForConstructor(script_state_.Get(),
+  if (!ScriptCustomElementDefinition::ForConstructor(script_state_.get(),
                                                      registry_, constructor_))
     return true;
 
@@ -154,7 +154,7 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
     const CustomElementDescriptor& descriptor,
     CustomElementDefinition::Id id) {
   return ScriptCustomElementDefinition::Create(
-      script_state_.Get(), registry_, descriptor, id, constructor_,
+      script_state_.get(), registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
       attribute_changed_callback_, std::move(observed_attributes_));
 }

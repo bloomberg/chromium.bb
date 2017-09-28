@@ -64,7 +64,7 @@ void ScriptPromiseResolver::OnTimerFired(TimerBase*) {
     return;
   }
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   ResolveOrRejectImmediately();
 }
 

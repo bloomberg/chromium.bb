@@ -445,7 +445,7 @@ static v8::Local<v8::Value> DeserializeIDBValueArray(
   v8::Local<v8::Array> array = v8::Array::New(isolate, values->size());
   for (size_t i = 0; i < values->size(); ++i) {
     v8::Local<v8::Value> v8_value =
-        DeserializeIDBValue(isolate, creation_context, values->at(i).Get());
+        DeserializeIDBValue(isolate, creation_context, values->at(i).get());
     if (v8_value.IsEmpty())
       v8_value = v8::Undefined(isolate);
     if (!V8CallBoolean(array->CreateDataProperty(context, i, v8_value)))

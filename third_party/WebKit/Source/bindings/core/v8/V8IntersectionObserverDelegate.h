@@ -30,7 +30,7 @@ class V8IntersectionObserverDelegate final
                IntersectionObserver&) override;
 
   ExecutionContext* GetExecutionContext() const override {
-    return ExecutionContext::From(script_state_.Get());
+    return ExecutionContext::From(script_state_.get());
   }
 
  private:

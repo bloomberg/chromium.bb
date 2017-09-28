@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptValue final {
     DCHECK(IsEmpty() || script_state_);
   }
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   v8::Isolate* GetIsolate() const {
     return script_state_ ? script_state_->GetIsolate()
@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptValue final {
   }
 
   v8::Local<v8::Context> GetContext() const {
-    DCHECK(script_state_.Get());
+    DCHECK(script_state_.get());
     return script_state_->GetContext();
   }
 
@@ -155,7 +155,7 @@ class CORE_EXPORT ScriptValue final {
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool IsEmpty() const { return !value_.Get() || value_->IsEmpty(); }
+  bool IsEmpty() const { return !value_.get() || value_->IsEmpty(); }
 
   void Clear() { value_ = nullptr; }
 

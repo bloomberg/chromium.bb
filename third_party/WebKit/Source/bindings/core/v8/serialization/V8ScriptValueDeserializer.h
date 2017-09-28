@@ -47,7 +47,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
  protected:
   virtual ScriptWrappable* ReadDOMObject(SerializationTag);
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   uint32_t Version() const { return version_; }
   bool ReadTag(SerializationTag* tag) {

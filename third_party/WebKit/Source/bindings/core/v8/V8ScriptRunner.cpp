@@ -219,7 +219,7 @@ v8::MaybeLocal<v8::Script> CompileAndConsumeOrProduce(
     v8::Local<v8::String> code,
     v8::ScriptOrigin origin) {
   RefPtr<CachedMetadata> code_cache(cache_handler->GetCachedMetadata(tag));
-  return code_cache.Get()
+  return code_cache.get()
              ? CompileAndConsumeCache(cache_handler, code_cache,
                                       consume_options, isolate, code, origin)
              : CompileAndProduceCache(cache_handler, tag, produce_options,

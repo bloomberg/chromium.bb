@@ -456,13 +456,13 @@ void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
       v8::Context::New(isolate),
       DOMWrapperWorld::Create(isolate,
                               DOMWrapperWorld::WorldType::kGarbageCollector));
-  ScriptState::Scope scope(script_state.Get());
+  ScriptState::Scope scope(script_state.get());
   StringBuilder builder;
   builder.Append("if (gc) gc(");
   builder.Append(only_minor_gc ? "true" : "false");
   builder.Append(")");
   V8ScriptRunner::CompileAndRunInternalScript(
-      script_state.Get(), V8String(isolate, builder.ToString()), isolate);
+      script_state.get(), V8String(isolate, builder.ToString()), isolate);
   script_state->DisposePerContextData();
 }
 
