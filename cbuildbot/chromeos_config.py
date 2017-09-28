@@ -166,7 +166,7 @@ class HWTestList(object):
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL,
                         timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY,
-                        minimum_duts=4, offload_failures_only=True)
+                        minimum_duts=4)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
     return self.DefaultListNonCanary(**default_dict)
