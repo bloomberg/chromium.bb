@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler_delegate.h"
-#include "ui/compositor/layer_owner_delegate.h"
 #include "ui/views/controls/webview/webview.h"
 
 class StatusBubbleViews;
@@ -22,7 +21,6 @@ class LayerTreeOwner;
 // ContentsWebView is used to present the WebContents of the active tab.
 class ContentsWebView
     : public views::WebView,
-      public ui::LayerOwnerDelegate,
       public WebContentsCloseHandlerDelegate {
  public:
   explicit ContentsWebView(content::BrowserContext* browser_context);
@@ -40,8 +38,8 @@ class ContentsWebView
   void OnThemeChanged() override;
   void RenderViewReady() override;
 
-  // ui::LayerOwnerDelegate overrides:
-  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
+  // ui::View overrides:
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
 
   // WebContentsCloseHandlerDelegate overrides:
   void CloneWebContentsLayer() override;
