@@ -1531,8 +1531,6 @@ enum WebFeature {
   kInertAttribute = 1995,
   kPluginInstanceAccessFromIsolatedWorld = 1996,
   kPluginInstanceAccessFromMainWorld = 1997,
-  kRequestFullscreenForDialogElement = 1998,
-  kRequestFullscreenForDialogElementInTopLayer = 1999,
   kShowModalForElementInFullscreenStack = 2000,
   kThreeValuedPositionBackground = 2001,
   kThreeValuedPositionBasicShape = 2002,
