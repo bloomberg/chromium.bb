@@ -461,6 +461,7 @@ Bug(none) virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/
 Bug(none) virtual/mojo-loading/http/tests/xmlhttprequest/methods-lower-case.html [ Failure Timeout Pass Crash ]
 Bug(none) installedapp/getinstalledrelatedapps-empty.html [ Timeout ]
 Bug(none) installedapp/getinstalledrelatedapps.html [ Timeout ]
+Bug(none) paint/invalidation/video-paint-invalidation.html [ Failure ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
 Bug(none) virtual [ Crash Failure Timeout ]
