@@ -30,7 +30,6 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
-#include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -113,7 +112,6 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
               ServiceAccessType::EXPLICIT_ACCESS),
           HostContentSettingsMapFactory::GetForProfile(profile)),
       ui_manager_(sb_service->ui_manager()),
-      trigger_manager_(sb_service->trigger_manager()),
       profile_(profile),
       navigation_observer_manager_(sb_service->navigation_observer_manager()),
       pref_change_registrar_(new PrefChangeRegistrar) {
@@ -183,7 +181,7 @@ void ChromePasswordProtectionService::FillReferrerChain(
 
 void ChromePasswordProtectionService::ShowModalWarning(
     content::WebContents* web_contents,
-    const std::string& verdict_token) {
+    const std::string& unused_verdict_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(jialiul): Use verdict_token field in post warning report.
   UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
@@ -197,8 +195,6 @@ void ChromePasswordProtectionService::ShowModalWarning(
     unhandled_password_reuses_[Origin(web_contents->GetLastCommittedURL())] =
         GetLastCommittedNavigationID(web_contents);
   }
-  // Starts preparing post-warning report.
-  MaybeStartThreatDetailsCollection(web_contents, verdict_token);
 }
 
 // TODO(jialiul): Handle user actions in separate functions.
@@ -242,8 +238,7 @@ void ChromePasswordProtectionService::OnUserAction(
           NOTREACHED();
           break;
       }
-      MaybeFinishCollectingThreatDetails(
-          web_contents, action == PasswordProtectionService::CHANGE_PASSWORD);
+      // TODO(jialiul): Sends post-warning reporting.
       break;
     case PasswordProtectionService::CHROME_SETTINGS:
       DCHECK_EQ(PasswordProtectionService::CHANGE_PASSWORD, action);
@@ -264,46 +259,6 @@ void ChromePasswordProtectionService::AddObserver(Observer* observer) {
 
 void ChromePasswordProtectionService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
-    content::WebContents* web_contents,
-    const std::string& token) {
-  // |trigger_manager_| can be null in test.
-  if (!trigger_manager_)
-    return;
-
-  security_interstitials::UnsafeResource resource;
-  resource.threat_type = SB_THREAT_TYPE_PASSWORD_REUSE;
-  resource.url = web_contents->GetLastCommittedURL();
-  resource.web_contents_getter = resource.GetWebContentsGetter(
-      web_contents->GetRenderProcessHost()->GetID(),
-      web_contents->GetMainFrame()->GetRoutingID());
-  resource.token = token;
-  // Ignores the return of |StartCollectingThreatDetails()| here and let
-  // TriggerManager decide whether it should start data collection.
-  trigger_manager_->StartCollectingThreatDetails(
-      safe_browsing::TriggerType::GAIA_PASSWORD_REUSE, web_contents, resource,
-      profile_->GetRequestContext(), /*history_service=*/nullptr,
-      TriggerManager::GetSBErrorDisplayOptions(*profile_->GetPrefs(),
-                                               *web_contents));
-}
-
-void ChromePasswordProtectionService::MaybeFinishCollectingThreatDetails(
-    content::WebContents* web_contents,
-    bool did_proceed) {
-  // |trigger_manager_| can be null in test.
-  if (!trigger_manager_)
-    return;
-
-  // Since we don't keep track the threat details in progress, it is safe to
-  // ignore the result of |FinishCollectingThreatDetails()|. TriggerManager will
-  // take care of whether report should be sent.
-  trigger_manager_->FinishCollectingThreatDetails(
-      safe_browsing::TriggerType::GAIA_PASSWORD_REUSE, web_contents,
-      base::TimeDelta::FromMilliseconds(0), did_proceed, /*num_visit=*/0,
-      TriggerManager::GetSBErrorDisplayOptions(*profile_->GetPrefs(),
-                                               *web_contents));
 }
 
 PrefService* ChromePasswordProtectionService::GetPrefs() {
@@ -616,7 +571,6 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
                                 nullptr,
                                 content_setting_map.get()),
       ui_manager_(ui_manager),
-      trigger_manager_(nullptr),
       profile_(profile) {
   InitializeAccountInfo();
 }

@@ -79,7 +79,6 @@ size_t GetDailyQuotaForTrigger(
     const std::vector<TriggerTypeAndQuotaItem>& trigger_quota_list) {
   switch (trigger_type) {
     case TriggerType::SECURITY_INTERSTITIAL:
-    case TriggerType::GAIA_PASSWORD_REUSE:
       return kUnlimitedTriggerQuota;
     case TriggerType::AD_SAMPLE:
       // These triggers have quota configured via Finch, lookup the value in
