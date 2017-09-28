@@ -583,7 +583,6 @@ login.createScreen(
 
           imageGrid.previewElement = previewElement;
           imageGrid.selectionType = 'default';
-          imageGrid.flipPhotoElement = this.getScreenElement('flip-photo');
 
           imageGrid.addEventListener(
               'activate', this.handleActivate_.bind(this));
@@ -603,8 +602,6 @@ login.createScreen(
               .addEventListener('click', this.handleDiscardPhoto_.bind(this));
 
           // Toggle 'animation' class for the duration of WebKit transition.
-          this.getScreenElement('flip-photo')
-              .addEventListener('click', this.handleFlipPhoto_.bind(this));
           this.getScreenElement('image-stream-crop')
               .addEventListener('transitionend', function(e) {
                 previewElement.classList.remove('animation');
@@ -1454,8 +1451,6 @@ login.createScreen(
           var imageGrid = this.getScreenElement('image-grid');
           this.updateNextButtonForUser_();
 
-          $('supervised-user-creation-flip-photo').tabIndex =
-              (imageGrid.selectionType == 'camera') ? 0 : -1;
           if (imageGrid.cameraLive || imageGrid.selectionType != 'camera')
             imageGrid.previewElement.classList.remove('phototaken');
           else
@@ -1485,19 +1480,6 @@ login.createScreen(
               imageGrid.stopCamera();
             }
           }
-        },
-
-        /**
-         * Handle camera-photo flip.
-         */
-        handleFlipPhoto_: function() {
-          var imageGrid = this.getScreenElement('image-grid');
-          imageGrid.previewElement.classList.add('animation');
-          imageGrid.flipPhoto = !imageGrid.flipPhoto;
-          var flipMessageId = imageGrid.flipPhoto ?
-              'photoFlippedAccessibleText' :
-              'photoFlippedBackAccessibleText';
-          announceAccessibleMessage(loadTimeData.getString(flipMessageId));
         },
 
         /**

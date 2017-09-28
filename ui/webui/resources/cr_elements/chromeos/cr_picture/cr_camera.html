@@ -22,11 +22,8 @@
         height: 100%;
         overflow: hidden;
         position: relative;
-        width: 100%;
-      }
-
-      #userImageStreamCrop.flip-x {
         transform: rotateY(180deg);
+        width: 100%;
       }
 
       #userImageStreamCrop::after {
@@ -79,15 +76,6 @@
         display: block;
       }
 
-      #flipPhoto {
-        -webkit-margin-end: 8px;
-        background-image: url(camera_flip_icon.svg);
-      }
-
-      :host-context([dir=rtl]) #flipPhoto {
-        float: left;
-      }
-
       #takePhoto {
         background-image: url(camera_alt_icon.svg);
       }
@@ -109,10 +97,7 @@
         </button>
       </div>
       <div>
-        <button is="paper-icon-button-light" id="flipPhoto" tabindex="2"
-            title="[[flipPhotoLabel]]" on-tap="onTapFlipPhoto_"
-            disabled="[[!cameraOnline_]]">
-        </button>
+        <!-- Empty div for even 'space-between' justification -->
       </div>
     </div>
   </template>

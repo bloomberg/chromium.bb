@@ -243,7 +243,6 @@
       <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_BUTTON_MASK" file="common/maximize_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_MINIMIZE_BUTTON_MASK" file="common/minimize_button_mask.png" />
       <if expr="chromeos">
-        <structure type="chrome_scaled_image" name="IDR_MIRROR_FLIP" file="cros/mirror_flip.png" />
         <structure type="chrome_scaled_image" name="IDR_NETWORK_ADD_CONNECTION" file="cros/network_add_connection.png" />
       </if>
       <if expr="chromeos">

@@ -43,9 +43,6 @@
     <include name="IDR_CR_ELEMENTS_CAMERA_ALT_ICON_SVG"
              file="cr_elements/chromeos/cr_picture/camera_alt_icon.svg"
              type="BINDATA" />
-    <include name="IDR_CR_ELEMENTS_CAMERA_FLIP_ICON_SVG"
-             file="cr_elements/chromeos/cr_picture/camera_flip_icon.svg"
-             type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
              file="cr_elements/chromeos/network/cellular_0.svg"
              type="BINDATA" />
