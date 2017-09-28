@@ -23,13 +23,18 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule.TestFactory;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.Collections;
 
 /**
  * Tests for the appearance of the card suggestions in the home sheet.
@@ -42,20 +47,21 @@ public class HomeSheetCardsUiCaptureTest {
 
     @Rule
     public SuggestionsDependenciesRule setupSuggestions() {
-        SuggestionsDependenciesRule.TestFactory depsFactory = NtpUiCaptureTestData.createFactory();
         FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
         NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
-        depsFactory.suggestionsSource = suggestionsSource;
-        return new SuggestionsDependenciesRule(depsFactory);
+        mDepsFactory.suggestionsSource = suggestionsSource;
+        return new SuggestionsDependenciesRule(mDepsFactory);
     }
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
 
+    private final TestFactory mDepsFactory = NtpUiCaptureTestData.createFactory();
+
     @Before
     public void setup() throws InterruptedException {
         ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(true);
-        mActivityRule.startMainActivityOnBlankPage();
+        mActivityRule.startMainActivityOnBottomSheet(BottomSheet.SHEET_STATE_PEEK);
     }
 
     @Test
@@ -86,5 +92,20 @@ public class HomeSheetCardsUiCaptureTest {
         mActivityRule.scrollToFirstItemOfType(ItemViewType.SNIPPET);
         waitForWindowUpdates();
         mScreenShooter.shoot("ScrolledToFirstCard");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"UiCatalogue"})
+    @ScreenShooter.Directory("HomeSheetCards")
+    public void testContentSuggestionPlaceholder() throws Exception {
+        FakeSuggestionsSource source = (FakeSuggestionsSource) mDepsFactory.suggestionsSource;
+        source.setSuggestionsForCategory(KnownCategories.ARTICLES, Collections.emptyList());
+        source.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE_LOADING);
+
+        mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
+        waitForWindowUpdates();
+
+        mScreenShooter.shoot("ContentSuggestionsPlaceholder");
     }
 }
