@@ -270,6 +270,7 @@ class Internals final : public GarbageCollected<Internals>,
 
   int lastSpellCheckRequestSequence(Document*, ExceptionState&);
   int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
+  void cancelCurrentSpellCheckRequest(Document*, ExceptionState&);
   String idleTimeSpellCheckerState(Document*, ExceptionState&);
   void runIdleTimeSpellChecker(Document*, ExceptionState&);
 

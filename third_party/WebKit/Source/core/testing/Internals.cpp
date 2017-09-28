@@ -1623,6 +1623,21 @@ int Internals::lastSpellCheckProcessedSequence(
   return requester->LastProcessedSequence();
 }
 
+void Internals::cancelCurrentSpellCheckRequest(
+    Document* document,
+    ExceptionState& exception_state) {
+  SpellCheckRequester* requester = GetSpellCheckRequester(document);
+
+  if (!requester) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        "No spell check requestor can be obtained for the provided document.");
+    return;
+  }
+
+  requester->CancelCheck();
+}
+
 String Internals::idleTimeSpellCheckerState(Document* document,
                                             ExceptionState& exception_state) {
   static const char* const kTexts[] = {
