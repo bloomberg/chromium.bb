@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import glob
+import os
 import unittest
 
 from idl_lexer import IDLLexer
@@ -20,7 +21,9 @@ class WebIDLParser(unittest.TestCase):
 
   def setUp(self):
     self.parser = IDLParser(IDLLexer(), mute_error=True)
-    self.filenames = glob.glob('test_parser/*_web.idl')
+    test_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), 'test_parser'))
+    self.filenames = glob.glob('%s/*_web.idl' % test_dir)
 
   def _TestNode(self, node):
     comments = node.GetListOf('SpecialComment')
