@@ -378,12 +378,8 @@ typedef struct MB_MODE_INFO {
   uint8_t use_intrabc;
 #endif  // CONFIG_INTRABC
 
-// Only for INTER blocks
-#if CONFIG_DUAL_FILTER
-  InterpFilter interp_filter[4];
-#else
-  InterpFilter interp_filter;
-#endif
+  // Only for INTER blocks
+  InterpFilters interp_filters;
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
 #if CONFIG_TXK_SEL

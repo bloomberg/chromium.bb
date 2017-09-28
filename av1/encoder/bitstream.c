@@ -1305,16 +1305,9 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   if (!av1_is_interp_needed(xd)) {
-#if CONFIG_DUAL_FILTER
-    for (int i = 0; i < 4; ++i)
-      assert(mbmi->interp_filter[i] == (cm->interp_filter == SWITCHABLE
-                                            ? EIGHTTAP_REGULAR
-                                            : cm->interp_filter));
-#else
-    assert(mbmi->interp_filter == (cm->interp_filter == SWITCHABLE
-                                       ? EIGHTTAP_REGULAR
-                                       : cm->interp_filter));
-#endif  // CONFIG_DUAL_FILTER
+    assert(mbmi->interp_filters ==
+           av1_broadcast_interp_filter(
+               av1_unswitchable_filter(cm->interp_filter)));
     return;
   }
   if (cm->interp_filter == SWITCHABLE) {
@@ -1325,20 +1318,23 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
           (mbmi->ref_frame[1] > INTRA_FRAME &&
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
         const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-        aom_write_symbol(w, mbmi->interp_filter[dir],
-                         ec_ctx->switchable_interp_cdf[ctx],
+        InterpFilter filter =
+            av1_extract_interp_filter(mbmi->interp_filters, dir);
+        aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
                          SWITCHABLE_FILTERS);
-        ++cpi->interp_filter_selected[0][mbmi->interp_filter[dir]];
+        ++cpi->interp_filter_selected[0][filter];
       } else {
-        assert(mbmi->interp_filter[dir] == EIGHTTAP_REGULAR);
+        assert(av1_extract_interp_filter(mbmi->interp_filters, dir) ==
+               EIGHTTAP_REGULAR);
       }
     }
 #else
     {
       const int ctx = av1_get_pred_context_switchable_interp(xd);
-      aom_write_symbol(w, mbmi->interp_filter,
-                       ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
-      ++cpi->interp_filter_selected[0][mbmi->interp_filter];
+      InterpFilter filter = av1_extract_interp_filter(mbmi->interp_filters, 0);
+      aom_write_symbol(w, filter, ec_ctx->switchable_interp_cdf[ctx],
+                       SWITCHABLE_FILTERS);
+      ++cpi->interp_filter_selected[0][filter];
     }
 #endif  // CONFIG_DUAL_FILTER
   }

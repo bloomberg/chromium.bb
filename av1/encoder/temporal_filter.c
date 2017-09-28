@@ -44,18 +44,13 @@ static void temporal_filter_predictors_mb_c(
   ConvolveParams conv_params = get_conv_params(which_mv, which_mv, 0);
 
 #if USE_TEMPORALFILTER_12TAP
-#if CONFIG_DUAL_FILTER
-  const InterpFilter interp_filter[4] = { TEMPORALFILTER_12TAP,
-                                          TEMPORALFILTER_12TAP,
-                                          TEMPORALFILTER_12TAP,
-                                          TEMPORALFILTER_12TAP };
-#else
-  const InterpFilter interp_filter = TEMPORALFILTER_12TAP;
-#endif
+  const InterpFilters interp_filters =
+      av1_broadcast_interp_filter(TEMPORALFILTER_12TAP);
   (void)xd;
 #else
-  const InterpFilter interp_filter = xd->mi[0]->mbmi.interp_filter;
+  const InterpFilters interp_filters = xd->mi[0]->mbmi.interp_filters;
 #endif  // USE_TEMPORALFILTER_12TAP
+
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
   WarpTypesAllowed warp_types;
   memset(&warp_types, 0, sizeof(WarpTypesAllowed));
@@ -72,7 +67,7 @@ static void temporal_filter_predictors_mb_c(
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     av1_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale,
-                                     16, 16, which_mv, interp_filter,
+                                     16, 16, which_mv, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      &warp_types, x, y,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -80,7 +75,7 @@ static void temporal_filter_predictors_mb_c(
 
     av1_highbd_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256],
                                      uv_block_width, &mv, scale, uv_block_width,
-                                     uv_block_height, which_mv, interp_filter,
+                                     uv_block_height, which_mv, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      &warp_types, x, y,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -88,7 +83,7 @@ static void temporal_filter_predictors_mb_c(
 
     av1_highbd_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512],
                                      uv_block_width, &mv, scale, uv_block_width,
-                                     uv_block_height, which_mv, interp_filter,
+                                     uv_block_height, which_mv, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      &warp_types, x, y,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -97,7 +92,7 @@ static void temporal_filter_predictors_mb_c(
   }
 #endif  // CONFIG_HIGHBITDEPTH
   av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
-                            &conv_params, interp_filter,
+                            &conv_params, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             &warp_types, x, y, 0, 0,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -105,7 +100,7 @@ static void temporal_filter_predictors_mb_c(
 
   av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            &conv_params, interp_filter,
+                            &conv_params, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             &warp_types, x, y, 1, 0,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -113,7 +108,7 @@ static void temporal_filter_predictors_mb_c(
 
   av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
                             &mv, scale, uv_block_width, uv_block_height,
-                            &conv_params, interp_filter,
+                            &conv_params, interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                             &warp_types, x, y, 2, 0,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION

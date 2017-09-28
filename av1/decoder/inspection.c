@@ -91,10 +91,10 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       // Skip Flag
       mi->skip = mbmi->skip;
 #if CONFIG_DUAL_FILTER
-      mi->filter[0] = mbmi->interp_filter[0];
-      mi->filter[1] = mbmi->interp_filter[1];
+      mi->filter[0] = av1_extract_interp_filter(mbmi->interp_filters, 0);
+      mi->filter[1] = av1_extract_interp_filter(mbmi->interp_filters, 1);
 #else
-      mi->filter = mbmi->interp_filter;
+      mi->filter = av1_extract_interp_filter(mbmi->interp_filters, 0);
 #endif
       // Transform
       mi->tx_type = mbmi->tx_type;

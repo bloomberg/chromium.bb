@@ -454,16 +454,17 @@ static void set_segment_id_supertx(const AV1_COMP *const cpi,
 #if CONFIG_DUAL_FILTER
 static void reset_intmv_filter_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                                     MB_MODE_INFO *mbmi) {
-  int dir;
-  for (dir = 0; dir < 2; ++dir) {
-    if (!has_subpel_mv_component(xd->mi[0], xd, dir) &&
-        (mbmi->ref_frame[1] == NONE_FRAME ||
-         !has_subpel_mv_component(xd->mi[0], xd, dir + 2)))
-      mbmi->interp_filter[dir] = (cm->interp_filter == SWITCHABLE)
-                                     ? EIGHTTAP_REGULAR
-                                     : cm->interp_filter;
-    mbmi->interp_filter[dir + 2] = mbmi->interp_filter[dir];
+  InterpFilter filters[2];
+  InterpFilter default_filter = av1_unswitchable_filter(cm->interp_filter);
+
+  for (int dir = 0; dir < 2; ++dir) {
+    filters[dir] = ((!has_subpel_mv_component(xd->mi[0], xd, dir) &&
+                     (mbmi->ref_frame[1] == NONE_FRAME ||
+                      !has_subpel_mv_component(xd->mi[0], xd, dir + 2)))
+                        ? default_filter
+                        : av1_extract_interp_filter(mbmi->interp_filters, dir));
   }
+  mbmi->interp_filters = av1_make_interp_filters(filters[0], filters[1]);
 }
 
 static void update_filter_type_count(FRAME_COUNTS *counts,
@@ -475,9 +476,11 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
         (mbmi->ref_frame[1] > INTRA_FRAME &&
          has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
-      ++counts->switchable_interp[ctx][mbmi->interp_filter[dir]];
-      update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx],
-                 mbmi->interp_filter[dir], SWITCHABLE_FILTERS);
+      InterpFilter filter =
+          av1_extract_interp_filter(mbmi->interp_filters, dir);
+      ++counts->switchable_interp[ctx][filter];
+      update_cdf(xd->tile_ctx->switchable_interp_cdf[ctx], filter,
+                 SWITCHABLE_FILTERS);
     }
   }
 }
@@ -736,7 +739,9 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         update_filter_type_count(td->counts, xd, mbmi);
 #else
         const int switchable_ctx = av1_get_pred_context_switchable_interp(xd);
-        ++td->counts->switchable_interp[switchable_ctx][mbmi->interp_filter];
+        const InterpFilter filter =
+            av1_extract_interp_filter(mbmi->interp_filters, 0);
+        ++td->counts->switchable_interp[switchable_ctx][filter];
 #endif
       }
     }
@@ -3856,11 +3861,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (bsize == BLOCK_8X8 && !unify_bsize) {
       if (cpi->sf.adaptive_pred_interp_filter && partition_none_allowed)
         pc_tree->leaf_split[0]->pred_interp_filter =
-#if CONFIG_DUAL_FILTER
-            ctx_none->mic.mbmi.interp_filter[0];
-#else
-            ctx_none->mic.mbmi.interp_filter;
-#endif
+            av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
 
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
 #if CONFIG_SUPERTX
@@ -4048,11 +4049,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
         partition_none_allowed)
       pc_tree->horizontal[0].pred_interp_filter =
-#if CONFIG_DUAL_FILTER
-          ctx_none->mic.mbmi.interp_filter[0];
-#else
-          ctx_none->mic.mbmi.interp_filter;
-#endif
+          av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
+
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
 #if CONFIG_SUPERTX
                      &sum_rate_nocoef,
@@ -4079,11 +4077,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
           partition_none_allowed)
         pc_tree->horizontal[1].pred_interp_filter =
-#if CONFIG_DUAL_FILTER
-            ctx_h->mic.mbmi.interp_filter[0];
-#else
-            ctx_none->mic.mbmi.interp_filter;
-#endif
+            av1_extract_interp_filter(ctx_h->mic.mbmi.interp_filters, 0);
+
 #if CONFIG_SUPERTX
       rd_pick_sb_modes(cpi, tile_data, x, mi_row + mi_step, mi_col, &this_rdc,
                        &this_rate_nocoef,
@@ -4210,11 +4205,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
         partition_none_allowed)
       pc_tree->vertical[0].pred_interp_filter =
-#if CONFIG_DUAL_FILTER
-          ctx_none->mic.mbmi.interp_filter[0];
-#else
-          ctx_none->mic.mbmi.interp_filter;
-#endif
+          av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
+
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
 #if CONFIG_SUPERTX
                      &sum_rate_nocoef,
@@ -4241,11 +4233,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
           partition_none_allowed)
         pc_tree->vertical[1].pred_interp_filter =
-#if CONFIG_DUAL_FILTER
-            ctx_none->mic.mbmi.interp_filter[0];
-#else
-            ctx_none->mic.mbmi.interp_filter;
-#endif
+            av1_extract_interp_filter(ctx_none->mic.mbmi.interp_filters, 0);
+
 #if CONFIG_SUPERTX
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + mi_step, &this_rdc,
                        &this_rate_nocoef,

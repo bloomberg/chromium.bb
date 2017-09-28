@@ -40,27 +40,8 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
                                    uint8_t *dst, int dst_stride, int subpel_x,
                                    int subpel_y, const struct scale_factors *sf,
                                    int w, int h, ConvolveParams *conv_params,
-#if CONFIG_DUAL_FILTER
-                                   const InterpFilter *interp_filter,
-#else
-                                   const InterpFilter interp_filter,
-#endif
-                                   int xs, int ys) {
-#if CONFIG_DUAL_FILTER
-  const InterpFilter filter_x = av1_get_plane_interp_filter(
-      interp_filter[1 + 2 * conv_params->ref], conv_params->plane);
-  const InterpFilter filter_y = av1_get_plane_interp_filter(
-      interp_filter[0 + 2 * conv_params->ref], conv_params->plane);
-  const InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(filter_x);
-  const InterpFilterParams interp_filter_params_y =
-      av1_get_interp_filter_params(filter_y);
-#else
-  const InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(interp_filter);
-  const InterpFilterParams interp_filter_params_y = interp_filter_params_x;
-#endif
-
+                                   InterpFilters interp_filters, int xs,
+                                   int ys) {
   assert(conv_params->do_average == 0 || conv_params->do_average == 1);
   assert(sf);
   if (has_scale(xs, ys)) {
@@ -69,19 +50,15 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
 #if CONFIG_CONVOLVE_ROUND
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-#if CONFIG_DUAL_FILTER
-                             interp_filter,
-#else   // CONFIG_DUAL_FILTER
-                             &interp_filter,
-#endif  // CONFIG_DUAL_FILTER
-                             subpel_x, xs, subpel_y, ys, 1, conv_params);
+                             interp_filters, subpel_x, xs, subpel_y, ys, 1,
+                             conv_params);
       conv_params->do_post_rounding = 1;
 #else
       assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND
     } else {
       assert(conv_params->round == CONVOLVE_OPT_ROUND);
-      av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filter,
+      av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filters,
                          subpel_x, xs, subpel_y, ys, conv_params);
     }
   } else {
@@ -96,31 +73,32 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
 #if CONFIG_CONVOLVE_ROUND
       av1_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-#if CONFIG_DUAL_FILTER
-                             interp_filter,
-#else   // CONFIG_DUAL_FILTER
-                             &interp_filter,
-#endif  // CONFIG_DUAL_FILTER
-                             subpel_x, xs, subpel_y, ys, 0, conv_params);
+                             interp_filters, subpel_x, xs, subpel_y, ys, 0,
+                             conv_params);
       conv_params->do_post_rounding = 1;
 #else
       assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND
     } else {
       assert(conv_params->round == CONVOLVE_OPT_ROUND);
+
+      InterpFilterParams filter_params_x, filter_params_y;
+      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+                                     &filter_params_y);
+
       if (w <= 2 || h <= 2) {
-        av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filter,
+        av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filters,
                        subpel_x, xs, subpel_y, ys, conv_params);
-      } else if (interp_filter_params_x.taps == SUBPEL_TAPS &&
-                 interp_filter_params_y.taps == SUBPEL_TAPS) {
-        const int16_t *kernel_x = av1_get_interp_filter_subpel_kernel(
-            interp_filter_params_x, subpel_x);
-        const int16_t *kernel_y = av1_get_interp_filter_subpel_kernel(
-            interp_filter_params_y, subpel_y);
+      } else if (filter_params_x.taps == SUBPEL_TAPS &&
+                 filter_params_y.taps == SUBPEL_TAPS) {
+        const int16_t *kernel_x =
+            av1_get_interp_filter_subpel_kernel(filter_params_x, subpel_x);
+        const int16_t *kernel_y =
+            av1_get_interp_filter_subpel_kernel(filter_params_y, subpel_y);
         sf->predict[subpel_x != 0][subpel_y != 0][conv_params->do_average](
             src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
       } else {
-        av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
+        av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filters,
                      subpel_x, xs, subpel_y, ys, conv_params);
       }
     }
@@ -133,44 +111,24 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
                                           int subpel_x, int subpel_y,
                                           const struct scale_factors *sf, int w,
                                           int h, ConvolveParams *conv_params,
-#if CONFIG_DUAL_FILTER
-                                          const InterpFilter *interp_filter,
-#else
-                                          const InterpFilter interp_filter,
-#endif
-                                          int xs, int ys, int bd) {
+                                          InterpFilters interp_filters, int xs,
+                                          int ys, int bd) {
   const int avg = conv_params->do_average;
   assert(avg == 0 || avg == 1);
-#if CONFIG_DUAL_FILTER
-  const int ref = conv_params->ref;
-  const InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(interp_filter[1 + 2 * ref]);
-  const InterpFilterParams interp_filter_params_y =
-      av1_get_interp_filter_params(interp_filter[0 + 2 * ref]);
-#else
-  const InterpFilterParams interp_filter_params_x =
-      av1_get_interp_filter_params(interp_filter);
-  const InterpFilterParams interp_filter_params_y = interp_filter_params_x;
-#endif
 
   if (has_scale(xs, ys)) {
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
 #if CONFIG_CONVOLVE_ROUND
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-#if CONFIG_DUAL_FILTER
-                                    interp_filter,
-#else  // CONFIG_DUAL_FILTER
-                                    &interp_filter,
-#endif  // CONFIG_DUAL_FILTER
-                                    subpel_x, xs, subpel_y, ys, 1, conv_params,
-                                    bd);
+                                    interp_filters, subpel_x, xs, subpel_y, ys,
+                                    1, conv_params, bd);
       conv_params->do_post_rounding = 1;
 #else
       assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND
     } else {
       av1_highbd_convolve_scale(src, src_stride, dst, dst_stride, w, h,
-                                interp_filter, subpel_x, xs, subpel_y, ys, avg,
+                                interp_filters, subpel_x, xs, subpel_y, ys, avg,
                                 bd);
     }
   } else {
@@ -185,30 +143,30 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
 #if CONFIG_CONVOLVE_ROUND
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
-#if CONFIG_DUAL_FILTER
-                                    interp_filter,
-#else  // CONFIG_DUAL_FILTER
-                                    &interp_filter,
-#endif  // CONFIG_DUAL_FILTER
-                                    subpel_x, xs, subpel_y, ys, 0, conv_params,
-                                    bd);
+                                    interp_filters, subpel_x, xs, subpel_y, ys,
+                                    0, conv_params, bd);
       conv_params->do_post_rounding = 1;
 #else
       assert(0);
 #endif  // CONFIG_CONVOLVE_ROUND
     } else {
-      if (interp_filter_params_x.taps == SUBPEL_TAPS &&
-          interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
-        const int16_t *kernel_x = av1_get_interp_filter_subpel_kernel(
-            interp_filter_params_x, subpel_x);
-        const int16_t *kernel_y = av1_get_interp_filter_subpel_kernel(
-            interp_filter_params_y, subpel_y);
+      InterpFilterParams filter_params_x, filter_params_y;
+      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+                                     &filter_params_y);
+
+      if (filter_params_x.taps == SUBPEL_TAPS &&
+          filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2) {
+        const int16_t *kernel_x =
+            av1_get_interp_filter_subpel_kernel(filter_params_x, subpel_x);
+        const int16_t *kernel_y =
+            av1_get_interp_filter_subpel_kernel(filter_params_y, subpel_y);
         sf->highbd_predict[subpel_x != 0][subpel_y != 0][avg](
             src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h,
             bd);
       } else {
         av1_highbd_convolve(src, src_stride, dst, dst_stride, w, h,
-                            interp_filter, subpel_x, xs, subpel_y, ys, avg, bd);
+                            interp_filters, subpel_x, xs, subpel_y, ys, avg,
+                            bd);
       }
     }
   }
@@ -320,26 +278,19 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_COMPOUND_SEGMENT
 
-void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
-                                     uint8_t *dst, int dst_stride,
-                                     const int subpel_x, const int subpel_y,
-                                     const struct scale_factors *sf, int w,
-                                     int h, ConvolveParams *conv_params,
-#if CONFIG_DUAL_FILTER
-                                     const InterpFilter *interp_filter,
-#else
-                                     const InterpFilter interp_filter,
-#endif
-                                     int xs, int ys,
+void av1_make_masked_inter_predictor(
+    const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
+    const int subpel_x, const int subpel_y, const struct scale_factors *sf,
+    int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
+    int xs, int ys,
 #if CONFIG_SUPERTX
-                                     int wedge_offset_x, int wedge_offset_y,
+    int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-                                     int plane,
+    int plane,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                                     const WarpTypesAllowed *warp_types,
-                                     int p_col, int p_row, int ref,
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                                     MACROBLOCKD *xd);
+    MACROBLOCKD *xd);
 
 static INLINE int round_mv_comp_q4(int value) {
   return (value < 0 ? value - 2 : value + 2) / 4;
@@ -442,11 +393,7 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
                                const struct scale_factors *sf, int w, int h,
                                ConvolveParams *conv_params,
-#if CONFIG_DUAL_FILTER
-                               const InterpFilter *interp_filter,
-#else
-                               const InterpFilter interp_filter,
-#endif
+                               InterpFilters interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                const WarpTypesAllowed *warp_types, int p_col,
                                int p_row, int plane, int ref,
@@ -458,11 +405,7 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
-#if CONFIG_DUAL_FILTER
-    const InterpFilter *interp_filter,
-#else
-    const InterpFilter interp_filter,
-#endif
+    InterpFilters interp_filters,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
     const WarpTypesAllowed *warp_types, int p_col, int p_row,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -568,16 +511,8 @@ static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
 
 static INLINE void set_default_interp_filters(
     MB_MODE_INFO *const mbmi, InterpFilter frame_interp_filter) {
-#if CONFIG_DUAL_FILTER
-  int dir;
-  for (dir = 0; dir < 4; ++dir)
-    mbmi->interp_filter[dir] = frame_interp_filter == SWITCHABLE
-                                   ? EIGHTTAP_REGULAR
-                                   : frame_interp_filter;
-#else
-  mbmi->interp_filter = frame_interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR
-                                                          : frame_interp_filter;
-#endif  // CONFIG_DUAL_FILTER
+  mbmi->interp_filters =
+      av1_broadcast_interp_filter(av1_unswitchable_filter(frame_interp_filter));
 }
 
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
