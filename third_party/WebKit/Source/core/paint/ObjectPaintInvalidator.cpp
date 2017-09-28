@@ -505,8 +505,10 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelection(
   // or shouldInvalidationSelection is set (in case that the selection itself
   // changed).
   bool full_invalidation = IsImmediateFullPaintInvalidationReason(reason);
-  if (!full_invalidation && !object_.ShouldInvalidateSelection())
+  if (!full_invalidation && !object_.ShouldInvalidateSelection()) {
+    object_.GetMutableForPainting().SetSelectionVisualRect(LayoutRect());
     return;
+  }
 
   LayoutRect old_selection_rect = object_.SelectionVisualRect();
   LayoutRect new_selection_rect;
