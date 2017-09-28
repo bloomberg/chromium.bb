@@ -31,6 +31,7 @@ Polymer({
     discardImageLabel: String,
     previewAltText: String,
     takePhotoLabel: String,
+    switchModeLabel: String,
 
     /** Whether the camera should be shown and active (started). */
     cameraActive_: {

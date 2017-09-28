@@ -94,6 +94,7 @@ void UserImageScreenHandler::DeclareLocalizedValues(
                IDS_USER_IMAGE_SCREEN_DESCRIPTION);
   builder->Add("takePhoto", IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
   builder->Add("discardPhoto", IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO);
+  builder->Add("switchMode", IDS_OPTIONS_CHANGE_PICTURE_SWITCH_MODE);
   builder->Add("profilePhoto", IDS_IMAGE_SCREEN_PROFILE_PHOTO);
   builder->Add("profilePhotoLoading",
                IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO);

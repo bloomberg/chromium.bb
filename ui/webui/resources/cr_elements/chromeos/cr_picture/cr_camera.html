@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="cr_png_behavior.html">
 
 <dom-module id="cr-camera">
   <template>
@@ -28,12 +29,28 @@
 
       #userImageStreamCrop::after {
         -webkit-mask-image: radial-gradient(transparent 140px, black 140px);
-        background-color: rgba(214, 214, 214, 0.34);
+        background-color: rgb(214, 214, 214);
         content: '';
         display: block;
         height: 100%;
+        opacity: 0.34;
         transform: translateZ(0);
         width: 100%;
+      }
+
+      @-webkit-keyframes pulse {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      #userImageStreamCrop.capture::after {
+        -webkit-mask-image: none;
+        animation: pulse linear 100ms normal forwards;
+      }
+
+      :host([videomode]) #userImageStreamCrop.capture::after {
+        animation: pulse linear 50ms 20;
       }
 
       paper-spinner {
@@ -77,6 +94,23 @@
       }
 
       #takePhoto {
+        background-image: url(camera_shutter_icon.svg);
+      }
+
+      :host([videomode]) #takePhoto {
+        background-image: url(videocam_shutter_icon.svg);
+      }
+
+      :host-context([dir=rtl]) #switchMode {
+        float: left;
+      }
+
+      #switchMode {
+        -webkit-margin-end: 8px;
+        background-image: url(videocam_icon.svg);
+      }
+
+      :host([videomode]) #switchMode {
         background-image: url(camera_alt_icon.svg);
       }
     </style>
@@ -97,7 +131,10 @@
         </button>
       </div>
       <div>
-        <!-- Empty div for even 'space-between' justification -->
+        <button is="paper-icon-button-light" id="switchMode" tabindex="2"
+            title="[[switchModeLabel]]" on-tap="onTapSwitchMode_"
+            disabled="[[!cameraOnline_]]">
+        </button>
       </div>
     </div>
   </template>

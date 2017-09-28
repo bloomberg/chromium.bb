@@ -13,14 +13,39 @@
  * Dimensions for camera capture.
  * @const
  */
-var CAPTURE_SIZE = {height: 576, width: 576};
+var CAPTURE_SIZE = {width: 576, height: 576};
+
+/**
+ * Interval between frames for camera capture (milliseconds).
+ * @const
+ */
+var CAPTURE_INTERVAL_MS = 1000 / 10;
+
+/**
+ * Duration of camera capture (milliseconds).
+ * @const
+ */
+var CAPTURE_DURATION_MS = 1000;
 
 Polymer({
   is: 'cr-camera',
 
+  behaviors: [CrPngBehavior],
+
   properties: {
     /** Strings provided by host */
     takePhotoLabel: String,
+    switchModeLabel: String,
+
+    /**
+     * True if currently in video mode.
+     * @private {boolean}
+     */
+    videomode: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
     /**
      * True when the camera is actually streaming video. May be false even when
@@ -54,16 +79,37 @@ Polymer({
   takePhoto: function() {
     if (!this.cameraOnline_)
       return;
-    var canvas =
-        /** @type {HTMLCanvasElement} */ (document.createElement('canvas'));
-    canvas.width = CAPTURE_SIZE.width;
-    canvas.height = CAPTURE_SIZE.height;
-    this.captureFrame_(
-        this.$.cameraVideo,
-        /** @type {!CanvasRenderingContext2D} */ (canvas.getContext('2d')));
 
-    var photoDataUrl = this.flipFrame_(canvas);
-    this.fire('photo-taken', {photoDataUrl: photoDataUrl});
+    /** Pre-allocate all frames needed for capture. */
+    var frames = [];
+    if (this.videomode) {
+      /** Reduce capture size when in video mode. */
+      var captureSize = {
+        width: CAPTURE_SIZE.width / 2,
+        height: CAPTURE_SIZE.height / 2
+      };
+      var captureFrameCount = CAPTURE_DURATION_MS / CAPTURE_INTERVAL_MS;
+      while (frames.length < captureFrameCount)
+        frames.push(this.allocateFrame_(captureSize));
+    } else {
+      frames.push(this.allocateFrame_(CAPTURE_SIZE));
+    }
+
+    /** Start capturing frames at an interval. */
+    var capturedFrames = [];
+    this.$.userImageStreamCrop.classList.add('capture');
+    var interval = setInterval(() => {
+      capturedFrames.push(this.captureFrame_(this.$.cameraVideo, frames.pop()));
+
+      /** Stop capturing frames when all allocated frames have been consumed. */
+      if (!frames.length) {
+        this.$.userImageStreamCrop.classList.remove('capture');
+        clearInterval(interval);
+        this.fire(
+            'photo-taken',
+            {photoDataUrl: this.convertFramesToPng_(capturedFrames)});
+      }
+    }, CAPTURE_INTERVAL_MS);
   },
 
   /** Tries to start the camera stream capture. */
@@ -111,51 +157,92 @@ Polymer({
   },
 
   /**
+   * Switch between photo and video mode.
+   * @private
+   */
+  onTapSwitchMode_: function() {
+    this.videomode = !this.videomode;
+    this.fire('switch-mode', this.videomode);
+  },
+
+  /**
+   * Allocates a canvas for capturing a single still frame at a specific size.
+   * @param {{width: number, height: number}} size Frame size.
+   * @return {!HTMLCanvasElement} The allocated canvas.
+   * @private
+   */
+  allocateFrame_: function(size) {
+    var canvas =
+        /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
+    canvas.width = size.width;
+    canvas.height = size.height;
+    var ctx = /** @type {!CanvasRenderingContext2D} */ (
+        canvas.getContext('2d', {alpha: false}));
+    // Flip frame horizontally.
+    ctx.translate(size.width, 0);
+    ctx.scale(-1.0, 1.0);
+    return canvas;
+  },
+
+  /**
    * Captures a single still frame from a <video> element, placing it at the
    * current drawing origin of a canvas context.
    * @param {!HTMLVideoElement} video Video element to capture from.
-   * @param {!CanvasRenderingContext2D} ctx Canvas context to draw onto.
+   * @param {!HTMLCanvasElement} canvas Canvas to save frame in.
+   * @return {!HTMLCanvasElement} The canvas frame was saved in.
    * @private
    */
-  captureFrame_: function(video, ctx) {
+  captureFrame_: function(video, canvas) {
+    var ctx =
+        /** @type {!CanvasRenderingContext2D} */ (
+            canvas.getContext('2d', {alpha: false}));
     var width = video.videoWidth;
     var height = video.videoHeight;
-    if (width < CAPTURE_SIZE.width || height < CAPTURE_SIZE.height) {
+    if (width < canvas.width || height < canvas.height) {
       console.error(
           'Video capture size too small: ' + width + 'x' + height + '!');
     }
     var src = {};
-    if (width / CAPTURE_SIZE.width > height / CAPTURE_SIZE.height) {
+    if (width / canvas.width > height / canvas.height) {
       // Full height, crop left/right.
       src.height = height;
-      src.width = height * CAPTURE_SIZE.width / CAPTURE_SIZE.height;
+      src.width = height * canvas.width / canvas.height;
     } else {
       // Full width, crop top/bottom.
       src.width = width;
-      src.height = width * CAPTURE_SIZE.height / CAPTURE_SIZE.width;
+      src.height = width * canvas.height / canvas.width;
     }
     src.x = (width - src.width) / 2;
     src.y = (height - src.height) / 2;
     ctx.drawImage(
-        video, src.x, src.y, src.width, src.height, 0, 0, CAPTURE_SIZE.width,
-        CAPTURE_SIZE.height);
+        video, src.x, src.y, src.width, src.height, 0, 0, canvas.width,
+        canvas.height);
+    return canvas;
   },
 
   /**
-   * Flips frame horizontally.
-   * @param {!(HTMLImageElement|HTMLCanvasElement|HTMLVideoElement)} source
-   *     Frame to flip.
-   * @return {string} Flipped frame as data URL.
+   * Encode frames and convert to animated PNG image.
+   * @param {!Array<!HTMLCanvasElement>} frames The frames to convert to image.
+   * @return {!string} The data URL for image.
+   * @private
    */
-  flipFrame_: function(source) {
-    var canvas = document.createElement('canvas');
-    canvas.width = CAPTURE_SIZE.width;
-    canvas.height = CAPTURE_SIZE.height;
-    var ctx = canvas.getContext('2d');
-    ctx.translate(CAPTURE_SIZE.width, 0);
-    ctx.scale(-1.0, 1.0);
-    ctx.drawImage(source, 0, 0);
-    return canvas.toDataURL('image/png');
+  convertFramesToPng_: function(frames) {
+    /** Encode captured frames. */
+    var encodedImages = frames.map(function(frame) {
+      return frame.toDataURL('image/png');
+    });
+
+    /** No need for further processing if single frame. */
+    if (encodedImages.length == 1)
+      return encodedImages[0];
+
+    /** Create forward/backward image sequence. */
+    var forwardBackwardImageSequence =
+        encodedImages.concat(encodedImages.slice(1, -1).reverse());
+
+    /** Convert image sequence to animated PNG. */
+    return CrPngBehavior.convertImageSequenceToPng(
+        forwardBackwardImageSequence);
   },
 });
 

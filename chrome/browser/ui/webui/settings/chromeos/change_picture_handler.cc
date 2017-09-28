@@ -181,8 +181,10 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
     NOTREACHED();
   DCHECK_EQ("image/png", mime_type);
 
+  // Use |raw_data| as image but first verify that it can be decoded.
   user_photo_ = gfx::ImageSkia();
-  user_photo_data_url_ = image_url;
+  std::vector<unsigned char> photo_data(raw_data.begin(), raw_data.end());
+  user_photo_data_ = base::RefCountedBytes::TakeVector(&photo_data);
 
   ImageDecoder::Cancel(this);
   ImageDecoder::Start(this, raw_data);
@@ -207,7 +209,17 @@ void ChangePictureHandler::SendSelectedImage() {
     case user_manager::User::USER_IMAGE_EXTERNAL: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->GetImage();
-      SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()), -1);
+      previous_image_format_ = user->image_format();
+      if (previous_image_format_ == user_manager::UserImage::FORMAT_PNG &&
+          user->has_image_bytes()) {
+        previous_image_bytes_ = user->image_bytes();
+        SendOldImage(webui::GetPngDataUrl(previous_image_bytes_->front(),
+                                          previous_image_bytes_->size()),
+                     -1);
+      } else {
+        previous_image_bytes_ = nullptr;
+        SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()), -1);
+      }
       break;
     }
     case user_manager::User::USER_IMAGE_PROFILE: {
@@ -225,6 +237,8 @@ void ChangePictureHandler::SendSelectedImage() {
         // User has an old default image, so present it in the same manner as a
         // previous image from file.
         previous_image_ = user->GetImage();
+        previous_image_bytes_ = nullptr;
+        previous_image_format_ = user_manager::UserImage::FORMAT_UNKNOWN;
         SendOldImage(
             default_user_image::GetDefaultImageUrl(previous_image_index_),
             previous_image_index_);
@@ -278,10 +292,11 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   if (image_type == "old") {
     // Previous image (from camera or manually uploaded) re-selected.
     DCHECK(!previous_image_.isNull());
-    user_image_manager->SaveUserImage(
-        user_manager::UserImage::CreateAndEncode(
-            previous_image_,
-            user_manager::UserImage::FORMAT_JPEG));
+    std::unique_ptr<user_manager::UserImage> user_image =
+        base::MakeUnique<user_manager::UserImage>(
+            previous_image_, previous_image_bytes_, previous_image_format_);
+    user_image->MarkAsSafe();
+    user_image_manager->SaveUserImage(std::move(user_image));
 
     UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
                                default_user_image::kHistogramImageOld,
@@ -306,7 +321,7 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
       waiting_for_camera_photo = true;
       VLOG(1) << "Still waiting for camera image to decode";
     } else {
-      SetImageFromCamera(user_photo_);
+      SetImageFromCamera(user_photo_, user_photo_data_.get());
     }
   } else if (image_type == "profile") {
     // Profile image selected. Could be previous (old) user image.
@@ -349,11 +364,16 @@ void ChangePictureHandler::FileSelected(const base::FilePath& path,
   VLOG(1) << "Selected image from file";
 }
 
-void ChangePictureHandler::SetImageFromCamera(const gfx::ImageSkia& photo) {
+void ChangePictureHandler::SetImageFromCamera(
+    const gfx::ImageSkia& photo,
+    base::RefCountedBytes* photo_bytes) {
+  std::unique_ptr<user_manager::UserImage> user_image =
+      base::MakeUnique<user_manager::UserImage>(
+          photo, photo_bytes, user_manager::UserImage::FORMAT_PNG);
+  user_image->MarkAsSafe();
   ChromeUserManager::Get()
       ->GetUserImageManager(GetUser()->GetAccountId())
-      ->SaveUserImage(user_manager::UserImage::CreateAndEncode(
-          photo, user_manager::UserImage::FORMAT_JPEG));
+      ->SaveUserImage(std::move(user_image));
   UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
                              default_user_image::kHistogramImageFromCamera,
                              default_user_image::kHistogramImagesCount);
@@ -390,7 +410,7 @@ gfx::NativeWindow ChangePictureHandler::GetBrowserWindow() const {
 
 void ChangePictureHandler::OnImageDecoded(const SkBitmap& decoded_image) {
   user_photo_ = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
-  SetImageFromCamera(user_photo_);
+  SetImageFromCamera(user_photo_, user_photo_data_.get());
 }
 
 void ChangePictureHandler::OnDecodeImageFailed() {
