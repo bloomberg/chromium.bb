@@ -1533,7 +1533,7 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 
 crbug.com/610464 [ Linux Win7 Debug ] http/tests/devtools/components/throttler.html [ Failure Pass ]
 crbug.com/667560 [ Linux Win7 Debug ] virtual/mojo-loading/http/tests/devtools/components/throttler.html [ Failure Pass ]
-crbug.com/654477 [ Linux Mac Win7 ] paint/invalidation/video-paint-invalidation.html [ Failure ]
+crbug.com/654477 [ Linux Mac Win7 ] paint/invalidation/video-paint-invalidation.html [ Failure Crash ]
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/654477 fast/layers/video-layer.html [ Failure ]
