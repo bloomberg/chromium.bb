@@ -53,9 +53,9 @@ class PLATFORM_EXPORT FontDataForRangeSet
   bool IsEntireRange() const {
     return !range_set_ || range_set_->IsEntireRange();
   }
-  UnicodeRangeSet* Ranges() const { return range_set_.Get(); }
-  bool HasFontData() const { return font_data_.Get(); }
-  const SimpleFontData* FontData() const { return font_data_.Get(); }
+  UnicodeRangeSet* Ranges() const { return range_set_.get(); }
+  bool HasFontData() const { return font_data_.get(); }
+  const SimpleFontData* FontData() const { return font_data_.get(); }
 
  protected:
   RefPtr<SimpleFontData> font_data_;

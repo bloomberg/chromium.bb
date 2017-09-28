@@ -352,11 +352,11 @@ RefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
   RefPtr<ShapeResult> line_result = ShapeResult::Create(font_, 0, direction);
   unsigned max_length = std::numeric_limits<unsigned>::max();
   if (line_start_result)
-    line_start_result->CopyRange(0, max_length, line_result.Get());
+    line_start_result->CopyRange(0, max_length, line_result.get());
   if (last_safe > first_safe)
-    result_->CopyRange(first_safe, last_safe, line_result.Get());
+    result_->CopyRange(first_safe, last_safe, line_result.get());
   if (line_end_result)
-    line_end_result->CopyRange(last_safe, max_length, line_result.Get());
+    line_end_result->CopyRange(last_safe, max_length, line_result.get());
 
   DCHECK_GT(break_opportunity, start);
   // TODO(layout-dev): This hits on Mac and Mac only for a number of tests in
@@ -384,11 +384,11 @@ RefPtr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
   if (first_safe == start) {
     // If |start| is safe-to-break no reshape is needed.
     line_result = ShapeResult::Create(font_, 0, direction);
-    result_->CopyRange(start, range_end, line_result.Get());
+    result_->CopyRange(start, range_end, line_result.get());
   } else if (first_safe < range_end) {
     // Otherwise reshape to |first_safe|, then copy the rest.
     line_result = Shape(direction, start, first_safe);
-    result_->CopyRange(first_safe, range_end, line_result.Get());
+    result_->CopyRange(first_safe, range_end, line_result.get());
   } else {
     // If no safe-to-break offset is found in range, reshape the entire range.
     line_result = Shape(direction, start, range_end);

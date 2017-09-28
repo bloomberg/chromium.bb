@@ -376,8 +376,8 @@ void ShapeResult::FallbackFonts(
     if (runs_[i] && runs_[i]->font_data_ &&
         runs_[i]->font_data_ != primary_font_ &&
         !runs_[i]->font_data_->IsTextOrientationFallbackOf(
-            primary_font_.Get())) {
-      fallback->insert(runs_[i]->font_data_.Get());
+            primary_font_.get())) {
+      fallback->insert(runs_[i]->font_data_.get());
     }
   }
 }
@@ -498,7 +498,7 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
                                         hb_buffer_t* harf_buzz_buffer,
                                         FloatRect* glyph_bounding_box) {
   DCHECK_EQ(is_horizontal_run, run->IsHorizontal());
-  const SimpleFontData* current_font_data = run->font_data_.Get();
+  const SimpleFontData* current_font_data = run->font_data_.get();
   const hb_glyph_info_t* glyph_infos =
       hb_buffer_get_glyph_infos(harf_buzz_buffer, 0);
   const hb_glyph_position_t* glyph_positions =

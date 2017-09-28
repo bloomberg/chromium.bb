@@ -45,7 +45,7 @@ struct HarfBuzzFontData {
     SimpleFontData* simple_font_data =
         FontCache::GetFontCache()
             ->FontDataFromFontPlatformData(platform_data)
-            .Get();
+            .get();
     if (simple_font_data_)
       FontCache::GetFontCache()->ReleaseFontData(simple_font_data_);
     simple_font_data_ = simple_font_data;

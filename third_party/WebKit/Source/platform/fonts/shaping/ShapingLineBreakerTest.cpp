@@ -107,7 +107,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatin) {
   RefPtr<ShapeResult> first1 = shaper.Shape(&font, direction, 0, 4);
   ASSERT_LT(first1->SnappedWidth(), first2->SnappedWidth());
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   RefPtr<ShapeResult> line;
   unsigned break_offset = 0;
 
@@ -165,7 +165,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinMultiLine) {
   RefPtr<ShapeResult> first = shaper.Shape(&font, direction, 0, 4);
   RefPtr<ShapeResult> mid_third = shaper.Shape(&font, direction, 0, 16);
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   unsigned break_offset = 0;
 
   ShapeLine(&breaker, 0, result->SnappedWidth() - 1, &break_offset);
@@ -191,7 +191,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinBreakAll) {
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
   RefPtr<ShapeResult> midpoint = shaper.Shape(&font, direction, 0, 16);
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   RefPtr<ShapeResult> line;
   unsigned break_offset = 0;
 
@@ -212,7 +212,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineZeroAvailableWidth) {
   HarfBuzzShaper shaper(string.Characters16(), string.length());
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   RefPtr<ShapeResult> line;
   unsigned break_offset = 0;
   LayoutUnit zero(0);
@@ -253,7 +253,7 @@ TEST_F(ShapingLineBreakerTest, DISABLED_ShapeLineArabicThaiHanLatin) {
       });
   LayoutUnit longest_word_width = (*longest_word)->SnappedWidth();
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   RefPtr<ShapeResult> line;
   unsigned break_offset = 0;
 
@@ -281,7 +281,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
   HarfBuzzShaper shaper(string.Characters16(), string.length());
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction, 0, 2);
 
-  ShapingLineBreaker breaker(&shaper, &font, result.Get(), &break_iterator);
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   RefPtr<ShapeResult> line;
   unsigned break_offset = 0;
 

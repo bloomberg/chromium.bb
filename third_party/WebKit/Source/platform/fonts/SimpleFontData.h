@@ -81,7 +81,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   const FontPlatformData& PlatformData() const { return platform_data_; }
   const OpenTypeVerticalData* VerticalData() const {
-    return vertical_data_.Get();
+    return vertical_data_.get();
   }
 
   RefPtr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
@@ -153,7 +153,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   Glyph GlyphForCharacter(UChar32) const;
 
-  bool IsCustomFont() const override { return custom_font_data_.Get(); }
+  bool IsCustomFont() const override { return custom_font_data_.get(); }
   bool IsLoading() const override {
     return custom_font_data_ ? custom_font_data_->IsLoading() : false;
   }
@@ -170,7 +170,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     missing_glyph_data_ = glyph_data;
   }
 
-  CustomFontData* GetCustomFontData() const { return custom_font_data_.Get(); }
+  CustomFontData* GetCustomFontData() const { return custom_font_data_.get(); }
 
   unsigned VisualOverflowInflationForAscent() const {
     return visual_overflow_inflation_for_ascent_;

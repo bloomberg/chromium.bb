@@ -79,7 +79,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
   if (platform_data.IsVerticalAnyUpright() && !is_text_orientation_fallback) {
     vertical_data_ = platform_data.VerticalData();
     has_vertical_glyphs_ =
-        vertical_data_.Get() && vertical_data_->HasVerticalMetrics();
+        vertical_data_.get() && vertical_data_->HasVerticalMetrics();
   }
 }
 

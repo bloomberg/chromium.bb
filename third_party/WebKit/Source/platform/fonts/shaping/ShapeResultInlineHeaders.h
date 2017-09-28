@@ -124,7 +124,7 @@ struct ShapeResult::RunInfo {
           });
     }
 
-    auto run = std::make_unique<RunInfo>(font_data_.Get(), direction_, script_,
+    auto run = std::make_unique<RunInfo>(font_data_.get(), direction_, script_,
                                          start_index_ + start, number_of_glyphs,
                                          number_of_characters);
 

@@ -49,7 +49,7 @@ float ShapeResultTestInfo::AdvanceForTesting(unsigned run_index,
 
 SimpleFontData* ShapeResultTestInfo::FontDataForTesting(
     unsigned run_index) const {
-  return runs_[run_index]->font_data_.Get();
+  return runs_[run_index]->font_data_.get();
 }
 
 Vector<unsigned> ShapeResultTestInfo::CharacterIndexesForTesting() const {
