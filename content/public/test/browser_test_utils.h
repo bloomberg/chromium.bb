@@ -780,13 +780,18 @@ class TestNavigationManager : public WebContentsObserver {
   // stack. Returns false if the request was aborted before starting.
   WARN_UNUSED_RESULT bool WaitForRequestStart();
 
-  // Waits until the navigation response has been sent received. Returns false
-  // if the request was aborted before getting a response.
+  // Waits until the navigation response's headers have been received. Returns
+  // false if the request was aborted before getting a response.
   WARN_UNUSED_RESULT bool WaitForResponse();
 
   // Waits until the navigation has been finished. Will automatically resume
   // navigations paused before this point.
   void WaitForNavigationFinished();
+
+  // Resume the navigation.
+  // * Called after |WaitForRequestStart|, it causes the request to be sent.
+  // * Called after |WaitForResponse|, it causes the response to be committed.
+  void ResumeNavigation();
 
  protected:
   // Derived classes can override if they want to filter out navigations. This
