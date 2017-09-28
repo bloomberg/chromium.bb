@@ -81,6 +81,8 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     # then a patch to Angle project can be applied to a chromium src's
     # checkout after first updating Angle's repo to its master's HEAD.
     patch_projects = Dict(value_type=tuple, hidden=True),
+    # Same as the above, except the keys are full repo URLs.
+    repo_path_map = Dict(value_type=tuple, hidden=True),
 
     # Check out refs/branch-heads.
     # TODO (machenbach): Only implemented for bot_update atm.

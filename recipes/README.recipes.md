@@ -227,17 +227,19 @@ Wrapper for easy calling of gclient steps.
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#309)(self, patch_project, gclient_config=None):**
+&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#309)(self, patch_project, gclient_config=None, patch_repo=None):**
 
 Returns path where a patch should be applied to based patch_project.
 
-Maps "patch_project" to a path of directories relative to checkout's root,
-which describe where to place the patch.
+Maps the patch's repo to a path of directories relative to checkout's root,
+which describe where to place the patch. If no mapping is found for the
+repo url, falls back to trying to find a mapping for the old-style
+"patch_project".
 
 For now, considers only first solution (c.solutions[0]), but in theory can
 be extended to all of them.
 
-See patch_projects solution config property.
+See patch_projects and repo_path_map solution config property.
 
 Returns:
   Relative path, including solution's root.
@@ -283,7 +285,7 @@ Chromium config. This may happen for one of two reasons:
 
 &mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#268)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#336)(self, patch_project, gclient_config=None):**
+&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#341)(self, patch_project, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
@@ -780,7 +782,7 @@ like checkout or compile), and some of these tests have failed.
 
 [DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#20)(api, patch_project):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#21)(api, patch_project, patch_repository_url):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit), [recipe\_engine/step][recipe_engine/recipe_modules/step]

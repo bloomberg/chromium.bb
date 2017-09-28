@@ -306,16 +306,19 @@ class GclientApi(recipe_api.RecipeApi):
       infra_step=True,
     )
 
-  def calculate_patch_root(self, patch_project, gclient_config=None):
+  def calculate_patch_root(self, patch_project, gclient_config=None,
+                           patch_repo=None):
     """Returns path where a patch should be applied to based patch_project.
 
-    Maps "patch_project" to a path of directories relative to checkout's root,
-    which describe where to place the patch.
+    Maps the patch's repo to a path of directories relative to checkout's root,
+    which describe where to place the patch. If no mapping is found for the
+    repo url, falls back to trying to find a mapping for the old-style
+    "patch_project".
 
     For now, considers only first solution (c.solutions[0]), but in theory can
     be extended to all of them.
 
-    See patch_projects solution config property.
+    See patch_projects and repo_path_map solution config property.
 
     Returns:
       Relative path, including solution's root.
@@ -323,15 +326,17 @@ class GclientApi(recipe_api.RecipeApi):
       solution root.
     """
     cfg = gclient_config or self.c
-    root, _ = cfg.patch_projects.get(patch_project, ('', ''))
-    if root:
-      # Note, that c.patch_projects contains patch roots as
-      # slash(/)-separated path, which are roots of the respective project repos
-      # and include actual solution name in them.
-      return self.m.path.join(*root.split('/'))
-    # Default case - assume patch is for first solution, as this is what most
-    # projects rely on.
-    return cfg.solutions[0].name
+    root, _ = cfg.repo_path_map.get(patch_repo, ('', ''))
+    if not root:
+      root, _ = cfg.patch_projects.get(patch_project, ('', ''))
+    if not root:
+      # Failure case - assume patch is for first solution, as this is what most
+      # projects rely on.
+      return cfg.solutions[0].name
+    # Note, that c.patch_projects contains patch roots as
+    # slash(/)-separated path, which are roots of the respective project repos
+    # and include actual solution name in them.
+    return self.m.path.join(*root.split('/'))
 
   def set_patch_project_revision(self, patch_project, gclient_config=None):
     """Updates config revision corresponding to patch_project.

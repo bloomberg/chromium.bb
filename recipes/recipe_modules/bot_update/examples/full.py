@@ -33,6 +33,9 @@ def RunSteps(api):
   api.gclient.c.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
   api.gclient.c.patch_projects['angle/angle'] = ('src/third_party/angle',
                                                  'HEAD')
+  api.gclient.c.repo_path_map['https://webrtc.googlesource.com/src'] = (
+      'src/third_party/webrtc', 'HEAD')
+
   patch = api.properties.get('patch', True)
   clobber = True if api.properties.get('clobber') else False
   no_shallow = True if api.properties.get('no_shallow') else False
@@ -232,4 +235,10 @@ def GenTests(api):
           'https://chromium-review.googlesource.com/#/c/338811',
         'event.patchSet.ref': 'refs/changes/11/338811/3',
       }
+  )
+  yield api.test('tryjob_gerrit_webrtc') + api.properties.tryserver(
+      gerrit_project='src',
+      git_url='https://webrtc.googlesource.com/src',
+      patch_issue=338811,
+      patch_set=3,
   )
