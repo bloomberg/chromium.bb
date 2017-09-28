@@ -175,7 +175,15 @@
   // Notify the view controller asynchronously to allow for the view to update.
   __weak AddressEditMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
-    [weakSelf.consumer setOptions:@[ [regions allKeys] ]
+    NSMutableArray<NSString*>* values =
+        [[NSMutableArray alloc] initWithArray:[regions allKeys]];
+    // If the field contains no value, insert an empty value at the beginning
+    // of the list of options, as the first option is selected when the UI
+    // opens. Otherwise, it would be impossible for the user to select the first
+    // option without selecting another option first.
+    if (!weakSelf.regionField.value)
+      [values insertObject:@"" atIndex:0];
+    [weakSelf.consumer setOptions:@[ values ]
                    forEditorField:weakSelf.regionField];
   });
 }
