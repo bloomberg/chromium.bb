@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -78,11 +79,12 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
                                      const base::FilePath& temp_dir) override;
   void OnExternalUpdateUnpackFailure(const std::string& app_id) override;
 
-  // Processes the parsed external update manifest, check |parsing_error| for
-  // any manifest parsing error.
-  void ProcessParsedManifest(ExternalUpdateErrorCode* parsing_error,
-                             const base::FilePath& external_update_dir,
-                             base::DictionaryValue* parsed_manifest);
+  // Processes the parsed external update manifest, check the
+  // ExternalUpdateErrorCode in |result| for any manifest parsing error.
+  using ParseManifestResult = std::pair<std::unique_ptr<base::DictionaryValue>,
+                                        ExternalUpdateErrorCode>;
+  void ProcessParsedManifest(const base::FilePath& external_update_dir,
+                             const ParseManifestResult& result);
 
   // Returns true if |external_update_| is interrupted before the updating
   // completes.

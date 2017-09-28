@@ -32,34 +32,24 @@ constexpr base::FilePath::CharType kExternalUpdateManifest[] =
 constexpr char kExternalCrx[] = "external_crx";
 constexpr char kExternalVersion[] = "external_version";
 
-void ParseExternalUpdateManifest(
-    const base::FilePath& external_update_dir,
-    base::DictionaryValue* parsed_manifest,
-    KioskExternalUpdater::ExternalUpdateErrorCode* error_code) {
+std::pair<std::unique_ptr<base::DictionaryValue>,
+          KioskExternalUpdater::ExternalUpdateErrorCode>
+ParseExternalUpdateManifest(const base::FilePath& external_update_dir) {
   base::FilePath manifest = external_update_dir.Append(kExternalUpdateManifest);
   if (!base::PathExists(manifest)) {
-    *error_code = KioskExternalUpdater::ERROR_NO_MANIFEST;
-    return;
+    return std::make_pair(nullptr, KioskExternalUpdater::ERROR_NO_MANIFEST);
   }
 
   JSONFileValueDeserializer deserializer(manifest);
-  std::string error_msg;
-  base::Value* extensions =
-      deserializer.Deserialize(NULL, &error_msg).release();
-  // TODO(Olli Raula) possible memory leak http://crbug.com/543015
+  std::unique_ptr<base::DictionaryValue> extensions =
+      base::DictionaryValue::From(deserializer.Deserialize(nullptr, nullptr));
   if (!extensions) {
-    *error_code = KioskExternalUpdater::ERROR_INVALID_MANIFEST;
-    return;
+    return std::make_pair(nullptr,
+                          KioskExternalUpdater::ERROR_INVALID_MANIFEST);
   }
 
-  base::DictionaryValue* dict_value = NULL;
-  if (!extensions->GetAsDictionary(&dict_value)) {
-    *error_code = KioskExternalUpdater::ERROR_INVALID_MANIFEST;
-    return;
-  }
-
-  parsed_manifest->Swap(dict_value);
-  *error_code = KioskExternalUpdater::ERROR_NONE;
+  return std::make_pair(std::move(extensions),
+                        KioskExternalUpdater::ERROR_NONE);
 }
 
 // Copies |external_crx_file| to |temp_crx_file|, and removes |temp_dir|
@@ -145,17 +135,13 @@ void KioskExternalUpdater::OnMountEvent(
       return;
     }
 
-    base::DictionaryValue* parsed_manifest = new base::DictionaryValue();
-    ExternalUpdateErrorCode* parsing_error = new ExternalUpdateErrorCode;
-    backend_task_runner_->PostTaskAndReply(
-        FROM_HERE,
+    base::PostTaskAndReplyWithResult(
+        backend_task_runner_.get(), FROM_HERE,
         base::BindOnce(&ParseExternalUpdateManifest,
-                       base::FilePath(mount_info.mount_path), parsed_manifest,
-                       parsing_error),
+                       base::FilePath(mount_info.mount_path)),
         base::BindOnce(&KioskExternalUpdater::ProcessParsedManifest,
-                       weak_factory_.GetWeakPtr(), base::Owned(parsing_error),
-                       base::FilePath(mount_info.mount_path),
-                       base::Owned(parsed_manifest)));
+                       weak_factory_.GetWeakPtr(),
+                       base::FilePath(mount_info.mount_path)));
     return;
   }
 
@@ -233,16 +219,17 @@ void KioskExternalUpdater::OnExternalUpdateUnpackFailure(
 }
 
 void KioskExternalUpdater::ProcessParsedManifest(
-    ExternalUpdateErrorCode* parsing_error,
     const base::FilePath& external_update_dir,
-    base::DictionaryValue* parsed_manifest) {
+    const ParseManifestResult& result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (*parsing_error == ERROR_NO_MANIFEST) {
+  const std::unique_ptr<base::DictionaryValue>& parsed_manifest = result.first;
+  ExternalUpdateErrorCode parsing_error = result.second;
+  if (parsing_error == ERROR_NO_MANIFEST) {
     KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   }
-  if (*parsing_error == ERROR_INVALID_MANIFEST) {
+  if (parsing_error == ERROR_INVALID_MANIFEST) {
     NotifyKioskUpdateProgress(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST));
@@ -266,7 +253,7 @@ void KioskExternalUpdater::ProcessParsedManifest(
       continue;
     }
 
-    const base::DictionaryValue* extension = NULL;
+    const base::DictionaryValue* extension = nullptr;
     if (!it.value().GetAsDictionary(&extension)) {
       LOG(ERROR) << "Found bad entry in manifest type " << it.value().GetType();
       continue;
@@ -487,34 +474,33 @@ base::string16 KioskExternalUpdater::GetUpdateReportMessage() const {
       if (updated_apps.empty())
         updated_apps = app_name;
       else
-        updated_apps = updated_apps + base::ASCIIToUTF16(", ") + app_name;
+        updated_apps += base::ASCIIToUTF16(", ") + app_name;
     } else {  // FAILED
       ++failed;
       if (failed_apps.empty()) {
         failed_apps = app_name + base::ASCIIToUTF16(": ") + update.error;
       } else {
-        failed_apps = failed_apps + base::ASCIIToUTF16("\n") + app_name +
-                      base::ASCIIToUTF16(": ") + update.error;
+        failed_apps += base::ASCIIToUTF16("\n") + app_name +
+                       base::ASCIIToUTF16(": ") + update.error;
       }
     }
   }
 
-  base::string16 message;
-  message = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-      IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE);
-  base::string16 success_app_msg;
+  base::string16 message =
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE);
   if (updated) {
-    success_app_msg = l10n_util::GetStringFUTF16(
+    base::string16 success_app_msg = l10n_util::GetStringFUTF16(
         IDS_KIOSK_EXTERNAL_UPDATE_SUCCESSFUL_UPDATED_APPS, updated_apps);
-    message = message + base::ASCIIToUTF16("\n") + success_app_msg;
+    message += base::ASCIIToUTF16("\n") + success_app_msg;
   }
 
-  base::string16 failed_app_msg;
   if (failed) {
-    failed_app_msg = ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-                         IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS) +
-                     base::ASCIIToUTF16("\n") + failed_apps;
-    message = message + base::ASCIIToUTF16("\n") + failed_app_msg;
+    base::string16 failed_app_msg =
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS) +
+        base::ASCIIToUTF16("\n") + failed_apps;
+    message += base::ASCIIToUTF16("\n") + failed_app_msg;
   }
   return message;
 }
