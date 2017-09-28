@@ -27,12 +27,12 @@ DEFINE_TRACE({{v8_class}}) {
   if (!script_state_->ContextIsValid())
     {{return_default}};
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     {{return_default}};
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   {% if method.call_with_this_handle %}
   v8::Local<v8::Value> thisHandle = thisValue.V8Value();
   {% endif %}
@@ -62,7 +62,7 @@ DEFINE_TRACE({{v8_class}}) {
   return !exceptionCatcher.HasCaught();
   {% else %}{# void #}
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                {{this_handle_parameter}},
                                {{method.arguments | length}},
                                argv,

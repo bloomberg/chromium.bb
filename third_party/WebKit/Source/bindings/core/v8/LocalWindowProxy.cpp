@@ -71,13 +71,13 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Context> context = script_state_->GetContext();
   // The embedder could run arbitrary code in response to the
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
-  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.Get());
+  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.get());
 
   if (next_status == Lifecycle::kGlobalObjectIsDetached) {
     v8::Local<v8::Context> context = script_state_->GetContext();
@@ -132,7 +132,7 @@ void LocalWindowProxy::Initialize() {
 
   CreateContext();
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Context> context = script_state_->GetContext();
   if (global_proxy_.IsEmpty()) {
     global_proxy_.Set(GetIsolate(), context->Global());
@@ -165,12 +165,12 @@ void LocalWindowProxy::Initialize() {
   {
     TRACE_EVENT1("v8", "ContextCreatedNotification", "IsMainFrame",
                  GetFrame()->IsMainFrame());
-    MainThreadDebugger::Instance()->ContextCreated(script_state_.Get(),
+    MainThreadDebugger::Instance()->ContextCreated(script_state_.get(),
                                                    GetFrame(), origin);
     GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
 
     InstallConditionalFeaturesOnGlobal(&V8Window::wrapperTypeInfo,
-                                       script_state_.Get());
+                                       script_state_.get());
 
     if (world_->IsMainWorld()) {
       // For the main world, install any remaining conditional bindings (i.e.
@@ -178,7 +178,7 @@ void LocalWindowProxy::Initialize() {
       // bindings cannot be enabled until the execution context is available
       // (e.g. parsing the document, inspecting HTTP headers).
       InstallConditionalFeatures(&V8Window::wrapperTypeInfo,
-                                 script_state_.Get(), v8::Local<v8::Object>(),
+                                 script_state_.get(), v8::Local<v8::Object>(),
                                  v8::Local<v8::Function>());
       GetFrame()->Loader().DispatchDidClearWindowObjectInMainWorld();
     }
@@ -296,7 +296,7 @@ void LocalWindowProxy::UpdateDocumentProperty() {
   TRACE_EVENT1("v8", "LocalWindowProxy::UpdateDocumentProperty", "IsMainFrame",
                GetFrame()->IsMainFrame());
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Context> context = script_state_->GetContext();
   v8::Local<v8::Value> document_wrapper =
       ToV8(GetFrame()->GetDocument(), context->Global(), GetIsolate());
@@ -477,7 +477,7 @@ void LocalWindowProxy::NamedItemAdded(HTMLDocument* document,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Object> document_wrapper =
       world_->DomDataStore().Get(document, GetIsolate());
   document_wrapper
@@ -501,7 +501,7 @@ void LocalWindowProxy::NamedItemRemoved(HTMLDocument* document,
 
   if (document->HasNamedItem(name))
     return;
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Object> document_wrapper =
       world_->DomDataStore().Get(document, GetIsolate());
   document_wrapper

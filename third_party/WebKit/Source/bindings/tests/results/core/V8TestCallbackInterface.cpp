@@ -38,18 +38,18 @@ void V8TestCallbackInterface::voidMethod() {
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> *argv = 0;
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                0,
                                argv,
@@ -60,12 +60,12 @@ bool V8TestCallbackInterface::booleanMethod() {
   if (!script_state_->ContextIsValid())
     return true;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return true;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> *argv = 0;
 
@@ -85,19 +85,19 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> boolArgHandle = v8::Boolean::New(script_state_->GetIsolate(), boolArg);
   v8::Local<v8::Value> argv[] = { boolArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -108,19 +108,19 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> sequenceArgHandle = ToV8(sequenceArg, script_state_->GetContext()->Global(), script_state_->GetIsolate());
   v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -131,19 +131,19 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> floatArgHandle = v8::Number::New(script_state_->GetIsolate(), floatArg);
   v8::Local<v8::Value> argv[] = { floatArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -154,19 +154,19 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, script_state_->GetContext()->Global(), script_state_->GetIsolate());
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -177,12 +177,12 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, script_state_->GetContext()->Global(), script_state_->GetIsolate());
   v8::Local<v8::Value> stringArgHandle = V8String(script_state_->GetIsolate(), stringArg);
@@ -190,7 +190,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                v8::Undefined(isolate),
                                2,
                                argv,
@@ -201,12 +201,12 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
   if (!script_state_->ContextIsValid())
     return;
   ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Local<v8::Value> thisHandle = thisValue.V8Value();
 
   v8::Local<v8::Value> stringArgHandle = V8String(script_state_->GetIsolate(), stringArg);
@@ -214,7 +214,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                thisHandle,
                                1,
                                argv,

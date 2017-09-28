@@ -51,12 +51,12 @@ bool V8LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
 
-  ExecutionContext* context = ExecutionContext::From(script_state_.Get());
+  ExecutionContext* context = ExecutionContext::From(script_state_.get());
   DCHECK(context);
   if (context->IsContextSuspended() || context->IsContextDestroyed())
     return false;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   v8::Local<v8::Value> thisValue = ToV8(

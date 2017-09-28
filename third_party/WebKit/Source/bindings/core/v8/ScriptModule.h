@@ -161,8 +161,8 @@ inline bool ScriptModule::operator==(const ScriptModule& other) const {
       HashTraits<ScriptModule>::IsDeletedValue(other))
     return false;
 
-  blink::SharedPersistent<v8::Module>* left = module_.Get();
-  blink::SharedPersistent<v8::Module>* right = other.module_.Get();
+  blink::SharedPersistent<v8::Module>* left = module_.get();
+  blink::SharedPersistent<v8::Module>* right = other.module_.get();
   if (left == right)
     return true;
   if (!left || !right)

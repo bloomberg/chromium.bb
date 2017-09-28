@@ -42,13 +42,13 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
                                               SQLError* error) {
   v8::Isolate* isolate = script_state_->GetIsolate();
   ExecutionContext* execution_context =
-      ExecutionContext::From(script_state_.Get());
+      ExecutionContext::From(script_state_.get());
   if (!execution_context || execution_context->IsContextSuspended() ||
       execution_context->IsContextDestroyed())
     return true;
   if (!script_state_->ContextIsValid())
     return true;
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   v8::Local<v8::Value> transaction_handle =
       ToV8(transaction, script_state_->GetContext()->Global(), isolate);
@@ -70,7 +70,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
   // the error callback did not return false, or there was no error callback.
   // Jump to the last step in the overall steps.
   if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                                    ExecutionContext::From(script_state_.Get()),
+                                    ExecutionContext::From(script_state_.get()),
                                     script_state_->GetContext()->Global(),
                                     WTF_ARRAY_LENGTH(argv), argv, isolate)
            .ToLocal(&result))

@@ -250,7 +250,7 @@ void V8Window::postMessageMethodCustom(
     return;
 
   message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  window->postMessage(message.Get(), transferables.message_ports, target_origin,
+  window->postMessage(message.get(), transferables.message_ports, target_origin,
                       source, exception_state);
 }
 

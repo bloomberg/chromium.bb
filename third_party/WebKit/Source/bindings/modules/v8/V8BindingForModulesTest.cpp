@@ -317,7 +317,7 @@ TEST(DeserializeIDBValueTest, CurrentVersions) {
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
-      isolate, scope.GetContext()->Global(), idb_value.Get());
+      isolate, scope.GetContext()->Global(), idb_value.get());
   EXPECT_TRUE(!scope.GetExceptionState().HadException());
 
   ASSERT_TRUE(v8_value->IsObject());
@@ -349,7 +349,7 @@ TEST(DeserializeIDBValueTest, FutureV8Version) {
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
-      isolate, scope.GetContext()->Global(), idb_value.Get());
+      isolate, scope.GetContext()->Global(), idb_value.get());
   EXPECT_TRUE(!scope.GetExceptionState().HadException());
   EXPECT_TRUE(v8_value->IsNull());
 }
@@ -367,7 +367,7 @@ TEST(DeserializeIDBValueTest, InjectionIntoNonObject) {
       CreateIDBValue(isolate, object_bytes, 42.0, "foo");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
-      isolate, scope.GetContext()->Global(), idb_value.Get());
+      isolate, scope.GetContext()->Global(), idb_value.get());
   EXPECT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(v8_value->IsNumber());
   v8::Local<v8::Number> v8_number = v8_value.As<v8::Number>();
@@ -387,7 +387,7 @@ TEST(DeserializeIDBValueTest, NestedInjectionIntoNonObject) {
       CreateIDBValue(isolate, object_bytes, 42.0, "foo.bar");
 
   v8::Local<v8::Value> v8_value = DeserializeIDBValue(
-      isolate, scope.GetContext()->Global(), idb_value.Get());
+      isolate, scope.GetContext()->Global(), idb_value.get());
   EXPECT_TRUE(!scope.GetExceptionState().HadException());
   ASSERT_TRUE(v8_value->IsNumber());
   v8::Local<v8::Number> v8_number = v8_value.As<v8::Number>();

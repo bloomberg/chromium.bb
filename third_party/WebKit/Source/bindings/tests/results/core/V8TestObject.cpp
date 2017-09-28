@@ -8460,7 +8460,7 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
   // FIXME: Only pass scriptState/exceptionState if instance really requires it.
   ScriptState* scriptState = ScriptState::Current(info.GetIsolate());
   message->UnregisterMemoryAllocatedWithCurrentScriptContext();
-  instance->postMessage(scriptState, message.Get(), transferables.message_ports, exceptionState);
+  instance->postMessage(scriptState, message.get(), transferables.message_ports, exceptionState);
 }
 
 static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {

@@ -64,7 +64,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
           break;
         }
         case BytesConsumer::Result::kDone: {
-          ScriptState::Scope scope(script_state_.Get());
+          ScriptState::Scope scope(script_state_.get());
           builder_.Finish();
           client_->DidFetchDataLoadedCustomFormat();
           return;

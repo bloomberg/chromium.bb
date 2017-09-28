@@ -22,7 +22,7 @@ class CORE_EXPORT V8ObjectBuilder final {
  public:
   explicit V8ObjectBuilder(ScriptState*);
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   V8ObjectBuilder& Add(const StringView& name, const V8ObjectBuilder&);
 

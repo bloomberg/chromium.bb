@@ -115,7 +115,7 @@ class ScriptPromisePropertyTestBase {
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }
   DOMWrapperWorld& MainWorld() { return MainScriptState()->World(); }
-  ScriptState* OtherScriptState() { return other_script_state_.Get(); }
+  ScriptState* OtherScriptState() { return other_script_state_.get(); }
   DOMWrapperWorld& OtherWorld() { return other_script_state_->World(); }
   ScriptState* CurrentScriptState() {
     return ScriptState::Current(GetIsolate());

@@ -137,7 +137,7 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {
   v8::Local<v8::Context> context = script_state_->GetContext();
 
   size_t version_envelope_size =
-      ReadVersionEnvelope(serialized_script_value_.Get(), &version_);
+      ReadVersionEnvelope(serialized_script_value_.get(), &version_);
   if (version_envelope_size) {
     const void* blink_envelope;
     bool read_envelope = ReadRawBytes(version_envelope_size, &blink_envelope);

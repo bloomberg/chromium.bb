@@ -73,7 +73,7 @@ class CORE_EXPORT ScriptPromiseResolver
   void Resolve() { Resolve(ToV8UndefinedGenerator()); }
   void Reject() { Reject(ToV8UndefinedGenerator()); }
 
-  ScriptState* GetScriptState() { return script_state_.Get(); }
+  ScriptState* GetScriptState() { return script_state_.get(); }
 
   // Note that an empty ScriptPromise will be returned after resolve or
   // reject is called.
@@ -84,7 +84,7 @@ class CORE_EXPORT ScriptPromiseResolver
     return resolver_.Promise();
   }
 
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
   // SuspendableObject implementation.
   void Suspend() override;
@@ -125,7 +125,7 @@ class CORE_EXPORT ScriptPromiseResolver
     DCHECK(new_state == kResolving || new_state == kRejecting);
     state_ = new_state;
 
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
 
     // Calling ToV8 in a ScriptForbiddenScope will trigger a CHECK and
     // cause a crash. ToV8 just invokes a constructor for wrapper creation,

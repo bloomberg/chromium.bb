@@ -128,7 +128,7 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
 
   if (global_scope_->IsWorkerGlobalScope() ||
       global_scope_->IsThreadedWorkletGlobalScope()) {
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(isolate_);
     debugger->ContextWillBeDestroyed(global_scope_->GetThread(),
                                      script_state_->GetContext());
@@ -179,7 +179,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
   script_state_ = ScriptState::Create(context, world_);
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   // Associate the global proxy object, the global object and the worker
   // instance (C++ object) as follows.
@@ -238,7 +238,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
                                              human_readable_name);
   }
 
-  InstallConditionalFeaturesOnGlobal(wrapper_type_info, script_state_.Get());
+  InstallConditionalFeaturesOnGlobal(wrapper_type_info, script_state_.get());
 
   return true;
 }
@@ -255,7 +255,7 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
   if (!InitializeContextIfNeeded(String()))
     return ScriptValue();
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   if (!disable_eval_pending_.IsEmpty()) {
     script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
@@ -272,7 +272,7 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
   // - A work{er,let} script doesn't have a nonce, and
   // - a work{er,let} script is always "not parser inserted".
   ReferrerScriptInfo referrer_info;
-  if (V8ScriptRunner::CompileScript(script_state_.Get(), script, file_name,
+  if (V8ScriptRunner::CompileScript(script_state_.get(), script, file_name,
                                     String(), script_start_position,
                                     cache_handler, kSharableCrossOrigin,
                                     v8_cache_options, referrer_info)
@@ -290,9 +290,9 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
     execution_state_->had_exception = true;
     execution_state_->error_message = ToCoreString(message->Get());
     execution_state_->location_ = SourceLocation::FromMessage(
-        isolate_, message, ExecutionContext::From(script_state_.Get()));
+        isolate_, message, ExecutionContext::From(script_state_.get()));
     execution_state_->exception =
-        ScriptValue(script_state_.Get(), block.Exception());
+        ScriptValue(script_state_.get(), block.Exception());
     block.Reset();
   } else {
     execution_state_->had_exception = false;
@@ -302,7 +302,7 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
   if (!maybe_result.ToLocal(&result) || result->IsUndefined())
     return ScriptValue();
 
-  return ScriptValue(script_state_.Get(), result);
+  return ScriptValue(script_state_.get(), result);
 }
 
 bool WorkerOrWorkletScriptController::Evaluate(
@@ -319,7 +319,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
   if (IsExecutionForbidden())
     return false;
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
   if (state.had_exception) {
     if (error_event) {
       if (state.error_event_from_imported_script_) {
@@ -329,14 +329,14 @@ bool WorkerOrWorkletScriptController::Evaluate(
       }
       if (global_scope_->ShouldSanitizeScriptError(state.location_->Url(),
                                                    kNotSharableCrossOrigin)) {
-        *error_event = ErrorEvent::CreateSanitizedError(world_.Get());
+        *error_event = ErrorEvent::CreateSanitizedError(world_.get());
       } else {
         *error_event =
             ErrorEvent::Create(state.error_message, state.location_->Clone(),
-                               state.exception, world_.Get());
+                               state.exception, world_.get());
       }
       V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-          script_state_.Get(), *error_event, state.exception.V8Value(),
+          script_state_.get(), *error_event, state.exception.V8Value(),
           script_state_->GetContext()->Global());
     } else {
       DCHECK(!global_scope_->ShouldSanitizeScriptError(
@@ -347,7 +347,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
       } else {
         event =
             ErrorEvent::Create(state.error_message, state.location_->Clone(),
-                               state.exception, world_.Get());
+                               state.exception, world_.get());
       }
       global_scope_->DispatchErrorEvent(event, kNotSharableCrossOrigin);
     }
