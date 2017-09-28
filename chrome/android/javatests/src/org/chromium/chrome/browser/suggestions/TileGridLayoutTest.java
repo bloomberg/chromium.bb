@@ -235,8 +235,8 @@ public class TileGridLayoutTest {
     private NewTabPage setUpFakeDataToShowOnNtp(int homePagePosition) throws InterruptedException {
         List<SiteSuggestion> siteSuggestions = makeSuggestions(FAKE_MOST_VISITED_URLS.length);
         siteSuggestions.add(homePagePosition,
-                new SiteSuggestion("HOMEPAGE", HOME_PAGE_URL, "", TileSource.HOMEPAGE,
-                        TileSectionType.PERSONALIZED));
+                new SiteSuggestion("HOMEPAGE", HOME_PAGE_URL, "", TileTitleSource.TITLE_TAG,
+                        TileSource.HOMEPAGE, TileSectionType.PERSONALIZED));
 
         FakeMostVisitedSites mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(siteSuggestions);

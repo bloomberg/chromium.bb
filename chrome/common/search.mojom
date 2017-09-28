@@ -15,6 +15,9 @@ enum NTPLoggingEventType;
 enum OmniboxFocusState;
 
 [Native]
+enum TileTitleSource;
+
+[Native]
 enum TileSource;
 
 [Native]
@@ -56,12 +59,14 @@ interface EmbeddedSearch {
   // Logs an impression on one of the Most Visited tile on the InstantExtended
   // New Tab Page.
   LogMostVisitedImpression(int32 page_seq_no, int32 position,
+                           TileTitleSource tile_title_source,
                            TileSource tile_source,
                            TileVisualType tile_type);
 
   // Logs a navigation on one of the Most Visited tile on the InstantExtended
   // New Tab Page.
   LogMostVisitedNavigation(int32 page_seq_no, int32 position,
+                           TileTitleSource tile_title_source,
                            TileSource tile_source,
                            TileVisualType tile_type);
 

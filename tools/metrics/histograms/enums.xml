@@ -28046,6 +28046,28 @@ from previous Chrome versions.
   <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
 </enum>
 
+<enum name="NTPTileTitleSource">
+  <summary>
+    The source where the displayed title of an NTP tile originates from.
+  </summary>
+  <int value="0" label="Unknown">
+    The title might be invalid, aggregated, user-set, extracted from history,
+    not loaded or simply not known.
+  </int>
+  <int value="1" label="Manifest">
+    The site's manifest contained a usable &quot;(short_)name&quot; attribute.
+  </int>
+  <int value="2" label="MetaTag">
+    The site provided a meta tag (e.g. OpenGraph's site_name).
+  </int>
+  <int value="3" label="TitleTag">
+    The site's title is used as tile title, extracted from the title tag.
+  </int>
+  <int value="4" label="InferredTitle">
+    The title was inferred from multiple signals (e.g. meta tags, url, title).
+  </int>
+</enum>
+
 <enum name="NTPTileVisualType">
   <summary>The visual type of a most visited tile on the new tab page.</summary>
   <int value="0" label="None">The icon or thumbnail hasn't loaded yet.</int>

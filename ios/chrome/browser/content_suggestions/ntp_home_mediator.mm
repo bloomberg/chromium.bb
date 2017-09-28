@@ -347,8 +347,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
 
-  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, item.source,
-                                      [item tileType]);
+  ntp_tiles::metrics::RecordTileClick(mostVisitedIndex, item.titleSource,
+                                      item.source, [item tileType]);
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item

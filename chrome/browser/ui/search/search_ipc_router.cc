@@ -219,6 +219,7 @@ void SearchIPCRouter::LogEvent(int page_seq_no,
 void SearchIPCRouter::LogMostVisitedImpression(
     int page_seq_no,
     int position,
+    ntp_tiles::TileTitleSource tile_title_source,
     ntp_tiles::TileSource tile_source,
     ntp_tiles::TileVisualType tile_type) {
   if (page_seq_no != commit_counter_)
@@ -228,12 +229,14 @@ void SearchIPCRouter::LogMostVisitedImpression(
   if (!policy_->ShouldProcessLogEvent())
     return;
 
-  delegate_->OnLogMostVisitedImpression(position, tile_source, tile_type);
+  delegate_->OnLogMostVisitedImpression(position, tile_title_source,
+                                        tile_source, tile_type);
 }
 
 void SearchIPCRouter::LogMostVisitedNavigation(
     int page_seq_no,
     int position,
+    ntp_tiles::TileTitleSource tile_title_source,
     ntp_tiles::TileSource tile_source,
     ntp_tiles::TileVisualType tile_type) {
   if (page_seq_no != commit_counter_)
@@ -243,7 +246,8 @@ void SearchIPCRouter::LogMostVisitedNavigation(
   if (!policy_->ShouldProcessLogEvent())
     return;
 
-  delegate_->OnLogMostVisitedNavigation(position, tile_source, tile_type);
+  delegate_->OnLogMostVisitedNavigation(position, tile_title_source,
+                                        tile_source, tile_type);
 }
 
 void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,

@@ -49322,6 +49322,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.TileTitle" enum="NTPTileTitleSource">
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Records the source of the title for each most visited tiled displayed when
+    an NTP is opened, e.g. a short_name from a manifest, or the page title.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.TileTitleClicked" enum="NTPTileTitleSource">
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Records the source for the name a most visited tile showed when the user
+    clicked it, e.g. a URL, or the page title.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.TileType" enum="NTPTileVisualType">
   <owner>mastiz@chromium.org</owner>
   <summary>
@@ -99365,6 +99381,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </suffix>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
+  <affected-histogram name="NewTabPage.TileTitle"/>
+  <affected-histogram name="NewTabPage.TileTitleClicked"/>
   <affected-histogram name="NewTabPage.TileType"/>
   <affected-histogram name="NewTabPage.TileTypeClicked"/>
 </histogram_suffixes>

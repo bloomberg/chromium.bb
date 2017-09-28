@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_title_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
 #include "url/gurl.h"
 
@@ -26,13 +28,17 @@ void RecordPageImpression(int number_of_tiles);
 // should be called only after the visual |type| of the tile has been
 // determined. If |rappor_service| is null, no rappor metrics will be reported.
 void RecordTileImpression(int index,
+                          TileTitleSource tile_source,
                           TileSource source,
                           TileVisualType type,
                           const GURL& url,
                           rappor::RapporService* rappor_service);
 
 // Records a click on a tile.
-void RecordTileClick(int index, TileSource source, TileVisualType tile_type);
+void RecordTileClick(int index,
+                     TileTitleSource tile_source,
+                     TileSource source,
+                     TileVisualType tile_type);
 
 }  // namespace metrics
 }  // namespace ntp_tiles

@@ -8,12 +8,14 @@
 #include <stddef.h>
 
 #include <bitset>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_title_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -42,11 +44,13 @@ class NTPUserDataLogger
 
   // Logs an impression on one of the NTP tiles by a given source.
   void LogMostVisitedImpression(int position,
+                                ntp_tiles::TileTitleSource tile_title_source,
                                 ntp_tiles::TileSource tile_source,
                                 ntp_tiles::TileVisualType tile_type);
 
   // Logs a navigation on one of the NTP tiles by a given source.
   void LogMostVisitedNavigation(int position,
+                                ntp_tiles::TileTitleSource tile_title_source,
                                 ntp_tiles::TileSource tile_source,
                                 ntp_tiles::TileVisualType tile_type);
 
@@ -90,6 +94,10 @@ class NTPUserDataLogger
   // only the impressions for the first source will be logged, leaving the
   // number of impressions for a source slightly out-of-sync with navigations.
   std::bitset<kNumMostVisited> impression_was_logged_;
+
+  // Stores the tile title source for each impression. Entries are only valid if
+  // the corresponding entry in |impression_was_logged_| is true.
+  std::vector<ntp_tiles::TileTitleSource> impression_tile_title_source_;
 
   // Stores the tile source for each impression. Entries are only valid if the
   // corresponding entry in |impression_was_logged_| is true.
