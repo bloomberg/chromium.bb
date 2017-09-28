@@ -55,6 +55,10 @@ class BackgroundImageGeometry {
   // that tile region. This may happen because of CSS background-size and
   // background-repeat requirements.
   const LayoutSize& TileSize() const { return tile_size_; }
+  // The tile_size_ is set in the Calculate() function after calling the
+  // ApplySubPixelHeuristicToImageSize(). The logical_tile_size_ is similar to
+  // the tile_size_, but without applying any subpixel heuristic.
+  const LayoutSize& LogicalTileSize() { return logical_tile_size_; }
   // phase() represents the point in the image that will appear at (0,0) in the
   // destination space. The point is defined in tileSize() coordinates.
   const LayoutPoint& Phase() const { return phase_; }
@@ -78,6 +82,9 @@ class BackgroundImageGeometry {
   void SetDestRect(const LayoutRect& dest_rect) { dest_rect_ = dest_rect; }
   void SetPhase(const LayoutPoint& phase) { phase_ = phase; }
   void SetTileSize(const LayoutSize& tile_size) { tile_size_ = tile_size; }
+  void SetLogicalTileSize(const LayoutSize& logical_tile_size) {
+    logical_tile_size_ = logical_tile_size;
+  }
   void SetSpaceSize(const LayoutSize& repeat_spacing) {
     repeat_spacing_ = repeat_spacing;
   }
@@ -116,6 +123,7 @@ class BackgroundImageGeometry {
   LayoutRect dest_rect_;
   LayoutPoint phase_;
   LayoutSize tile_size_;
+  LayoutSize logical_tile_size_;
   LayoutSize repeat_spacing_;
   bool has_non_local_geometry_;
   bool coordinate_offset_by_paint_rect_;

@@ -68,10 +68,17 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // Note that the container_size is in the effective zoom level of
   // the style that applies to the given ImageResourceObserver, i.e if the zoom
   // level is 1.0 the container_size should be unzoomed.
+  // The |logical_size| is the |container_size| without applying subpixel
+  // snapping. Both sizes include zoom. This size is only currently computed for
+  // BoxPainterBase and NinePieceImagePainter as these are the only painters
+  // which use custom paint. We pass a nullptr for other subclasses.
+  // TODO(schenney): Pass the |container_size| unsnapped as a LayoutSize so that
+  // we don't need to pass an additional parameter.
   virtual RefPtr<Image> GetImage(const ImageResourceObserver&,
                                  const Document&,
                                  const ComputedStyle&,
-                                 const IntSize& container_size) const = 0;
+                                 const IntSize& container_size,
+                                 const LayoutSize* logical_size) const = 0;
   virtual WrappedImagePtr Data() const = 0;
   virtual float ImageScaleFactor() const { return 1; }
   virtual bool KnownToBeOpaque(const Document&, const ComputedStyle&) const = 0;

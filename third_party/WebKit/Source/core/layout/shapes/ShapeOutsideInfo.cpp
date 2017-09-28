@@ -168,9 +168,9 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
   }
 
   DCHECK(!style_image->IsPendingImage());
-  RefPtr<Image> image =
-      style_image->GetImage(layout_box_, layout_box_.GetDocument(),
-                            layout_box_.StyleRef(), FlooredIntSize(image_size));
+  RefPtr<Image> image = style_image->GetImage(
+      layout_box_, layout_box_.GetDocument(), layout_box_.StyleRef(),
+      FlooredIntSize(image_size), nullptr);
 
   return Shape::CreateRasterShape(image.get(), shape_image_threshold,
                                   image_rect, margin_rect, writing_mode,

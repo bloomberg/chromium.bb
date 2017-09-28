@@ -26,9 +26,12 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
                                         Observer*);
   ~CSSPaintImageGeneratorImpl() override;
 
+  // The |container_size| is the container size with subpixel snapping, where
+  // the |logical_size| is without it. Both sizes include zoom.
   RefPtr<Image> Paint(const ImageResourceObserver&,
-                      const IntSize&,
-                      const CSSStyleValueVector*) final;
+                      const IntSize& container_size,
+                      const CSSStyleValueVector*,
+                      const LayoutSize* logical_size) final;
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;
   const Vector<AtomicString>& CustomInvalidationProperties() const final;
   bool HasAlpha() const final;

@@ -530,6 +530,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   // present in the painted tile.
   SetTileSize(
       ApplySubPixelHeuristicToImageSize(fill_tile_size, positioning_area));
+  SetLogicalTileSize(fill_tile_size);
 
   EFillRepeat background_repeat_x = fill_layer.RepeatX();
   EFillRepeat background_repeat_y = fill_layer.RepeatY();
@@ -565,6 +566,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
 
     SetTileSize(
         ApplySubPixelHeuristicToImageSize(fill_tile_size, positioning_area));
+    SetLogicalTileSize(fill_tile_size);
     SetPhaseX(
         TileSize().Width()
             ? LayoutUnit(roundf(TileSize().Width() -
@@ -593,6 +595,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
 
     SetTileSize(
         ApplySubPixelHeuristicToImageSize(fill_tile_size, positioning_area));
+    SetLogicalTileSize(fill_tile_size);
     SetPhaseY(
         TileSize().Height()
             ? LayoutUnit(roundf(TileSize().Height() -

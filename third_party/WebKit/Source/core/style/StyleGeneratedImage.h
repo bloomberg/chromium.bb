@@ -52,10 +52,13 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   bool UsesImageContainerSize() const override { return !fixed_size_; }
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
+  // The |container_size| is the container size with subpixel snapping, where
+  // the |logical_size| is without it. Both sizes include zoom.
   RefPtr<Image> GetImage(const ImageResourceObserver&,
                          const Document&,
                          const ComputedStyle&,
-                         const IntSize&) const override;
+                         const IntSize& container_size,
+                         const LayoutSize* logical_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
   DECLARE_VIRTUAL_TRACE();

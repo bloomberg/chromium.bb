@@ -84,7 +84,8 @@ class StylePendingImage final : public StyleImage {
   RefPtr<Image> GetImage(const ImageResourceObserver&,
                          const Document&,
                          const ComputedStyle&,
-                         const IntSize&) const override {
+                         const IntSize& container_size,
+                         const LayoutSize* logical_size) const override {
     NOTREACHED();
     return nullptr;
   }
