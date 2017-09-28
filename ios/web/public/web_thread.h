@@ -65,6 +65,9 @@ class WebThread {
     // The main thread in the browser.
     UI,
 
+    // This is the thread that interacts with the database.
+    DB,
+
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
     // Blocking IO should happen in TaskScheduler.
     IO,
@@ -202,6 +205,7 @@ class WebThread {
   // std::unique_ptr<Foo, web::WebThread::DeleteOnIOThread> ptr;
   struct DeleteOnUIThread : public DeleteOnThread<UI> {};
   struct DeleteOnIOThread : public DeleteOnThread<IO> {};
+  struct DeleteOnDBThread : public DeleteOnThread<DB> {};
 
  private:
   friend class WebThreadImpl;
