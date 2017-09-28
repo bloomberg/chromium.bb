@@ -348,8 +348,7 @@ static int tegra_bo_flush(struct bo *bo, struct map_info *data)
 	struct tegra_private_map_data *priv = data->priv;
 
 	if (priv && priv->prot & PROT_WRITE)
-		transfer_tiled_memory(bo, priv->tiled, priv->untiled,
-				      TEGRA_WRITE_TILED_BUFFER);
+		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_WRITE_TILED_BUFFER);
 
 	return 0;
 }

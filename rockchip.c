@@ -134,7 +134,7 @@ static int rockchip_init(struct driver *drv)
 
 	/* Camera ISP supports only NV12 output. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
@@ -161,7 +161,6 @@ static int rockchip_init(struct driver *drv)
 static bool has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)
 {
 	uint32_t i;
-
 	for (i = 0; i < count; i++)
 		if (list[i] == modifier)
 			return true;
@@ -235,7 +234,6 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 			      uint32_t flags)
 {
 	uint64_t modifiers[] = { DRM_FORMAT_MOD_NONE };
-
 	return rockchip_bo_create_with_modifiers(bo, width, height, format, modifiers,
 						 ARRAY_SIZE(modifiers));
 }
@@ -292,7 +290,6 @@ static int rockchip_bo_unmap(struct bo *bo, struct map_info *data)
 static int rockchip_bo_flush(struct bo *bo, struct map_info *data)
 {
 	struct rockchip_private_map_data *priv = data->priv;
-
 	if (priv)
 		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
 
