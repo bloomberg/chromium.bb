@@ -50,7 +50,7 @@ TEST_F(HistoryTest, CanChangeToURL) {
     KURL document_url(kParsedURLString, test.document_url);
     RefPtr<SecurityOrigin> document_origin =
         SecurityOrigin::Create(document_url);
-    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.get(),
                                                      document_url));
   }
 }
@@ -74,7 +74,7 @@ TEST_F(HistoryTest, CanChangeToURLInFileOrigin) {
     KURL document_url(kParsedURLString, test.document_url);
     RefPtr<SecurityOrigin> document_origin =
         SecurityOrigin::Create(document_url);
-    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.get(),
                                                      document_url));
   }
 }
@@ -109,7 +109,7 @@ TEST_F(HistoryTest, CanChangeToURLInUniqueOrigin) {
     KURL url(kParsedURLString, test.url);
     KURL document_url(kParsedURLString, test.document_url);
     RefPtr<SecurityOrigin> document_origin = SecurityOrigin::CreateUnique();
-    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.Get(),
+    EXPECT_EQ(test.expected, History::CanChangeToUrl(url, document_origin.get(),
                                                      document_url));
   }
 }

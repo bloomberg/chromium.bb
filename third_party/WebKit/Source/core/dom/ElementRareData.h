@@ -87,7 +87,7 @@ class ElementRareData : public NodeRareData {
     attribute_map_ = attribute_map;
   }
 
-  ComputedStyle* GetComputedStyle() const { return computed_style_.Get(); }
+  ComputedStyle* GetComputedStyle() const { return computed_style_.get(); }
   void SetComputedStyle(RefPtr<ComputedStyle>);
   void ClearComputedStyle();
 

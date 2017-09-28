@@ -76,8 +76,8 @@ bool CanvasFontCache::GetFontUsingDefaultStyle(const String& font_string,
     return false;
 
   RefPtr<ComputedStyle> font_style =
-      ComputedStyle::Clone(*default_font_style_.Get());
-  document_->EnsureStyleResolver().ComputeFont(font_style.Get(), *parsed_style);
+      ComputedStyle::Clone(*default_font_style_.get());
+  document_->EnsureStyleResolver().ComputeFont(font_style.get(), *parsed_style);
   fonts_resolved_using_default_style_.insert(font_string,
                                              font_style->GetFont());
   resolved_font = fonts_resolved_using_default_style_.find(font_string)->value;

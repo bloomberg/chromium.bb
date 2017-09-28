@@ -137,7 +137,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
           TaskRunnerHelper::Get(TaskType::kNetworking, &document)),
       parser_scheduler_(
           sync_policy == kAllowAsynchronousParsing
-              ? HTMLParserScheduler::Create(this, loading_task_runner_.Get())
+              ? HTMLParserScheduler::Create(this, loading_task_runner_.get())
               : nullptr),
       xss_auditor_delegate_(&document),
       weak_factory_(this),
@@ -816,7 +816,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
   config->xss_auditor->Init(GetDocument(), &xss_auditor_delegate_);
 
   config->decoder = TakeDecoder();
-  config->tokenized_chunk_queue = tokenized_chunk_queue_.Get();
+  config->tokenized_chunk_queue = tokenized_chunk_queue_.get();
   if (GetDocument()->GetSettings()) {
     if (GetDocument()
             ->GetSettings()

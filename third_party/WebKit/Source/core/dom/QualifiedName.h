@@ -140,7 +140,7 @@ class CORE_EXPORT QualifiedName {
 
   String ToString() const;
 
-  QualifiedNameImpl* Impl() const { return impl_.Get(); }
+  QualifiedNameImpl* Impl() const { return impl_.get(); }
 
   // Init routine for globals
   static void InitAndReserveCapacityForSize(unsigned size);

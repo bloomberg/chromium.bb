@@ -152,7 +152,7 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     DCHECK(!IsEmpty());
     unsigned start = current_;
     current_ = end_;
-    return StringView(characters_.Get(), start, end_ - start);
+    return StringView(characters_.get(), start, end_ - start);
   }
 
   void GiveRemainingTo(StringBuilder& recipient) {
@@ -207,7 +207,7 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     DCHECK(!IsEmpty());
     const unsigned start = current_;
     SkipLeading<characterPredicate>();
-    return StringView(characters_.Get(), start, current_ - start);
+    return StringView(characters_.get(), start, current_ - start);
   }
 
   RefPtr<StringImpl> characters_;

@@ -2132,7 +2132,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
     return kReattach;
 
   StyleRecalcChange local_change =
-      ComputedStyle::StylePropagationDiff(old_style.Get(), new_style.Get());
+      ComputedStyle::StylePropagationDiff(old_style.get(), new_style.get());
   if (local_change == kNoChange) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_unchanged, 1);
@@ -2140,8 +2140,8 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_changed, 1);
     if (this == GetDocument().documentElement()) {
-      if (GetDocument().GetStyleEngine().UpdateRemUnits(old_style.Get(),
-                                                        new_style.Get())) {
+      if (GetDocument().GetStyleEngine().UpdateRemUnits(old_style.get(),
+                                                        new_style.get())) {
         // Trigger a full document recalc on rem unit changes. We could keep
         // track of which elements depend on rem units like we do for viewport
         // styles, but we assume root font size changes are rare and just
@@ -2161,7 +2161,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   DCHECK(old_style);
 
   if (local_change != kNoChange)
-    UpdateCallbackSelectors(old_style.Get(), new_style.Get());
+    UpdateCallbackSelectors(old_style.get(), new_style.get());
 
   if (LayoutObject* layout_object = this->GetLayoutObject()) {
     // kNoChange may means that the computed style didn't change, but there are
@@ -2170,9 +2170,9 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
     // invalidation diffing in that case, but we replace the old ComputedStyle
     // object with the new one to ensure the mentioned flags are up to date.
     if (local_change == kNoChange)
-      layout_object->SetStyleInternal(new_style.Get());
+      layout_object->SetStyleInternal(new_style.get());
     else
-      layout_object->SetStyle(new_style.Get());
+      layout_object->SetStyle(new_style.get());
   } else {
     if (ShouldStoreNonLayoutObjectComputedStyle(*new_style))
       StoreNonLayoutObjectComputedStyle(new_style);

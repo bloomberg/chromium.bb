@@ -112,7 +112,7 @@ class NodeRenderingData {
   }
 
   ComputedStyle* GetNonAttachedStyle() const {
-    return non_attached_style_.Get();
+    return non_attached_style_.get();
   }
   void SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style);
 

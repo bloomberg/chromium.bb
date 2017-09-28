@@ -252,7 +252,7 @@ DEFINE_TRACE(WebViewFrameWidget) {
 }
 
 PageWidgetEventHandler* WebViewFrameWidget::GetPageWidgetEventHandler() {
-  return web_view_.Get();
+  return web_view_.get();
 }
 
 }  // namespace blink

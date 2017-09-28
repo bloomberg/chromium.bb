@@ -39,7 +39,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
  private:
   // Implements Modulator:
-  ScriptState* GetScriptState() final { return script_state_.Get(); }
+  ScriptState* GetScriptState() final { return script_state_.get(); }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
     EXPECT_EQ(kTestReferrerURL, url.GetString());
@@ -60,22 +60,22 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
                             CaptureEvalErrorFlag capture_error) final {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
-    ScriptState::Scope scope(script_state_.Get());
-    return module_script->Record().Evaluate(script_state_.Get(),
+    ScriptState::Scope scope(script_state_.get());
+    return module_script->Record().Evaluate(script_state_.get(),
                                             CaptureEvalErrorFlag::kCapture);
   }
 
   ScriptModuleState GetRecordStatus(ScriptModule script_module) final {
-    ScriptState::Scope scope(script_state_.Get());
-    return script_module.Status(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
+    return script_module.Status(script_state_.get());
   }
 
   ScriptValue GetError(const ModuleScript* module_script) final {
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
     ScriptModule record = module_script->Record();
     DCHECK(!record.IsNull());
-    return ScriptValue(script_state_.Get(),
-                       record.ErrorCompletion(script_state_.Get()));
+    return ScriptValue(script_state_.get(),
+                       record.ErrorCompletion(script_state_.get()));
   }
 
   RefPtr<ScriptState> script_state_;

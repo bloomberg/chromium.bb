@@ -613,7 +613,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
 
   if (PlaceholderFrame()) {
     DCHECK(GetDocument().Printing());
-    context.DrawImage(PlaceholderFrame().Get(), PixelSnappedIntRect(r));
+    context.DrawImage(PlaceholderFrame().get(), PixelSnappedIntRect(r));
     return;
   }
 

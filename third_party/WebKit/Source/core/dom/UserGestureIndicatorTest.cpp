@@ -148,7 +148,7 @@ TEST(UserGestureIndicatorTest, Timeouts) {
     }
 
     {
-      UserGestureIndicator user_gesture_scope(token.Get());
+      UserGestureIndicator user_gesture_scope(token.get());
       AdvanceClock(0.75);
       EXPECT_TRUE(token->HasGestures());
       AdvanceClock(0.75);

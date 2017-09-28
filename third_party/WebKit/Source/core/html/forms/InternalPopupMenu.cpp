@@ -524,11 +524,11 @@ void InternalPopupMenu::Update() {
   }
 
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  PagePopupClient::AddString("window.updateData = {\n", data.Get());
-  PagePopupClient::AddString("type: \"update\",\n", data.Get());
-  ItemIterationContext context(*owner_element_->GetComputedStyle(), data.Get());
+  PagePopupClient::AddString("window.updateData = {\n", data.get());
+  PagePopupClient::AddString("type: \"update\",\n", data.get());
+  ItemIterationContext context(*owner_element_->GetComputedStyle(), data.get());
   context.SerializeBaseStyle();
-  PagePopupClient::AddString("children: [", data.Get());
+  PagePopupClient::AddString("children: [", data.get());
   const HeapVector<Member<HTMLElement>>& items = owner_element_->GetListItems();
   for (; context.list_index_ < items.size(); ++context.list_index_) {
     Element& child = *items[context.list_index_];
@@ -542,12 +542,12 @@ void InternalPopupMenu::Update() {
       AddSeparator(context, toHTMLHRElement(child));
   }
   context.FinishGroupIfNecessary();
-  PagePopupClient::AddString("],\n", data.Get());
+  PagePopupClient::AddString("],\n", data.get());
   IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
       owner_element_->VisibleBoundsInVisualViewport(),
       OwnerElement().GetDocument().View());
-  AddProperty("anchorRectInScreen", anchor_rect_in_screen, data.Get());
-  PagePopupClient::AddString("}\n", data.Get());
+  AddProperty("anchorRectInScreen", anchor_rect_in_screen, data.get());
+  PagePopupClient::AddString("}\n", data.get());
   popup_->PostMessage(String::FromUTF8(data->Data(), data->size()));
 }
 

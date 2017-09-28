@@ -81,7 +81,7 @@ SerializedScriptValue* History::state(ExceptionState& exception_state) {
     return 0;
   }
   last_state_object_requested_ = StateInternal();
-  return last_state_object_requested_.Get();
+  return last_state_object_requested_.get();
 }
 
 SerializedScriptValue* History::StateInternal() const {
