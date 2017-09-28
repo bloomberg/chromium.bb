@@ -146,6 +146,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   LayerImpl* MaskLayer();
   bool HasMask() const;
+  bool HasMaskingContributingSurface() const;
 
   const FilterOperations& Filters() const;
   const FilterOperations& BackgroundFilters() const;

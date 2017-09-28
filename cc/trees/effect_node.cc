@@ -28,6 +28,7 @@ EffectNode::EffectNode()
       has_potential_opacity_animation(false),
       is_currently_animating_filter(false),
       is_currently_animating_opacity(false),
+      has_masking_child(false),
       effect_changed(false),
       subtree_has_copy_request(false),
       transform_id(0),
@@ -63,6 +64,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          is_currently_animating_filter == other.is_currently_animating_filter &&
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
+         has_masking_child == other.has_masking_child &&
          effect_changed == other.effect_changed &&
          subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
