@@ -227,24 +227,6 @@ class Node {
   const NodeName name_;
   const DelegateHolder delegate_;
 
-  // A wrapper structure for Port table entries. https://crbug.com/725605 likely
-  // indicates memory corruption stomping on the Port table, and there is no
-  // clue as to where the corruption is coming from. Changing the size of the
-  // map entry allocations should effectively work around the bug, as it did for
-  // https://crbug.com/740044.
-  struct PortTableEntry {
-    explicit PortTableEntry(scoped_refptr<Port> port);
-    PortTableEntry(const PortTableEntry&) = delete;
-    PortTableEntry(PortTableEntry&& other);
-    ~PortTableEntry();
-
-    PortTableEntry& operator=(const PortTableEntry&) = delete;
-    PortTableEntry& operator=(PortTableEntry&& other);
-
-    uint64_t sentinel_value_ = 0x1827364554637281ULL;
-    scoped_refptr<Port> port;
-  };
-
   // Guards |ports_|. This must never be acquired while an individual port's
   // lock is held on the same thread. Conversely, individual port locks may be
   // acquired while this one is held.
@@ -253,7 +235,7 @@ class Node {
   // destruction, it is also important to ensure that such events are never
   // destroyed while this (or any individual Port) lock is held.
   base::Lock ports_lock_;
-  std::unordered_map<PortName, PortTableEntry> ports_;
+  std::unordered_map<PortName, scoped_refptr<Port>> ports_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);
 };
