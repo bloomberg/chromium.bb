@@ -47,7 +47,7 @@ GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
 void GinJavaBridgeDispatcherHost::InstallFilterAndRegisterAllRoutingIds() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (named_objects_.empty() ||
-      !web_contents()->GetRenderProcessHost()->GetChannel()) {
+      !web_contents()->GetMainFrame()->GetProcess()->GetChannel()) {
     return;
   }
 
