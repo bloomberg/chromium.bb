@@ -88,15 +88,17 @@ class CrosAmdGpuBrokerProcessPolicy : public CrosAmdGpuProcessPolicy {
 // openat and in the non-Chrome OS case unlink allowed.
 ResultExpr CrosAmdGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
-    case __NR_access:
     case __NR_faccessat:
-    case __NR_open:
     case __NR_openat:
+#if !defined(__aarch64__)
+    case __NR_access:
+    case __NR_open:
 #if !defined(OS_CHROMEOS)
     // The broker process needs to able to unlink the temporary
     // files that it may create. This is used by DRI3.
     case __NR_unlink:
-#endif
+#endif  // !defined(OS_CHROMEOS)
+#endif  // !define(__aarch64__)
       return Allow();
     default:
       return CrosAmdGpuProcessPolicy::EvaluateSyscall(sysno);
@@ -112,12 +114,14 @@ CrosAmdGpuProcessPolicy::~CrosAmdGpuProcessPolicy() {}
 ResultExpr CrosAmdGpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_fstatfs:
-    case __NR_getdents:
-    case __NR_readlink:
     case __NR_sched_setscheduler:
-    case __NR_stat:
     case __NR_sysinfo:
     case __NR_uname:
+#if !defined(__aarch64__)
+    case __NR_getdents:
+    case __NR_readlink:
+    case __NR_stat:
+#endif
       return Allow();
 #if defined(__x86_64__)
     // Allow only AF_UNIX for |domain|.
