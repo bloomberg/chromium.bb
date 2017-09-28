@@ -52,6 +52,7 @@ source_set("browser") {
     "//components/tracing:startup_tracing",
     "//components/url_formatter",
     "//components/variations",
+    "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",

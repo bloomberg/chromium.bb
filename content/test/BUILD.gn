@@ -1574,6 +1574,7 @@ test("content_unittests") {
     "//components/offline_pages/features:features",
     "//components/rappor:test_support",
     "//components/ukm:test_support",
+    "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",

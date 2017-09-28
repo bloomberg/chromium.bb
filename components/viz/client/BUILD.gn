@@ -4,16 +4,22 @@
 
 import("//components/viz/viz.gni")
 
-viz_source_set("client") {
+viz_component("client") {
   sources = [
     "client_layer_tree_frame_sink.cc",
     "client_layer_tree_frame_sink.h",
     "client_shared_bitmap_manager.cc",
     "client_shared_bitmap_manager.h",
+    "frame_eviction_manager.cc",
+    "frame_eviction_manager.h",
+    "frame_evictor.cc",
+    "frame_evictor.h",
     "hit_test_data_provider.h",
     "local_surface_id_provider.cc",
     "local_surface_id_provider.h",
   ]
+
+  defines = [ "VIZ_CLIENT_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",

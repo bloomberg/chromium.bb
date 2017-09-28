@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/frame_sinks/frame_evictor.h"
+#include "components/viz/client/frame_evictor.h"
 
 #include "base/logging.h"
 

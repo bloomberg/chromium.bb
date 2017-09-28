@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_
-#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_
+#ifndef COMPONENTS_VIZ_CLIENT_FRAME_EVICTION_MANAGER_H_
+#define COMPONENTS_VIZ_CLIENT_FRAME_EVICTION_MANAGER_H_
 
 #include <stddef.h>
 
@@ -14,11 +14,11 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/singleton.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/client/viz_client_export.h"
 
 namespace viz {
 
-class VIZ_SERVICE_EXPORT FrameEvictionManagerClient {
+class FrameEvictionManagerClient {
  public:
   virtual ~FrameEvictionManagerClient() {}
   virtual void EvictCurrentFrame() = 0;
@@ -30,7 +30,7 @@ class VIZ_SERVICE_EXPORT FrameEvictionManagerClient {
 // between a small set of tabs faster. The limit is a soft limit, because
 // clients can lock their frame to prevent it from being discarded, e.g. if the
 // tab is visible, or while capturing a screenshot.
-class VIZ_SERVICE_EXPORT FrameEvictionManager
+class VIZ_CLIENT_EXPORT FrameEvictionManager
     : public base::MemoryCoordinatorClient {
  public:
   static FrameEvictionManager* GetInstance();
@@ -78,4 +78,4 @@ class VIZ_SERVICE_EXPORT FrameEvictionManager
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTION_MANAGER_H_
+#endif  // COMPONENTS_VIZ_CLIENT_FRAME_EVICTION_MANAGER_H_

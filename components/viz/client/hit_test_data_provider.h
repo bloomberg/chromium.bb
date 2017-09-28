@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/viz/client/viz_client_export.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
 
-class HitTestDataProvider {
+class VIZ_CLIENT_EXPORT HitTestDataProvider {
  public:
   HitTestDataProvider() = default;
   virtual ~HitTestDataProvider() = default;

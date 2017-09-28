@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTOR_H_
-#define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTOR_H_
+#ifndef COMPONENTS_VIZ_CLIENT_FRAME_EVICTOR_H_
+#define COMPONENTS_VIZ_CLIENT_FRAME_EVICTOR_H_
 
 #include "base/macros.h"
-#include "components/viz/service/frame_sinks/frame_eviction_manager.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/client/frame_eviction_manager.h"
 
 namespace viz {
 
-class VIZ_SERVICE_EXPORT FrameEvictorClient {
+class FrameEvictorClient {
  public:
   virtual ~FrameEvictorClient() {}
   virtual void EvictDelegatedFrame() = 0;
 };
 
-class VIZ_SERVICE_EXPORT FrameEvictor : public FrameEvictionManagerClient {
+class VIZ_CLIENT_EXPORT FrameEvictor : public FrameEvictionManagerClient {
  public:
   // |client| must outlive |this|.
   explicit FrameEvictor(FrameEvictorClient* client);
@@ -43,4 +42,4 @@ class VIZ_SERVICE_EXPORT FrameEvictor : public FrameEvictionManagerClient {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_FRAME_SINKS_FRAME_EVICTOR_H_
+#endif  // COMPONENTS_VIZ_CLIENT_FRAME_EVICTOR_H_
