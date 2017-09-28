@@ -34,7 +34,8 @@ namespace {
 class SavePasswordsCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
-  SavePasswordsCollectionViewControllerTest() = default;
+  SavePasswordsCollectionViewControllerTest()
+      : thread_bundle_(web::TestWebThreadBundle::REAL_DB_THREAD) {}
 
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;

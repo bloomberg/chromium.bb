@@ -309,11 +309,20 @@ TEST_F(CallStackProfileStructTraitsTest, Thread) {
   EXPECT_TRUE(proxy_->BounceThread(Thread::FILE_THREAD, &out));
   EXPECT_EQ(Thread::FILE_THREAD, out);
 
+  EXPECT_TRUE(proxy_->BounceThread(Thread::FILE_USER_BLOCKING_THREAD, &out));
+  EXPECT_EQ(Thread::FILE_USER_BLOCKING_THREAD, out);
+
   EXPECT_TRUE(proxy_->BounceThread(Thread::PROCESS_LAUNCHER_THREAD, &out));
   EXPECT_EQ(Thread::PROCESS_LAUNCHER_THREAD, out);
 
+  EXPECT_TRUE(proxy_->BounceThread(Thread::CACHE_THREAD, &out));
+  EXPECT_EQ(Thread::CACHE_THREAD, out);
+
   EXPECT_TRUE(proxy_->BounceThread(Thread::IO_THREAD, &out));
   EXPECT_EQ(Thread::IO_THREAD, out);
+
+  EXPECT_TRUE(proxy_->BounceThread(Thread::DB_THREAD, &out));
+  EXPECT_EQ(Thread::DB_THREAD, out);
 
   EXPECT_TRUE(proxy_->BounceThread(Thread::GPU_MAIN_THREAD, &out));
   EXPECT_EQ(Thread::GPU_MAIN_THREAD, out);

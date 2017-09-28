@@ -86,7 +86,8 @@ const int kDeleteButtonItem = 0;
 class PasswordDetailsCollectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
-  PasswordDetailsCollectionViewControllerTest() {
+  PasswordDetailsCollectionViewControllerTest()
+      : thread_bundle_(web::TestWebThreadBundle::REAL_DB_THREAD) {
     origin_ = kSite;
     form_.username_value = base::SysNSStringToUTF16(kUsername);
     form_.password_value = base::SysNSStringToUTF16(kPassword);

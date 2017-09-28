@@ -469,10 +469,16 @@ Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
       return UI_THREAD;
     case CallStackProfileParams::FILE_THREAD:
       return FILE_THREAD;
+    case CallStackProfileParams::FILE_USER_BLOCKING_THREAD:
+      return FILE_USER_BLOCKING_THREAD;
     case CallStackProfileParams::PROCESS_LAUNCHER_THREAD:
       return PROCESS_LAUNCHER_THREAD;
+    case CallStackProfileParams::CACHE_THREAD:
+      return CACHE_THREAD;
     case CallStackProfileParams::IO_THREAD:
       return IO_THREAD;
+    case CallStackProfileParams::DB_THREAD:
+      return DB_THREAD;
     case CallStackProfileParams::GPU_MAIN_THREAD:
       return GPU_MAIN_THREAD;
     case CallStackProfileParams::RENDER_THREAD:

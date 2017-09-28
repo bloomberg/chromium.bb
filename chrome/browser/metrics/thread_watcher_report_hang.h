@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_METRICS_THREAD_WATCHER_REPORT_HANG_H_
 
 #include "base/compiler_specific.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace metrics {
 
@@ -20,8 +19,7 @@ NOINLINE void ShutdownHang();
 
 // This function makes it possible to tell from the callstack alone what thread
 // was unresponsive.
-NOINLINE void CrashBecauseThreadWasUnresponsive(
-    content::BrowserThread::ID thread_id);
+NOINLINE void CrashBecauseThreadWasUnresponsive(int thread_id);
 
 }  // namespace metrics
 
