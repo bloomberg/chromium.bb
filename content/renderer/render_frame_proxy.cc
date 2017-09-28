@@ -218,6 +218,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       *base::CommandLine::ForCurrentProcess();
   enable_surface_synchronization_ =
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  compositing_helper_.reset(
+      ChildFrameCompositingHelper::CreateForRenderFrameProxy(this));
 }
 
 void RenderFrameProxy::ResendFrameRects() {
@@ -228,7 +230,7 @@ void RenderFrameProxy::ResendFrameRects() {
 }
 
 void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_ && compositing_helper_->surface_id().is_valid()) {
+  if (compositing_helper_->surface_id().is_valid()) {
     FrameHostMsg_HittestData_Params params;
     params.surface_id = compositing_helper_->surface_id();
     params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
@@ -335,8 +337,7 @@ void RenderFrameProxy::OnDeleteProxy() {
 }
 
 void RenderFrameProxy::OnChildFrameProcessGone() {
-  if (compositing_helper_)
-    compositing_helper_->ChildFrameGone();
+  compositing_helper_->ChildFrameGone();
 }
 
 void RenderFrameProxy::OnSetChildFrameSurface(
@@ -348,25 +349,6 @@ void RenderFrameProxy::OnSetChildFrameSurface(
   // before the frame has been destroyed. http://crbug.com/446575.
   if (!web_frame()->Parent())
     return;
-
-  if (!compositing_helper_) {
-    compositing_helper_.reset(
-        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this));
-    if (enable_surface_synchronization_) {
-      // We wait until there is a single CompositorFrame guaranteed to be
-      // available and ready for display in the display compositor before using
-      // surface synchronization. This guarantees that we will have something to
-      // display when the compositor goes to produce a display frame.
-      //
-      // Once there's an available fallback surface that can be employed, then
-      // the primary surface is updated as soon as the frame rect changes.
-      //
-      // The compositor will attempt to composite the primary surface within a
-      // give deadline (4 frames is the default). If the primary surface isn't
-      // available for four frames, then the fallback surface will be used.
-      compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-    }
-  }
 
   if (!enable_surface_synchronization_)
     compositing_helper_->SetPrimarySurfaceInfo(surface_info);
@@ -544,8 +526,7 @@ void RenderFrameProxy::FrameRectsChanged(const blink::WebRect& frame_rect) {
   gfx::Rect rect = frame_rect;
   if (frame_rect_.size() != rect.size() || !local_surface_id_.is_valid()) {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
-    if (compositing_helper_ && enable_surface_synchronization_ &&
-        frame_sink_id_.is_valid()) {
+    if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
       float device_scale_factor =
           render_widget()->GetOriginalDeviceScaleFactor();
       viz::SurfaceInfo surface_info(

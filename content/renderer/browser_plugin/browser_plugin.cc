@@ -104,9 +104,6 @@ BrowserPlugin::BrowserPlugin(
 BrowserPlugin::~BrowserPlugin() {
   Detach();
 
-  if (compositing_helper_)
-    compositing_helper_->OnContainerDestroy();
-
   if (delegate_) {
     delegate_->DidDestroyElement();
     delegate_.reset();
@@ -138,26 +135,6 @@ void BrowserPlugin::OnSetChildFrameSurface(
     const viz::SurfaceSequence& sequence) {
   if (!attached())
     return;
-
-  if (!compositing_helper_) {
-    compositing_helper_.reset(
-        ChildFrameCompositingHelper::CreateForBrowserPlugin(
-            weak_ptr_factory_.GetWeakPtr()));
-    if (enable_surface_synchronization_) {
-      // We wait until there is a single CompositorFrame guaranteed to be
-      // available and ready for display in the display compositor before using
-      // surface synchronization. This guarantees that we will have something to
-      // display when the compositor goes to produce a display frame.
-      //
-      // Once there's an available fallback surface that can be employed, then
-      // the primary surface is updated as soon as the frame rect changes.
-      //
-      // The compositor will attempt to composite the primary surface within a
-      // give deadline (4 frames is the default). If the primary surface isn't
-      // available for four frames, then the fallback surface will be used.
-      compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-    }
-  }
 
   if (!enable_surface_synchronization_)
     compositing_helper_->SetPrimarySurfaceInfo(surface_info);
@@ -226,10 +203,7 @@ void BrowserPlugin::Detach() {
 
   attached_ = false;
   guest_crashed_ = false;
-  if (compositing_helper_) {
-    compositing_helper_->OnContainerDestroy();
-    compositing_helper_.reset();
-  }
+  compositing_helper_->OnContainerDestroy();
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
@@ -250,12 +224,6 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
   guest_crashed_ = true;
-
-  if (!compositing_helper_) {
-    compositing_helper_.reset(
-        ChildFrameCompositingHelper::CreateForBrowserPlugin(
-            weak_ptr_factory_.GetWeakPtr()));
-  }
   compositing_helper_->ChildFrameGone();
 }
 
@@ -327,8 +295,7 @@ void BrowserPlugin::ViewRectsChanged(const gfx::Rect& view_rect) {
       !view_rect_ || view_rect_->size() != view_rect.size();
   if (rect_size_changed || !local_surface_id_.is_valid()) {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
-    if (compositing_helper_ && enable_surface_synchronization_ &&
-        frame_sink_id_.is_valid()) {
+    if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
       RenderWidget* render_widget =
           RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
               ->GetRenderWidget();
@@ -395,6 +362,10 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserPlugin::UpdateInternalInstanceId,
                                 weak_ptr_factory_.GetWeakPtr()));
+
+  compositing_helper_.reset(ChildFrameCompositingHelper::CreateForBrowserPlugin(
+      weak_ptr_factory_.GetWeakPtr()));
+
   return true;
 }
 
@@ -483,8 +454,7 @@ void BrowserPlugin::UpdateVisibility(bool visible) {
   if (!attached())
     return;
 
-  if (compositing_helper_)
-    compositing_helper_->UpdateVisibility(visible);
+  compositing_helper_->UpdateVisibility(visible);
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
       browser_plugin_instance_id_,
