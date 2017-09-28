@@ -32,14 +32,8 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/editing/iterators/BackwardsCharacterIterator.h"
-#include "core/editing/iterators/BackwardsTextBuffer.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/ForwardsTextBuffer.h"
-#include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/TextBoundaries.h"
-#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 
