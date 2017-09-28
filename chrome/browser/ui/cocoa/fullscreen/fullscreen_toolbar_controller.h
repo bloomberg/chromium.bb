@@ -60,11 +60,6 @@ struct FullscreenToolbarLayout {
   // Whether or not we are in fullscreen mode.
   BOOL inFullscreenMode_;
 
-  // Whether the menu bar is currently locked in the visible position (while
-  // the mouse is over the toolbar). AppKit counts lock/unlock calls, so it's
-  // important that locks/unlocks are balanced.
-  BOOL menubarLocked_;
-
   // Updates the fullscreen toolbar layout for changes in the menubar. This
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
@@ -76,8 +71,9 @@ struct FullscreenToolbarLayout {
   // Manages the toolbar animations for the TOOLBAR_HIDDEN style.
   std::unique_ptr<FullscreenToolbarAnimationController> animationController_;
 
-  // Mouse tracker to track the user's interactions with the toolbar. This
-  // object is only set when the browser is in fullscreen mode.
+  // When the menu bar and toolbar are visible, creates a tracking area which
+  // is used to keep them visible until the mouse moves far enough away from
+  // them. Only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenToolbarMouseTracker> mouseTracker_;
 
   // Controller for immersive fullscreen.

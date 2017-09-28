@@ -5,9 +5,8 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
 
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
-#include "ui/base/cocoa/appkit_utils.h"
+#include "chrome/browser/ui/cocoa/scoped_menu_bar_lock.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace {
@@ -29,27 +28,24 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
   // is still on the toolbar.
   base::scoped_nsobject<CrTrackingArea> trackingArea_;
 
+  // Keeps the menu bar from hiding until the mouse exits the tracking area.
+  std::unique_ptr<ScopedMenuBarLock> menuBarLock_;
+
   // The content view for the window.
   NSView* contentView_;  // weak
 
   // The owner of this class.
   FullscreenToolbarController* owner_;  // weak
-
-  // The object managing the fullscreen toolbar's animations.
-  FullscreenToolbarAnimationController* animationController_;  // weak
 }
 
 @end
 
 @implementation FullscreenToolbarMouseTracker
 
-- (instancetype)
-initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
-                animationController:
-                    (FullscreenToolbarAnimationController*)animationController {
+- (instancetype)initWithFullscreenToolbarController:
+    (FullscreenToolbarController*)owner {
   if ((self = [super init])) {
     owner_ = owner;
-    animationController_ = animationController;
   }
 
   return self;
@@ -61,9 +57,10 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
 }
 
 - (void)updateTrackingArea {
-  // Remove the tracking area if the toolbar isn't fully shown.
-  if (!ui::IsCGFloatEqual([owner_ toolbarFraction], 1.0)) {
+  // Remove the tracking area if the toolbar and menu bar aren't both visible.
+  if ([owner_ toolbarFraction] == 0 || ![NSMenu menuBarVisible]) {
     [self removeTrackingArea];
+    menuBarLock_.reset();
     return;
   }
 
@@ -108,21 +105,12 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
   contentView_ = nil;
 }
 
-- (BOOL)mouseInsideTrackingArea {
-  return [trackingArea_ mouseInsideTrackingAreaForView:contentView_];
-}
-
 - (void)mouseEntered:(NSEvent*)event {
-  // Empty implementation. Required for CrTrackingArea.
+  menuBarLock_.reset(new ScopedMenuBarLock());
 }
 
 - (void)mouseExited:(NSEvent*)event {
-  DCHECK_EQ([event trackingArea], trackingArea_.get());
-
-  animationController_->AnimateToolbarOutIfPossible();
-
-  [owner_ updateToolbarLayout];
-  [self removeTrackingArea];
+  menuBarLock_.reset();
 }
 
 @end

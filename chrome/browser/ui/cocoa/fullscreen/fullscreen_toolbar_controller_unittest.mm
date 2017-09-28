@@ -19,34 +19,6 @@
 #include "ui/base/cocoa/appkit_utils.h"
 
 //////////////////////////////////////////////////////////////////
-// MockFullscreenToolbarMouseTracker
-// Mocks the mouse interactions with the toolbar.
-
-@interface MockFullscreenToolbarMouseTracker : FullscreenToolbarMouseTracker
-
-@property(nonatomic, assign) BOOL mouseInside;
-
-// Overridden to prevent a tracking area from being created.
-- (void)updateTrackingArea;
-
-- (BOOL)mouseInsideTrackingArea;
-
-@end
-
-@implementation MockFullscreenToolbarMouseTracker
-
-@synthesize mouseInside = mouseInside_;
-
-- (void)updateTrackingArea {
-}
-
-- (BOOL)mouseInsideTrackingArea {
-  return mouseInside_;
-}
-
-@end
-
-//////////////////////////////////////////////////////////////////
 // MockFullscreenMenubarTracker
 // Mocks the state of the menubar.
 
@@ -85,11 +57,6 @@
 
 @end
 
-@interface NSMenu (PrivateAPI)
-- (void)_lockMenuPosition;
-- (void)_unlockMenuPosition;
-@end
-
 #define CHECK_LAYOUT(TOOLBAR_FRACTION, MENUBAR_FRACTION)                       \
   {                                                                            \
     FullscreenToolbarLayout layout = [controller_ computeLayout];              \
@@ -124,7 +91,9 @@ class FullscreenToolbarControllerTest : public testing::Test {
     [menubar_tracker_ setMenubarProgress:0.0];
     [controller_ setMenubarTracker:menubar_tracker_];
 
-    mouse_tracker_.reset([[MockFullscreenToolbarMouseTracker alloc] init]);
+    mouse_tracker_ =
+        [OCMockObject mockForClass:[FullscreenToolbarMouseTracker class]];
+    [[mouse_tracker_ stub] updateTrackingArea];
     [controller_ setMouseTracker:mouse_tracker_];
 
     [controller_ animationController]->SetAnimationDuration(0.0);
@@ -142,14 +111,14 @@ class FullscreenToolbarControllerTest : public testing::Test {
   // A mock BrowserWindowController object.
   id bwc_;
 
+  // A mock FullscreenToolbarMouseTracker object.
+  id mouse_tracker_;
+
   // The FullscreenToolbarController object being tested.
   base::scoped_nsobject<FullscreenToolbarController> controller_;
 
   // Mocks the state of the menubar.
   base::scoped_nsobject<MockFullscreenMenubarTracker> menubar_tracker_;
-
-  // Mocks the mouse interactions with the toolbar.
-  base::scoped_nsobject<MockFullscreenToolbarMouseTracker> mouse_tracker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenToolbarControllerTest);
@@ -236,79 +205,6 @@ TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithVisibilityLocks) {
   EXPECT_TRUE(![locks isToolbarVisibilityLocked]);
   EXPECT_TRUE(![locks isToolbarVisibilityLockedForOwner:alt_owner.get()]);
   CHECK_LAYOUT(0, 0);
-}
-
-// Basic test that checks the toolbar fraction for different mouse tracking
-// values.
-TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMouseTracking) {
-  CHECK_LAYOUT(0, 0);
-
-  [mouse_tracker_ setMouseInside:YES];
-  CHECK_LAYOUT(1, 0);
-
-  [menubar_tracker_ setMenubarProgress:1];
-  CHECK_LAYOUT(1, 1);
-
-  [menubar_tracker_ setMenubarProgress:0];
-  CHECK_LAYOUT(1, 0);
-
-  [mouse_tracker_ setMouseInside:NO];
-  CHECK_LAYOUT(0, 0);
-}
-
-// Test that checks the toolbar fraction with mouse tracking, menubar fraction,
-// and visibility locks.
-TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMultipleFactors) {
-  FullscreenToolbarVisibilityLockController* locks =
-      [controller_ visibilityLockController];
-  base::scoped_nsobject<NSObject> owner([[NSObject alloc] init]);
-  CHECK_LAYOUT(0, 0);
-
-  // Toolbar should be shown with the menubar.
-  [menubar_tracker_ setMenubarProgress:1];
-  CHECK_LAYOUT(1, 1);
-
-  // Move the mouse to the toolbar and start hiding the menubar. Toolbar
-  // should be fully visible.
-  [mouse_tracker_ setMouseInside:YES];
-  CHECK_LAYOUT(1, 1);
-  [menubar_tracker_ setMenubarProgress:0.5];
-  CHECK_LAYOUT(1, 0.5);
-
-  // Lock the toolbar's visibility.
-  [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-  CHECK_LAYOUT(1, 0.5);
-
-  // Hide the menubar. Toolbar should be fully visible.
-  [menubar_tracker_ setMenubarProgress:0];
-  CHECK_LAYOUT(1, 0);
-
-  // Lock the toolbar's visibility. Toolbar should be fully visible.
-  [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-  CHECK_LAYOUT(1, 0);
-
-  // Move the mouse away from the toolbar. Toolbar should hide.
-  [mouse_tracker_ setMouseInside:NO];
-  CHECK_LAYOUT(0, 0);
-
-  // Lock the toolbar and move the mouse to it.
-  [locks lockToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-  [mouse_tracker_ setMouseInside:YES];
-  CHECK_LAYOUT(1, 0);
-
-  // Move the mouse away from the toolbar. Toolbar should be fully visible.
-  [mouse_tracker_ setMouseInside:NO];
-  CHECK_LAYOUT(1, 0);
-
-  // Release the toolbar. Toolbar should be hidden.
-  [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
-}
-
-// Verify that private methods used by FullscreenToolbarController still exist.
-TEST_F(FullscreenToolbarControllerTest, PrivateAPIs) {
-  EXPECT_TRUE([NSMenu instancesRespondToSelector:@selector(_lockMenuPosition)]);
-  EXPECT_TRUE(
-      [NSMenu instancesRespondToSelector:@selector(_unlockMenuPosition)]);
 }
 
 }  // namespace
