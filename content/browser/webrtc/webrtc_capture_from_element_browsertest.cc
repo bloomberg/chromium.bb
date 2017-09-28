@@ -21,7 +21,8 @@
 // process and hence does not support capture: https://crbug.com/641559.
 #define MAYBE_CaptureFromMediaElement DISABLED_CaptureFromMediaElement
 #else
-#define MAYBE_CaptureFromMediaElement CaptureFromMediaElement
+// crbug.com/769903: Disabling due to TSAN error.
+#define MAYBE_CaptureFromMediaElement DISABLED_CaptureFromMediaElement
 #endif
 
 namespace {
