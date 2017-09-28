@@ -1209,9 +1209,9 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   server_cert_ = x509_util::CreateX509CertificateFromBuffers(
       SSL_get0_peer_certificates(ssl_.get()));
 
-  // OpenSSL decoded the certificate, but the platform certificate
-  // implementation could not. This is treated as a fatal SSL-level protocol
-  // error rather than a certificate error. See https://crbug.com/91341.
+  // OpenSSL decoded the certificate, but the X509Certificate implementation
+  // could not. This is treated as a fatal SSL-level protocol error rather than
+  // a certificate error. See https://crbug.com/91341.
   if (!server_cert_)
     return ERR_SSL_SERVER_CERT_BAD_FORMAT;
 
