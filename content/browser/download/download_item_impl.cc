@@ -93,30 +93,28 @@ void DeleteDownloadedFileDone(
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
-static base::FilePath DownloadFileDetach(
-    std::unique_ptr<DownloadFile> download_file) {
+base::FilePath DownloadFileDetach(std::unique_ptr<DownloadFile> download_file) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
   return full_path;
 }
 
-static base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
+base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath temp_file_path;
-  if (base::CreateTemporaryFile(&temp_file_path) &&
-      base::CopyFile(download_file->FullPath(), temp_file_path)) {
-    return temp_file_path;
-  } else {
-    // Deletes the file at |temp_file_path|.
-    if (!base::DirectoryExists(temp_file_path))
-      base::DeleteFile(temp_file_path, false);
-    temp_file_path.clear();
+  if (!base::CreateTemporaryFile(&temp_file_path))
+    return base::FilePath();
+
+  if (!base::CopyFile(download_file->FullPath(), temp_file_path)) {
+    DeleteDownloadedFile(temp_file_path);
     return base::FilePath();
   }
+
+  return temp_file_path;
 }
 
-static void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
+void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   download_file->Cancel();
 }
