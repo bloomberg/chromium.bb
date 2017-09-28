@@ -1936,6 +1936,18 @@ void RendererSchedulerImpl::OnBeginNestedRunLoop() {
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
   seqlock_queueing_time_estimator_.data.OnBeginNestedRunLoop();
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       main_thread_only().web_view_schedulers) {
+    web_view_scheduler->OnBeginNestedRunLoop();
+  }
+}
+
+void RendererSchedulerImpl::OnExitNestedRunLoop() {
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       main_thread_only().web_view_schedulers) {
+    web_view_scheduler->OnExitNestedRunLoop();
+  }
 }
 
 void RendererSchedulerImpl::AddTaskTimeObserver(

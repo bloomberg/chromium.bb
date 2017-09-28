@@ -74,6 +74,9 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void DidBeginProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
   void DidEndProvisionalLoad(WebFrameSchedulerImpl* frame_scheduler);
 
+  void OnBeginNestedRunLoop();
+  void OnExitNestedRunLoop();
+
   bool IsAudioPlaying() const;
 
   void OnConnectionUpdated();
@@ -122,6 +125,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool is_audio_playing_;
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
+  bool nested_runloop_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
   base::ObserverList<VirtualTimeObserver> virtual_time_observers_;

@@ -135,5 +135,10 @@ void SchedulerHelper::OnBeginNestedRunLoop() {
     observer_->OnBeginNestedRunLoop();
 }
 
+void SchedulerHelper::OnExitNestedRunLoop() {
+  if (observer_)
+    observer_->OnExitNestedRunLoop();
+}
+
 }  // namespace scheduler
 }  // namespace blink

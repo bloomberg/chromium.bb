@@ -137,6 +137,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // SchedulerHelper::Observer implementation:
   void OnTriedToExecuteBlockedTask() override;
   void OnBeginNestedRunLoop() override;
+  void OnExitNestedRunLoop() override;
 
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,

@@ -110,6 +110,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       is_audio_playing_(false),
       reported_background_throttling_since_navigation_(false),
       has_active_connection_(false),
+      nested_runloop_(false),
       background_time_budget_pool_(nullptr),
       delegate_(delegate) {
   renderer_scheduler->AddWebViewScheduler(this);
@@ -264,6 +265,16 @@ void WebViewSchedulerImpl::DidEndProvisionalLoad(
   ApplyVirtualTimePolicy();
 }
 
+void WebViewSchedulerImpl::OnBeginNestedRunLoop() {
+  nested_runloop_ = true;
+  ApplyVirtualTimePolicy();
+}
+
+void WebViewSchedulerImpl::OnExitNestedRunLoop() {
+  nested_runloop_ = false;
+  ApplyVirtualTimePolicy();
+}
+
 void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   virtual_time_policy_ = policy;
 
@@ -330,10 +341,12 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
 
   // We pause virtual time until we've seen a loading task posted, because
   // otherwise we could advance virtual time arbitarially far before the
-  // first load arrives.
+  // first load arrives.  We also pause virtual time while the run loop is
+  // nested because that implies something modal is happening such as the
+  // DevTools debugger pausing the system.
   SetAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
                                background_parser_count_ == 0 &&
-                               provisional_loads_.empty() &&
+                               provisional_loads_.empty() && !nested_runloop_ &&
                                expect_backward_forwards_navigation_.empty());
 }
 

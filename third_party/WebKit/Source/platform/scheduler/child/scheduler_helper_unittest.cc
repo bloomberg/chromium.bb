@@ -189,6 +189,7 @@ class MockObserver : public SchedulerHelper::Observer {
  public:
   MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
   MOCK_METHOD0(OnBeginNestedRunLoop, void());
+  MOCK_METHOD0(OnExitNestedRunLoop, void());
 };
 
 }  // namespace
