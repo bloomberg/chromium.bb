@@ -799,7 +799,7 @@ class circular_deque {
       buffer_.DestructRange(&buffer_[0], &buffer_[last.index_]);
     }
 
-    if (last.index_ == begin_) {
+    if (first.index_ == begin_) {
       // This deletion is from the beginning. Nothing needs to be copied, only
       // begin_ needs to be updated.
       begin_ = last.index_;
