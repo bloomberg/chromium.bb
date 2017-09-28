@@ -18,6 +18,11 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void OnJavascriptDisallowed() override;
 
  private:
+  friend class PolicyToolUITest;
+
+  static const base::FilePath::CharType kPolicyToolSessionsDir[];
+  static const base::FilePath::CharType kPolicyToolDefaultSessionName[];
+  static const base::FilePath::CharType kPolicyToolSessionExtension[];
   // Reads the current session file (based on the session_name_) and sends the
   // contents to the UI.
   void ImportFile();
@@ -36,6 +41,12 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void ShowErrorMessageToUser(const std::string& message);
 
   base::FilePath GetSessionPath(const base::FilePath::StringType& name) const;
+
+  // Returns the current list of all sessions sorted by last access time in
+  // decreasing order.
+  base::ListValue GetSessionsList();
+
+  void SetDefaultSessionName();
 
   base::FilePath sessions_dir_;
   base::FilePath::StringType session_name_;
