@@ -28,7 +28,7 @@
 # The SPIR-V headers from the SPIR-V Registry
 # https://www.khronos.org/registry/spir-v/
 #
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.11)
 project(SPIRV-Headers)
 
 # There are two ways to use this project.
