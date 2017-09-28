@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_LOG_SOURCE_ACCESS_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -17,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/api/feedback_private/access_rate_limiter.h"
 #include "extensions/common/api/feedback_private.h"
 
 namespace extensions {
@@ -40,7 +42,6 @@ class LogSourceAccessManager {
   static void SetRateLimitingTimeoutForTesting(const base::TimeDelta* timeout);
 
   // Override the default base::Time clock with a custom clock for testing.
-  // Pass in |clock|=nullptr to revert to default behavior.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> clock) {
     tick_clock_ = std::move(clock);
   }
@@ -102,12 +103,6 @@ class LogSourceAccessManager {
   // delete from |last_access_times_|.
   bool UpdateSourceAccessTime(const SourceAndExtension& key);
 
-  // Returns the last time that |key.source| was accessed by |key.extension|.
-  // If it was never accessed by the extension, returns an empty base::TimeTicks
-  // object.
-  base::TimeTicks GetLastExtensionAccessTime(
-      const SourceAndExtension& key) const;
-
   // Returns the number of entries in |sources_| with source=|source|.
   size_t GetNumActiveResourcesForSource(
       api::feedback_private::LogSource source) const;
@@ -125,7 +120,8 @@ class LogSourceAccessManager {
   // This intentionally kept separate from |sources_| because entries can be
   // removed from and re-added to |sources_|, but that should not erase the
   // recorded access times.
-  std::map<SourceAndExtension, base::TimeTicks> last_access_times_;
+  std::map<SourceAndExtension, std::unique_ptr<AccessRateLimiter>>
+      rate_limiters_;
 
   // For fetching browser resources like ApiResourceManager.
   content::BrowserContext* context_;

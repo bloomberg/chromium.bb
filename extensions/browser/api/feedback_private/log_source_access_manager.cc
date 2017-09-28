@@ -57,7 +57,7 @@ void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
 
 LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
     : context_(context),
-      tick_clock_(new base::DefaultTickClock),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       weak_factory_(this) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
@@ -171,22 +171,12 @@ int LogSourceAccessManager::CreateResource(const SourceAndExtension& key) {
 
 bool LogSourceAccessManager::UpdateSourceAccessTime(
     const SourceAndExtension& key) {
-  base::TimeTicks last = GetLastExtensionAccessTime(key);
-  base::TimeTicks now = tick_clock_->NowTicks();
-  if (!last.is_null() && now < last + GetMinTimeBetweenReads()) {
-    return false;
+  if (rate_limiters_.find(key) == rate_limiters_.end()) {
+    rate_limiters_.emplace(
+        key, std::make_unique<AccessRateLimiter>(1, GetMinTimeBetweenReads(),
+                                                 tick_clock_.get()));
   }
-  last_access_times_[key] = now;
-  return true;
-}
-
-base::TimeTicks LogSourceAccessManager::GetLastExtensionAccessTime(
-    const SourceAndExtension& key) const {
-  const auto iter = last_access_times_.find(key);
-  if (iter == last_access_times_.end())
-    return base::TimeTicks();
-
-  return iter->second;
+  return rate_limiters_[key]->AttemptAccess();
 }
 
 size_t LogSourceAccessManager::GetNumActiveResourcesForSource(
