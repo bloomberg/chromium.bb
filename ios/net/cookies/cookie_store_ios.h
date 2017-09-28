@@ -31,6 +31,8 @@
 
 namespace net {
 
+class CookieCreationTimeManager;
+
 // Observer for changes on |NSHTTPCookieStorge sharedHTTPCookieStorage|.
 class CookieNotificationObserver {
  public:
@@ -156,6 +158,8 @@ class CookieStoreIOS : public net::CookieStore,
   // deleted.
   typedef base::Callback<bool(NSHTTPCookie*, base::Time)> CookieFilterFunction;
 
+  // Clears the system cookie store.
+  void ClearSystemStore();
   // Returns true if the system cookie store policy is
   // |NSHTTPCookieAcceptPolicyAlways|.
   bool SystemCookiesAllowed();
@@ -165,15 +169,12 @@ class CookieStoreIOS : public net::CookieStore,
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
 
-  void DeleteCookiesWithFilterAsync(CookieFilterFunction filter,
-                                    DeleteCallback callback);
-
-  // Flush to CookieMonster from |cookies|, and run |callback|.
-  void FlushStoreFromCookies(base::OnceClosure callback,
-                             NSArray<NSHTTPCookie*>* cookies);
+  void DeleteCookiesWithFilter(const CookieFilterFunction& filter,
+                               DeleteCallback callback);
 
   std::unique_ptr<net::CookieMonster> cookie_monster_;
   std::unique_ptr<SystemCookieStore> system_store_;
+  std::unique_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
   base::CancelableClosure flush_closure_;
 
@@ -188,22 +189,26 @@ class CookieStoreIOS : public net::CookieStore,
   // the CookieStoreIOS is synchronized and the CookieStore when the
   // CookieStoreIOS is not synchronized.
 
-  // Updates the cookie cache with cookies named |cookie_name| from the current
-  // set of |nscookies| that would be sent with a request for |url|.
-  // |run_callbacks| Run all callbacks registered for cookie named |name| if
-  // CookieCache was changed.
-  void UpdateCacheForCookies(const GURL& gurl,
-                             const std::string& cookie_name,
-                             bool run_callbacks,
-                             NSArray<NSHTTPCookie*>* nscookies);
+  // Fetches any cookies named |name| that would be sent with a request for
+  // |url| from the system cookie store and pushes them onto the back of the
+  // vector pointed to by |cookies|. Returns true if any cookies were pushed
+  // onto the vector, and false otherwise.
+  bool GetSystemCookies(const GURL& url,
+                        const std::string& name,
+                        std::vector<net::CanonicalCookie>* cookies);
 
   // Updates the cookie cache with the current set of system cookies named
-  // |cookie_name| that would be sent with a request for |url|.
-  // |run_callbacks| Run all callbacks registered for cookie named |name| if
-  // CookieCache was changed.
-  void UpdateCacheForCookieFromSystem(const GURL& gurl,
-                                      const std::string& cookie_name,
-                                      bool run_callbacks);
+  // |name| that would be sent with a request for |url|. Returns whether the
+  // cache changed.
+  // |out_removed_cookies|, if not null, will be populated with the cookies that
+  // were removed.
+  // |out_changed_cookies|, if not null, will be populated with the cookies that
+  // were added.
+  bool UpdateCacheForCookieFromSystem(
+      const GURL& gurl,
+      const std::string& name,
+      std::vector<net::CanonicalCookie>* out_removed_cookies,
+      std::vector<net::CanonicalCookie>* out_added_cookies);
 
   // Runs all callbacks registered for cookies named |name| that would be sent
   // with a request for |url|.
@@ -222,6 +227,22 @@ class CookieStoreIOS : public net::CookieStore,
   // Fetches new values for all (url, name) pairs that have hooks registered,
   // asynchronously invoking callbacks if necessary.
   void UpdateCachesFromCookieMonster();
+
+  // Called after cookies are cleared from NSHTTPCookieStorage so that cookies
+  // can be cleared from .binarycookies file. |callback| is called after all the
+  // cookies are deleted (with the total number of cookies deleted).
+  // |num_deleted| contains the number of cookies deleted from
+  // NSHTTPCookieStorage.
+  void DidClearNSHTTPCookieStorageCookies(DeleteCallback callback,
+                                          int num_deleted);
+  // Called after cookies are cleared from .binarycookies files. |callback| is
+  // called after all the cookies are deleted with the total number of cookies
+  // deleted.
+  // |num_deleted_from_nshttp_cookie_storage| contains the number of cookies
+  // deleted from NSHTTPCookieStorage.
+  void DidClearBinaryCookiesFileCookies(
+      DeleteCallback callback,
+      int num_deleted_from_nshttp_cookie_storage);
 
   // Callback-wrapping:
   // When this CookieStoreIOS object is synchronized with the system store,
@@ -249,10 +270,6 @@ class CookieStoreIOS : public net::CookieStore,
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
   net::CookieList CanonicalCookieListFromSystemCookies(NSArray* cookies);
-
-  // Runs |callback| on CanonicalCookie List converted from cookies.
-  void RunGetCookieListCallbackOnSystemCookies(GetCookieListCallback callback,
-                                               NSArray<NSHTTPCookie*>* cookies);
 
   // Cached values of system cookies. Only cookies which have an observer added
   // with AddCallbackForCookie are kept in this cache.
