@@ -2413,7 +2413,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   if (!compositor_context_provider) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
-                             ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+                             ResourceProvider::TEXTURE_HINT_DEFAULT,
                              ResourcePool::kDefaultExpirationDelay,
                              settings_.disallow_non_exact_resource_reuse);
 
@@ -2427,11 +2427,11 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   if (use_gpu_rasterization_) {
     DCHECK(worker_context_provider);
 
-    *resource_pool = ResourcePool::Create(
-        resource_provider_.get(), GetTaskRunner(),
-        ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-        ResourcePool::kDefaultExpirationDelay,
-        settings_.disallow_non_exact_resource_reuse);
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+                             ResourceProvider::TEXTURE_HINT_FRAMEBUFFER,
+                             ResourcePool::kDefaultExpirationDelay,
+                             settings_.disallow_non_exact_resource_reuse);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2467,7 +2467,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
 
   *resource_pool =
       ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
-                           ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+                           ResourceProvider::TEXTURE_HINT_DEFAULT,
                            ResourcePool::kDefaultExpirationDelay,
                            settings_.disallow_non_exact_resource_reuse);
 
@@ -4199,7 +4199,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   }
 
   id = resource_provider_->CreateResource(
-      upload_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      upload_size, ResourceProvider::TEXTURE_HINT_DEFAULT, format,
       gfx::ColorSpace::CreateSRGB());
 
   if (!scaled) {

@@ -239,7 +239,7 @@ class RasterBufferProviderTest
 
   void AppendTask(unsigned id, const gfx::Size& size) {
     auto resource = std::make_unique<ScopedResource>(resource_provider_.get());
-    resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+    resource->Allocate(size, ResourceProvider::TEXTURE_HINT_DEFAULT,
                        viz::RGBA_8888, gfx::ColorSpace());
 
     // The raster buffer has no tile ids associated with it for partial update,
@@ -258,7 +258,7 @@ class RasterBufferProviderTest
     const gfx::Size size(1, 1);
 
     auto resource = std::make_unique<ScopedResource>(resource_provider_.get());
-    resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+    resource->Allocate(size, ResourceProvider::TEXTURE_HINT_DEFAULT,
                        viz::RGBA_8888, gfx::ColorSpace());
 
     std::unique_ptr<RasterBuffer> raster_buffer =

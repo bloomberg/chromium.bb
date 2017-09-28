@@ -295,10 +295,10 @@ void DisplayResourceProvider::ReceiveFromChild(
                                          Resource::DELEGATED, GL_LINEAR));
     } else {
       resource = InsertResource(
-          local_id, Resource(0, it->size, Resource::DELEGATED,
-                             it->mailbox_holder.texture_target, it->filter,
-                             TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
-                             it->format));
+          local_id,
+          Resource(0, it->size, Resource::DELEGATED,
+                   it->mailbox_holder.texture_target, it->filter,
+                   TEXTURE_HINT_DEFAULT, RESOURCE_TYPE_GL_TEXTURE, it->format));
       resource->buffer_format = it->buffer_format;
       resource->SetMailbox(viz::TextureMailbox(
           it->mailbox_holder.mailbox, it->mailbox_holder.sync_token,

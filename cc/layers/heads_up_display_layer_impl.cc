@@ -96,10 +96,9 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
   }
 
   auto resource = std::make_unique<ScopedResource>(resource_provider);
-  resource->Allocate(internal_content_bounds_,
-                     ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
-                     resource_provider->best_render_buffer_format(),
-                     gfx::ColorSpace());
+  resource->Allocate(
+      internal_content_bounds_, ResourceProvider::TEXTURE_HINT_FRAMEBUFFER,
+      resource_provider->best_render_buffer_format(), gfx::ColorSpace());
   resources_.push_back(std::move(resource));
 }
 
