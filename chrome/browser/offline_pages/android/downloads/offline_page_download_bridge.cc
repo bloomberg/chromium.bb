@@ -215,7 +215,7 @@ content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
   // In other cases, use the RenderProcessHost ID + RenderFrameHost ID to get
   // the WebContents.
   return base::Bind(&GetWebContentsByFrameID,
-                    web_contents->GetRenderProcessHost()->GetID(),
+                    web_contents->GetMainFrame()->GetProcess()->GetID(),
                     web_contents->GetMainFrame()->GetRoutingID());
 }
 
