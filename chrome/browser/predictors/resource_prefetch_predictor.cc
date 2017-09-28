@@ -280,20 +280,32 @@ void ResourcePrefetchPredictor::RecordPageRequestSummary(
     return;
   }
 
-  // Kick off history lookup to determine if we should record the URL.
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  DCHECK(history_service);
-  history_service->ScheduleDBTask(
-      std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
-          std::move(summary),
-          base::BindOnce(&ResourcePrefetchPredictor::OnVisitCountLookup,
-                         weak_factory_.GetWeakPtr()))),
-      &history_lookup_consumer_);
+  history::HistoryService* history_service = nullptr;
+  if (config_.is_url_learning_enabled) {
+    // Kick off history lookup to determine if we should record the URL.
+    history_service = HistoryServiceFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    DCHECK(history_service);
+    history_service->ScheduleDBTask(
+        std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
+            std::move(summary),
+            base::BindOnce(&ResourcePrefetchPredictor::OnVisitCountLookup,
+                           weak_factory_.GetWeakPtr()))),
+        &history_lookup_consumer_);
+  } else {
+    // We won't record the URL data anyway so avoid the hop to the history
+    // sequence and back.
+    OnVisitCountLookup(0, *summary);
+  }
 
-  // Report readiness metric with 20% probability.
-  if (base::RandInt(1, 5) == 5) {
+  // Report readiness metric with 20% probability and only if the host learning
+  // is enabled.
+  if (config_.is_host_learning_enabled && base::RandInt(1, 5) == 5) {
+    if (!history_service) {
+      history_service = HistoryServiceFactory::GetForProfile(
+          profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    }
+    DCHECK(history_service);
     history_service->TopHosts(
         kNumSampleHosts,
         base::Bind(&ResourcePrefetchPredictor::ReportDatabaseReadiness,

@@ -323,9 +323,14 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   using URLRequestSummary = URLRequestSummary;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    content::EnableFeatureWithParam(kSpeculativeResourcePrefetchingFeature,
-                                    kModeParamName, kExternalPrefetchingMode,
-                                    command_line);
+    command_line->AppendSwitchASCII("force-fieldtrials", "trial/group");
+    std::string params = base::StringPrintf(
+        "trial.group:%s/%s/%s/%s", kModeParamName, kExternalPrefetchingMode,
+        kEnableUrlLearningParamName, "true");
+    command_line->AppendSwitchASCII("force-fieldtrial-params", params);
+    std::string enabled_feature = base::StringPrintf(
+        "%s<trial", kSpeculativeResourcePrefetchingFeatureName);
+    command_line->AppendSwitchASCII("enable-features", enabled_feature);
   }
 
   void SetUpOnMainThread() override {
@@ -728,9 +733,10 @@ class ResourcePrefetchPredictorPrefetchingBrowserTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII("force-fieldtrials", "trial/group");
-    std::string parameter = base::StringPrintf(
-        "trial.group:%s/%s", kModeParamName, kPrefetchingMode);
-    command_line->AppendSwitchASCII("force-fieldtrial-params", parameter);
+    std::string params = base::StringPrintf(
+        "trial.group:%s/%s/%s/%s", kModeParamName, kPrefetchingMode,
+        kEnableUrlLearningParamName, "true");
+    command_line->AppendSwitchASCII("force-fieldtrial-params", params);
     std::string enabled_feature = base::StringPrintf(
         "%s<trial", kSpeculativeResourcePrefetchingFeatureName);
     command_line->AppendSwitchASCII("enable-features", enabled_feature);
