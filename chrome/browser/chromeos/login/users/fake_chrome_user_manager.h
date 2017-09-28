@@ -151,7 +151,6 @@ class FakeChromeUserManager : public ChromeUserManager {
                         bool is_current_user_owner) const override;
 
   // UserManagerInterface override.
-  BootstrapManager* GetBootstrapManager() override;
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const AccountId& account_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;
@@ -176,10 +175,6 @@ class FakeChromeUserManager : public ChromeUserManager {
     owner_account_id_ = owner_account_id;
   }
 
-  void set_bootstrap_manager(BootstrapManager* bootstrap_manager) {
-    bootstrap_manager_ = bootstrap_manager;
-  }
-
   void set_multi_profile_user_controller(
       MultiProfileUserController* controller) {
     multi_profile_user_controller_ = controller;
@@ -199,7 +194,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool fake_ephemeral_users_enabled_ = false;
   bool current_user_new_ = false;
 
-  BootstrapManager* bootstrap_manager_ = nullptr;
   MultiProfileUserController* multi_profile_user_controller_ = nullptr;
 
   // If set this is the active user. If empty, the first created user is the

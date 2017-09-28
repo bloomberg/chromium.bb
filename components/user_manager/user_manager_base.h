@@ -118,9 +118,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // not full initialized yet" flag.
   virtual void SetIsCurrentUserNew(bool is_new);
 
-  // TODO(xiyuan): Figure out a better way to expose this info.
-  virtual bool HasPendingBootstrap(const AccountId& account_id) const;
-
   // Helper function that converts users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
   // skipped.
