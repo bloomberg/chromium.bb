@@ -22,8 +22,10 @@ class CORE_EXPORT InterventionReport : public ReportBody {
   ~InterventionReport() override {}
 
   String message() const { return message_; }
-  String sourceFile() const { return location_->Url(); }
   long lineNumber() const { return location_->LineNumber(); }
+  String sourceFile() const {
+    return location_->Url().IsNull() ? "" : location_->Url();
+  }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { ReportBody::Trace(visitor); }
 

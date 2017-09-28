@@ -288,8 +288,8 @@ void Deprecation::GenerateReport(const LocalFrame* frame,
   // Send the deprecation report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;
   frame->Client()->GetInterfaceProvider()->GetInterface(&service);
-  service->QueueDeprecationReport(document->Url(), body->message(),
-                                  body->sourceFile(), body->lineNumber());
+  service->QueueDeprecationReport(document->Url(), message, body->sourceFile(),
+                                  body->lineNumber());
 }
 
 String Deprecation::DeprecationMessage(WebFeature feature) {

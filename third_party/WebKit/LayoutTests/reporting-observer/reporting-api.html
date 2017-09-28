@@ -3,6 +3,12 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/third_party/WebKit/public/platform/reporting.mojom.js"></script>
+<script src="resources/intervention.js"></script>
+
+<div id="target" style="padding: 10px; background-color: blue;">
+  <p>Testing Reporting API.</p>
+</div>
+
 <script>
 // Mock implementation of ReportingServiceProxy.
 // |promise| property is always a promise for the next report to be queued.
@@ -27,6 +33,11 @@ class MockReportingServiceProxy {
     this.resolve([url, message, sourceFile, lineNumber]);
     this.resetPromise();
   }
+
+  async queueInterventionReport(url, message, sourceFile, lineNumber) {
+    this.resolve([url, message, sourceFile, lineNumber]);
+    this.resetPromise();
+  }
 }
 
 // Make an instance and have it receive the request.
@@ -41,11 +52,26 @@ promise_test(async () => {
   // Use a deprecated feature.
   window.webkitStorageInfo;
 
-  // Ensure the report is generated and routed to the mojo interface.
+  // Ensure the deprecation report is generated and routed to the reporting mojo
+  // interface.
   let [url, message, sourceFile, lineNumber] = await promise;
   assert_true(url.url.endsWith("reporting-observer/reporting-api.html"));
   assert_equals(typeof message, "string");
   assert_true(sourceFile.endsWith("reporting-observer/reporting-api.html"));
   assert_equals(typeof lineNumber, "number");
 }, "Deprecation report");
+
+promise_test(async () => {
+  // Cause and wait for an intervention.
+  let promise = proxy.promise;
+  causeIntervention();
+
+  // Ensure the intervention report is generated and routed to the reporting
+  // mojo interface.
+  let [url, message, sourceFile, lineNumber] = await promise;
+  assert_true(url.url.endsWith("reporting-observer/reporting-api.html"));
+  assert_equals(typeof message, "string");
+  assert_true(sourceFile.endsWith("reporting-observer/resources/intervention.js"));
+  assert_equals(typeof lineNumber, "number");
+}, "Intervention report");
 </script>
