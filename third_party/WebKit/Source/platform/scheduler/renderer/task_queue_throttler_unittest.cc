@@ -28,8 +28,8 @@ using ::testing::ElementsAre;
 
 namespace blink {
 namespace scheduler {
-namespace task_queue_throttler_unittest {  // To avoid symbol collisions in
-                                           // jumbo builds.
+// To avoid symbol collisions in jumbo builds.
+namespace task_queue_throttler_unittest {
 
 bool MessageLoopTaskCounter(size_t* count) {
   *count = *count + 1;

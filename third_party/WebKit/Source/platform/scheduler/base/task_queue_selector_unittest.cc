@@ -24,6 +24,8 @@ using ::testing::_;
 namespace blink {
 namespace scheduler {
 namespace internal {
+// To avoid symbol collisions in jumbo builds.
+namespace task_queue_selector_unittest {
 
 class MockObserver : public TaskQueueSelector::Observer {
  public:
@@ -564,6 +566,7 @@ INSTANTIATE_TEST_CASE_P(
     ChooseOldestWithPriorityTest,
     ::testing::ValuesIn(kChooseOldestWithPriorityTestCases));
 
+}  // namespace task_queue_selector_unittest
 }  // namespace internal
 }  // namespace scheduler
 }  // namespace blink

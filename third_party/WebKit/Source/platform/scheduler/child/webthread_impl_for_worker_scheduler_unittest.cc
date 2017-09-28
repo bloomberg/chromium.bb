@@ -20,7 +20,7 @@ using ::testing::Invoke;
 
 namespace blink {
 namespace scheduler {
-namespace {
+namespace webthread_impl_for_worker_scheduler_unittest {
 
 class MockTask {
  public:
@@ -67,8 +67,6 @@ void ShutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
       static_cast<WebSchedulerImpl*>(thread->Scheduler());
   web_scheduler_impl->Shutdown();
 }
-
-}  // namespace
 
 class WebThreadImplForWorkerSchedulerTest : public ::testing::Test {
  public:
@@ -194,5 +192,6 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
   thread_.reset();
 }
 
+}  // namespace webthread_impl_for_worker_scheduler_unittest
 }  // namespace scheduler
 }  // namespace blink
