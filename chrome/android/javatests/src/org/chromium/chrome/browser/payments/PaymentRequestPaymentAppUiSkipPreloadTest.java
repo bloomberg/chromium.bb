@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -90,8 +91,9 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
      * getInstruments.
      */
     @Test
-    @MediumTest
-    @Feature({"Payments"})
+    // @MediumTest
+    // @Feature({"Payments"})
+    @DisabledTest
     public void testPayViaDelayedSlowBobPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(
