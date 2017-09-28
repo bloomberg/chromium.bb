@@ -3199,6 +3199,15 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_APP_MENU_IPH" desc="Label for in-product help that appears in the Chrome three-dot menu (navigation menu). In previous versions of Chrome, the menu contained Bookmarks, Downloads, and History. In this version of Chrome, these three items have been moved out of the menu. Tapping this help text will show the user where they can find these three items. 'Bookmarks', 'Downloads', and 'History' should use the same translations as in Chrome settings and menu items. The tone of this string is that of the user asking Chrome, 'where are these 3 things?'">
         Where are bookmarks, downloads, and history?
       </message>
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_TITLE" desc="The title for the dialog promoting the Chrome Home feature.">
+        Try the new Chrome
+      </message>
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="The message for the dialog promoting the Chrome Home feature. The message emphasizes the fact that both appearance and functionality have been updated.">
+        One swipe access to your shortcuts and bookmarks with a fresh new look.
+      </message>
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_CHANGE_LATER" desc="The message beside the toggle that would enable or disable the Chrome Home feature. This string is used to indicate that the user may change the setting later.">
+        (You can change this later)
+      </message>
 
       <!-- Photo picker -->
       <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">
