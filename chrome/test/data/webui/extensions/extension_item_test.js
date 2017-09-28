@@ -110,10 +110,21 @@ cr.define('extension_item_tests', function() {
       testNormalElementsAreVisible(item);
       testDeveloperElementsAreVisible(item);
 
+      // Developer reload button should be visible only for enabled unpacked
+      // extensions.
       extension_test_util.testVisible(item, '#dev-reload-button', false);
+
       item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
       Polymer.dom.flush();
       extension_test_util.testVisible(item, '#dev-reload-button', true);
+
+      item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
+      Polymer.dom.flush();
+      extension_test_util.testVisible(item, '#dev-reload-button', false);
+
+      item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
+      Polymer.dom.flush();
+      extension_test_util.testVisible(item, '#dev-reload-button', false);
     });
 
     /** Tests that the delegate methods are correctly called. */
