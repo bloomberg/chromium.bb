@@ -32,6 +32,10 @@ class UseCounterPageLoadMetricsObserverTest
           page_load_metrics::mojom::PageLoadFeatures()) {
     NavigateAndCommit(GURL(kTestUrl));
     SimulateFeaturesUpdate(first_features);
+    // Verify that kPageVisits is observed on commit.
+    histogram_tester().ExpectBucketCount(
+        internal::kFeaturesHistogramName,
+        static_cast<base::Histogram::Sample>(WebFeature::kPageVisits), 1);
     for (auto feature : first_features.features) {
       histogram_tester().ExpectBucketCount(
           internal::kFeaturesHistogramName,

@@ -25,6 +25,8 @@ class UseCounterPageLoadMetricsObserver
   ~UseCounterPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver.
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
   void OnFeaturesUsageObserved(
       const page_load_metrics::mojom::PageLoadFeatures&) override;
 
