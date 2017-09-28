@@ -128,8 +128,8 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   void FollowRedirect() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
-  void PauseCachingResponseBody() override;
-  void ResumeCachingResponseBody() override;
+  void PauseReadingBodyFromNet() override;
+  void ResumeReadingBodyFromNet() override;
 
   // mojom::URLLoaderClient for Blob response reading (used only when
   // the SW response had valid blob UUID):

@@ -78,8 +78,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void FollowRedirect() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
-  void PauseCachingResponseBody() override;
-  void ResumeCachingResponseBody() override;
+  void PauseReadingBodyFromNet() override;
+  void ResumeReadingBodyFromNet() override;
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();

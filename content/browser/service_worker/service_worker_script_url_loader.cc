@@ -116,12 +116,12 @@ void ServiceWorkerScriptURLLoader::SetPriority(net::RequestPriority priority,
   network_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void ServiceWorkerScriptURLLoader::PauseCachingResponseBody() {
-  network_loader_->PauseCachingResponseBody();
+void ServiceWorkerScriptURLLoader::PauseReadingBodyFromNet() {
+  network_loader_->PauseReadingBodyFromNet();
 }
 
-void ServiceWorkerScriptURLLoader::ResumeCachingResponseBody() {
-  network_loader_->ResumeCachingResponseBody();
+void ServiceWorkerScriptURLLoader::ResumeReadingBodyFromNet() {
+  network_loader_->ResumeReadingBodyFromNet();
 }
 
 // URLLoaderClient for network loader ------------------------------------------

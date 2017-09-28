@@ -238,12 +238,12 @@ void URLLoaderImpl::SetPriority(net::RequestPriority priority,
   NOTIMPLEMENTED();
 }
 
-void URLLoaderImpl::PauseCachingResponseBody() {
+void URLLoaderImpl::PauseReadingBodyFromNet() {
   // TODO(yzshen): add implementation.
   NOTIMPLEMENTED();
 }
 
-void URLLoaderImpl::ResumeCachingResponseBody() {
+void URLLoaderImpl::ResumeReadingBodyFromNet() {
   // TODO(yzshen): add implementation.
   NOTIMPLEMENTED();
 }

@@ -176,14 +176,14 @@ void AppCacheURLLoaderJob::SetPriority(net::RequestPriority priority,
     network_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void AppCacheURLLoaderJob::PauseCachingResponseBody() {
+void AppCacheURLLoaderJob::PauseReadingBodyFromNet() {
   if (network_loader_)
-    network_loader_->PauseCachingResponseBody();
+    network_loader_->PauseReadingBodyFromNet();
 }
 
-void AppCacheURLLoaderJob::ResumeCachingResponseBody() {
+void AppCacheURLLoaderJob::ResumeReadingBodyFromNet() {
   if (network_loader_)
-    network_loader_->ResumeCachingResponseBody();
+    network_loader_->ResumeReadingBodyFromNet();
 }
 
 void AppCacheURLLoaderJob::OnReceiveResponse(

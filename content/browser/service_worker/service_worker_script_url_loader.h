@@ -63,8 +63,8 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
   void FollowRedirect() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
-  void PauseCachingResponseBody() override;
-  void ResumeCachingResponseBody() override;
+  void PauseReadingBodyFromNet() override;
+  void ResumeReadingBodyFromNet() override;
 
   // mojom::URLLoaderClient for the network load:
   void OnReceiveResponse(const ResourceResponseHead& response_head,

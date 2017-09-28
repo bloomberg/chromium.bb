@@ -107,8 +107,8 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
 
-  void PauseCachingResponseBody() override {}
-  void ResumeCachingResponseBody() override {}
+  void PauseReadingBodyFromNet() override {}
+  void ResumeReadingBodyFromNet() override {}
 
   // storage::MojoBlobReader::Delegate implementation:
   mojo::ScopedDataPipeProducerHandle PassDataPipe() override {

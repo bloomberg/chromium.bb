@@ -382,11 +382,11 @@ void MojoAsyncResourceHandler::SetPriority(net::RequestPriority priority,
       request(), priority, intra_priority_value);
 }
 
-void MojoAsyncResourceHandler::PauseCachingResponseBody() {
+void MojoAsyncResourceHandler::PauseReadingBodyFromNet() {
   NOTREACHED();
 }
 
-void MojoAsyncResourceHandler::ResumeCachingResponseBody() {
+void MojoAsyncResourceHandler::ResumeReadingBodyFromNet() {
   NOTREACHED();
 }
 

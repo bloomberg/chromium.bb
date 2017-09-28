@@ -803,8 +803,8 @@ class MockURLLoader : public mojom::URLLoader {
                    int32_t intra_priority_value) override {
     NOTREACHED();
   }
-  void PauseCachingResponseBody() override {}
-  void ResumeCachingResponseBody() override {}
+  void PauseReadingBodyFromNet() override {}
+  void ResumeReadingBodyFromNet() override {}
 
   mojom::URLLoaderClient* client() const { return client_.get(); }
 

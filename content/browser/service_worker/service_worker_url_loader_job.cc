@@ -403,9 +403,9 @@ void ServiceWorkerURLLoaderJob::SetPriority(net::RequestPriority priority,
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerURLLoaderJob::PauseCachingResponseBody() {}
+void ServiceWorkerURLLoaderJob::PauseReadingBodyFromNet() {}
 
-void ServiceWorkerURLLoaderJob::ResumeCachingResponseBody() {}
+void ServiceWorkerURLLoaderJob::ResumeReadingBodyFromNet() {}
 
 // Blob URLLoaderClient implementation for blob reading ------------
 
