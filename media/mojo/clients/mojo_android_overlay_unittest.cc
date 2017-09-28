@@ -20,8 +20,8 @@
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 
-using ::testing::_;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace media {
 
@@ -111,7 +111,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     provider_binding_.Bind(mojo::MakeRequest(&provider_ptr));
 
     overlay_client_.reset(new MojoAndroidOverlay(
-        std::move(provider_ptr), std::move(config_), routing_token));
+        std::move(provider_ptr), std::move(config_), routing_token, nullptr));
     overlay_client_->AddSurfaceDestroyedCallback(base::Bind(
         &MockClientCallbacks::OnDestroyed, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();

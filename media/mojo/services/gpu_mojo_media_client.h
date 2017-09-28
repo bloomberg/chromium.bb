@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace media {
@@ -23,7 +24,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
   // is expected to be the GPU main thread task runner.
   GpuMojoMediaClient(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager);
+      base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
+      AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
@@ -45,6 +47,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   service_manager::ServiceContextRefFactory* context_ref_factory_;
+  AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };

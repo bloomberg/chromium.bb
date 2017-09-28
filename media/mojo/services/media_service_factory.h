@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "media/base/android_overlay_mojo_factory.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -29,7 +30,8 @@ CreateMediaService();
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
 CreateGpuMediaService(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager);
+    base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
+    AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
 
 // Creates a MediaService instance using the TestMojoMediaClient.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
