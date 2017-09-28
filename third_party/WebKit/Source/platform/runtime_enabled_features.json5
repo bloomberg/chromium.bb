@@ -998,6 +998,11 @@
     {
       name: "TouchpadAndWheelScrollLatching",
     },
+    // When enabled, tracks the number of times each LayoutBlock
+    // goes through layout. For testing purposes only.
+    {
+      name: "TrackLayoutPassesPerBlock",
+    },
     {
       name: "TrustedDOMTypes",
       status: "experimental",

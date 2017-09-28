@@ -1548,6 +1548,7 @@ jumbo_source_set("unit_tests") {
     "layout/LayoutBlockTest.cpp",
     "layout/LayoutBoxModelObjectTest.cpp",
     "layout/LayoutBoxTest.cpp",
+    "layout/LayoutCountTest.cpp",
     "layout/LayoutEmbeddedContentTest.cpp",
     "layout/LayoutGeometryMapTest.cpp",
     "layout/LayoutInlineTest.cpp",
