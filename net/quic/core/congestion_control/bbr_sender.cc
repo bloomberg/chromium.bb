@@ -203,16 +203,10 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
       config.HasClientRequestedIndependentOption(kBBRR, perspective)) {
     rate_based_recovery_ = true;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4 &&
-      config.HasClientRequestedIndependentOption(kBBR1, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4, 1,
-                      2);
+  if (config.HasClientRequestedIndependentOption(kBBR1, perspective)) {
     max_aggregation_bytes_multiplier_ = 1.5;
   }
-  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4 &&
-      config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4, 2,
-                      2);
+  if (config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
     max_aggregation_bytes_multiplier_ = 2;
   }
 }

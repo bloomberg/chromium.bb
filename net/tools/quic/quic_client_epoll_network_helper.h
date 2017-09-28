@@ -83,6 +83,10 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
 
   QuicClientBase* client() { return client_; }
 
+  void set_max_reads_per_epoll_loop(int num_reads) {
+    max_reads_per_epoll_loop_ = num_reads;
+  }
+
  private:
   friend class test::QuicClientPeer;
 
@@ -116,6 +120,8 @@ class QuicClientEpollNetworkHelper : public QuicClientBase::NetworkHelper,
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
   QuicClientBase* client_;
+
+  int max_reads_per_epoll_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientEpollNetworkHelper);
 };

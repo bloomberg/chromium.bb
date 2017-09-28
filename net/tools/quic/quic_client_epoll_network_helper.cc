@@ -46,7 +46,8 @@ QuicClientEpollNetworkHelper::QuicClientEpollNetworkHelper(
       packets_dropped_(0),
       overflow_supported_(false),
       packet_reader_(new QuicPacketReader()),
-      client_(client) {}
+      client_(client),
+      max_reads_per_epoll_loop_(std::numeric_limits<int>::max()) {}
 
 QuicClientEpollNetworkHelper::~QuicClientEpollNetworkHelper() {
   if (client_->connected()) {
@@ -133,12 +134,18 @@ void QuicClientEpollNetworkHelper::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, GetLatestFD());
 
   if (event->in_events & EPOLLIN) {
+    DVLOG(1) << "Read packets on EPOLLIN";
+    int times_to_read = max_reads_per_epoll_loop_;
     bool more_to_read = true;
-    while (client_->connected() && more_to_read) {
+    while (client_->connected() && more_to_read && times_to_read > 0) {
       more_to_read = packet_reader_->ReadAndDispatchPackets(
           GetLatestFD(), GetLatestClientAddress().port(),
           *client_->helper()->GetClock(), this,
           overflow_supported_ ? &packets_dropped_ : nullptr);
+      --times_to_read;
+    }
+    if (client_->connected() && more_to_read) {
+      event->out_ready_mask |= EPOLLIN;
     }
   }
   if (client_->connected() && (event->in_events & EPOLLOUT)) {

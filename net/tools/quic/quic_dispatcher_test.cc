@@ -527,22 +527,29 @@ TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
 
 TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
   CreateTimeWaitListManager();
-
+  FLAGS_quic_restart_flag_quic_enable_accept_random_ipn = false;
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   QuicConnectionId connection_id = 1;
+
   // Dispatcher forwards this packet for this connection_id to the time wait
   // list manager.
   EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, QuicStringPiece("hq")))
       .Times(0);
-  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, connection_id))
-      .Times(1);
+  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 1)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager_, ProcessPacket(_, _, 2)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
-      .Times(1);
+      .Times(2);
   // A packet whose packet number is one to large to be allowed to start a
   // connection.
   ProcessPacket(client_address, connection_id, true, SerializeCHLO(),
                 PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
                 QuicDispatcher::kMaxReasonableInitialPacketNumber + 1);
+  connection_id = 2;
+  FLAGS_quic_restart_flag_quic_enable_accept_random_ipn = true;
+  ProcessPacket(client_address, connection_id, true, SerializeCHLO(),
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
+                kMaxRandomInitialPacketNumber +
+                    QuicDispatcher::kMaxReasonableInitialPacketNumber + 1);
 }
 
 TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {

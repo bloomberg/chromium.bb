@@ -310,7 +310,7 @@ TEST_P(QuicDataWriterTest, Write16BitUnsignedIntegers) {
                                                     : little_endian16,
         2);
 
-    uint64_t read_number16 = 0u;
+    uint64_t read_number16;
     QuicDataReader reader(buffer16, 2, GetParam().endianness);
     reader.ReadBytesToUInt64(2, &read_number16);
     EXPECT_EQ(in_memory16, read_number16);
@@ -330,7 +330,7 @@ TEST_P(QuicDataWriterTest, Write24BitUnsignedIntegers) {
                                                   : little_endian24,
       3);
 
-  uint64_t read_number24 = 0u;
+  uint64_t read_number24;
   QuicDataReader reader(buffer24, 3, GetParam().endianness);
   reader.ReadBytesToUInt64(3, &read_number24);
   EXPECT_EQ(in_memory24, read_number24);
@@ -366,7 +366,7 @@ TEST_P(QuicDataWriterTest, Write32BitUnsignedIntegers) {
                                                     : little_endian32,
         4);
 
-    uint64_t read_number32 = 0u;
+    uint64_t read_number32;
     QuicDataReader reader(buffer32, 4, GetParam().endianness);
     reader.ReadBytesToUInt64(4, &read_number32);
     EXPECT_EQ(in_memory32, read_number32);
@@ -386,7 +386,7 @@ TEST_P(QuicDataWriterTest, Write40BitUnsignedIntegers) {
                                                   : little_endian40,
       5);
 
-  uint64_t read_number40 = 0u;
+  uint64_t read_number40;
   QuicDataReader reader(buffer40, 5, GetParam().endianness);
   reader.ReadBytesToUInt64(5, &read_number40);
   EXPECT_EQ(in_memory40, read_number40);
@@ -405,7 +405,7 @@ TEST_P(QuicDataWriterTest, Write48BitUnsignedIntegers) {
                                                   : little_endian48,
       6);
 
-  uint64_t read_number48 = 0u;
+  uint64_t read_number48;
   QuicDataReader reader(buffer48, 6, GetParam().endianness);
   reader.ReadBytesToUInt64(6., &read_number48);
   EXPECT_EQ(in_memory48, read_number48);
@@ -424,7 +424,7 @@ TEST_P(QuicDataWriterTest, Write56BitUnsignedIntegers) {
                                                   : little_endian56,
       7);
 
-  uint64_t read_number56 = 0u;
+  uint64_t read_number56;
   QuicDataReader reader(buffer56, 7, GetParam().endianness);
   reader.ReadBytesToUInt64(7, &read_number56);
   EXPECT_EQ(in_memory56, read_number56);
@@ -445,7 +445,7 @@ TEST_P(QuicDataWriterTest, Write64BitUnsignedIntegers) {
                                                   : AsChars(little_endian64),
       8);
 
-  uint64_t read_number64 = 0u;
+  uint64_t read_number64;
   QuicDataReader reader(buffer64, 8, GetParam().endianness);
   reader.ReadBytesToUInt64(8, &read_number64);
   EXPECT_EQ(in_memory64, read_number64);
@@ -506,7 +506,7 @@ TEST_P(QuicDataWriterTest, WriteIntegers) {
     uint8_t read8;
     uint16_t read16;
     uint32_t read32;
-    uint64_t read64 = 0u;
+    uint64_t read64;
     switch (i) {
       case 0u:
         EXPECT_TRUE(reader.ReadBytesToUInt64(i, &read64));

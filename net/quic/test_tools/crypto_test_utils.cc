@@ -956,7 +956,8 @@ CryptoHandshakeMessage GenerateDefaultInchoateCHLO(
        {"KEXS", "C255"},
        {"PUBS", GenerateClientPublicValuesHex().c_str()},
        {"NONC", GenerateClientNonceHex(clock, crypto_config).c_str()},
-       {"VER\0", QuicTagToString(QuicVersionToQuicTag(version)).c_str()}},
+       {"VER\0", QuicVersionLabelToString(
+           QuicVersionToQuicVersionLabel(version)).c_str()}},
       kClientHelloMinimumSize);
   // clang-format on
 }

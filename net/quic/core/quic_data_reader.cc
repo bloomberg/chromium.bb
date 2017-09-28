@@ -56,6 +56,7 @@ bool QuicDataReader::ReadUInt64(uint64_t* result) {
 }
 
 bool QuicDataReader::ReadBytesToUInt64(size_t num_bytes, uint64_t* result) {
+  *result = 0u;
   if (num_bytes > sizeof(*result)) {
     return false;
   }

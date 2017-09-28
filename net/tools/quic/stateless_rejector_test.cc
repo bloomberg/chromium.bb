@@ -108,7 +108,8 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
         "#" + QuicTextUtils::HexEncode(config_peer_.GetPrimaryConfig()->id);
 
     // Encode the QUIC version.
-    ver_hex_ = QuicTagToString(QuicVersionToQuicTag(GetParam().version));
+    ver_hex_ = QuicVersionLabelToString(
+        QuicVersionToQuicVersionLabel(GetParam().version));
 
     // Generate a public value.
     char public_value[32];

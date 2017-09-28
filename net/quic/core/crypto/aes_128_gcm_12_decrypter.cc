@@ -4,7 +4,9 @@
 
 #include "net/quic/core/crypto/aes_128_gcm_12_decrypter.h"
 
-#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
+#include "third_party/boringssl/src/include/openssl/aead.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
 namespace net {
@@ -29,9 +31,10 @@ Aes128Gcm12Decrypter::Aes128Gcm12Decrypter()
 Aes128Gcm12Decrypter::~Aes128Gcm12Decrypter() {}
 
 uint32_t Aes128Gcm12Decrypter::cipher_id() const {
-  // This OpenSSL macro has the value 0x0300C02F. The two most significant bytes
-  // 0x0300 are OpenSSL specific and are NOT part of the TLS CipherSuite value
-  // for TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256.
+  if (FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_tls13_cipher_suites);
+    return TLS1_CK_AES_128_GCM_SHA256;
+  }
   return TLS1_CK_ECDHE_RSA_WITH_AES_128_GCM_SHA256;
 }
 

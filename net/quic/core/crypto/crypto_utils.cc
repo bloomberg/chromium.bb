@@ -188,15 +188,17 @@ QuicErrorCode CryptoUtils::ValidateServerHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
   }
 
-  QuicTagVector supported_version_tags;
-  if (server_hello.GetTaglist(kVER, &supported_version_tags) != QUIC_NO_ERROR) {
+  QuicVersionLabelVector supported_version_labels;
+  if (server_hello.GetVersionLabelList(kVER, &supported_version_labels) !=
+      QUIC_NO_ERROR) {
     *error_details = "server hello missing version list";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
   if (!negotiated_versions.empty()) {
-    bool mismatch = supported_version_tags.size() != negotiated_versions.size();
-    for (size_t i = 0; i < supported_version_tags.size() && !mismatch; ++i) {
-      mismatch = QuicTagToQuicVersion(supported_version_tags[i]) !=
+    bool mismatch =
+        supported_version_labels.size() != negotiated_versions.size();
+    for (size_t i = 0; i < supported_version_labels.size() && !mismatch; ++i) {
+      mismatch = QuicVersionLabelToQuicVersion(supported_version_labels[i]) !=
                  negotiated_versions[i];
     }
     // The server sent a list of supported versions, and the connection
@@ -224,12 +226,14 @@ QuicErrorCode CryptoUtils::ValidateClientHello(
   // speaking, then the client went through a version negotiation.  In this
   // case, we need to make sure that we actually do not support this version
   // and that it wasn't a downgrade attack.
-  QuicTag client_version_tag;
-  if (client_hello.GetUint32(kVER, &client_version_tag) != QUIC_NO_ERROR) {
+  QuicVersionLabel client_version_label;
+  if (client_hello.GetVersionLabel(kVER, &client_version_label) !=
+      QUIC_NO_ERROR) {
     *error_details = "client hello missing version list";
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
-  QuicVersion client_version = QuicTagToQuicVersion(client_version_tag);
+  QuicVersion client_version =
+      QuicVersionLabelToQuicVersion(client_version_label);
   if (client_version != version) {
     // Just because client_version is a valid version enum doesn't mean that
     // this server actually supports that version, so we check to see if
