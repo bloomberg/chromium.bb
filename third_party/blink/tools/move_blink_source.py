@@ -23,6 +23,7 @@ sys.path.append(os.path.abspath(
                  'third_party', 'WebKit', 'Tools', 'Scripts')))
 from blinkpy.common.name_style_converter import NameStyleConverter
 from plan_blink_move import plan_blink_move
+from plan_blink_move import relative_dest
 from webkitpy.common.checkout.git import Git
 from webkitpy.common.path_finder import get_chromium_src_dir
 from webkitpy.common.system.filesystem import FileSystem
@@ -333,6 +334,8 @@ class MoveBlinkSource(object):
                 content = self._update_cpp_includes(original_content)
                 if file_path.endswith('.h') and '/third_party/WebKit/public/' in file_path.replace('\\', '/'):
                     content = self._update_basename_only_includes(content, file_path)
+                if file_path.endswith('.h') and '/third_party/WebKit/' in file_path.replace('\\', '/'):
+                    content = self._update_include_guard(content, file_path)
 
                 if original_content == content:
                     continue
@@ -398,6 +401,16 @@ class MoveBlinkSource(object):
         # subdir is 'web' or 'platform'.
         return re.sub(r'#include\s+"(\w+\.h)"',
                       partial(self._replace_basename_only_include, subdir, source_path), content)
+
+    def _update_include_guard(self, content, source_path):
+        current_guard = re.sub(r'[.]', '_', self._fs.basename(source_path))
+        new_path = relative_dest(self._fs, self._fs.relpath(
+            source_path, start=self._fs.join(self._repo_root, 'third_party', 'WebKit')))
+        new_guard = 'THIRD_PARTY_BLINK_' + re.sub(r'[\\/.]', '_', new_path.upper()) + '_'
+        content = re.sub(r'#ifndef\s+(WTF_)?' + current_guard, '#ifndef ' + new_guard, content);
+        content = re.sub(r'#define\s+(WTF_)?' + current_guard, '#define ' + new_guard, content);
+        content = re.sub(r'#endif\s+//\s+(WTF_)?' + current_guard, '#endif  // ' + new_guard, content);
+        return content
 
     def _update_single_file_content(self, file_path, replace_list, should_write=True):
         full_path = self._fs.join(self._repo_root, file_path)
