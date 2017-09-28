@@ -150,11 +150,8 @@
   <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED" desc="Summary in the error page when we try and connect to a server, but the server doesn't let us.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> refused to connect.
   </message>
-  <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails. The 'abbr' tag is HTML mark up used to indicate that 'DNS address' is an abbreviation.">
-    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>’s server <ph name="BEGIN_ABBR">&lt;abbr jsvalues="title:dnsDefinition"&gt;</ph>DNS address<ph name="END_ABBR">&lt;/abbr&gt;</ph> could not be found.
-  </message>
-  <message name="IDS_ERRORPAGES_SUMMARY_DNS_DEFINITION" desc="Definition of DNS that appears when hovering over the abbreviation">
-    DNS is the network service that translates a website’s name to its Internet address.
+  <message name="IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED" desc="Summary in the error page when a dns look up fails.">
+    <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>’s server IP address could not be found.
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_ICANN_NAME_COLLISION" desc="Summary in the error page when a dns look up fails due to having contained 127.0.53.53.">
     This site on the company, organization or school intranet has the same URL as an external website.
