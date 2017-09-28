@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
 
 namespace vr {
@@ -20,6 +21,7 @@ class UiRenderer;
 class UiScene;
 class UiSceneManager;
 class VrShellRenderer;
+struct Model;
 }  // namespace vr
 
 namespace vr {
@@ -32,18 +34,12 @@ struct UiInitialState {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class Ui {
+class Ui : public BrowserUiInterface, public UiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      ContentInputDelegate* content_input_delegate,
      const vr::UiInitialState& ui_initial_state);
-  virtual ~Ui();
-
-  base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
-
-  void OnGlInitialized(unsigned int content_texture_id);
-
-  UiInterface* ui();
+  ~Ui() override;
 
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.
   UiScene* scene() { return scene_.get(); }
@@ -51,13 +47,44 @@ class Ui {
   UiRenderer* ui_renderer() { return ui_renderer_.get(); }
   UiInputManager* input_manager() { return input_manager_.get(); }
 
+  base::WeakPtr<vr::BrowserUiInterface> GetBrowserUiWeakPtr();
+
+  // BrowserUiInterface
+  void SetWebVrMode(bool enabled, bool show_toast) override;
+  void SetFullscreen(bool enabled) override;
+  void SetToolbarState(const ToolbarState& state) override;
+  void SetIncognito(bool enabled) override;
+  void SetWebVrSecureOrigin(bool secure) override;
+  void SetLoading(bool loading) override;
+  void SetLoadProgress(float progress) override;
+  void SetIsExiting() override;
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
+  void SetVideoCapturingIndicator(bool enabled) override;
+  void SetScreenCapturingIndicator(bool enabled) override;
+  void SetAudioCapturingIndicator(bool enabled) override;
+  void SetBluetoothConnectedIndicator(bool enabled) override;
+  void SetLocationAccessIndicator(bool enabled) override;
+  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
+
+  // UiInterface
+  bool ShouldRenderWebVr() override;
+  void OnGlInitialized(unsigned int content_texture_id) override;
+  void OnAppButtonClicked() override;
+  void OnAppButtonGesturePerformed(UiInterface::Direction direction) override;
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
+  void OnWebVrFrameAvailable() override;
+  void OnWebVrTimedOut() override;
+
  private:
   // This state may be further abstracted into a SkiaUi object.
   std::unique_ptr<vr::UiScene> scene_;
+  std::unique_ptr<vr::Model> model_;
   std::unique_ptr<vr::UiSceneManager> scene_manager_;
   std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
   std::unique_ptr<vr::UiInputManager> input_manager_;
   std::unique_ptr<vr::UiRenderer> ui_renderer_;
+
+  base::WeakPtrFactory<Ui> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Ui);
 };

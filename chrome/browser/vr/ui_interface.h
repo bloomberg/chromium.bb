@@ -11,8 +11,6 @@ class Transform;
 
 namespace vr {
 
-class UiScene;
-
 // This is the platform-specific interface to the VR UI.
 class UiInterface {
  public:
@@ -25,8 +23,6 @@ class UiInterface {
   };
 
   virtual ~UiInterface() {}
-
-  virtual UiScene* scene() = 0;
 
   virtual bool ShouldRenderWebVr() = 0;
 

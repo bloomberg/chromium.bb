@@ -20,6 +20,7 @@ namespace vr {
 class UiElement;
 class UiScene;
 class UiSceneManager;
+struct Model;
 
 class UiSceneManagerTest : public testing::Test {
  public:
@@ -78,6 +79,7 @@ class UiSceneManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<UiScene> scene_;
+  std::unique_ptr<Model> model_;
   std::unique_ptr<UiSceneManager> manager_;
   MockContentInputDelegate content_input_delegate_;
   base::TimeTicks current_time_;

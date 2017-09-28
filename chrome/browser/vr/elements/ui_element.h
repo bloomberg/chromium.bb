@@ -14,6 +14,7 @@
 #include "cc/animation/transform_operations.h"
 #include "chrome/browser/vr/animation_player.h"
 #include "chrome/browser/vr/color_scheme.h"
+#include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
@@ -195,6 +196,11 @@ class UiElement : public cc::AnimationTarget {
   UiElement* parent() { return parent_; }
   const UiElement* parent() const { return parent_; }
 
+  void AddBinding(std::unique_ptr<BindingBase> binding);
+  const std::vector<std::unique_ptr<BindingBase>>& bindings() {
+    return bindings_;
+  }
+
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
 
@@ -344,6 +350,8 @@ class UiElement : public cc::AnimationTarget {
 
   UiElement* parent_ = nullptr;
   std::vector<std::unique_ptr<UiElement>> children_;
+
+  std::vector<std::unique_ptr<BindingBase>> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

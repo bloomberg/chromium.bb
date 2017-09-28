@@ -7,7 +7,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/color_scheme.h"
@@ -21,7 +20,6 @@ namespace vr {
 class ContentElement;
 class ContentInputDelegate;
 class Grid;
-class LoadingIndicator;
 class Rect;
 class TransientElement;
 class WebVrUrlToast;
@@ -30,6 +28,7 @@ class UiElement;
 class UiScene;
 class UrlBar;
 class ExitPrompt;
+struct Model;
 struct UiInitialState;
 
 // The scene manager creates and maintains a UiElement hierarchy.
@@ -55,7 +54,6 @@ struct UiInitialState;
 //           kScreenCaptureIndicator
 //           kLocationAccessIndicator
 //           kBluetoothConnectedIndicator
-//           kLoadingIndicator
 //       kExitPrompt
 //         kExitPromptBackplane
 //       kExclusiveScreenToastTransientParent
@@ -90,19 +88,16 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
                  ContentInputDelegate* content_input_delegate,
+                 Model* model,
                  const UiInitialState& ui_initial_state);
   ~UiSceneManager() override;
 
-  base::WeakPtr<UiSceneManager> GetWeakPtr();
-
   // UiBrowserInterface.
-  void SetWebVrMode(bool web_vr, bool show_toast) override;
   void SetFullscreen(bool fullscreen) override;
   void SetIncognito(bool incognito) override;
   void SetToolbarState(const ToolbarState& state) override;
   void SetWebVrSecureOrigin(bool secure) override;
-  void SetLoading(bool loading) override;
-  void SetLoadProgress(float progress) override;
+  void SetWebVrMode(bool web_vr, bool show_toast) override;
   void SetIsExiting() override;
   void SetVideoCapturingIndicator(bool enabled) override;
   void SetScreenCapturingIndicator(bool enabled) override;
@@ -111,8 +106,13 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   void SetBluetoothConnectedIndicator(bool enabled) override;
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
 
+  // TODO(vollick): once we have migrated to a model, these methods can be
+  // removed. They will be left here for now as BrowserUiInterface is an
+  // abstract base class. The Set.. methods above are all on the chopping block.
+  void SetLoading(bool loading) override;
+  void SetLoadProgress(float progress) override;
+
   // UiInterface.
-  UiScene* scene() override;
   bool ShouldRenderWebVr() override;
   void OnGlInitialized(unsigned int content_texture_id) override;
   void OnAppButtonClicked() override;
@@ -127,6 +127,9 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   void OnSecurityIconClickedForTesting();
   void OnExitPromptChoiceForTesting(bool chose_exit);
 
+  // TODO(vollick): this should move to the model.
+  const ColorScheme& color_scheme() const;
+
  private:
   void Create2dBrowsingSubtreeRoots();
   void CreateWebVrRoot();
@@ -138,7 +141,7 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   void CreateUnderDevelopmentNotice();
   void CreateBackground();
   void CreateViewportAwareRoot();
-  void CreateUrlBar();
+  void CreateUrlBar(Model* model);
   void CreateWebVrUrlToast();
   void CreateCloseButton();
   void CreateExitPrompt();
@@ -156,7 +159,6 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   void OnCloseButtonClicked();
   void OnUnsupportedMode(UiUnsupportedMode mode);
   ColorScheme::Mode mode() const;
-  const ColorScheme& color_scheme() const;
 
   TransientElement* AddTransientParent(UiElementName name,
                                        UiElementName parent_name,
@@ -189,7 +191,6 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
   UrlBar* url_bar_ = nullptr;
   TransientElement* webvr_url_toast_transient_parent_ = nullptr;
   WebVrUrlToast* webvr_url_toast_ = nullptr;
-  LoadingIndicator* loading_indicator_ = nullptr;
 
   std::vector<UiElement*> system_indicators_;
 
@@ -220,8 +221,6 @@ class UiSceneManager : public UiInterface, public BrowserUiInterface {
 
   gfx::SizeF last_content_screen_bounds_;
   float last_content_aspect_ratio_ = 0.0f;
-
-  base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UiSceneManager);
 };
