@@ -122,7 +122,7 @@
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
-- (void)dismissRecentTabs {
+- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
   [self stop];
 }
 

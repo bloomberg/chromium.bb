@@ -91,7 +91,7 @@
 }
 
 - (void)didFinish {
-  [self.commandHandler dismissRecentTabs];
+  [self.commandHandler dismissRecentTabsWithCompletion:nil];
 }
 
 @end

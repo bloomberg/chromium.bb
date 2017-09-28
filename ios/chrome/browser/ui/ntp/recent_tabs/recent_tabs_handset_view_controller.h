@@ -10,8 +10,8 @@
 // Command protocol for the RecentTabsHandsetViewController.
 @protocol RecentTabsHandsetViewControllerCommand
 
-// Dismisses the recent tabs panel.
-- (void)dismissRecentTabs;
+// Dismisses the recent tabs panel and calls |completion| once it is done.
+- (void)dismissRecentTabsWithCompletion:(void (^)())completion;
 
 @end
 
