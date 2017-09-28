@@ -27,17 +27,17 @@ class CORE_EXPORT TestInterfaceOrLong final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterfaceOrLong();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isLong() const { return type_ == SpecificTypeLong; }
-  int32_t getAsLong() const;
-  void setLong(int32_t);
-  static TestInterfaceOrLong fromLong(int32_t);
+  bool IsLong() const { return type_ == SpecificType::kLong; }
+  int32_t GetAsLong() const;
+  void SetLong(int32_t);
+  static TestInterfaceOrLong FromLong(int32_t);
 
-  bool isTestInterface() const { return type_ == SpecificTypeTestInterface; }
-  TestInterfaceImplementation* getAsTestInterface() const;
-  void setTestInterface(TestInterfaceImplementation*);
-  static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
+  bool IsTestInterface() const { return type_ == SpecificType::kTestInterface; }
+  TestInterfaceImplementation* GetAsTestInterface() const;
+  void SetTestInterface(TestInterfaceImplementation*);
+  static TestInterfaceOrLong FromTestInterface(TestInterfaceImplementation*);
 
   TestInterfaceOrLong(const TestInterfaceOrLong&);
   ~TestInterfaceOrLong();
@@ -45,12 +45,12 @@ class CORE_EXPORT TestInterfaceOrLong final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeLong,
-    SpecificTypeTestInterface,
+  enum class SpecificType {
+    kNone,
+    kLong,
+    kTestInterface,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   int32_t long_;
   Member<TestInterfaceImplementation> test_interface_;

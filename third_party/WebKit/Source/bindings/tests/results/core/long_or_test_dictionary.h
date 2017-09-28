@@ -26,17 +26,17 @@ class CORE_EXPORT LongOrTestDictionary final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   LongOrTestDictionary();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isLong() const { return type_ == SpecificTypeLong; }
-  int32_t getAsLong() const;
-  void setLong(int32_t);
-  static LongOrTestDictionary fromLong(int32_t);
+  bool IsLong() const { return type_ == SpecificType::kLong; }
+  int32_t GetAsLong() const;
+  void SetLong(int32_t);
+  static LongOrTestDictionary FromLong(int32_t);
 
-  bool isTestDictionary() const { return type_ == SpecificTypeTestDictionary; }
-  const TestDictionary& getAsTestDictionary() const;
-  void setTestDictionary(const TestDictionary&);
-  static LongOrTestDictionary fromTestDictionary(const TestDictionary&);
+  bool IsTestDictionary() const { return type_ == SpecificType::kTestDictionary; }
+  const TestDictionary& GetAsTestDictionary() const;
+  void SetTestDictionary(const TestDictionary&);
+  static LongOrTestDictionary FromTestDictionary(const TestDictionary&);
 
   LongOrTestDictionary(const LongOrTestDictionary&);
   ~LongOrTestDictionary();
@@ -44,12 +44,12 @@ class CORE_EXPORT LongOrTestDictionary final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeLong,
-    SpecificTypeTestDictionary,
+  enum class SpecificType {
+    kNone,
+    kLong,
+    kTestDictionary,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   int32_t long_;
   TestDictionary test_dictionary_;

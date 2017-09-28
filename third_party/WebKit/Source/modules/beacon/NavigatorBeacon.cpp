@@ -114,12 +114,12 @@ bool NavigatorBeacon::SendBeaconImpl(
   size_t beacon_size = 0;
   bool allowed;
 
-  if (data.isArrayBufferView()) {
+  if (data.IsArrayBufferView()) {
     allowed =
         PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance, url,
-                               data.getAsArrayBufferView().View(), beacon_size);
-  } else if (data.isBlob()) {
-    Blob* blob = data.getAsBlob();
+                               data.GetAsArrayBufferView().View(), beacon_size);
+  } else if (data.IsBlob()) {
+    Blob* blob = data.GetAsBlob();
     if (!FetchUtils::IsCORSSafelistedContentType(AtomicString(blob->type()))) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
@@ -134,12 +134,12 @@ bool NavigatorBeacon::SendBeaconImpl(
     }
     allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
                                      url, blob, beacon_size);
-  } else if (data.isString()) {
+  } else if (data.IsString()) {
     allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, data.getAsString(), beacon_size);
-  } else if (data.isFormData()) {
+                                     url, data.GetAsString(), beacon_size);
+  } else if (data.IsFormData()) {
     allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
-                                     url, data.getAsFormData(), beacon_size);
+                                     url, data.GetAsFormData(), beacon_size);
   } else {
     allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), allowance,
                                      url, String(), beacon_size);

@@ -413,10 +413,10 @@ ScriptPromise SubtleCrypto::importKey(
     case kWebCryptoKeyFormatRaw:
     case kWebCryptoKeyFormatPkcs8:
     case kWebCryptoKeyFormatSpki:
-      if (raw_key_data.isArrayBuffer()) {
-        key_data = CopyBytes(raw_key_data.getAsArrayBuffer());
-      } else if (raw_key_data.isArrayBufferView()) {
-        key_data = CopyBytes(raw_key_data.getAsArrayBufferView().View());
+      if (raw_key_data.IsArrayBuffer()) {
+        key_data = CopyBytes(raw_key_data.GetAsArrayBuffer());
+      } else if (raw_key_data.IsArrayBufferView()) {
+        key_data = CopyBytes(raw_key_data.GetAsArrayBufferView().View());
       } else {
         result->CompleteWithError(
             kWebCryptoErrorTypeType,
@@ -432,11 +432,11 @@ ScriptPromise SubtleCrypto::importKey(
     //  (2) Let keyData be the keyData parameter passed to the importKey
     //      method.
     case kWebCryptoKeyFormatJwk:
-      if (raw_key_data.isDictionary()) {
+      if (raw_key_data.IsDictionary()) {
         // TODO(eroman): To match the spec error order, parsing of the
         // JsonWebKey should be done earlier (at the WebIDL layer of
         // parameter checking), regardless of the format being "jwk".
-        if (!ParseJsonWebKey(raw_key_data.getAsDictionary(), key_data, result))
+        if (!ParseJsonWebKey(raw_key_data.GetAsDictionary(), key_data, result))
           return promise;
       } else {
         result->CompleteWithError(kWebCryptoErrorTypeType,

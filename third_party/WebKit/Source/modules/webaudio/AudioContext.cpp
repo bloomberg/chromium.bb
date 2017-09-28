@@ -50,14 +50,14 @@ AudioContext* AudioContext::Create(Document& document,
   }
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
-  if (context_options.latencyHint().isAudioContextLatencyCategory()) {
+  if (context_options.latencyHint().IsAudioContextLatencyCategory()) {
     latency_hint = WebAudioLatencyHint(
-        context_options.latencyHint().getAsAudioContextLatencyCategory());
-  } else if (context_options.latencyHint().isDouble()) {
+        context_options.latencyHint().GetAsAudioContextLatencyCategory());
+  } else if (context_options.latencyHint().IsDouble()) {
     // This should be the requested output latency in seconds, without taking
     // into account double buffering (same as baseLatency).
     latency_hint =
-        WebAudioLatencyHint(context_options.latencyHint().getAsDouble());
+        WebAudioLatencyHint(context_options.latencyHint().GetAsDouble());
   }
 
   AudioContext* audio_context = new AudioContext(document, latency_hint);

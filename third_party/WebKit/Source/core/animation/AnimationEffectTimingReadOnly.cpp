@@ -43,9 +43,9 @@ double AnimationEffectTimingReadOnly::iterations() {
 void AnimationEffectTimingReadOnly::duration(
     UnrestrictedDoubleOrString& return_value) {
   if (std::isnan(parent_->SpecifiedTiming().iteration_duration)) {
-    return_value.setString("auto");
+    return_value.SetString("auto");
   } else {
-    return_value.setUnrestrictedDouble(
+    return_value.SetUnrestrictedDouble(
         parent_->SpecifiedTiming().iteration_duration * 1000);
   }
 }

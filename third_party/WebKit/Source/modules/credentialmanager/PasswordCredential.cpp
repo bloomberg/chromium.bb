@@ -62,7 +62,7 @@ PasswordCredential* PasswordCredential::Create(
     // won't have a matching value in |formData|, and we can safely skip it.
     FileOrUSVString result;
     form_data->get(element->GetName(), result);
-    if (!result.isUSVString())
+    if (!result.IsUSVString())
       continue;
 
     Vector<String> autofill_tokens;
@@ -74,14 +74,14 @@ PasswordCredential* PasswordCredential::Create(
         .Split(' ', autofill_tokens);
     for (const auto& token : autofill_tokens) {
       if (token == "current-password" || token == "new-password") {
-        data.setPassword(result.getAsUSVString());
+        data.setPassword(result.GetAsUSVString());
         password_name = element->GetName();
       } else if (token == "photo") {
-        data.setIconURL(result.getAsUSVString());
+        data.setIconURL(result.GetAsUSVString());
       } else if (token == "name" || token == "nickname") {
-        data.setName(result.getAsUSVString());
+        data.setName(result.GetAsUSVString());
       } else if (token == "username") {
-        data.setId(result.getAsUSVString());
+        data.setId(result.GetAsUSVString());
         id_name = element->GetName();
       }
     }
@@ -103,14 +103,14 @@ PasswordCredential* PasswordCredential::Create(
 
   FormDataOrURLSearchParams additional_data;
   if (form->enctype() == "multipart/form-data") {
-    additional_data.setFormData(form_data);
+    additional_data.SetFormData(form_data);
   } else {
     URLSearchParams* params = URLSearchParams::Create(String());
     for (const FormData::Entry* entry : form_data->Entries()) {
       if (entry->IsString())
         params->append(entry->name().data(), entry->Value().data());
     }
-    additional_data.setURLSearchParams(params);
+    additional_data.SetURLSearchParams(params);
   }
 
   credential->setAdditionalData(additional_data);
@@ -148,11 +148,11 @@ const KURL& PasswordCredential::iconURL() const {
 
 RefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
     String& content_type) const {
-  if (additional_data_.isURLSearchParams()) {
+  if (additional_data_.IsURLSearchParams()) {
     // If |additionalData| is a 'URLSearchParams' object, build a urlencoded
     // response.
     URLSearchParams* params = URLSearchParams::Create(String());
-    URLSearchParams* additional_data = additional_data_.getAsURLSearchParams();
+    URLSearchParams* additional_data = additional_data_.GetAsURLSearchParams();
     for (const auto& param : additional_data->Params()) {
       const String& name = param.first;
       if (name != idName() && name != passwordName())
@@ -169,8 +169,8 @@ RefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
 
   // Otherwise, we'll build a multipart response.
   FormData* form_data = FormData::Create(nullptr);
-  if (additional_data_.isFormData()) {
-    FormData* additional_data = additional_data_.getAsFormData();
+  if (additional_data_.IsFormData()) {
+    FormData* additional_data = additional_data_.GetAsFormData();
     for (const FormData::Entry* entry : additional_data->Entries()) {
       const String& name = form_data->Decode(entry->name());
       if (name == idName() || name == passwordName())

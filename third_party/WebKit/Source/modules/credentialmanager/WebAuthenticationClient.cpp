@@ -84,16 +84,16 @@ using webauth::mojom::blink::AuthenticatorTransport;
 
 // TODO(kpaulhamus): Make this a TypeConverter
 Vector<uint8_t> ConvertBufferSource(const blink::BufferSource& buffer) {
-  DCHECK(!buffer.isNull());
+  DCHECK(!buffer.IsNull());
   Vector<uint8_t> vector;
-  if (buffer.isArrayBuffer()) {
-    vector.Append(static_cast<uint8_t*>(buffer.getAsArrayBuffer()->Data()),
-                  buffer.getAsArrayBuffer()->ByteLength());
+  if (buffer.IsArrayBuffer()) {
+    vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
+                  buffer.GetAsArrayBuffer()->ByteLength());
   } else {
-    DCHECK(buffer.isArrayBufferView());
+    DCHECK(buffer.IsArrayBufferView());
     vector.Append(static_cast<uint8_t*>(
-                      buffer.getAsArrayBufferView().View()->BaseAddress()),
-                  buffer.getAsArrayBufferView().View()->byteLength());
+                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
+                  buffer.GetAsArrayBufferView().View()->byteLength());
   }
   return vector;
 }

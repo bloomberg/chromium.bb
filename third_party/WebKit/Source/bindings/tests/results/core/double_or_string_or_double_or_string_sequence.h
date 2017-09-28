@@ -27,22 +27,22 @@ class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   DoubleOrStringOrDoubleOrStringSequence();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isDouble() const { return type_ == SpecificTypeDouble; }
-  double getAsDouble() const;
-  void setDouble(double);
-  static DoubleOrStringOrDoubleOrStringSequence fromDouble(double);
+  bool IsDouble() const { return type_ == SpecificType::kDouble; }
+  double GetAsDouble() const;
+  void SetDouble(double);
+  static DoubleOrStringOrDoubleOrStringSequence FromDouble(double);
 
-  bool isDoubleOrStringSequence() const { return type_ == SpecificTypeDoubleOrStringSequence; }
-  const HeapVector<DoubleOrString>& getAsDoubleOrStringSequence() const;
-  void setDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
-  static DoubleOrStringOrDoubleOrStringSequence fromDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
+  bool IsDoubleOrStringSequence() const { return type_ == SpecificType::kDoubleOrStringSequence; }
+  const HeapVector<DoubleOrString>& GetAsDoubleOrStringSequence() const;
+  void SetDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
+  static DoubleOrStringOrDoubleOrStringSequence FromDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static DoubleOrStringOrDoubleOrStringSequence fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static DoubleOrStringOrDoubleOrStringSequence FromString(const String&);
 
   DoubleOrStringOrDoubleOrStringSequence(const DoubleOrStringOrDoubleOrStringSequence&);
   ~DoubleOrStringOrDoubleOrStringSequence();
@@ -50,13 +50,13 @@ class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeDouble,
-    SpecificTypeDoubleOrStringSequence,
-    SpecificTypeString,
+  enum class SpecificType {
+    kNone,
+    kDouble,
+    kDoubleOrStringSequence,
+    kString,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   double double_;
   HeapVector<DoubleOrString> double_or_string_sequence_;

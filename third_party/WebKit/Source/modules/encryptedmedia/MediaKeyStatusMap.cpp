@@ -85,7 +85,7 @@ class MapIterationSource final
       return false;
 
     const auto& entry = map_->at(current_++);
-    key.setArrayBuffer(entry.KeyId());
+    key.SetArrayBuffer(entry.KeyId());
     value = entry.Status();
     return true;
   }

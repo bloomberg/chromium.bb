@@ -23,39 +23,39 @@
 
 namespace blink {
 
-TestInterfaceOrLong::TestInterfaceOrLong() : type_(SpecificTypeNone) {}
+TestInterfaceOrLong::TestInterfaceOrLong() : type_(SpecificType::kNone) {}
 
-int32_t TestInterfaceOrLong::getAsLong() const {
-  DCHECK(isLong());
+int32_t TestInterfaceOrLong::GetAsLong() const {
+  DCHECK(IsLong());
   return long_;
 }
 
-void TestInterfaceOrLong::setLong(int32_t value) {
-  DCHECK(isNull());
+void TestInterfaceOrLong::SetLong(int32_t value) {
+  DCHECK(IsNull());
   long_ = value;
-  type_ = SpecificTypeLong;
+  type_ = SpecificType::kLong;
 }
 
-TestInterfaceOrLong TestInterfaceOrLong::fromLong(int32_t value) {
+TestInterfaceOrLong TestInterfaceOrLong::FromLong(int32_t value) {
   TestInterfaceOrLong container;
-  container.setLong(value);
+  container.SetLong(value);
   return container;
 }
 
-TestInterfaceImplementation* TestInterfaceOrLong::getAsTestInterface() const {
-  DCHECK(isTestInterface());
+TestInterfaceImplementation* TestInterfaceOrLong::GetAsTestInterface() const {
+  DCHECK(IsTestInterface());
   return test_interface_;
 }
 
-void TestInterfaceOrLong::setTestInterface(TestInterfaceImplementation* value) {
-  DCHECK(isNull());
+void TestInterfaceOrLong::SetTestInterface(TestInterfaceImplementation* value) {
+  DCHECK(IsNull());
   test_interface_ = value;
-  type_ = SpecificTypeTestInterface;
+  type_ = SpecificType::kTestInterface;
 }
 
-TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplementation* value) {
+TestInterfaceOrLong TestInterfaceOrLong::FromTestInterface(TestInterfaceImplementation* value) {
   TestInterfaceOrLong container;
-  container.setTestInterface(value);
+  container.SetTestInterface(value);
   return container;
 }
 
@@ -76,7 +76,7 @@ void V8TestInterfaceOrLong::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
 
   if (V8TestInterface::hasInstance(v8Value, isolate)) {
     TestInterfaceImplementation* cppValue = V8TestInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestInterface(cppValue);
+    impl.SetTestInterface(cppValue);
     return;
   }
 
@@ -84,7 +84,7 @@ void V8TestInterfaceOrLong::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 
@@ -92,19 +92,19 @@ void V8TestInterfaceOrLong::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case TestInterfaceOrLong::SpecificTypeNone:
+    case TestInterfaceOrLong::SpecificType::kNone:
       return v8::Null(isolate);
-    case TestInterfaceOrLong::SpecificTypeLong:
-      return v8::Integer::New(isolate, impl.getAsLong());
-    case TestInterfaceOrLong::SpecificTypeTestInterface:
-      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
+    case TestInterfaceOrLong::SpecificType::kLong:
+      return v8::Integer::New(isolate, impl.GetAsLong());
+    case TestInterfaceOrLong::SpecificType::kTestInterface:
+      return ToV8(impl.GetAsTestInterface(), creationContext, isolate);
     default:
       NOTREACHED();
   }

@@ -97,7 +97,7 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
                               bool is_transition) {
   ComputedTimingProperties computed_timing = effect->getComputedTiming();
   double delay = computed_timing.delay();
-  double duration = computed_timing.duration().getAsUnrestrictedDouble();
+  double duration = computed_timing.duration().GetAsUnrestrictedDouble();
   String easing = effect->SpecifiedTiming().timing_function->ToString();
 
   if (is_transition) {
@@ -398,13 +398,13 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
 
     AnimationEffectTiming* timing = effect->timing();
     UnrestrictedDoubleOrString unrestricted_duration;
-    unrestricted_duration.setUnrestrictedDouble(duration + delay);
+    unrestricted_duration.SetUnrestrictedDouble(duration + delay);
     timing->setDuration(unrestricted_duration, exception_state);
   } else {
     AnimationEffectTiming* timing =
         ToAnimationEffectTiming(animation->effect()->timing());
     UnrestrictedDoubleOrString unrestricted_duration;
-    unrestricted_duration.setUnrestrictedDouble(duration);
+    unrestricted_duration.SetUnrestrictedDouble(duration);
     timing->setDuration(unrestricted_duration, exception_state);
     timing->setDelay(delay);
   }

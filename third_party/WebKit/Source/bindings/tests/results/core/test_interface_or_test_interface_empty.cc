@@ -22,39 +22,39 @@
 
 namespace blink {
 
-TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty() : type_(SpecificTypeNone) {}
+TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty() : type_(SpecificType::kNone) {}
 
-TestInterfaceImplementation* TestInterfaceOrTestInterfaceEmpty::getAsTestInterface() const {
-  DCHECK(isTestInterface());
+TestInterfaceImplementation* TestInterfaceOrTestInterfaceEmpty::GetAsTestInterface() const {
+  DCHECK(IsTestInterface());
   return test_interface_;
 }
 
-void TestInterfaceOrTestInterfaceEmpty::setTestInterface(TestInterfaceImplementation* value) {
-  DCHECK(isNull());
+void TestInterfaceOrTestInterfaceEmpty::SetTestInterface(TestInterfaceImplementation* value) {
+  DCHECK(IsNull());
   test_interface_ = value;
-  type_ = SpecificTypeTestInterface;
+  type_ = SpecificType::kTestInterface;
 }
 
-TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterface(TestInterfaceImplementation* value) {
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::FromTestInterface(TestInterfaceImplementation* value) {
   TestInterfaceOrTestInterfaceEmpty container;
-  container.setTestInterface(value);
+  container.SetTestInterface(value);
   return container;
 }
 
-TestInterfaceEmpty* TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const {
-  DCHECK(isTestInterfaceEmpty());
+TestInterfaceEmpty* TestInterfaceOrTestInterfaceEmpty::GetAsTestInterfaceEmpty() const {
+  DCHECK(IsTestInterfaceEmpty());
   return test_interface_empty_;
 }
 
-void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(TestInterfaceEmpty* value) {
-  DCHECK(isNull());
+void TestInterfaceOrTestInterfaceEmpty::SetTestInterfaceEmpty(TestInterfaceEmpty* value) {
+  DCHECK(IsNull());
   test_interface_empty_ = value;
-  type_ = SpecificTypeTestInterfaceEmpty;
+  type_ = SpecificType::kTestInterfaceEmpty;
 }
 
-TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterfaceEmpty(TestInterfaceEmpty* value) {
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::FromTestInterfaceEmpty(TestInterfaceEmpty* value) {
   TestInterfaceOrTestInterfaceEmpty container;
-  container.setTestInterfaceEmpty(value);
+  container.SetTestInterfaceEmpty(value);
   return container;
 }
 
@@ -76,13 +76,13 @@ void V8TestInterfaceOrTestInterfaceEmpty::ToImpl(v8::Isolate* isolate, v8::Local
 
   if (V8TestInterface::hasInstance(v8Value, isolate)) {
     TestInterfaceImplementation* cppValue = V8TestInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestInterface(cppValue);
+    impl.SetTestInterface(cppValue);
     return;
   }
 
   if (V8TestInterfaceEmpty::hasInstance(v8Value, isolate)) {
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestInterfaceEmpty(cppValue);
+    impl.SetTestInterfaceEmpty(cppValue);
     return;
   }
 
@@ -91,12 +91,12 @@ void V8TestInterfaceOrTestInterfaceEmpty::ToImpl(v8::Isolate* isolate, v8::Local
 
 v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeNone:
+    case TestInterfaceOrTestInterfaceEmpty::SpecificType::kNone:
       return v8::Null(isolate);
-    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterface:
-      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
-    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterfaceEmpty:
-      return ToV8(impl.getAsTestInterfaceEmpty(), creationContext, isolate);
+    case TestInterfaceOrTestInterfaceEmpty::SpecificType::kTestInterface:
+      return ToV8(impl.GetAsTestInterface(), creationContext, isolate);
+    case TestInterfaceOrTestInterfaceEmpty::SpecificType::kTestInterfaceEmpty:
+      return ToV8(impl.GetAsTestInterfaceEmpty(), creationContext, isolate);
     default:
       NOTREACHED();
   }

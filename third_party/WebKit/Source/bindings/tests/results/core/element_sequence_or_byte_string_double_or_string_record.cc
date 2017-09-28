@@ -24,39 +24,39 @@
 
 namespace blink {
 
-ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoubleOrStringRecord() : type_(SpecificTypeNone) {}
+ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoubleOrStringRecord() : type_(SpecificType::kNone) {}
 
-const HeapVector<std::pair<String, DoubleOrString>>& ElementSequenceOrByteStringDoubleOrStringRecord::getAsByteStringDoubleOrStringRecord() const {
-  DCHECK(isByteStringDoubleOrStringRecord());
+const HeapVector<std::pair<String, DoubleOrString>>& ElementSequenceOrByteStringDoubleOrStringRecord::GetAsByteStringDoubleOrStringRecord() const {
+  DCHECK(IsByteStringDoubleOrStringRecord());
   return byte_string_double_or_string_record_;
 }
 
-void ElementSequenceOrByteStringDoubleOrStringRecord::setByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
-  DCHECK(isNull());
+void ElementSequenceOrByteStringDoubleOrStringRecord::SetByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
+  DCHECK(IsNull());
   byte_string_double_or_string_record_ = value;
-  type_ = SpecificTypeByteStringDoubleOrStringRecord;
+  type_ = SpecificType::kByteStringDoubleOrStringRecord;
 }
 
-ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::fromByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
+ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::FromByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
   ElementSequenceOrByteStringDoubleOrStringRecord container;
-  container.setByteStringDoubleOrStringRecord(value);
+  container.SetByteStringDoubleOrStringRecord(value);
   return container;
 }
 
-const HeapVector<Member<Element>>& ElementSequenceOrByteStringDoubleOrStringRecord::getAsElementSequence() const {
-  DCHECK(isElementSequence());
+const HeapVector<Member<Element>>& ElementSequenceOrByteStringDoubleOrStringRecord::GetAsElementSequence() const {
+  DCHECK(IsElementSequence());
   return element_sequence_;
 }
 
-void ElementSequenceOrByteStringDoubleOrStringRecord::setElementSequence(const HeapVector<Member<Element>>& value) {
-  DCHECK(isNull());
+void ElementSequenceOrByteStringDoubleOrStringRecord::SetElementSequence(const HeapVector<Member<Element>>& value) {
+  DCHECK(IsNull());
   element_sequence_ = value;
-  type_ = SpecificTypeElementSequence;
+  type_ = SpecificType::kElementSequence;
 }
 
-ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::fromElementSequence(const HeapVector<Member<Element>>& value) {
+ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::FromElementSequence(const HeapVector<Member<Element>>& value) {
   ElementSequenceOrByteStringDoubleOrStringRecord container;
-  container.setElementSequence(value);
+  container.SetElementSequence(value);
   return container;
 }
 
@@ -80,7 +80,7 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(v8::Isolate* isol
     HeapVector<Member<Element>> cppValue = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setElementSequence(cppValue);
+    impl.SetElementSequence(cppValue);
     return;
   }
 
@@ -88,7 +88,7 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(v8::Isolate* isol
     HeapVector<std::pair<String, DoubleOrString>> cppValue = NativeValueTraits<IDLRecord<IDLByteString, DoubleOrString>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setByteStringDoubleOrStringRecord(cppValue);
+    impl.SetByteStringDoubleOrStringRecord(cppValue);
     return;
   }
 
@@ -97,12 +97,12 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::ToImpl(v8::Isolate* isol
 
 v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificTypeNone:
+    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificType::kNone:
       return v8::Null(isolate);
-    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificTypeByteStringDoubleOrStringRecord:
-      return ToV8(impl.getAsByteStringDoubleOrStringRecord(), creationContext, isolate);
-    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificTypeElementSequence:
-      return ToV8(impl.getAsElementSequence(), creationContext, isolate);
+    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificType::kByteStringDoubleOrStringRecord:
+      return ToV8(impl.GetAsByteStringDoubleOrStringRecord(), creationContext, isolate);
+    case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificType::kElementSequence:
+      return ToV8(impl.GetAsElementSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

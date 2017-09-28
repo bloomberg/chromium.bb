@@ -18,56 +18,56 @@
 
 namespace blink {
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface::UnsignedLongLongOrBooleanOrTestCallbackInterface() : type_(SpecificTypeNone) {}
+UnsignedLongLongOrBooleanOrTestCallbackInterface::UnsignedLongLongOrBooleanOrTestCallbackInterface() : type_(SpecificType::kNone) {}
 
-bool UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool UnsignedLongLongOrBooleanOrTestCallbackInterface::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void UnsignedLongLongOrBooleanOrTestCallbackInterface::setBoolean(bool value) {
-  DCHECK(isNull());
+void UnsignedLongLongOrBooleanOrTestCallbackInterface::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromBoolean(bool value) {
+UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::FromBoolean(bool value) {
   UnsignedLongLongOrBooleanOrTestCallbackInterface container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-TestCallbackInterface* UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsTestCallbackInterface() const {
-  DCHECK(isTestCallbackInterface());
+TestCallbackInterface* UnsignedLongLongOrBooleanOrTestCallbackInterface::GetAsTestCallbackInterface() const {
+  DCHECK(IsTestCallbackInterface());
   return test_callback_interface_;
 }
 
-void UnsignedLongLongOrBooleanOrTestCallbackInterface::setTestCallbackInterface(TestCallbackInterface* value) {
-  DCHECK(isNull());
+void UnsignedLongLongOrBooleanOrTestCallbackInterface::SetTestCallbackInterface(TestCallbackInterface* value) {
+  DCHECK(IsNull());
   test_callback_interface_ = value;
-  type_ = SpecificTypeTestCallbackInterface;
+  type_ = SpecificType::kTestCallbackInterface;
 }
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromTestCallbackInterface(TestCallbackInterface* value) {
+UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::FromTestCallbackInterface(TestCallbackInterface* value) {
   UnsignedLongLongOrBooleanOrTestCallbackInterface container;
-  container.setTestCallbackInterface(value);
+  container.SetTestCallbackInterface(value);
   return container;
 }
 
-uint64_t UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsUnsignedLongLong() const {
-  DCHECK(isUnsignedLongLong());
+uint64_t UnsignedLongLongOrBooleanOrTestCallbackInterface::GetAsUnsignedLongLong() const {
+  DCHECK(IsUnsignedLongLong());
   return unsigned_long_long_;
 }
 
-void UnsignedLongLongOrBooleanOrTestCallbackInterface::setUnsignedLongLong(uint64_t value) {
-  DCHECK(isNull());
+void UnsignedLongLongOrBooleanOrTestCallbackInterface::SetUnsignedLongLong(uint64_t value) {
+  DCHECK(IsNull());
   unsigned_long_long_ = value;
-  type_ = SpecificTypeUnsignedLongLong;
+  type_ = SpecificType::kUnsignedLongLong;
 }
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromUnsignedLongLong(uint64_t value) {
+UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::FromUnsignedLongLong(uint64_t value) {
   UnsignedLongLongOrBooleanOrTestCallbackInterface container;
-  container.setUnsignedLongLong(value);
+  container.SetUnsignedLongLong(value);
   return container;
 }
 
@@ -88,12 +88,12 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* iso
 
   if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
     TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestCallbackInterface(cppValue);
+    impl.SetTestCallbackInterface(cppValue);
     return;
   }
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
@@ -101,7 +101,7 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* iso
     uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setUnsignedLongLong(cppValue);
+    impl.SetUnsignedLongLong(cppValue);
     return;
   }
 
@@ -109,21 +109,21 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::ToImpl(v8::Isolate* iso
     uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setUnsignedLongLong(cppValue);
+    impl.SetUnsignedLongLong(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const UnsignedLongLongOrBooleanOrTestCallbackInterface& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeNone:
+    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificType::kNone:
       return v8::Null(isolate);
-    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeTestCallbackInterface:
-      return ToV8(impl.getAsTestCallbackInterface(), creationContext, isolate);
-    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeUnsignedLongLong:
-      return v8::Number::New(isolate, static_cast<double>(impl.getAsUnsignedLongLong()));
+    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificType::kTestCallbackInterface:
+      return ToV8(impl.GetAsTestCallbackInterface(), creationContext, isolate);
+    case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificType::kUnsignedLongLong:
+      return v8::Number::New(isolate, static_cast<double>(impl.GetAsUnsignedLongLong()));
     default:
       NOTREACHED();
   }

@@ -831,11 +831,11 @@ void HTMLFormElement::AnonymousNamedGetter(
     }
   }
   if (elements.size() == 1) {
-    return_value.setElement(elements.at(0));
+    return_value.SetElement(elements.at(0));
     return;
   }
 
-  return_value.setRadioNodeList(GetRadioNodeList(name, only_match_img));
+  return_value.SetRadioNodeList(GetRadioNodeList(name, only_match_img));
 }
 
 void HTMLFormElement::SetDemoted(bool demoted) {

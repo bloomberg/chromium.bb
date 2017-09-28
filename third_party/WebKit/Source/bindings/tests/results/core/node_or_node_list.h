@@ -28,17 +28,17 @@ class CORE_EXPORT NodeOrNodeList final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   NodeOrNodeList();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isNode() const { return type_ == SpecificTypeNode; }
-  Node* getAsNode() const;
-  void setNode(Node*);
-  static NodeOrNodeList fromNode(Node*);
+  bool IsNode() const { return type_ == SpecificType::kNode; }
+  Node* GetAsNode() const;
+  void SetNode(Node*);
+  static NodeOrNodeList FromNode(Node*);
 
-  bool isNodeList() const { return type_ == SpecificTypeNodeList; }
-  NodeList* getAsNodeList() const;
-  void setNodeList(NodeList*);
-  static NodeOrNodeList fromNodeList(NodeList*);
+  bool IsNodeList() const { return type_ == SpecificType::kNodeList; }
+  NodeList* GetAsNodeList() const;
+  void SetNodeList(NodeList*);
+  static NodeOrNodeList FromNodeList(NodeList*);
 
   NodeOrNodeList(const NodeOrNodeList&);
   ~NodeOrNodeList();
@@ -46,12 +46,12 @@ class CORE_EXPORT NodeOrNodeList final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeNode,
-    SpecificTypeNodeList,
+  enum class SpecificType {
+    kNone,
+    kNode,
+    kNodeList,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   Member<Node> node_;
   Member<NodeList> node_list_;

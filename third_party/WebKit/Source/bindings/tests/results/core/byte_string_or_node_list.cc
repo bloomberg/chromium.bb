@@ -22,39 +22,39 @@
 
 namespace blink {
 
-ByteStringOrNodeList::ByteStringOrNodeList() : type_(SpecificTypeNone) {}
+ByteStringOrNodeList::ByteStringOrNodeList() : type_(SpecificType::kNone) {}
 
-const String& ByteStringOrNodeList::getAsByteString() const {
-  DCHECK(isByteString());
+const String& ByteStringOrNodeList::GetAsByteString() const {
+  DCHECK(IsByteString());
   return byte_string_;
 }
 
-void ByteStringOrNodeList::setByteString(const String& value) {
-  DCHECK(isNull());
+void ByteStringOrNodeList::SetByteString(const String& value) {
+  DCHECK(IsNull());
   byte_string_ = value;
-  type_ = SpecificTypeByteString;
+  type_ = SpecificType::kByteString;
 }
 
-ByteStringOrNodeList ByteStringOrNodeList::fromByteString(const String& value) {
+ByteStringOrNodeList ByteStringOrNodeList::FromByteString(const String& value) {
   ByteStringOrNodeList container;
-  container.setByteString(value);
+  container.SetByteString(value);
   return container;
 }
 
-NodeList* ByteStringOrNodeList::getAsNodeList() const {
-  DCHECK(isNodeList());
+NodeList* ByteStringOrNodeList::GetAsNodeList() const {
+  DCHECK(IsNodeList());
   return node_list_;
 }
 
-void ByteStringOrNodeList::setNodeList(NodeList* value) {
-  DCHECK(isNull());
+void ByteStringOrNodeList::SetNodeList(NodeList* value) {
+  DCHECK(IsNull());
   node_list_ = value;
-  type_ = SpecificTypeNodeList;
+  type_ = SpecificType::kNodeList;
 }
 
-ByteStringOrNodeList ByteStringOrNodeList::fromNodeList(NodeList* value) {
+ByteStringOrNodeList ByteStringOrNodeList::FromNodeList(NodeList* value) {
   ByteStringOrNodeList container;
-  container.setNodeList(value);
+  container.SetNodeList(value);
   return container;
 }
 
@@ -75,7 +75,7 @@ void V8ByteStringOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
 
   if (V8NodeList::hasInstance(v8Value, isolate)) {
     NodeList* cppValue = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setNodeList(cppValue);
+    impl.SetNodeList(cppValue);
     return;
   }
 
@@ -83,19 +83,19 @@ void V8ByteStringOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     V8StringResource<> cppValue = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setByteString(cppValue);
+    impl.SetByteString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const ByteStringOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case ByteStringOrNodeList::SpecificTypeNone:
+    case ByteStringOrNodeList::SpecificType::kNone:
       return v8::Null(isolate);
-    case ByteStringOrNodeList::SpecificTypeByteString:
-      return V8String(isolate, impl.getAsByteString());
-    case ByteStringOrNodeList::SpecificTypeNodeList:
-      return ToV8(impl.getAsNodeList(), creationContext, isolate);
+    case ByteStringOrNodeList::SpecificType::kByteString:
+      return V8String(isolate, impl.GetAsByteString());
+    case ByteStringOrNodeList::SpecificType::kNodeList:
+      return ToV8(impl.GetAsNodeList(), creationContext, isolate);
     default:
       NOTREACHED();
   }

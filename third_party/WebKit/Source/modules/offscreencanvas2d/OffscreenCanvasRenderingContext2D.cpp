@@ -165,7 +165,7 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
 
 void OffscreenCanvasRenderingContext2D::SetOffscreenCanvasGetContextResult(
     OffscreenRenderingContext& result) {
-  result.setOffscreenCanvasRenderingContext2D(this);
+  result.SetOffscreenCanvasRenderingContext2D(this);
 }
 
 bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(

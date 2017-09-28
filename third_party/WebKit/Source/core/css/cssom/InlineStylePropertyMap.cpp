@@ -127,19 +127,19 @@ void InlineStylePropertyMap::set(
     CSSStyleValueOrCSSStyleValueSequenceOrString& item,
     ExceptionState& exception_state) {
   const CSSValue* css_value = nullptr;
-  if (item.isCSSStyleValue()) {
+  if (item.IsCSSStyleValue()) {
     css_value =
-        SingleStyleValueAsCSSValue(property_id, *item.getAsCSSStyleValue());
-  } else if (item.isCSSStyleValueSequence()) {
+        SingleStyleValueAsCSSValue(property_id, *item.GetAsCSSStyleValue());
+  } else if (item.IsCSSStyleValueSequence()) {
     if (!CSSPropertyAPI::Get(property_id).IsRepeated()) {
       exception_state.ThrowTypeError(
           "Property does not support multiple values");
       return;
     }
-    css_value = AsCSSValueList(property_id, item.getAsCSSStyleValueSequence());
+    css_value = AsCSSValueList(property_id, item.GetAsCSSStyleValueSequence());
   } else {
     // Parse it.
-    DCHECK(item.isString());
+    DCHECK(item.IsString());
     // TODO(meade): Implement this.
     exception_state.ThrowTypeError("Not implemented yet");
     return;
@@ -174,16 +174,16 @@ void InlineStylePropertyMap::append(
     return;
   }
 
-  if (item.isCSSStyleValue()) {
+  if (item.IsCSSStyleValue()) {
     const CSSValue* css_value =
-        StyleValueToCSSValue(property_id, *item.getAsCSSStyleValue());
+        StyleValueToCSSValue(property_id, *item.GetAsCSSStyleValue());
     if (!css_value) {
       exception_state.ThrowTypeError("Invalid type for property");
       return;
     }
     css_value_list->Append(*css_value);
-  } else if (item.isCSSStyleValueSequence()) {
-    for (CSSStyleValue* style_value : item.getAsCSSStyleValueSequence()) {
+  } else if (item.IsCSSStyleValueSequence()) {
+    for (CSSStyleValue* style_value : item.GetAsCSSStyleValueSequence()) {
       const CSSValue* css_value =
           StyleValueToCSSValue(property_id, *style_value);
       if (!css_value) {
@@ -194,7 +194,7 @@ void InlineStylePropertyMap::append(
     }
   } else {
     // Parse it.
-    DCHECK(item.isString());
+    DCHECK(item.IsString());
     // TODO(meade): Implement this.
     exception_state.ThrowTypeError("Not implemented yet");
     return;
@@ -227,11 +227,11 @@ InlineStylePropertyMap::GetIterationEntries() {
       // TODO(meade): Eventually custom properties will support other types, so
       // actually return them instead of always returning a
       // CSSUnsupportedStyleValue.
-      value.setCSSStyleValue(
+      value.SetCSSStyleValue(
           CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
     } else if (property_id == CSSPropertyApplyAtRule) {
       name = kAtApply;
-      value.setCSSStyleValue(CSSUnsupportedStyleValue::Create(
+      value.SetCSSStyleValue(CSSUnsupportedStyleValue::Create(
           ToCSSCustomIdentValue(property_reference.Value()).Value()));
     } else {
       name = getPropertyNameString(property_id);
@@ -239,9 +239,9 @@ InlineStylePropertyMap::GetIterationEntries() {
           StyleValueFactory::CssValueToStyleValueVector(
               property_id, property_reference.Value());
       if (style_value_vector.size() == 1)
-        value.setCSSStyleValue(style_value_vector[0]);
+        value.SetCSSStyleValue(style_value_vector[0]);
       else
-        value.setCSSStyleValueSequence(style_value_vector);
+        value.SetCSSStyleValueSequence(style_value_vector);
     }
     result.push_back(std::make_pair(name, value));
   }

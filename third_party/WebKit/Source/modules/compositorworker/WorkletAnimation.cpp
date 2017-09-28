@@ -42,10 +42,10 @@ bool ValidateTimelines(HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
   }
 
   for (const auto& timeline : timelines) {
-    if (timeline.isScrollTimeline()) {
+    if (timeline.IsScrollTimeline()) {
       DoubleOrScrollTimelineAutoKeyword time_range;
-      timeline.getAsScrollTimeline()->timeRange(time_range);
-      if (time_range.isScrollTimelineAutoKeyword()) {
+      timeline.GetAsScrollTimeline()->timeRange(time_range);
+      if (time_range.IsScrollTimelineAutoKeyword()) {
         error_string = "ScrollTimeline timeRange must have non-auto value";
         return false;
       }

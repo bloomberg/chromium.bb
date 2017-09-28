@@ -29,7 +29,7 @@ StringOrCSSVariableReferenceValue VariableReferenceValue(
   CSSStyleVariableReferenceValue* variable_reference =
       CSSStyleVariableReferenceValue::Create(variable_name.ToString(),
                                              unparsed_value);
-  return StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+  return StringOrCSSVariableReferenceValue::FromCSSVariableReferenceValue(
       variable_reference);
 }
 
@@ -41,7 +41,7 @@ HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToFragments(
     if (range.Peek().FunctionId() == CSSValueVar) {
       if (!builder.IsEmpty()) {
         fragments.push_back(
-            StringOrCSSVariableReferenceValue::fromString(builder.ToString()));
+            StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
         builder.Clear();
       }
       CSSParserTokenRange block = range.ConsumeBlock();
@@ -57,7 +57,7 @@ HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToFragments(
   }
   if (!builder.IsEmpty()) {
     fragments.push_back(
-        StringOrCSSVariableReferenceValue::fromString(builder.ToString()));
+        StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
   }
   return fragments;
 }
@@ -77,10 +77,10 @@ const CSSValue* CSSUnparsedValue::ToCSSValue() const {
     if (i) {
       tokens.Append("/**/");
     }
-    if (fragments_[i].isString()) {
-      tokens.Append(fragments_[i].getAsString());
-    } else if (fragments_[i].isCSSVariableReferenceValue()) {
-      tokens.Append(fragments_[i].getAsCSSVariableReferenceValue()->variable());
+    if (fragments_[i].IsString()) {
+      tokens.Append(fragments_[i].GetAsString());
+    } else if (fragments_[i].IsCSSVariableReferenceValue()) {
+      tokens.Append(fragments_[i].GetAsCSSVariableReferenceValue()->variable());
     } else {
       NOTREACHED();
     }

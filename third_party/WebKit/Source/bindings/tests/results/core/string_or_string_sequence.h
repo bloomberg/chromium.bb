@@ -25,17 +25,17 @@ class CORE_EXPORT StringOrStringSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   StringOrStringSequence();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static StringOrStringSequence fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static StringOrStringSequence FromString(const String&);
 
-  bool isStringSequence() const { return type_ == SpecificTypeStringSequence; }
-  const Vector<String>& getAsStringSequence() const;
-  void setStringSequence(const Vector<String>&);
-  static StringOrStringSequence fromStringSequence(const Vector<String>&);
+  bool IsStringSequence() const { return type_ == SpecificType::kStringSequence; }
+  const Vector<String>& GetAsStringSequence() const;
+  void SetStringSequence(const Vector<String>&);
+  static StringOrStringSequence FromStringSequence(const Vector<String>&);
 
   StringOrStringSequence(const StringOrStringSequence&);
   ~StringOrStringSequence();
@@ -43,12 +43,12 @@ class CORE_EXPORT StringOrStringSequence final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeString,
-    SpecificTypeStringSequence,
+  enum class SpecificType {
+    kNone,
+    kString,
+    kStringSequence,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   String string_;
   Vector<String> string_sequence_;

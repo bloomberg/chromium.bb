@@ -17,32 +17,32 @@
 
 namespace blink {
 
-TestEnumOrDouble::TestEnumOrDouble() : type_(SpecificTypeNone) {}
+TestEnumOrDouble::TestEnumOrDouble() : type_(SpecificType::kNone) {}
 
-double TestEnumOrDouble::getAsDouble() const {
-  DCHECK(isDouble());
+double TestEnumOrDouble::GetAsDouble() const {
+  DCHECK(IsDouble());
   return double_;
 }
 
-void TestEnumOrDouble::setDouble(double value) {
-  DCHECK(isNull());
+void TestEnumOrDouble::SetDouble(double value) {
+  DCHECK(IsNull());
   double_ = value;
-  type_ = SpecificTypeDouble;
+  type_ = SpecificType::kDouble;
 }
 
-TestEnumOrDouble TestEnumOrDouble::fromDouble(double value) {
+TestEnumOrDouble TestEnumOrDouble::FromDouble(double value) {
   TestEnumOrDouble container;
-  container.setDouble(value);
+  container.SetDouble(value);
   return container;
 }
 
-const String& TestEnumOrDouble::getAsTestEnum() const {
-  DCHECK(isTestEnum());
+const String& TestEnumOrDouble::GetAsTestEnum() const {
+  DCHECK(IsTestEnum());
   return test_enum_;
 }
 
-void TestEnumOrDouble::setTestEnum(const String& value) {
-  DCHECK(isNull());
+void TestEnumOrDouble::SetTestEnum(const String& value) {
+  DCHECK(IsNull());
   NonThrowableExceptionState exceptionState;
   const char* validValues[] = {
       "",
@@ -55,12 +55,12 @@ void TestEnumOrDouble::setTestEnum(const String& value) {
     return;
   }
   test_enum_ = value;
-  type_ = SpecificTypeTestEnum;
+  type_ = SpecificType::kTestEnum;
 }
 
-TestEnumOrDouble TestEnumOrDouble::fromTestEnum(const String& value) {
+TestEnumOrDouble TestEnumOrDouble::FromTestEnum(const String& value) {
   TestEnumOrDouble container;
-  container.setTestEnum(value);
+  container.SetTestEnum(value);
   return container;
 }
 
@@ -82,7 +82,7 @@ void V8TestEnumOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
     double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDouble(cppValue);
+    impl.SetDouble(cppValue);
     return;
   }
 
@@ -98,19 +98,19 @@ void V8TestEnumOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
     };
     if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
       return;
-    impl.setTestEnum(cppValue);
+    impl.SetTestEnum(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case TestEnumOrDouble::SpecificTypeNone:
+    case TestEnumOrDouble::SpecificType::kNone:
       return v8::Null(isolate);
-    case TestEnumOrDouble::SpecificTypeDouble:
-      return v8::Number::New(isolate, impl.getAsDouble());
-    case TestEnumOrDouble::SpecificTypeTestEnum:
-      return V8String(isolate, impl.getAsTestEnum());
+    case TestEnumOrDouble::SpecificType::kDouble:
+      return v8::Number::New(isolate, impl.GetAsDouble());
+    case TestEnumOrDouble::SpecificType::kTestEnum:
+      return V8String(isolate, impl.GetAsTestEnum());
     default:
       NOTREACHED();
   }

@@ -30,22 +30,22 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   StringOrArrayBufferOrArrayBufferView();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isArrayBuffer() const { return type_ == SpecificTypeArrayBuffer; }
-  TestArrayBuffer* getAsArrayBuffer() const;
-  void setArrayBuffer(TestArrayBuffer*);
-  static StringOrArrayBufferOrArrayBufferView fromArrayBuffer(TestArrayBuffer*);
+  bool IsArrayBuffer() const { return type_ == SpecificType::kArrayBuffer; }
+  TestArrayBuffer* GetAsArrayBuffer() const;
+  void SetArrayBuffer(TestArrayBuffer*);
+  static StringOrArrayBufferOrArrayBufferView FromArrayBuffer(TestArrayBuffer*);
 
-  bool isArrayBufferView() const { return type_ == SpecificTypeArrayBufferView; }
-  NotShared<TestArrayBufferView> getAsArrayBufferView() const;
-  void setArrayBufferView(NotShared<TestArrayBufferView>);
-  static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(NotShared<TestArrayBufferView>);
+  bool IsArrayBufferView() const { return type_ == SpecificType::kArrayBufferView; }
+  NotShared<TestArrayBufferView> GetAsArrayBufferView() const;
+  void SetArrayBufferView(NotShared<TestArrayBufferView>);
+  static StringOrArrayBufferOrArrayBufferView FromArrayBufferView(NotShared<TestArrayBufferView>);
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static StringOrArrayBufferOrArrayBufferView fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static StringOrArrayBufferOrArrayBufferView FromString(const String&);
 
   StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&);
   ~StringOrArrayBufferOrArrayBufferView();
@@ -53,13 +53,13 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeArrayBuffer,
-    SpecificTypeArrayBufferView,
-    SpecificTypeString,
+  enum class SpecificType {
+    kNone,
+    kArrayBuffer,
+    kArrayBufferView,
+    kString,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   Member<TestArrayBuffer> array_buffer_;
   Member<TestArrayBufferView> array_buffer_view_;

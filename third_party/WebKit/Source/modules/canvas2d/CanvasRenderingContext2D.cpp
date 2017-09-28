@@ -140,7 +140,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
 
 void CanvasRenderingContext2D::SetCanvasGetContextResult(
     RenderingContext& result) {
-  result.setCanvasRenderingContext2D(this);
+  result.SetCanvasRenderingContext2D(this);
 }
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() {}

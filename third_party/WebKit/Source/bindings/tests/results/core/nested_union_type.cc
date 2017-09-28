@@ -26,107 +26,107 @@
 
 namespace blink {
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord() : type_(SpecificTypeNone) {}
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord() : type_(SpecificType::kNone) {}
 
-Event* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsEvent() const {
-  DCHECK(isEvent());
+Event* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsEvent() const {
+  DCHECK(IsEvent());
   return event_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setEvent(Event* value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetEvent(Event* value) {
+  DCHECK(IsNull());
   event_ = value;
-  type_ = SpecificTypeEvent;
+  type_ = SpecificType::kEvent;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromEvent(Event* value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromEvent(Event* value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setEvent(value);
+  container.SetEvent(value);
   return container;
 }
 
-const Vector<int32_t>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsLongSequence() const {
-  DCHECK(isLongSequence());
+const Vector<int32_t>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsLongSequence() const {
+  DCHECK(IsLongSequence());
   return long_sequence_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setLongSequence(const Vector<int32_t>& value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetLongSequence(const Vector<int32_t>& value) {
+  DCHECK(IsNull());
   long_sequence_ = value;
-  type_ = SpecificTypeLongSequence;
+  type_ = SpecificType::kLongSequence;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromLongSequence(const Vector<int32_t>& value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromLongSequence(const Vector<int32_t>& value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setLongSequence(value);
+  container.SetLongSequence(value);
   return container;
 }
 
-Node* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsNode() const {
-  DCHECK(isNode());
+Node* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsNode() const {
+  DCHECK(IsNode());
   return node_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setNode(Node* value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetNode(Node* value) {
+  DCHECK(IsNull());
   node_ = value;
-  type_ = SpecificTypeNode;
+  type_ = SpecificType::kNode;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromNode(Node* value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromNode(Node* value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setNode(value);
+  container.SetNode(value);
   return container;
 }
 
-const String& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsString() const {
-  DCHECK(isString());
+const String& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setString(const String& value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromString(const String& value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromString(const String& value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-const HeapVector<std::pair<String, ByteStringOrNodeList>>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsStringByteStringOrNodeListRecord() const {
-  DCHECK(isStringByteStringOrNodeListRecord());
+const HeapVector<std::pair<String, ByteStringOrNodeList>>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsStringByteStringOrNodeListRecord() const {
+  DCHECK(IsStringByteStringOrNodeListRecord());
   return string_byte_string_or_node_list_record_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
+  DCHECK(IsNull());
   string_byte_string_or_node_list_record_ = value;
-  type_ = SpecificTypeStringByteStringOrNodeListRecord;
+  type_ = SpecificType::kStringByteStringOrNodeListRecord;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setStringByteStringOrNodeListRecord(value);
+  container.SetStringByteStringOrNodeListRecord(value);
   return container;
 }
 
-XMLHttpRequest* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsXMLHttpRequest() const {
-  DCHECK(isXMLHttpRequest());
+XMLHttpRequest* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::GetAsXMLHttpRequest() const {
+  DCHECK(IsXMLHttpRequest());
   return xml_http_request_;
 }
 
-void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setXMLHttpRequest(XMLHttpRequest* value) {
-  DCHECK(isNull());
+void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SetXMLHttpRequest(XMLHttpRequest* value) {
+  DCHECK(IsNull());
   xml_http_request_ = value;
-  type_ = SpecificTypeXMLHttpRequest;
+  type_ = SpecificType::kXMLHttpRequest;
 }
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromXMLHttpRequest(XMLHttpRequest* value) {
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::FromXMLHttpRequest(XMLHttpRequest* value) {
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord container;
-  container.setXMLHttpRequest(value);
+  container.SetXMLHttpRequest(value);
   return container;
 }
 
@@ -150,19 +150,19 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
 
   if (V8Event::hasInstance(v8Value, isolate)) {
     Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setEvent(cppValue);
+    impl.SetEvent(cppValue);
     return;
   }
 
   if (V8Node::hasInstance(v8Value, isolate)) {
     Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setNode(cppValue);
+    impl.SetNode(cppValue);
     return;
   }
 
   if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
     XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setXMLHttpRequest(cppValue);
+    impl.SetXMLHttpRequest(cppValue);
     return;
   }
 
@@ -170,7 +170,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
     Vector<int32_t> cppValue = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setLongSequence(cppValue);
+    impl.SetLongSequence(cppValue);
     return;
   }
 
@@ -178,7 +178,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
     HeapVector<std::pair<String, ByteStringOrNodeList>> cppValue = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setStringByteStringOrNodeListRecord(cppValue);
+    impl.SetStringByteStringOrNodeListRecord(cppValue);
     return;
   }
 
@@ -186,27 +186,27 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeNone:
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kNone:
       return v8::Null(isolate);
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeEvent:
-      return ToV8(impl.getAsEvent(), creationContext, isolate);
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeLongSequence:
-      return ToV8(impl.getAsLongSequence(), creationContext, isolate);
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeNode:
-      return ToV8(impl.getAsNode(), creationContext, isolate);
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeStringByteStringOrNodeListRecord:
-      return ToV8(impl.getAsStringByteStringOrNodeListRecord(), creationContext, isolate);
-    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeXMLHttpRequest:
-      return ToV8(impl.getAsXMLHttpRequest(), creationContext, isolate);
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kEvent:
+      return ToV8(impl.GetAsEvent(), creationContext, isolate);
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kLongSequence:
+      return ToV8(impl.GetAsLongSequence(), creationContext, isolate);
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kNode:
+      return ToV8(impl.GetAsNode(), creationContext, isolate);
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kStringByteStringOrNodeListRecord:
+      return ToV8(impl.GetAsStringByteStringOrNodeListRecord(), creationContext, isolate);
+    case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificType::kXMLHttpRequest:
+      return ToV8(impl.GetAsXMLHttpRequest(), creationContext, isolate);
     default:
       NOTREACHED();
   }

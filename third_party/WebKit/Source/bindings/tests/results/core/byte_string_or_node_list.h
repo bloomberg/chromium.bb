@@ -27,17 +27,17 @@ class CORE_EXPORT ByteStringOrNodeList final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ByteStringOrNodeList();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isByteString() const { return type_ == SpecificTypeByteString; }
-  const String& getAsByteString() const;
-  void setByteString(const String&);
-  static ByteStringOrNodeList fromByteString(const String&);
+  bool IsByteString() const { return type_ == SpecificType::kByteString; }
+  const String& GetAsByteString() const;
+  void SetByteString(const String&);
+  static ByteStringOrNodeList FromByteString(const String&);
 
-  bool isNodeList() const { return type_ == SpecificTypeNodeList; }
-  NodeList* getAsNodeList() const;
-  void setNodeList(NodeList*);
-  static ByteStringOrNodeList fromNodeList(NodeList*);
+  bool IsNodeList() const { return type_ == SpecificType::kNodeList; }
+  NodeList* GetAsNodeList() const;
+  void SetNodeList(NodeList*);
+  static ByteStringOrNodeList FromNodeList(NodeList*);
 
   ByteStringOrNodeList(const ByteStringOrNodeList&);
   ~ByteStringOrNodeList();
@@ -45,12 +45,12 @@ class CORE_EXPORT ByteStringOrNodeList final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeByteString,
-    SpecificTypeNodeList,
+  enum class SpecificType {
+    kNone,
+    kByteString,
+    kNodeList,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   String byte_string_;
   Member<NodeList> node_list_;

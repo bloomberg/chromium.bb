@@ -30,7 +30,7 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
 TEST(PushManagerTest, ValidSenderKey) {
   PushSubscriptionOptionsInit options;
   options.setApplicationServerKey(
-      ArrayBufferOrArrayBufferView::fromArrayBuffer(DOMArrayBuffer::Create(
+      ArrayBufferOrArrayBufferView::FromArrayBuffer(DOMArrayBuffer::Create(
           kApplicationServerKey, kApplicationServerKeyLength)));
 
   DummyExceptionStateForTesting exception_state;
@@ -55,7 +55,7 @@ TEST(PushManagerTest, InvalidSenderKeyLength) {
   uint8_t sender_key[kMaxKeyLength + 1];
   memset(sender_key, 0, sizeof(sender_key));
   PushSubscriptionOptionsInit options;
-  options.setApplicationServerKey(ArrayBufferOrArrayBufferView::fromArrayBuffer(
+  options.setApplicationServerKey(ArrayBufferOrArrayBufferView::FromArrayBuffer(
       DOMArrayBuffer::Create(sender_key, kMaxKeyLength + 1)));
 
   DummyExceptionStateForTesting exception_state;

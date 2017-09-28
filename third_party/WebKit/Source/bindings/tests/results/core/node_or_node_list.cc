@@ -21,39 +21,39 @@
 
 namespace blink {
 
-NodeOrNodeList::NodeOrNodeList() : type_(SpecificTypeNone) {}
+NodeOrNodeList::NodeOrNodeList() : type_(SpecificType::kNone) {}
 
-Node* NodeOrNodeList::getAsNode() const {
-  DCHECK(isNode());
+Node* NodeOrNodeList::GetAsNode() const {
+  DCHECK(IsNode());
   return node_;
 }
 
-void NodeOrNodeList::setNode(Node* value) {
-  DCHECK(isNull());
+void NodeOrNodeList::SetNode(Node* value) {
+  DCHECK(IsNull());
   node_ = value;
-  type_ = SpecificTypeNode;
+  type_ = SpecificType::kNode;
 }
 
-NodeOrNodeList NodeOrNodeList::fromNode(Node* value) {
+NodeOrNodeList NodeOrNodeList::FromNode(Node* value) {
   NodeOrNodeList container;
-  container.setNode(value);
+  container.SetNode(value);
   return container;
 }
 
-NodeList* NodeOrNodeList::getAsNodeList() const {
-  DCHECK(isNodeList());
+NodeList* NodeOrNodeList::GetAsNodeList() const {
+  DCHECK(IsNodeList());
   return node_list_;
 }
 
-void NodeOrNodeList::setNodeList(NodeList* value) {
-  DCHECK(isNull());
+void NodeOrNodeList::SetNodeList(NodeList* value) {
+  DCHECK(IsNull());
   node_list_ = value;
-  type_ = SpecificTypeNodeList;
+  type_ = SpecificType::kNodeList;
 }
 
-NodeOrNodeList NodeOrNodeList::fromNodeList(NodeList* value) {
+NodeOrNodeList NodeOrNodeList::FromNodeList(NodeList* value) {
   NodeOrNodeList container;
-  container.setNodeList(value);
+  container.SetNodeList(value);
   return container;
 }
 
@@ -75,13 +75,13 @@ void V8NodeOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
   if (V8Node::hasInstance(v8Value, isolate)) {
     Node* cppValue = V8Node::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setNode(cppValue);
+    impl.SetNode(cppValue);
     return;
   }
 
   if (V8NodeList::hasInstance(v8Value, isolate)) {
     NodeList* cppValue = V8NodeList::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setNodeList(cppValue);
+    impl.SetNodeList(cppValue);
     return;
   }
 
@@ -90,12 +90,12 @@ void V8NodeOrNodeList::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 
 v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case NodeOrNodeList::SpecificTypeNone:
+    case NodeOrNodeList::SpecificType::kNone:
       return v8::Null(isolate);
-    case NodeOrNodeList::SpecificTypeNode:
-      return ToV8(impl.getAsNode(), creationContext, isolate);
-    case NodeOrNodeList::SpecificTypeNodeList:
-      return ToV8(impl.getAsNodeList(), creationContext, isolate);
+    case NodeOrNodeList::SpecificType::kNode:
+      return ToV8(impl.GetAsNode(), creationContext, isolate);
+    case NodeOrNodeList::SpecificType::kNodeList:
+      return ToV8(impl.GetAsNodeList(), creationContext, isolate);
     default:
       NOTREACHED();
   }

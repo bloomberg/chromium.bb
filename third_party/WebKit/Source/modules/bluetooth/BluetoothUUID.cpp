@@ -308,10 +308,10 @@ String GetUUIDForGATTAttribute(GATTAttribute attribute,
 
   // If name is an unsigned long, return BluetoothUUID.cannonicalUUI(name) and
   // abort this steps.
-  if (name.isUnsignedLong())
-    return BluetoothUUID::canonicalUUID(name.getAsUnsignedLong());
+  if (name.IsUnsignedLong())
+    return BluetoothUUID::canonicalUUID(name.GetAsUnsignedLong());
 
-  String name_str = name.getAsString();
+  String name_str = name.GetAsString();
 
   // If name is a valid UUID, return name and abort these steps.
   if (IsValidUUID(name_str))

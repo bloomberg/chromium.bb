@@ -320,7 +320,7 @@ static IDBTransaction* TransactionForDatabase(
     const String& mode = IndexedDBNames::readonly) {
   DummyExceptionStateForTesting exception_state;
   StringOrStringSequence scope;
-  scope.setString(object_store_name);
+  scope.SetString(object_store_name);
   IDBTransaction* idb_transaction =
       idb_database->transaction(script_state, scope, mode, exception_state);
   if (exception_state.HadException())

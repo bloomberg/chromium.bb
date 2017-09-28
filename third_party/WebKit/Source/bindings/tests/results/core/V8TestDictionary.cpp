@@ -848,7 +848,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     doubleOrStringMemberValue = ToV8(impl.doubleOrStringMember(), creationContext, isolate);
     doubleOrStringMemberHasValueOrDefault = true;
   } else {
-    doubleOrStringMemberValue = ToV8(DoubleOrString::fromDouble(3.14), creationContext, isolate);
+    doubleOrStringMemberValue = ToV8(DoubleOrString::FromDouble(3.14), creationContext, isolate);
     doubleOrStringMemberHasValueOrDefault = true;
   }
   if (doubleOrStringMemberHasValueOrDefault &&
@@ -986,7 +986,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     otherDoubleOrStringMemberValue = ToV8(impl.otherDoubleOrStringMember(), creationContext, isolate);
     otherDoubleOrStringMemberHasValueOrDefault = true;
   } else {
-    otherDoubleOrStringMemberValue = ToV8(DoubleOrString::fromString("default string value"), creationContext, isolate);
+    otherDoubleOrStringMemberValue = ToV8(DoubleOrString::FromString("default string value"), creationContext, isolate);
     otherDoubleOrStringMemberHasValueOrDefault = true;
   }
   if (otherDoubleOrStringMemberHasValueOrDefault &&

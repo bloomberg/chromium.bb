@@ -94,7 +94,7 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
   NodeOrNodeList result;
   impl->getItem(name, result);
-  if (result.isNull())
+  if (result.IsNull())
     return;
   V8SetReturnValue(info, result);
 }

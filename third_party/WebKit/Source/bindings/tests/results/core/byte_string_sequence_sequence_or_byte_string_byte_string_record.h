@@ -25,17 +25,17 @@ class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ByteStringSequenceSequenceOrByteStringByteStringRecord();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isByteStringByteStringRecord() const { return type_ == SpecificTypeByteStringByteStringRecord; }
-  const Vector<std::pair<String, String>>& getAsByteStringByteStringRecord() const;
-  void setByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
-  static ByteStringSequenceSequenceOrByteStringByteStringRecord fromByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
+  bool IsByteStringByteStringRecord() const { return type_ == SpecificType::kByteStringByteStringRecord; }
+  const Vector<std::pair<String, String>>& GetAsByteStringByteStringRecord() const;
+  void SetByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
+  static ByteStringSequenceSequenceOrByteStringByteStringRecord FromByteStringByteStringRecord(const Vector<std::pair<String, String>>&);
 
-  bool isByteStringSequenceSequence() const { return type_ == SpecificTypeByteStringSequenceSequence; }
-  const Vector<Vector<String>>& getAsByteStringSequenceSequence() const;
-  void setByteStringSequenceSequence(const Vector<Vector<String>>&);
-  static ByteStringSequenceSequenceOrByteStringByteStringRecord fromByteStringSequenceSequence(const Vector<Vector<String>>&);
+  bool IsByteStringSequenceSequence() const { return type_ == SpecificType::kByteStringSequenceSequence; }
+  const Vector<Vector<String>>& GetAsByteStringSequenceSequence() const;
+  void SetByteStringSequenceSequence(const Vector<Vector<String>>&);
+  static ByteStringSequenceSequenceOrByteStringByteStringRecord FromByteStringSequenceSequence(const Vector<Vector<String>>&);
 
   ByteStringSequenceSequenceOrByteStringByteStringRecord(const ByteStringSequenceSequenceOrByteStringByteStringRecord&);
   ~ByteStringSequenceSequenceOrByteStringByteStringRecord();
@@ -43,12 +43,12 @@ class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeByteStringByteStringRecord,
-    SpecificTypeByteStringSequenceSequence,
+  enum class SpecificType {
+    kNone,
+    kByteStringByteStringRecord,
+    kByteStringSequenceSequence,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   Vector<std::pair<String, String>> byte_string_byte_string_record_;
   Vector<Vector<String>> byte_string_sequence_sequence_;

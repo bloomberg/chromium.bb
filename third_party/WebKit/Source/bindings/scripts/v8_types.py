@@ -1036,7 +1036,7 @@ def union_literal_cpp_value(idl_type, idl_literal):
     else:
         raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)
 
-    return '%s::from%s(%s)' % (idl_type.name, member_type.name,
+    return '%s::From%s(%s)' % (idl_type.name, member_type.name,
                                member_type.literal_cpp_value(idl_literal))
 
 

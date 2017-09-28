@@ -156,14 +156,14 @@ static inline void ConvertCanvasStyleToUnionType(
     CanvasStyle* style,
     StringOrCanvasGradientOrCanvasPattern& return_value) {
   if (CanvasGradient* gradient = style->GetCanvasGradient()) {
-    return_value.setCanvasGradient(gradient);
+    return_value.SetCanvasGradient(gradient);
     return;
   }
   if (CanvasPattern* pattern = style->GetCanvasPattern()) {
-    return_value.setCanvasPattern(pattern);
+    return_value.SetCanvasPattern(pattern);
     return;
   }
-  return_value.setString(style->GetColor());
+  return_value.SetString(style->GetColor());
 }
 
 void BaseRenderingContext2D::strokeStyle(
@@ -173,12 +173,12 @@ void BaseRenderingContext2D::strokeStyle(
 
 void BaseRenderingContext2D::setStrokeStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
-  DCHECK(!style.isNull());
+  DCHECK(!style.IsNull());
 
   String color_string;
   CanvasStyle* canvas_style = nullptr;
-  if (style.isString()) {
-    color_string = style.getAsString();
+  if (style.IsString()) {
+    color_string = style.GetAsString();
     if (color_string == GetState().UnparsedStrokeColor())
       return;
     Color parsed_color = 0;
@@ -189,10 +189,10 @@ void BaseRenderingContext2D::setStrokeStyle(
       return;
     }
     canvas_style = CanvasStyle::CreateFromRGBA(parsed_color.Rgb());
-  } else if (style.isCanvasGradient()) {
-    canvas_style = CanvasStyle::CreateFromGradient(style.getAsCanvasGradient());
-  } else if (style.isCanvasPattern()) {
-    CanvasPattern* canvas_pattern = style.getAsCanvasPattern();
+  } else if (style.IsCanvasGradient()) {
+    canvas_style = CanvasStyle::CreateFromGradient(style.GetAsCanvasGradient());
+  } else if (style.IsCanvasPattern()) {
+    CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
     if (OriginClean() && !canvas_pattern->OriginClean())
       SetOriginTainted();
@@ -214,12 +214,12 @@ void BaseRenderingContext2D::fillStyle(
 
 void BaseRenderingContext2D::setFillStyle(
     const StringOrCanvasGradientOrCanvasPattern& style) {
-  DCHECK(!style.isNull());
+  DCHECK(!style.IsNull());
   ValidateStateStack();
   String color_string;
   CanvasStyle* canvas_style = nullptr;
-  if (style.isString()) {
-    color_string = style.getAsString();
+  if (style.IsString()) {
+    color_string = style.GetAsString();
     if (color_string == GetState().UnparsedFillColor())
       return;
     Color parsed_color = 0;
@@ -230,10 +230,10 @@ void BaseRenderingContext2D::setFillStyle(
       return;
     }
     canvas_style = CanvasStyle::CreateFromRGBA(parsed_color.Rgb());
-  } else if (style.isCanvasGradient()) {
-    canvas_style = CanvasStyle::CreateFromGradient(style.getAsCanvasGradient());
-  } else if (style.isCanvasPattern()) {
-    CanvasPattern* canvas_pattern = style.getAsCanvasPattern();
+  } else if (style.IsCanvasGradient()) {
+    canvas_style = CanvasStyle::CreateFromGradient(style.GetAsCanvasGradient());
+  } else if (style.IsCanvasPattern()) {
+    CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
     if (OriginClean() && !canvas_pattern->OriginClean())
       SetOriginTainted();
@@ -904,39 +904,39 @@ static inline void ClipRectsToImageRect(const FloatRect& image_rect,
 static inline CanvasImageSource* ToImageSourceInternal(
     const CanvasImageSourceUnion& value,
     ExceptionState& exception_state) {
-  if (value.isCSSImageValue()) {
+  if (value.IsCSSImageValue()) {
     if (RuntimeEnabledFeatures::CSSPaintAPIEnabled())
-      return value.getAsCSSImageValue();
+      return value.GetAsCSSImageValue();
     exception_state.ThrowTypeError("CSSImageValue is not yet supported");
     return nullptr;
   }
-  if (value.isHTMLImageElement())
-    return value.getAsHTMLImageElement();
-  if (value.isHTMLVideoElement()) {
-    HTMLVideoElement* video = value.getAsHTMLVideoElement();
+  if (value.IsHTMLImageElement())
+    return value.GetAsHTMLImageElement();
+  if (value.IsHTMLVideoElement()) {
+    HTMLVideoElement* video = value.GetAsHTMLVideoElement();
     video->VideoWillBeDrawnToCanvas();
     return video;
   }
-  if (value.isSVGImageElement())
-    return value.getAsSVGImageElement();
-  if (value.isHTMLCanvasElement())
-    return value.getAsHTMLCanvasElement();
-  if (value.isImageBitmap()) {
-    if (static_cast<ImageBitmap*>(value.getAsImageBitmap())->IsNeutered()) {
+  if (value.IsSVGImageElement())
+    return value.GetAsSVGImageElement();
+  if (value.IsHTMLCanvasElement())
+    return value.GetAsHTMLCanvasElement();
+  if (value.IsImageBitmap()) {
+    if (static_cast<ImageBitmap*>(value.GetAsImageBitmap())->IsNeutered()) {
       exception_state.ThrowDOMException(
           kInvalidStateError, String::Format("The image source is detached"));
       return nullptr;
     }
-    return value.getAsImageBitmap();
+    return value.GetAsImageBitmap();
   }
-  if (value.isOffscreenCanvas()) {
-    if (static_cast<OffscreenCanvas*>(value.getAsOffscreenCanvas())
+  if (value.IsOffscreenCanvas()) {
+    if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
             ->IsNeutered()) {
       exception_state.ThrowDOMException(
           kInvalidStateError, String::Format("The image source is detached"));
       return nullptr;
     }
-    return value.getAsOffscreenCanvas();
+    return value.GetAsOffscreenCanvas();
   }
   NOTREACHED();
   return nullptr;

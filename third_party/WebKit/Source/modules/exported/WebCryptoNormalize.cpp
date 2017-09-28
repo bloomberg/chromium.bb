@@ -55,7 +55,7 @@ WebCryptoAlgorithm NormalizeCryptoAlgorithm(
   WebCryptoAlgorithm algorithm;
   AlgorithmError error;
   AlgorithmIdentifier algorithm_identifier;
-  algorithm_identifier.setDictionary(algorithm_dictionary);
+  algorithm_identifier.SetDictionary(algorithm_dictionary);
   if (!NormalizeAlgorithm(algorithm_identifier, operation, algorithm, &error)) {
     *exception_code = WebCryptoErrorToExceptionCode(error.error_type);
     *error_details = error.error_details;

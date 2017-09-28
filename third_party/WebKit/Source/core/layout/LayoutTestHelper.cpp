@@ -89,7 +89,7 @@ void RenderingTest::LoadAhem(LocalFrame& frame) {
   RefPtr<SharedBuffer> shared_buffer =
       testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
   StringOrArrayBufferOrArrayBufferView buffer =
-      StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
+      StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
           DOMArrayBuffer::Create(shared_buffer));
   FontFace* ahem =
       FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());

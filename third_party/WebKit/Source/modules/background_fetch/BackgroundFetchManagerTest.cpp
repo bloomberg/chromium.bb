@@ -62,7 +62,7 @@ TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
   KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
-      RequestOrUSVStringOrRequestOrUSVStringSequence::fromUSVString(
+      RequestOrUSVStringOrRequestOrUSVStringSequence::FromUSVString(
           image_url.GetString());
 
   Vector<WebServiceWorkerRequest> web_requests =
@@ -88,7 +88,7 @@ TEST_F(BackgroundFetchManagerTest, SingleRequest) {
   ASSERT_TRUE(request);
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
-      RequestOrUSVStringOrRequestOrUSVStringSequence::fromRequest(request);
+      RequestOrUSVStringOrRequestOrUSVStringSequence::FromRequest(request);
 
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
@@ -110,9 +110,9 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
                      "https://www.example.com/my_cat_video.avi");
 
   RequestOrUSVString image_request =
-      RequestOrUSVString::fromUSVString(image_url.GetString());
+      RequestOrUSVString::FromUSVString(image_url.GetString());
   RequestOrUSVString icon_request =
-      RequestOrUSVString::fromUSVString(icon_url.GetString());
+      RequestOrUSVString::FromUSVString(icon_url.GetString());
 
   Request* request = Request::Create(
       scope.GetScriptState(), cat_video_url.GetString(),
@@ -121,7 +121,7 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
   ASSERT_TRUE(request);
 
   RequestOrUSVString cat_video_request =
-      RequestOrUSVString::fromRequest(request);
+      RequestOrUSVString::FromRequest(request);
 
   HeapVector<RequestOrUSVString> request_sequence;
   request_sequence.push_back(image_request);
@@ -130,7 +130,7 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(request_sequence);
+          FromRequestOrUSVStringSequence(request_sequence);
 
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
@@ -153,7 +153,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
   HeapVector<RequestOrUSVString> request_sequence;
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(request_sequence);
+          FromRequestOrUSVStringSequence(request_sequence);
 
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);
@@ -168,7 +168,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
 
   RequestOrUSVString null_request;
   RequestOrUSVString image_request =
-      RequestOrUSVString::fromUSVString(image_url.GetString());
+      RequestOrUSVString::FromUSVString(image_url.GetString());
 
   HeapVector<RequestOrUSVString> request_sequence;
   request_sequence.push_back(image_request);
@@ -176,7 +176,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::
-          fromRequestOrUSVStringSequence(request_sequence);
+          FromRequestOrUSVStringSequence(request_sequence);
 
   Vector<WebServiceWorkerRequest> web_requests =
       CreateWebRequestVector(scope, requests);

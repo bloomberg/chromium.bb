@@ -313,9 +313,9 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
     ExceptionState& exception_state) {
   Vector<WebServiceWorkerRequest> web_requests;
 
-  if (requests.isRequestOrUSVStringSequence()) {
+  if (requests.IsRequestOrUSVStringSequence()) {
     HeapVector<RequestOrUSVString> request_vector =
-        requests.getAsRequestOrUSVStringSequence();
+        requests.GetAsRequestOrUSVStringSequence();
 
     // Throw a TypeError when the developer has passed an empty sequence.
     if (!request_vector.size()) {
@@ -329,10 +329,10 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
       const RequestOrUSVString& request_or_url = request_vector[i];
 
       Request* request = nullptr;
-      if (request_or_url.isRequest()) {
-        request = request_or_url.getAsRequest();
-      } else if (request_or_url.isUSVString()) {
-        request = Request::Create(script_state, request_or_url.getAsUSVString(),
+      if (request_or_url.IsRequest()) {
+        request = request_or_url.GetAsRequest();
+      } else if (request_or_url.IsUSVString()) {
+        request = Request::Create(script_state, request_or_url.GetAsUSVString(),
                                   exception_state);
         if (exception_state.HadException())
           return Vector<WebServiceWorkerRequest>();
@@ -344,12 +344,12 @@ Vector<WebServiceWorkerRequest> BackgroundFetchManager::CreateWebRequestVector(
       DCHECK(request);
       request->PopulateWebServiceWorkerRequest(web_requests[i]);
     }
-  } else if (requests.isRequest()) {
-    DCHECK(requests.getAsRequest());
+  } else if (requests.IsRequest()) {
+    DCHECK(requests.GetAsRequest());
     web_requests.resize(1);
-    requests.getAsRequest()->PopulateWebServiceWorkerRequest(web_requests[0]);
-  } else if (requests.isUSVString()) {
-    Request* request = Request::Create(script_state, requests.getAsUSVString(),
+    requests.GetAsRequest()->PopulateWebServiceWorkerRequest(web_requests[0]);
+  } else if (requests.IsUSVString()) {
+    Request* request = Request::Create(script_state, requests.GetAsUSVString(),
                                        exception_state);
     if (exception_state.HadException())
       return Vector<WebServiceWorkerRequest>();

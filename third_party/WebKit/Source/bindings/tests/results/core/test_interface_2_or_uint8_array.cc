@@ -16,39 +16,39 @@
 
 namespace blink {
 
-TestInterface2OrUint8Array::TestInterface2OrUint8Array() : type_(SpecificTypeNone) {}
+TestInterface2OrUint8Array::TestInterface2OrUint8Array() : type_(SpecificType::kNone) {}
 
-TestInterface2* TestInterface2OrUint8Array::getAsTestInterface2() const {
-  DCHECK(isTestInterface2());
+TestInterface2* TestInterface2OrUint8Array::GetAsTestInterface2() const {
+  DCHECK(IsTestInterface2());
   return test_interface_2_;
 }
 
-void TestInterface2OrUint8Array::setTestInterface2(TestInterface2* value) {
-  DCHECK(isNull());
+void TestInterface2OrUint8Array::SetTestInterface2(TestInterface2* value) {
+  DCHECK(IsNull());
   test_interface_2_ = value;
-  type_ = SpecificTypeTestInterface2;
+  type_ = SpecificType::kTestInterface2;
 }
 
-TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(TestInterface2* value) {
+TestInterface2OrUint8Array TestInterface2OrUint8Array::FromTestInterface2(TestInterface2* value) {
   TestInterface2OrUint8Array container;
-  container.setTestInterface2(value);
+  container.SetTestInterface2(value);
   return container;
 }
 
-NotShared<DOMUint8Array> TestInterface2OrUint8Array::getAsUint8Array() const {
-  DCHECK(isUint8Array());
+NotShared<DOMUint8Array> TestInterface2OrUint8Array::GetAsUint8Array() const {
+  DCHECK(IsUint8Array());
   return uint8_array_;
 }
 
-void TestInterface2OrUint8Array::setUint8Array(NotShared<DOMUint8Array> value) {
-  DCHECK(isNull());
+void TestInterface2OrUint8Array::SetUint8Array(NotShared<DOMUint8Array> value) {
+  DCHECK(IsNull());
   uint8_array_ = Member<DOMUint8Array>(value.View());
-  type_ = SpecificTypeUint8Array;
+  type_ = SpecificType::kUint8Array;
 }
 
-TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(NotShared<DOMUint8Array> value) {
+TestInterface2OrUint8Array TestInterface2OrUint8Array::FromUint8Array(NotShared<DOMUint8Array> value) {
   TestInterface2OrUint8Array container;
-  container.setUint8Array(value);
+  container.SetUint8Array(value);
   return container;
 }
 
@@ -70,7 +70,7 @@ void V8TestInterface2OrUint8Array::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
 
   if (V8TestInterface2::hasInstance(v8Value, isolate)) {
     TestInterface2* cppValue = V8TestInterface2::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestInterface2(cppValue);
+    impl.SetTestInterface2(cppValue);
     return;
   }
 
@@ -78,7 +78,7 @@ void V8TestInterface2OrUint8Array::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
     NotShared<DOMUint8Array> cppValue = ToNotShared<NotShared<DOMUint8Array>>(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setUint8Array(cppValue);
+    impl.SetUint8Array(cppValue);
     return;
   }
 
@@ -87,12 +87,12 @@ void V8TestInterface2OrUint8Array::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
 
 v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case TestInterface2OrUint8Array::SpecificTypeNone:
+    case TestInterface2OrUint8Array::SpecificType::kNone:
       return v8::Null(isolate);
-    case TestInterface2OrUint8Array::SpecificTypeTestInterface2:
-      return ToV8(impl.getAsTestInterface2(), creationContext, isolate);
-    case TestInterface2OrUint8Array::SpecificTypeUint8Array:
-      return ToV8(impl.getAsUint8Array(), creationContext, isolate);
+    case TestInterface2OrUint8Array::SpecificType::kTestInterface2:
+      return ToV8(impl.GetAsTestInterface2(), creationContext, isolate);
+    case TestInterface2OrUint8Array::SpecificType::kUint8Array:
+      return ToV8(impl.GetAsUint8Array(), creationContext, isolate);
     default:
       NOTREACHED();
   }

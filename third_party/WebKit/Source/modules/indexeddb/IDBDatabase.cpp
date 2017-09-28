@@ -366,10 +366,10 @@ IDBTransaction* IDBDatabase::transaction(
   RecordApiCallsHistogram(kIDBTransactionCall);
 
   HashSet<String> scope;
-  if (store_names.isString()) {
-    scope.insert(store_names.getAsString());
-  } else if (store_names.isStringSequence()) {
-    for (const String& name : store_names.getAsStringSequence())
+  if (store_names.IsString()) {
+    scope.insert(store_names.GetAsString());
+  } else if (store_names.IsStringSequence()) {
+    for (const String& name : store_names.GetAsStringSequence())
       scope.insert(name);
   } else {
     NOTREACHED();

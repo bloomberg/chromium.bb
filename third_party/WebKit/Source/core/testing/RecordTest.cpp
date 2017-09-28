@@ -73,7 +73,7 @@ RecordTest::returnStringByteStringSequenceRecord() {
 
 bool RecordTest::unionReceivedARecord(
     const BooleanOrByteStringByteStringRecord& arg) {
-  return arg.isByteStringByteStringRecord();
+  return arg.IsByteStringByteStringRecord();
 }
 
 DEFINE_TRACE(RecordTest) {

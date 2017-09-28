@@ -17,39 +17,39 @@
 
 namespace blink {
 
-BooleanOrString::BooleanOrString() : type_(SpecificTypeNone) {}
+BooleanOrString::BooleanOrString() : type_(SpecificType::kNone) {}
 
-bool BooleanOrString::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool BooleanOrString::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void BooleanOrString::setBoolean(bool value) {
-  DCHECK(isNull());
+void BooleanOrString::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-BooleanOrString BooleanOrString::fromBoolean(bool value) {
+BooleanOrString BooleanOrString::FromBoolean(bool value) {
   BooleanOrString container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-const String& BooleanOrString::getAsString() const {
-  DCHECK(isString());
+const String& BooleanOrString::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void BooleanOrString::setString(const String& value) {
-  DCHECK(isNull());
+void BooleanOrString::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-BooleanOrString BooleanOrString::fromString(const String& value) {
+BooleanOrString BooleanOrString::FromString(const String& value) {
   BooleanOrString container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
@@ -68,7 +68,7 @@ void V8BooleanOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Valu
     return;
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
@@ -76,19 +76,19 @@ void V8BooleanOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Valu
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case BooleanOrString::SpecificTypeNone:
+    case BooleanOrString::SpecificType::kNone:
       return v8::Null(isolate);
-    case BooleanOrString::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case BooleanOrString::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
+    case BooleanOrString::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case BooleanOrString::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
     default:
       NOTREACHED();
   }

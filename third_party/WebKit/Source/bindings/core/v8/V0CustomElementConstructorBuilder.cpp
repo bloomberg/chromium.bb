@@ -346,7 +346,7 @@ static void ConstructCustomElement(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   Element* element = document->createElementNS(
       namespace_uri, tag_name,
-      StringOrDictionary::fromString(maybe_type->IsNull() ? g_null_atom : type),
+      StringOrDictionary::FromString(maybe_type->IsNull() ? g_null_atom : type),
       exception_state);
   if (element) {
     UseCounter::Count(document, WebFeature::kV0CustomElementsConstruct);

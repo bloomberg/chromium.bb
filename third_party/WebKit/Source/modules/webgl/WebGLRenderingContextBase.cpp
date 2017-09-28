@@ -7825,9 +7825,9 @@ void WebGLRenderingContextBase::RestoreUnpackParameters() {
 void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(
     HTMLCanvasElementOrOffscreenCanvas& result) const {
   if (canvas()) {
-    result.setHTMLCanvasElement(static_cast<HTMLCanvasElement*>(host()));
+    result.SetHTMLCanvasElement(static_cast<HTMLCanvasElement*>(host()));
   } else {
-    result.setOffscreenCanvas(static_cast<OffscreenCanvas*>(host()));
+    result.SetOffscreenCanvas(static_cast<OffscreenCanvas*>(host()));
   }
 }
 

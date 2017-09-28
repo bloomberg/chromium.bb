@@ -106,7 +106,7 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name,
     return;
 
   if (named_items.size() == 1) {
-    return_value.setElement(named_items.at(0));
+    return_value.SetElement(named_items.at(0));
     return;
   }
 
@@ -115,7 +115,7 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name,
   UseCounter::Count(
       GetDocument(),
       WebFeature::kHTMLOptionsCollectionNamedGetterReturnsNodeList);
-  return_value.setNodeList(StaticElementList::Adopt(named_items));
+  return_value.SetNodeList(StaticElementList::Adopt(named_items));
 }
 
 bool HTMLOptionsCollection::AnonymousIndexedSetter(

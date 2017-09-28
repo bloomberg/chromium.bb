@@ -308,14 +308,14 @@ WebMediaConstraints ParseOptions(ExecutionContext* context,
   WebMediaConstraints constraints;
 
   Dictionary constraints_dictionary;
-  if (options.isNull()) {
+  if (options.IsNull()) {
     // Do nothing.
-  } else if (options.isMediaTrackConstraints()) {
+  } else if (options.IsMediaTrackConstraints()) {
     constraints = MediaConstraintsImpl::Create(
-        context, options.getAsMediaTrackConstraints(), error_state);
+        context, options.GetAsMediaTrackConstraints(), error_state);
   } else {
-    DCHECK(options.isBoolean());
-    if (options.getAsBoolean()) {
+    DCHECK(options.IsBoolean());
+    if (options.GetAsBoolean()) {
       constraints = MediaConstraintsImpl::Create();
     }
   }

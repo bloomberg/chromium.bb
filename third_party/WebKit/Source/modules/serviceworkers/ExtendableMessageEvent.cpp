@@ -65,12 +65,12 @@ MessagePortArray ExtendableMessageEvent::ports() const {
 void ExtendableMessageEvent::source(
     ClientOrServiceWorkerOrMessagePort& result) const {
   if (source_as_client_)
-    result = ClientOrServiceWorkerOrMessagePort::fromClient(source_as_client_);
+    result = ClientOrServiceWorkerOrMessagePort::FromClient(source_as_client_);
   else if (source_as_service_worker_)
-    result = ClientOrServiceWorkerOrMessagePort::fromServiceWorker(
+    result = ClientOrServiceWorkerOrMessagePort::FromServiceWorker(
         source_as_service_worker_);
   else if (source_as_message_port_)
-    result = ClientOrServiceWorkerOrMessagePort::fromMessagePort(
+    result = ClientOrServiceWorkerOrMessagePort::FromMessagePort(
         source_as_message_port_);
   else
     result = ClientOrServiceWorkerOrMessagePort();
@@ -103,12 +103,12 @@ ExtendableMessageEvent::ExtendableMessageEvent(
   if (initializer.hasLastEventId())
     last_event_id_ = initializer.lastEventId();
   if (initializer.hasSource()) {
-    if (initializer.source().isClient())
-      source_as_client_ = initializer.source().getAsClient();
-    else if (initializer.source().isServiceWorker())
-      source_as_service_worker_ = initializer.source().getAsServiceWorker();
-    else if (initializer.source().isMessagePort())
-      source_as_message_port_ = initializer.source().getAsMessagePort();
+    if (initializer.source().IsClient())
+      source_as_client_ = initializer.source().GetAsClient();
+    else if (initializer.source().IsServiceWorker())
+      source_as_service_worker_ = initializer.source().GetAsServiceWorker();
+    else if (initializer.source().IsMessagePort())
+      source_as_message_port_ = initializer.source().GetAsMessagePort();
   }
   if (initializer.hasPorts())
     ports_ = new MessagePortArray(initializer.ports());

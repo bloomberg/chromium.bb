@@ -27,17 +27,17 @@ class CORE_EXPORT BooleanOrTestCallbackInterface final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrTestCallbackInterface();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
-  bool getAsBoolean() const;
-  void setBoolean(bool);
-  static BooleanOrTestCallbackInterface fromBoolean(bool);
+  bool IsBoolean() const { return type_ == SpecificType::kBoolean; }
+  bool GetAsBoolean() const;
+  void SetBoolean(bool);
+  static BooleanOrTestCallbackInterface FromBoolean(bool);
 
-  bool isTestCallbackInterface() const { return type_ == SpecificTypeTestCallbackInterface; }
-  TestCallbackInterface* getAsTestCallbackInterface() const;
-  void setTestCallbackInterface(TestCallbackInterface*);
-  static BooleanOrTestCallbackInterface fromTestCallbackInterface(TestCallbackInterface*);
+  bool IsTestCallbackInterface() const { return type_ == SpecificType::kTestCallbackInterface; }
+  TestCallbackInterface* GetAsTestCallbackInterface() const;
+  void SetTestCallbackInterface(TestCallbackInterface*);
+  static BooleanOrTestCallbackInterface FromTestCallbackInterface(TestCallbackInterface*);
 
   BooleanOrTestCallbackInterface(const BooleanOrTestCallbackInterface&);
   ~BooleanOrTestCallbackInterface();
@@ -45,12 +45,12 @@ class CORE_EXPORT BooleanOrTestCallbackInterface final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeBoolean,
-    SpecificTypeTestCallbackInterface,
+  enum class SpecificType {
+    kNone,
+    kBoolean,
+    kTestCallbackInterface,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   bool boolean_;
   Member<TestCallbackInterface> test_callback_interface_;

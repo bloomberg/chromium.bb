@@ -481,7 +481,7 @@ bool GetAlgorithmIdentifier(const Dictionary& raw,
   Dictionary dictionary;
   if (DictionaryHelper::Get(raw, property_name, dictionary) &&
       !dictionary.IsUndefinedOrNull()) {
-    value.setDictionary(dictionary);
+    value.SetDictionary(dictionary);
     return true;
   }
 
@@ -493,7 +493,7 @@ bool GetAlgorithmIdentifier(const Dictionary& raw,
     return false;
   }
 
-  value.setString(algorithm_name);
+  value.SetString(algorithm_name);
   return true;
 }
 
@@ -1063,12 +1063,12 @@ bool ParseAlgorithmIdentifier(const AlgorithmIdentifier& raw,
 
   // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary
   // with a "name" attribute and nothing else.
-  if (raw.isString()) {
-    return ParseAlgorithmDictionary(raw.getAsString(), Dictionary(), op,
+  if (raw.IsString()) {
+    return ParseAlgorithmDictionary(raw.GetAsString(), Dictionary(), op,
                                     algorithm, context, error);
   }
 
-  Dictionary params = raw.getAsDictionary();
+  Dictionary params = raw.GetAsDictionary();
 
   // Get the name of the algorithm from the AlgorithmIdentifier.
   if (!params.IsObject()) {

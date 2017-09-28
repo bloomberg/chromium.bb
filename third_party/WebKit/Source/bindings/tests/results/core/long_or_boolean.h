@@ -25,17 +25,17 @@ class CORE_EXPORT LongOrBoolean final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   LongOrBoolean();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
-  bool getAsBoolean() const;
-  void setBoolean(bool);
-  static LongOrBoolean fromBoolean(bool);
+  bool IsBoolean() const { return type_ == SpecificType::kBoolean; }
+  bool GetAsBoolean() const;
+  void SetBoolean(bool);
+  static LongOrBoolean FromBoolean(bool);
 
-  bool isLong() const { return type_ == SpecificTypeLong; }
-  int32_t getAsLong() const;
-  void setLong(int32_t);
-  static LongOrBoolean fromLong(int32_t);
+  bool IsLong() const { return type_ == SpecificType::kLong; }
+  int32_t GetAsLong() const;
+  void SetLong(int32_t);
+  static LongOrBoolean FromLong(int32_t);
 
   LongOrBoolean(const LongOrBoolean&);
   ~LongOrBoolean();
@@ -43,12 +43,12 @@ class CORE_EXPORT LongOrBoolean final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeBoolean,
-    SpecificTypeLong,
+  enum class SpecificType {
+    kNone,
+    kBoolean,
+    kLong,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   bool boolean_;
   int32_t long_;

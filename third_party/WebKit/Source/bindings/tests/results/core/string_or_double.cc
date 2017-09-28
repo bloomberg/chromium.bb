@@ -17,39 +17,39 @@
 
 namespace blink {
 
-StringOrDouble::StringOrDouble() : type_(SpecificTypeNone) {}
+StringOrDouble::StringOrDouble() : type_(SpecificType::kNone) {}
 
-double StringOrDouble::getAsDouble() const {
-  DCHECK(isDouble());
+double StringOrDouble::GetAsDouble() const {
+  DCHECK(IsDouble());
   return double_;
 }
 
-void StringOrDouble::setDouble(double value) {
-  DCHECK(isNull());
+void StringOrDouble::SetDouble(double value) {
+  DCHECK(IsNull());
   double_ = value;
-  type_ = SpecificTypeDouble;
+  type_ = SpecificType::kDouble;
 }
 
-StringOrDouble StringOrDouble::fromDouble(double value) {
+StringOrDouble StringOrDouble::FromDouble(double value) {
   StringOrDouble container;
-  container.setDouble(value);
+  container.SetDouble(value);
   return container;
 }
 
-const String& StringOrDouble::getAsString() const {
-  DCHECK(isString());
+const String& StringOrDouble::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void StringOrDouble::setString(const String& value) {
-  DCHECK(isNull());
+void StringOrDouble::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-StringOrDouble StringOrDouble::fromString(const String& value) {
+StringOrDouble StringOrDouble::FromString(const String& value) {
   StringOrDouble container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8StringOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDouble(cppValue);
+    impl.SetDouble(cppValue);
     return;
   }
 
@@ -79,19 +79,19 @@ void V8StringOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const StringOrDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case StringOrDouble::SpecificTypeNone:
+    case StringOrDouble::SpecificType::kNone:
       return v8::Null(isolate);
-    case StringOrDouble::SpecificTypeDouble:
-      return v8::Number::New(isolate, impl.getAsDouble());
-    case StringOrDouble::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
+    case StringOrDouble::SpecificType::kDouble:
+      return v8::Number::New(isolate, impl.GetAsDouble());
+    case StringOrDouble::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
     default:
       NOTREACHED();
   }

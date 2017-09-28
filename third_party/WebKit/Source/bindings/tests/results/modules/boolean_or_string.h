@@ -25,17 +25,17 @@ class MODULES_EXPORT BooleanOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrString();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
-  bool getAsBoolean() const;
-  void setBoolean(bool);
-  static BooleanOrString fromBoolean(bool);
+  bool IsBoolean() const { return type_ == SpecificType::kBoolean; }
+  bool GetAsBoolean() const;
+  void SetBoolean(bool);
+  static BooleanOrString FromBoolean(bool);
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static BooleanOrString fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static BooleanOrString FromString(const String&);
 
   BooleanOrString(const BooleanOrString&);
   ~BooleanOrString();
@@ -43,12 +43,12 @@ class MODULES_EXPORT BooleanOrString final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeBoolean,
-    SpecificTypeString,
+  enum class SpecificType {
+    kNone,
+    kBoolean,
+    kString,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   bool boolean_;
   String string_;

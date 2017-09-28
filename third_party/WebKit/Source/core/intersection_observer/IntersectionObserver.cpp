@@ -110,10 +110,10 @@ void ParseRootMargin(String root_margin_parameter,
 void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
                      Vector<float>& thresholds,
                      ExceptionState& exception_state) {
-  if (threshold_parameter.isDouble()) {
-    thresholds.push_back(static_cast<float>(threshold_parameter.getAsDouble()));
+  if (threshold_parameter.IsDouble()) {
+    thresholds.push_back(static_cast<float>(threshold_parameter.GetAsDouble()));
   } else {
-    for (auto threshold_value : threshold_parameter.getAsDoubleSequence())
+    for (auto threshold_value : threshold_parameter.GetAsDoubleSequence())
       thresholds.push_back(static_cast<float>(threshold_value));
   }
 

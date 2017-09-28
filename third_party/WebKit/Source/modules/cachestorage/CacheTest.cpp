@@ -55,10 +55,10 @@ class ScopedFetcherForTests final
     ++fetch_count_;
     if (expected_url_) {
       String fetched_url;
-      if (request_info.isRequest())
-        EXPECT_EQ(*expected_url_, request_info.getAsRequest()->url());
+      if (request_info.IsRequest())
+        EXPECT_EQ(*expected_url_, request_info.GetAsRequest()->url());
       else
-        EXPECT_EQ(*expected_url_, request_info.getAsUSVString());
+        EXPECT_EQ(*expected_url_, request_info.GetAsUSVString());
     }
 
     if (response_) {
@@ -341,13 +341,13 @@ class CacheStorageTest : public ::testing::Test {
 
 RequestInfo StringToRequestInfo(const String& value) {
   RequestInfo info;
-  info.setUSVString(value);
+  info.SetUSVString(value);
   return info;
 }
 
 RequestInfo RequestToRequestInfo(Request* value) {
   RequestInfo info;
-  info.setRequest(value);
+  info.SetRequest(value);
   return info;
 }
 

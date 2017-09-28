@@ -6450,14 +6450,14 @@ static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallback
     if (exceptionState.HadException())
       return;
   } else {
-    defaultLongArg.setDouble(10);
+    defaultLongArg.SetDouble(10);
   }
   if (!info[1]->IsUndefined()) {
     V8DoubleOrStringOrNull::ToImpl(info.GetIsolate(), info[1], defaultStringArg, UnionTypeConversionMode::kNullable, exceptionState);
     if (exceptionState.HadException())
       return;
   } else {
-    defaultStringArg.setString("foo");
+    defaultStringArg.SetString("foo");
   }
   if (!info[2]->IsUndefined()) {
     V8DoubleOrString::ToImpl(info.GetIsolate(), info[2], defaultNullArg, UnionTypeConversionMode::kNullable, exceptionState);

@@ -371,12 +371,12 @@ ScriptPromise CredentialsContainer::create(
   }
 
   if (options.hasPassword()) {
-    if (options.password().isPasswordCredentialData()) {
+    if (options.password().IsPasswordCredentialData()) {
       resolver->Resolve(PasswordCredential::Create(
-          options.password().getAsPasswordCredentialData(), exception_state));
+          options.password().GetAsPasswordCredentialData(), exception_state));
     } else {
       resolver->Resolve(PasswordCredential::Create(
-          options.password().getAsHTMLFormElement(), exception_state));
+          options.password().GetAsHTMLFormElement(), exception_state));
     }
   } else if (options.hasFederated()) {
     resolver->Resolve(

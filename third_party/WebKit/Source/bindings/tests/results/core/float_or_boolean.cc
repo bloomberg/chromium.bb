@@ -17,39 +17,39 @@
 
 namespace blink {
 
-FloatOrBoolean::FloatOrBoolean() : type_(SpecificTypeNone) {}
+FloatOrBoolean::FloatOrBoolean() : type_(SpecificType::kNone) {}
 
-bool FloatOrBoolean::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool FloatOrBoolean::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void FloatOrBoolean::setBoolean(bool value) {
-  DCHECK(isNull());
+void FloatOrBoolean::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-FloatOrBoolean FloatOrBoolean::fromBoolean(bool value) {
+FloatOrBoolean FloatOrBoolean::FromBoolean(bool value) {
   FloatOrBoolean container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-float FloatOrBoolean::getAsFloat() const {
-  DCHECK(isFloat());
+float FloatOrBoolean::GetAsFloat() const {
+  DCHECK(IsFloat());
   return float_;
 }
 
-void FloatOrBoolean::setFloat(float value) {
-  DCHECK(isNull());
+void FloatOrBoolean::SetFloat(float value) {
+  DCHECK(IsNull());
   float_ = value;
-  type_ = SpecificTypeFloat;
+  type_ = SpecificType::kFloat;
 }
 
-FloatOrBoolean FloatOrBoolean::fromFloat(float value) {
+FloatOrBoolean FloatOrBoolean::FromFloat(float value) {
   FloatOrBoolean container;
-  container.setFloat(value);
+  container.SetFloat(value);
   return container;
 }
 
@@ -68,7 +68,7 @@ void V8FloatOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     return;
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
@@ -76,7 +76,7 @@ void V8FloatOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     float cppValue = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setFloat(cppValue);
+    impl.SetFloat(cppValue);
     return;
   }
 
@@ -84,19 +84,19 @@ void V8FloatOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     float cppValue = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setFloat(cppValue);
+    impl.SetFloat(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case FloatOrBoolean::SpecificTypeNone:
+    case FloatOrBoolean::SpecificType::kNone:
       return v8::Null(isolate);
-    case FloatOrBoolean::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case FloatOrBoolean::SpecificTypeFloat:
-      return v8::Number::New(isolate, impl.getAsFloat());
+    case FloatOrBoolean::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case FloatOrBoolean::SpecificType::kFloat:
+      return v8::Number::New(isolate, impl.GetAsFloat());
     default:
       NOTREACHED();
   }

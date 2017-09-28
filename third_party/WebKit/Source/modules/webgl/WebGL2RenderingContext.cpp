@@ -98,12 +98,12 @@ WebGL2RenderingContext::WebGL2RenderingContext(
 
 void WebGL2RenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
-  result.setWebGL2RenderingContext(this);
+  result.SetWebGL2RenderingContext(this);
 }
 
 void WebGL2RenderingContext::SetOffscreenCanvasGetContextResult(
     OffscreenRenderingContext& result) {
-  result.setWebGL2RenderingContext(this);
+  result.SetWebGL2RenderingContext(this);
 }
 
 ImageBitmap* WebGL2RenderingContext::TransferToImageBitmap(

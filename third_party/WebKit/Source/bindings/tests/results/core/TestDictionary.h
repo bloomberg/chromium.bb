@@ -98,7 +98,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   inline void setDoubleOrNullMember(double);
   inline void setDoubleOrNullMemberToNull();
 
-  bool hasDoubleOrStringMember() const { return !double_or_string_member_.isNull(); }
+  bool hasDoubleOrStringMember() const { return !double_or_string_member_.IsNull(); }
   const DoubleOrString& doubleOrStringMember() const {
     return double_or_string_member_;
   }
@@ -178,7 +178,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
 
-  bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.isNull(); }
+  bool hasOtherDoubleOrStringMember() const { return !other_double_or_string_member_.IsNull(); }
   const DoubleOrString& otherDoubleOrStringMember() const {
     return other_double_or_string_member_;
   }
@@ -225,7 +225,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setStringSequenceMember(const Vector<String>&);
 
-  bool hasTestInterface2OrUint8ArrayMember() const { return !test_interface_2_or_uint8_array_member_.isNull(); }
+  bool hasTestInterface2OrUint8ArrayMember() const { return !test_interface_2_or_uint8_array_member_.IsNull(); }
   const TestInterface2OrUint8Array& testInterface2OrUint8ArrayMember() const {
     return test_interface_2_or_uint8_array_member_;
   }
@@ -298,7 +298,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>&);
 
-  bool hasUnionWithTypedefs() const { return !union_with_typedefs_.isNull(); }
+  bool hasUnionWithTypedefs() const { return !union_with_typedefs_.IsNull(); }
   const FloatOrBoolean& unionWithTypedefs() const {
     return union_with_typedefs_;
   }

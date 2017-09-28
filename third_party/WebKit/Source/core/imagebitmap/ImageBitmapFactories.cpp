@@ -80,42 +80,42 @@ static inline ImageBitmapSource* ToImageBitmapSourceInternal(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, image_bitmap_source_histogram,
       ("Canvas.CreateImageBitmapSource", kCreateImageBitmapSourceCount));
-  if (value.isHTMLVideoElement()) {
+  if (value.IsHTMLVideoElement()) {
     image_bitmap_source_histogram.Count(
         kCreateImageBitmapSourceHTMLVideoElement);
-    return value.getAsHTMLVideoElement();
+    return value.GetAsHTMLVideoElement();
   }
-  if (value.isHTMLImageElement()) {
+  if (value.IsHTMLImageElement()) {
     image_bitmap_source_histogram.Count(
         kCreateImageBitmapSourceHTMLImageElement);
-    return value.getAsHTMLImageElement();
+    return value.GetAsHTMLImageElement();
   }
-  if (value.isSVGImageElement()) {
+  if (value.IsSVGImageElement()) {
     image_bitmap_source_histogram.Count(
         kCreateImageBitmapSourceSVGImageElement);
-    return value.getAsSVGImageElement();
+    return value.GetAsSVGImageElement();
   }
-  if (value.isHTMLCanvasElement()) {
+  if (value.IsHTMLCanvasElement()) {
     image_bitmap_source_histogram.Count(
         kCreateImageBitmapSourceHTMLCanvasElement);
-    return value.getAsHTMLCanvasElement();
+    return value.GetAsHTMLCanvasElement();
   }
-  if (value.isBlob()) {
+  if (value.IsBlob()) {
     image_bitmap_source_histogram.Count(kCreateImageBitmapSourceBlob);
-    return value.getAsBlob();
+    return value.GetAsBlob();
   }
-  if (value.isImageData()) {
+  if (value.IsImageData()) {
     image_bitmap_source_histogram.Count(kCreateImageBitmapSourceImageData);
-    return value.getAsImageData();
+    return value.GetAsImageData();
   }
-  if (value.isImageBitmap()) {
+  if (value.IsImageBitmap()) {
     image_bitmap_source_histogram.Count(kCreateImageBitmapSourceImageBitmap);
-    return value.getAsImageBitmap();
+    return value.GetAsImageBitmap();
   }
-  if (value.isOffscreenCanvas()) {
+  if (value.IsOffscreenCanvas()) {
     image_bitmap_source_histogram.Count(
         kCreateImageBitmapSourceOffscreenCanvas);
-    return value.getAsOffscreenCanvas();
+    return value.GetAsOffscreenCanvas();
   }
   NOTREACHED();
   return nullptr;

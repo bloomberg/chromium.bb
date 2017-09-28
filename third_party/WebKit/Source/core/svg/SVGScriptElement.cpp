@@ -166,7 +166,7 @@ void SVGScriptElement::DispatchErrorEvent() {
 void SVGScriptElement::SetScriptElementForBinding(
     HTMLScriptElementOrSVGScriptElement& element) {
   if (!IsInV1ShadowTree())
-    element.setSVGScriptElement(this);
+    element.SetSVGScriptElement(this);
 }
 
 #if DCHECK_IS_ON()

@@ -79,12 +79,12 @@ FontFace* FontFace::Create(ExecutionContext* context,
                            const AtomicString& family,
                            StringOrArrayBufferOrArrayBufferView& source,
                            const FontFaceDescriptors& descriptors) {
-  if (source.isString())
-    return Create(context, family, source.getAsString(), descriptors);
-  if (source.isArrayBuffer())
-    return Create(context, family, source.getAsArrayBuffer(), descriptors);
-  if (source.isArrayBufferView()) {
-    return Create(context, family, source.getAsArrayBufferView().View(),
+  if (source.IsString())
+    return Create(context, family, source.GetAsString(), descriptors);
+  if (source.IsArrayBuffer())
+    return Create(context, family, source.GetAsArrayBuffer(), descriptors);
+  if (source.IsArrayBufferView()) {
+    return Create(context, family, source.GetAsArrayBufferView().View(),
                   descriptors);
   }
   NOTREACHED();

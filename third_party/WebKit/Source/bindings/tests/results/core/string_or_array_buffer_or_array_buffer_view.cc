@@ -18,56 +18,56 @@
 
 namespace blink {
 
-StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView() : type_(SpecificTypeNone) {}
+StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView() : type_(SpecificType::kNone) {}
 
-TestArrayBuffer* StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer() const {
-  DCHECK(isArrayBuffer());
+TestArrayBuffer* StringOrArrayBufferOrArrayBufferView::GetAsArrayBuffer() const {
+  DCHECK(IsArrayBuffer());
   return array_buffer_;
 }
 
-void StringOrArrayBufferOrArrayBufferView::setArrayBuffer(TestArrayBuffer* value) {
-  DCHECK(isNull());
+void StringOrArrayBufferOrArrayBufferView::SetArrayBuffer(TestArrayBuffer* value) {
+  DCHECK(IsNull());
   array_buffer_ = value;
-  type_ = SpecificTypeArrayBuffer;
+  type_ = SpecificType::kArrayBuffer;
 }
 
-StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(TestArrayBuffer* value) {
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(TestArrayBuffer* value) {
   StringOrArrayBufferOrArrayBufferView container;
-  container.setArrayBuffer(value);
+  container.SetArrayBuffer(value);
   return container;
 }
 
-NotShared<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView() const {
-  DCHECK(isArrayBufferView());
+NotShared<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::GetAsArrayBufferView() const {
+  DCHECK(IsArrayBufferView());
   return array_buffer_view_;
 }
 
-void StringOrArrayBufferOrArrayBufferView::setArrayBufferView(NotShared<TestArrayBufferView> value) {
-  DCHECK(isNull());
+void StringOrArrayBufferOrArrayBufferView::SetArrayBufferView(NotShared<TestArrayBufferView> value) {
+  DCHECK(IsNull());
   array_buffer_view_ = Member<TestArrayBufferView>(value.View());
-  type_ = SpecificTypeArrayBufferView;
+  type_ = SpecificType::kArrayBufferView;
 }
 
-StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBufferView(NotShared<TestArrayBufferView> value) {
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::FromArrayBufferView(NotShared<TestArrayBufferView> value) {
   StringOrArrayBufferOrArrayBufferView container;
-  container.setArrayBufferView(value);
+  container.SetArrayBufferView(value);
   return container;
 }
 
-const String& StringOrArrayBufferOrArrayBufferView::getAsString() const {
-  DCHECK(isString());
+const String& StringOrArrayBufferOrArrayBufferView::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void StringOrArrayBufferOrArrayBufferView::setString(const String& value) {
-  DCHECK(isNull());
+void StringOrArrayBufferOrArrayBufferView::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromString(const String& value) {
+StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::FromString(const String& value) {
   StringOrArrayBufferOrArrayBufferView container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
@@ -89,7 +89,7 @@ void V8StringOrArrayBufferOrArrayBufferView::ToImpl(v8::Isolate* isolate, v8::Lo
 
   if (v8Value->IsArrayBuffer()) {
     TestArrayBuffer* cppValue = V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setArrayBuffer(cppValue);
+    impl.SetArrayBuffer(cppValue);
     return;
   }
 
@@ -97,7 +97,7 @@ void V8StringOrArrayBufferOrArrayBufferView::ToImpl(v8::Isolate* isolate, v8::Lo
     NotShared<TestArrayBufferView> cppValue = ToNotShared<NotShared<TestArrayBufferView>>(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setArrayBufferView(cppValue);
+    impl.SetArrayBufferView(cppValue);
     return;
   }
 
@@ -105,21 +105,21 @@ void V8StringOrArrayBufferOrArrayBufferView::ToImpl(v8::Isolate* isolate, v8::Lo
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
+    case StringOrArrayBufferOrArrayBufferView::SpecificType::kNone:
       return v8::Null(isolate);
-    case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBuffer:
-      return ToV8(impl.getAsArrayBuffer(), creationContext, isolate);
-    case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBufferView:
-      return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
-    case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
+    case StringOrArrayBufferOrArrayBufferView::SpecificType::kArrayBuffer:
+      return ToV8(impl.GetAsArrayBuffer(), creationContext, isolate);
+    case StringOrArrayBufferOrArrayBufferView::SpecificType::kArrayBufferView:
+      return ToV8(impl.GetAsArrayBufferView(), creationContext, isolate);
+    case StringOrArrayBufferOrArrayBufferView::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
     default:
       NOTREACHED();
   }

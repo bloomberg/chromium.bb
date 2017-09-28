@@ -27,17 +27,17 @@ class CORE_EXPORT BooleanOrElementSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrElementSequence();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
-  bool getAsBoolean() const;
-  void setBoolean(bool);
-  static BooleanOrElementSequence fromBoolean(bool);
+  bool IsBoolean() const { return type_ == SpecificType::kBoolean; }
+  bool GetAsBoolean() const;
+  void SetBoolean(bool);
+  static BooleanOrElementSequence FromBoolean(bool);
 
-  bool isElementSequence() const { return type_ == SpecificTypeElementSequence; }
-  const HeapVector<Member<Element>>& getAsElementSequence() const;
-  void setElementSequence(const HeapVector<Member<Element>>&);
-  static BooleanOrElementSequence fromElementSequence(const HeapVector<Member<Element>>&);
+  bool IsElementSequence() const { return type_ == SpecificType::kElementSequence; }
+  const HeapVector<Member<Element>>& GetAsElementSequence() const;
+  void SetElementSequence(const HeapVector<Member<Element>>&);
+  static BooleanOrElementSequence FromElementSequence(const HeapVector<Member<Element>>&);
 
   BooleanOrElementSequence(const BooleanOrElementSequence&);
   ~BooleanOrElementSequence();
@@ -45,12 +45,12 @@ class CORE_EXPORT BooleanOrElementSequence final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeBoolean,
-    SpecificTypeElementSequence,
+  enum class SpecificType {
+    kNone,
+    kBoolean,
+    kElementSequence,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   bool boolean_;
   HeapVector<Member<Element>> element_sequence_;

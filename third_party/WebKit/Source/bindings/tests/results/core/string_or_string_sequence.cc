@@ -17,39 +17,39 @@
 
 namespace blink {
 
-StringOrStringSequence::StringOrStringSequence() : type_(SpecificTypeNone) {}
+StringOrStringSequence::StringOrStringSequence() : type_(SpecificType::kNone) {}
 
-const String& StringOrStringSequence::getAsString() const {
-  DCHECK(isString());
+const String& StringOrStringSequence::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void StringOrStringSequence::setString(const String& value) {
-  DCHECK(isNull());
+void StringOrStringSequence::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-StringOrStringSequence StringOrStringSequence::fromString(const String& value) {
+StringOrStringSequence StringOrStringSequence::FromString(const String& value) {
   StringOrStringSequence container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-const Vector<String>& StringOrStringSequence::getAsStringSequence() const {
-  DCHECK(isStringSequence());
+const Vector<String>& StringOrStringSequence::GetAsStringSequence() const {
+  DCHECK(IsStringSequence());
   return string_sequence_;
 }
 
-void StringOrStringSequence::setStringSequence(const Vector<String>& value) {
-  DCHECK(isNull());
+void StringOrStringSequence::SetStringSequence(const Vector<String>& value) {
+  DCHECK(IsNull());
   string_sequence_ = value;
-  type_ = SpecificTypeStringSequence;
+  type_ = SpecificType::kStringSequence;
 }
 
-StringOrStringSequence StringOrStringSequence::fromStringSequence(const Vector<String>& value) {
+StringOrStringSequence StringOrStringSequence::FromStringSequence(const Vector<String>& value) {
   StringOrStringSequence container;
-  container.setStringSequence(value);
+  container.SetStringSequence(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8StringOrStringSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     Vector<String> cppValue = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setStringSequence(cppValue);
+    impl.SetStringSequence(cppValue);
     return;
   }
 
@@ -79,19 +79,19 @@ void V8StringOrStringSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case StringOrStringSequence::SpecificTypeNone:
+    case StringOrStringSequence::SpecificType::kNone:
       return v8::Null(isolate);
-    case StringOrStringSequence::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case StringOrStringSequence::SpecificTypeStringSequence:
-      return ToV8(impl.getAsStringSequence(), creationContext, isolate);
+    case StringOrStringSequence::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case StringOrStringSequence::SpecificType::kStringSequence:
+      return ToV8(impl.GetAsStringSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

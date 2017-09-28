@@ -47,7 +47,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
  private:
   static CSSUnparsedValue* FromString(String string) {
     HeapVector<StringOrCSSVariableReferenceValue> fragments;
-    fragments.push_back(StringOrCSSVariableReferenceValue::fromString(string));
+    fragments.push_back(StringOrCSSVariableReferenceValue::FromString(string));
     return Create(fragments);
   }
 

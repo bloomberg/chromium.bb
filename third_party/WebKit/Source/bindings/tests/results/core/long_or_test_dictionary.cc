@@ -17,39 +17,39 @@
 
 namespace blink {
 
-LongOrTestDictionary::LongOrTestDictionary() : type_(SpecificTypeNone) {}
+LongOrTestDictionary::LongOrTestDictionary() : type_(SpecificType::kNone) {}
 
-int32_t LongOrTestDictionary::getAsLong() const {
-  DCHECK(isLong());
+int32_t LongOrTestDictionary::GetAsLong() const {
+  DCHECK(IsLong());
   return long_;
 }
 
-void LongOrTestDictionary::setLong(int32_t value) {
-  DCHECK(isNull());
+void LongOrTestDictionary::SetLong(int32_t value) {
+  DCHECK(IsNull());
   long_ = value;
-  type_ = SpecificTypeLong;
+  type_ = SpecificType::kLong;
 }
 
-LongOrTestDictionary LongOrTestDictionary::fromLong(int32_t value) {
+LongOrTestDictionary LongOrTestDictionary::FromLong(int32_t value) {
   LongOrTestDictionary container;
-  container.setLong(value);
+  container.SetLong(value);
   return container;
 }
 
-const TestDictionary& LongOrTestDictionary::getAsTestDictionary() const {
-  DCHECK(isTestDictionary());
+const TestDictionary& LongOrTestDictionary::GetAsTestDictionary() const {
+  DCHECK(IsTestDictionary());
   return test_dictionary_;
 }
 
-void LongOrTestDictionary::setTestDictionary(const TestDictionary& value) {
-  DCHECK(isNull());
+void LongOrTestDictionary::SetTestDictionary(const TestDictionary& value) {
+  DCHECK(IsNull());
   test_dictionary_ = value;
-  type_ = SpecificTypeTestDictionary;
+  type_ = SpecificType::kTestDictionary;
 }
 
-LongOrTestDictionary LongOrTestDictionary::fromTestDictionary(const TestDictionary& value) {
+LongOrTestDictionary LongOrTestDictionary::FromTestDictionary(const TestDictionary& value) {
   LongOrTestDictionary container;
-  container.setTestDictionary(value);
+  container.SetTestDictionary(value);
   return container;
 }
 
@@ -73,7 +73,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setTestDictionary(cppValue);
+    impl.SetTestDictionary(cppValue);
     return;
   }
 
@@ -82,7 +82,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     V8TestDictionary::ToImpl(isolate, v8Value, cppValue, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setTestDictionary(cppValue);
+    impl.SetTestDictionary(cppValue);
     return;
   }
 
@@ -90,7 +90,7 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 
@@ -98,19 +98,19 @@ void V8LongOrTestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case LongOrTestDictionary::SpecificTypeNone:
+    case LongOrTestDictionary::SpecificType::kNone:
       return v8::Null(isolate);
-    case LongOrTestDictionary::SpecificTypeLong:
-      return v8::Integer::New(isolate, impl.getAsLong());
-    case LongOrTestDictionary::SpecificTypeTestDictionary:
-      return ToV8(impl.getAsTestDictionary(), creationContext, isolate);
+    case LongOrTestDictionary::SpecificType::kLong:
+      return v8::Integer::New(isolate, impl.GetAsLong());
+    case LongOrTestDictionary::SpecificType::kTestDictionary:
+      return ToV8(impl.GetAsTestDictionary(), creationContext, isolate);
     default:
       NOTREACHED();
   }

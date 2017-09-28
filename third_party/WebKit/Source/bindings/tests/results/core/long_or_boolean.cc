@@ -17,39 +17,39 @@
 
 namespace blink {
 
-LongOrBoolean::LongOrBoolean() : type_(SpecificTypeNone) {}
+LongOrBoolean::LongOrBoolean() : type_(SpecificType::kNone) {}
 
-bool LongOrBoolean::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool LongOrBoolean::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void LongOrBoolean::setBoolean(bool value) {
-  DCHECK(isNull());
+void LongOrBoolean::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-LongOrBoolean LongOrBoolean::fromBoolean(bool value) {
+LongOrBoolean LongOrBoolean::FromBoolean(bool value) {
   LongOrBoolean container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-int32_t LongOrBoolean::getAsLong() const {
-  DCHECK(isLong());
+int32_t LongOrBoolean::GetAsLong() const {
+  DCHECK(IsLong());
   return long_;
 }
 
-void LongOrBoolean::setLong(int32_t value) {
-  DCHECK(isNull());
+void LongOrBoolean::SetLong(int32_t value) {
+  DCHECK(IsNull());
   long_ = value;
-  type_ = SpecificTypeLong;
+  type_ = SpecificType::kLong;
 }
 
-LongOrBoolean LongOrBoolean::fromLong(int32_t value) {
+LongOrBoolean LongOrBoolean::FromLong(int32_t value) {
   LongOrBoolean container;
-  container.setLong(value);
+  container.SetLong(value);
   return container;
 }
 
@@ -68,7 +68,7 @@ void V8LongOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
     return;
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
@@ -76,7 +76,7 @@ void V8LongOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 
@@ -84,19 +84,19 @@ void V8LongOrBoolean::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
     int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, v8Value, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setLong(cppValue);
+    impl.SetLong(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case LongOrBoolean::SpecificTypeNone:
+    case LongOrBoolean::SpecificType::kNone:
       return v8::Null(isolate);
-    case LongOrBoolean::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case LongOrBoolean::SpecificTypeLong:
-      return v8::Integer::New(isolate, impl.getAsLong());
+    case LongOrBoolean::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case LongOrBoolean::SpecificType::kLong:
+      return v8::Integer::New(isolate, impl.GetAsLong());
     default:
       NOTREACHED();
   }

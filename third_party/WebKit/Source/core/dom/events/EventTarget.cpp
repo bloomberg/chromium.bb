@@ -313,11 +313,11 @@ bool EventTarget::addEventListener(
     const AtomicString& event_type,
     EventListener* listener,
     const AddEventListenerOptionsOrBoolean& options_union) {
-  if (options_union.isBoolean())
-    return addEventListener(event_type, listener, options_union.getAsBoolean());
-  if (options_union.isAddEventListenerOptions()) {
+  if (options_union.IsBoolean())
+    return addEventListener(event_type, listener, options_union.GetAsBoolean());
+  if (options_union.IsAddEventListenerOptions()) {
     AddEventListenerOptionsResolved options =
-        options_union.getAsAddEventListenerOptions();
+        options_union.GetAsAddEventListenerOptions();
     return addEventListener(event_type, listener, options);
   }
   return addEventListener(event_type, listener);
@@ -396,11 +396,12 @@ bool EventTarget::removeEventListener(
     const AtomicString& event_type,
     const EventListener* listener,
     const EventListenerOptionsOrBoolean& options_union) {
-  if (options_union.isBoolean())
+  if (options_union.IsBoolean()) {
     return removeEventListener(event_type, listener,
-                               options_union.getAsBoolean());
-  if (options_union.isEventListenerOptions()) {
-    EventListenerOptions options = options_union.getAsEventListenerOptions();
+                               options_union.GetAsBoolean());
+  }
+  if (options_union.IsEventListenerOptions()) {
+    EventListenerOptions options = options_union.GetAsEventListenerOptions();
     return removeEventListener(event_type, listener, options);
   }
   return removeEventListener(event_type, listener);

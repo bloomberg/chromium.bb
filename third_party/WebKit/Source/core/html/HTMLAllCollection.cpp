@@ -70,13 +70,13 @@ void HTMLAllCollection::namedGetter(const AtomicString& name,
     return;
 
   if (named_items.size() == 1) {
-    return_value.setElement(named_items.at(0));
+    return_value.SetElement(named_items.at(0));
     return;
   }
 
   // FIXME: HTML5 specification says this should be a HTMLCollection.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-  return_value.setNodeList(StaticElementList::Adopt(named_items));
+  return_value.SetNodeList(StaticElementList::Adopt(named_items));
 }
 
 }  // namespace blink

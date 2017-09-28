@@ -11,15 +11,15 @@ namespace blink {
 DOMArrayPiece::DOMArrayPiece(
     const ArrayBufferOrArrayBufferView& array_buffer_or_view,
     InitWithUnionOption option) {
-  if (array_buffer_or_view.isArrayBuffer()) {
-    DOMArrayBuffer* array_buffer = array_buffer_or_view.getAsArrayBuffer();
+  if (array_buffer_or_view.IsArrayBuffer()) {
+    DOMArrayBuffer* array_buffer = array_buffer_or_view.GetAsArrayBuffer();
     InitWithData(array_buffer->Data(), array_buffer->ByteLength());
-  } else if (array_buffer_or_view.isArrayBufferView()) {
+  } else if (array_buffer_or_view.IsArrayBufferView()) {
     DOMArrayBufferView* array_buffer_view =
-        array_buffer_or_view.getAsArrayBufferView().View();
+        array_buffer_or_view.GetAsArrayBufferView().View();
     InitWithData(array_buffer_view->BaseAddress(),
                  array_buffer_view->byteLength());
-  } else if (array_buffer_or_view.isNull() &&
+  } else if (array_buffer_or_view.IsNull() &&
              option == kAllowNullPointToNullWithZeroSize) {
     InitWithData(nullptr, 0);
   }  // Otherwise, leave the obejct as null.
