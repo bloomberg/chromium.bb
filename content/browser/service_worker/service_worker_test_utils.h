@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -77,6 +78,9 @@ class ServiceWorkerRemoteProviderEndpoint {
   // This is the other end of ServiceWorkerContainerAssociatedPtr owned by
   // content::ServiceWorkerProviderHost.
   mojom::ServiceWorkerContainerAssociatedRequest client_request_;
+  // This is to keep alive the corresponding content::ServiceWorkerRegistration.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+      registration_object_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };

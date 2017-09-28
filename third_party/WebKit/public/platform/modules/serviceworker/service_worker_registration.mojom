@@ -37,4 +37,18 @@ struct ServiceWorkerRegistrationObjectInfo {
   // The registration options attached with this registration object, including
   // some information such as scope of this registration.
   ServiceWorkerRegistrationOptions options;
+
+  // Holds one mojo connection to browser process, acts as a reference count to
+  // control lifetime of ServiceWorkerRegistration on the browser process.
+  associated ServiceWorkerRegistrationObjectHost? host_ptr_info;
+};
+
+// This interface lives on the browser process, it corresponds to one
+// ServiceWorkerRegistration JavaScript object. The renderer uses it to ask the
+// browser to do operations needed to implement ServiceWorkerRegistration
+// methods.
+interface ServiceWorkerRegistrationObjectHost {
+  // TODO(leonhsl): Implement all methods.
+  // Update() => (ServiceWorkerErrorType error, string? error_msg);
+  // Unregister() => (ServiceWorkerErrorType error, string? error_msg);
 };

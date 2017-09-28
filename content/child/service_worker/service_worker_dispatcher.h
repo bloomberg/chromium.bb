@@ -40,7 +40,6 @@ namespace content {
 
 class ServiceWorkerHandleReference;
 class ServiceWorkerProviderContext;
-class ServiceWorkerRegistrationHandleReference;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
@@ -230,8 +229,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
 
   // Assumes that the given object information retains an interprocess handle
   // reference passed from the browser process, and adopts it.
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info);
 

@@ -61,8 +61,17 @@ class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
     handles_.push_back(std::move(handle));
   }
   void RegisterServiceWorkerRegistrationHandle(
-      std::unique_ptr<ServiceWorkerRegistrationHandle> handle) override {
-    registration_handles_.push_back(std::move(handle));
+      ServiceWorkerRegistrationHandle* handle) override {
+    registration_handles_.push_back(base::WrapUnique(handle));
+  }
+  void UnregisterServiceWorkerRegistrationHandle(int handle_id) override {
+    auto iter = registration_handles_.begin();
+    for (; iter != registration_handles_.end(); ++iter) {
+      if ((*iter)->handle_id() == handle_id)
+        break;
+    }
+    ASSERT_NE(registration_handles_.end(), iter);
+    registration_handles_.erase(iter);
   }
 
   void RemoveHandles() {

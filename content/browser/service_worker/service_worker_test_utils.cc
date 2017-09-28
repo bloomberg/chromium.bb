@@ -33,6 +33,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindWithProviderInfo(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
   client_request_ = std::move(info->client_request);
   host_ptr_.Bind(std::move(info->host_ptr_info));
+  registration_object_info_ = std::move(info->registration);
 }
 
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(

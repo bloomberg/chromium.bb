@@ -156,8 +156,6 @@ target(link_target_type, "child") {
     "service_worker/service_worker_network_provider.h",
     "service_worker/service_worker_provider_context.cc",
     "service_worker/service_worker_provider_context.h",
-    "service_worker/service_worker_registration_handle_reference.cc",
-    "service_worker/service_worker_registration_handle_reference.h",
     "service_worker/service_worker_subresource_loader.cc",
     "service_worker/service_worker_subresource_loader.h",
     "service_worker/web_service_worker_impl.cc",

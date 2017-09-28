@@ -30,7 +30,6 @@ class URLLoaderFactory;
 }
 
 class ServiceWorkerHandleReference;
-class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
 
 // ServiceWorkerProviderContext stores common state for service worker
@@ -82,19 +81,22 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   int provider_id() const { return provider_id_; }
 
   // For service worker execution contexts. Sets the registration for
-  // ServiceWorkerGlobalScope#registration. Unlike GetRegistration(),
-  // called on the main thread. SetRegistration() is called during
-  // the setup for service worker startup, so it is guaranteed to be called
-  // before GetRegistration().
-  void SetRegistration(
-      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+  // ServiceWorkerGlobalScope#registration. Unlike
+  // TakeRegistrationForServiceWorkerGlobalScope(), called on the main thread.
+  // SetRegistrationForServiceWorkerGlobalScope() is called during the setup for
+  // service worker startup, so it is guaranteed to be called before
+  // TakeRegistrationForServiceWorkerGlobalScope().
+  void SetRegistrationForServiceWorkerGlobalScope(
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
       std::unique_ptr<ServiceWorkerHandleReference> installing,
       std::unique_ptr<ServiceWorkerHandleReference> waiting,
       std::unique_ptr<ServiceWorkerHandleReference> active);
 
   // For service worker execution contexts. Used for initializing
   // ServiceWorkerGlobalScope#registration. Called on the worker thread.
-  void GetRegistration(
+  // This takes ServiceWorkerRegistrationObjectHost ptr info from
+  // ControllerState::registration.
+  void TakeRegistrationForServiceWorkerGlobalScope(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* info,
       ServiceWorkerVersionAttributes* attrs);
 

@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -52,15 +51,15 @@ WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
 WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() {}
 
 WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
-    std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref)
-    : handle_ref_(std::move(handle_ref)), proxy_(nullptr) {
-  DCHECK(handle_ref_);
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info)
+    : info_(std::move(info)), proxy_(nullptr) {
+  DCHECK(info_);
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
-            handle_ref_->handle_id());
+            info_->handle_id);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
-  dispatcher->AddServiceWorkerRegistration(handle_ref_->handle_id(), this);
+  dispatcher->AddServiceWorkerRegistration(info_->handle_id, this);
 }
 
 void WebServiceWorkerRegistrationImpl::SetInstalling(
@@ -121,7 +120,7 @@ WebServiceWorkerRegistrationImpl::Proxy() {
 }
 
 blink::WebURL WebServiceWorkerRegistrationImpl::Scope() const {
-  return handle_ref_->scope();
+  return info_->options->scope;
 }
 
 void WebServiceWorkerRegistrationImpl::Update(
@@ -189,7 +188,7 @@ void WebServiceWorkerRegistrationImpl::SetNavigationPreloadHeader(
 }
 
 int64_t WebServiceWorkerRegistrationImpl::RegistrationId() const {
-  return handle_ref_->registration_id();
+  return info_->registration_id;
 }
 
 // static
@@ -198,14 +197,14 @@ WebServiceWorkerRegistrationImpl::CreateHandle(
     const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration) {
   if (!registration)
     return nullptr;
-  return base::MakeUnique<HandleImpl>(registration);
+  return std::make_unique<HandleImpl>(registration);
 }
 
 WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   if (dispatcher)
-    dispatcher->RemoveServiceWorkerRegistration(handle_ref_->handle_id());
+    dispatcher->RemoveServiceWorkerRegistration(info_->handle_id);
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -16,9 +17,11 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -177,14 +180,18 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
   int64_t kRegistrationId = 1L;
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId, context()->AsWeakPtr());
-  std::unique_ptr<ServiceWorkerRegistrationHandle> handle(
-      new ServiceWorkerRegistrationHandle(
-          context()->AsWeakPtr(), base::WeakPtr<ServiceWorkerProviderHost>(),
-          registration.get()));
+  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+      blink::mojom::ServiceWorkerRegistrationOptions(kScope), kRegistrationId,
+      context()->AsWeakPtr());
+  auto dispatcher_host = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
+      helper_->mock_render_process_id(),
+      helper_->browser_context()->GetResourceContext());
+  // ServiceWorkerRegistrationHandle ctor will make |handle| be owned by
+  // |dispatcher_host|.
+  auto* handle = new ServiceWorkerRegistrationHandle(
+      context()->AsWeakPtr(), dispatcher_host.get(),
+      base::WeakPtr<ServiceWorkerProviderHost>(), registration.get());
+  ALLOW_UNUSED_LOCAL(handle);
   registration->NotifyRegistrationFailed();
   // Don't crash when handle gets destructed.
 }
