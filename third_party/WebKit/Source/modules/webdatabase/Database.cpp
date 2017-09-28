@@ -984,9 +984,9 @@ SecurityOrigin* Database::GetSecurityOrigin() const {
   if (!GetExecutionContext())
     return nullptr;
   if (GetExecutionContext()->IsContextThread())
-    return context_thread_security_origin_.Get();
+    return context_thread_security_origin_.get();
   if (GetDatabaseContext()->GetDatabaseThread()->IsDatabaseThread())
-    return database_thread_security_origin_.Get();
+    return database_thread_security_origin_.get();
   return nullptr;
 }
 
@@ -995,7 +995,7 @@ bool Database::Opened() {
 }
 
 WebTaskRunner* Database::GetDatabaseTaskRunner() const {
-  return database_task_runner_.Get();
+  return database_task_runner_.get();
 }
 
 }  // namespace blink

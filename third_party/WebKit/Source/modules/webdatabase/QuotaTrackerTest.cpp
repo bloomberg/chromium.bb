@@ -18,11 +18,11 @@ TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
 
   const String database_name = "db";
   const unsigned long long kDatabaseSize = 1234ULL;
-  tracker.UpdateDatabaseSize(origin.Get(), database_name, kDatabaseSize);
+  tracker.UpdateDatabaseSize(origin.get(), database_name, kDatabaseSize);
 
   unsigned long long used = 0;
   unsigned long long available = 0;
-  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.Get(), database_name,
+  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), database_name,
                                                    &used, &available);
 
   EXPECT_EQ(used, kDatabaseSize);
@@ -36,14 +36,14 @@ TEST(QuotaTrackerTest, LocalAccessBlocked) {
 
   const String database_name = "db";
   const unsigned long long kDatabaseSize = 1234ULL;
-  tracker.UpdateDatabaseSize(origin.Get(), database_name, kDatabaseSize);
+  tracker.UpdateDatabaseSize(origin.get(), database_name, kDatabaseSize);
 
   // QuotaTracker should not care about policy, just identity.
   origin->BlockLocalAccessFromLocalOrigin();
 
   unsigned long long used = 0;
   unsigned long long available = 0;
-  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.Get(), database_name,
+  tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), database_name,
                                                    &used, &available);
 
   EXPECT_EQ(used, kDatabaseSize);

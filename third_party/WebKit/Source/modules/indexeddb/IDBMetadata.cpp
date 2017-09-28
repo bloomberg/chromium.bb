@@ -45,7 +45,7 @@ RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy() const {
                                                auto_increment, max_index_id));
 
   for (const auto& it : indexes) {
-    IDBIndexMetadata* index = it.value.Get();
+    IDBIndexMetadata* index = it.value.get();
     RefPtr<IDBIndexMetadata> index_copy = WTF::AdoptRef(
         new IDBIndexMetadata(index->name, index->id, index->key_path,
                              index->unique, index->multi_entry));

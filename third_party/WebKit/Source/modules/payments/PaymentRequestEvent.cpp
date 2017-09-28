@@ -81,7 +81,7 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
   }
 
   if (!context->GetSecurityOrigin()->IsSameSchemeHostPortAndSuborigin(
-          SecurityOrigin::Create(parsed_url_to_open).Get())) {
+          SecurityOrigin::Create(parsed_url_to_open).get())) {
     resolver->Resolve(v8::Null(script_state->GetIsolate()));
     return promise;
   }

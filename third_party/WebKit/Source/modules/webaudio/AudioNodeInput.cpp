@@ -162,7 +162,7 @@ AudioBus* AudioNodeInput::Bus() {
 AudioBus* AudioNodeInput::InternalSummingBus() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
 
-  return internal_summing_bus_.Get();
+  return internal_summing_bus_.get();
 }
 
 void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,

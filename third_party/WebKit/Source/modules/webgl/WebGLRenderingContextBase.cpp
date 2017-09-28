@@ -1954,7 +1954,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask) {
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   if (ClearIfComposited(mask) != kCombinedClear) {
     // If clearing the default back buffer's depth buffer, also clear the
@@ -2412,7 +2412,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawArrays(mode, first, count);
   MarkContextChanged(kCanvasChanged);
@@ -2432,7 +2432,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawElements(
       mode, count, type,
@@ -2454,7 +2454,7 @@ void WebGLRenderingContextBase::DrawArraysInstancedANGLE(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawArraysInstancedANGLE(mode, first, count, primcount);
   MarkContextChanged(kCanvasChanged);
@@ -2475,7 +2475,7 @@ void WebGLRenderingContextBase::DrawElementsInstancedANGLE(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawElementsInstancedANGLE(
       mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)),
@@ -4864,7 +4864,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
     return;
 
   TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-               zoffset, format, type, image_for_render.Get(),
+               zoffset, format, type, image_for_render.get(),
                WebGLImageConversion::kHtmlDomImage, unpack_flip_y_,
                unpack_premultiply_alpha_, source_image_rect, depth,
                unpack_image_height);
@@ -5110,7 +5110,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
                    canvas
                        ->CopiedImage(kBackBuffer, kPreferAcceleration,
                                      FunctionIDToSnapshotReason(function_id))
-                       .Get(),
+                       .get(),
                    WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                    unpack_premultiply_alpha_, source_sub_rectangle, 1, 0);
       return;
@@ -5144,7 +5144,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
                  canvas
                      ->CopiedImage(kBackBuffer, kPreferAcceleration,
                                    FunctionIDToSnapshotReason(function_id))
-                     .Get(),
+                     .get(),
                  WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                  unpack_premultiply_alpha_, source_sub_rectangle, depth,
                  unpack_image_height);
@@ -5324,7 +5324,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   if (!image)
     return;
   TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-               zoffset, format, type, image.Get(),
+               zoffset, format, type, image.get(),
                WebGLImageConversion::kHtmlDomVideo, unpack_flip_y_,
                unpack_premultiply_alpha_, source_image_rect, depth,
                unpack_image_height);
@@ -7809,7 +7809,7 @@ int WebGLRenderingContextBase::ExternallyAllocatedBytesPerPixel() {
 }
 
 DrawingBuffer* WebGLRenderingContextBase::GetDrawingBuffer() const {
-  return drawing_buffer_.Get();
+  return drawing_buffer_.get();
 }
 
 void WebGLRenderingContextBase::ResetUnpackParameters() {

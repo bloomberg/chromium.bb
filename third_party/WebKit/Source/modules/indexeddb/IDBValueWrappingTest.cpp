@@ -36,7 +36,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
       wrapped_marker_buffer,
       WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
       WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
-  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.Get()));
+  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
 
   Vector<char> wrapped_marker_bytes(wrapped_marker_buffer->size());
   ASSERT_TRUE(wrapped_marker_buffer->GetBytes(wrapped_marker_bytes.data(),
@@ -52,7 +52,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
         WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
         WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
-    EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.Get()));
+    EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
   }
 
   // IsWrapped() looks at the first 3 bytes in the value. Flipping any bit in
@@ -67,7 +67,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
                                wrapped_marker_bytes.size()),
           WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>(blob_data_handles),
           WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
-      EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.Get()));
+      EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
 
       wrapped_marker_bytes[i] ^= mask;
     }

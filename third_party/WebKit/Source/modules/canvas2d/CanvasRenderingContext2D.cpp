@@ -492,7 +492,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       font_style->SetFontDescription(element_font_description);
       font_style->GetFont().Update(font_style->GetFont().GetFontSelector());
       canvas()->GetDocument().EnsureStyleResolver().ComputeFont(
-          font_style.Get(), *parsed_style);
+          font_style.get(), *parsed_style);
 
       // We need to reset Computed and Adjusted size so we skip zoom and
       // minimum font size.

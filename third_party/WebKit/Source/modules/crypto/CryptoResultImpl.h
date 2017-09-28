@@ -71,7 +71,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   // ScriptPromise.
   ScriptPromise Promise();
 
-  WebCryptoResult Result() { return WebCryptoResult(this, cancel_.Get()); }
+  WebCryptoResult Result() { return WebCryptoResult(this, cancel_.get()); }
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -219,9 +219,9 @@ class ExecutableWithDatabase
   virtual void Execute(IDBDatabase*) = 0;
   virtual RequestCallback* GetRequestCallback() = 0;
   ExecutionContext* Context() const {
-    return ExecutionContext::From(script_state_.Get());
+    return ExecutionContext::From(script_state_.get());
   }
-  ScriptState* GetScriptState() const { return script_state_.Get(); }
+  ScriptState* GetScriptState() const { return script_state_.get(); }
 
  private:
   RefPtr<ScriptState> script_state_;
@@ -575,10 +575,10 @@ class OpenCursorCallback final : public EventListener {
     }
 
     Document* document =
-        ToDocument(ExecutionContext::From(script_state_.Get()));
+        ToDocument(ExecutionContext::From(script_state_.get()));
     if (!document)
       return;
-    ScriptState* script_state = script_state_.Get();
+    ScriptState* script_state = script_state_.get();
     ScriptState::Scope scope(script_state);
     v8::Local<v8::Context> context = script_state->GetContext();
     v8_inspector::StringView object_group =

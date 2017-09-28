@@ -123,7 +123,7 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
 
   // HRTF DB loader
   HRTFDatabaseLoader* HrtfDatabaseLoader() {
-    return hrtf_database_loader_.Get();
+    return hrtf_database_loader_.get();
   }
   void CreateAndLoadHRTFDatabaseLoader(float);
   bool IsHRTFDatabaseLoaded();

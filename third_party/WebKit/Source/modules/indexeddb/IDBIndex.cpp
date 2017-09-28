@@ -53,7 +53,7 @@ IDBIndex::IDBIndex(RefPtr<IDBIndexMetadata> metadata,
       transaction_(transaction) {
   DCHECK(object_store_);
   DCHECK(transaction_);
-  DCHECK(metadata_.Get());
+  DCHECK(metadata_.get());
   DCHECK_NE(Id(), IDBIndexMetadata::kInvalidId);
 }
 

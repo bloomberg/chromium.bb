@@ -2224,8 +2224,8 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
   LayoutText* layout_text = ToLayoutText(GetLayoutObject());
   for (RefPtr<AbstractInlineTextBox> box =
            layout_text->FirstAbstractInlineTextBox();
-       box.Get(); box = box->NextInlineTextBox()) {
-    AXObject* ax_object = AxObjectCache().GetOrCreate(box.Get());
+       box.get(); box = box->NextInlineTextBox()) {
+    AXObject* ax_object = AxObjectCache().GetOrCreate(box.get());
     if (!ax_object->AccessibilityIsIgnored())
       children_.push_back(ax_object);
   }

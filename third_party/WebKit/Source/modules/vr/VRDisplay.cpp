@@ -689,14 +689,14 @@ void VRDisplay::submitFrame() {
   // as implemented by AcceleratedStaticBitmapImage. Ensure this is
   // the case, don't attempt to render if using an unexpected drawing
   // path.
-  if (!image_ref.Get() || !image_ref->IsTextureBacked()) {
+  if (!image_ref.get() || !image_ref->IsTextureBacked()) {
     TRACE_EVENT0("gpu", "VRDisplay::GetImage_SlowFallback");
     // We get a non-texture-backed image when running layout tests
     // on desktop builds. Add a slow fallback so that these continue
     // working.
     image_ref = rendering_context_->GetImage(kPreferAcceleration,
                                              kSnapshotReasonCreateImageBitmap);
-    if (!image_ref.Get() || !image_ref->IsTextureBacked()) {
+    if (!image_ref.get() || !image_ref->IsTextureBacked()) {
       NOTREACHED()
           << "WebVR requires hardware-accelerated rendering to texture";
       return;
@@ -708,7 +708,7 @@ void VRDisplay::submitFrame() {
   // itself does not keep it alive. We must keep a reference to the
   // image until the mailbox was consumed.
   StaticBitmapImage* static_image =
-      static_cast<StaticBitmapImage*>(image_ref.Get());
+      static_cast<StaticBitmapImage*>(image_ref.get());
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay::EnsureMailbox");
   static_image->EnsureMailbox(kVerifiedSyncToken);
   TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");

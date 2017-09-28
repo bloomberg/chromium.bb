@@ -50,7 +50,7 @@ class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
     return new CanvasPattern(std::move(image), repeat, origin_clean);
   }
 
-  Pattern* GetPattern() const { return pattern_.Get(); }
+  Pattern* GetPattern() const { return pattern_.get(); }
   const AffineTransform& GetTransform() const { return pattern_transform_; }
 
   bool OriginClean() const { return origin_clean_; }

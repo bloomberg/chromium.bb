@@ -50,7 +50,7 @@ class SpeechSynthesisVoice final
   bool isDefault() const { return platform_voice_->IsDefault(); }
 
   PlatformSpeechSynthesisVoice* PlatformVoice() const {
-    return platform_voice_.Get();
+    return platform_voice_.get();
   }
 
   DEFINE_INLINE_TRACE() {}

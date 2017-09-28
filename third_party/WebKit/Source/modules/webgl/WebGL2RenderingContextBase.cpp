@@ -3376,7 +3376,7 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawArraysInstancedANGLE(mode, first, count, instance_count);
   MarkContextChanged(kCanvasChanged);
@@ -3397,7 +3397,7 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawElementsInstancedANGLE(
       mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)),
@@ -3421,7 +3421,7 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode,
   }
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   ClearIfComposited();
   ContextGL()->DrawRangeElements(
       mode, start, end, count, type,
@@ -3434,7 +3434,7 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
   GLsizei n = buffers.size();
   const GLenum* bufs = buffers.data();
   for (GLsizei i = 0; i < n; ++i) {
@@ -3538,7 +3538,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferiv(buffer, drawbuffer,
                              value.View()->DataMaybeShared() + src_offset);
@@ -3553,7 +3553,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferiv(buffer, drawbuffer, value.data() + src_offset);
 }
@@ -3569,7 +3569,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferuiv(buffer, drawbuffer,
                               value.View()->DataMaybeShared() + src_offset);
@@ -3584,7 +3584,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
     return;
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.data() + src_offset);
 }
@@ -3606,7 +3606,7 @@ void WebGL2RenderingContextBase::clearBufferfv(
   // added, the type of the back buffer might change, so do the
   // emulation for all clearBuffer entry points instead of just here.
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer,
                              value.View()->DataMaybeShared() + src_offset);
@@ -3627,7 +3627,7 @@ void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
   // added, the type of the back buffer might change, so do the
   // emulation for all clearBuffer entry points instead of just here.
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
-                                                   drawing_buffer_.Get());
+                                                   drawing_buffer_.get());
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer, value.data() + src_offset);
 }

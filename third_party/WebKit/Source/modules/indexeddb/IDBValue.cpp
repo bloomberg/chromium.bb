@@ -116,7 +116,7 @@ RefPtr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
 }
 
 bool IDBValue::IsNull() const {
-  return !data_.Get();
+  return !data_.get();
 }
 
 }  // namespace blink

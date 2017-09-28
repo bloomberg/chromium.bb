@@ -143,7 +143,7 @@ AudioBus* AudioNodeOutput::Pull(AudioBus* in_place_bus,
 
 AudioBus* AudioNodeOutput::Bus() const {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
-  return is_in_place_ ? in_place_bus_.Get() : internal_bus_.Get();
+  return is_in_place_ ? in_place_bus_.get() : internal_bus_.get();
 }
 
 unsigned AudioNodeOutput::FanOutCount() {

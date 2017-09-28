@@ -79,7 +79,7 @@ RefPtr<Image> CSSPaintDefinition::Paint(
   float zoom = layout_object.StyleRef().EffectiveZoom();
   const IntSize specified_size = GetSpecifiedSize(size, zoom);
 
-  ScriptState::Scope scope(script_state_.Get());
+  ScriptState::Scope scope(script_state_.get());
 
   MaybeCreatePaintInstance();
 
@@ -117,7 +117,7 @@ RefPtr<Image> CSSPaintDefinition::Paint(
   block.SetVerbose(true);
 
   V8ScriptRunner::CallFunction(paint,
-                               ExecutionContext::From(script_state_.Get()),
+                               ExecutionContext::From(script_state_.get()),
                                instance, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
   // The paint function may have produced an error, in which case produce an

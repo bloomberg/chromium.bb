@@ -223,7 +223,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
   DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
   RefPtr<IDBObjectStoreMetadata> object_store_metadata =
       database_->Metadata().object_stores.at(object_store_id);
-  DCHECK(object_store_metadata.Get());
+  DCHECK(object_store_metadata.get());
 
   IDBObjectStore* object_store =
       IDBObjectStore::Create(std::move(object_store_metadata), this);
@@ -269,7 +269,7 @@ void IDBTransaction::ObjectStoreDeleted(const int64_t object_store_id,
     DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
     RefPtr<IDBObjectStoreMetadata> metadata =
         database_->Metadata().object_stores.at(object_store_id);
-    DCHECK(metadata.Get());
+    DCHECK(metadata.get());
     DCHECK_EQ(metadata->name, name);
     deleted_object_stores_.push_back(std::move(metadata));
   } else {
@@ -329,7 +329,7 @@ void IDBTransaction::IndexDeleted(IDBIndex* index) {
   }
 
   const IDBObjectStoreMetadata* old_store_metadata =
-      object_store_iterator->value.Get();
+      object_store_iterator->value.get();
   DCHECK(old_store_metadata);
   if (!old_store_metadata->indexes.Contains(index->Id())) {
     // The index's object store was created before this transaction, but the
