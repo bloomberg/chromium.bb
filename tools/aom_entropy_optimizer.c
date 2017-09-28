@@ -400,17 +400,6 @@ int main(int argc, const char **argv) {
                      "default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]"
                      "[CDF_SIZE(SWITCHABLE_FILTERS)]");
 
-  /* Blockzero */
-  cts_each_dim[0] = TX_SIZES;
-  cts_each_dim[1] = PLANE_TYPES;
-  cts_each_dim[2] = REF_TYPES;
-  cts_each_dim[3] = BLOCKZ_CONTEXTS;
-  cts_each_dim[4] = 2;
-  optimize_entropy_table(
-      &fc.blockz_count[0][0][0][0][0], probsfile, 5, cts_each_dim, NULL, 1,
-      "static const aom_prob av1_default_blockzero_probs[TX_SIZES]"
-      "[PLANE_TYPES][REF_TYPES][BLOCKZ_CONTEXTS]");
-
   /* Motion vector referencing */
   cts_each_dim[0] = NEWMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
