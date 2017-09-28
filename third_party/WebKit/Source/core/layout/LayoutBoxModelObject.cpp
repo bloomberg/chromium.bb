@@ -603,7 +603,7 @@ bool LayoutBoxModelObject::HasNonEmptyLayoutSize() const {
         if (!layout_inline.LinesBoundingBox().IsEmpty())
           return true;
       } else {
-        DCHECK(object->IsText());
+        DCHECK(object->IsText() || object->IsSVG());
       }
     }
   }

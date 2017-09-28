@@ -50,6 +50,11 @@ static const char kBlockWithText[] =
     "  <div>Hello</div> "
     "</div>";
 
+static const char kBlockWithEmptyZeroSizedSVG[] =
+    "<div id='testElement'>"
+    "  <svg height='0'><g><rect width='100' height='100'/></g></svg> "
+    "</div>";
+
 static const char kBlockWithInlines[] =
     "<div id='testElement'>"
     "  <span>Hello</span> "
@@ -97,6 +102,9 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
   EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
   InsertHTML(kBlockWithEmptyInlines);
+  EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
+
+  InsertHTML(kBlockWithEmptyZeroSizedSVG);
   EXPECT_FALSE(TestElement().HasNonEmptyLayoutSize());
 
   InsertHTML(kBlockWithContinuations);
