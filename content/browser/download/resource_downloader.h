@@ -11,6 +11,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
@@ -26,6 +27,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       std::unique_ptr<DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<ResourceRequest> request,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+      scoped_refptr<storage::FileSystemContext> file_system_context,
       uint32_t download_id,
       bool is_parallel_request);
 
@@ -59,6 +61,7 @@ class ResourceDownloader : public UrlDownloadHandler,
  private:
   // Helper method to start the network request.
   void Start(mojom::URLLoaderFactoryPtr* factory,
+             scoped_refptr<storage::FileSystemContext> file_system_context,
              std::unique_ptr<DownloadUrlParameters> download_url_parameters);
 
   // Intercepts the navigation response and takes ownership of the |url_loader|.
@@ -79,6 +82,9 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // Object for handing the server response.
   DownloadResponseHandler response_handler_;
+
+  // URLLoaderClient binding for loading a blob.
+  mojo::Binding<mojom::URLLoaderClient> blob_client_binding_;
 
   // ID of the download, or DownloadItem::kInvalidId if this is a new
   // download.

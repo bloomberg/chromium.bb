@@ -69,10 +69,9 @@
 namespace content {
 namespace {
 
-scoped_refptr<URLLoaderFactoryGetter> GetURLLoaderFactoryGetter(
-    BrowserContext* context,
-    int render_process_id,
-    int render_frame_id) {
+StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
+                                          int render_process_id,
+                                          int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SiteInstance* site_instance = nullptr;
@@ -82,9 +81,8 @@ scoped_refptr<URLLoaderFactoryGetter> GetURLLoaderFactoryGetter(
     if (render_frame_host_)
       site_instance = render_frame_host_->GetSiteInstance();
   }
-  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+  return static_cast<StoragePartitionImpl*>(
       BrowserContext::GetStoragePartition(context, site_instance));
-  return partition->url_loader_factory_getter();
 }
 
 bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
@@ -167,6 +165,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -184,7 +183,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
-          url_loader_factory_getter, download_id, false)
+          url_loader_factory_getter, file_system_context, download_id, false)
           .release());
 }
 
@@ -738,15 +737,16 @@ void DownloadManagerImpl::DownloadUrl(
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
         params.get());
+    StoragePartitionImpl* storage_partition =
+        GetStoragePartition(browser_context_, params->render_process_host_id(),
+                            params->render_frame_host_routing_id());
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&BeginResourceDownload, std::move(params),
-                       std::move(request),
-                       GetURLLoaderFactoryGetter(
-                           browser_context_, params->render_process_host_id(),
-                           params->render_frame_host_routing_id()),
-                       content::DownloadItem::kInvalidId,
-                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &BeginResourceDownload, std::move(params), std::move(request),
+            storage_partition->url_loader_factory_getter(),
+            make_scoped_refptr(storage_partition->GetFileSystemContext()),
+            content::DownloadItem::kInvalidId, weak_factory_.GetWeakPtr()),
         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                        weak_factory_.GetWeakPtr()));
   } else {
