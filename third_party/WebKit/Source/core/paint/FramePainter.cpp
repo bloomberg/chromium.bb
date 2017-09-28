@@ -7,6 +7,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/FramePaintTiming.h"
@@ -233,11 +234,11 @@ void FramePainter::PaintScrollCorner(GraphicsContext& context,
     bool needs_background = GetFrameView().GetFrame().IsMainFrame();
     if (needs_background &&
         !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-            context, *GetFrameView().GetLayoutView(),
-            DisplayItem::kScrollbarCorner)) {
+            context, *GetFrameView().ScrollCorner(),
+            DisplayItem::kScrollbarBackground)) {
       LayoutObjectDrawingRecorder drawing_recorder(
-          context, *GetFrameView().GetLayoutView(),
-          DisplayItem::kScrollbarCorner, FloatRect(corner_rect));
+          context, *GetFrameView().ScrollCorner(),
+          DisplayItem::kScrollbarBackground, corner_rect);
       context.FillRect(corner_rect, GetFrameView().BaseBackgroundColor());
     }
     ScrollbarPainter::PaintIntoRect(*GetFrameView().ScrollCorner(), context,
@@ -268,7 +269,13 @@ void FramePainter::PaintScrollbar(GraphicsContext& context,
   if (needs_background) {
     IntRect to_fill = bar.FrameRect();
     to_fill.Intersect(rect);
-    context.FillRect(to_fill, GetFrameView().BaseBackgroundColor());
+    if (!to_fill.IsEmpty() &&
+        !DrawingRecorder::UseCachedDrawingIfPossible(
+            context, bar, DisplayItem::kScrollbarBackground)) {
+      DrawingRecorder recorder(context, bar, DisplayItem::kScrollbarBackground,
+                               to_fill);
+      context.FillRect(to_fill, GetFrameView().BaseBackgroundColor());
+    }
   }
 
   bar.Paint(context, CullRect(rect));

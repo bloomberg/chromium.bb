@@ -1087,6 +1087,9 @@ bool PaintLayerCompositor::RequiresScrollCornerLayer() const {
 }
 
 void PaintLayerCompositor::UpdateOverflowControlsLayers() {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   GraphicsLayer* controls_parent = overflow_controls_host_layer_.get();
   // Main frame scrollbars should always be stuck to the sides of the screen (in
   // overscroll and in pinch-zoom), so make the parent for the scrollbars be the

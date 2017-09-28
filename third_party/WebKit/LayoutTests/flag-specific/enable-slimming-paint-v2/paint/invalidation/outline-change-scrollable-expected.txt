@@ -17,6 +17,11 @@
           "reason": "style change"
         }
       ]
+    },
+    {
+      "name": "LayoutView #document",
+      "position": [0, 585],
+      "bounds": [800, 15]
     }
   ],
   "objectPaintInvalidations": [
