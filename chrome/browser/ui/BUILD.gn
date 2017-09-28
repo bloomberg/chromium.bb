@@ -1666,6 +1666,8 @@ split_static_library("ui") {
       "views/frame/native_widget_mac_frameless_nswindow.mm",
       "views/fullscreen_control/fullscreen_control_host.cc",
       "views/fullscreen_control/fullscreen_control_host.h",
+      "views/fullscreen_control/fullscreen_control_popup.cc",
+      "views/fullscreen_control/fullscreen_control_popup.h",
       "views/fullscreen_control/fullscreen_control_view.cc",
       "views/fullscreen_control/fullscreen_control_view.h",
       "views/global_error_bubble_view.cc",

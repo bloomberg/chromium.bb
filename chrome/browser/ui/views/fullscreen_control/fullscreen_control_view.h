@@ -5,22 +5,21 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_VIEW_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
+// FullscreenControlView shows a FAB (floating action button from the material
+// design spec) with close icon (i.e. a partially-transparent black circular
+// button with a "X" icon in the middle).
+// |on_button_pressed| will be called when the user taps the button.
 class FullscreenControlView : public views::View,
-                              public DropdownBarHostDelegate,
                               public views::ButtonListener {
  public:
-  explicit FullscreenControlView(BrowserView* browser_view);
+  explicit FullscreenControlView(
+      const base::RepeatingClosure& on_button_pressed);
   ~FullscreenControlView() override;
-
-  // DropdownBarHostDelegate:
-  void SetFocusAndSelection(bool select_all) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -28,7 +27,7 @@ class FullscreenControlView : public views::View,
   views::Button* exit_fullscreen_button() { return exit_fullscreen_button_; }
 
  private:
-  BrowserView* const browser_view_;
+  const base::RepeatingClosure on_button_pressed_;
   views::Button* const exit_fullscreen_button_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlView);
