@@ -79,6 +79,8 @@ class BubbleManager {
   void CloseBubblesOwnedBy(const content::RenderFrameHost* frame);
 
  private:
+  friend class ExtensionInstalledBubbleBrowserTest;
+
   enum ManagerState {
     SHOW_BUBBLES,
     NO_MORE_BUBBLES,

@@ -10,9 +10,12 @@
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "components/bubble/bubble_controller.h"
+#include "components/bubble/bubble_ui.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 using extensions::Manifest;
 using ActionType = extensions::ExtensionBuilder::ActionType;
@@ -32,6 +35,21 @@ class ExtensionInstalledBubbleBrowserTest
 
   // DialogBrowserTest:
   void ShowDialog(const std::string& name) override;
+
+  BubbleController* GetExtensionBubbleControllerFromManager(
+      BubbleManager* manager) const {
+    for (auto& controller : manager->controllers_) {
+      if (controller->GetName() == "ExtensionInstalled")
+        return controller.get();
+    }
+    return nullptr;
+  }
+
+  BubbleUi* GetBubbleUiFromManager(BubbleManager* manager) const {
+    BubbleController* controller =
+        GetExtensionBubbleControllerFromManager(manager);
+    return controller ? controller->bubble_ui_.get() : nullptr;
+  }
 
  private:
   base::AutoReset<bool> disable_animations_;
@@ -134,4 +152,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
     auto bubble = MakeBubble("Page action", ActionType::PAGE_ACTION);
     EXPECT_NE(0, bubble->options() & ExtensionInstalledBubble::HOW_TO_USE);
   }
+}
+
+// Tests if the BubbleController gets removed from the BubbleManager when
+// the BubbleUi is closed.
+IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, CloseBubbleUi) {
+  ui::test::MaterialDesignControllerTestAPI md_test_api(
+      ui::MaterialDesignController::MATERIAL_NORMAL);
+  md_test_api.SetSecondaryUiMaterial(true);
+
+  auto bubble = MakeBubble("No action", base::nullopt);
+  BubbleManager* manager = browser()->GetBubbleManager();
+  manager->ShowBubble(std::move(bubble));
+
+  BubbleUi* bubble_ui = GetBubbleUiFromManager(manager);
+  DCHECK(bubble_ui);
+  bubble_ui->Close();
+
+  // BubbleManager should no longer hold the controller.
+  EXPECT_FALSE(GetExtensionBubbleControllerFromManager(manager));
 }
