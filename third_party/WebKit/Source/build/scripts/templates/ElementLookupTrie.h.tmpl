@@ -7,11 +7,11 @@
 #define {{namespace}}ElementLookupTrie_h
 
 #include "core/CoreExport.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
-CORE_EXPORT StringImpl* lookup{{namespace}}Tag(const UChar* data, unsigned length);
+CORE_EXPORT const AtomicString& lookup{{namespace}}Tag(const UChar* data, unsigned length);
 
 } // namespace blink
 
