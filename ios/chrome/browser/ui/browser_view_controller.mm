@@ -102,7 +102,6 @@
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_snackbar.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
@@ -119,6 +118,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -151,6 +151,7 @@
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/card_view.h"
 #import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
@@ -357,7 +358,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 #pragma mark - BVC
 
 @interface BrowserViewController ()<ActivityServicePresentation,
-                                    ActivityServiceSnackbar,
                                     AppRatingPromptDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
@@ -548,6 +548,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Coordinator for displaying Repost Form dialog.
   RepostFormCoordinator* _repostFormCoordinator;
+
+  // Coordinator for displaying snackbars.
+  SnackbarCoordinator* _snackbarCoordinator;
 
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
@@ -757,8 +760,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
 // Evaluates Javascript asynchronously using the current page context.
 - (void)openJavascript:(NSString*)javascript;
-// Shows a self-dismissing snackbar displaying |message|.
-- (void)showSnackbar:(NSString*)message;
 // Induces an intentional crash in the browser process.
 - (void)induceBrowserCrash;
 // Saves the image or display error message, based on privacy settings.
@@ -1005,6 +1006,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationSettingsCommands)];
 
+    _snackbarCoordinator = [[SnackbarCoordinator alloc] init];
+    _snackbarCoordinator.dispatcher = _dispatcher;
+    [_snackbarCoordinator start];
+
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
     _webStateDelegate.reset(new web::WebStateDelegateBridge(self));
@@ -1049,10 +1054,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (id<ApplicationCommands,
       BrowserCommands,
       OmniboxFocuser,
+      SnackbarCommands,
       UrlLoader,
       WebToolbarDelegate>)dispatcher {
   return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                        UrlLoader, WebToolbarDelegate>>(_dispatcher);
+                        SnackbarCommands, UrlLoader, WebToolbarDelegate>>(
+      _dispatcher);
 }
 
 - (void)setActive:(BOOL)active {
@@ -1887,7 +1894,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _activityServiceCoordinator.browserState = _browserState;
   _activityServiceCoordinator.positionProvider = _toolbarController;
   _activityServiceCoordinator.presentationProvider = self;
-  _activityServiceCoordinator.snackbarProvider = self;
 
   _qrScannerCoordinator =
       [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
@@ -3637,8 +3643,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
                          reading_list::ADDED_VIA_CURRENT_APP);
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self showSnackbar:l10n_util::GetNSString(
-                         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
+  [self.dispatcher
+      showSnackbarWithMessage:l10n_util::GetNSString(
+                                  IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
 
 #pragma mark - Keyboard commands management
@@ -4172,7 +4179,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // the UI.
   if (![currentTab viewForPrinting]) {
     TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
-    [self showSnackbar:l10n_util::GetNSString(IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
+    [self.dispatcher
+        showSnackbarWithMessage:l10n_util::GetNSString(
+                                    IDS_IOS_CANNOT_PRINT_PAGE_ERROR)];
     return;
   }
   DCHECK(_browserState);
@@ -4896,10 +4905,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                                             message:message
                                                      viewController:self];
   [_alertCoordinator start];
-}
-
-- (void)showSnackbar:(NSString*)message {
-  [_dependencyFactory showSnackbarWithMessage:message];
 }
 
 #pragma mark - Show Mail Composer methods

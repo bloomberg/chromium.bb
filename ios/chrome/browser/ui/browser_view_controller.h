@@ -21,6 +21,7 @@
 @class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
 class GURL;
+@protocol SnackbarCommands;
 @class Tab;
 @class TabModel;
 @protocol TabStripFoldAnimation;
@@ -61,6 +62,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 @property(nonatomic, readonly) id<ApplicationCommands,
                                   BrowserCommands,
                                   OmniboxFocuser,
+                                  SnackbarCommands,
                                   UrlLoader,
                                   WebToolbarDelegate>
     dispatcher;
