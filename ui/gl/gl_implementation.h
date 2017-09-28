@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
+#include "ui/gl/extension_set.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_switches.h"
 
@@ -118,6 +119,9 @@ GL_EXPORT GLFunctionPointerType GetGLProcAddress(const char* name);
 // callers should cache the result.
 GL_EXPORT std::string GetGLExtensionsFromCurrentContext();
 GL_EXPORT std::string GetGLExtensionsFromCurrentContext(GLApi* api);
+
+GL_EXPORT ExtensionSet GetRequestableGLExtensionsFromCurrentContext();
+GL_EXPORT ExtensionSet GetRequestableGLExtensionsFromCurrentContext(GLApi* api);
 
 // Helper for the GL bindings implementation to understand whether
 // glGetString(GL_EXTENSIONS) or glGetStringi(GL_EXTENSIONS, i) will

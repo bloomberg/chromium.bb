@@ -55,6 +55,28 @@ void CleanupNativeLibraries(void* unused) {
   }
 }
 
+ExtensionSet GetGLExtensionsFromCurrentContext(GLApi* api,
+                                               GLenum extensions_enum,
+                                               GLenum num_extensions_enum) {
+  if (WillUseGLGetStringForExtensions(api)) {
+    const char* extensions =
+        reinterpret_cast<const char*>(api->glGetStringFn(extensions_enum));
+    return extensions ? MakeExtensionSet(extensions) : ExtensionSet();
+  }
+
+  GLint num_extensions = 0;
+  api->glGetIntegervFn(num_extensions_enum, &num_extensions);
+
+  std::vector<base::StringPiece> exts(num_extensions);
+  for (GLint i = 0; i < num_extensions; ++i) {
+    const char* extension =
+        reinterpret_cast<const char*>(api->glGetStringiFn(extensions_enum, i));
+    DCHECK(extension != NULL);
+    exts[i] = extension;
+  }
+  return ExtensionSet(exts);
+}
+
 }  // namespace
 
 base::ThreadLocalPointer<CurrentGL>* g_current_gl_context_tls = NULL;
@@ -213,6 +235,15 @@ std::string GetGLExtensionsFromCurrentContext(GLApi* api) {
     exts[i] = extension;
   }
   return base::JoinString(exts, " ");
+}
+
+ExtensionSet GetRequestableGLExtensionsFromCurrentContext() {
+  return GetRequestableGLExtensionsFromCurrentContext(g_current_gl_context);
+}
+
+ExtensionSet GetRequestableGLExtensionsFromCurrentContext(GLApi* api) {
+  return GetGLExtensionsFromCurrentContext(api, GL_REQUESTABLE_EXTENSIONS_ANGLE,
+                                           GL_NUM_REQUESTABLE_EXTENSIONS_ANGLE);
 }
 
 bool WillUseGLGetStringForExtensions() {
