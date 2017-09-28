@@ -170,6 +170,10 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
   if (!pending.IsHTMLElement() && !isSVGSVGElement(pending))
     return false;
 
+  // |pending| is not a dialog element.
+  if (isHTMLDialogElement(pending))
+    return false;
+
   // The fullscreen element ready check for |pending| returns false.
   if (!FullscreenElementReady(pending))
     return false;
@@ -480,20 +484,6 @@ void Fullscreen::RequestFullscreen(Element& pending, RequestType request_type) {
     if (From(document).pending_requests_.size()) {
       UseCounter::Count(document,
                         WebFeature::kFullscreenRequestWithPendingElement);
-    }
-
-    // TODO(foolip): In order to reinstate the hierarchy restrictions in the
-    // spec, something has to prevent dialog elements from moving within top
-    // layer. Either disallowing fullscreen for dialog elements entirely or just
-    // preventing dialog elements from simultaneously being fullscreen and modal
-    // are good candidates. See https://github.com/whatwg/fullscreen/pull/91
-    if (isHTMLDialogElement(pending)) {
-      UseCounter::Count(document,
-                        WebFeature::kRequestFullscreenForDialogElement);
-      if (pending.IsInTopLayer()) {
-        UseCounter::Count(
-            document, WebFeature::kRequestFullscreenForDialogElementInTopLayer);
-      }
     }
 
     From(document).pending_requests_.push_back(
