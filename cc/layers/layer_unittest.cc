@@ -26,7 +26,6 @@
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/mutable_properties.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -924,8 +923,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetForceRenderSurfaceForTesting(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->SetMutableProperties(MutableProperty::kTransform));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(
       dummy_layer1.get()));
@@ -1418,7 +1415,7 @@ TEST_F(LayerTest, AnimationSchedulesLayerUpdate) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
 }
 
-TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
+TEST_F(LayerTest, ElementIdIsPushed) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   std::unique_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -1426,18 +1423,15 @@ TEST_F(LayerTest, ElementIdAndMutablePropertiesArePushed) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
                                   layer_tree_host_->SetRootLayer(test_layer));
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
 
   test_layer->SetElementId(ElementId(2));
-  test_layer->SetMutableProperties(MutableProperty::kTransform);
 
   EXPECT_FALSE(impl_layer->element_id());
-  EXPECT_EQ(MutableProperty::kNone, impl_layer->mutable_properties());
 
   test_layer->PushPropertiesTo(impl_layer.get());
 
   EXPECT_EQ(ElementId(2), impl_layer->element_id());
-  EXPECT_EQ(MutableProperty::kTransform, impl_layer->mutable_properties());
 }
 
 TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {

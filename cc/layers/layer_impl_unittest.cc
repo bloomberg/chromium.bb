@@ -15,7 +15,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/mutable_properties.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -191,9 +190,6 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   // but does cause the layer to need to push properties.
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetElementId(ElementId(2)));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetMutableProperties(MutableProperty::kOpacity);
-      root->SetNeedsPushProperties());
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
@@ -392,8 +388,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetElementId(ElementId(2)));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->SetMutableProperties(MutableProperty::kTransform));
 }
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {

@@ -5,11 +5,18 @@
 #ifndef CompositorMutableProperties_h
 #define CompositorMutableProperties_h
 
-#include "cc/trees/mutable_properties.h"
-
 namespace blink {
 
-using CompositorMutableProperty = cc::MutableProperty;
+struct CompositorMutableProperty {
+  enum : uint32_t { kNone = 0 };
+  enum : uint32_t { kOpacity = 1 << 0 };
+  enum : uint32_t { kScrollLeft = 1 << 1 };
+  enum : uint32_t { kScrollTop = 1 << 2 };
+  enum : uint32_t { kTransform = 1 << 3 };
+  enum : uint32_t { kTransformRelated = kTransform | kScrollLeft | kScrollTop };
+
+  enum : int { kNumProperties = 4 };
+};
 
 }  // namespace blink
 

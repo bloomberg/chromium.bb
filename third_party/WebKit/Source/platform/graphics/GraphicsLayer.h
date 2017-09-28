@@ -272,8 +272,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetElementId(const CompositorElementId&);
   CompositorElementId GetElementId() const;
 
-  void SetCompositorMutableProperties(uint32_t);
-
   WebContentLayerClient& WebContentLayerClientForTesting() { return *this; }
 
   // DisplayItemClient methods

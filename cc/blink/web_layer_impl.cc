@@ -487,14 +487,6 @@ cc::ElementId WebLayerImpl::GetElementId() const {
   return layer_->element_id();
 }
 
-void WebLayerImpl::SetCompositorMutableProperties(uint32_t properties) {
-  layer_->SetMutableProperties(properties);
-}
-
-uint32_t WebLayerImpl::CompositorMutableProperties() const {
-  return layer_->mutable_properties();
-}
-
 void WebLayerImpl::SetScrollParent(blink::WebLayer* parent) {
   cc::Layer* scroll_parent = nullptr;
   if (parent)

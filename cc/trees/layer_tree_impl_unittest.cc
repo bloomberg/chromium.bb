@@ -14,7 +14,6 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
-#include "cc/trees/mutable_properties.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1994,52 +1993,6 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   host_impl().active_tree()->RegisterSelection(input);
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_TRUE(output.start.visible());
-}
-
-TEST_F(LayerTreeImplTest, NodesiesForProxies) {
-  LayerImpl* root = root_layer();
-  root->SetDrawsContent(true);
-  root->SetBounds(gfx::Size(100, 100));
-
-  uint32_t properties[] = {
-      MutableProperty::kOpacity, MutableProperty::kScrollLeft,
-      MutableProperty::kScrollTop, MutableProperty::kTransform,
-  };
-
-  for (size_t i = 0; i < arraysize(properties); ++i) {
-    int sub_layer_id = i + 2;
-    std::unique_ptr<LayerImpl> sub_layer =
-        LayerImpl::Create(host_impl().active_tree(), sub_layer_id);
-    sub_layer->SetBounds(gfx::Size(50, 50));
-    sub_layer->SetDrawsContent(true);
-    sub_layer->SetMutableProperties(properties[i]);
-    root->test_properties()->AddChild(std::move(sub_layer));
-  }
-
-  host_impl().active_tree()->BuildPropertyTreesForTesting();
-
-  for (size_t i = 0; i < arraysize(properties); ++i) {
-    LayerImpl* layer = host_impl().active_tree()->LayerById(i + 2);
-    switch (properties[i]) {
-      case MutableProperty::kOpacity:
-        DCHECK_EQ(root->transform_tree_index(), layer->transform_tree_index());
-        DCHECK_NE(root->effect_tree_index(), layer->effect_tree_index());
-        break;
-      case MutableProperty::kScrollLeft:
-      case MutableProperty::kScrollTop:
-      case MutableProperty::kTransform:
-        DCHECK_EQ(root->effect_tree_index(), layer->effect_tree_index());
-        DCHECK_NE(root->transform_tree_index(), layer->transform_tree_index());
-        for (size_t j = 0; j < arraysize(properties); ++j) {
-          if (j == i)
-            continue;
-          LayerImpl* other = host_impl().active_tree()->LayerById(j + 2);
-          DCHECK_NE(other->transform_tree_index(),
-                    layer->transform_tree_index());
-        }
-        break;
-    }
-  }
 }
 
 TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {

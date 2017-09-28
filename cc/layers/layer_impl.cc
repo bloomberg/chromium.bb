@@ -30,7 +30,6 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/mutable_properties.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/scroll_node.h"
@@ -73,7 +72,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       current_draw_mode_(DRAW_MODE_NONE),
-      mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       trilinear_filtering_(false),
@@ -347,7 +345,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(bounds_);
   if (scrollable_)
     layer->SetScrollable(scroll_container_bounds_);
-  layer->SetMutableProperties(mutable_properties_);
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
@@ -652,18 +649,6 @@ void LayerImpl::SetElementId(ElementId element_id) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::SetMutableProperties(uint32_t properties) {
-  if (mutable_properties_ == properties)
-    return;
-
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "LayerImpl::SetMutableProperties", "properties", properties);
-
-  mutable_properties_ = properties;
-  // If this layer is already in the element map, update its properties.
-  layer_tree_impl_->AddToElementMap(this);
-}
-
 void LayerImpl::SetPosition(const gfx::PointF& position) {
   position_ = position;
 }
@@ -750,9 +735,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   if (element_id_)
     element_id_.AddToTracedValue(state);
-
-  if (mutable_properties_ != MutableProperty::kNone)
-    state->SetInteger("mutable_properties", mutable_properties_);
 
   MathUtil::AddToTracedValue("scroll_offset", CurrentScrollOffset(), state);
 

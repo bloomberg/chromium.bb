@@ -193,9 +193,6 @@ class CC_EXPORT LayerImpl {
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
 
-  void SetMutableProperties(uint32_t properties);
-  uint32_t mutable_properties() const { return mutable_properties_; }
-
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
 
@@ -539,7 +536,6 @@ class CC_EXPORT LayerImpl {
   TransformTree& GetTransformTree() const;
 
   ElementId element_id_;
-  uint32_t mutable_properties_;
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
   // This is in the layer's space.

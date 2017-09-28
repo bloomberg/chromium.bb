@@ -415,9 +415,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 
-  void SetMutableProperties(uint32_t properties);
-  uint32_t mutable_properties() const { return inputs_.mutable_properties; }
-
   bool HasTickingAnimationForTesting() const;
 
   void SetHasWillChangeTransformHint(bool has_will_change);
@@ -611,8 +608,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     LayerStickyPositionConstraint sticky_position_constraint;
 
     ElementId element_id;
-
-    uint32_t mutable_properties;
 
     Layer* scroll_parent;
     Layer* clip_parent;

@@ -1235,11 +1235,6 @@ CompositorElementId GraphicsLayer::GetElementId() const {
   return CompositorElementId();
 }
 
-void GraphicsLayer::SetCompositorMutableProperties(uint32_t properties) {
-  if (WebLayer* layer = PlatformLayer())
-    layer->SetCompositorMutableProperties(properties);
-}
-
 sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   if (!DrawsContent())
     return nullptr;

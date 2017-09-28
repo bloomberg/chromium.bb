@@ -128,8 +128,6 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   cc::Layer* CcLayer() override;
   void SetElementId(const cc::ElementId&) override;
   cc::ElementId GetElementId() const override;
-  void SetCompositorMutableProperties(uint32_t properties) override;
-  uint32_t CompositorMutableProperties() const override;
   void SetHasWillChangeTransformHint(bool has_will_change) override;
   void ShowScrollbars() override;
   void SetScrollBoundaryBehavior(
