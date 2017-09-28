@@ -10,14 +10,15 @@
 
 // static
 NewTabPromoBubbleView* NewTabPromoBubbleView::CreateOwned(
-    const gfx::Rect& anchor_rect) {
-  return new NewTabPromoBubbleView(anchor_rect);
+    views::View* anchor_view) {
+  return new NewTabPromoBubbleView(anchor_view);
 }
 
-NewTabPromoBubbleView::NewTabPromoBubbleView(const gfx::Rect& anchor_rect)
-    : FeaturePromoBubbleView(anchor_rect,
+NewTabPromoBubbleView::NewTabPromoBubbleView(views::View* anchor_view)
+    : FeaturePromoBubbleView(anchor_view,
                              views::BubbleBorder::LEFT_CENTER,
-                             GetStringSpecifier()) {}
+                             GetStringSpecifier(),
+                             ActivationAction::DO_NOT_ACTIVATE) {}
 
 NewTabPromoBubbleView::~NewTabPromoBubbleView() = default;
 

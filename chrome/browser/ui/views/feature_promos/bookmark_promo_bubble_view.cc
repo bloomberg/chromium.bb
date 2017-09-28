@@ -17,7 +17,8 @@ BookmarkPromoBubbleView* BookmarkPromoBubbleView::CreateOwned(
 BookmarkPromoBubbleView::BookmarkPromoBubbleView(views::View* anchor_view)
     : FeaturePromoBubbleView(anchor_view,
                              views::BubbleBorder::TOP_RIGHT,
-                             GetStringSpecifier()) {}
+                             GetStringSpecifier(),
+                             ActivationAction::ACTIVATE) {}
 
 BookmarkPromoBubbleView::~BookmarkPromoBubbleView() = default;
 

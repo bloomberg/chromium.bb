@@ -41,8 +41,16 @@ class NewTabButton : public views::ImageButton,
   // Retrieves the last active BrowserView instance to display the NewTabPromo.
   static void ShowPromoForLastActiveBrowser();
 
+  // Returns whether there was a bubble that was closed. A bubble closes only
+  // when it exists.
+  static void CloseBubbleForLastActiveBrowser();
+
   // Shows the NewTabPromo when the NewTabFeatureEngagementTracker calls for it.
   void ShowPromo();
+
+  // Returns whether there was a bubble that was closed. A bubble closes only
+  // when it exists.
+  void CloseBubble();
 
   NewTabPromoBubbleView* new_tab_promo() { return new_tab_promo_; }
 

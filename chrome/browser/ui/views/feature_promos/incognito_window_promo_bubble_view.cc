@@ -18,7 +18,8 @@ IncognitoWindowPromoBubbleView::IncognitoWindowPromoBubbleView(
     views::View* anchor_view)
     : FeaturePromoBubbleView(anchor_view,
                              views::BubbleBorder::TOP_RIGHT,
-                             GetStringSpecifier()) {}
+                             GetStringSpecifier(),
+                             ActivationAction::ACTIVATE) {}
 
 IncognitoWindowPromoBubbleView::~IncognitoWindowPromoBubbleView() = default;
 

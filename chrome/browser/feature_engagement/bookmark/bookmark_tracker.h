@@ -49,7 +49,7 @@ class BookmarkTracker : public FeatureTracker {
   // FeatureTracker:
   void OnSessionTimeMet() override;
 
-  // Sets the BookmarkInProductHelp pref to true and calls the Bookmark Promo.
+  // Shows the Bookmark in-product help promo bubble.
   void ShowPromo();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkTracker);

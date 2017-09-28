@@ -917,19 +917,21 @@ void TabStripModel::ExecuteContextMenuCommand(
     int context_index, ContextMenuCommand command_id) {
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
-    case CommandNewTab:
+    case CommandNewTab: {
       base::RecordAction(UserMetricsAction("TabContextMenu_NewTab"));
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
                                 TabStripModel::NEW_TAB_CONTEXT_MENU,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-      feature_engagement::NewTabTrackerFactory::GetInstance()
-          ->GetForProfile(profile_)
-          ->OnNewTabOpened();
-#endif
-
       delegate()->AddTabAt(GURL(), context_index + 1, true);
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+      auto* new_tab_tracker =
+          feature_engagement::NewTabTrackerFactory::GetInstance()
+              ->GetForProfile(profile_);
+      new_tab_tracker->OnNewTabOpened();
+      new_tab_tracker->CloseBubble();
+#endif
       break;
+    }
 
     case CommandReload: {
       base::RecordAction(UserMetricsAction("TabContextMenu_Reload"));
