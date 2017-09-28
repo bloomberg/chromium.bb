@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -607,8 +609,8 @@ public class CustomTabsConnection {
                     result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            return CustomTabActivity.updateCustomButton(session, id,
-                                    bitmap, description);
+                            return BrowserSessionContentUtils.updateCustomButton(
+                                    session, id, bitmap, description);
                         }
                     });
                 } catch (ExecutionException e) {
@@ -627,8 +629,8 @@ public class CustomTabsConnection {
                 result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
-                        return CustomTabActivity.updateRemoteViews(session,
-                                remoteViews, clickableIDs, pendingIntent);
+                        return BrowserSessionContentUtils.updateRemoteViews(
+                                session, remoteViews, clickableIDs, pendingIntent);
                     }
                 });
             } catch (ExecutionException e) {
@@ -650,7 +652,7 @@ public class CustomTabsConnection {
     private boolean requestPostMessageChannelInternal(final CustomTabsSessionToken session,
             final Uri postMessageOrigin) {
         if (!mWarmupHasBeenCalled.get()) return false;
-        if (!isCallerForegroundOrSelf() && !CustomTabActivity.isActiveSession(session)) {
+        if (!isCallerForegroundOrSelf() && !BrowserSessionContentUtils.isActiveSession(session)) {
             return false;
         }
         if (!mClientManager.bindToPostMessageServiceForSession(session)) return false;
@@ -695,7 +697,7 @@ public class CustomTabsConnection {
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
-        if (!isCallerForegroundOrSelf() && !CustomTabActivity.isActiveSession(session)) {
+        if (!isCallerForegroundOrSelf() && !BrowserSessionContentUtils.isActiveSession(session)) {
             result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
         }
         // If called before a validatePostMessageOrigin, the post message origin will be invalid and
@@ -853,7 +855,7 @@ public class CustomTabsConnection {
      * @param url URL extracted from the intent.
      * @param intent incoming intent.
      */
-    void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
+    public void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
         if (mLogRequests) {
             Log.w(TAG, "onHandledIntent, URL = " + url);
             Bundle extras = intent.getExtras();

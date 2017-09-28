@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
+package org.chromium.chrome.browser.browserservices;
 
 import android.content.Context;
 import android.net.Uri;
@@ -15,7 +15,7 @@ import android.support.customtabs.PostMessageServiceConnection;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.customtabs.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content_public.browser.MessagePort;
@@ -60,7 +60,7 @@ public class PostMessageHandler
      * Sets the package name unique to the session.
      * @param packageName The package name for the client app for the owning session.
      */
-    void setPackageName(@NonNull String packageName) {
+    public void setPackageName(@NonNull String packageName) {
         mPackageName = packageName;
     }
 
@@ -220,7 +220,7 @@ public class PostMessageHandler
      * @return The origin that has been declared for this handler.
      */
     @VisibleForTesting
-    Uri getOriginForTesting() {
+    public Uri getOriginForTesting() {
         return mOrigin;
     }
 
@@ -228,7 +228,7 @@ public class PostMessageHandler
      * Cleans up any dependencies that this handler might have.
      * @param context Context to use for unbinding if necessary.
      */
-    void cleanup(Context context) {
+    public void cleanup(Context context) {
         if (mBoundToService) super.unbindFromContext(context);
         if (mOriginVerifier != null) mOriginVerifier.cleanUp();
     }
