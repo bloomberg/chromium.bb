@@ -7,7 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-// This view controller simply shows the host refresh indicator.
+// This view controller simply shows the host refresh indicator. It is only used
+// when no host list has been fetched.
 @interface HostFetchingViewController : UIViewController
 @end
 
