@@ -9,6 +9,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -16,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
@@ -57,21 +61,83 @@ const char kTruncatedBodyPath[] = "/truncated-body";
 // The body of the truncated response (After truncation).
 const char kTruncatedBody[] = "Truncated Body";
 
-// Class to make it easier to start a SimpleURLLoader and wait for it to
-// complete.
-class WaitForStringHelper {
+// Class to make it easier to start a SimpleURLLoader, wait for it to complete,
+// and check the result.
+class SimpleLoaderTestHelper {
  public:
-  WaitForStringHelper() : simple_url_loader_(SimpleURLLoader::Create()) {}
+  // What the response should be downloaded to.
+  enum class DownloadType { TO_STRING, TO_FILE };
 
-  ~WaitForStringHelper() {}
+  explicit SimpleLoaderTestHelper(DownloadType download_type)
+      : download_type_(download_type),
+        simple_url_loader_(SimpleURLLoader::Create()) {
+    // Create a desistination directory, if downloading to a file.
+    if (download_type_ == DownloadType::TO_FILE) {
+      EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+      dest_path_ = temp_dir_.GetPath().AppendASCII("foo");
+    }
+  }
+
+  ~SimpleLoaderTestHelper() {}
+
+  // File path that will be written to.
+  const base::FilePath& dest_path() const {
+    DCHECK_EQ(DownloadType::TO_FILE, download_type_);
+    return dest_path_;
+  }
+
+  // Starts a SimpleURLLoader using the method corresponding to the
+  // DownloadType, but does not wait for it to complete. The default
+  // |max_body_size| of -1 means don't use a max body size (Use
+  // DownloadToStringOfUnboundedSizeUntilCrashAndDie for string downloads, and
+  // don't specify a size for other types of downloads).
+  void StartRequest(mojom::URLLoaderFactory* url_loader_factory,
+                    const ResourceRequest& resource_request,
+                    int64_t max_body_size = -1) {
+    EXPECT_FALSE(done_);
+    switch (download_type_) {
+      case DownloadType::TO_STRING:
+        if (max_body_size < 0) {
+          simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToString,
+                             base::Unretained(this)));
+        } else {
+          simple_url_loader_->DownloadToString(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToString,
+                             base::Unretained(this)),
+              max_body_size);
+        }
+        break;
+      case DownloadType::TO_FILE:
+        if (max_body_size < 0) {
+          simple_url_loader_->DownloadToFile(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToFile,
+                             base::Unretained(this)),
+              dest_path_);
+        } else {
+          simple_url_loader_->DownloadToFile(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToFile,
+                             base::Unretained(this)),
+              dest_path_, max_body_size);
+        }
+        break;
+    }
+  }
 
   // Runs a SimpleURLLoader using the provided ResourceRequest and waits for
   // completion.
   void RunRequest(mojom::URLLoaderFactory* url_loader_factory,
-                  const ResourceRequest& resource_request) {
-    simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        resource_request, url_loader_factory, TRAFFIC_ANNOTATION_FOR_TESTS,
-        GetCallback());
+                  const ResourceRequest& resource_request,
+                  int64_t max_body_size = -1) {
+    StartRequest(url_loader_factory, resource_request, max_body_size);
     Wait();
   }
 
@@ -87,11 +153,8 @@ class WaitForStringHelper {
   // provided max size and waits for completion.
   void RunRequestWithBoundedSize(mojom::URLLoaderFactory* url_loader_factory,
                                  const ResourceRequest& resource_request,
-                                 size_t max_size) {
-    simple_url_loader_->DownloadToString(resource_request, url_loader_factory,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS,
-                                         GetCallback(), max_size);
-    Wait();
+                                 int64_t max_body_size) {
+    RunRequest(url_loader_factory, resource_request, max_body_size);
   }
 
   // Simpler version of RunRequestWithBoundedSize that takes a URL instead.
@@ -104,24 +167,35 @@ class WaitForStringHelper {
     RunRequestWithBoundedSize(url_loader_factory, resource_request, max_size);
   }
 
-  // Callback to be invoked once the SimpleURLLoader has received the response
-  // body. Exposed so that some tests can start the SimpleURLLoader directly.
-  SimpleURLLoader::BodyAsStringCallback GetCallback() {
-    return base::BindOnce(&WaitForStringHelper::BodyReceived,
-                          base::Unretained(this));
-  }
-
   // Waits until the request is completed. Automatically called by RunRequest
   // methods, but exposed so some tests can start the SimpleURLLoader directly.
   void Wait() { run_loop_.Run(); }
 
-  // Received response body, if any.
-  const std::string* response_body() const { return response_body_.get(); }
+  // Sets whether a file should still exists on download-to-file errors.
+  // Defaults to false.
+  void set_expect_path_exists_on_error(bool expect_path_exists_on_error) {
+    EXPECT_EQ(DownloadType::TO_FILE, download_type_);
+    expect_path_exists_on_error_ = expect_path_exists_on_error;
+  }
+
+  // Received response body, if any. Returns nullptr if no body was received
+  // (Which is different from a 0-length body). For DownloadType::TO_STRING,
+  // this is just the value passed to the callback. For DownloadType::TO_FILE,
+  // it is nullptr if an empty FilePath was passed to the callback, or the
+  // contents of the file, otherwise.
+  const std::string* response_body() const {
+    EXPECT_TRUE(done_);
+    return response_body_.get();
+  }
+
+  // Returns true if the callback has been invoked.
+  bool done() const { return done_; }
 
   SimpleURLLoader* simple_url_loader() { return simple_url_loader_.get(); }
 
   // Returns the HTTP response code. Fails if there isn't one.
   int GetResponseCode() const {
+    EXPECT_TRUE(done_);
     if (!simple_url_loader_->ResponseInfo()) {
       ADD_FAILURE() << "No response info.";
       return -1;
@@ -134,17 +208,55 @@ class WaitForStringHelper {
   }
 
  private:
-  void BodyReceived(std::unique_ptr<std::string> response_body) {
+  void DownloadedToString(std::unique_ptr<std::string> response_body) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_FALSE(done_);
+    EXPECT_EQ(DownloadType::TO_STRING, download_type_);
+    EXPECT_FALSE(response_body_);
+
     response_body_ = std::move(response_body);
+
+    done_ = true;
     run_loop_.Quit();
   }
+
+  void DownloadedToFile(const base::FilePath& file_path) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    EXPECT_FALSE(done_);
+    EXPECT_EQ(DownloadType::TO_FILE, download_type_);
+    EXPECT_FALSE(response_body_);
+
+    // Make sure the destination file exists if |file_path| is non-empty, or the
+    // file is expected to exist on error.
+    EXPECT_EQ(!file_path.empty() || expect_path_exists_on_error_,
+              base::PathExists(dest_path_));
+
+    if (!file_path.empty()) {
+      EXPECT_EQ(dest_path_, file_path);
+      response_body_ = std::make_unique<std::string>();
+      EXPECT_TRUE(base::ReadFileToString(dest_path_, response_body_.get()));
+    }
+
+    done_ = true;
+    run_loop_.Quit();
+  }
+
+  DownloadType download_type_;
+  bool done_ = false;
+
+  bool expect_path_exists_on_error_ = false;
 
   std::unique_ptr<SimpleURLLoader> simple_url_loader_;
   base::RunLoop run_loop_;
 
   std::unique_ptr<std::string> response_body_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaitForStringHelper);
+  base::ScopedTempDir temp_dir_;
+  base::FilePath dest_path_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleLoaderTestHelper);
 };
 
 // Request handler for the embedded test server that returns a response body
@@ -199,9 +311,10 @@ std::unique_ptr<net::test_server::HttpResponse> HandleTruncatedBody(
   return std::move(response);
 }
 
-class SimpleURLLoaderTest : public testing::Test {
+// Base class with shared setup logic.
+class SimpleURLLoaderTestBase {
  public:
-  SimpleURLLoaderTest()
+  SimpleURLLoaderTestBase()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         network_service_(NetworkService::Create()) {
@@ -222,7 +335,7 @@ class SimpleURLLoaderTest : public testing::Test {
     EXPECT_TRUE(test_server_.Start());
   }
 
-  ~SimpleURLLoaderTest() override {}
+  virtual ~SimpleURLLoaderTestBase() {}
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -234,341 +347,329 @@ class SimpleURLLoaderTest : public testing::Test {
   net::test_server::EmbeddedTestServer test_server_;
 };
 
-TEST_F(SimpleURLLoaderTest, BasicRequest) {
+class SimpleURLLoaderTest
+    : public SimpleURLLoaderTestBase,
+      public testing::TestWithParam<SimpleLoaderTestHelper::DownloadType> {
+ public:
+  SimpleURLLoaderTest() : test_helper_(GetParam()) {}
+
+  ~SimpleURLLoaderTest() override {}
+
+  SimpleLoaderTestHelper* test_helper() { return &test_helper_; }
+
+ private:
+  SimpleLoaderTestHelper test_helper_;
+};
+
+TEST_P(SimpleURLLoaderTest, BasicRequest) {
   ResourceRequest resource_request;
   // Use a more interesting request than "/echo", just to verify more than the
   // request URL is hooked up.
   resource_request.url = test_server_.GetURL("/echoheader?foo");
   resource_request.headers.SetHeader("foo", "Expected Response");
-  WaitForStringHelper string_helper;
-  string_helper.RunRequest(url_loader_factory_.get(), resource_request);
+  test_helper()->RunRequest(url_loader_factory_.get(), resource_request);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("Expected Response", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("Expected Response", *test_helper()->response_body());
 }
 
 // Test that SimpleURLLoader handles data URLs, which don't have headers.
-TEST_F(SimpleURLLoaderTest, DataURL) {
+TEST_P(SimpleURLLoaderTest, DataURL) {
   ResourceRequest resource_request;
-  // Use a more interesting request than "/echo", just to verify more than the
-  // request URL is hooked up.
   resource_request.url = GURL("data:text/plain,foo");
-  WaitForStringHelper string_helper;
-  string_helper.RunRequest(url_loader_factory_.get(), resource_request);
+  test_helper()->RunRequest(url_loader_factory_.get(), resource_request);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  ASSERT_TRUE(string_helper.simple_url_loader()->ResponseInfo());
-  EXPECT_FALSE(string_helper.simple_url_loader()->ResponseInfo()->headers);
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("foo", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper()->simple_url_loader()->ResponseInfo()->headers);
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("foo", *test_helper()->response_body());
 }
 
 // Make sure the class works when the size of the encoded and decoded bodies are
 // different.
-TEST_F(SimpleURLLoaderTest, GzipBody) {
+TEST_P(SimpleURLLoaderTest, GzipBody) {
   ResourceRequest resource_request;
   resource_request.url = test_server_.GetURL("/gzip-body?foo");
-  WaitForStringHelper string_helper;
-  string_helper.RunRequest(url_loader_factory_.get(), resource_request);
+  test_helper()->RunRequest(url_loader_factory_.get(), resource_request);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("foo", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("foo", *test_helper()->response_body());
 }
 
 // Make sure redirects are followed.
-TEST_F(SimpleURLLoaderTest, Redirect) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(
+TEST_P(SimpleURLLoaderTest, Redirect) {
+  test_helper()->RunRequestForURL(
       url_loader_factory_.get(),
       test_server_.GetURL("/server-redirect?" +
                           test_server_.GetURL("/echo").spec()));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("Echo", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("Echo", *test_helper()->response_body());
 }
 
 // Check that no body is returned with an HTTP error response.
-TEST_F(SimpleURLLoaderTest, HttpErrorStatusCodeResponse) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL("/echo?status=400"));
+TEST_P(SimpleURLLoaderTest, HttpErrorStatusCodeResponse) {
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL("/echo?status=400"));
 
-  EXPECT_EQ(net::ERR_FAILED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(400, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_FAILED, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(400, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
 // Check that the body is returned with an HTTP error response, when
 // SetAllowHttpErrorResults(true) is called.
-TEST_F(SimpleURLLoaderTest, HttpErrorStatusCodeResponseAllowed) {
-  WaitForStringHelper string_helper;
-  string_helper.simple_url_loader()->SetAllowHttpErrorResults(true);
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL("/echo?status=400"));
+TEST_P(SimpleURLLoaderTest, HttpErrorStatusCodeResponseAllowed) {
+  test_helper()->simple_url_loader()->SetAllowHttpErrorResults(true);
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL("/echo?status=400"));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(400, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("Echo", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(400, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("Echo", *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, EmptyResponseBody) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL("/nocontent"));
+TEST_P(SimpleURLLoaderTest, EmptyResponseBody) {
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL("/nocontent"));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(204, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(204, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
   // A response body is sent from the NetworkService, but it's empty.
-  EXPECT_EQ("", *string_helper.response_body());
+  EXPECT_EQ("", *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, BigResponseBody) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, BigResponseBody) {
   // Big response that requires multiple reads, and exceeds the maximum size
   // limit of SimpleURLLoader::DownloadToString().  That is, this test make sure
   // that DownloadToStringOfUnboundedSizeUntilCrashAndDie() can receive strings
   // longer than DownloadToString() allows.
   const uint32_t kResponseSize = 2 * 1024 * 1024;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL(base::StringPrintf(
-                                     "/response-size?%u", kResponseSize)));
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL(base::StringPrintf(
+                                      "/response-size?%u", kResponseSize)));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kResponseSize, string_helper.response_body()->length());
-  EXPECT_EQ(std::string(kResponseSize, 'a'), *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kResponseSize, test_helper()->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, ResponseBodyWithSizeMatchingLimit) {
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeMatchingLimit) {
   const uint32_t kResponseSize = 16;
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kResponseSize);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kResponseSize, string_helper.response_body()->length());
-  EXPECT_EQ(std::string(kResponseSize, 'a'), *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kResponseSize, test_helper()->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, ResponseBodyWithSizeBelowLimit) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeBelowLimit) {
   const uint32_t kResponseSize = 16;
   const uint32_t kMaxResponseSize = kResponseSize + 1;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kMaxResponseSize);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kResponseSize, string_helper.response_body()->length());
-  EXPECT_EQ(std::string(kResponseSize, 'a'), *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kResponseSize, test_helper()->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimit) {
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimit) {
   const uint32_t kResponseSize = 16;
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kResponseSize - 1);
 
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
 // Same as above, but with setting allow_partial_results to true.
-TEST_F(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimitPartialResponse) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, ResponseBodyWithSizeAboveLimitPartialResponse) {
   const uint32_t kResponseSize = 16;
   const uint32_t kMaxResponseSize = kResponseSize - 1;
-  string_helper.simple_url_loader()->SetAllowPartialResults(true);
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kMaxResponseSize);
 
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES,
-            string_helper.simple_url_loader()->NetError());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(std::string(kMaxResponseSize, 'a'), *string_helper.response_body());
-  EXPECT_EQ(kMaxResponseSize, string_helper.response_body()->length());
+            test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(std::string(kMaxResponseSize, 'a'),
+            *test_helper()->response_body());
+  EXPECT_EQ(kMaxResponseSize, test_helper()->response_body()->length());
 }
 
 // The next 4 tests duplicate the above 4, but with larger response sizes. This
 // means the size limit will not be exceeded on the first read.
-TEST_F(SimpleURLLoaderTest, BigResponseBodyWithSizeMatchingLimit) {
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeMatchingLimit) {
   const uint32_t kResponseSize = 512 * 1024;
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kResponseSize);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kResponseSize, string_helper.response_body()->length());
-  EXPECT_EQ(std::string(kResponseSize, 'a'), *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kResponseSize, test_helper()->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, BigResponseBodyWithSizeBelowLimit) {
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeBelowLimit) {
   const uint32_t kResponseSize = 512 * 1024;
   const uint32_t kMaxResponseSize = kResponseSize + 1;
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kMaxResponseSize);
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kResponseSize, string_helper.response_body()->length());
-  EXPECT_EQ(std::string(kResponseSize, 'a'), *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kResponseSize, test_helper()->response_body()->length());
+  EXPECT_EQ(std::string(kResponseSize, 'a'), *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimit) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimit) {
   const uint32_t kResponseSize = 512 * 1024;
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kResponseSize - 1);
 
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimitPartialResponse) {
+TEST_P(SimpleURLLoaderTest, BigResponseBodyWithSizeAboveLimitPartialResponse) {
   const uint32_t kResponseSize = 512 * 1024;
   const uint32_t kMaxResponseSize = kResponseSize - 1;
-  WaitForStringHelper string_helper;
-  string_helper.simple_url_loader()->SetAllowPartialResults(true);
-  string_helper.RunRequestForURLWithBoundedSize(
+  test_helper()->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper()->RunRequestForURLWithBoundedSize(
       url_loader_factory_.get(),
       test_server_.GetURL(
           base::StringPrintf("/response-size?%u", kResponseSize)),
       kMaxResponseSize);
 
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES,
-            string_helper.simple_url_loader()->NetError());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(std::string(kMaxResponseSize, 'a'), *string_helper.response_body());
-  EXPECT_EQ(kMaxResponseSize, string_helper.response_body()->length());
+            test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(std::string(kMaxResponseSize, 'a'),
+            *test_helper()->response_body());
+  EXPECT_EQ(kMaxResponseSize, test_helper()->response_body()->length());
 }
 
-TEST_F(SimpleURLLoaderTest, NetErrorBeforeHeaders) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL("/close-socket"));
+TEST_P(SimpleURLLoaderTest, NetErrorBeforeHeaders) {
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL("/close-socket"));
 
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.simple_url_loader()->ResponseInfo());
-  EXPECT_FALSE(string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, NetErrorBeforeHeadersWithPartialResults) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, NetErrorBeforeHeadersWithPartialResults) {
   // Allow response body on error. There should still be no response body, since
   // the error is before body reading starts.
-  string_helper.simple_url_loader()->SetAllowPartialResults(true);
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL("/close-socket"));
+  test_helper()->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL("/close-socket"));
 
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_FALSE(test_helper()->response_body());
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.simple_url_loader()->ResponseInfo());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->simple_url_loader()->ResponseInfo());
 }
 
-TEST_F(SimpleURLLoaderTest, NetErrorAfterHeaders) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL(kInvalidGzipPath));
+TEST_P(SimpleURLLoaderTest, NetErrorAfterHeaders) {
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL(kInvalidGzipPath));
 
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, NetErrorAfterHeadersWithPartialResults) {
-  WaitForStringHelper string_helper;
+TEST_P(SimpleURLLoaderTest, NetErrorAfterHeadersWithPartialResults) {
   // Allow response body on error. This case results in a 0-byte response body.
-  string_helper.simple_url_loader()->SetAllowPartialResults(true);
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL(kInvalidGzipPath));
+  test_helper()->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL(kInvalidGzipPath));
 
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("", *string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("", *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, TruncatedBody) {
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL(kTruncatedBodyPath));
+TEST_P(SimpleURLLoaderTest, TruncatedBody) {
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL(kTruncatedBodyPath));
 
   EXPECT_EQ(net::ERR_CONTENT_LENGTH_MISMATCH,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, TruncatedBodyWithPartialResults) {
-  WaitForStringHelper string_helper;
-  string_helper.simple_url_loader()->SetAllowPartialResults(true);
-  string_helper.RunRequestForURL(url_loader_factory_.get(),
-                                 test_server_.GetURL(kTruncatedBodyPath));
+TEST_P(SimpleURLLoaderTest, TruncatedBodyWithPartialResults) {
+  test_helper()->simple_url_loader()->SetAllowPartialResults(true);
+  test_helper()->RunRequestForURL(url_loader_factory_.get(),
+                                  test_server_.GetURL(kTruncatedBodyPath));
 
   EXPECT_EQ(net::ERR_CONTENT_LENGTH_MISMATCH,
-            string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ(kTruncatedBody, *string_helper.response_body());
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(kTruncatedBody, *test_helper()->response_body());
 }
 
 // Test case where NetworkService is destroyed before headers are received (and
 // before the request is even made, for that matter).
-TEST_F(SimpleURLLoaderTest, DestroyServiceBeforeResponseStarts) {
+TEST_P(SimpleURLLoaderTest, DestroyServiceBeforeResponseStarts) {
   ResourceRequest resource_request;
   resource_request.url = test_server_.GetURL("/hung");
-  WaitForStringHelper string_helper;
-  string_helper.simple_url_loader()
-      ->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-          resource_request, url_loader_factory_.get(),
-          TRAFFIC_ANNOTATION_FOR_TESTS, string_helper.GetCallback());
+  test_helper()->StartRequest(url_loader_factory_.get(), resource_request);
   network_service_ = nullptr;
-  string_helper.Wait();
+  test_helper()->Wait();
 
-  EXPECT_EQ(net::ERR_FAILED, string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.response_body());
-  ASSERT_FALSE(string_helper.simple_url_loader()->ResponseInfo());
+  EXPECT_EQ(net::ERR_FAILED, test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->response_body());
+  ASSERT_FALSE(test_helper()->simple_url_loader()->ResponseInfo());
 }
 
 enum class TestLoaderEvent {
@@ -773,47 +874,46 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
 };
 
 // Check that the request fails if OnComplete() is called before anything else.
-TEST_F(SimpleURLLoaderTest, ResponseCompleteBeforeReceivedResponse) {
+TEST_P(SimpleURLLoaderTest, ResponseCompleteBeforeReceivedResponse) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kResponseComplete);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.simple_url_loader()->ResponseInfo());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
 // Check that the request fails if OnComplete() is called before the body pipe
 // is received.
-TEST_F(SimpleURLLoaderTest, ResponseCompleteAfterReceivedResponse) {
+TEST_P(SimpleURLLoaderTest, ResponseCompleteAfterReceivedResponse) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kResponseComplete);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, CloseClientPipeBeforeBodyStarts) {
+TEST_P(SimpleURLLoaderTest, CloseClientPipeBeforeBodyStarts) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kClientPipeClosed);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_FAILED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_FAILED, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
 // This test tries closing the client pipe / completing the request in most
 // possible valid orders relative to read events (Which always occur in the same
 // order).
-TEST_F(SimpleURLLoaderTest, CloseClientPipeOrder) {
+TEST_P(SimpleURLLoaderTest, CloseClientPipeOrder) {
   enum class ClientCloseOrder {
     kBeforeData,
     kDuringData,
@@ -863,33 +963,33 @@ TEST_F(SimpleURLLoaderTest, CloseClientPipeOrder) {
           if (close_client_order == ClientCloseOrder::kAfterBufferClosed)
             loader_factory.AddEvent(close_client_event);
 
-          WaitForStringHelper string_helper;
-          string_helper.simple_url_loader()->SetAllowPartialResults(
+          SimpleLoaderTestHelper test_helper(GetParam());
+          test_helper.simple_url_loader()->SetAllowPartialResults(
               allow_partial_results);
-          string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+          test_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-          EXPECT_EQ(200, string_helper.GetResponseCode());
+          EXPECT_EQ(200, test_helper.GetResponseCode());
           if (close_client_event != TestLoaderEvent::kResponseComplete) {
             if (close_client_event ==
                 TestLoaderEvent::kResponseCompleteFailed) {
               EXPECT_EQ(net::ERR_TIMED_OUT,
-                        string_helper.simple_url_loader()->NetError());
+                        test_helper.simple_url_loader()->NetError());
             } else {
               EXPECT_EQ(net::ERR_FAILED,
-                        string_helper.simple_url_loader()->NetError());
+                        test_helper.simple_url_loader()->NetError());
             }
             if (!allow_partial_results) {
-              EXPECT_FALSE(string_helper.response_body());
+              EXPECT_FALSE(test_helper.response_body());
             } else {
-              ASSERT_TRUE(string_helper.response_body());
+              ASSERT_TRUE(test_helper.response_body());
               EXPECT_EQ(std::string(bytes_received, 'a'),
-                        *string_helper.response_body());
+                        *test_helper.response_body());
             }
           } else {
-            EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-            ASSERT_TRUE(string_helper.response_body());
+            EXPECT_EQ(net::OK, test_helper.simple_url_loader()->NetError());
+            ASSERT_TRUE(test_helper.response_body());
             EXPECT_EQ(std::string(bytes_received, 'a'),
-                      *string_helper.response_body());
+                      *test_helper.response_body());
           }
         }
       }
@@ -898,21 +998,20 @@ TEST_F(SimpleURLLoaderTest, CloseClientPipeOrder) {
 }
 
 // Make sure the close client pipe message doesn't cause any issues.
-TEST_F(SimpleURLLoaderTest, ErrorAndCloseClientPipeBeforeBodyStarts) {
+TEST_P(SimpleURLLoaderTest, ErrorAndCloseClientPipeBeforeBodyStarts) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kResponseCompleteFailed);
   loader_factory.AddEvent(TestLoaderEvent::kClientPipeClosed);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_TIMED_OUT, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_TIMED_OUT, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
 // Make sure the close client pipe message doesn't cause any issues.
-TEST_F(SimpleURLLoaderTest, SuccessAndCloseClientPipeBeforeBodyComplete) {
+TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeBeforeBodyComplete) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
@@ -920,17 +1019,16 @@ TEST_F(SimpleURLLoaderTest, SuccessAndCloseClientPipeBeforeBodyComplete) {
   loader_factory.AddEvent(TestLoaderEvent::kClientPipeClosed);
   loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferClosed);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("a", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("a", *test_helper()->response_body());
 }
 
 // Make sure the close client pipe message doesn't cause any issues.
-TEST_F(SimpleURLLoaderTest, SuccessAndCloseClientPipeAfterBodyComplete) {
+TEST_P(SimpleURLLoaderTest, SuccessAndCloseClientPipeAfterBodyComplete) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
@@ -938,107 +1036,106 @@ TEST_F(SimpleURLLoaderTest, SuccessAndCloseClientPipeAfterBodyComplete) {
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferClosed);
   loader_factory.AddEvent(TestLoaderEvent::kResponseComplete);
   loader_factory.AddEvent(TestLoaderEvent::kClientPipeClosed);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::OK, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  ASSERT_TRUE(string_helper.response_body());
-  EXPECT_EQ("a", *string_helper.response_body());
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("a", *test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, DoubleReceivedResponse) {
+TEST_P(SimpleURLLoaderTest, DoubleReceivedResponse) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, RedirectAfterReseivedResponse) {
+TEST_P(SimpleURLLoaderTest, RedirectAfterReseivedResponse) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedRedirect);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, UnexpectedBodyBufferReceived) {
+TEST_P(SimpleURLLoaderTest, UnexpectedBodyBufferReceived) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_FALSE(string_helper.simple_url_loader()->ResponseInfo());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper()->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, DoubleBodyBufferReceived) {
+TEST_P(SimpleURLLoaderTest, DoubleBodyBufferReceived) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts) {
+TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
   loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedRedirect);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts2) {
+TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyStarts2) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
   loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, UnexpectedMessageAfterBodyComplete) {
+TEST_P(SimpleURLLoaderTest, UnexpectedMessageAfterBodyComplete) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
   loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferClosed);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
 }
 
-TEST_F(SimpleURLLoaderTest, MoreDataThanExpected) {
+TEST_P(SimpleURLLoaderTest, MoreDataThanExpected) {
   MockURLLoaderFactory loader_factory(&scoped_task_environment_);
   loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
@@ -1046,12 +1143,114 @@ TEST_F(SimpleURLLoaderTest, MoreDataThanExpected) {
   loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
   loader_factory.AddEvent(TestLoaderEvent::kBodyBufferClosed);
   loader_factory.AddEvent(TestLoaderEvent::kResponseCompleteWithExtraData);
-  WaitForStringHelper string_helper;
-  string_helper.RunRequestForURL(&loader_factory, GURL("foo://bar/"));
+  test_helper()->RunRequestForURL(&loader_factory, GURL("foo://bar/"));
 
-  EXPECT_EQ(net::ERR_UNEXPECTED, string_helper.simple_url_loader()->NetError());
-  EXPECT_EQ(200, string_helper.GetResponseCode());
-  EXPECT_FALSE(string_helper.response_body());
+  EXPECT_EQ(net::ERR_UNEXPECTED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper()->GetResponseCode());
+  EXPECT_FALSE(test_helper()->response_body());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    /* No prefix */,
+    SimpleURLLoaderTest,
+    testing::Values(SimpleLoaderTestHelper::DownloadType::TO_STRING,
+                    SimpleLoaderTestHelper::DownloadType::TO_FILE));
+
+class SimpleURLLoaderFileTest : public SimpleURLLoaderTestBase,
+                                public testing::Test {
+ public:
+  SimpleURLLoaderFileTest()
+      : test_helper_(SimpleLoaderTestHelper::DownloadType::TO_FILE) {}
+  ~SimpleURLLoaderFileTest() override {}
+
+  SimpleLoaderTestHelper* test_helper() { return &test_helper_; }
+
+ private:
+  SimpleLoaderTestHelper test_helper_;
+};
+
+// Make sure that an existing file will be completely overwritten.
+TEST_F(SimpleURLLoaderFileTest, OverwriteFile) {
+  std::string junk_data(100, '!');
+  ASSERT_EQ(static_cast<int>(junk_data.size()),
+            base::WriteFile(test_helper()->dest_path(), junk_data.data(),
+                            junk_data.size()));
+  ASSERT_TRUE(base::PathExists(test_helper()->dest_path()));
+
+  ResourceRequest resource_request;
+  resource_request.url = GURL("data:text/plain,foo");
+  test_helper()->RunRequest(url_loader_factory_.get(), resource_request);
+
+  EXPECT_EQ(net::OK, test_helper()->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper()->simple_url_loader()->ResponseInfo());
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("foo", *test_helper()->response_body());
+}
+
+// Make sure that file creation errors are handled correctly.
+TEST_F(SimpleURLLoaderFileTest, FileCreateError) {
+  ASSERT_TRUE(base::CreateDirectory(test_helper()->dest_path()));
+  ASSERT_TRUE(base::PathExists(test_helper()->dest_path()));
+
+  ResourceRequest resource_request;
+  resource_request.url = GURL("data:text/plain,foo");
+  // The directory should still exist after the download fails.
+  test_helper()->set_expect_path_exists_on_error(true);
+  test_helper()->RunRequest(url_loader_factory_.get(), resource_request);
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED,
+            test_helper()->simple_url_loader()->NetError());
+  EXPECT_TRUE(test_helper()->simple_url_loader()->ResponseInfo());
+  EXPECT_FALSE(test_helper()->response_body());
+}
+
+// Make sure that destroying the loader destroys a partially downloaded file.
+TEST_F(SimpleURLLoaderFileTest, DeleteLoaderDuringRequestDestroysFile) {
+  for (bool body_data_read : {false, true}) {
+    for (bool body_buffer_closed : {false, true}) {
+      for (bool client_pipe_closed : {false, true}) {
+        // If both pipes were closed cleanly, the file shouldn't be deleted, as
+        // that indicates success.
+        if (body_buffer_closed && client_pipe_closed)
+          continue;
+
+        MockURLLoaderFactory loader_factory(&scoped_task_environment_);
+        loader_factory.AddEvent(TestLoaderEvent::kReceivedResponse);
+        loader_factory.AddEvent(TestLoaderEvent::kBodyBufferReceived);
+        if (body_data_read)
+          loader_factory.AddEvent(TestLoaderEvent::kBodyDataRead);
+        if (body_buffer_closed)
+          loader_factory.AddEvent(TestLoaderEvent::kBodyBufferClosed);
+        if (client_pipe_closed)
+          loader_factory.AddEvent(TestLoaderEvent::kClientPipeClosed);
+
+        // The request just hangs after receiving some body data.
+        ResourceRequest resource_request;
+        resource_request.url = GURL("foo://bar/");
+
+        std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+            std::make_unique<SimpleLoaderTestHelper>(
+                SimpleLoaderTestHelper::DownloadType::TO_FILE);
+        test_helper->StartRequest(&loader_factory, resource_request);
+
+        // Wait for the request to advance as far as it's going to.
+        scoped_task_environment_.RunUntilIdle();
+
+        // Destination file should have been created, and request should still
+        // be in progress.
+        base::FilePath dest_path = test_helper->dest_path();
+        EXPECT_TRUE(base::PathExists(dest_path));
+        EXPECT_FALSE(test_helper->done());
+
+        // Destroying the SimpleURLLoader now should post a task to destroy the
+        // file.
+        test_helper.reset();
+        scoped_task_environment_.RunUntilIdle();
+        EXPECT_FALSE(base::PathExists(dest_path));
+      }
+    }
+  }
 }
 
 }  // namespace
