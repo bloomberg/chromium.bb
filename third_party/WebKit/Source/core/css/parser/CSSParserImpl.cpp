@@ -20,6 +20,7 @@
 #include "core/css/parser/CSSLazyPropertyParserImpl.h"
 #include "core/css/parser/CSSParserObserver.h"
 #include "core/css/parser/CSSParserObserverWrapper.h"
+#include "core/css/parser/CSSParserScopedTokenBuffer.h"
 #include "core/css/parser/CSSParserSelector.h"
 #include "core/css/parser/CSSParserTokenStream.h"
 #include "core/css/parser/CSSPropertyParser.h"
@@ -36,6 +37,29 @@
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
+
+namespace {
+
+// This may still consume tokens if it fails
+AtomicString ConsumeStringOrURI(CSSParserTokenStream& stream) {
+  const CSSParserToken& token = stream.Peek();
+
+  if (token.GetType() == kStringToken || token.GetType() == kUrlToken)
+    return stream.ConsumeIncludingWhitespace().Value().ToAtomicString();
+
+  if (token.GetType() != kFunctionToken ||
+      !EqualIgnoringASCIICase(token.Value(), "url"))
+    return AtomicString();
+
+  CSSParserTokenStream::BlockGuard guard(stream);
+  const CSSParserToken& uri = stream.ConsumeIncludingWhitespace();
+  if (uri.GetType() == kBadStringToken || !stream.UncheckedAtEnd())
+    return AtomicString();
+  DCHECK_EQ(uri.GetType(), kStringToken);
+  return uri.Value().ToAtomicString();
+}
+
+}  // namespace
 
 CSSParserImpl::CSSParserImpl(const CSSParserContext* context,
                              StyleSheetContents* style_sheet)
@@ -56,10 +80,9 @@ MutableStylePropertySet::SetResult CSSParserImpl::ParseValue(
   else if (declaration->CssParserMode() == kCSSFontFaceRuleMode)
     rule_type = StyleRule::kFontFace;
   CSSTokenizer tokenizer(string);
-  CSSParserTokenStream stream(tokenizer);
   // TODO(shend): Use streams instead of ranges
-  parser.ConsumeDeclarationValue(stream.MakeRangeToEOF(), unresolved_property,
-                                 important, rule_type);
+  parser.ConsumeDeclarationValue(CSSParserTokenRange(tokenizer.TokenizeToEOF()),
+                                 unresolved_property, important, rule_type);
   bool did_parse = false;
   bool did_change = false;
   if (!parser.parsed_properties_.IsEmpty()) {
@@ -79,9 +102,9 @@ MutableStylePropertySet::SetResult CSSParserImpl::ParseVariableValue(
     bool is_animation_tainted) {
   CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
-  CSSParserTokenStream stream(tokenizer);
   // TODO(shend): Use streams instead of ranges
-  const CSSParserTokenRange range = stream.MakeRangeToEOF();
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
   parser.ConsumeVariableValue(range, property_name, important,
                               is_animation_tainted);
   bool did_parse = false;
@@ -206,20 +229,18 @@ StyleRuleBase* CSSParserImpl::ParseRule(const String& string,
   CSSParserImpl parser(context, style_sheet);
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
-  // TODO(shend): Use streams instead of ranges
-  CSSParserTokenRange range = stream.MakeRangeToEOF();
-  range.ConsumeWhitespace();
-  if (range.AtEnd())
+  stream.ConsumeWhitespace();
+  if (stream.UncheckedAtEnd())
     return nullptr;  // Parse error, empty rule
   StyleRuleBase* rule;
-  if (range.Peek().GetType() == kAtKeywordToken)
-    rule = parser.ConsumeAtRule(range, allowed_rules);
+  if (stream.UncheckedPeek().GetType() == kAtKeywordToken)
+    rule = parser.ConsumeAtRule(stream, allowed_rules);
   else
-    rule = parser.ConsumeQualifiedRule(range, allowed_rules);
+    rule = parser.ConsumeQualifiedRule(stream, allowed_rules);
   if (!rule)
     return nullptr;  // Parse error, failed to consume rule
-  range.ConsumeWhitespace();
-  if (!rule || !range.AtEnd())
+  stream.ConsumeWhitespace();
+  if (!rule || !stream.UncheckedAtEnd())
     return nullptr;  // Parse error, trailing garbage
   return rule;
 }
@@ -236,17 +257,13 @@ void CSSParserImpl::ParseStyleSheet(const String& string,
                      "CSSParserImpl::parseStyleSheet.parse");
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
-  // TODO(shend): Use streams instead of ranges. Streams will ruin
-  // tokenize/parse metrics as we will be tokenizing on demand.
-  const CSSParserTokenRange range = stream.MakeRangeToEOF();
-
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing) {
-    parser.lazy_state_ = new CSSLazyParsingState(
-        context, tokenizer.TakeEscapedStrings(), string, parser.style_sheet_);
+    parser.lazy_state_ =
+        new CSSLazyParsingState(context, string, parser.style_sheet_);
   }
   bool first_rule_valid = parser.ConsumeRuleList(
-      range, kTopLevelRuleList, [&style_sheet](StyleRuleBase* rule) {
+      stream, kTopLevelRuleList, [&style_sheet](StyleRuleBase* rule) {
         if (rule->IsCharsetRule())
           return;
         style_sheet->ParserAppendRule(rule);
@@ -318,29 +335,61 @@ ImmutableStylePropertySet* CSSParserImpl::ParseCustomPropertySet(
   if (!range.AtEnd())
     return nullptr;
   CSSParserImpl parser(StrictCSSParserContext());
-  parser.ConsumeDeclarationList(block, StyleRule::kStyle);
-
-  // Drop nested @apply rules. Seems nicer to do this here instead of making
-  // a different StyleRule type
-  for (size_t i = parser.parsed_properties_.size(); i--;) {
-    if (parser.parsed_properties_[i].Id() == CSSPropertyApplyAtRule)
-      parser.parsed_properties_.EraseAt(i);
-  }
-
+  parser.ConsumeDeclarationListForAtApply(block);
   return CreateStylePropertySet(parser.parsed_properties_, kHTMLStandardMode);
+}
+
+void CSSParserImpl::ConsumeDeclarationListForAtApply(
+    CSSParserTokenRange range) {
+  DCHECK(parsed_properties_.IsEmpty());
+  DCHECK(RuntimeEnabledFeatures::CSSApplyAtRulesEnabled());
+  DCHECK(!observer_wrapper_);
+
+  while (!range.AtEnd()) {
+    switch (range.Peek().GetType()) {
+      case kWhitespaceToken:
+      case kSemicolonToken:
+        range.Consume();
+        break;
+      case kIdentToken: {
+        const CSSParserToken* declaration_start = &range.Peek();
+
+        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
+          range.ConsumeComponentValue();
+
+        ConsumeDeclaration(range.MakeSubRange(declaration_start, &range.Peek()),
+                           RangeOffset::Ignore(), StyleRule::kStyle);
+
+        break;
+      }
+      case kAtKeywordToken: {
+        range.Consume();
+        while (!range.AtEnd() && range.Peek().GetType() != kLeftBraceToken &&
+               range.Peek().GetType() != kSemicolonToken)
+          range.ConsumeComponentValue();
+        range.ConsumeComponentValue();
+        break;
+      }
+      default:  // Parse error, unexpected token in declaration list
+        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
+          range.ConsumeComponentValue();
+        break;
+    }
+  }
 }
 
 std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
     const String& key_list) {
   CSSTokenizer tokenizer(key_list);
   // TODO(shend): Use streams instead of ranges
-  return ConsumeKeyframeKeyList(
-      CSSParserTokenStream(tokenizer).MakeRangeToEOF());
+  return ConsumeKeyframeKeyList(CSSParserTokenRange(tokenizer.TokenizeToEOF()));
 }
 
 bool CSSParserImpl::SupportsDeclaration(CSSParserTokenRange& range) {
   DCHECK(parsed_properties_.IsEmpty());
-  ConsumeDeclaration(range, StyleRule::kStyle);
+  // Even though we might use an observer here, this is just to test if we
+  // successfully parse the range, so we can pass RangeOffset::Ignore() here.
+  ConsumeDeclaration(range, RangeOffset::Ignore(), StyleRule::kStyle);
   bool result = !parsed_properties_.IsEmpty();
   parsed_properties_.clear();
   return result;
@@ -353,7 +402,7 @@ void CSSParserImpl::ParseDeclarationListForInspector(
   CSSParserImpl parser(context);
   CSSParserObserverWrapper wrapper(observer);
   parser.observer_wrapper_ = &wrapper;
-  CSSTokenizer tokenizer(declaration, wrapper);
+  CSSTokenizer tokenizer(declaration);
   observer.StartRuleHeader(StyleRule::kStyle, 0);
   observer.EndRuleHeader(1);
   CSSParserTokenStream stream(tokenizer);
@@ -367,23 +416,26 @@ void CSSParserImpl::ParseStyleSheetForInspector(const String& string,
   CSSParserImpl parser(context, style_sheet);
   CSSParserObserverWrapper wrapper(observer);
   parser.observer_wrapper_ = &wrapper;
-  CSSTokenizer tokenizer(string, wrapper);
-  // TODO(shend): Use streams instead of ranges
-  bool first_rule_valid =
-      parser.ConsumeRuleList(tokenizer.TokenRange(), kTopLevelRuleList,
-                             [&style_sheet](StyleRuleBase* rule) {
-                               if (rule->IsCharsetRule())
-                                 return;
-                               style_sheet->ParserAppendRule(rule);
-                             });
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenStream stream(tokenizer);
+  bool first_rule_valid = parser.ConsumeRuleList(
+      stream, kTopLevelRuleList, [&style_sheet](StyleRuleBase* rule) {
+        if (rule->IsCharsetRule())
+          return;
+        style_sheet->ParserAppendRule(rule);
+      });
   style_sheet->SetHasSyntacticallyValidCSSHeader(first_rule_valid);
 }
 
 StylePropertySet* CSSParserImpl::ParseDeclarationListForLazyStyle(
-    CSSParserTokenRange block,
+    const String& string,
+    size_t offset,
     const CSSParserContext* context) {
+  CSSTokenizer tokenizer(string, offset);
+  CSSParserTokenStream stream(tokenizer);
+  CSSParserTokenStream::BlockGuard guard(stream);
   CSSParserImpl parser(context);
-  parser.ConsumeDeclarationList(std::move(block), StyleRule::kStyle);
+  parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
   return CreateStylePropertySet(parser.parsed_properties_, context->Mode());
 }
 
@@ -402,7 +454,7 @@ static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
 }
 
 template <typename T>
-bool CSSParserImpl::ConsumeRuleList(CSSParserTokenRange range,
+bool CSSParserImpl::ConsumeRuleList(CSSParserTokenStream& stream,
                                     RuleListType rule_list_type,
                                     const T callback) {
   AllowedRulesType allowed_rules = kRegularRules;
@@ -422,24 +474,24 @@ bool CSSParserImpl::ConsumeRuleList(CSSParserTokenRange range,
 
   bool seen_rule = false;
   bool first_rule_valid = false;
-  while (!range.AtEnd()) {
+  while (!stream.AtEnd()) {
     StyleRuleBase* rule;
-    switch (range.Peek().GetType()) {
+    switch (stream.UncheckedPeek().GetType()) {
       case kWhitespaceToken:
-        range.ConsumeWhitespace();
+        stream.UncheckedConsume();
         continue;
       case kAtKeywordToken:
-        rule = ConsumeAtRule(range, allowed_rules);
+        rule = ConsumeAtRule(stream, allowed_rules);
         break;
       case kCDOToken:
       case kCDCToken:
         if (rule_list_type == kTopLevelRuleList) {
-          range.Consume();
+          stream.UncheckedConsume();
           continue;
         }
       // fallthrough
       default:
-        rule = ConsumeQualifiedRule(range, allowed_rules);
+        rule = ConsumeQualifiedRule(stream, allowed_rules);
         break;
     }
     if (!seen_rule) {
@@ -461,23 +513,34 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
   const StringView name = stream.ConsumeIncludingWhitespace().Value();
   const CSSAtRuleID id = CssAtRuleID(name);
 
-  const auto prelude_start = stream.Position();
-  while (!stream.AtEnd() &&
+  // @import rules have a URI component that is not technically part of the
+  // prelude.
+  AtomicString import_prelude_uri;
+  if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport)
+    import_prelude_uri = ConsumeStringOrURI(stream);
+
+  stream.EnsureLookAhead();
+  CSSParserScopedTokenBuffer prelude_buffer(stream);
+  const size_t prelude_offset_start = stream.LookAheadOffset();
+  while (!stream.UncheckedAtEnd() &&
          stream.UncheckedPeek().GetType() != kLeftBraceToken &&
          stream.UncheckedPeek().GetType() != kSemicolonToken)
-    stream.UncheckedConsumeComponentValue();
+    stream.UncheckedConsumeComponentValue(prelude_buffer);
 
-  CSSParserTokenRange prelude =
-      stream.MakeSubRange(prelude_start, stream.Position());
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
+  const RangeOffset prelude_offset(prelude_offset_start, stream.Offset());
+
   if (id != kCSSAtRuleInvalid && context_->IsUseCounterRecordingEnabled())
     CountAtRule(context_, id);
 
-  if (stream.AtEnd() || stream.Peek().GetType() == kSemicolonToken) {
-    stream.Consume();
+  if (stream.AtEnd() || stream.UncheckedPeek().GetType() == kSemicolonToken) {
+    stream.UncheckedConsume();
     if (allowed_rules == kAllowCharsetRules && id == kCSSAtRuleCharset)
       return ConsumeCharsetRule(prelude);
-    if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport)
-      return ConsumeImportRule(prelude);
+    if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport) {
+      return ConsumeImportRule(std::move(import_prelude_uri), prelude,
+                               prelude_offset);
+    }
     if (allowed_rules <= kAllowNamespaceRules && id == kCSSAtRuleNamespace)
       return ConsumeNamespaceRule(prelude);
     if (allowed_rules == kApplyRules && id == kCSSAtRuleApply) {
@@ -487,9 +550,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
     return nullptr;  // Parse error, unrecognised at-rule without block
   }
 
-  // TODO(shend): Use streams instead of ranges
-  CSSParserTokenRange range = stream.MakeRangeToEOF();
-  CSSParserTokenRange block = range.ConsumeBlock();
   CSSParserTokenStream::BlockGuard guard(stream);
 
   if (allowed_rules == kKeyframeRules)
@@ -502,101 +562,72 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
 
   switch (id) {
     case kCSSAtRuleMedia:
-      return ConsumeMediaRule(prelude, block);
+      return ConsumeMediaRule(std::move(prelude_buffer), prelude_offset,
+                              stream);
     case kCSSAtRuleSupports:
-      return ConsumeSupportsRule(prelude, block);
+      return ConsumeSupportsRule(std::move(prelude_buffer), prelude_offset,
+                                 stream);
     case kCSSAtRuleViewport:
-      return ConsumeViewportRule(prelude, block);
+      return ConsumeViewportRule(std::move(prelude_buffer), prelude_offset,
+                                 stream);
     case kCSSAtRuleFontFace:
-      return ConsumeFontFaceRule(prelude, stream);
+      return ConsumeFontFaceRule(std::move(prelude_buffer), prelude_offset,
+                                 stream);
     case kCSSAtRuleWebkitKeyframes:
-      return ConsumeKeyframesRule(true, prelude, block);
+      return ConsumeKeyframesRule(true, std::move(prelude_buffer),
+                                  prelude_offset, stream);
     case kCSSAtRuleKeyframes:
-      return ConsumeKeyframesRule(false, prelude, block);
+      return ConsumeKeyframesRule(false, std::move(prelude_buffer),
+                                  prelude_offset, stream);
     case kCSSAtRulePage:
-      return ConsumePageRule(prelude, block);
-    default:
-      return nullptr;  // Parse error, unrecognised at-rule with block
-  }
-}
-
-StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenRange& range,
-                                            AllowedRulesType allowed_rules) {
-  DCHECK_EQ(range.Peek().GetType(), kAtKeywordToken);
-  const StringView name = range.ConsumeIncludingWhitespace().Value();
-  const CSSParserToken* prelude_start = &range.Peek();
-  while (!range.AtEnd() && range.Peek().GetType() != kLeftBraceToken &&
-         range.Peek().GetType() != kSemicolonToken)
-    range.ConsumeComponentValue();
-
-  CSSParserTokenRange prelude =
-      range.MakeSubRange(prelude_start, &range.Peek());
-  CSSAtRuleID id = CssAtRuleID(name);
-  if (id != kCSSAtRuleInvalid && context_->IsUseCounterRecordingEnabled())
-    CountAtRule(context_, id);
-
-  if (range.AtEnd() || range.Peek().GetType() == kSemicolonToken) {
-    range.Consume();
-    if (allowed_rules == kAllowCharsetRules && id == kCSSAtRuleCharset)
-      return ConsumeCharsetRule(prelude);
-    if (allowed_rules <= kAllowImportRules && id == kCSSAtRuleImport)
-      return ConsumeImportRule(prelude);
-    if (allowed_rules <= kAllowNamespaceRules && id == kCSSAtRuleNamespace)
-      return ConsumeNamespaceRule(prelude);
-    if (allowed_rules == kApplyRules && id == kCSSAtRuleApply) {
-      ConsumeApplyRule(prelude);
-      return nullptr;  // ConsumeApplyRule just updates parsed_properties_
-    }
-    return nullptr;  // Parse error, unrecognised at-rule without block
-  }
-
-  CSSParserTokenRange block = range.ConsumeBlock();
-  if (allowed_rules == kKeyframeRules)
-    return nullptr;  // Parse error, no at-rules supported inside @keyframes
-  if (allowed_rules == kNoRules || allowed_rules == kApplyRules)
-    return nullptr;  // Parse error, no at-rules with blocks supported inside
-                     // declaration lists
-
-  DCHECK_LE(allowed_rules, kRegularRules);
-
-  switch (id) {
-    case kCSSAtRuleMedia:
-      return ConsumeMediaRule(prelude, block);
-    case kCSSAtRuleSupports:
-      return ConsumeSupportsRule(prelude, block);
-    case kCSSAtRuleViewport:
-      return ConsumeViewportRule(prelude, block);
-    case kCSSAtRuleFontFace:
-      return ConsumeFontFaceRule(prelude, block);
-    case kCSSAtRuleWebkitKeyframes:
-      return ConsumeKeyframesRule(true, prelude, block);
-    case kCSSAtRuleKeyframes:
-      return ConsumeKeyframesRule(false, prelude, block);
-    case kCSSAtRulePage:
-      return ConsumePageRule(prelude, block);
+      return ConsumePageRule(std::move(prelude_buffer), prelude_offset, stream);
     default:
       return nullptr;  // Parse error, unrecognised at-rule with block
   }
 }
 
 StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
-    CSSParserTokenRange& range,
+    CSSParserTokenStream& stream,
     AllowedRulesType allowed_rules) {
-  const CSSParserToken* prelude_start = &range.Peek();
-  while (!range.AtEnd() && range.Peek().GetType() != kLeftBraceToken)
-    range.ConsumeComponentValue();
+  DCHECK(stream.HasLookAhead());
+  const size_t prelude_offset_start = stream.LookAheadOffset();
+  CSSParserScopedTokenBuffer prelude_buffer(stream);
 
-  if (range.AtEnd())
+  if (observer_wrapper_) {
+    // TODO(shend): We need to store token offsets here because ConsumeStyleRule
+    // needs them in ObserveSelectors. We can get rid of this by making
+    // ConsumeStyleRule parse the prelude in a streaming fashion.
+    observer_wrapper_->StartConstruction();
+    while (!stream.UncheckedAtEnd() &&
+           stream.UncheckedPeek().GetType() != kLeftBraceToken) {
+      stream.UncheckedConsumeComponentValueWithOffsets(*observer_wrapper_,
+                                                       prelude_buffer);
+    }
+    // We want the offset of the kLeftBraceToken, which is peeked but not
+    // consumed.
+    observer_wrapper_->AddToken(stream.LookAheadOffset());
+  } else {
+    while (!stream.UncheckedAtEnd() &&
+           stream.UncheckedPeek().GetType() != kLeftBraceToken)
+      stream.UncheckedConsumeComponentValue(prelude_buffer);
+  }
+
+  if (stream.AtEnd())
     return nullptr;  // Parse error, EOF instead of qualified rule block
 
-  CSSParserTokenRange prelude =
-      range.MakeSubRange(prelude_start, &range.Peek());
-  CSSParserTokenRange block = range.ConsumeBlock();
+  const RangeOffset prelude_offset(prelude_offset_start, stream.Offset());
+
+  if (observer_wrapper_)
+    observer_wrapper_->FinalizeConstruction(prelude_buffer.Range().begin());
+
+  CSSParserTokenStream::BlockGuard guard(stream);
 
   if (allowed_rules <= kRegularRules)
-    return ConsumeStyleRule(prelude, block);
-  if (allowed_rules == kKeyframeRules)
-    return ConsumeKeyframeStyleRule(prelude, block);
+    return ConsumeStyleRule(std::move(prelude_buffer), prelude_offset, stream);
+  if (allowed_rules == kKeyframeRules) {
+    return ConsumeKeyframeStyleRule(std::move(prelude_buffer), prelude_offset,
+                                    stream);
+  }
 
   NOTREACHED();
   return nullptr;
@@ -629,18 +660,19 @@ StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
   return StyleRuleCharset::Create();
 }
 
-StyleRuleImport* CSSParserImpl::ConsumeImportRule(CSSParserTokenRange prelude) {
-  AtomicString uri(ConsumeStringOrURI(prelude));
+StyleRuleImport* CSSParserImpl::ConsumeImportRule(
+    AtomicString uri,
+    CSSParserTokenRange prelude,
+    const RangeOffset& prelude_offset) {
   if (uri.IsNull())
     return nullptr;  // Parse error, expected string or URI
 
   if (observer_wrapper_) {
-    unsigned end_offset = observer_wrapper_->EndOffset(prelude);
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kImport, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(end_offset);
-    observer_wrapper_->Observer().StartRuleBody(end_offset);
-    observer_wrapper_->Observer().EndRuleBody(end_offset);
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kImport,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(prelude_offset.end);
+    observer_wrapper_->Observer().EndRuleBody(prelude_offset.end);
   }
 
   return StyleRuleImport::Create(uri,
@@ -661,36 +693,40 @@ StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
   return StyleRuleNamespace::Create(namespace_prefix, uri);
 }
 
-StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(CSSParserTokenRange prelude,
-                                                CSSParserTokenRange block) {
+StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
   HeapVector<Member<StyleRuleBase>> rules;
 
   if (observer_wrapper_) {
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kMedia, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(
-        observer_wrapper_->EndOffset(prelude));
-    observer_wrapper_->Observer().StartRuleBody(
-        observer_wrapper_->PreviousTokenStartOffset(block));
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kMedia,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(block.Offset());
   }
 
   if (style_sheet_)
     style_sheet_->SetHasMediaQueries();
 
+  const auto media =
+      MediaQueryParser::ParseMediaQuerySet(prelude_buffer.Range());
+
+  prelude_buffer.Release();
   ConsumeRuleList(block, kRegularRuleList,
                   [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
 
   if (observer_wrapper_)
-    observer_wrapper_->Observer().EndRuleBody(
-        observer_wrapper_->EndOffset(block));
+    observer_wrapper_->Observer().EndRuleBody(block.Offset());
 
-  return StyleRuleMedia::Create(MediaQueryParser::ParseMediaQuerySet(prelude),
-                                rules);
+  return StyleRuleMedia::Create(media, rules);
 }
 
 StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
-    CSSParserTokenRange prelude,
-    CSSParserTokenRange block) {
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   CSSSupportsParser::SupportsResult supported =
       CSSSupportsParser::SupportsCondition(prelude, *this,
                                            CSSSupportsParser::kForAtRule);
@@ -698,29 +734,30 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
     return nullptr;  // Parse error, invalid @supports condition
 
   if (observer_wrapper_) {
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kSupports, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(
-        observer_wrapper_->EndOffset(prelude));
-    observer_wrapper_->Observer().StartRuleBody(
-        observer_wrapper_->PreviousTokenStartOffset(block));
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kSupports,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(block.Offset());
   }
+
+  const auto prelude_serialized = prelude.Serialize().StripWhiteSpace();
+  prelude_buffer.Release();
 
   HeapVector<Member<StyleRuleBase>> rules;
   ConsumeRuleList(block, kRegularRuleList,
                   [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
 
   if (observer_wrapper_)
-    observer_wrapper_->Observer().EndRuleBody(
-        observer_wrapper_->EndOffset(block));
+    observer_wrapper_->Observer().EndRuleBody(block.Offset());
 
-  return StyleRuleSupports::Create(prelude.Serialize().StripWhiteSpace(),
-                                   supported, rules);
+  return StyleRuleSupports::Create(prelude_serialized, supported, rules);
 }
 
 StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
-    CSSParserTokenRange prelude,
-    CSSParserTokenRange block) {
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   // Allow @viewport rules from UA stylesheets even if the feature is disabled.
   if (!RuntimeEnabledFeatures::CSSViewportEnabled() &&
       !IsUASheetBehavior(context_->Mode()))
@@ -730,73 +767,53 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
     return nullptr;  // Parser error; @viewport prelude should be empty
 
   if (observer_wrapper_) {
-    unsigned end_offset = observer_wrapper_->EndOffset(prelude);
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kViewport, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(end_offset);
-    observer_wrapper_->Observer().StartRuleBody(end_offset);
-    observer_wrapper_->Observer().EndRuleBody(end_offset);
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kViewport,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(prelude_offset.end);
+    observer_wrapper_->Observer().EndRuleBody(prelude_offset.end);
   }
 
   if (style_sheet_)
     style_sheet_->SetHasViewportRule();
 
+  prelude_buffer.Release();
   ConsumeDeclarationList(block, StyleRule::kViewport);
   return StyleRuleViewport::Create(
       CreateStylePropertySet(parsed_properties_, kCSSViewportRuleMode));
 }
 
 StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
-    CSSParserTokenRange prelude,
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
     CSSParserTokenStream& stream) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   if (!prelude.AtEnd())
     return nullptr;  // Parse error; @font-face prelude should be empty
 
   if (observer_wrapper_) {
-    unsigned end_offset = observer_wrapper_->EndOffset(prelude);
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kFontFace, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(end_offset);
-    observer_wrapper_->Observer().StartRuleBody(end_offset);
-    observer_wrapper_->Observer().EndRuleBody(end_offset);
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kFontFace,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(prelude_offset.end);
+    observer_wrapper_->Observer().EndRuleBody(prelude_offset.end);
   }
 
   if (style_sheet_)
     style_sheet_->SetHasFontFaceRule();
 
+  prelude_buffer.Release();
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
-  return StyleRuleFontFace::Create(
-      CreateStylePropertySet(parsed_properties_, kCSSFontFaceRuleMode));
-}
-
-StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
-    CSSParserTokenRange prelude,
-    CSSParserTokenRange block) {
-  if (!prelude.AtEnd())
-    return nullptr;  // Parse error; @font-face prelude should be empty
-
-  if (observer_wrapper_) {
-    unsigned end_offset = observer_wrapper_->EndOffset(prelude);
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kFontFace, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(end_offset);
-    observer_wrapper_->Observer().StartRuleBody(end_offset);
-    observer_wrapper_->Observer().EndRuleBody(end_offset);
-  }
-
-  if (style_sheet_)
-    style_sheet_->SetHasFontFaceRule();
-
-  ConsumeDeclarationList(block, StyleRule::kFontFace);
   return StyleRuleFontFace::Create(
       CreateStylePropertySet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
     bool webkit_prefixed,
-    CSSParserTokenRange prelude,
-    CSSParserTokenRange block) {
-  CSSParserTokenRange range_copy = prelude;  // For inspector callbacks
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  auto prelude = prelude_buffer.Range();
   const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
   if (!prelude.AtEnd())
     return nullptr;  // Parse error; expected single non-whitespace token in
@@ -813,15 +830,13 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
   }
 
   if (observer_wrapper_) {
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kKeyframes, observer_wrapper_->StartOffset(range_copy));
-    observer_wrapper_->Observer().EndRuleHeader(
-        observer_wrapper_->EndOffset(prelude));
-    observer_wrapper_->Observer().StartRuleBody(
-        observer_wrapper_->PreviousTokenStartOffset(block));
-    observer_wrapper_->Observer().EndRuleBody(
-        observer_wrapper_->EndOffset(block));
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kKeyframes,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
+    observer_wrapper_->Observer().StartRuleBody(block.Offset());
   }
+
+  prelude_buffer.Release();
 
   StyleRuleKeyframes* keyframe_rule = StyleRuleKeyframes::Create();
   ConsumeRuleList(
@@ -830,22 +845,29 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
       });
   keyframe_rule->SetName(name);
   keyframe_rule->SetVendorPrefixed(webkit_prefixed);
+
+  if (observer_wrapper_)
+    observer_wrapper_->Observer().EndRuleBody(block.Offset());
+
   return keyframe_rule;
 }
 
-StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenRange prelude,
-                                              CSSParserTokenRange block) {
+StyleRulePage* CSSParserImpl::ConsumePageRule(
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   CSSSelectorList selector_list = ParsePageSelector(prelude, style_sheet_);
   if (!selector_list.IsValid())
     return nullptr;  // Parse error, invalid @page selector
 
   if (observer_wrapper_) {
-    unsigned end_offset = observer_wrapper_->EndOffset(prelude);
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kPage, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(end_offset);
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kPage,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
   }
 
+  prelude_buffer.Release();
   ConsumeDeclarationList(block, StyleRule::kStyle);
 
   return StyleRulePage::Create(
@@ -865,20 +887,23 @@ void CSSParserImpl::ConsumeApplyRule(CSSParserTokenRange prelude) {
 }
 
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
-    CSSParserTokenRange prelude,
-    CSSParserTokenRange block) {
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   std::unique_ptr<Vector<double>> key_list = ConsumeKeyframeKeyList(prelude);
   if (!key_list)
     return nullptr;
 
   if (observer_wrapper_) {
-    observer_wrapper_->Observer().StartRuleHeader(
-        StyleRule::kKeyframe, observer_wrapper_->StartOffset(prelude));
-    observer_wrapper_->Observer().EndRuleHeader(
-        observer_wrapper_->EndOffset(prelude));
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kKeyframe,
+                                                  prelude_offset.start);
+    observer_wrapper_->Observer().EndRuleHeader(prelude_offset.end);
   }
 
+  prelude_buffer.Release();
   ConsumeDeclarationList(block, StyleRule::kKeyframe);
+
   return StyleRuleKeyframe::Create(
       std::move(key_list),
       CreateStylePropertySet(parsed_properties_, context_->Mode()));
@@ -907,8 +932,11 @@ static void ObserveSelectors(CSSParserObserverWrapper& wrapper,
   wrapper.Observer().EndRuleHeader(wrapper.EndOffset(original_range));
 }
 
-StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenRange prelude,
-                                           CSSParserTokenRange block) {
+StyleRule* CSSParserImpl::ConsumeStyleRule(
+    CSSParserScopedTokenBuffer prelude_buffer,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  const CSSParserTokenRange prelude = prelude_buffer.Range();
   CSSSelectorList selector_list =
       CSSSelectorParser::ParseSelector(prelude, context_, style_sheet_);
   if (!selector_list.IsValid())
@@ -917,11 +945,15 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenRange prelude,
   // TODO(csharrison): How should we lazily parse css that needs the observer?
   if (observer_wrapper_) {
     ObserveSelectors(*observer_wrapper_, prelude);
-  } else if (lazy_state_ && !lazy_state_->IsEmptyBlock(block)) {
+  } else if (lazy_state_) {
+    // TODO(shend): Don't lazily parse empty blocks.
     DCHECK(style_sheet_);
-    return StyleRule::CreateLazy(std::move(selector_list),
-                                 lazy_state_->CreateLazyParser(block));
+    return StyleRule::CreateLazy(
+        std::move(selector_list),
+        lazy_state_->CreateLazyParser(block.Offset() - 1));
   }
+
+  prelude_buffer.Release();
   ConsumeDeclarationList(block, StyleRule::kStyle);
 
   return StyleRule::Create(
@@ -936,33 +968,49 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
   bool use_observer = observer_wrapper_ && (rule_type == StyleRule::kStyle ||
                                             rule_type == StyleRule::kKeyframe);
   if (use_observer) {
-    observer_wrapper_->Observer().StartRuleBody(
-        observer_wrapper_->PreviousTokenStartOffset(stream));
-    observer_wrapper_->SkipCommentsBefore(stream, true);
+    observer_wrapper_->Observer().StartRuleBody(stream.Offset());
   }
 
-  while (!stream.AtEnd()) {
+  while (true) {
+    // Having a lookahead may skip comments, which are used by the observer.
+    DCHECK(!stream.HasLookAhead() || stream.AtEnd());
+
+    if (use_observer && !stream.HasLookAhead()) {
+      while (true) {
+        size_t start_offset = stream.Offset();
+        if (!stream.ConsumeCommentOrNothing())
+          break;
+        observer_wrapper_->Observer().ObserveComment(start_offset,
+                                                     stream.Offset());
+      }
+    }
+
+    if (stream.AtEnd())
+      break;
+
     switch (stream.UncheckedPeek().GetType()) {
       case kWhitespaceToken:
       case kSemicolonToken:
         stream.UncheckedConsume();
         break;
       case kIdentToken: {
-        if (use_observer)
-          observer_wrapper_->YieldCommentsBefore(stream);
-
-        const auto declaration_start = stream.Position();
-        while (!stream.AtEnd() &&
-               stream.UncheckedPeek().GetType() != kSemicolonToken)
-          stream.UncheckedConsumeComponentValue();
+        const size_t decl_offset_start = stream.Offset();
+        CSSParserScopedTokenBuffer decl_buffer(stream);
+        while (!stream.UncheckedAtEnd() &&
+               stream.UncheckedPeek().GetType() != kSemicolonToken) {
+          stream.UncheckedConsumeComponentValue(decl_buffer);
+        }
 
         // TODO(shend): Use streams instead of ranges
-        ConsumeDeclaration(
-            stream.MakeSubRange(declaration_start, stream.Position()),
-            rule_type);
+        // We want the offset of the kSemicolonToken, which is peeked but not
+        // consumed.
+        const RangeOffset decl_offset(decl_offset_start,
+                                      stream.LookAheadOffset());
+        ConsumeDeclaration(decl_buffer.Range(), decl_offset, rule_type);
 
-        if (use_observer)
-          observer_wrapper_->SkipCommentsBefore(stream, false);
+        if (!stream.AtEnd())
+          stream.UncheckedConsume();  // kSemicolonToken
+
         break;
       }
       case kAtKeywordToken: {
@@ -976,85 +1024,26 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
         DCHECK(!rule);
         break;
       }
-      default:  // Parse error, unexpected token in declaration list
-        while (!stream.AtEnd() &&
-               stream.UncheckedPeek().GetType() != kSemicolonToken)
+      default:
+        while (!stream.UncheckedAtEnd() &&
+               stream.UncheckedPeek().GetType() != kSemicolonToken) {
           stream.UncheckedConsumeComponentValue();
+        }
+
+        if (!stream.UncheckedAtEnd())
+          stream.UncheckedConsume();  // kSemicolonToken
+
         break;
     }
   }
 
-  // Yield remaining comments
-  if (use_observer) {
-    observer_wrapper_->YieldCommentsBefore(stream);
-    observer_wrapper_->Observer().EndRuleBody(
-        observer_wrapper_->EndOffset(stream));
-  }
-}
-
-void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenRange range,
-                                           StyleRule::RuleType rule_type) {
-  DCHECK(parsed_properties_.IsEmpty());
-
-  bool use_observer = observer_wrapper_ && (rule_type == StyleRule::kStyle ||
-                                            rule_type == StyleRule::kKeyframe);
-  if (use_observer) {
-    observer_wrapper_->Observer().StartRuleBody(
-        observer_wrapper_->PreviousTokenStartOffset(range));
-    observer_wrapper_->SkipCommentsBefore(range, true);
-  }
-
-  while (!range.AtEnd()) {
-    switch (range.Peek().GetType()) {
-      case kWhitespaceToken:
-      case kSemicolonToken:
-        range.Consume();
-        break;
-      case kIdentToken: {
-        const CSSParserToken* declaration_start = &range.Peek();
-
-        if (use_observer)
-          observer_wrapper_->YieldCommentsBefore(range);
-
-        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-
-        ConsumeDeclaration(range.MakeSubRange(declaration_start, &range.Peek()),
-                           rule_type);
-
-        if (use_observer)
-          observer_wrapper_->SkipCommentsBefore(range, false);
-        break;
-      }
-      case kAtKeywordToken: {
-        AllowedRulesType allowed_rules =
-            rule_type == StyleRule::kStyle &&
-                    RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()
-                ? kApplyRules
-                : kNoRules;
-        StyleRuleBase* rule = ConsumeAtRule(range, allowed_rules);
-        DCHECK(!rule);
-        break;
-      }
-      default:  // Parse error, unexpected token in declaration list
-        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-        break;
-    }
-  }
-
-  // Yield remaining comments
-  if (use_observer) {
-    observer_wrapper_->YieldCommentsBefore(range);
-    observer_wrapper_->Observer().EndRuleBody(
-        observer_wrapper_->EndOffset(range));
-  }
+  if (use_observer)
+    observer_wrapper_->Observer().EndRuleBody(stream.LookAheadOffset());
 }
 
 void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
+                                       const RangeOffset& decl_offset,
                                        StyleRule::RuleType rule_type) {
-  CSSParserTokenRange range_copy = range;  // For inspector callbacks
-
   DCHECK_EQ(range.Peek().GetType(), kIdentToken);
   const CSSParserToken& token = range.ConsumeIncludingWhitespace();
   CSSPropertyID unresolved_property = token.ParseAsUnresolvedCSSPropertyID();
@@ -1103,8 +1092,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
   if (observer_wrapper_ &&
       (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe)) {
     observer_wrapper_->Observer().ObserveProperty(
-        observer_wrapper_->StartOffset(range_copy),
-        observer_wrapper_->EndOffset(range_copy), important,
+        decl_offset.start, decl_offset.end, important,
         parsed_properties_.size() != properties_count);
   }
 }

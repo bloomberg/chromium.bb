@@ -38,8 +38,9 @@ TEST(MediaConditionParserTest, Basic) {
   // FIXME: We should test comma-seperated media conditions
   for (unsigned i = 0; test_cases[i].input; ++i) {
     CSSTokenizer tokenizer(test_cases[i].input);
+    const auto tokens = tokenizer.TokenizeToEOF();
     RefPtr<MediaQuerySet> media_condition_query_set =
-        MediaQueryParser::ParseMediaCondition(tokenizer.TokenRange());
+        MediaQueryParser::ParseMediaCondition(CSSParserTokenRange(tokens));
     ASSERT_EQ(media_condition_query_set->QueryVector().size(), (unsigned)1);
     String query_text = media_condition_query_set->QueryVector()[0]->CssText();
     ASSERT_STREQ(test_cases[i].output, query_text.Ascii().data());

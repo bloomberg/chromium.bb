@@ -21,6 +21,7 @@ class CSSLazyParsingState;
 class CSSParserContext;
 class CSSParserObserver;
 class CSSParserObserverWrapper;
+class CSSParserScopedTokenBuffer;
 class CSSParserTokenStream;
 class StyleRule;
 class StyleRuleBase;
@@ -59,6 +60,19 @@ class CSSParserImpl {
     kNoRules,     // For parsing at-rules inside declaration lists
   };
 
+  // Represents the start and end offsets of a CSSParserTokenRange.
+  struct RangeOffset {
+    size_t start, end;
+
+    RangeOffset(size_t start, size_t end) : start(start), end(end) {
+      DCHECK(start <= end);
+    }
+
+    // Used when we don't care what the offset is (typically when we don't have
+    // an observer).
+    static RangeOffset Ignore() { return {0, 0}; }
+  };
+
   static MutableStylePropertySet::SetResult ParseValue(MutableStylePropertySet*,
                                                        CSSPropertyID,
                                                        const String&,
@@ -89,6 +103,10 @@ class CSSParserImpl {
                                            StyleSheetContents*);
 
   static ImmutableStylePropertySet* ParseCustomPropertySet(CSSParserTokenRange);
+  // TODO(shend): Remove this when crbug.com/661854 is fixed. We need to use a
+  // stream for parsing @apply blocks so we can correctly store custom
+  // property values.
+  void ConsumeDeclarationListForAtApply(CSSParserTokenRange);
 
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
 
@@ -103,7 +121,8 @@ class CSSParserImpl {
                                           CSSParserObserver&);
 
   static StylePropertySet* ParseDeclarationListForLazyStyle(
-      CSSParserTokenRange block,
+      const String&,
+      size_t offset,
       const CSSParserContext*);
 
  private:
@@ -111,45 +130,55 @@ class CSSParserImpl {
 
   // Returns whether the first encountered rule was valid
   template <typename T>
-  bool ConsumeRuleList(CSSParserTokenRange, RuleListType, T callback);
+  bool ConsumeRuleList(CSSParserTokenStream&, RuleListType, T callback);
 
   // These functions update the range/stream they're given
   StyleRuleBase* ConsumeAtRule(CSSParserTokenStream&, AllowedRulesType);
-  // TODO(shend): Remove this overload once we switch over to streams.
-  StyleRuleBase* ConsumeAtRule(CSSParserTokenRange&, AllowedRulesType);
-  StyleRuleBase* ConsumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
+  StyleRuleBase* ConsumeQualifiedRule(CSSParserTokenStream&, AllowedRulesType);
 
   static StyleRuleCharset* ConsumeCharsetRule(CSSParserTokenRange prelude);
-  StyleRuleImport* ConsumeImportRule(CSSParserTokenRange prelude);
+  StyleRuleImport* ConsumeImportRule(AtomicString prelude_uri,
+                                     CSSParserTokenRange prelude,
+                                     const RangeOffset& prelude_offset);
   StyleRuleNamespace* ConsumeNamespaceRule(CSSParserTokenRange prelude);
-  StyleRuleMedia* ConsumeMediaRule(CSSParserTokenRange prelude,
-                                   CSSParserTokenRange block);
-  StyleRuleSupports* ConsumeSupportsRule(CSSParserTokenRange prelude,
-                                         CSSParserTokenRange block);
-  StyleRuleViewport* ConsumeViewportRule(CSSParserTokenRange prelude,
-                                         CSSParserTokenRange block);
-  StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenRange prelude,
-                                         CSSParserTokenStream& block);
-  // TODO(shend): Remove this overload once we switch over to streams.
-  StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenRange prelude,
-                                         CSSParserTokenRange block);
-  StyleRuleKeyframes* ConsumeKeyframesRule(bool webkit_prefixed,
-                                           CSSParserTokenRange prelude,
-                                           CSSParserTokenRange block);
-  StyleRulePage* ConsumePageRule(CSSParserTokenRange prelude,
-                                 CSSParserTokenRange block);
+  StyleRuleMedia* ConsumeMediaRule(CSSParserScopedTokenBuffer prelude_buffer,
+                                   const RangeOffset& prelude_offset,
+                                   CSSParserTokenStream& block);
+  StyleRuleSupports* ConsumeSupportsRule(
+      CSSParserScopedTokenBuffer prelude_buffer,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
+  StyleRuleViewport* ConsumeViewportRule(
+      CSSParserScopedTokenBuffer prelude_buffer,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
+  StyleRuleFontFace* ConsumeFontFaceRule(
+      CSSParserScopedTokenBuffer prelude_buffer,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
+  StyleRuleKeyframes* ConsumeKeyframesRule(
+      bool webkit_prefixed,
+      CSSParserScopedTokenBuffer prelude_buffer,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
+  StyleRulePage* ConsumePageRule(CSSParserScopedTokenBuffer prelude_buffer,
+                                 const RangeOffset& prelude_offset,
+                                 CSSParserTokenStream& block);
   // Updates parsed_properties_
   void ConsumeApplyRule(CSSParserTokenRange prelude);
 
-  StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,
-                                              CSSParserTokenRange block);
-  StyleRule* ConsumeStyleRule(CSSParserTokenRange prelude,
-                              CSSParserTokenRange block);
+  StyleRuleKeyframe* ConsumeKeyframeStyleRule(
+      CSSParserScopedTokenBuffer prelude_buffer,
+      const RangeOffset& prelude_offset,
+      CSSParserTokenStream& block);
+  StyleRule* ConsumeStyleRule(CSSParserScopedTokenBuffer prelude_buffer,
+                              const RangeOffset& prelude_offset,
+                              CSSParserTokenStream& block);
 
   void ConsumeDeclarationList(CSSParserTokenStream&, StyleRule::RuleType);
-  // TODO(shend): Remove this overload once we switch over to streams.
-  void ConsumeDeclarationList(CSSParserTokenRange, StyleRule::RuleType);
-  void ConsumeDeclaration(CSSParserTokenRange, StyleRule::RuleType);
+  void ConsumeDeclaration(CSSParserTokenRange,
+                          const RangeOffset& decl_offset,
+                          StyleRule::RuleType);
   void ConsumeDeclarationValue(CSSParserTokenRange,
                                CSSPropertyID,
                                bool important,

@@ -71,26 +71,27 @@ CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
 }
 
 const CSSValue* CSSUnparsedValue::ToCSSValue() const {
-  StringBuilder tokens;
+  StringBuilder input;
 
   for (unsigned i = 0; i < fragments_.size(); i++) {
     if (i) {
-      tokens.Append("/**/");
+      input.Append("/**/");
     }
     if (fragments_[i].IsString()) {
-      tokens.Append(fragments_[i].GetAsString());
+      input.Append(fragments_[i].GetAsString());
     } else if (fragments_[i].IsCSSVariableReferenceValue()) {
-      tokens.Append(fragments_[i].GetAsCSSVariableReferenceValue()->variable());
+      input.Append(fragments_[i].GetAsCSSVariableReferenceValue()->variable());
     } else {
       NOTREACHED();
     }
   }
 
-  CSSTokenizer tokenizer(tokens.ToString());
+  CSSTokenizer tokenizer(input.ToString());
+  const auto tokens = tokenizer.TokenizeToEOF();
   // TODO(alancutter): This should be using a real parser context instead of
   // StrictCSSParserContext.
   return CSSVariableReferenceValue::Create(
-      CSSVariableData::Create(tokenizer.TokenRange(),
+      CSSVariableData::Create(CSSParserTokenRange(tokens),
                               false /* isAnimationTainted */,
                               true /* needsVariableResolution */),
       *StrictCSSParserContext());

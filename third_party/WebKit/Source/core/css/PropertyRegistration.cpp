@@ -114,9 +114,10 @@ void PropertyRegistration::registerProperty(
   RefPtr<CSSVariableData> initial_variable_data;
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
+    const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
     initial = syntax_descriptor.Parse(
-        tokenizer.TokenRange(),
+        CSSParserTokenRange(tokens),
         document->ElementSheet().Contents()->ParserContext(),
         is_animation_tainted);
     if (!initial) {
@@ -134,7 +135,7 @@ void PropertyRegistration::registerProperty(
     initial =
         &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(*initial);
     initial_variable_data = CSSVariableData::Create(
-        tokenizer.TokenRange(), is_animation_tainted, false);
+        CSSParserTokenRange(tokens), is_animation_tainted, false);
   } else {
     if (!syntax_descriptor.IsTokenStream()) {
       exception_state.ThrowDOMException(

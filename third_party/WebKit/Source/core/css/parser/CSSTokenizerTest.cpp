@@ -72,7 +72,8 @@ void TestTokens(const String& string,
   CSSParserTokenRange expected(expected_tokens);
 
   CSSTokenizer tokenizer(string);
-  CSSParserTokenRange actual = tokenizer.TokenRange();
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange actual(tokens);
 
   // Just check that serialization doesn't hit any asserts
   actual.Serialize();
@@ -496,7 +497,8 @@ TEST(CSSTokenizerBlockTest, Basic) {
   };
   for (int i = 0; test_cases[i].input; ++i) {
     CSSTokenizer tokenizer(test_cases[i].input);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     MediaQueryBlockWatcher block_watcher;
 
     unsigned max_level = 0;

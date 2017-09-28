@@ -43,7 +43,8 @@ CSSSelectorList CSSParser::ParseSelector(
     StyleSheetContents* style_sheet_contents,
     const String& selector) {
   CSSTokenizer tokenizer(selector);
-  return CSSSelectorParser::ParseSelector(tokenizer.TokenRange(), context,
+  const auto tokens = tokenizer.TokenizeToEOF();
+  return CSSSelectorParser::ParseSelector(CSSParserTokenRange(tokens), context,
                                           style_sheet_contents);
 }
 
@@ -52,7 +53,8 @@ CSSSelectorList CSSParser::ParsePageSelector(
     StyleSheetContents* style_sheet_contents,
     const String& selector) {
   CSSTokenizer tokenizer(selector);
-  return CSSParserImpl::ParsePageSelector(tokenizer.TokenRange(),
+  const auto tokens = tokenizer.TokenizeToEOF();
+  return CSSParserImpl::ParsePageSelector(CSSParserTokenRange(tokens),
                                           style_sheet_contents);
 }
 
@@ -172,8 +174,9 @@ const CSSValue* CSSParser::ParseSingleValue(CSSPropertyID property_id,
                                                             context->Mode()))
     return value;
   CSSTokenizer tokenizer(string);
-  return CSSPropertyParser::ParseSingleValue(property_id,
-                                             tokenizer.TokenRange(), context);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  return CSSPropertyParser::ParseSingleValue(
+      property_id, CSSParserTokenRange(tokens), context);
 }
 
 ImmutableStylePropertySet* CSSParser::ParseInlineStyleDeclaration(
@@ -196,9 +199,10 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
 
 bool CSSParser::ParseSupportsCondition(const String& condition) {
   CSSTokenizer tokenizer(condition);
+  const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserImpl parser(StrictCSSParserContext());
   return CSSSupportsParser::SupportsCondition(
-             tokenizer.TokenRange(), parser,
+             CSSParserTokenRange(tokens), parser,
              CSSSupportsParser::kForWindowCSS) == CSSSupportsParser::kSupported;
 }
 

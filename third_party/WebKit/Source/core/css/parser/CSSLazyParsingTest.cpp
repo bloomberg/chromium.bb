@@ -45,21 +45,6 @@ TEST_F(CSSLazyParsingTest, Simple) {
   EXPECT_TRUE(HasParsedProperties(rule));
 }
 
-// Avoiding lazy parsing for trivially empty blocks helps us perform the
-// shouldConsiderForMatchingRules optimization.
-TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
-  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
-
-  String sheet_text = "body {  }";
-  CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
-  StyleRule* rule = RuleAt(style_sheet, 0);
-  EXPECT_TRUE(HasParsedProperties(rule));
-  EXPECT_FALSE(
-      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
-}
-
 // Avoid parsing rules with ::before or ::after to avoid causing
 // collectFeatures() when we trigger parsing for attr();
 TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
