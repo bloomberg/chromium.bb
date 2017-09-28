@@ -351,8 +351,7 @@
     <dimen name="snippets_peeking_card_bounce_distance">10dp</dimen>
     <dimen name="snippets_card_gap">0.5dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
-    <dimen name="snippets_publisher_margin_top_with_article_snippet">16dp</dimen>
-    <dimen name="snippets_publisher_margin_top_without_article_snippet">8dp</dimen>
+    <dimen name="snippets_publisher_margin_top">8dp</dimen>
     <!-- This is in sp because we want the icon to scale with the TextView it sits alongside. -->
     <dimen name="snippets_offline_icon_size">18sp</dimen>
     <dimen name="ntp_suggestions_footer_padding_top">40dp</dimen>

@@ -1768,7 +1768,6 @@
                         "NTPCondensedTileLayout"
                     ],
                     "disable_features": [
-                        "ContentSuggestionsShowSummary",
                         "NTPShowGoogleGInOmnibox"
                     ]
                 }

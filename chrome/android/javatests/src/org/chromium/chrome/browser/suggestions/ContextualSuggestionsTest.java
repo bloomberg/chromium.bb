@@ -52,14 +52,12 @@ public class ContextualSuggestionsTest {
     private static final List<SnippetArticle> FAKE_CONTEXTUAL_SUGGESTIONS = Arrays.asList(
             new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion0",
                     "James Roderick to step down as conductor for Laville orchestra",
-                    "The Curious One", "summary is not used", "http://example.com", 0, 0.0f, 0L,
-                    false, null),
+                    "The Curious One", "http://example.com", 0, 0.0f, 0L, false, null),
             new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion1",
-                    "Boy raises orphaned goat", "Meme feed", "summary is not used",
-                    "http://example.com", 0, 0.0f, 0L, false, null),
+                    "Boy raises orphaned goat", "Meme feed", "http://example.com", 0, 0.0f, 0L,
+                    false, null),
             new SnippetArticle(KnownCategories.CONTEXTUAL, "suggestion2", "Top gigs this week",
-                    "Hello World", "summary is not used", "http://example.com", 0, 0.0f, 0L,
-                    false, null));
+                    "Hello World", "http://example.com", 0, 0.0f, 0L, false, null));
 
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();

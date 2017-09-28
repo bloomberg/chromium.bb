@@ -1022,9 +1022,6 @@ extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 extern const char kEnableContentSuggestionsSettingsName[];
 extern const char kEnableContentSuggestionsSettingsDescription[];
 
-extern const char kEnableContentSuggestionsShowSummaryName[];
-extern const char kEnableContentSuggestionsShowSummaryDescription[];
-
 extern const char kEnableContentSuggestionsThumbnailDominantColorName[];
 extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 

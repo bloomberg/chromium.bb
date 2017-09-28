@@ -65,7 +65,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsSettings,
-    &kContentSuggestionsShowSummary,
     &kContentSuggestionsThumbnailDominantColor,
     &kContentSuggestionsVideoOverlay,
     &kContextualSearchSingleActions,
@@ -183,9 +182,6 @@ const base::Feature kContentSuggestionsScrollToLoad{
 
 const base::Feature kContentSuggestionsSettings{
     "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kContentSuggestionsShowSummary{
-    "ContentSuggestionsShowSummary", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsThumbnailDominantColor{
     "ContentSuggestionsThumbnailDominantColor",

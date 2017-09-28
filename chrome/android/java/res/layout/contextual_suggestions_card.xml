@@ -55,23 +55,12 @@
             android:textAppearance="@style/BlackTitle1"
             chrome:leading="22sp" />
 
-        <org.chromium.ui.widget.TextViewWithLeading
-            android:id="@+id/article_snippet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:textSize="14sp"
-            android:textColor="@color/snippets_text_color"
-            chrome:leading="20sp" />
-
         <LinearLayout
             tools:ignore="UseCompoundDrawables"
             android:id="@+id/publisher_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/snippets_publisher_margin_top_with_article_snippet"
+            android:layout_marginTop="@dimen/snippets_publisher_margin_top"
             android:orientation="horizontal">
 
             <!-- The following attributes:

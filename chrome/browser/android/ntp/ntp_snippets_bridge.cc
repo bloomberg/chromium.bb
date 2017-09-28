@@ -68,7 +68,6 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
             ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
             ConvertUTF16ToJavaString(env, suggestion.title()),
             ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
-            ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
             ConvertUTF8ToJavaString(env, suggestion.url().spec()),
             suggestion.publish_date().ToJavaTime(), suggestion.score(),
             suggestion.fetch_date().ToJavaTime(),

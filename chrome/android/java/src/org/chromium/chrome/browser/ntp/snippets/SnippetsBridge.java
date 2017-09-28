@@ -20,8 +20,6 @@ import java.util.List;
  * Provides access to the snippets to display on the NTP using the C++ ContentSuggestionsService.
  */
 public class SnippetsBridge implements SuggestionsSource {
-    private static final String TAG = "SnippetsBridge";
-
     private long mNativeSnippetsBridge;
     private final ObserverList<Observer> mObserverList = new ObserverList<>();
 
@@ -202,14 +200,13 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
-            String id, String title, String publisher, String previewText, String url,
-            long timestamp, float score, long fetchTime, boolean isVideoSuggestion,
-            int thumbnailDominantColor) {
+            String id, String title, String publisher, String url, long timestamp, float score,
+            long fetchTime, boolean isVideoSuggestion, int thumbnailDominantColor) {
         int position = suggestions.size();
         // thumbnailDominantColor equal to 0 encodes absence of the value. 0 is not a valid color,
         // because the passed color cannot be fully transparent.
-        suggestions.add(new SnippetArticle(category, id, title, publisher, previewText, url,
-                timestamp, score, fetchTime, isVideoSuggestion,
+        suggestions.add(new SnippetArticle(category, id, title, publisher, url, timestamp, score,
+                fetchTime, isVideoSuggestion,
                 thumbnailDominantColor == 0 ? null : thumbnailDominantColor));
         return suggestions.get(position);
     }
