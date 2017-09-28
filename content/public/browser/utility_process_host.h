@@ -23,6 +23,7 @@ class SequencedTaskRunner;
 }
 
 namespace content {
+class BrowserMessageFilter;
 class UtilityProcessHostClient;
 struct ChildProcessData;
 
@@ -82,6 +83,9 @@ class UtilityProcessHost : public IPC::Sender {
 
   // Set the name of the process to appear in the task manager.
   virtual void SetName(const base::string16& name) = 0;
+
+  // Adds an IPC message filter.
+  virtual void AddFilter(BrowserMessageFilter* filter) = 0;
 };
 
 };  // namespace content
