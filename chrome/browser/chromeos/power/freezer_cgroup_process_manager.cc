@@ -61,7 +61,14 @@ class FreezerCgroupProcessManager::FileWorker {
     if (!enabled_) {
       LOG(WARNING) << "Cgroup freezer does not exist or is not writable. "
                    << "Unable to freeze renderer processes.";
+      return;
     }
+
+    // Thaw renderers on startup. This helps robustness for the case where we
+    // start up with renderers in frozen state, for example after the previous
+    // Chrome process crashed at a point in time after suspend where it still
+    // hadn't thawed renderers yet.
+    ThawRenderers(base::Bind([](bool) {}));
   }
 
   void SetShouldFreezeRenderer(base::ProcessHandle handle, bool frozen) {
