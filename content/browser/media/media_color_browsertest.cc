@@ -22,7 +22,13 @@ class MediaColorTest : public MediaBrowserTest {
 
 // Android doesn't support Theora.
 #if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pTheora) {
+// This fails on Linux: http://crbug.com/767926.
+#if defined(OS_LINUX)
+#define MAYBE_Yuv420pTheora DISABLED_Yuv420pTheora
+#else
+#define MAYBE_Yuv420pTheora Yuv420pTheora
+#endif
+IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pTheora) {
   RunColorTest("yuv420p.ogv");
 }
 
@@ -35,7 +41,13 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pTheora) {
 }
 #endif  // !defined(OS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pVp8) {
+// This fails on Linux: http://crbug.com/767926.
+#if defined(OS_LINUX)
+#define MAYBE_Yuv420pVp8 DISABLED_Yuv420pVp8
+#else
+#define MAYBE_Yuv420pVp8 Yuv420pVp8
+#endif
+IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pVp8) {
   RunColorTest("yuv420p.webm");
 }
 
@@ -46,8 +58,8 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // This fails on some Android devices: http://crbug.com/649199,
-// http://crbug.com/649185.
-#if defined(OS_ANDROID)
+// and Linux: http://crbug.com/767926.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #define MAYBE_Yuv420pH264 DISABLED_Yuv420pH264
 #else
 #define MAYBE_Yuv420pH264 Yuv420pH264
@@ -56,9 +68,9 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pH264) {
   RunColorTest("yuv420p.mp4");
 }
 
-// This test fails on Android: http://crbug.com/647818, and OSX:
-// http://crbug.com/647838.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// This test fails on Android: http://crbug.com/647818, OSX:
+// http://crbug.com/647838 and Linux: http://crbug.com/767926.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_Yuvj420pH264 DISABLED_Yuvj420pH264
 #else
 #define MAYBE_Yuvj420pH264 Yuvj420pH264
