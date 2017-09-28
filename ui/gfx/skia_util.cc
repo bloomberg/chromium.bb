@@ -98,12 +98,12 @@ bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
   size_t size2 = 0;
 
   addr1 = bitmap1.getAddr32(0, 0);
-  size1 = bitmap1.getSize();
+  size1 = bitmap1.getSafeSize();
 
   addr2 = bitmap2.getAddr32(0, 0);
-  size2 = bitmap2.getSize();
+  size2 = bitmap2.getSafeSize();
 
-  return (size1 == size2) && (0 == memcmp(addr1, addr2, bitmap1.getSize()));
+  return (size1 == size2) && (0 == memcmp(addr1, addr2, size1));
 }
 
 void ConvertSkiaToRGBA(const unsigned char* skia,
