@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "ui/gfx/transform.h"
@@ -63,6 +64,12 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   for (auto& element : *root_element_) {
     // Process all animations before calculating object transforms.
     element.OnBeginFrame(current_time);
+  }
+
+  for (auto& element : *root_element_) {
+    for (auto& binding : element.bindings()) {
+      binding->Update();
+    }
   }
 
   for (auto& element : *root_element_) {

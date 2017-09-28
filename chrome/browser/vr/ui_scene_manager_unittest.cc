@@ -11,6 +11,7 @@
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
+#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -28,19 +29,19 @@ using TargetProperty::TRANSFORM;
 using TargetProperty::OPACITY;
 
 namespace {
-std::set<UiElementName> kFloorCeilingBackgroundElements = {
+const std::set<UiElementName> kFloorCeilingBackgroundElements = {
     kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
-std::set<UiElementName> kElementsVisibleInBrowsing = {
+const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kBackgroundFront, kBackgroundLeft, kBackgroundBack,
     kBackgroundRight, kBackgroundTop,  kBackgroundBottom,
     kCeiling,         kFloor,          kContentQuad,
     kBackplane,       kUrlBar,         kUnderDevelopmentNotice};
-std::set<UiElementName> kElementsVisibleWithExitPrompt = {
+const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kBackgroundFront, kBackgroundLeft,     kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom,   kCeiling,        kFloor,
     kExitPrompt,      kExitPromptBackplane};
-std::set<UiElementName> kHitTestableElements = {
+const std::set<UiElementName> kHitTestableElements = {
     kFloor,
     kCeiling,
     kBackplane,
@@ -56,7 +57,7 @@ std::set<UiElementName> kHitTestableElements = {
     kLoadingIndicator,
     kCloseButton,
 };
-std::set<UiElementName> kElementsVisibleWithExitWarning = {
+const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
 };
 
@@ -641,6 +642,21 @@ TEST_F(UiSceneManagerTest, RendererUsesCorrectOpacity) {
   TexturedElement::SetInitializedForTesting();
 
   CheckRendererOpacityRecursive(&scene_->root_element());
+}
+
+TEST_F(UiSceneManagerTest, LoadingIndicatorBindings) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  model_->loading = true;
+  model_->load_progress = 0.5f;
+  AnimateBy(MsToDelta(200));
+  EXPECT_TRUE(VerifyVisibility({kLoadingIndicator}, true));
+  UiElement* loading_indicator = scene_->GetUiElementByName(kLoadingIndicator);
+  UiElement* loading_indicator_fg = loading_indicator->children().back().get();
+  EXPECT_FLOAT_EQ(loading_indicator->size().width() * 0.5f,
+                  loading_indicator_fg->size().width());
+  float tx =
+      loading_indicator_fg->GetTargetTransform().Apply().matrix().get(0, 3);
+  EXPECT_FLOAT_EQ(loading_indicator->size().width() * 0.25f, tx);
 }
 
 TEST_F(UiSceneManagerTest, ExitWarning) {

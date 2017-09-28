@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/close_button_texture.h"
 #include "chrome/browser/vr/elements/content_element.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
-#include "chrome/browser/vr/elements/loading_indicator.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
@@ -30,6 +30,7 @@
 #include "chrome/browser/vr/elements/url_bar.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
+#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -42,12 +43,30 @@
 
 namespace vr {
 
+namespace {
+
+template <typename P>
+void BindColor(UiSceneManager* model, Rect* rect, P p) {
+  rect->AddBinding(base::MakeUnique<Binding<SkColor>>(
+      base::Bind([](UiSceneManager* m, P p) { return (m->color_scheme()).*p; },
+                 base::Unretained(model), p),
+      base::Bind(
+          [](Rect* r, const SkColor& c) {
+            r->SetCenterColor(c);
+            r->SetEdgeColor(c);
+          },
+          base::Unretained(rect))));
+}
+
+}  // namespace
+
 using TargetProperty::BOUNDS;
 using TargetProperty::TRANSFORM;
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
                                ContentInputDelegate* content_input_delegate,
+                               Model* model,
                                const UiInitialState& ui_initial_state)
     : browser_(browser),
       scene_(scene),
@@ -56,8 +75,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
       started_for_autopresentation_(
           ui_initial_state.web_vr_autopresentation_expected),
       showing_web_vr_splash_screen_(
-          ui_initial_state.web_vr_autopresentation_expected),
-      weak_ptr_factory_(this) {
+          ui_initial_state.web_vr_autopresentation_expected) {
   Create2dBrowsingSubtreeRoots();
   CreateWebVrRoot();
   CreateBackground();
@@ -65,7 +83,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateContentQuad(content_input_delegate);
   CreateSecurityWarnings();
   CreateSystemIndicators();
-  CreateUrlBar();
+  CreateUrlBar(model);
   CreateWebVrUrlToast();
   CreateCloseButton();
   CreateScreenDimmer();
@@ -397,8 +415,7 @@ void UiSceneManager::CreateViewportAwareRoot() {
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 }
 
-void UiSceneManager::CreateUrlBar() {
-  // TODO(cjgrant): Incorporate final size and position.
+void UiSceneManager::CreateUrlBar(Model* model) {
   auto url_bar = base::MakeUnique<UrlBar>(
       512,
       base::Bind(&UiSceneManager::OnBackButtonClicked, base::Unretained(this)),
@@ -414,16 +431,39 @@ void UiSceneManager::CreateUrlBar() {
   control_elements_.push_back(url_bar.get());
   scene_->AddUiElement(k2dBrowsingForeground, std::move(url_bar));
 
-  auto indicator = base::MakeUnique<LoadingIndicator>(256);
-  indicator->set_name(kLoadingIndicator);
-  indicator->set_draw_phase(kPhaseForeground);
-  indicator->SetTranslate(0, kLoadingIndicatorVerticalOffset,
-                          kLoadingIndicatorDepthOffset);
-  indicator->SetSize(kLoadingIndicatorWidth, kLoadingIndicatorHeight);
-  indicator->set_y_anchoring(YAnchoring::YTOP);
-  loading_indicator_ = indicator.get();
-  control_elements_.push_back(indicator.get());
-  scene_->AddUiElement(kUrlBar, std::move(indicator));
+  auto indicator_bg = base::MakeUnique<Rect>();
+  indicator_bg->set_name(kLoadingIndicator);
+  indicator_bg->set_draw_phase(kPhaseForeground);
+  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffset,
+                             kLoadingIndicatorDepthOffset);
+  indicator_bg->SetSize(kLoadingIndicatorWidth, kLoadingIndicatorHeight);
+  indicator_bg->set_y_anchoring(YAnchoring::YTOP);
+  indicator_bg->SetTransitionedProperties({OPACITY});
+  indicator_bg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
+  indicator_bg->AddBinding(VR_BIND_FUNC(bool, Model, model, loading, Rect,
+                                        indicator_bg.get(), SetVisible));
+  BindColor(this, indicator_bg.get(),
+            &ColorScheme::loading_indicator_background);
+
+  scene_->AddUiElement(kUrlBar, std::move(indicator_bg));
+
+  auto indicator_fg = base::MakeUnique<Rect>();
+  indicator_fg->set_draw_phase(kPhaseForeground);
+  indicator_fg->set_x_anchoring(XLEFT);
+  indicator_fg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
+  indicator_fg->set_hit_testable(false);
+  BindColor(this, indicator_fg.get(),
+            &ColorScheme::loading_indicator_foreground);
+  indicator_fg->AddBinding(base::MakeUnique<Binding<float>>(
+      base::Bind([](Model* m) { return m->load_progress; },
+                 base::Unretained(model)),
+      base::Bind(
+          [](Rect* r, const float& value) {
+            r->SetSize(kLoadingIndicatorWidth * value, kLoadingIndicatorHeight);
+            r->SetTranslate(r->size().width() * 0.5f, 0.0f, 0.001f);
+          },
+          base::Unretained(indicator_fg.get()))));
+  scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
 }
 
 TransientElement* UiSceneManager::AddTransientParent(UiElementName name,
@@ -542,10 +582,6 @@ void UiSceneManager::CreateToasts() {
   element->set_hit_testable(false);
   scene_->AddUiElement(kExclusiveScreenToastViewportAwareTransientParent,
                        std::move(element));
-}
-
-base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
@@ -772,10 +808,6 @@ void UiSceneManager::SetIncognito(bool incognito) {
   ConfigureScene();
 }
 
-UiScene* UiSceneManager::scene() {
-  return scene_;
-}
-
 bool UiSceneManager::ShouldRenderWebVr() {
   return scene_->web_vr_rendering_enabled();
 }
@@ -886,11 +918,11 @@ void UiSceneManager::SetToolbarState(const ToolbarState& state) {
 }
 
 void UiSceneManager::SetLoading(bool loading) {
-  loading_indicator_->SetLoading(loading);
+  NOTREACHED();
 }
 
 void UiSceneManager::SetLoadProgress(float progress) {
-  loading_indicator_->SetLoadProgress(progress);
+  NOTREACHED();
 }
 
 void UiSceneManager::SetIsExiting() {

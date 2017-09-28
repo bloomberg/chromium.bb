@@ -207,6 +207,10 @@ void UiElement::RemoveChild(UiElement* to_remove) {
   DCHECK_NE(old_size, children_.size());
 }
 
+void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {
+  bindings_.push_back(std::move(binding));
+}
+
 gfx::Point3F UiElement::GetCenter() const {
   gfx::Point3F center;
   world_space_transform_.TransformPoint(&center);

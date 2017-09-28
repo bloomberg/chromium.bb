@@ -53,7 +53,6 @@ class FPSMeter;
 class SlidingAverage;
 class Ui;
 class UiBrowserInterface;
-class UiInterface;
 struct UiInitialState;
 }  // namespace vr
 
@@ -236,7 +235,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::vector<gfx::Transform> webvr_head_pose_;
 
   std::unique_ptr<vr::Ui> ui_;
-  vr::UiInterface* ui_scene_manager_;
 
   bool web_vr_mode_;
   bool ready_to_draw_ = false;

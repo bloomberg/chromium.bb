@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/fake_ui_element_renderer.h"
 #include "chrome/browser/vr/ui.h"
@@ -39,24 +40,28 @@ void UiSceneManagerTest::SetUp() {
 
 void UiSceneManagerTest::MakeManager(InCct in_cct, InWebVr in_web_vr) {
   scene_ = base::MakeUnique<UiScene>();
+  model_ = base::MakeUnique<Model>();
 
   UiInitialState ui_initial_state;
   ui_initial_state.in_cct = in_cct;
   ui_initial_state.in_web_vr = in_web_vr;
   ui_initial_state.web_vr_autopresentation_expected = false;
-  manager_ = base::MakeUnique<UiSceneManager>(
-      browser_.get(), scene_.get(), &content_input_delegate_, ui_initial_state);
+  manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
+                                              &content_input_delegate_,
+                                              model_.get(), ui_initial_state);
 }
 
 void UiSceneManagerTest::MakeAutoPresentedManager() {
   scene_ = base::MakeUnique<UiScene>();
+  model_ = base::MakeUnique<Model>();
 
   UiInitialState ui_initial_state;
   ui_initial_state.in_cct = false;
   ui_initial_state.in_web_vr = false;
   ui_initial_state.web_vr_autopresentation_expected = true;
-  manager_ = base::MakeUnique<UiSceneManager>(
-      browser_.get(), scene_.get(), &content_input_delegate_, ui_initial_state);
+  manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
+                                              &content_input_delegate_,
+                                              model_.get(), ui_initial_state);
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
