@@ -280,6 +280,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& url,
       SiteInstance* parent_site_instance);
 
+  // Temporary hack to determine whether to skip OOPIFs on the new tab page.
+  // TODO(creis): Remove when https://crbug.com/566091 is fixed.
+  virtual bool ShouldStayInParentProcessForNTP(
+      const GURL& url,
+      SiteInstance* parent_site_instance);
+
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
