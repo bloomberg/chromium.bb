@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
@@ -34,7 +35,7 @@ class DisplayInfoProvider {
  public:
   using DisplayUnitInfoList = std::vector<api::system_display::DisplayUnitInfo>;
   using DisplayLayoutList = std::vector<api::system_display::DisplayLayout>;
-  using TouchCalibrationCallback = base::Callback<void(bool)>;
+  using TouchCalibrationCallback = base::OnceCallback<void(bool)>;
 
   virtual ~DisplayInfoProvider();
 
@@ -80,10 +81,9 @@ class DisplayInfoProvider {
   // Implements touch calibration methods. See system_display.idl. This returns
   // false in case any error occurs. In such cases the |error| string will also
   // be set.
-  virtual bool ShowNativeTouchCalibration(
-      const std::string& id,
-      std::string* error,
-      const TouchCalibrationCallback& callback);
+  virtual bool ShowNativeTouchCalibration(const std::string& id,
+                                          std::string* error,
+                                          TouchCalibrationCallback callback);
   virtual bool StartCustomTouchCalibration(const std::string& id,
                                            std::string* error);
   virtual bool CompleteCustomTouchCalibration(

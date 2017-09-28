@@ -47,9 +47,9 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
       const api::system_display::Insets& delta) override;
   bool OverscanCalibrationReset(const std::string& id) override;
   bool OverscanCalibrationComplete(const std::string& id) override;
-  bool ShowNativeTouchCalibration(
-      const std::string& id, std::string* error,
-      const TouchCalibrationCallback& callback) override;
+  bool ShowNativeTouchCalibration(const std::string& id,
+                                  std::string* error,
+                                  TouchCalibrationCallback callback) override;
   bool StartCustomTouchCalibration(const std::string& id,
                                    std::string* error) override;
   bool CompleteCustomTouchCalibration(

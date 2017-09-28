@@ -219,15 +219,18 @@ gfx::Transform TouchTransformController::GetTouchTransform(
   // transform as we want to use the raw native touch input data for calibration
   if (is_calibrating_)
     return ctm;
-
+  uint32_t touch_device_identifier =
+      TouchCalibrationData::GenerateTouchDeviceIdentifier(
+          touchscreen.name, touchscreen.vendor_id, touchscreen.product_id);
   // If touch calibration data is unavailable, use naive approach.
-  if (!touch_display.has_touch_calibration_data()) {
+  if (!touch_display.HasTouchCalibrationData(touch_device_identifier)) {
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,
                                     touch_native_size);
   }
-
+  const TouchCalibrationData& calibration_data =
+      touch_display.GetTouchCalibrationData(touch_device_identifier);
   // The resolution at which the touch calibration was performed.
-  gfx::SizeF touch_calib_size(touch_display.GetTouchCalibrationData().bounds);
+  gfx::SizeF touch_calib_size(calibration_data.bounds);
 
   // Any additional transfomration that needs to be applied to the display
   // points, before we solve for the final transform.
@@ -260,15 +263,15 @@ gfx::Transform TouchTransformController::GetTouchTransform(
   }
   // Solve for coefficients and compute transform matrix.
   gfx::Transform stored_ctm;
-  if (!GetCalibratedTransform(
-          touch_display.GetTouchCalibrationData().point_pairs, pre_transform,
-          &stored_ctm)) {
+  if (!GetCalibratedTransform(calibration_data.point_pairs, pre_transform,
+                              &stored_ctm)) {
     // TODO(malaykeshav): This can be checked at the calibration step before
     // storing the calibration associated data. This will allow us to explicitly
     // inform the user with proper UX.
 
-    // Clear stored calibration data.
-    display_manager_->ClearTouchCalibrationData(touch_display.id());
+    // Clear stored calibration data as it does not produce a valid calibration.
+    display_manager_->ClearTouchCalibrationData(touch_display.id(),
+                                                touch_device_identifier);
 
     // Return uncalibrated transform.
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,

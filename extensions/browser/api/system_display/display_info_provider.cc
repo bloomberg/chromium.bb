@@ -127,7 +127,7 @@ bool DisplayInfoProvider::OverscanCalibrationComplete(const std::string& id) {
 bool DisplayInfoProvider::ShowNativeTouchCalibration(
     const std::string& id,
     std::string* error,
-    const TouchCalibrationCallback& callback) {
+    TouchCalibrationCallback callback) {
   NOTREACHED();  // Implemented on Chrome OS only in override.
   return false;
 }
