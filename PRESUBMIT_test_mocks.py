@@ -9,6 +9,47 @@ import re
 import subprocess
 import sys
 
+# TODO(dcheng): It's kind of horrible that this is copy and pasted from
+# presubmit_canned_checks.py, but it's far easier than any of the alternatives.
+def _ReportErrorFileAndLine(filename, line_num, dummy_line):
+  """Default error formatter for _FindNewViolationsOfRule."""
+  return '%s:%s' % (filename, line_num)
+
+
+class MockCannedChecks(object):
+  def _FindNewViolationsOfRule(self, callable_rule, input_api,
+                               source_file_filter=None,
+                               error_formatter=_ReportErrorFileAndLine):
+    """Find all newly introduced violations of a per-line rule (a callable).
+
+    Arguments:
+      callable_rule: a callable taking a file extension and line of input and
+        returning True if the rule is satisfied and False if there was a
+        problem.
+      input_api: object to enumerate the affected files.
+      source_file_filter: a filter to be passed to the input api.
+      error_formatter: a callable taking (filename, line_number, line) and
+        returning a formatted error string.
+
+    Returns:
+      A list of the newly-introduced violations reported by the rule.
+    """
+    errors = []
+    for f in input_api.AffectedFiles(include_deletes=False,
+                                     file_filter=source_file_filter):
+      # For speed, we do two passes, checking first the full file.  Shelling out
+      # to the SCM to determine the changed region can be quite expensive on
+      # Win32.  Assuming that most files will be kept problem-free, we can
+      # skip the SCM operations most of the time.
+      extension = str(f.LocalPath()).rsplit('.', 1)[-1]
+      if all(callable_rule(extension, line) for line in f.NewContents()):
+        continue  # No violation found in full text: can skip considering diff.
+
+      for line_num, line in f.ChangedContents():
+        if not callable_rule(extension, line):
+          errors.append(error_formatter(f.LocalPath(), line_num, line))
+
+    return errors
 
 class MockInputApi(object):
   """Mock class for the InputApi class.
@@ -18,6 +59,7 @@ class MockInputApi(object):
   """
 
   def __init__(self):
+    self.canned_checks = MockCannedChecks()
     self.fnmatch = fnmatch
     self.json = json
     self.re = re

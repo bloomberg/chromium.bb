@@ -108,7 +108,7 @@ def _CheckForForbiddenNamespace(input_api, output_api):
     def source_file_filter(path):
         return input_api.FilterSourceFile(path,
                                           white_list=[r'third_party/WebKit/Source/.*\.(h|cpp)$'],
-                                          black_list=[r'third_party/WebKit/Source/(platform|wtf|web|controller)/'])
+                                          black_list=[r'third_party/WebKit/Source/(platform|controller)/'])
 
     comment_re = input_api.re.compile(r'^\s*//')
     result = []
