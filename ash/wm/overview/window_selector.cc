@@ -564,6 +564,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
     return false;
 
   switch (key_event.key_code()) {
+    case ui::VKEY_BROWSER_BACK:
     case ui::VKEY_ESCAPE:
       CancelSelection();
       break;
