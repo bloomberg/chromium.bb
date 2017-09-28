@@ -245,6 +245,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
       UITableViewCell* cell =
           [self.tableView cellForRowAtIndexPath:oldSelectedIndexPath];
       cell.accessoryType = UITableViewCellAccessoryNone;
+      cell.accessibilityTraits &= ~UIAccessibilityTraitSelected;
     }
   }
 
@@ -253,6 +254,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
 
   UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
   cell.accessoryType = UITableViewCellAccessoryCheckmark;
+  cell.accessibilityTraits |= UIAccessibilityTraitSelected;
 
   [_delegate paymentRequestPickerViewController:self
                                    didSelectRow:self.selectedRow];
