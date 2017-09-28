@@ -100,8 +100,8 @@ class ShapeClipPathOperation final : public ClipPathOperation {
     return WTF::AdoptRef(new ShapeClipPathOperation(std::move(shape)));
   }
 
-  const BasicShape* GetBasicShape() const { return shape_.Get(); }
-  bool IsValid() const { return shape_.Get(); }
+  const BasicShape* GetBasicShape() const { return shape_.get(); }
+  bool IsValid() const { return shape_.get(); }
   const Path& GetPath(const FloatRect& bounding_rect) {
     DCHECK(shape_);
     path_.reset();
@@ -131,9 +131,9 @@ inline bool ShapeClipPathOperation::operator==(
     const ClipPathOperation& o) const {
   if (!IsSameType(o))
     return false;
-  BasicShape* other_shape = ToShapeClipPathOperation(o).shape_.Get();
-  if (!shape_.Get() || !other_shape)
-    return static_cast<bool>(shape_.Get()) == static_cast<bool>(other_shape);
+  BasicShape* other_shape = ToShapeClipPathOperation(o).shape_.get();
+  if (!shape_.get() || !other_shape)
+    return static_cast<bool>(shape_.get()) == static_cast<bool>(other_shape);
   return *shape_ == *other_shape;
 }
 

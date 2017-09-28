@@ -149,7 +149,7 @@ ClipRects* PaintLayerClipper::ClipRectsIfCached(
   DCHECK(entry.overlay_scrollbar_clip_behavior ==
          context.overlay_scrollbar_clip_behavior);
 #endif
-  return entry.clip_rects.Get();
+  return entry.clip_rects.get();
 }
 
 ClipRects& PaintLayerClipper::StoreClipRectsInCache(

@@ -18,8 +18,8 @@ class CORE_EXPORT DOMArrayBufferBase
  public:
   virtual ~DOMArrayBufferBase() {}
 
-  const WTF::ArrayBuffer* Buffer() const { return buffer_.Get(); }
-  WTF::ArrayBuffer* Buffer() { return buffer_.Get(); }
+  const WTF::ArrayBuffer* Buffer() const { return buffer_.get(); }
+  WTF::ArrayBuffer* Buffer() { return buffer_.get(); }
 
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }

@@ -144,7 +144,7 @@ class NetworkResourcesData final
     }
 
     BlobDataHandle* DownloadedFileBlob() const {
-      return downloaded_file_blob_.Get();
+      return downloaded_file_blob_.get();
     }
     void SetDownloadedFileBlob(RefPtr<BlobDataHandle> blob) {
       downloaded_file_blob_ = std::move(blob);
@@ -168,7 +168,7 @@ class NetworkResourcesData final
     DECLARE_TRACE();
 
    private:
-    bool HasData() const { return data_buffer_.Get(); }
+    bool HasData() const { return data_buffer_.get(); }
     size_t DataLength() const;
     void AppendData(const char* data, size_t data_length);
     size_t DecodeDataToContent();

@@ -37,7 +37,7 @@ class CORE_EXPORT ReadableStreamController final
   bool IsActive() const { return !js_controller_.IsEmpty(); }
 
   void Close() {
-    ScriptState* script_state = script_state_.Get();
+    ScriptState* script_state = script_state_.get();
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -55,7 +55,7 @@ class CORE_EXPORT ReadableStreamController final
   }
 
   double DesiredSize() const {
-    ScriptState* script_state = script_state_.Get();
+    ScriptState* script_state = script_state_.get();
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -74,7 +74,7 @@ class CORE_EXPORT ReadableStreamController final
 
   template <typename ChunkType>
   void Enqueue(ChunkType chunk) const {
-    ScriptState* script_state = script_state_.Get();
+    ScriptState* script_state = script_state_.get();
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -93,7 +93,7 @@ class CORE_EXPORT ReadableStreamController final
 
   template <typename ErrorType>
   void GetError(ErrorType error) {
-    ScriptState* script_state = script_state_.Get();
+    ScriptState* script_state = script_state_.get();
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);

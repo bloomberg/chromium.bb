@@ -62,7 +62,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
   }
 
   ShapeValueType GetType() const { return type_; }
-  BasicShape* Shape() const { return shape_.Get(); }
+  BasicShape* Shape() const { return shape_.get(); }
 
   StyleImage* GetImage() const { return image_.Get(); }
   bool IsImageValid() const {

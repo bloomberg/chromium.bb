@@ -65,23 +65,23 @@ class CORE_EXPORT ObjectPaintProperties {
   //                                      redundant, but it is a pain to teach
   //                                      scrollbars to paint with an offset.
   const TransformPaintPropertyNode* PaintOffsetTranslation() const {
-    return paint_offset_translation_.Get();
+    return paint_offset_translation_.get();
   }
   const TransformPaintPropertyNode* Transform() const {
-    return transform_.Get();
+    return transform_.get();
   }
   const TransformPaintPropertyNode* Perspective() const {
-    return perspective_.Get();
+    return perspective_.get();
   }
   const TransformPaintPropertyNode* SvgLocalToBorderBoxTransform() const {
-    return svg_local_to_border_box_transform_.Get();
+    return svg_local_to_border_box_transform_.get();
   }
-  const ScrollPaintPropertyNode* Scroll() const { return scroll_.Get(); }
+  const ScrollPaintPropertyNode* Scroll() const { return scroll_.get(); }
   const TransformPaintPropertyNode* ScrollTranslation() const {
-    return scroll_translation_.Get();
+    return scroll_translation_.get();
   }
   const TransformPaintPropertyNode* ScrollbarPaintOffset() const {
-    return scrollbar_paint_offset_.Get();
+    return scrollbar_paint_offset_.get();
   }
 
   // The hierarchy of the effect subtree created by a LayoutObject is as
@@ -95,9 +95,9 @@ class CORE_EXPORT ObjectPaintProperties {
   // +-[ mask ]
   //       Isolated group for painting the CSS mask. This node will have
   //       SkBlendMode::kDstIn and shall paint last, i.e. after masked contents.
-  const EffectPaintPropertyNode* Effect() const { return effect_.Get(); }
-  const EffectPaintPropertyNode* Filter() const { return filter_.Get(); }
-  const EffectPaintPropertyNode* Mask() const { return mask_.Get(); }
+  const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
+  const EffectPaintPropertyNode* Filter() const { return filter_.get(); }
+  const EffectPaintPropertyNode* Mask() const { return mask_.get(); }
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
@@ -125,18 +125,18 @@ class CORE_EXPORT ObjectPaintProperties {
   //       Clip created by CSS clip. Only exists if the current clip includes
   //       some clip that doesn't apply to our fixed position descendants.
   const ClipPaintPropertyNode* FragmentClip() const {
-    return fragment_clip_.Get();
+    return fragment_clip_.get();
   }
-  const ClipPaintPropertyNode* MaskClip() const { return mask_clip_.Get(); }
-  const ClipPaintPropertyNode* CssClip() const { return css_clip_.Get(); }
+  const ClipPaintPropertyNode* MaskClip() const { return mask_clip_.get(); }
+  const ClipPaintPropertyNode* CssClip() const { return css_clip_.get(); }
   const ClipPaintPropertyNode* CssClipFixedPosition() const {
-    return css_clip_fixed_position_.Get();
+    return css_clip_fixed_position_.get();
   }
   const ClipPaintPropertyNode* InnerBorderRadiusClip() const {
-    return inner_border_radius_clip_.Get();
+    return inner_border_radius_clip_.get();
   }
   const ClipPaintPropertyNode* OverflowClip() const {
-    return overflow_clip_.Get();
+    return overflow_clip_.get();
   }
 
   // This is the complete set of property nodes that can be used to paint the

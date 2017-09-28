@@ -160,9 +160,9 @@ BuildObjectForAnimationKeyframes(const KeyframeEffectReadOnly* effect) {
 
   for (const auto& keyframe : normalized_keyframes) {
     // Ignore CSS Transitions
-    if (!keyframe.Get()->IsStringKeyframe())
+    if (!keyframe.get()->IsStringKeyframe())
       continue;
-    const StringKeyframe* string_keyframe = ToStringKeyframe(keyframe.Get());
+    const StringKeyframe* string_keyframe = ToStringKeyframe(keyframe.get());
     keyframes->addItem(BuildObjectForStringKeyframe(string_keyframe));
   }
   return protocol::Animation::KeyframesRule::create()
@@ -293,7 +293,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       KeyframeVector old_keyframes = old_string_keyframe_model->GetFrames();
       StringKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
-        new_keyframes.push_back(ToStringKeyframe(old_keyframe.Get()));
+        new_keyframes.push_back(ToStringKeyframe(old_keyframe.get()));
       new_model = StringKeyframeEffectModel::Create(new_keyframes);
     } else if (old_model->IsAnimatableValueKeyframeEffectModel()) {
       AnimatableValueKeyframeEffectModel* old_animatable_value_keyframe_model =
@@ -302,7 +302,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
           old_animatable_value_keyframe_model->GetFrames();
       AnimatableValueKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
-        new_keyframes.push_back(ToAnimatableValueKeyframe(old_keyframe.Get()));
+        new_keyframes.push_back(ToAnimatableValueKeyframe(old_keyframe.get()));
       new_model = AnimatableValueKeyframeEffectModel::Create(new_keyframes);
     } else if (old_model->IsTransitionKeyframeEffectModel()) {
       TransitionKeyframeEffectModel* old_transition_keyframe_model =
@@ -310,7 +310,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
       KeyframeVector old_keyframes = old_transition_keyframe_model->GetFrames();
       TransitionKeyframeVector new_keyframes;
       for (auto& old_keyframe : old_keyframes)
-        new_keyframes.push_back(ToTransitionKeyframe(old_keyframe.Get()));
+        new_keyframes.push_back(ToTransitionKeyframe(old_keyframe.get()));
       new_model = TransitionKeyframeEffectModel::Create(new_keyframes);
     }
 
@@ -390,7 +390,7 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
     DCHECK(frames.size() == 3);
     KeyframeVector new_frames;
     for (int i = 0; i < 3; i++)
-      new_frames.push_back(ToTransitionKeyframe(frames[i]->Clone().Get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[i]->Clone().get()));
     // Update delay, represented by the distance between the first two
     // keyframes.
     new_frames[1]->SetOffset(delay / (delay + duration));

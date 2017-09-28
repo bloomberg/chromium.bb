@@ -50,7 +50,7 @@ class FindPaintOffsetNeedingUpdateScope {
                   ->PaintProperties()
                   ->PaintOffsetTranslation()
             : nullptr;
-    DCHECK_OBJECT_PROPERTY_EQ(object_, old_paint_offset_translation_.Get(),
+    DCHECK_OBJECT_PROPERTY_EQ(object_, old_paint_offset_translation_.get(),
                               paint_offset_translation);
   }
 

@@ -2139,8 +2139,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // the lowest z-index.
   PaintLayer* hit_layer = HitTestChildren(
       kPositiveZOrderChildren, root_layer, result, hit_test_rect,
-      hit_test_location, local_transform_state.Get(),
-      z_offset_for_descendants_ptr, z_offset, unflattened_transform_state.Get(),
+      hit_test_location, local_transform_state.get(),
+      z_offset_for_descendants_ptr, z_offset, unflattened_transform_state.get(),
       depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
@@ -2151,8 +2151,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our overflow objects.
   hit_layer = HitTestChildren(
       kNormalFlowChildren, root_layer, result, hit_test_rect, hit_test_location,
-      local_transform_state.Get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.Get(), depth_sort_descendants);
+      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state.get(), depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2191,7 +2191,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     hit_test_location, kHitTestDescendants,
                                     inside_fragment_foreground_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                       unflattened_transform_state.Get())) {
+                       unflattened_transform_state.get())) {
       if (result.GetHitTestRequest().ListBased())
         result.Append(temp_result);
       else
@@ -2210,8 +2210,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our negative z-index children.
   hit_layer = HitTestChildren(
       kNegativeZOrderChildren, root_layer, result, hit_test_rect,
-      hit_test_location, local_transform_state.Get(),
-      z_offset_for_descendants_ptr, z_offset, unflattened_transform_state.Get(),
+      hit_test_location, local_transform_state.get(),
+      z_offset_for_descendants_ptr, z_offset, unflattened_transform_state.get(),
       depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
@@ -2232,7 +2232,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     hit_test_location, kHitTestSelf,
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                       unflattened_transform_state.Get())) {
+                       unflattened_transform_state.get())) {
       if (result.IsRectBasedTest())
         result.Append(temp_result);
       else
@@ -2368,7 +2368,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 
   // Now do a hit test with the root layer shifted to be us.
   return HitTestLayer(this, container_layer, result, local_hit_test_rect,
-                      new_hit_test_location, true, new_transform_state.Get(),
+                      new_hit_test_location, true, new_transform_state.get(),
                       z_offset);
 }
 

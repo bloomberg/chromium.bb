@@ -103,7 +103,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                                               FloatRect(border_image_rect)));
 
   PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
-              image.Get(), image_size, op);
+              image.get(), image_size, op);
 
   graphics_context.SetImageInterpolationQuality(previous_interpolation_quality);
   return true;

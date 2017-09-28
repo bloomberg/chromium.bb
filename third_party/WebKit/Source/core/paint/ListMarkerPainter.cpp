@@ -77,7 +77,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
         layout_list_marker_.GetImage()
             ->GetImage(layout_list_marker_, layout_list_marker_.GetDocument(),
                        layout_list_marker_.StyleRef(), marker.Size())
-            .Get(),
+            .get(),
         marker);
     if (layout_list_marker_.GetSelectionState() != SelectionState::kNone) {
       LayoutRect sel_rect = layout_list_marker_.LocalSelectionRect();

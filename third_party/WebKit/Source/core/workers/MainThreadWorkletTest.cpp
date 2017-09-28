@@ -47,7 +47,7 @@ class MainThreadWorkletTest : public ::testing::Test {
     reporting_proxy_ = WTF::MakeUnique<MainThreadWorkletReportingProxyForTest>(
         page_->GetFrame().GetDocument());
     global_scope_ = new MainThreadWorkletGlobalScope(
-        &page_->GetFrame(), url, "fake user agent", security_origin_.Get(),
+        &page_->GetFrame(), url, "fake user agent", security_origin_.get(),
         ToIsolate(page_->GetFrame().GetDocument()), *reporting_proxy_);
   }
 

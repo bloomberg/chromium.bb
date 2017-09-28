@@ -155,11 +155,11 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
   // When finalResponse is an empty object.
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
-                                    *security_origin.Get(),
+                                    *security_origin.get(),
                                     GetExecutionContext()));
   final_response.SetURL(url);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
-                                   *security_origin.Get(),
+                                   *security_origin.get(),
                                    GetExecutionContext()));
   // When there exist cross-origin redirects.
   AtomicString cross_origin_domain = "http://126.0.0.1:8000";
@@ -168,14 +168,14 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   redirect_response3.SetURL(redirect_url);
   redirect_chain.push_back(redirect_response3);
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
-                                    *security_origin.Get(),
+                                    *security_origin.get(),
                                     GetExecutionContext()));
 
   // When cross-origin redirect opts in.
   redirect_chain.back().SetHTTPHeaderField(HTTPNames::Timing_Allow_Origin,
                                            origin_domain);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
-                                   *security_origin.Get(),
+                                   *security_origin.get(),
                                    GetExecutionContext()));
 }
 

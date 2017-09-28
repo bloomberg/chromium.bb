@@ -19,7 +19,7 @@ namespace blink {
     RefPtr<type> value2 = value1->Copy();                       \
     svg1->Set##fieldName(value1);                               \
     svg2->Set##fieldName(value2);                               \
-    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());       \
+    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());       \
   }
 
 // This is not very useful for fields directly stored by values, because they
@@ -31,7 +31,7 @@ namespace blink {
     RefPtr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();   \
     svg1->Set##fieldName(SVGComputedStyle::Initial##fieldName()); \
     svg2->Set##fieldName(SVGComputedStyle::Initial##fieldName()); \
-    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());         \
+    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());         \
   }
 
 TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
@@ -52,7 +52,7 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
                          SVGComputedStyle::InitialStrokePaintColor(),
                          SVGComputedStyle::InitialStrokePaintUri(), true,
                          false);
-    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());
+    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());
   }
   {
     RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();
@@ -65,7 +65,7 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
                          SVGComputedStyle::InitialStrokePaintColor(),
                          SVGComputedStyle::InitialStrokePaintUri(), false,
                          true);
-    EXPECT_FALSE(svg1->Diff(svg2.Get()).HasDifference());
+    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());
   }
 }
 

@@ -407,7 +407,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
   float screen_device_scale_factor =
       frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
 
-  return DragImage::Create(image.Get(), image_orientation,
+  return DragImage::Create(image.get(), image_orientation,
                            screen_device_scale_factor, kInterpolationHigh,
                            opacity);
 }

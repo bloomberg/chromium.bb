@@ -475,7 +475,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   }
 
   if (page_popup_ && page_popup &&
-      page_popup_->HasSamePopupClient(page_popup.Get())) {
+      page_popup_->HasSamePopupClient(page_popup.get())) {
     // That click triggered a page popup that is the same as the one we just
     // closed.  It needs to be closed.
     CancelPagePopup();
@@ -706,7 +706,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       }
 
       if (page_popup_ && last_hidden_page_popup_ &&
-          page_popup_->HasSamePopupClient(last_hidden_page_popup_.Get())) {
+          page_popup_->HasSamePopupClient(last_hidden_page_popup_.get())) {
         // The tap triggered a page popup that is the same as the one we just
         // closed. It needs to be closed.
         CancelPagePopup();
@@ -1535,14 +1535,14 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   }
   EnablePopupMouseWheelEventListener(WebLocalFrameImpl::FromFrame(
       client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot()));
-  return page_popup_.Get();
+  return page_popup_.get();
 }
 
 void WebViewImpl::ClosePagePopup(PagePopup* popup) {
   DCHECK(popup);
   WebPagePopupImpl* popup_impl = ToWebPagePopupImpl(popup);
-  DCHECK_EQ(page_popup_.Get(), popup_impl);
-  if (page_popup_.Get() != popup_impl)
+  DCHECK_EQ(page_popup_.get(), popup_impl);
+  if (page_popup_.get() != popup_impl)
     return;
   page_popup_->ClosePopup();
 }
@@ -2289,7 +2289,7 @@ WebColor WebViewImpl::BackgroundColor() const {
 }
 
 WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
-  return page_popup_.Get();
+  return page_popup_.get();
 }
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as

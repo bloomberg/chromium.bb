@@ -31,7 +31,7 @@ class SVGImageTest : public ::testing::Test {
   }
 
   void PumpFrame() {
-    Image* image = image_.Get();
+    Image* image = image_.get();
     std::unique_ptr<SkCanvas> null_canvas = SkMakeNullCanvas();
     SkiaPaintCanvas canvas(null_canvas.get());
     PaintFlags flags;

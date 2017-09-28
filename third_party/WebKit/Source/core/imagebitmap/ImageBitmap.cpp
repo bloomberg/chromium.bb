@@ -210,7 +210,7 @@ RefPtr<StaticBitmapImage> FlipImageVertically(RefPtr<StaticBitmapImage> input) {
   RefPtr<Uint8Array> image_pixels = CopyImageData(input);
   if (!image_pixels)
     return nullptr;
-  SkImageInfo info = GetSkImageInfo(input.Get());
+  SkImageInfo info = GetSkImageInfo(input.get());
   unsigned image_row_bytes = info.width() * info.bytesPerPixel();
   for (int i = 0; i < info.height() / 2; i++) {
     unsigned top_first_element = i * image_row_bytes;
@@ -233,7 +233,7 @@ RefPtr<StaticBitmapImage> GetImageWithAlphaDisposition(
   if (skia_image->alphaType() == alpha_type)
     return image;
 
-  SkImageInfo info = GetSkImageInfo(image.Get());
+  SkImageInfo info = GetSkImageInfo(image.get());
   info = info.makeAlphaType(alpha_type);
   RefPtr<Uint8Array> dst_pixels = CopyImageData(image, info);
   if (!dst_pixels)
@@ -482,7 +482,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
     return;
   DCHECK(image_input->IsStaticBitmapImage());
   RefPtr<StaticBitmapImage> input =
-      static_cast<StaticBitmapImage*>(image_input.Get());
+      static_cast<StaticBitmapImage*>(image_input.get());
 
   ParsedOptions parsed_options = ParseOptions(
       options, crop_rect, IntSize(input->width(), input->height()));
@@ -506,7 +506,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
       FloatSize(offscreen_canvas->Size()));
   DCHECK(raw_input->IsStaticBitmapImage());
   RefPtr<StaticBitmapImage> input =
-      static_cast<StaticBitmapImage*>(raw_input.Get());
+      static_cast<StaticBitmapImage*>(raw_input.get());
   raw_input = nullptr;
 
   if (status != kNormalSourceImageStatus)

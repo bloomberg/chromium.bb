@@ -361,7 +361,7 @@ class CORE_EXPORT WebViewImpl final
   WebViewScheduler* Scheduler() const override;
   void SetVisibilityState(WebPageVisibilityState, bool) override;
 
-  bool HasOpenedPopup() const { return page_popup_.Get(); }
+  bool HasOpenedPopup() const { return page_popup_.get(); }
 
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function

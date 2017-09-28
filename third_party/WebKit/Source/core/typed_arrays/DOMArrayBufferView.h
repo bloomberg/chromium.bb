@@ -57,8 +57,8 @@ class CORE_EXPORT DOMArrayBufferView
     return buffer();
   }
 
-  const WTF::ArrayBufferView* View() const { return buffer_view_.Get(); }
-  WTF::ArrayBufferView* View() { return buffer_view_.Get(); }
+  const WTF::ArrayBufferView* View() const { return buffer_view_.get(); }
+  WTF::ArrayBufferView* View() { return buffer_view_.get(); }
 
   ViewType GetType() const { return View()->GetType(); }
   const char* TypeName() { return View()->TypeName(); }
