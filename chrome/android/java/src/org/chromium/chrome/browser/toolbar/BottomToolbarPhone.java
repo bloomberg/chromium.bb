@@ -334,7 +334,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     public boolean isInTabSwitcherMode() {
-        return !mBottomSheet.isSheetOpen() && super.isInTabSwitcherMode();
+        return super.isInTabSwitcherMode() && (mBottomSheet == null || !mBottomSheet.isSheetOpen());
     }
 
     @Override
@@ -744,7 +744,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
             mExpandButton.setTint(tint);
         }
 
-        if (mBottomSheet.isSheetOpen()) {
+        if (mBottomSheet != null && mBottomSheet.isSheetOpen()) {
             mShowMenuButtonWhenSheetOpen = mBottomSheet.isShowingNewTab();
             updateButtonsContainerVisibilityAndTranslation();
             updateMenuButtonClickableState();
