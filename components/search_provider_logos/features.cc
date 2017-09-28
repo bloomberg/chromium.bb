@@ -8,7 +8,7 @@ namespace search_provider_logos {
 namespace features {
 
 const base::Feature kUseDdljsonApi{"UseDdljsonApi",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kDdljsonOverrideUrlParam[] = "ddljson-override-url";
 
