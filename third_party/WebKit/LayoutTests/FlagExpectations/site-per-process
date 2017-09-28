@@ -1,6 +1,13 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/769502: PlzNavigate-related, not-yet-investigated timeout.
+crbug.com/769502 fast/loader/recursive-before-unload-crash.html [ Timeout ]
+
+# https://crbug.com/769508: PlzNavigate-related, not-yet-investigated failures.
+crbug.com/769508 fast/css/acid2.html [ Failure ]
+crbug.com/769508 fast/css/acid2-pixel.html [ Failure ]
+
 # https://crbug.com/765779: unique name trouble with PlzNavigate
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/765779 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
