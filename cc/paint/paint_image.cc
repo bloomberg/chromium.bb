@@ -99,6 +99,12 @@ PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   return result;
 }
 
+PaintImage PaintImage::MakeStatic() const {
+  PaintImage result(*this);
+  result.repetition_count_ = kAnimationNone;
+  return result;
+}
+
 SkISize PaintImage::GetSupportedDecodeSize(
     const SkISize& requested_size) const {
   // TODO(vmpstr): If this image is using subset_rect, then we don't support

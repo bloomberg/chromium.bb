@@ -89,6 +89,10 @@ class CC_PAINT_EXPORT PaintImage {
   // subset must be non-empty and lie within the image bounds.
   PaintImage MakeSubset(const gfx::Rect& subset) const;
 
+  // Makes a new PaintImage representing a static frame of the original image,
+  // which should not be animated by the compositor.
+  PaintImage MakeStatic() const;
+
   bool operator==(const PaintImage& other) const;
 
   // Returns the smallest size that is at least as big as the requested_size
