@@ -29,11 +29,6 @@ service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
   return connector_;
 }
 
-bool ShellDelegateMus::IsIncognitoAllowed() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool ShellDelegateMus::IsRunningInForcedAppMode() const {
   NOTIMPLEMENTED();
   return false;

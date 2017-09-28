@@ -23,10 +23,6 @@ TestShellDelegate::~TestShellDelegate() = default;
   return nullptr;
 }
 
-bool TestShellDelegate::IsIncognitoAllowed() const {
-  return true;
-}
-
 bool TestShellDelegate::IsRunningInForcedAppMode() const {
   return false;
 }

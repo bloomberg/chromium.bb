@@ -67,10 +67,6 @@ ShellDelegateImpl::~ShellDelegateImpl() {}
   return nullptr;
 }
 
-bool ShellDelegateImpl::IsIncognitoAllowed() const {
-  return true;
-}
-
 bool ShellDelegateImpl::IsRunningInForcedAppMode() const {
   return false;
 }

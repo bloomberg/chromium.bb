@@ -51,10 +51,6 @@ class ASH_EXPORT ShellDelegate {
   // Returns the connector for the mojo service manager. Returns null in tests.
   virtual service_manager::Connector* GetShellConnector() const = 0;
 
-  // Returns true if incognito mode is allowed for the user.
-  // Incognito windows are restricted for supervised users.
-  virtual bool IsIncognitoAllowed() const = 0;
-
   // Returns true if we're running in forced app mode.
   virtual bool IsRunningInForcedAppMode() const = 0;
 

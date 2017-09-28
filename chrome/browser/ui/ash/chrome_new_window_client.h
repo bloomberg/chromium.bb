@@ -16,6 +16,8 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
   ChromeNewWindowClient();
   ~ChromeNewWindowClient() override;
 
+  static ChromeNewWindowClient* Get();
+
   // Overridden from ash::mojom::NewWindowClient:
   void NewTab() override;
   void NewWindow(bool incognito) override;

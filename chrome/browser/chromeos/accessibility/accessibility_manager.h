@@ -136,9 +136,6 @@ class AccessibilityManager
   // Enables or disable Sticky Keys.
   void EnableStickyKeys(bool enabled);
 
-  // Returns true if Incognito mode is allowed, or false if not.
-  bool IsIncognitoAllowed();
-
   // Returns true if the Sticky Keys is enabled, or false if not.
   bool IsStickyKeysEnabled() const;
 

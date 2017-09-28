@@ -363,10 +363,6 @@ service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
 }
 
-bool ChromeShellDelegate::IsIncognitoAllowed() const {
-  return AccessibilityManager::Get()->IsIncognitoAllowed();
-}
-
 bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
   return chrome::IsRunningInForcedAppMode();
 }
