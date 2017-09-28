@@ -1841,6 +1841,7 @@ source_set("unit_tests") {
     "policy/fake_affiliated_invalidation_service_provider.h",
     "policy/heartbeat_scheduler_unittest.cc",
     "policy/network_configuration_updater_unittest.cc",
+    "policy/off_hours/off_hours_interval_unittest.cc",
     "policy/off_hours/weekly_time_unittest.cc",
     "policy/pre_signin_policy_fetcher_unittest.cc",
     "policy/recommendation_restorer_unittest.cc",

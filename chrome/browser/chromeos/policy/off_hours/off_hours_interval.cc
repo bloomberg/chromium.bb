@@ -23,6 +23,8 @@ std::unique_ptr<base::DictionaryValue> OffHoursInterval::ToValue() const {
 }
 
 bool OffHoursInterval::Contains(const WeeklyTime& w) const {
+  if (w.GetDurationTo(end_).is_zero())
+    return false;
   base::TimeDelta interval_duration = start_.GetDurationTo(end_);
   return start_.GetDurationTo(w) + w.GetDurationTo(end_) == interval_duration;
 }

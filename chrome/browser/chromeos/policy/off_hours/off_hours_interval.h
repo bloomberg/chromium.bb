@@ -15,6 +15,7 @@ namespace off_hours {
 
 // Represents non-emply time interval [start, end) between two weekly times.
 // Interval can be wrapped across the end of the week.
+// Interval is empty if start = end. Empty intervals isn't allowed.
 class OffHoursInterval {
  public:
   OffHoursInterval(const WeeklyTime& start, const WeeklyTime& end);
