@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/validation.h"
@@ -219,7 +220,7 @@ PaymentsProfileComparator::ComputeMissingFields(
   // is just the region that will be used to check if the number is
   // potentially in a local format.
   std::string country =
-      data_util::GetCountryCodeWithFallback(&profile, app_locale());
+      autofill::data_util::GetCountryCodeWithFallback(&profile, app_locale());
 
   base::string16 phone = profile.GetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), app_locale());

@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -128,7 +129,7 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
       GetShippingAddressLabelFormAutofillProfile(profile, locale);
 
   base::string16 phone =
-      data_util::GetFormattedPhoneNumberForDisplay(profile, locale);
+      autofill::i18n::GetFormattedPhoneNumberForDisplay(profile, locale);
 
   return GetBaseProfileLabel(type, name, address, phone, accessible_content,
                              enabled);
@@ -314,7 +315,7 @@ std::unique_ptr<views::View> GetContactInfoLabel(
 
   base::string16 phone =
       options.request_payer_phone()
-          ? data_util::GetFormattedPhoneNumberForDisplay(profile, locale)
+          ? autofill::i18n::GetFormattedPhoneNumberForDisplay(profile, locale)
           : base::string16();
 
   base::string16 email = options.request_payer_email()

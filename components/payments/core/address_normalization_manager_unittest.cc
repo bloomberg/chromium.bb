@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "components/payments/core/test_address_normalizer.h"
+#include "components/autofill/core/browser/test_address_normalizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -17,7 +17,7 @@ class AddressNormalizationManagerTest : public testing::Test {
   AddressNormalizationManagerTest() {}
 
   void Initialize(const std::string& country_code) {
-    address_normalizer_ = base::MakeUnique<TestAddressNormalizer>();
+    address_normalizer_ = base::MakeUnique<autofill::TestAddressNormalizer>();
     manager_ = base::MakeUnique<AddressNormalizationManager>(
         address_normalizer_.get(), country_code);
   }
@@ -30,7 +30,7 @@ class AddressNormalizationManagerTest : public testing::Test {
 
   void CompletionCallback() { completion_callback_called_ = true; }
 
-  std::unique_ptr<TestAddressNormalizer> address_normalizer_;
+  std::unique_ptr<autofill::TestAddressNormalizer> address_normalizer_;
   std::unique_ptr<AddressNormalizationManager> manager_;
   bool completion_callback_called_ = false;
 };

@@ -4,9 +4,12 @@
 
 #include "components/payments/core/address_normalization_manager.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace payments {
@@ -16,7 +19,7 @@ constexpr int kAddressNormalizationTimeoutSeconds = 5;
 }  // namespace
 
 AddressNormalizationManager::AddressNormalizationManager(
-    AddressNormalizer* address_normalizer,
+    autofill::AddressNormalizer* address_normalizer,
     const std::string& default_country_code)
     : default_country_code_(default_country_code),
       address_normalizer_(address_normalizer) {
@@ -65,7 +68,7 @@ void AddressNormalizationManager::MaybeRunCompletionCallback() {
 
 AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
     AddressNormalizationManager* owner,
-    AddressNormalizer* address_normalizer,
+    autofill::AddressNormalizer* address_normalizer,
     autofill::AutofillProfile* profile)
     : owner_(owner), profile_(profile) {
   DCHECK(owner_);

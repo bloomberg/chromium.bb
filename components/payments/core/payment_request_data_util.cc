@@ -5,7 +5,6 @@
 #include "components/payments/core/payment_request_data_util.h"
 
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,34 +17,10 @@
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
-#include "third_party/libphonenumber/phonenumber_api.h"
 #include "url/url_constants.h"
 
 namespace payments {
 namespace data_util {
-
-namespace {
-using ::i18n::phonenumbers::PhoneNumber;
-using ::i18n::phonenumbers::PhoneNumberUtil;
-
-// Formats the |phone_number| to the specified |format|. Returns the original
-// number if the operation is not possible.
-std::string FormatPhoneNumber(const std::string& phone_number,
-                              const std::string& country_code,
-                              PhoneNumberUtil::PhoneNumberFormat format) {
-  PhoneNumber parsed_number;
-  PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
-  if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
-      PhoneNumberUtil::NO_PARSING_ERROR) {
-    return phone_number;
-  }
-
-  std::string formatted_number;
-  phone_number_util->Format(parsed_number, format, &formatted_number);
-  return formatted_number;
-}
-
-}  // namespace
 
 PaymentAddress GetPaymentAddressFromAutofillProfile(
     const autofill::AutofillProfile& profile,
@@ -201,44 +176,6 @@ void ParseSupportedCardTypes(
   out_supported_card_types_set->insert(autofill::CreditCard::CARD_TYPE_UNKNOWN);
 }
 
-base::string16 GetFormattedPhoneNumberForDisplay(
-    const autofill::AutofillProfile& profile,
-    const std::string& locale) {
-  // Since the "+" is removed for some country's phone numbers, try to add a "+"
-  // and see if it is a valid phone number for a country.
-  // Having two "+" in front of a number has no effect on the formatted number.
-  // The reason for this is international phone numbers for another country. For
-  // example, without adding a "+", the US number 1-415-123-1234 for an AU
-  // address would be wrongly formatted as +61 1-415-123-1234 which is invalid.
-  std::string phone = base::UTF16ToUTF8(profile.GetInfo(
-      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), locale));
-  std::string tentative_intl_phone = "+" + phone;
-
-  // Always favor the tentative international phone number if it's determined as
-  // being a valid number.
-  if (autofill::IsValidPhoneNumber(
-          base::UTF8ToUTF16(tentative_intl_phone),
-          GetCountryCodeWithFallback(&profile, locale))) {
-    return base::UTF8ToUTF16(FormatPhoneForDisplay(
-        tentative_intl_phone, GetCountryCodeWithFallback(&profile, locale)));
-  }
-
-  return base::UTF8ToUTF16(FormatPhoneForDisplay(
-      phone, GetCountryCodeWithFallback(&profile, locale)));
-}
-
-std::string FormatPhoneForDisplay(const std::string& phone_number,
-                                  const std::string& country_code) {
-  return FormatPhoneNumber(phone_number, country_code,
-                           PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL);
-}
-
-std::string FormatPhoneForResponse(const std::string& phone_number,
-                                   const std::string& country_code) {
-  return FormatPhoneNumber(phone_number, country_code,
-                           PhoneNumberUtil::PhoneNumberFormat::E164);
-}
-
 base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
   base::string16 number = autofill::CreditCard::StripSeparators(card_number);
   if (number.empty() || !base::IsAsciiDigit(number[0]))
@@ -257,15 +194,6 @@ base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
   }
 
   return number;
-}
-
-std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,
-                                       const std::string& app_locale) {
-  std::string country_code =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-  if (!autofill::data_util::IsValidCountryCode(country_code))
-    country_code = autofill::AutofillCountry::CountryCodeForLocale(app_locale);
-  return country_code;
 }
 
 }  // namespace data_util

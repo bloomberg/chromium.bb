@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
-#define COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_H_
 
 #include <string>
 
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
 namespace autofill {
-class AutofillProfile;
-}
 
-namespace payments {
+class AutofillProfile;
 
 // A class used to normalize addresses.
 class AddressNormalizer : public autofill::LoadRulesListener {
@@ -22,10 +20,9 @@ class AddressNormalizer : public autofill::LoadRulesListener {
   class Delegate {
    public:
     virtual void OnAddressNormalized(
-        const autofill::AutofillProfile& normalized_profile) = 0;
+        const AutofillProfile& normalized_profile) = 0;
 
-    virtual void OnCouldNotNormalize(
-        const autofill::AutofillProfile& profile) = 0;
+    virtual void OnCouldNotNormalize(const AutofillProfile& profile) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -53,13 +50,12 @@ class AddressNormalizer : public autofill::LoadRulesListener {
   // happen synchronously, or not at all if the rules are not already loaded.
   // Will start loading the rules for the |region_code| if they had not started
   // loading.
-  virtual void StartAddressNormalization(
-      const autofill::AutofillProfile& profile,
-      const std::string& region_code,
-      int timeout_seconds,
-      Delegate* requester) = 0;
+  virtual void StartAddressNormalization(const AutofillProfile& profile,
+                                         const std::string& region_code,
+                                         int timeout_seconds,
+                                         Delegate* requester) = 0;
 };
 
-}  // namespace payments
+}  // namespace autofill
 
-#endif  // COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_H_

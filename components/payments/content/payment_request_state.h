@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
-#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -37,7 +37,7 @@ class PaymentRequestDelegate;
 // what the merchant has specified, as input into the "is ready to pay"
 // computation.
 class PaymentRequestState : public PaymentResponseHelper::Delegate,
-                            public AddressNormalizer::Delegate,
+                            public autofill::AddressNormalizer::Delegate,
                             public PaymentRequestSpec::Observer {
  public:
   // Any class call add itself as Observer via AddObserver() and receive
@@ -89,7 +89,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void OnPaymentResponseReady(
       mojom::PaymentResponsePtr payment_response) override;
 
-  // AddressNormalizer::Delegate
+  // autofill::AddressNormalizer::Delegate
   void OnAddressNormalized(
       const autofill::AutofillProfile& normalized_profile) override;
   void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override;
@@ -200,7 +200,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // generation has begun. False otherwise.
   bool IsPaymentAppInvoked() const;
 
-  AddressNormalizer* GetAddressNormalizer();
+  autofill::AddressNormalizer* GetAddressNormalizer();
 
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,

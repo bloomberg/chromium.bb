@@ -115,7 +115,8 @@ ChromePaymentRequestDelegate::GetRegionDataLoader() {
       GetAddressInputStorage().release(), GetApplicationLocale());
 }
 
-AddressNormalizer* ChromePaymentRequestDelegate::GetAddressNormalizer() {
+autofill::AddressNormalizer*
+ChromePaymentRequestDelegate::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 

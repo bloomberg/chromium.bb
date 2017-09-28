@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -52,7 +53,7 @@ NSString* GetBillingAddressLabelFromAutofillProfile(
 
 NSString* GetPhoneNumberLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile) {
-  base::string16 label = payments::data_util::GetFormattedPhoneNumberForDisplay(
+  base::string16 label = autofill::i18n::GetFormattedPhoneNumberForDisplay(
       profile, GetApplicationContext()->GetApplicationLocale());
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }

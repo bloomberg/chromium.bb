@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/address_normalizer_impl.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 
 #include <stddef.h>
 #include <utility>
@@ -18,16 +18,15 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/payments/core/payment_request_data_util.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
-namespace payments {
+namespace autofill {
 namespace {
 
-using ::autofill::AutofillProfile;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 
@@ -38,16 +37,15 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
                               const std::string& region_code,
                               int timeout_seconds,
                               AddressNormalizer::Delegate* delegate,
-                              autofill::AddressValidator* address_validator)
+                              AddressValidator* address_validator)
       : profile_(profile),
         region_code_(region_code),
         delegate_(delegate),
         address_validator_(address_validator),
         has_responded_(false),
-        on_timeout_(
-            base::Bind(&::payments::AddressNormalizationRequest::OnRulesLoaded,
-                       base::Unretained(this),
-                       false)) {
+        on_timeout_(base::Bind(&AddressNormalizationRequest::OnRulesLoaded,
+                               base::Unretained(this),
+                               false)) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, on_timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds));
@@ -82,11 +80,11 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
     // Normalize the address.
     if (address_validator_ &&
         address_validator_->NormalizeAddress(&address_data)) {
-      profile_.SetRawInfo(autofill::ADDRESS_HOME_STATE,
+      profile_.SetRawInfo(ADDRESS_HOME_STATE,
                           base::UTF8ToUTF16(address_data.administrative_area));
-      profile_.SetRawInfo(autofill::ADDRESS_HOME_CITY,
+      profile_.SetRawInfo(ADDRESS_HOME_CITY,
                           base::UTF8ToUTF16(address_data.locality));
-      profile_.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
+      profile_.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                           base::UTF8ToUTF16(address_data.dependent_locality));
     }
 
@@ -99,21 +97,20 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
   // if it cannot be formatted. More info at:
   // https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm
   void FormatPhoneNumberForResponse() {
-    const std::string original_number = base::UTF16ToUTF8(profile_.GetInfo(
-        autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-        region_code_));
+    const std::string original_number = base::UTF16ToUTF8(
+        profile_.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), region_code_));
 
     std::string formatted_number =
-        data_util::FormatPhoneForResponse(original_number, region_code_);
+        autofill::i18n::FormatPhoneForResponse(original_number, region_code_);
 
-    profile_.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+    profile_.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                         base::UTF8ToUTF16(formatted_number));
   }
 
   AutofillProfile profile_;
   std::string region_code_;
   AddressNormalizer::Delegate* delegate_;
-  autofill::AddressValidator* address_validator_;
+  AddressValidator* address_validator_;
 
   bool has_responded_;
   base::CancelableCallback<void()> on_timeout_;
@@ -143,7 +140,7 @@ void AddressNormalizerImpl::StartAddressNormalization(
     const std::string& region_code,
     int timeout_seconds,
     AddressNormalizer::Delegate* requester) {
-  DCHECK(timeout_seconds >= 0);
+  DCHECK_GE(timeout_seconds, 0);
 
   std::unique_ptr<AddressNormalizationRequest> request(
       base::MakeUnique<AddressNormalizationRequest>(profile, region_code,
@@ -186,4 +183,4 @@ void AddressNormalizerImpl::OnAddressValidationRulesLoaded(
   }
 }
 
-}  // namespace payments
+}  // namespace autofill

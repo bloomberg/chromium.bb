@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/address_normalizer_impl.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 
 #include <utility>
 
@@ -15,10 +15,9 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 #include "third_party/libaddressinput/src/cpp/test/testdata_source.h"
 
-namespace payments {
+namespace autofill {
 namespace {
 
-using ::autofill::AutofillProfile;
 using ::i18n::addressinput::NullStorage;
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
@@ -34,12 +33,12 @@ class NormalizationDelegate : public AddressNormalizer::Delegate {
 
   ~NormalizationDelegate() override {}
 
-  void OnAddressNormalized(const autofill::AutofillProfile& profile) override {
+  void OnAddressNormalized(const AutofillProfile& profile) override {
     normalized_called_ = true;
     profile_ = profile;
   }
 
-  void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override {
+  void OnCouldNotNormalize(const AutofillProfile& profile) override {
     not_normalized_called_ = true;
     profile_ = profile;
   }
@@ -199,7 +198,7 @@ TEST_F(AddressNormalizerTest, StartNormalization_RulesNotLoaded_WillLoad) {
 TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalized) {
   NormalizationDelegate delegate;
   AutofillProfile profile;
-  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                      base::UTF8ToUTF16("(515) 123-1234"));
 
   // Load the rules.
@@ -214,7 +213,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalized) {
 
   // Expect that the phone number was formatted.
   EXPECT_EQ("+15151231234", base::UTF16ToUTF8(delegate.profile().GetRawInfo(
-                                autofill::PHONE_HOME_WHOLE_NUMBER)));
+                                PHONE_HOME_WHOLE_NUMBER)));
 }
 
 // Tests that the phone number is formatted even when the address is not
@@ -222,7 +221,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalized) {
 TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalized) {
   NormalizationDelegate delegate;
   AutofillProfile profile;
-  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                      base::UTF8ToUTF16("515-123-1234"));
 
   // Make sure the rules will not be loaded in the StartAddressNormalization
@@ -240,7 +239,7 @@ TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalized) {
 
   // Expect that the phone number was formatted.
   EXPECT_EQ("+15151231234", base::UTF16ToUTF8(delegate.profile().GetRawInfo(
-                                autofill::PHONE_HOME_WHOLE_NUMBER)));
+                                PHONE_HOME_WHOLE_NUMBER)));
 }
 
-}  // namespace payments
+}  // namespace autofill

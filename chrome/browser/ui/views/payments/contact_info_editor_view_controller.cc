@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/payments/content/payment_request_spec.h"
@@ -75,7 +76,7 @@ base::string16 ContactInfoEditorViewController::GetInitialValueForType(
     return base::string16();
 
   if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
-    return data_util::GetFormattedPhoneNumberForDisplay(
+    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
         *profile_to_edit_, state()->GetApplicationLocale());
   }
 
@@ -159,7 +160,7 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
 base::string16
 ContactInfoEditorViewController::ContactInfoValidationDelegate::Format(
     const base::string16& text) {
-  return base::UTF8ToUTF16(data_util::FormatPhoneForDisplay(
+  return base::UTF8ToUTF16(autofill::i18n::FormatPhoneForDisplay(
       base::UTF16ToUTF8(text),
       autofill::AutofillCountry::CountryCodeForLocale(locale_)));
 }

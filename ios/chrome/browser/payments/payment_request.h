@@ -13,9 +13,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/address_normalization_manager.h"
-#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_options_provider.h"
@@ -27,13 +27,13 @@
 #include "url/gurl.h"
 
 namespace autofill {
+class AddressNormalizer;
 class AutofillProfile;
 class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
 
 namespace payments {
-class AddressNormalizer;
 class AutofillPaymentInstrument;
 class CurrencyFormatter;
 class PaymentDetails;
@@ -118,7 +118,7 @@ class PaymentRequest : public PaymentOptionsProvider,
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
-  AddressNormalizer* GetAddressNormalizer() override;
+  autofill::AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
@@ -354,7 +354,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   __weak id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 
   // The address normalizer to use for the duration of the Payment Request.
-  AddressNormalizerImpl address_normalizer_;
+  autofill::AddressNormalizerImpl address_normalizer_;
 
   // Used to normalize the shipping address and the contact info.
   AddressNormalizationManager address_normalization_manager_;

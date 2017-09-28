@@ -6,8 +6,8 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payment_instrument.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
@@ -18,7 +18,7 @@ class PaymentRequestSpec;
 
 // A helper class to facilitate the creation of the PaymentResponse.
 class PaymentResponseHelper : public PaymentInstrument::Delegate,
-                              public AddressNormalizer::Delegate {
+                              public autofill::AddressNormalizer::Delegate {
  public:
   class Delegate {
    public:
