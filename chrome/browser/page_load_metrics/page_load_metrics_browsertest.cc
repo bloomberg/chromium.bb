@@ -1155,6 +1155,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
 // Test UseCounter Features observed in a child frame are recorded, exactly
@@ -1176,6 +1179,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, UseCounterFeaturesInIframe) {
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
 // Test UseCounter Features observed in multiple child frames are recorded,
@@ -1199,6 +1205,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
