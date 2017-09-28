@@ -166,6 +166,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
             : ApplicationMode::NORMAL;
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                              withURL:webpageGURL
+                                      dismissOmnibox:YES
                                           transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation
@@ -253,6 +254,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                                              withURL:[[startupInformation
                                                          startupParameters]
                                                          externalURL]
+                                      dismissOmnibox:YES
                                           transition:ui::PAGE_TRANSITION_LINK
                                           completion:^{
                                             [startupInformation

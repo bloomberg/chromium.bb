@@ -458,7 +458,8 @@ TEST_F(BrowserViewControllerTest, TestClearPresentedState) {
   EXPECT_CALL(*this, OnCompletionCalled());
   [bvc_ clearPresentedStateWithCompletion:^{
     this->OnCompletionCalled();
-  }];
+  }
+                           dismissOmnibox:YES];
 }
 
 // Tests for the browser view controller when Payment Request is enabled.

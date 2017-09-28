@@ -18,10 +18,12 @@ class GURL;
 // Protocol for object that can open new tabs during application launch.
 @protocol TabOpening<NSObject>
 
-// Dismisses any modal view then opens either a normal or incognito tab with
-// |url|. After opening |url|, run completion |handler| if it is not nil.
+// Dismisses any modal view, excluding the omnibox if |dismissOmnibox| is NO,
+// then opens either a normal or incognito tab with |url|. After opening |url|,
+// run completion |handler| if it is not nil.
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
+                               dismissOmnibox:(BOOL)dismissOmnibox
                                    transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion;
 

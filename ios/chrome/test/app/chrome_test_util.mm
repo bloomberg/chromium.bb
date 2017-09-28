@@ -170,7 +170,8 @@ void RemoveAllInfoBars() {
 }
 
 void ClearPresentedState() {
-  [GetMainController() dismissModalDialogsWithCompletion:nil];
+  [GetMainController() dismissModalDialogsWithCompletion:nil
+                                          dismissOmnibox:YES];
 }
 
 void SetBooleanLocalStatePref(const char* pref_name, bool value) {

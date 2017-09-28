@@ -72,6 +72,8 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
                                                     ? ApplicationMode::INCOGNITO
                                                     : ApplicationMode::NORMAL
                                         withURL:[params externalURL]
+                                 dismissOmnibox:[params postOpeningAction] !=
+                                                FOCUS_OMNIBOX
                                      transition:ui::PAGE_TRANSITION_LINK
                                      completion:tabOpenedCompletion];
       return YES;

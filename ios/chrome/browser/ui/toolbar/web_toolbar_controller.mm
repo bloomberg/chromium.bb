@@ -2126,6 +2126,11 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (void)fadeInOmniboxTrailingView {
+  UIView* trailingView = [_omniBox rightView];
+  trailingView.alpha = 0;
+  [_cancelButton setAlpha:0];
+  [_cancelButton setHidden:NO];
+
   // Instead of passing a delay into -fadeInView:, wait to call -fadeInView:.
   // The CABasicAnimation's start and end positions are calculated immediately
   // instead of after the animation's delay, but the omnibox's layer isn't set
@@ -2134,11 +2139,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   dispatch_time_t delay = dispatch_time(
       DISPATCH_TIME_NOW, ios::material::kDuration6 * NSEC_PER_SEC);
   dispatch_after(delay, dispatch_get_main_queue(), ^(void) {
-    UIView* trailingView = [_omniBox rightView];
-    trailingView.alpha = 0;
-    [_cancelButton setAlpha:0];
-    [_cancelButton setHidden:NO];
-
     [self fadeInView:trailingView
         fromLeadingOffset:kPositionAnimationLeadingOffset
              withDuration:ios::material::kDuration1

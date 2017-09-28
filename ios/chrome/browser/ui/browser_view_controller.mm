@@ -4266,7 +4266,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                             @"535886823&pt=9008&ct=rating")];
 
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppDialogShown"));
-  [self clearPresentedStateWithCompletion:nil];
+  [self clearPresentedStateWithCompletion:nil dismissOmnibox:YES];
 
   _rateThisAppDialog = ios::GetChromeBrowserProvider()->CreateAppRatingPrompt();
   [_rateThisAppDialog setAppStoreURL:storeURL];
@@ -4406,11 +4406,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion {
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
   [_activityServiceCoordinator cancelShare];
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:NO];
   [_bookmarkInteractionController dismissSnackbar];
-  [_toolbarController cancelOmniboxEdit];
+  if (dismissOmnibox) {
+    [_toolbarController cancelOmniboxEdit];
+  }
   [_dialogPresenter cancelAllDialogs];
   [self.dispatcher hidePageInfo];
   [self.tabTipBubblePresenter dismissAnimated:NO];
