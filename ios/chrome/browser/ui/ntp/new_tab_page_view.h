@@ -14,12 +14,6 @@
 @interface NewTabPageView : UIView
 @property(nonatomic, weak, readonly) UIScrollView* scrollView;
 @property(nonatomic, weak, readonly) NewTabPageBar* tabBar;
-// Safe area to be used for toolbar. Once the view is part of the view hierarchy
-// and has its own safe area set, this is equal to safeAreaInsets. But as a
-// snapshot of the view is taken before it is inserted in the view hierarchy,
-// this property needs to be set to what would be the safe area after being
-// inserted in the view hierarchy, before the snapshot is taken.
-@property(nonatomic, assign) UIEdgeInsets safeAreaInsetForToolbar;
 
 - (instancetype)initWithFrame:(CGRect)frame
                 andScrollView:(UIScrollView*)scrollView

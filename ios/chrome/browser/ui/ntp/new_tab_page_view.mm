@@ -19,7 +19,6 @@
 
 @synthesize scrollView = scrollView_;
 @synthesize tabBar = tabBar_;
-@synthesize safeAreaInsetForToolbar = _safeAreaInsetForToolbar;
 
 - (instancetype)initWithFrame:(CGRect)frame
                 andScrollView:(UIScrollView*)scrollView
@@ -34,11 +33,6 @@
   return self;
 }
 
-- (void)safeAreaInsetsDidChange {
-  self.safeAreaInsetForToolbar = self.safeAreaInsets;
-  [super safeAreaInsetsDidChange];
-}
-
 - (instancetype)initWithFrame:(CGRect)frame {
   NOTREACHED();
   return nil;
@@ -47,13 +41,6 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   NOTREACHED();
   return nil;
-}
-
-#pragma mark - Properties
-
-- (void)setSafeAreaInsetForToolbar:(UIEdgeInsets)safeAreaInsetForToolbar {
-  _safeAreaInsetForToolbar = safeAreaInsetForToolbar;
-  self.tabBar.safeAreaInsetFromNTPView = safeAreaInsetForToolbar;
 }
 
 - (void)setFrame:(CGRect)frame {
@@ -114,7 +101,6 @@
         CGRectGetMinX(self.bounds), CGRectGetMinY(self.bounds),
         CGRectGetWidth(self.bounds), CGRectGetMinY(self.tabBar.frame));
   }
-  [self updateScrollViewContentSize];
 
   // When using a new_tab_page_view in autolayout -setFrame is never called,
   // which means all the logic to keep the selected scroll index set is never

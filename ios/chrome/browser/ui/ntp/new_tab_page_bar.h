@@ -24,16 +24,10 @@
 @interface NewTabPageBar : UIView<UIGestureRecognizerDelegate>
 
 @property(nonatomic, strong) NSArray* items;
-// Which button is currently selected.
 @property(nonatomic, assign) NSUInteger selectedIndex;
-// Percentage of the overlay that sits over the tab bar buttons.
 @property(nonatomic, assign) CGFloat overlayPercentage;
 @property(nonatomic, readonly, strong) NSArray* buttons;
 @property(nonatomic, weak) id<NewTabPageBarDelegate> delegate;
-
-// Safe area set by the NTP view. This is used as the safeAreaInsets of this
-// view as it needs to be used before the safeAreaInsets is set up.
-@property(nonatomic, assign) UIEdgeInsets safeAreaInsetFromNTPView;
 
 // Changes the colors of the buttons and overlay depending on the content offset
 // of the scroll view. Tablet Incognito only.
