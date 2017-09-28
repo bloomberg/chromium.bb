@@ -570,11 +570,9 @@ void ChromeCleanerControllerImpl::OnCleanerProcessDone(
       RecordCleanupResultHistogram(CLEANUP_RESULT_SUCCEEDED);
       delegate_->ResetTaggedProfiles(
           g_browser_process->profile_manager()->GetLoadedProfiles(),
-          // OnSettingsResetCompleted() will take care of transitioning to the
-          // kIdle state with IdleReason kCleaningSucceeded.
-          base::BindOnce(&ChromeCleanerControllerImpl::OnSettingsResetCompleted,
-                         base::Unretained(this)));
-      ResetCleanerDataAndInvalidateWeakPtrs();
+          base::BindOnce(&base::DoNothing));
+      idle_reason_ = IdleReason::kCleaningSucceeded;
+      SetStateAndNotifyObservers(State::kIdle);
       return;
     }
   }
@@ -596,11 +594,6 @@ void ChromeCleanerControllerImpl::InitiateReboot() {
     for (auto& observer : observer_list_)
       observer.OnRebootFailed();
   }
-}
-
-void ChromeCleanerControllerImpl::OnSettingsResetCompleted() {
-  idle_reason_ = IdleReason::kCleaningSucceeded;
-  SetStateAndNotifyObservers(State::kIdle);
 }
 
 }  // namespace safe_browsing
