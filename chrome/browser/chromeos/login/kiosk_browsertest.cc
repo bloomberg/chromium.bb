@@ -67,15 +67,19 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/switches.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "media/audio/mock_audio_manager.h"
+#include "media/audio/test_audio_thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/keyboard/keyboard_switches.h"
 
 namespace em = enterprise_management;
 
@@ -118,6 +122,11 @@ const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
 //     chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //         detail/aaedpojejpghjkedenggihopfhfijcko
 const char kTestGetVolumeListKioskApp[] = "aaedpojejpghjkedenggihopfhfijcko";
+
+// An app to test Kiosk virtual keyboard API chrome.virtualKeyboard.* .
+// Source files are in
+//     chrome/test/data/chromeos/app_mode/virtual_keyboard/src/
+const char kTestVirtualKeyboardKioskApp[] = "fmmbbdiapbcicajbpkpkdbcgidgppada";
 
 // Testing apps for testing kiosk multi-app feature. All the crx files are in
 //    chrome/test/data/chromeos/app_mode/webstore/downloads.
@@ -2295,6 +2304,51 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   DCHECK_GT(private_store.GetUpdateCheckCountAndReset(), 0);
   DCHECK_EQ(0, fake_cws()->GetUpdateCheckCountAndReset());
   EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
+}
+
+// Specialized test fixture for testing kiosk mode where virtual keyboard is
+// enabled.
+class KioskVirtualKeyboardTest : public KioskTest {
+ public:
+  KioskVirtualKeyboardTest() {}
+  ~KioskVirtualKeyboardTest() override = default;
+
+ protected:
+  // KioskTest overrides:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    KioskTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        kTestVirtualKeyboardKioskApp);
+    command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
+  }
+
+  // Use class variable for sane lifetime.
+  std::unique_ptr<media::MockAudioManager> mock_audio_manager_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KioskVirtualKeyboardTest);
+};
+
+// Verifies that chrome.virtualKeyboard.restrictFeatures and related private
+// APIs work.
+IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
+  // Mock existence of audio input.
+  // We cannot do this in SetUp because it's overriden in RunTestOnMainThread.
+  mock_audio_manager_ = base::MakeUnique<media::MockAudioManager>(
+      base::MakeUnique<media::TestAudioThread>());
+  mock_audio_manager_->SetHasInputDevices(true);
+
+  set_test_app_id(kTestVirtualKeyboardKioskApp);
+  set_test_app_version("0.1");
+  set_test_crx_file(test_app_id() + ".crx");
+
+  extensions::ResultCatcher catcher;
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // Shutdown should be done in the same thread, thus not in the destructor.
+  mock_audio_manager_->Shutdown();
 }
 
 // Specialized test fixture for testing kiosk mode on the

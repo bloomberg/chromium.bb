@@ -18,6 +18,23 @@ class GURL;
 
 namespace keyboard {
 
+// For virtual keyboard IME extension.
+struct KeyboardConfig {
+  bool auto_complete = true;
+  bool auto_correct = true;
+  bool handwriting = true;
+  bool spell_check = true;
+  // It denotes the preferred value, and can be true even if there is no actual
+  // audio input device.
+  bool voice_input = true;
+
+  bool operator==(const keyboard::KeyboardConfig& rhs) const {
+    return auto_complete == rhs.auto_complete &&
+           auto_correct == rhs.auto_correct && handwriting == rhs.handwriting &&
+           spell_check == rhs.spell_check && voice_input == rhs.voice_input;
+  }
+};
+
 // An enumeration of different keyboard control events that should be logged.
 enum KeyboardControlEvent {
   KEYBOARD_CONTROL_SHOW = 0,
@@ -49,6 +66,14 @@ enum KeyboardState {
   // Request virtual keyboard be suppressed.
   KEYBOARD_STATE_DISABLED,
 };
+
+// Updates the current keyboard config with the given config is they are
+// different, notifying to observers. Returns whether update happened.
+KEYBOARD_EXPORT bool UpdateKeyboardConfig(
+    const keyboard::KeyboardConfig& keyboard_config);
+
+// Gets the current virtual keyboard IME config.
+KEYBOARD_EXPORT const keyboard::KeyboardConfig& GetKeyboardConfig();
 
 // Sets the state of the a11y onscreen keyboard.
 KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);

@@ -30,8 +30,11 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   // successfully. This is same as |state| == HIDDEN on OnStateChanged.
   virtual void OnKeyboardHidden() {}
 
-  // When state changed.
+  // Called when the state changed.
   virtual void OnStateChanged(const KeyboardControllerState state) {}
+
+  // Called when the virtual keyboard IME config changed.
+  virtual void OnKeyboardConfigChanged() {}
 };
 
 }  // namespace keyboard

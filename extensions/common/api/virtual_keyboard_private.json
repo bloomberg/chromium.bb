@@ -49,6 +49,30 @@
           "width": {"type": "integer", "description": "The width of the virtual keyboard window."},
           "height": {"type": "integer", "description": "The height of the virtual keyboard window."}
         }
+      },
+      {
+        "id": "KeyboardConfig",
+        "type": "object",
+        "properties": {
+          "layout": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Virtual keyboard layout string."
+          },
+          "hotrodmode": {
+            "type": "boolean",
+            "description": "Virtual keyboard is in hotrod mode."
+          },
+          "a11ymode": {
+            "type": "boolean",
+            "description": "True if accessibility virtual keyboard is enabled."
+          },
+          "features": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of experimental feature flags."
+          }
+        }
       }
     ],
     "functions": [
@@ -142,32 +166,11 @@
           {
             "type": "function",
             "name": "callback",
-            "optional": true,
             "description": "Called when querying virtual keyboard configuration is complete.",
             "parameters": [
               {
-                "type": "object",
-                "name": "config",
-                "properties": {
-                  "layout": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Virtual keyboard layout string."
-                  },
-                  "hotrodmode": {
-                    "type": "boolean",
-                    "description": "Virtual keyboard is in hotrod mode."
-                  },
-                  "a11ymode": {
-                    "type": "boolean",
-                    "description": "True if accessibility virtual keyboard is enabled."
-                  },
-                  "features": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "List of experimental feature flags."
-                  }
-                }
+                "$ref": "KeyboardConfig",
+                "name": "config"
               }
             ]
           }
@@ -223,6 +226,18 @@
         "name": "onKeyboardClosed",
         "type": "function",
         "description": "Fired when the virtual keyboard window has been closed. For example, this can happen when turning off on-screen keyboard or exiting tablet mode."
+      },
+      {
+        "name": "onKeyboardConfigChanged",
+        "type": "function",
+        "description": "Fired when a configuration for virtual keyboard IME has changed, e.g. auto complete disabled.",
+        "parameters": [
+          {
+            "name": "config",
+            "description": "The virtual keyboard config",
+            "$ref": "KeyboardConfig"
+          }
+        ]
       }
     ]
   }

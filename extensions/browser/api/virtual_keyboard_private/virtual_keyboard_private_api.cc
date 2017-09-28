@@ -144,7 +144,8 @@ VirtualKeyboardPrivateSetKeyboardStateFunction::Run() {
 }
 
 VirtualKeyboardAPI::VirtualKeyboardAPI(content::BrowserContext* context) {
-  delegate_ = ExtensionsAPIClient::Get()->CreateVirtualKeyboardDelegate();
+  delegate_ =
+      ExtensionsAPIClient::Get()->CreateVirtualKeyboardDelegate(context);
 }
 
 VirtualKeyboardAPI::~VirtualKeyboardAPI() {
