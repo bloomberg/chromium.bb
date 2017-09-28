@@ -232,7 +232,7 @@ FormDataBytesConsumer::FormDataBytesConsumer(
     ExecutionContext* execution_context,
     RefPtr<EncodedFormData> form_data,
     BytesConsumer* consumer)
-    : impl_(IsSimple(form_data.Get())
+    : impl_(IsSimple(form_data.get())
                 ? static_cast<BytesConsumer*>(
                       new SimpleFormDataBytesConsumer(std::move(form_data)))
                 : static_cast<BytesConsumer*>(

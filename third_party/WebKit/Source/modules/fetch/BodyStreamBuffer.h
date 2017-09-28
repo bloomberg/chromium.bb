@@ -57,7 +57,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool IsStreamLocked();
   bool IsStreamDisturbed();
   void CloseAndLockAndDisturb();
-  ScriptState* GetScriptState() { return script_state_.Get(); }
+  ScriptState* GetScriptState() { return script_state_.get(); }
 
   DEFINE_INLINE_TRACE() {
     visitor->Trace(consumer_);

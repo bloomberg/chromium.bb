@@ -159,7 +159,7 @@ class BeaconFormData final : public Beacon {
   }
 
   void Serialize(ResourceRequest& request) const override {
-    request.SetHTTPBody(entity_body_.Get());
+    request.SetHTTPBody(entity_body_.get());
     request.SetHTTPContentType(content_type_);
   }
 
@@ -264,7 +264,7 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
                              AtomicString(destination_url.GetString()));
   RefPtr<SecurityOrigin> ping_origin = SecurityOrigin::Create(ping_url);
   if (ProtocolIs(frame->GetDocument()->Url().GetString(), "http") ||
-      frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.Get())) {
+      frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.get())) {
     request.SetHTTPHeaderField(
         HTTPNames::Ping_From,
         AtomicString(frame->GetDocument()->Url().GetString()));

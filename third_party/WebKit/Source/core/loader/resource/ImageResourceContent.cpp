@@ -223,7 +223,7 @@ blink::Image* ImageResourceContent::GetImage() {
   }
 
   if (image_)
-    return image_.Get();
+    return image_.get();
 
   return blink::Image::NullImage();
 }
@@ -253,7 +253,7 @@ LayoutSize ImageResourceContent::ImageSize(
 
   if (image_->IsBitmapImage() &&
       should_respect_image_orientation == kRespectImageOrientation) {
-    size = LayoutSize(ToBitmapImage(image_.Get())->SizeRespectingOrientation());
+    size = LayoutSize(ToBitmapImage(image_.get())->SizeRespectingOrientation());
   } else {
     size = LayoutSize(image_->Size());
   }

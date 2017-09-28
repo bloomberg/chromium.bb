@@ -73,7 +73,7 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
                     ThreadableLoader*);
   ThreadableLoader* CreateLoader();
   void DidFailInternal();
-  bool IsClean() const { return blob_data_handle_.Get(); }
+  bool IsClean() const { return blob_data_handle_.get(); }
   void Close();
   void GetError();
   void Clear();

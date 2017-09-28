@@ -115,14 +115,14 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
   }
   if (!is_reading_) {
     is_reading_ = true;
-    ScriptState::Scope scope(script_state_.Get());
-    ScriptValue reader(script_state_.Get(),
+    ScriptState::Scope scope(script_state_.get());
+    ScriptValue reader(script_state_.get(),
                        reader_.NewLocal(script_state_->GetIsolate()));
     // The owner must retain the reader.
     DCHECK(!reader.IsEmpty());
-    ReadableStreamOperations::DefaultReaderRead(script_state_.Get(), reader)
-        .Then(OnFulfilled::CreateFunction(script_state_.Get(), this),
-              OnRejected::CreateFunction(script_state_.Get(), this));
+    ReadableStreamOperations::DefaultReaderRead(script_state_.get(), reader)
+        .Then(OnFulfilled::CreateFunction(script_state_.get(), this),
+              OnRejected::CreateFunction(script_state_.get(), this));
   }
   return Result::kShouldWait;
 }

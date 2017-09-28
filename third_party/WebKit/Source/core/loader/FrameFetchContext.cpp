@@ -766,7 +766,7 @@ void FrameFetchContext::SendImagePing(const KURL& url) {
 
 SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
   if (IsDetached())
-    return frozen_state_->security_origin.Get();
+    return frozen_state_->security_origin.get();
   return document_ ? document_->GetSecurityOrigin() : nullptr;
 }
 
@@ -1018,7 +1018,7 @@ const KURL& FrameFetchContext::Url() const {
 
 const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
   if (IsDetached())
-    return frozen_state_->parent_security_origin.Get();
+    return frozen_state_->parent_security_origin.get();
   Frame* parent = GetFrame()->Tree().Parent();
   if (!parent)
     return nullptr;
@@ -1161,7 +1161,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
       return loader;
   }
 
-  return GetFrame()->CreateURLLoader(request, task_runner.Get());
+  return GetFrame()->CreateURLLoader(request, task_runner.get());
 }
 
 FetchContext* FrameFetchContext::Detach() {

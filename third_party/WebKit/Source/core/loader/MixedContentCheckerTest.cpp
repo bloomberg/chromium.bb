@@ -62,7 +62,7 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
     RefPtr<SecurityOrigin> security_origin(SecurityOrigin::Create(origin_url));
     KURL target_url(NullURL(), test.target);
     EXPECT_EQ(test.expectation, MixedContentChecker::IsMixedContent(
-                                    security_origin.Get(), target_url));
+                                    security_origin.get(), target_url));
   }
 }
 

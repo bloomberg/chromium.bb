@@ -238,7 +238,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     worker_thread_ = WTF::MakeUnique<WorkerThreadForTest>(
         ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
 
-    worker_thread_->StartWithSourceCode(security_origin_.Get(),
+    worker_thread_->StartWithSourceCode(security_origin_.get(),
                                         "//fake source code",
                                         parent_frame_task_runners_.Get());
     worker_thread_->WaitForInit();
