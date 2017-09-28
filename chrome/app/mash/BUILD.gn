@@ -4,6 +4,7 @@
 
 import("//build/config/nacl/config.gni")
 import("//chrome/common/features.gni")
+import("//components/nacl/features.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 

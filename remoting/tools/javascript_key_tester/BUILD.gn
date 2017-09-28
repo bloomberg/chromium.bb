@@ -2,47 +2,47 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("//components/nacl/features.gni")
 
-if (enable_nacl) {
-  group("javascript_key_tester") {
-    deps = [
-      ":javascript_key_tester_copies",
-    ]
-  }
+assert(enable_nacl)
 
-  copy("javascript_key_tester_copies") {
-    pexe_dir = get_label_info(
-            "pnacl:remoting_key_tester_newlib(//build/toolchain/nacl:newlib_pnacl)",
-            "root_out_dir")
+group("javascript_key_tester") {
+  deps = [
+    ":javascript_key_tester_copies",
+  ]
+}
 
-    sources = [
-      "$pexe_dir/remoting_key_tester_newlib.pexe",
-      "background.js",
-      "chord_tracker.js",
-      "event_listeners.js",
-      "icon_128.png",
-      "main.css",
-      "main.html",
-      "main.js",
-      "manifest.json",
-      "pnacl/remoting_key_tester.nmf",
-    ]
+copy("javascript_key_tester_copies") {
+  pexe_dir = get_label_info(
+          "pnacl:remoting_key_tester_newlib(//build/toolchain/nacl:newlib_pnacl)",
+          "root_out_dir")
 
-    outputs = [
-      "$target_out_dir/remoting/key_tester/{{source_file_part}}",
-    ]
+  sources = [
+    "$pexe_dir/remoting_key_tester_newlib.pexe",
+    "background.js",
+    "chord_tracker.js",
+    "event_listeners.js",
+    "icon_128.png",
+    "main.css",
+    "main.html",
+    "main.js",
+    "manifest.json",
+    "pnacl/remoting_key_tester.nmf",
+  ]
 
-    deps = [
-      ":javascript_key_tester_jscompile",
-      "pnacl:remoting_key_tester_newlib(//build/toolchain/nacl:newlib_pnacl)",
-    ]
-  }
+  outputs = [
+    "$target_out_dir/remoting/key_tester/{{source_file_part}}",
+  ]
 
-  group("javascript_key_tester_jscompile") {
-    # TODO(GYP): crbug.com/471926 add support for run_jscompile=true.
-    run_jscompile = false
-    if (run_jscompile) {
-    }
+  deps = [
+    ":javascript_key_tester_jscompile",
+    "pnacl:remoting_key_tester_newlib(//build/toolchain/nacl:newlib_pnacl)",
+  ]
+}
+
+group("javascript_key_tester_jscompile") {
+  # TODO(GYP): crbug.com/471926 add support for run_jscompile=true.
+  run_jscompile = false
+  if (run_jscompile) {
   }
 }

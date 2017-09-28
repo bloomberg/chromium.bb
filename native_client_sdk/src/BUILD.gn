@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("//components/nacl/features.gni")
 
 declare_args() {
   # Set to true if cross compiling trusted (e.g. building sel_ldr_arm on x86)

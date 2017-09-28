@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("//components/nacl/features.gni")
 import("//remoting/remoting_enable.gni")
 
 static_library("ipc_message_lib") {

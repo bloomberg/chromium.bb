@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//components/nacl/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//services/catalog/public/tools/catalog.gni")
