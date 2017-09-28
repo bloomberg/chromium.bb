@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
@@ -31,6 +32,8 @@ import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 
 import java.util.concurrent.TimeoutException;
@@ -141,16 +144,27 @@ public class VrShellTransitionTest {
     @MediumTest
     public void testExitFullscreenAfterExitingVrFromCinemaMode()
             throws InterruptedException, TimeoutException {
-        mVrTestFramework.loadUrlAndAwaitInitialization(
-                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.forceEnterVr();
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_navigation_2d_page"), PAGE_LOAD_TIMEOUT_S);
         DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen");
         mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
 
         Assert.assertTrue(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
         VrTransitionUtils.forceExitVr();
-        Assert.assertFalse(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
+        // The fullscreen exit from exiting VR isn't necessarily instantaneous, so give it
+        // a bit of time.
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return !DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents());
+                } catch (InterruptedException | TimeoutException e) {
+                    return false;
+                }
+            }
+        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 
     /**
