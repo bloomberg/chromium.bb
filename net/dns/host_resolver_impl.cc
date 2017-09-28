@@ -804,7 +804,6 @@ class HostResolverImpl::ProcTask
     DCHECK(network_task_runner_->BelongsToCurrentThread());
     // If results are empty, we should return an error.
     bool empty_list_on_ok = (error == OK && results.empty());
-    UMA_HISTOGRAM_BOOLEAN("DNS.EmptyAddressListAndNoError", empty_list_on_ok);
     if (empty_list_on_ok)
       error = ERR_NAME_NOT_RESOLVED;
 

@@ -656,7 +656,6 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
                 result == CONFIG_PARSE_WIN_UNHANDLED_OPTIONS);
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ConfigParseWin",
                               result, CONFIG_PARSE_WIN_MAX);
-    UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ConfigParseResult", success_);
     UMA_HISTOGRAM_TIMES("AsyncDNS.ConfigParseDuration",
                         base::TimeTicks::Now() - start_time);
   }
