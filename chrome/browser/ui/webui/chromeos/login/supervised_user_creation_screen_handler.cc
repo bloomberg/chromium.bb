@@ -155,11 +155,6 @@ void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
   // It should be removed by issue 251179.
   builder->Add("takePhoto", IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
   builder->Add("discardPhoto", IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO);
-  builder->Add("flipPhoto", IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO);
-  builder->Add("photoFlippedAccessibleText",
-               IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT);
-  builder->Add("photoFlippedBackAccessibleText",
-               IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT);
   builder->Add("photoCaptureAccessibleText",
                IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
   builder->Add("photoDiscardAccessibleText",

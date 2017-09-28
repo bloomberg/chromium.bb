@@ -29,7 +29,6 @@ Polymer({
 
     /** Strings provided by host */
     discardImageLabel: String,
-    flipPhotoLabel: String,
     previewAltText: String,
     takePhotoLabel: String,
 

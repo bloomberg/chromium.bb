@@ -20,7 +20,6 @@ Polymer({
 
   properties: {
     /** Strings provided by host */
-    flipPhotoLabel: String,
     takePhotoLabel: String,
 
     /**
@@ -32,20 +31,10 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /**
-     * True if the photo is currently marked flipped.
-     * @private {boolean}
-     */
-    isFlipped_: {
-      type: Boolean,
-      value: true,
-    },
   },
 
   /** @override */
   attached: function() {
-    this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.cameraOnline_ = true;
     }.bind(this));
@@ -73,8 +62,7 @@ Polymer({
         this.$.cameraVideo,
         /** @type {!CanvasRenderingContext2D} */ (canvas.getContext('2d')));
 
-    var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
-                                         canvas.toDataURL('image/png');
+    var photoDataUrl = this.flipFrame_(canvas);
     this.fire('photo-taken', {photoDataUrl: photoDataUrl});
   },
 
@@ -120,16 +108,6 @@ Polymer({
     var tracks = stream.getVideoTracks();
     for (var i = 0; i < tracks.length; i++)
       tracks[i].stop();
-  },
-
-  /**
-   * Flip the live camera stream.
-   * @private
-   */
-  onTapFlipPhoto_: function() {
-    this.isFlipped_ = !this.isFlipped_;
-    this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
-    this.fire('photo-flipped', this.isFlipped_);
   },
 
   /**

@@ -98,7 +98,6 @@ OobeWebUITest.prototype = {
       '#user-image-grid',
       '#discard-photo',
       '#take-photo',
-      '#flip-photo',
     ];
 
     // Enable when failure is resolved.

@@ -77,7 +77,6 @@ Polymer({
   listeners: {
     'discard-image': 'onDiscardImage_',
     'image-activate': 'onImageActivate_',
-    'photo-flipped': 'onPhotoFlipped_',
     'photo-taken': 'onPhotoTaken_',
   },
 
@@ -191,17 +190,6 @@ Polymer({
     this.pictureList_.setFocus();
     announceAccessibleMessage(
         loadTimeData.getString('photoCaptureAccessibleText'));
-  },
-
-  /**
-   * @param {!{detail: boolean}} event
-   * @private
-   */
-  onPhotoFlipped_: function(event) {
-    var flipped = event.detail;
-    var flipMessageId = flipped ? 'photoFlippedAccessibleText' :
-                                  'photoFlippedBackAccessibleText';
-    announceAccessibleMessage(loadTimeData.getString(flipMessageId));
   },
 
   /** @private */

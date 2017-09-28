@@ -420,7 +420,7 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   display: none;
 }
 
-.camera.flip-x #supervised-user-creation-image-preview-img {
+.camera #supervised-user-creation-image-preview-img {
   transform: rotateY(180deg);
 }
 
@@ -447,12 +447,9 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   height: 220px;
   overflow: hidden;
   position: relative;
+  transform: rotateY(180deg);
   transition: transform 200ms linear;
   width: 220px;
-}
-
-.flip-x #supervised-user-creation-image-stream-crop {
-  transform: rotateY(180deg);
 }
 
 .supervised-user-creation-image-stream {
@@ -476,30 +473,6 @@ html[dir=rtl] #supervised-user-creation-image-preview {
 
 .camera #supervised-user-creation-image-preview-caption {
   display: none;
-}
-
-#supervised-user-creation-flip-photo {
-  background: url(chrome://theme/IDR_MIRROR_FLIP) no-repeat;
-  border: none;
-  bottom: 44px;  /* 8px + image bottom. */
-  display: block;
-  height: 32px;
-  opacity: 0;
-  position: absolute;
-  right: 8px;
-  transition: opacity 75ms linear;
-  width: 32px;
-}
-
-html[dir=rtl] #supervised-user-creation-flip-photo {
-  left: 8px;
-  right: auto;
-}
-
-/* "Flip photo" button is hidden during flip animation. */
-.camera.online:not(.animation) #supervised-user-creation-flip-photo,
-.camera.phototaken:not(.animation) #supervised-user-creation-flip-photo {
-  opacity: 0.75;
 }
 
 #supervised-user-creation-discard-photo,
