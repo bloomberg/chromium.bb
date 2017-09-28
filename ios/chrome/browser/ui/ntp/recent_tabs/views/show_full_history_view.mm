@@ -43,7 +43,7 @@ const CGFloat kDesiredHeight = 48;
     [self addSubview:label];
 
     self.isAccessibilityElement = YES;
-    self.accessibilityLabel = [label accessibilityLabel];
+    self.accessibilityLabel = label.text;
     self.accessibilityTraits |= UIAccessibilityTraitButton;
 
     NSDictionary* viewsDictionary = @{
