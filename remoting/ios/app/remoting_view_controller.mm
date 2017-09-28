@@ -27,6 +27,7 @@
 #import "remoting/ios/app/refresh_control_provider.h"
 #import "remoting/ios/app/remoting_menu_view_controller.h"
 #import "remoting/ios/app/remoting_theme.h"
+#import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/facade/remoting_service.h"
 
@@ -128,6 +129,7 @@ ConnectionType GetConnectionType() {
                                          style:UIBarButtonItemStyleDone
                                         target:self
                                         action:@selector(didSelectMenu)];
+    remoting::SetAccessibilityInfoFromImage(menuButton);
     self.navigationItem.leftBarButtonItem = menuButton;
 
     _appBar.headerViewController.headerView.backgroundColor =

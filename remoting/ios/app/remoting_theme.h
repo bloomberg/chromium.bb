@@ -42,11 +42,11 @@
 @property(class, nonatomic, readonly) UIImage* backIcon;
 @property(class, nonatomic, readonly) UIImage* checkboxCheckedIcon;
 @property(class, nonatomic, readonly) UIImage* checkboxOutlineIcon;
-@property(class, nonatomic, readonly) UIImage* closeIcon;
+@property(class, nonatomic, readonly) UIImage* closeIcon;  // ally: "Close"
 @property(class, nonatomic, readonly) UIImage* desktopIcon;
 @property(class, nonatomic, readonly) UIImage* feedbackIcon;
 @property(class, nonatomic, readonly) UIImage* helpIcon;
-@property(class, nonatomic, readonly) UIImage* menuIcon;
+@property(class, nonatomic, readonly) UIImage* menuIcon;  // ally: "Menu"
 @property(class, nonatomic, readonly) UIImage* radioCheckedIcon;
 @property(class, nonatomic, readonly) UIImage* radioOutlineIcon;
 @property(class, nonatomic, readonly) UIImage* refreshIcon;

@@ -16,6 +16,12 @@ UIViewController* TopPresentingVC();
 // guide for older OS versions that exactly matches the anchors of the view.
 UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view);
 
+// Sets the a11y label of the UIBarButtonItem according to the image it holds.
+void SetAccessibilityInfoFromImage(UIBarButtonItem* button);
+
+// Sets the a11y label of the UIButton according to the image it holds.
+void SetAccessibilityInfoFromImage(UIButton* button);
+
 }  // namespace remoting
 
 #endif  // REMOTING_IOS_APP_VIEW_UTILS_H_
