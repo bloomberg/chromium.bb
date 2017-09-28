@@ -3668,7 +3668,8 @@ crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash 
 crbug.com/762486 [ Win7 Debug ] virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-08
-crbug.com/763208 [ Win Linux Mac10.12 ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
+crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
+crbug.com/763208 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 
 crbug.com/763666 external/wpt/assumptions/ahem.html [ Failure ]
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
@@ -3701,8 +3702,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
 
 # Sheriff failures 2017-09-20
-# Flaky on chromium.webkit/WebKit Linux Trusty Leak
-crbug.com/766952 [ Win10 Linux ] http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 # Timeouts flakily on chromium.webkit/WebKit Win7 and WebKit Win10
 crbug.com/767012 [ Win7 Win10 ] virtual/mojo-loading/http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Timeout ]
 # Fails flakily on chromium.mac/Mac10.12 Tests and WebKit Mac10.12.
