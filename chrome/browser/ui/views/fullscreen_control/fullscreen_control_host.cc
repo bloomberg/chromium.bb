@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 
-#include "base/i18n/rtl.h"
+#include "base/bind.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "ui/events/event.h"
@@ -15,10 +15,10 @@
 namespace {
 
 // +----------------------------+
-// |       |  Control  |        |
-// |       |           |        |
-// |       +-----------+        | <-- Height
-// |                            | <-- Height * kExitHeightScaleFactor
+// |         +-------+          |
+// |         |Control|          |
+// |         +-------+          |
+// |                            | <-- Control.bottom * kExitHeightScaleFactor
 // |          Screen            |       Buffer for mouse moves or pointer events
 // |                            |       before closing the fullscreen exit
 // |                            |       control.
@@ -40,36 +40,12 @@ constexpr float kShowFullscreenExitControlHeight = 3.f;
 
 FullscreenControlHost::FullscreenControlHost(BrowserView* browser_view,
                                              views::View* host_view)
-    : DropdownBarHost(browser_view),
-      browser_view_(browser_view),
-      fullscreen_control_view_(new FullscreenControlView(browser_view)) {
-  Init(host_view, fullscreen_control_view_, fullscreen_control_view_);
-}
+    : browser_view_(browser_view),
+      fullscreen_control_popup_(browser_view->GetBubbleParentView(),
+                                base::Bind(&BrowserView::ExitFullscreen,
+                                           base::Unretained(browser_view))) {}
 
 FullscreenControlHost::~FullscreenControlHost() = default;
-
-bool FullscreenControlHost::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  return false;
-}
-
-bool FullscreenControlHost::CanHandleAccelerators() const {
-  return false;
-}
-
-gfx::Rect FullscreenControlHost::GetDialogPosition(
-    gfx::Rect avoid_overlapping_rect) {
-  gfx::Rect bounds;
-  GetWidgetBounds(&bounds);
-  if (bounds.IsEmpty())
-    return gfx::Rect();
-
-  // Place the view horizontally centered at the top of the widget.
-  int original_y = bounds.y();
-  bounds.ClampToCenteredSize(view()->GetPreferredSize());
-  bounds.set_y(original_y);
-  return bounds;
-}
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_MOVED)
@@ -86,23 +62,28 @@ void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
     HandleFullScreenControlVisibility(event, InputEntryMethod::TOUCH);
 }
 
-void FullscreenControlHost::OnVisibilityChanged() {
-  if (!IsVisible())
-    input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
+void FullscreenControlHost::Hide(bool animate) {
+  fullscreen_control_popup_.Hide(animate);
+}
+
+bool FullscreenControlHost::IsVisible() const {
+  return fullscreen_control_popup_.IsVisible();
 }
 
 void FullscreenControlHost::HandleFullScreenControlVisibility(
     const ui::LocatedEvent* event,
     InputEntryMethod input_entry_method) {
-  if (IsAnimating() || (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
-                        input_entry_method_ != input_entry_method)) {
+  if (fullscreen_control_popup_.IsAnimating() ||
+      (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
+       input_entry_method_ != input_entry_method)) {
     return;
   }
 
   if (browser_view_->IsFullscreen()) {
     if (IsVisible()) {
-      float control_height = static_cast<float>(view()->height());
-      float y_limit = control_height * kExitHeightScaleFactor;
+      float control_bottom = static_cast<float>(
+          fullscreen_control_popup_.GetFinalBounds().bottom());
+      float y_limit = control_bottom * kExitHeightScaleFactor;
       if (event->y() >= y_limit)
         Hide(true);
     } else {
@@ -119,5 +100,5 @@ void FullscreenControlHost::HandleFullScreenControlVisibility(
 void FullscreenControlHost::ShowForInputEntryMethod(
     InputEntryMethod input_entry_method) {
   input_entry_method_ = input_entry_method;
-  Show(true);
+  fullscreen_control_popup_.Show(browser_view_->GetClientAreaBoundsInScreen());
 }
