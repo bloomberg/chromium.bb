@@ -185,7 +185,6 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
   SupervisedUserManager::RegisterPrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
-  BootstrapManager::RegisterPrefs(registry);
   enterprise_user_session_metrics::RegisterPrefs(registry);
 }
 
@@ -202,7 +201,6 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       cros_settings_(CrosSettings::Get()),
       device_local_account_policy_service_(NULL),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)),
-      bootstrap_manager_(new BootstrapManager(this)),
       weak_factory_(this) {
   UpdateNumberOfUsers();
 
@@ -296,10 +294,6 @@ void ChromeUserManagerImpl::Shutdown() {
   avatar_policy_observer_.reset();
   wallpaper_policy_observer_.reset();
   registrar_.RemoveAll();
-}
-
-BootstrapManager* ChromeUserManagerImpl::GetBootstrapManager() {
-  return bootstrap_manager_.get();
 }
 
 MultiProfileUserController*
@@ -670,9 +664,6 @@ void ChromeUserManagerImpl::PerformPreUserListLoadingActions() {
   // This process also should not trigger EnsureUsersLoaded again.
   if (supervised_user_manager_->HasFailedUserCreationTransaction())
     supervised_user_manager_->RollbackUserCreationTransaction();
-
-  // Abandon all unfinished bootstraps.
-  bootstrap_manager_->RemoveAllPendingBootstrap();
 }
 
 void ChromeUserManagerImpl::PerformPostUserListLoadingActions() {
@@ -843,11 +834,6 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
-}
-
-bool ChromeUserManagerImpl::HasPendingBootstrap(
-    const AccountId& account_id) const {
-  return bootstrap_manager_->HasPendingBootstrap(account_id);
 }
 
 void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
@@ -1220,12 +1206,6 @@ void ChromeUserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
   session_controller->ShowMultiprofilesSessionAbortedDialog(user_email);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::MULTIPROFILES_SESSION_ABORTED);
-}
-
-void ChromeUserManagerImpl::RemovePendingBootstrapUser(
-    const AccountId& account_id) {
-  DCHECK(HasPendingBootstrap(account_id));
-  RemoveNonOwnerUserInternal(account_id, nullptr);
 }
 
 void ChromeUserManagerImpl::UpdateNumberOfUsers() {

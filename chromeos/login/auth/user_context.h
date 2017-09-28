@@ -33,8 +33,6 @@ class CHROMEOS_EXPORT UserContext {
     AUTH_FLOW_OFFLINE,
     // Offline authentication using and Easy unlock device (e.g. a phone).
     AUTH_FLOW_EASY_UNLOCK,
-    // Easy bootstrap flow.
-    AUTH_FLOW_EASY_BOOTSTRAP,
     // Authentication against Active Directory server.
     AUTH_FLOW_ACTIVE_DIRECTORY,
   };

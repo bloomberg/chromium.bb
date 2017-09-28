@@ -86,7 +86,6 @@ const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
-const char kAccelNameToggleEasyBootstrap[] = "toggle_easy_bootstrap";
 const char kAccelNameBootstrappingSlave[] = "bootstrapping_slave";
 
 // A class to change arrow key traversal behavior when it's alive.
@@ -153,9 +152,6 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   accel_map_[ui::Accelerator(ui::VKEY_X,
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameEnableDebugging;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameToggleEasyBootstrap;
 
   accel_map_[ui::Accelerator(
       ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =

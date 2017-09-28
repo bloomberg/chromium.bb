@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/easy_unlock/bootstrap_manager.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
@@ -55,8 +54,7 @@ class ChromeUserManagerImpl
       public content::NotificationObserver,
       public policy::CloudExternalDataPolicyObserver::Delegate,
       public policy::DeviceLocalAccountPolicyService::Observer,
-      public MultiProfileUserControllerDelegate,
-      public BootstrapManager::Delegate {
+      public MultiProfileUserControllerDelegate {
  public:
   ~ChromeUserManagerImpl() override;
 
@@ -67,7 +65,6 @@ class ChromeUserManagerImpl
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // UserManagerInterface implementation:
-  BootstrapManager* GetBootstrapManager() override;
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const AccountId& account_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;
@@ -169,7 +166,6 @@ class ChromeUserManagerImpl
   void RegularUserLoggedIn(const AccountId& account_id) override;
   void RegularUserLoggedInAsEphemeral(const AccountId& account_id) override;
   void SupervisedUserLoggedIn(const AccountId& account_id) override;
-  bool HasPendingBootstrap(const AccountId& account_id) const override;
 
  private:
   friend class SupervisedUserManagerImpl;
@@ -217,9 +213,6 @@ class ChromeUserManagerImpl
 
   // MultiProfileUserControllerDelegate implementation:
   void OnUserNotAllowed(const std::string& user_email) override;
-
-  // BootstrapManager::Delegate implementation:
-  void RemovePendingBootstrapUser(const AccountId& account_id) override;
 
   // Update the number of users.
   void UpdateNumberOfUsers();
@@ -277,8 +270,6 @@ class ChromeUserManagerImpl
   // Observer for the policy that can be used to manage wallpapers.
   std::unique_ptr<policy::CloudExternalDataPolicyObserver>
       wallpaper_policy_observer_;
-
-  std::unique_ptr<BootstrapManager> bootstrap_manager_;
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_;
 

@@ -1005,16 +1005,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             'authenticateUser',
             [credentials.email, credentials.password, false]);
       } else if (credentials.authCode) {
-        if (credentials.hasOwnProperty('authCodeOnly') &&
-            credentials.authCodeOnly) {
-          chrome.send(
-              'completeAuthenticationAuthCodeOnly', [credentials.authCode]);
-        } else {
-          chrome.send('completeAuthentication', [
-            credentials.gaiaId, credentials.email, credentials.password,
-            credentials.authCode, credentials.usingSAML, credentials.gapsCookie
-          ]);
-        }
+        chrome.send('completeAuthentication', [
+          credentials.gaiaId, credentials.email, credentials.password,
+          credentials.authCode, credentials.usingSAML, credentials.gapsCookie
+        ]);
       } else {
         chrome.send('completeLogin', [
           credentials.gaiaId, credentials.email, credentials.password,

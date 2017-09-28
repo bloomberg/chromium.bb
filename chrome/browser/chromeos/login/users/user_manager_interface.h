@@ -13,7 +13,6 @@ class AccountId;
 
 namespace chromeos {
 
-class BootstrapManager;
 class MultiProfileUserController;
 class SupervisedUserManager;
 class UserFlow;
@@ -25,7 +24,6 @@ class UserManagerInterface {
   UserManagerInterface() {}
   virtual ~UserManagerInterface() {}
 
-  virtual BootstrapManager* GetBootstrapManager() = 0;
   virtual MultiProfileUserController* GetMultiProfileUserController() = 0;
   virtual UserImageManager* GetUserImageManager(
       const AccountId& account_id) = 0;

@@ -149,10 +149,6 @@ void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
   }
 }
 
-BootstrapManager* FakeChromeUserManager::GetBootstrapManager() {
-  return bootstrap_manager_;
-}
-
 MultiProfileUserController*
 FakeChromeUserManager::GetMultiProfileUserController() {
   return multi_profile_user_controller_;

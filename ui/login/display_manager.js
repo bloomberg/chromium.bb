@@ -41,7 +41,6 @@
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
 /** @const */ var ACCELERATOR_ENABLE_DEBBUGING = 'debugging';
-/** @const */ var ACCELERATOR_TOGGLE_EASY_BOOTSTRAP = 'toggle_easy_bootstrap';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
 /** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
@@ -414,9 +413,6 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
-      } else if (name == ACCELERATOR_TOGGLE_EASY_BOOTSTRAP) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN)
-          chrome.send('toggleEasyBootstrap');
       } else if (name == ACCELERATOR_BOOTSTRAPPING_SLAVE) {
         chrome.send('setOobeBootstrappingSlave');
       }

@@ -362,25 +362,8 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
   params.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
 
-  if (use_easy_bootstrap_) {
-    params.SetBoolean("useEafe", true);
-    // Easy login overrides.
-    std::string eafe_url = "https://easylogin.corp.google.com/";
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kEafeUrl))
-      eafe_url = command_line->GetSwitchValueASCII(switches::kEafeUrl);
-    std::string eafe_path = "planters/cbaudioChrome";
-    if (command_line->HasSwitch(switches::kEafePath))
-      eafe_path = command_line->GetSwitchValueASCII(switches::kEafePath);
-
-    params.SetString("gaiaUrl", eafe_url);
-    params.SetString("gaiaPath", eafe_path);
-  }
-
-  // Easy bootstrap is not v2-compatible
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCrosGaiaApiV1) ||
-      use_easy_bootstrap_) {
+          switches::kCrosGaiaApiV1)) {
     params.SetString("chromeOSApiVersion", "1");
   } else {
     // This enables GLIF MM UI for the online Gaia screen by default.
@@ -489,16 +472,12 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthentication);
-  AddCallback("completeAuthenticationAuthCodeOnly",
-              &GaiaScreenHandler::HandleCompleteAuthenticationAuthCodeOnly);
   AddCallback("usingSAMLAPI", &GaiaScreenHandler::HandleUsingSAMLAPI);
   AddCallback("scrapedPasswordCount",
               &GaiaScreenHandler::HandleScrapedPasswordCount);
   AddCallback("scrapedPasswordVerificationFailed",
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
-  AddCallback("toggleEasyBootstrap",
-              &GaiaScreenHandler::HandleToggleEasyBootstrap);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("updateOfflineLogin",
               &GaiaScreenHandler::set_offline_login_is_active);
@@ -681,17 +660,6 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   Delegate()->CompleteLogin(user_context);
 }
 
-void GaiaScreenHandler::HandleCompleteAuthenticationAuthCodeOnly(
-    const std::string& auth_code) {
-  if (!Delegate())
-    return;
-
-  UserContext user_context;
-  user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_BOOTSTRAP);
-  user_context.SetAuthCode(auth_code);
-  Delegate()->CompleteLogin(user_context);
-}
-
 void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
                                             const std::string& typed_email,
                                             const std::string& password,
@@ -715,11 +683,6 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
 
 void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
   RecordSAMLScrapingVerificationResultInHistogram(false);
-}
-
-void GaiaScreenHandler::HandleToggleEasyBootstrap() {
-  use_easy_bootstrap_ = !use_easy_bootstrap_;
-  LoadAuthExtension(true /* force */, false /* offline */);
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {

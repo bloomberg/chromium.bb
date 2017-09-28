@@ -130,7 +130,6 @@ class MockUserManager : public ChromeUserManager {
   const user_manager::User* GetPrimaryUser() const override;
 
   // ChromeUserManager overrides:
-  BootstrapManager* GetBootstrapManager() override;
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const AccountId& account_id) override;
   SupervisedUserManager* GetSupervisedUserManager() override;

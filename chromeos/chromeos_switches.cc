@@ -238,12 +238,6 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 // Disables wake on wifi features.
 const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 
-// EAFE path to use for Easy bootstrapping.
-const char kEafePath[] = "eafe-path";
-
-// EAFE URL to use for Easy bootstrapping.
-const char kEafeUrl[] = "eafe-url";
-
 // Enables the Android Wallpapers App as the default app on Chrome OS.
 const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
 

@@ -95,7 +95,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                     const std::string& auth_code,
                                     bool using_saml,
                                     const std::string& gaps_cookie);
-  void HandleCompleteAuthenticationAuthCodeOnly(const std::string& auth_code);
   void HandleCompleteLogin(const std::string& gaia_id,
                            const std::string& typed_email,
                            const std::string& password,
@@ -111,8 +110,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleScrapedPasswordVerificationFailed();
 
   void HandleGaiaUIReady();
-
-  void HandleToggleEasyBootstrap();
 
   void HandleIdentifierEntered(const std::string& account_identifier);
 
@@ -247,9 +244,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   std::string test_user_;
   std::string test_pass_;
   bool test_expects_complete_login_ = false;
-
-  // True if Easy bootstrap is enabled.
-  bool use_easy_bootstrap_ = false;
 
   // True if proxy doesn't allow access to google.com/generate_204.
   NetworkPortalDetector::CaptivePortalStatus captive_portal_status_ =
