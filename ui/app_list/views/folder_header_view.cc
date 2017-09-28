@@ -159,10 +159,6 @@ gfx::Size FolderHeaderView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidth, preferred_height);
 }
 
-views::View* FolderHeaderView::GetFolderNameViewForTest() const {
-  return folder_name_view_;
-}
-
 int FolderHeaderView::GetMaxFolderNameWidth() const {
   return is_fullscreen_app_list_enabled_ ? kMaxFolderNameWidthFullScreen
                                          : kMaxFolderNameWidth;

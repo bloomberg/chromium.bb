@@ -24,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace app_list {
 
@@ -39,8 +38,7 @@ constexpr int kSearchBoxMinimumTopPadding = 24;
 
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      AppListModel* model)
-    : is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
-      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
+    : is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   apps_grid_view_ =
       new AppsGridView(app_list_main_view->contents_view(), nullptr);
   if (is_fullscreen_app_list_enabled_) {
@@ -78,10 +76,7 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 
   CreateViewsForFolderTopItemsAnimation(folder_item, true);
 
-  if (is_app_list_focus_enabled_)
-    contents_view()->GetSearchBoxView()->search_box()->RequestFocus();
-  else
-    apps_grid_view_->ClearAnySelectedView();
+  apps_grid_view_->ClearAnySelectedView();
 }
 
 void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
