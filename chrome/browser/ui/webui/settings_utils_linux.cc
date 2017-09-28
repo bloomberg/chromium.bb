@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -140,7 +141,7 @@ void ShowNetworkProxySettings(content::WebContents* web_contents) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&DetectAndStartProxyConfigUtil,
-                     web_contents->GetRenderProcessHost()->GetID(),
+                     web_contents->GetRenderViewHost()->GetProcess()->GetID(),
                      web_contents->GetRenderViewHost()->GetRoutingID()));
 }
 
