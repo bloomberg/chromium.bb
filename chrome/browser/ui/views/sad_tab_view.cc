@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/bulleted_label_list_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "content/public/browser/web_contents.h"
@@ -32,9 +33,6 @@ namespace {
 constexpr int kMaxContentWidth = 600;
 constexpr int kMinColumnWidth = 120;
 constexpr int kTitleBottomSpacing = 13;
-constexpr int kBulletBottomSpacing = 1;
-constexpr int kBulletWidth = 20;
-constexpr int kBulletPadding = 13;
 
 views::Label* CreateFormattedLabel(const base::string16& message) {
   views::Label* label =
@@ -99,33 +97,12 @@ SadTabView::SadTabView(content::WebContents* web_contents,
 
   std::vector<int> bullet_string_ids = GetSubMessages();
   if (!bullet_string_ids.empty()) {
-    const int bullet_columnset_id = 1;
-    views::ColumnSet* column_set = layout->AddColumnSet(bullet_columnset_id);
-    column_set->AddPaddingColumn(1, unrelated_horizontal_spacing);
-    column_set->AddColumn(views::GridLayout::TRAILING,
-                          views::GridLayout::LEADING, 0,
-                          views::GridLayout::FIXED, kBulletWidth, 0);
-    column_set->AddPaddingColumn(0, kBulletPadding);
-    column_set->AddColumn(views::GridLayout::LEADING,
-                          views::GridLayout::LEADING, 0,
-                          views::GridLayout::USE_PREF,
-                          0,  // No fixed width.
-                          0);
-    column_set->AddPaddingColumn(1, unrelated_horizontal_spacing);
+    auto list_view = std::make_unique<BulletedLabelListView>();
+    for (const auto& id : bullet_string_ids)
+      list_view->AddLabel(l10n_util::GetStringUTF16(id));
 
-    for (int bullet_string_id : bullet_string_ids) {
-      const base::string16 bullet_character(base::WideToUTF16(L"\u2022"));
-      views::Label* bullet_label = CreateFormattedLabel(bullet_character);
-      views::Label* label =
-          CreateFormattedLabel(l10n_util::GetStringUTF16(bullet_string_id));
-
-      layout->StartRowWithPadding(0, bullet_columnset_id, 0,
-                                  kBulletBottomSpacing);
-      layout->AddView(bullet_label);
-      layout->AddView(label);
-
-      bullet_labels_.push_back(label);
-    }
+    layout->StartRow(0, column_set_id);
+    layout->AddView(list_view.release(), 2, 1);
   }
 
   action_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
@@ -185,10 +162,6 @@ void SadTabView::Layout() {
 
   message_->SizeToFit(max_width);
   title_->SizeToFit(max_width);
-
-  // Bullet labels need to take into account the size of the bullet.
-  for (views::Label* label : bullet_labels_)
-    label->SizeToFit(max_width - kBulletWidth - kBulletPadding);
 
   View::Layout();
 }
