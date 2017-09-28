@@ -3228,7 +3228,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
   // operation and destroy the entry object.
   base::RunLoop().RunUntilIdle();
 
-  for (int i = 0; i < disk_cache::kSimpleEntryFileCount; ++i) {
+  for (int i = 0; i < disk_cache::kSimpleEntryNormalFileCount; ++i) {
     base::FilePath entry_file_path = cache_path_.AppendASCII(
         disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, i));
     base::File::Info info;

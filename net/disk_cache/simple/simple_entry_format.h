@@ -36,8 +36,14 @@ const uint64_t kSimpleSparseRangeMagicNumber = UINT64_C(0xeb97bf016553676b);
 //   - the key.
 //   - the data.
 //   - at the end, a SimpleFileEOF record.
-static const int kSimpleEntryFileCount = 2;
+
+// This is the number of files we can use for representing normal/dense streams.
+static const int kSimpleEntryNormalFileCount = 2;
 static const int kSimpleEntryStreamCount = 3;
+
+// Total # of files name we can potentially use; this includes both normal
+// API and sparse streams.
+static const int kSimpleEntryTotalFileCount = kSimpleEntryNormalFileCount + 1;
 
 // Note that stream 0/stream 1 files rely on the footer to verify the entry,
 // so if the format changes, it's insufficient to change the version here;
