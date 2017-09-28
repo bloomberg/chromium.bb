@@ -249,6 +249,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnPanelKeypress();
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
   void OnWaiting();
+  void OnLoadingProgress();
 
   // Media control elements.
   Member<MediaControlOverlayEnclosureElement> overlay_enclosure_;

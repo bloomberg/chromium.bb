@@ -1116,6 +1116,10 @@ void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
   ComputeWhichControlsFit();
 }
 
+void MediaControlsImpl::OnLoadingProgress() {
+  timeline_->RenderBarSegments();
+}
+
 void MediaControlsImpl::ComputeWhichControlsFit() {
   // Hide all controls that don't fit, and show the ones that do.
   // This might be better suited for a layout, but since JS media controls
