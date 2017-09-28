@@ -14,25 +14,17 @@
     android:padding="8dp"
     android:background="@drawable/card_single">
 
-    <!-- Using some standard metrics (minWidth, paddings) to override the
-         special ones used in ButtonCompatBorderless -->
     <Button
+        style="@style/SuggestionCardAction"
         android:id="@+id/action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:minWidth="0dp"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
-        android:text="@string/more"
-        android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        style="@style/ButtonCompatBorderless" />
+        android:layout_gravity="center_vertical"
+        android:text="@string/more" />
 
     <org.chromium.chrome.browser.ntp.cards.ProgressIndicatorView
         android:id="@+id/progress_indicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        />
+        android:layout_gravity="center_vertical" />
 </FrameLayout>
