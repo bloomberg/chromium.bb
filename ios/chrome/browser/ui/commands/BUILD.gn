@@ -28,6 +28,7 @@ source_set("commands") {
     "reading_list_add_command.mm",
     "show_signin_command.h",
     "show_signin_command.mm",
+    "snackbar_commands.h",
     "start_voice_search_command.h",
     "start_voice_search_command.mm",
   ]

@@ -19,16 +19,12 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kBrowserViewControllerSnackbarCategory =
-    @"BrowserViewControllerSnackbarCategory";
 
 @implementation BrowserViewControllerDependencyFactory {
   ios::ChromeBrowserState* browserState_;
@@ -73,14 +69,6 @@ newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
 
 - (KeyCommandsProvider*)newKeyCommandsProvider {
   return [[KeyCommandsProvider alloc] init];
-}
-
-- (void)showSnackbarWithMessage:(NSString*)text {
-  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
-  message.accessibilityLabel = text;
-  message.duration = 2.0;
-  message.category = kBrowserViewControllerSnackbarCategory;
-  [MDCSnackbarManager showMessage:message];
 }
 
 - (AlertCoordinator*)alertCoordinatorWithTitle:(NSString*)title

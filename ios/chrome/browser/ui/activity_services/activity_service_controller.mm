@@ -17,9 +17,9 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
-#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_snackbar.h"
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -33,8 +33,8 @@
   BOOL active_;
   __weak id<ActivityServicePassword> passwordProvider_;
   __weak id<ActivityServicePresentation> presentationProvider_;
-  __weak id<ActivityServiceSnackbar> snackbarProvider_;
   UIActivityViewController* activityViewController_;
+  __weak id<SnackbarCommands> dispatcher_;
 }
 
 // Resets the controller's user interface and delegate.
@@ -100,11 +100,10 @@
 
 - (void)shareWithData:(ShareToData*)data
             browserState:(ios::ChromeBrowserState*)browserState
-              dispatcher:(id<BrowserCommands>)dispatcher
+              dispatcher:(id<BrowserCommands, SnackbarCommands>)dispatcher
         passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider
-    presentationProvider:(id<ActivityServicePresentation>)presentationProvider
-        snackbarProvider:(id<ActivityServiceSnackbar>)snackbarProvider {
+    presentationProvider:(id<ActivityServicePresentation>)presentationProvider {
   DCHECK(data);
   DCHECK(!active_);
 
@@ -121,10 +120,10 @@
 
   DCHECK(!passwordProvider_);
   DCHECK(!presentationProvider_);
-  DCHECK(!snackbarProvider_);
   passwordProvider_ = passwordProvider;
   presentationProvider_ = presentationProvider;
-  snackbarProvider_ = snackbarProvider;
+
+  dispatcher_ = dispatcher;
 
   DCHECK(!activityViewController_);
   activityViewController_ = [[UIActivityViewController alloc]
@@ -164,7 +163,6 @@
 - (void)resetUserInterface {
   passwordProvider_ = nil;
   presentationProvider_ = nil;
-  snackbarProvider_ = nil;
   activityViewController_ = nil;
   active_ = NO;
 }
@@ -176,7 +174,6 @@
   DCHECK(active_);
   DCHECK(passwordProvider_);
   DCHECK(presentationProvider_);
-  DCHECK(snackbarProvider_);
 
   BOOL shouldResetUI = YES;
   if (activityType) {
@@ -322,9 +319,6 @@
              completionMessage:(NSString*)message {
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS: {
-      // Captures this provider for use in the asynchronously executed
-      // completion block.
-      __weak id<ActivityServiceSnackbar> snackbarProvider = snackbarProvider_;
       // Flag to limit user feedback after form filled to just once.
       __block BOOL shown = NO;
       id<PasswordFormFiller> passwordFormFiller =
@@ -336,7 +330,8 @@
                                      return;
                                    TriggerHapticFeedbackForNotification(
                                        UINotificationFeedbackTypeSuccess);
-                                   [snackbarProvider showSnackbar:message];
+                                   [dispatcher_
+                                       showSnackbarWithMessage:message];
                                    shown = YES;
                                  }];
       break;
@@ -357,7 +352,7 @@
     case ShareTo::SHARE_SUCCESS:
       if ([message length]) {
         TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-        [snackbarProvider_ showSnackbar:message];
+        [dispatcher_ showSnackbarWithMessage:message];
       }
       break;
     case ShareTo::SHARE_ERROR:
@@ -386,12 +381,12 @@
 
 #pragma mark - For Testing
 
-- (void)setProvidersForTesting:(id<ActivityServicePassword,
-                                   ActivityServicePresentation,
-                                   ActivityServiceSnackbar>)provider {
+- (void)setProvidersForTesting:
+            (id<ActivityServicePassword, ActivityServicePresentation>)provider
+                    dispatcher:(id<SnackbarCommands>)dispatcher {
   passwordProvider_ = provider;
   presentationProvider_ = provider;
-  snackbarProvider_ = provider;
+  dispatcher_ = dispatcher;
 }
 
 @end

@@ -96,9 +96,8 @@ id<GREYMatcher> PrintButton() {
                                           @"This page cannot be printed.")]
       assertWithMatcher:grey_interactable()];
 
-  // Dismiss the snackbar.
-  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:
-                          kBrowserViewControllerSnackbarCategory];
+  // Dismiss the snackbar (nil dismisses all snackbar messages).
+  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
 }
 
 - (void)testActivityServiceControllerCantPrintUnprintablePages {

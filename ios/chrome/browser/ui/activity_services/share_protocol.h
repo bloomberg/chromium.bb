@@ -11,9 +11,9 @@
 @protocol ActivityServicePassword;
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
-@protocol ActivityServiceSnackbar;
 @protocol BrowserCommands;
 @class ShareToData;
+@protocol SnackbarCommands;
 
 namespace ios {
 class ChromeBrowserState;
@@ -51,11 +51,10 @@ enum ShareResult {
 // |positionProvider| must return a non-nil view and a non-zero size.
 - (void)shareWithData:(ShareToData*)data
             browserState:(ios::ChromeBrowserState*)browserState
-              dispatcher:(id<BrowserCommands>)dispatcher
+              dispatcher:(id<BrowserCommands, SnackbarCommands>)dispatcher
         passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider
-    presentationProvider:(id<ActivityServicePresentation>)presentationProvider
-        snackbarProvider:(id<ActivityServiceSnackbar>)snackbarProvider;
+    presentationProvider:(id<ActivityServicePresentation>)presentationProvider;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_SHARE_PROTOCOL_H_

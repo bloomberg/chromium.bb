@@ -29,10 +29,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// The category for all messages presented by the
-// BrowserViewControllerDependencyFactory via |showSnackbarWithMessage:|.
-extern NSString* const kBrowserViewControllerSnackbarCategory;
-
 // Creates helper objects needed by BrowserViewController.
 @interface BrowserViewControllerDependencyFactory : NSObject
 
@@ -59,8 +55,6 @@ newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
 
 // Returns a new keyboard commands coordinator to handle keyboard commands.
 - (KeyCommandsProvider*)newKeyCommandsProvider;
-
-- (void)showSnackbarWithMessage:(NSString*)message;
 
 - (AlertCoordinator*)alertCoordinatorWithTitle:(NSString*)title
                                        message:(NSString*)message

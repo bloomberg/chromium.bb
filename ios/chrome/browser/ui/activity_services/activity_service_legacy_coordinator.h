@@ -9,7 +9,6 @@
 
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
-@protocol ActivityServiceSnackbar;
 @class CommandDispatcher;
 @class TabModel;
 
@@ -31,8 +30,6 @@ class ChromeBrowserState;
     positionProvider;
 @property(nonatomic, readwrite, weak) id<ActivityServicePresentation>
     presentationProvider;
-@property(nonatomic, readwrite, weak) id<ActivityServiceSnackbar>
-    snackbarProvider;
 
 // Removes references to any weak objects that this coordinator holds pointers
 // to.
