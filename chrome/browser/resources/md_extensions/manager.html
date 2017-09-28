@@ -24,6 +24,11 @@
 <link rel="import" href="chrome://extensions/view_manager.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
+<if expr="chromeos">
+<link rel="import" href="chrome://extensions/kiosk_browser_proxy.html">
+<link rel="import" href="chrome://extensions/kiosk_dialog.html">
+</if>
+
 <dom-module id="extensions-manager">
   <template>
     <style include="cr-shared-style">
@@ -60,7 +65,12 @@
     <extensions-toolbar in-dev-mode="[[inDevMode]]"
         on-pack-tap="onPackTap_" delegate="[[delegate]]"
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
-        on-search-changed="onFilterChanged_">
+        on-search-changed="onFilterChanged_"
+<if expr="chromeos">
+        on-kiosk-tap="onKioskTap_"
+        kiosk-enabled="[[kioskEnabled_]]"
+</if>
+        >
     </extensions-toolbar>
     <dialog id="drawer" is="cr-drawer" align="$i18n{textdirection}">
       <div class="drawer-content">
@@ -91,6 +101,13 @@
       </extensions-pack-dialog>
       <extensions-load-error id="load-error" delegate="[[delegate]]">
       </extensions-load-error>
+<if expr="chromeos">
+      <template is="dom-if" if="[[showKioskDialog_]]" restamp>
+        <extensions-kiosk-dialog id="kiosk-dialog"
+            on-close="onKioskDialogClose_">
+        </extensions-kiosk-dialog>
+      </template>
+</if>
     </div>
   </template>
   <script src="chrome://extensions/manager.js"></script>

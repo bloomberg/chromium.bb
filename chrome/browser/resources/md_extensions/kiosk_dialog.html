@@ -1,0 +1,144 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="kiosk_browser_proxy.html">
+
+<dom-module id="extensions-kiosk-dialog">
+  <template>
+    <style include="cr-shared-style paper-button-style cr-icons">
+      #add-kiosk-app {
+        --paper-input-container-input: {
+          font-size: inherit;
+        };
+        align-items: center;
+        display: flex;
+        margin-bottom: 10px;
+        margin-top: 20px;
+        width: 350px;
+      }
+
+      #add-kiosk-app paper-input {
+        flex: 1;
+      }
+
+      #add-kiosk-app paper-button {
+        -webkit-margin-start: 10px;
+      }
+
+      paper-button {
+        color: var(--google-blue-500);
+      }
+
+      #kiosk-apps-list {
+        border: 1px solid var(--paper-grey-300);
+        padding: 10px;
+      }
+
+      .list-item {
+        align-items: center;
+        border-bottom: 1px solid var(--paper-grey-300);
+        display: flex;
+        justify-content: space-between;
+        padding: 5px;
+      }
+
+      .list-item:last-of-type {
+        border-bottom: none;
+      }
+
+      .list-item:hover {
+        background-color: var(--paper-grey-300);
+      }
+
+      .item-icon {
+        vertical-align: middle;
+        width: 25px;
+      }
+
+      .item-controls {
+        visibility: hidden;
+      }
+
+      .list-item:hover .item-controls {
+        visibility: visible;
+      }
+    </style>
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
+        ignore-enter-key>
+      <div slot="title">$i18n{manageKioskApp}</div>
+      <div slot="body">
+        <div id="kiosk-apps-list">
+          <template is="dom-repeat" items="[[apps_]]">
+            <div class="list-item">
+              <div class="item-name">
+                <img class="item-icon" src="[[item.iconURL]]">
+                [[item.name]]
+                <span hidden="[[!item.autoLaunch]]">
+                  $i18n{kioskAutoLaunch}
+                </span>
+              </div>
+              <div class="item-controls">
+                <paper-button hidden="[[!canEditAutoLaunch_]]"
+                    on-tap="onAutoLaunchButtonTap_">
+                  [[getAutoLaunchButtonLabel_(item.autoLaunch,
+                      '$i18nPolymer{kioskDisableAutoLaunch}',
+                      '$i18nPolymer{kioskEnableAutoLaunch}')]]
+                </paper-button>
+                <button is="paper-icon-button-light" class="icon-delete-gray"
+                    on-tap="onDeleteAppTap_"></button>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div id="add-kiosk-app">
+          <paper-input id="add-input" label="$i18n{kioskAddApp}"
+              placeholder="$i18n{kioskAddAppHint}" value="{{addAppInput_}}"
+              always-float-label invalid="[[errorAppId_]]"
+              error-message="[[getErrorMessage_(
+                  '$i18nPolymer{kioskInvalidApp}', errorAppId_)]]"
+              on-keydown="clearInputInvalid_">
+          </paper-input>
+          <paper-button id="add-button" on-tap="onAddAppTap_"
+              disabled="[[!addAppInput_]]">
+            $i18n{add}
+          </paper-button>
+        </div>
+        <paper-checkbox disabled="[[!canEditBailout_]]"
+            on-pointerdown="onBailoutTap_" checked="[[bailoutDisabled_]]"
+            hidden="[[!canEditAutoLaunch_]]">
+          $i18n{kioskDisableBailout}
+        </paper-checkbox>
+      </div>
+      <div slot="button-container">
+        <paper-button class="action-button" on-tap="onDoneTap_">
+          $i18n{done}
+        </paper-button>
+      </div>
+    </dialog>
+    <dialog is="cr-dialog" id="confirm-dialog" close-text="$i18n{close}"
+        ignore-enter-key on-close="stopPropagation_">
+      <div slot="title">$i18n{kioskDisableBailoutWarningTitle}</div>
+      <div slot="body">$i18n{kioskDisableBailoutWarningBody}</div>
+      <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="onBailoutDialogCancelTap_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button" on-tap="onBailoutDialogConfirmTap_">
+          $i18n{confirm}
+        </paper-button>
+      </div>
+    </dialog>
+  </template>
+  <script src="chrome://extensions/kiosk_dialog.js"></script>
+</dom-module>

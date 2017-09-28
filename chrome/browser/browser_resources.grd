@@ -190,8 +190,14 @@
         <include name="IDR_MD_EXTENSIONS_ERROR_PAGE_JS" file="resources\md_extensions\error_page.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML" file="resources\md_extensions\keyboard_shortcuts.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS" file="resources\md_extensions\keyboard_shortcuts.js" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_MANAGER_HTML" file="resources\md_extensions\manager.html" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_MANAGER_JS" file="resources\md_extensions\manager.js" type="BINDATA" />
+      <if expr="chromeos">
+        <include name="IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_HTML" file="resources\md_extensions\kiosk_browser_proxy.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_JS" file="resources\md_extensions\kiosk_browser_proxy.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_KIOSK_DIALOG_HTML" file="resources\md_extensions\kiosk_dialog.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_KIOSK_DIALOG_JS" file="resources\md_extensions\kiosk_dialog.js" type="BINDATA" />
+      </if>
+        <include name="IDR_MD_EXTENSIONS_MANAGER_HTML" file="resources\md_extensions\manager.html" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_MD_EXTENSIONS_MANAGER_JS" file="resources\md_extensions\manager.js" type="BINDATA" flattenhtml="true" />
         <include name="IDR_MD_EXTENSIONS_ICONS_HTML" file="resources\md_extensions\icons.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_HTML" file="resources\md_extensions\item.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_JS" file="resources\md_extensions\item.js" type="BINDATA" />
@@ -215,8 +221,8 @@
         <include name="IDR_MD_EXTENSIONS_SHORTCUT_INPUT_JS" file="resources\md_extensions\shortcut_input.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_SIDEBAR_HTML" file="resources\md_extensions\sidebar.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_SIDEBAR_JS" file="resources\md_extensions\sidebar.js" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_TOOLBAR_HTML" file="resources\md_extensions\toolbar.html" type="BINDATA" />
-        <include name="IDR_MD_EXTENSIONS_TOOLBAR_JS" file="resources\md_extensions\toolbar.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_TOOLBAR_HTML" file="resources\md_extensions\toolbar.html" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_MD_EXTENSIONS_TOOLBAR_JS" file="resources\md_extensions\toolbar.js" type="BINDATA" flattenhtml="true" />
         <include name="IDR_MD_EXTENSIONS_STRINGS_HTML" file="resources\md_extensions\strings.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_VIEW_MANAGER_HTML" file="resources\md_extensions\view_manager.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_VIEW_MANAGER_JS" file="resources\md_extensions\view_manager.js" type="BINDATA" />

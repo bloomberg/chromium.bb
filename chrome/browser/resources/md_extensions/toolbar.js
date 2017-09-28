@@ -35,6 +35,10 @@ cr.define('extensions', function() {
         type: Boolean,
         value: false,
       },
+
+      // <if expr="chromeos">
+      kioskEnabled: Boolean,
+      // </if>
     },
 
     /** @private */
@@ -51,6 +55,13 @@ cr.define('extensions', function() {
     onPackTap_: function() {
       this.fire('pack-tap');
     },
+
+    // <if expr="chromeos">
+    /** @private */
+    onKioskTap_: function() {
+      this.fire('kiosk-tap');
+    },
+    // </if>
 
     /** @private */
     onUpdateNowTap_: function() {
