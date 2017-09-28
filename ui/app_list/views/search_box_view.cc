@@ -661,6 +661,21 @@ void SearchBoxView::OnMouseEvent(ui::MouseEvent* event) {
 
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   app_list_view_->OnKeyEvent(event);
+
+  if (event->handled() || event->type() != ui::ET_KEY_PRESSED)
+    return;
+
+  if (event->key_code() != ui::VKEY_UP && event->key_code() != ui::VKEY_DOWN)
+    return;
+
+  // If focus is in search box view, up key moves focus to the last element of
+  // contents view, while down key moves focus to the first element of contents
+  // view.
+  views::View* v = GetFocusManager()->GetNextFocusableView(
+      contents_view_, GetWidget(), event->key_code() == ui::VKEY_UP, false);
+  if (v)
+    v->RequestFocus();
+  event->SetHandled();
 }
 
 void SearchBoxView::ButtonPressed(views::Button* sender,
