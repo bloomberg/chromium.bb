@@ -10069,6 +10069,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultSoundSetting" enum="ContentSetting">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>steimel@chromium.org</owner>
+  <summary>The default sound setting at profile open.</summary>
+</histogram>
+
 <histogram name="ContentSettings.DefaultSubresourceFilterSetting"
     enum="ContentSetting">
   <owner>csharrison@chromium.org</owner>
@@ -94742,6 +94748,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="protocol-handler" label="Protocol handler exceptions"/>
   <suffix name="push-messaging" label="Push messaging exceptions"/>
   <suffix name="site-engagement" label="Site engagement exceptions"/>
+  <suffix name="sound" label="Sound exceptions"/>
   <suffix name="ssl-cert-decisions" label="SSL cert decisions exceptions"/>
   <suffix name="subresource-filter" label="Subresource filter exceptions"/>
   <suffix name="usb-chooser-data" label="USB chooser data exceptions"/>
