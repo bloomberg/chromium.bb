@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
-import("//build/config/nacl/config.gni")
+import("//components/nacl/features.gni")
 import("//ppapi/native_client/nacl_test_data.gni")
 
 group("extensions") {

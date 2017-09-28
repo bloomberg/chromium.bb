@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
+import("//components/nacl/features.gni")
 import("//testing/test.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("run_jsbundler.gni")

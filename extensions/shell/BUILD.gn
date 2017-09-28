@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/util/process_version.gni")
+import("//components/nacl/features.gni")
 import("//extensions/features/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")

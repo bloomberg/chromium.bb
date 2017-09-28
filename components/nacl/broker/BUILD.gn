@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
 import("//build/config/compiler/compiler.gni")
+import("//components/nacl/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 # This file builds nacl64.exe, which is a 64-bit x86 Windows executable
