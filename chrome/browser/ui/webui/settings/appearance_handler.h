@@ -41,6 +41,12 @@ class AppearanceHandler : public SettingsPageUIHandler {
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Whether should show the wallpaper setting row.
+  void IsWallpaperSettingVisible(const base::ListValue* args);
+
+  // Whether the wallpaper is policy controlled.
+  void IsWallpaperPolicyControlled(const base::ListValue* args);
+
   // Open the wallpaper manager app.
   void HandleOpenWallpaperManager(const base::ListValue* args);
 #endif

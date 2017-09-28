@@ -51,9 +51,16 @@
               $i18n{openWallpaperApp}
             </div>
           </div>
-          <button class="icon-external" is="paper-icon-button-light"
-              aria-label="$i18n{setWallpaper}"
-              aria-describedby="wallpaperSecondary"></button>
+          <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
+            <cr-policy-indicator id="wallpaperPolicyIndicator"
+                indicator-type="devicePolicy">
+            </cr-policy-indicator>
+          </template>
+          <button class="icon-external" id="showWallpaperManager"
+              is="paper-icon-button-light" aria-label="$i18n{setWallpaper}"
+              disabled="[[isWallpaperPolicyControlled_]]"
+              aria-describedby="wallpaperSecondary">
+          </button>
         </div>
         <div class="settings-box two-line"
             hidden="[[!pageVisibility.setTheme]]">
@@ -72,7 +79,8 @@
             </div>
             <button class="icon-external" is="paper-icon-button-light"
                 actionable aria-label="$i18n{themes}"
-                aria-describedby="themesSecondary"></button>
+                aria-describedby="themesSecondary">
+            </button>
           </a>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
