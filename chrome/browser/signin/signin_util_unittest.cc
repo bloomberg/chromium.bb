@@ -16,11 +16,15 @@ class SigninUtilTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+    signin_util::ResetForceSigninForTesting();
 
     prefs_.reset(new TestingPrefServiceSimple());
   }
 
-  void TearDown() override { BrowserWithTestWindowTest::TearDown(); }
+  void TearDown() override {
+    signin_util::ResetForceSigninForTesting();
+    BrowserWithTestWindowTest::TearDown();
+  }
 
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 };
