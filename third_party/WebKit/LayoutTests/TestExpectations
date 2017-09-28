@@ -3613,7 +3613,7 @@ crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Ti
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
 crbug.com/760546 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
-crbug.com/757955 [ Win7 Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
+crbug.com/757955 [ Linux Win7 Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 
 # Tests flakely timing out on WebKit Linux Trusty dbg builder
 crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
