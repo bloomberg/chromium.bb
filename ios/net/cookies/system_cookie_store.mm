@@ -4,7 +4,7 @@
 
 #import "ios/net/cookies/system_cookie_store.h"
 
-#include "base/time/time.h"
+#include "base/memory/ptr_util.h"
 #import "ios/net/cookies/cookie_creation_time_manager.h"
 #include "ios/net/ios_net_features.h"
 
@@ -16,12 +16,22 @@ namespace net {
 
 SystemCookieStore::~SystemCookieStore() = default;
 
-NSArray* SystemCookieStore::GetCookiesForURL(const GURL& url) {
-  return GetCookiesForURL(url, /* manager = */ nullptr);
+SystemCookieStore::SystemCookieStore()
+    : creation_time_manager_(base::MakeUnique<CookieCreationTimeManager>()),
+      weak_factory_(this) {}
+
+void SystemCookieStore::SetCookieAsync(NSHTTPCookie* cookie,
+                                       SystemCookieCallback callback) {
+  SetCookieAsync(cookie, /*optional_creation_time=*/nullptr,
+                 std::move(callback));
 }
 
-NSArray* SystemCookieStore::GetAllCookies() {
-  return GetAllCookies(/* manager = */ nullptr);
+base::Time SystemCookieStore::GetCookieCreationTime(NSHTTPCookie* cookie) {
+  return creation_time_manager_->GetCreationTime(cookie);
+}
+
+base::WeakPtr<SystemCookieStore> SystemCookieStore::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 // protected static
