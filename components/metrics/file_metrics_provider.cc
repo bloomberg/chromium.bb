@@ -5,6 +5,7 @@
 #include "components/metrics/file_metrics_provider.h"
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -114,8 +115,23 @@ scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
 // This structure stores all the information about the sources being monitored
 // and their current reporting state.
 struct FileMetricsProvider::SourceInfo {
-  SourceInfo(SourceType source_type, SourceAssociation source_association)
-      : type(source_type), association(source_association) {}
+  SourceInfo(const Params& params)
+      : type(params.type),
+        association(params.association),
+        prefs_key(params.prefs_key),
+        filter(params.filter) {
+    switch (type) {
+      case SOURCE_HISTOGRAMS_ACTIVE_FILE:
+        DCHECK(prefs_key.empty());
+      // fall through
+      case SOURCE_HISTOGRAMS_ATOMIC_FILE:
+        path = params.path;
+        break;
+      case SOURCE_HISTOGRAMS_ATOMIC_DIR:
+        directory = params.path;
+        break;
+    }
+  }
   ~SourceInfo() {}
 
   // How to access this source (file/dir, atomic/active).
@@ -135,6 +151,9 @@ struct FileMetricsProvider::SourceInfo {
   // Name used inside prefs to persistent metadata.
   std::string prefs_key;
 
+  // The filter callback for determining what to do with found files.
+  FilterCallback filter;
+
   // The last-seen time of this source to detect change.
   base::Time last_seen;
 
@@ -149,6 +168,14 @@ struct FileMetricsProvider::SourceInfo {
   DISALLOW_COPY_AND_ASSIGN(SourceInfo);
 };
 
+FileMetricsProvider::Params::Params(const base::FilePath& path,
+                                    SourceType type,
+                                    SourceAssociation association,
+                                    base::StringPiece prefs_key)
+    : path(path), type(type), association(association), prefs_key(prefs_key) {}
+
+FileMetricsProvider::Params::~Params() {}
+
 FileMetricsProvider::FileMetricsProvider(PrefService* local_state)
     : task_runner_(CreateBackgroundTaskRunner()),
       pref_service_(local_state),
@@ -159,39 +186,23 @@ FileMetricsProvider::FileMetricsProvider(PrefService* local_state)
 
 FileMetricsProvider::~FileMetricsProvider() {}
 
-void FileMetricsProvider::RegisterSource(const base::FilePath& path,
-                                         SourceType type,
-                                         SourceAssociation source_association,
-                                         const base::StringPiece prefs_key) {
+void FileMetricsProvider::RegisterSource(const Params& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ensure that kSourceOptions has been filled for this type.
-  DCHECK_GT(arraysize(kSourceOptions), static_cast<size_t>(type));
+  DCHECK_GT(arraysize(kSourceOptions), static_cast<size_t>(params.type));
 
-  std::unique_ptr<SourceInfo> source(new SourceInfo(type, source_association));
-  source->prefs_key = prefs_key.as_string();
-
-  switch (source->type) {
-    case SOURCE_HISTOGRAMS_ACTIVE_FILE:
-      DCHECK(prefs_key.empty());
-    // fall through
-    case SOURCE_HISTOGRAMS_ATOMIC_FILE:
-      source->path = path;
-      break;
-    case SOURCE_HISTOGRAMS_ATOMIC_DIR:
-      source->directory = path;
-      break;
-  }
+  std::unique_ptr<SourceInfo> source(new SourceInfo(params));
 
   // |prefs_key| may be empty if the caller does not wish to persist the
   // state across instances of the program.
-  if (pref_service_ && !prefs_key.empty()) {
+  if (pref_service_ && !params.prefs_key.empty()) {
     source->last_seen = base::Time::FromInternalValue(
         pref_service_->GetInt64(metrics::prefs::kMetricsLastSeenPrefix +
                                 source->prefs_key));
   }
 
-  switch (source_association) {
+  switch (params.association) {
     case ASSOCIATE_CURRENT_RUN:
     case ASSOCIATE_INTERNAL_PROFILE:
       sources_to_check_.push_back(std::move(source));
@@ -214,8 +225,14 @@ void FileMetricsProvider::RegisterPrefs(PrefRegistrySimple* prefs,
 // static
 void FileMetricsProvider::SetTaskRunnerForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
-  DCHECK(!g_task_runner_for_testing);
+  DCHECK(!g_task_runner_for_testing || !task_runner);
   g_task_runner_for_testing = task_runner.get();
+}
+
+// static
+void FileMetricsProvider::RecordAccessResult(AccessResult result) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.FileMetricsProvider.AccessResult", result,
+                            ACCESS_RESULT_MAX);
 }
 
 // static
@@ -223,12 +240,11 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
   DCHECK_EQ(SOURCE_HISTOGRAMS_ATOMIC_DIR, source->type);
   DCHECK(!source->directory.empty());
 
-  // Open the directory and find all the files, remembering the oldest that
-  // has not been read. They can be removed and/or ignored if they're older
-  // than the last-check time.
-  base::Time oldest_file_time = base::Time::Now();
-  base::FilePath oldest_file_path;
+  // Open the directory and find all the files, remembering the last-modified
+  // time of each.
+  base::flat_map<base::Time, base::FilePath> found_files;
   base::FilePath file_path;
+  base::Time now_time = base::Time::Now();
   int file_count = 0;
   int delete_count = 0;
   base::FileEnumerator file_iter(source->directory, /*recursive=*/false,
@@ -258,11 +274,9 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
     // Process real files.
     base::Time modified = file_info.GetLastModifiedTime();
     if (modified > source->last_seen) {
-      // This file hasn't been read. Remember it if it is older than others.
-      if (modified < oldest_file_time) {
-        oldest_file_path = std::move(file_path);
-        oldest_file_time = modified;
-      }
+      // This file hasn't been read. Remember it (unless it's from the future).
+      if (modified <= now_time)
+        found_files.emplace(modified, std::move(file_path));
       ++file_count;
     } else {
       // This file has been read. Try to delete it. Ignore any errors because
@@ -280,14 +294,22 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
   UMA_HISTOGRAM_COUNTS_100("UMA.FileMetricsProvider.DeletedFiles",
                            delete_count);
 
-  // Stop now if there are no files to read.
-  if (oldest_file_path.empty())
-    return false;
+  // Filter files from the front until one is found for processing.
+  while (!found_files.empty()) {
+    base::FilePath& path = found_files.begin()->second;
+    AccessResult result = HandleFilterSource(source, path);
+    if (result == ACCESS_RESULT_SUCCESS) {
+      source->path = std::move(path);
+      return true;
+    }
 
-  // Set the active file to be the oldest modified file that has not yet
-  // been read.
-  source->path = std::move(oldest_file_path);
-  return true;
+    // Record the result. Success will be recorded by the caller.
+    RecordAccessResult(result);
+    found_files.erase(found_files.begin());
+  }
+
+  // No files to read.
+  return false;
 }
 
 // static
@@ -325,8 +347,7 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
     // Some results are not reported in order to keep the dashboard clean.
     if (result != ACCESS_RESULT_DOESNT_EXIST &&
         result != ACCESS_RESULT_NOT_MODIFIED) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "UMA.FileMetricsProvider.AccessResult", result, ACCESS_RESULT_MAX);
+      RecordAccessResult(result);
     }
 
     // Metrics associated with internal profiles have to be fetched directly
@@ -370,6 +391,13 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
 
   if (source->last_seen >= info.last_modified)
     return ACCESS_RESULT_NOT_MODIFIED;
+
+  // Non-directory files still need to be filtered.
+  if (source->directory.empty()) {
+    AccessResult result = HandleFilterSource(source, source->path);
+    if (result != ACCESS_RESULT_SUCCESS)
+      return result;
+  }
 
   // A new file of metrics has been found.
   base::File file(source->path, kSourceOptions[source->type].file_open_flags);
@@ -456,6 +484,48 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromSource(
   source->read_complete = true;
   DVLOG(1) << "Reported " << histogram_count << " histograms from "
            << source->path.value();
+}
+
+FileMetricsProvider::AccessResult FileMetricsProvider::HandleFilterSource(
+    SourceInfo* source,
+    const base::FilePath& path) {
+  if (!source->filter)
+    return ACCESS_RESULT_SUCCESS;
+
+  // Alternatively, pass a Params object to the filter like what was originally
+  // used to configure the source.
+  // Params params(path, source->type, source->association, source->prefs_key);
+  switch (source->filter.Run(path)) {
+    case FILTER_PROCESS_FILE:
+      // Process the file.
+      return ACCESS_RESULT_SUCCESS;
+
+    case FILTER_TRY_LATER: {
+      // Touch the file with the current timestamp making it (presumably) the
+      // newest file in the directory.
+      base::Time now = base::Time::Now();
+      base::TouchFile(path, /*accessed=*/now, /*modified=*/now);
+      return ACCESS_RESULT_FILTER_TRY_LATER;
+    }
+
+    case FILTER_SKIP_FILE:
+      switch (source->type) {
+        case SOURCE_HISTOGRAMS_ATOMIC_FILE:
+        case SOURCE_HISTOGRAMS_ATOMIC_DIR:
+          // Only "atomic" files are deleted (best-effort).
+          DeleteFileWhenPossible(path);
+          break;
+        case SOURCE_HISTOGRAMS_ACTIVE_FILE:
+          // File will presumably get modified elsewhere and thus tried again.
+          break;
+      }
+      return ACCESS_RESULT_FILTER_SKIP_FILE;
+  }
+
+  // Code never gets here but some compilers don't realize that and so complain
+  // that "not all control paths return a value".
+  NOTREACHED();
+  return ACCESS_RESULT_SUCCESS;
 }
 
 void FileMetricsProvider::ScheduleSourcesCheck() {
