@@ -214,7 +214,7 @@ static int tegra_init(struct driver *drv)
 }
 
 static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			   uint32_t flags)
+			   uint64_t flags)
 {
 	uint32_t size, stride, block_height_log2 = 0;
 	enum nv_mem_kind kind = NV_MEM_KIND_PITCH;

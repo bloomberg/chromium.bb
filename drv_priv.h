@@ -70,7 +70,7 @@ struct backend {
 	int (*init)(struct driver *drv);
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			 uint32_t flags);
+			 uint64_t flags);
 	int (*bo_create_with_modifiers)(struct bo *bo, uint32_t width, uint32_t height,
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
 	int (*bo_destroy)(struct bo *bo);

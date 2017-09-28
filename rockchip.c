@@ -231,7 +231,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 }
 
 static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			      uint32_t flags)
+			      uint64_t flags)
 {
 	uint64_t modifiers[] = { DRM_FORMAT_MOD_NONE };
 	return rockchip_bo_create_with_modifiers(bo, width, height, format, modifiers,

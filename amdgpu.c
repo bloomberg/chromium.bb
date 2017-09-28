@@ -135,7 +135,7 @@ static ADDR_E_RETURNCODE ADDR_API free_sys_mem(const ADDR_FREESYSMEM_INPUT *in)
 }
 
 static int amdgpu_addrlib_compute(void *addrlib, uint32_t width, uint32_t height, uint32_t format,
-				  uint32_t usage, uint32_t *tiling_flags,
+				  uint64_t usage, uint32_t *tiling_flags,
 				  ADDR_COMPUTE_SURFACE_INFO_OUTPUT *addr_out)
 {
 	ADDR_COMPUTE_SURFACE_INFO_INPUT addr_surf_info_in = { 0 };
@@ -273,7 +273,7 @@ static int amdgpu_init(struct driver *drv)
 	int ret;
 	void *addrlib;
 	struct format_metadata metadata;
-	uint32_t flags = BO_USE_RENDER_MASK;
+	uint64_t flags = BO_USE_RENDER_MASK;
 
 	addrlib = amdgpu_addrlib_init(drv_get_fd(drv));
 	if (!addrlib)
@@ -345,7 +345,7 @@ static void amdgpu_close(struct driver *drv)
 }
 
 static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			    uint32_t usage)
+			    uint64_t usage)
 {
 	void *addrlib = bo->drv->priv;
 	union drm_amdgpu_gem_create gem_create;

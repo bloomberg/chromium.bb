@@ -182,7 +182,7 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 }
 
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-		       uint32_t flags)
+		       uint64_t flags)
 {
 	int ret;
 	size_t plane;

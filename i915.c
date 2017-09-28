@@ -297,7 +297,7 @@ static int i915_init(struct driver *drv)
 }
 
 static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			  uint32_t flags)
+			  uint64_t flags)
 {
 	int ret;
 	size_t plane;
