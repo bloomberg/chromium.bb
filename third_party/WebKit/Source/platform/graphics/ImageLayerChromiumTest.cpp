@@ -104,9 +104,9 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset) {
 
   bool opaque = false;
   RefPtr<Image> image = TestImage::Create(IntSize(100, 100), opaque);
-  ASSERT_TRUE(image.Get());
+  ASSERT_TRUE(image.get());
 
-  graphics_layer->SetContentsToImage(image.Get());
+  graphics_layer->SetContentsToImage(image.get());
   ASSERT_TRUE(graphics_layer->HasContentsLayer());
   ASSERT_TRUE(graphics_layer->ContentsLayer());
 
@@ -123,17 +123,17 @@ TEST(ImageLayerChromiumTest, opaqueImages) {
 
   bool opaque = true;
   RefPtr<Image> opaque_image = TestImage::Create(IntSize(100, 100), opaque);
-  ASSERT_TRUE(opaque_image.Get());
+  ASSERT_TRUE(opaque_image.get());
   RefPtr<Image> non_opaque_image =
       TestImage::Create(IntSize(100, 100), !opaque);
-  ASSERT_TRUE(non_opaque_image.Get());
+  ASSERT_TRUE(non_opaque_image.get());
 
   ASSERT_FALSE(graphics_layer->ContentsLayer());
 
-  graphics_layer->SetContentsToImage(opaque_image.Get());
+  graphics_layer->SetContentsToImage(opaque_image.get());
   ASSERT_TRUE(graphics_layer->ContentsLayer()->Opaque());
 
-  graphics_layer->SetContentsToImage(non_opaque_image.Get());
+  graphics_layer->SetContentsToImage(non_opaque_image.get());
   ASSERT_FALSE(graphics_layer->ContentsLayer()->Opaque());
 }
 

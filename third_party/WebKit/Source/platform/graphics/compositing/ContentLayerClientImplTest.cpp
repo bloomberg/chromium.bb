@@ -248,12 +248,12 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
   RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       clip0, TransformPaintPropertyNode::Root(), clip_rect);
 
-  PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.Get(),
+  PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.get(),
                                 EffectPaintPropertyNode::Root());
   chunks_array[0].properties = PaintChunkProperties(layer_state);
   chunks_array[1].properties = PaintChunkProperties(layer_state);
   chunks_array[2].properties = PaintChunkProperties(
-      PropertyTreeState(TransformPaintPropertyNode::Root(), clip2.Get(),
+      PropertyTreeState(TransformPaintPropertyNode::Root(), clip2.get(),
                         EffectPaintPropertyNode::Root()));
 
   c.SetTracksRasterInvalidations(true);

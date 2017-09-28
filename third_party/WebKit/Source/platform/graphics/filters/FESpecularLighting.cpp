@@ -105,7 +105,7 @@ bool FESpecularLighting::SetSpecularExponent(float specular_exponent) {
 }
 
 const LightSource* FESpecularLighting::GetLightSource() const {
-  return light_source_.Get();
+  return light_source_.get();
 }
 
 void FESpecularLighting::SetLightSource(RefPtr<LightSource> light_source) {

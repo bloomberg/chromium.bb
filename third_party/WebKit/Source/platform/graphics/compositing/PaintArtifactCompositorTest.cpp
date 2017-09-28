@@ -641,7 +641,7 @@ TEST_F(PaintArtifactCompositorTest, DeeplyNestedClips) {
   const cc::ClipNode* clip_node =
       GetPropertyTrees().clip_tree.Node(drawing_layer->clip_tree_index());
   for (auto it = clips.rbegin(); it != clips.rend(); ++it) {
-    const ClipPaintPropertyNode* paint_clip_node = it->Get();
+    const ClipPaintPropertyNode* paint_clip_node = it->get();
     EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clip_node->clip_type);
     EXPECT_EQ(paint_clip_node->ClipRect().Rect(), clip_node->clip);
     clip_node = GetPropertyTrees().clip_tree.Node(clip_node->parent_id);
@@ -747,15 +747,15 @@ TEST_F(PaintArtifactCompositorTest, EffectTreeConversion) {
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect2.Get())
+             effect2.get())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect1.Get())
+             effect1.get())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect3.Get())
+             effect3.get())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   Update(artifact.Build());
 
@@ -1223,7 +1223,7 @@ TEST_F(PaintArtifactCompositorTest, MergeClip) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip.Get(),
+      .Chunk(TransformPaintPropertyNode::Root(), clip.get(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 200, 300), Color::kBlack);
   test_artifact
@@ -1265,7 +1265,7 @@ TEST_F(PaintArtifactCompositorTest, Merge2DTransform) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(transform.Get(), ClipPaintPropertyNode::Root(),
+      .Chunk(transform.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   test_artifact
@@ -1302,18 +1302,18 @@ TEST_F(PaintArtifactCompositorTest, Merge2DTransformDirectAncestor) {
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
-          transform.Get(), TransformationMatrix().Translate(50, 50),
+          transform.get(), TransformationMatrix().Translate(50, 50),
           FloatPoint3D(100, 100, 0), false, 0);
 
   TestPaintArtifact test_artifact;
   test_artifact
-      .Chunk(transform.Get(), ClipPaintPropertyNode::Root(),
+      .Chunk(transform.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   // The second chunk can merge into the first because it has a descendant
   // state of the first's transform and no direct compositing reason.
   test_artifact
-      .Chunk(transform2.Get(), ClipPaintPropertyNode::Root(),
+      .Chunk(transform2.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
 
@@ -1347,7 +1347,7 @@ TEST_F(PaintArtifactCompositorTest, MergeTransformOrigin) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(transform.Get(), ClipPaintPropertyNode::Root(),
+      .Chunk(transform.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   test_artifact
@@ -1387,7 +1387,7 @@ TEST_F(PaintArtifactCompositorTest, MergeOpacity) {
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1426,12 +1426,12 @@ TEST_F(PaintArtifactCompositorTest, MergeNested) {
           false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform.Get(),
+      ClipPaintPropertyNode::Root(), transform.get(),
       FloatRoundedRect(10, 20, 50, 60));
 
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), transform.Get(), clip.Get(),
+      EffectPaintPropertyNode::Root(), transform.get(), clip.get(),
       kColorFilterNone, CompositorFilterOperations(), opacity,
       SkBlendMode::kSrcOver);
 
@@ -1440,7 +1440,7 @@ TEST_F(PaintArtifactCompositorTest, MergeNested) {
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk(transform.Get(), clip.Get(), effect.Get())
+  test_artifact.Chunk(transform.get(), clip.get(), effect.get())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1481,11 +1481,11 @@ TEST_F(PaintArtifactCompositorTest, ClipPushedUp) {
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
-          transform.Get(), TransformationMatrix().Translate(20, 25),
+          transform.get(), TransformationMatrix().Translate(20, 25),
           FloatPoint3D(100, 100, 0), false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform2.Get(),
+      ClipPaintPropertyNode::Root(), transform2.get(),
       FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
@@ -1494,7 +1494,7 @@ TEST_F(PaintArtifactCompositorTest, ClipPushedUp) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip.Get(),
+      .Chunk(TransformPaintPropertyNode::Root(), clip.get(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
@@ -1539,12 +1539,12 @@ TEST_F(PaintArtifactCompositorTest, EffectPushedUp_DISABLED) {
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
-          transform.Get(), TransformationMatrix().Translate(20, 25),
+          transform.get(), TransformationMatrix().Translate(20, 25),
           FloatPoint3D(100, 100, 0), false, 0);
 
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), transform2.Get(),
+      EffectPaintPropertyNode::Root(), transform2.get(),
       ClipPaintPropertyNode::Root(), kColorFilterNone,
       CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver);
 
@@ -1555,7 +1555,7 @@ TEST_F(PaintArtifactCompositorTest, EffectPushedUp_DISABLED) {
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1598,16 +1598,16 @@ TEST_F(PaintArtifactCompositorTest, EffectAndClipPushedUp_DISABLED) {
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
-          transform.Get(), TransformationMatrix().Translate(20, 25),
+          transform.get(), TransformationMatrix().Translate(20, 25),
           FloatPoint3D(100, 100, 0), false, 0);
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform.Get(),
+      ClipPaintPropertyNode::Root(), transform.get(),
       FloatRoundedRect(10, 20, 50, 60));
 
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
-      EffectPaintPropertyNode::Root(), transform2.Get(), clip.Get(),
+      EffectPaintPropertyNode::Root(), transform2.get(), clip.get(),
       kColorFilterNone, CompositorFilterOperations(), opacity,
       SkBlendMode::kSrcOver);
 
@@ -1617,7 +1617,7 @@ TEST_F(PaintArtifactCompositorTest, EffectAndClipPushedUp_DISABLED) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip.Get(), effect.Get())
+      .Chunk(TransformPaintPropertyNode::Root(), clip.get(), effect.get())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1657,7 +1657,7 @@ TEST_F(PaintArtifactCompositorTest, ClipAndEffectNoTransform) {
   float opacity = 2.0 / 255.0;
   RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::Create(
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      clip.Get(), kColorFilterNone, CompositorFilterOperations(), opacity,
+      clip.get(), kColorFilterNone, CompositorFilterOperations(), opacity,
       SkBlendMode::kSrcOver);
 
   TestPaintArtifact test_artifact;
@@ -1666,7 +1666,7 @@ TEST_F(PaintArtifactCompositorTest, ClipAndEffectNoTransform) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip.Get(), effect.Get())
+      .Chunk(TransformPaintPropertyNode::Root(), clip.get(), effect.get())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1702,7 +1702,7 @@ TEST_F(PaintArtifactCompositorTest, TwoClips) {
       FloatRoundedRect(20, 30, 10, 20));
 
   RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
-      clip.Get(), TransformPaintPropertyNode::Root(),
+      clip.get(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 20, 50, 60));
 
   TestPaintArtifact test_artifact;
@@ -1711,7 +1711,7 @@ TEST_F(PaintArtifactCompositorTest, TwoClips) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip2.Get(),
+      .Chunk(TransformPaintPropertyNode::Root(), clip2.get(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
@@ -1750,7 +1750,7 @@ TEST_F(PaintArtifactCompositorTest, TwoTransformsClipBetween) {
       FloatRoundedRect(0, 0, 50, 60));
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
-          transform.Get(), TransformationMatrix().Translate(20, 25),
+          transform.get(), TransformationMatrix().Translate(20, 25),
           FloatPoint3D(100, 100, 0), false, 0);
   TestPaintArtifact test_artifact;
   test_artifact
@@ -1758,7 +1758,7 @@ TEST_F(PaintArtifactCompositorTest, TwoTransformsClipBetween) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(transform2.Get(), clip.Get(), EffectPaintPropertyNode::Root())
+      .Chunk(transform2.get(), clip.get(), EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 300, 400), Color::kBlack);
   test_artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -1794,7 +1794,7 @@ TEST_F(PaintArtifactCompositorTest, OverlapTransform) {
   test_artifact.Chunk(DefaultPaintChunkProperties())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
   test_artifact
-      .Chunk(transform.Get(), ClipPaintPropertyNode::Root(),
+      .Chunk(transform.get(), ClipPaintPropertyNode::Root(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   test_artifact.Chunk(DefaultPaintChunkProperties())
@@ -1828,7 +1828,7 @@ TEST_F(PaintArtifactCompositorTest, MightOverlap) {
           TransformationMatrix().Translate(99, 0), FloatPoint3D(100, 100, 0),
           false);
   {
-    paint_chunk2.properties.property_tree_state.SetTransform(transform.Get());
+    paint_chunk2.properties.property_tree_state.SetTransform(transform.get());
     PendingLayer pending_layer2(paint_chunk2, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1839,7 +1839,7 @@ TEST_F(PaintArtifactCompositorTest, MightOverlap) {
           TransformationMatrix().Translate(100, 0), FloatPoint3D(100, 100, 0),
           false);
   {
-    paint_chunk2.properties.property_tree_state.SetTransform(transform2.Get());
+    paint_chunk2.properties.property_tree_state.SetTransform(transform2.get());
     PendingLayer pending_layer2(paint_chunk2, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1982,7 +1982,7 @@ TEST_F(PaintArtifactCompositorTest, EffectWithElementId) {
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
@@ -2003,11 +2003,11 @@ TEST_F(PaintArtifactCompositorTest, CompositedLuminanceMask) {
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             masked.Get())
+             masked.get())
       .RectDrawing(FloatRect(100, 100, 200, 200), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             masking.Get())
+             masking.get())
       .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
   Update(artifact.Build());
   ASSERT_EQ(2u, ContentLayerCount());
@@ -2101,7 +2101,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeClip) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
   artifact
-      .Chunk(TransformPaintPropertyNode::Root(), clip.Get(),
+      .Chunk(TransformPaintPropertyNode::Root(), clip.get(),
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
@@ -2127,7 +2127,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeEffect) {
       .RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -2157,7 +2157,7 @@ TEST_F(PaintArtifactCompositorTest, DirectlyCompositedEffect) {
       .RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -2206,7 +2206,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeDeepEffect) {
       .RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect3.Get())
+             effect3.get())
       .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -2254,9 +2254,9 @@ TEST_F(PaintArtifactCompositorTest, IndirectlyCompositedEffect) {
       .RectDrawing(FloatRect(50, 25, 100, 100), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(25, 75, 100, 100), Color::kGray);
-  artifact.Chunk(transform.Get(), ClipPaintPropertyNode::Root(), effect.Get())
+  artifact.Chunk(transform.get(), ClipPaintPropertyNode::Root(), effect.get())
       .RectDrawing(FloatRect(75, 75, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(3u, ContentLayerCount());
@@ -2298,22 +2298,22 @@ TEST_F(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
       .RectDrawing(FloatRect(0, 0, 50, 50), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect1.Get())
+             effect1.get())
       .RectDrawing(FloatRect(100, 0, 50, 50), Color::kGray);
   // This chunk has a transform that must be composited, thus causing effect1
   // to be composited too.
-  artifact.Chunk(transform.Get(), ClipPaintPropertyNode::Root(), effect1.Get())
+  artifact.Chunk(transform.get(), ClipPaintPropertyNode::Root(), effect1.get())
       .RectDrawing(FloatRect(200, 0, 50, 50), Color::kGray);
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect2.Get())
+             effect2.get())
       .RectDrawing(FloatRect(200, 100, 50, 50), Color::kGray);
   // This chunk overlaps with the 2nd chunk, but is seemingly safe to merge.
   // However because effect1 gets composited due to a composited transform,
   // we can't merge with effect1 nor skip it to merge with the first chunk.
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect2.Get())
+             effect2.get())
       .RectDrawing(FloatRect(100, 0, 50, 50), Color::kGray);
 
   Update(artifact.Build());
@@ -2354,7 +2354,7 @@ TEST_F(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
              EffectPaintPropertyNode::Root())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
 
   CompositorElementIdSet composited_element_ids;
@@ -3059,7 +3059,7 @@ TEST_F(PaintArtifactCompositorTest, WillBeRemovedFromFrame) {
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect.Get())
+             effect.get())
       .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
   Update(artifact.Build());
 
@@ -3159,7 +3159,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {
   TestPaintArtifact artifact;
   artifact.Chunk(DefaultPaintChunkProperties())
       .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
-  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.Get(), effect1.Get())
+  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.get(), effect1.get())
       .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());
@@ -3185,9 +3185,9 @@ TEST_F(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
-             effect1.Get())
+             effect1.get())
       .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
-  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.Get(), effect1.Get())
+  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.get(), effect1.get())
       .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
   Update(artifact.Build());
   ASSERT_EQ(1u, ContentLayerCount());

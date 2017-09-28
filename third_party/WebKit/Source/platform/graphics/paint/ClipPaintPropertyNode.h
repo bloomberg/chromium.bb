@@ -57,7 +57,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return local_transform_space_.Get();
+    return local_transform_space_.get();
   }
   const FloatRoundedRect& ClipRect() const { return clip_rect_; }
 

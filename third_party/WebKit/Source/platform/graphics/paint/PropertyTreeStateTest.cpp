@@ -25,7 +25,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnTransformNode) {
                                          TransformationMatrix(), FloatPoint3D(),
                                          false, 0, kCompositingReasonNone,
                                          expected_compositor_element_id);
-  PropertyTreeState state(transform.Get(), ClipPaintPropertyNode::Root(),
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
                           EffectPaintPropertyNode::Root());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
@@ -39,7 +39,7 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnEffectNode) {
       CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
       kCompositingReasonNone, expected_compositor_element_id);
   PropertyTreeState state(TransformPaintPropertyNode::Root(),
-                          ClipPaintPropertyNode::Root(), effect.Get());
+                          ClipPaintPropertyNode::Root(), effect.get());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
 }
@@ -56,8 +56,8 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithElementIdOnMultipleNodes) {
       ClipPaintPropertyNode::Root(), kColorFilterNone,
       CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
       kCompositingReasonNone, expected_compositor_element_id);
-  PropertyTreeState state(transform.Get(), ClipPaintPropertyNode::Root(),
-                          effect.Get());
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
+                          effect.get());
   EXPECT_EQ(expected_compositor_element_id,
             state.GetCompositorElementId(CompositorElementIdSet()));
 }
@@ -75,8 +75,8 @@ TEST_F(PropertyTreeStateTest, CompositorElementIdWithDifferingElementIds) {
       ClipPaintPropertyNode::Root(), kColorFilterNone,
       CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
       kCompositingReasonNone, second_compositor_element_id);
-  PropertyTreeState state(transform.Get(), ClipPaintPropertyNode::Root(),
-                          effect.Get());
+  PropertyTreeState state(transform.get(), ClipPaintPropertyNode::Root(),
+                          effect.get());
 
   CompositorElementIdSet composited_element_ids;
   composited_element_ids.insert(first_compositor_element_id);

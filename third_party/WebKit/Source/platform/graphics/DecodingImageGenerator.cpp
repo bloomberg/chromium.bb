@@ -149,7 +149,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
 
   PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
   const bool decoded = frame_generator_->DecodeAndScale(
-      data_.Get(), all_data_received_, frame_index, decode_info, pixels,
+      data_.get(), all_data_received_, frame_index, decode_info, pixels,
       row_bytes, alpha_option);
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 
@@ -179,7 +179,7 @@ bool DecodingImageGenerator::QueryYUV8(SkYUVSizeInfo* size_info,
   if (color_space)
     *color_space = kJPEG_SkYUVColorSpace;
 
-  return frame_generator_->GetYUVComponentSizes(data_.Get(), size_info);
+  return frame_generator_->GetYUVComponentSizes(data_.get(), size_info);
 }
 
 bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
@@ -195,7 +195,7 @@ bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
 
   PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
   bool decoded =
-      frame_generator_->DecodeToYUV(data_.Get(), frame_index, size_info.fSizes,
+      frame_generator_->DecodeToYUV(data_.get(), frame_index, size_info.fSizes,
                                     planes, size_info.fWidthBytes);
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 

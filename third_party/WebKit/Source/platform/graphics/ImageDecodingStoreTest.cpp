@@ -79,18 +79,18 @@ TEST_F(ImageDecodingStoreTest, insertDecoder) {
   std::unique_ptr<ImageDecoder> decoder = MockImageDecoder::Create(this);
   decoder->SetSize(1, 1);
   const ImageDecoder* ref_decoder = decoder.get();
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder));
   EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
   EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 
   ImageDecoder* test_decoder;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      generator_.get(), size, ImageDecoder::kAlphaPremultiplied,
       &test_decoder));
   EXPECT_TRUE(test_decoder);
   EXPECT_EQ(ref_decoder, test_decoder);
-  ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), test_decoder);
+  ImageDecodingStore::Instance().UnlockDecoder(generator_.get(), test_decoder);
   EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
 }
 
@@ -101,11 +101,11 @@ TEST_F(ImageDecodingStoreTest, evictDecoder) {
   decoder1->SetSize(1, 1);
   decoder2->SetSize(2, 2);
   decoder3->SetSize(3, 3);
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder1));
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder2));
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder3));
   EXPECT_EQ(3, ImageDecodingStore::Instance().CacheEntries());
   EXPECT_EQ(56u, ImageDecodingStore::Instance().MemoryUsageInBytes());
@@ -130,17 +130,17 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted) {
   decoder1->SetSize(1, 1);
   decoder2->SetSize(2, 2);
   decoder3->SetSize(3, 3);
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder1));
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder2));
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder3));
   EXPECT_EQ(3, ImageDecodingStore::Instance().CacheEntries());
 
   ImageDecoder* test_decoder;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), SkISize::Make(2, 2), ImageDecoder::kAlphaPremultiplied,
+      generator_.get(), SkISize::Make(2, 2), ImageDecoder::kAlphaPremultiplied,
       &test_decoder));
 
   EvictOneCache();
@@ -149,7 +149,7 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted) {
   EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
   EXPECT_EQ(16u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 
-  ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), test_decoder);
+  ImageDecodingStore::Instance().UnlockDecoder(generator_.get(), test_decoder);
   EvictOneCache();
   EXPECT_FALSE(ImageDecodingStore::Instance().CacheEntries());
   EXPECT_FALSE(ImageDecodingStore::Instance().MemoryUsageInBytes());
@@ -160,22 +160,22 @@ TEST_F(ImageDecodingStoreTest, removeDecoder) {
   std::unique_ptr<ImageDecoder> decoder = MockImageDecoder::Create(this);
   decoder->SetSize(1, 1);
   const ImageDecoder* ref_decoder = decoder.get();
-  ImageDecodingStore::Instance().InsertDecoder(generator_.Get(),
+  ImageDecodingStore::Instance().InsertDecoder(generator_.get(),
                                                std::move(decoder));
   EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
   EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 
   ImageDecoder* test_decoder;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      generator_.get(), size, ImageDecoder::kAlphaPremultiplied,
       &test_decoder));
   EXPECT_TRUE(test_decoder);
   EXPECT_EQ(ref_decoder, test_decoder);
-  ImageDecodingStore::Instance().RemoveDecoder(generator_.Get(), test_decoder);
+  ImageDecodingStore::Instance().RemoveDecoder(generator_.get(), test_decoder);
   EXPECT_FALSE(ImageDecodingStore::Instance().CacheEntries());
 
   EXPECT_FALSE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      generator_.get(), size, ImageDecoder::kAlphaPremultiplied,
       &test_decoder));
 }
 

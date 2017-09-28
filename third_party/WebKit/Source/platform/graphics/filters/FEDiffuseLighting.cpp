@@ -87,7 +87,7 @@ bool FEDiffuseLighting::SetDiffuseConstant(float diffuse_constant) {
 }
 
 const LightSource* FEDiffuseLighting::GetLightSource() const {
-  return light_source_.Get();
+  return light_source_.get();
 }
 
 void FEDiffuseLighting::SetLightSource(RefPtr<LightSource> light_source) {

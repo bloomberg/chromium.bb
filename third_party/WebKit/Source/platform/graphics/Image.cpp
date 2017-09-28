@@ -84,7 +84,7 @@ bool Image::SupportsType(const String& type) {
 Image::SizeAvailability Image::SetData(RefPtr<SharedBuffer> data,
                                        bool all_data_received) {
   encoded_image_data_ = std::move(data);
-  if (!encoded_image_data_.Get())
+  if (!encoded_image_data_.get())
     return kSizeAvailable;
 
   int length = encoded_image_data_->size();
