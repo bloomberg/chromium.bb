@@ -1449,7 +1449,7 @@ void LayoutText::SetTextWithOffset(RefPtr<StringImpl> text,
                                    unsigned offset,
                                    unsigned len,
                                    bool force) {
-  if (!force && Equal(text_.Impl(), text.Get()))
+  if (!force && Equal(text_.Impl(), text.get()))
     return;
 
   unsigned old_len = TextLength();
@@ -1643,7 +1643,7 @@ void LayoutText::SecureText(UChar mask) {
 void LayoutText::SetText(RefPtr<StringImpl> text, bool force) {
   DCHECK(text);
 
-  if (!force && Equal(text_.Impl(), text.Get()))
+  if (!force && Equal(text_.Impl(), text.get()))
     return;
 
   SetTextInternal(std::move(text));

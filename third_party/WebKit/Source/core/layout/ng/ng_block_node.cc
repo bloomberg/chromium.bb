@@ -353,7 +353,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     // layout object as ourselves, we need to copy its floats across.
     if (child_object == box_) {
       for (const auto& maybe_float_fragment :
-           ToNGPhysicalBoxFragment(child_fragment.Get())->Children()) {
+           ToNGPhysicalBoxFragment(child_fragment.get())->Children()) {
         // The child of the anonymous fragment might be just a line-box
         // fragment - ignore.
         if (IsFloatFragment(*maybe_float_fragment)) {
@@ -366,7 +366,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
       }
       continue;
     }
-    const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.Get());
+    const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.get());
     if (IsFirstFragment(constraint_space, box_fragment))
       CopyChildFragmentPosition(box_fragment, offset_from_start);
 
@@ -383,11 +383,11 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     // Each anonymous child of a multicol container constitutes one column.
     DCHECK(child->IsPlaced());
     DCHECK(child->GetLayoutObject() == box_);
-    const auto* column = ToNGPhysicalBoxFragment(child.Get());
+    const auto* column = ToNGPhysicalBoxFragment(child.get());
     for (const auto& actual_child : column->Children()) {
       // Position each child node in the first column that they occur,
       // relatively to the block-start of the flow thread.
-      const auto& box_fragment = *ToNGPhysicalBoxFragment(actual_child.Get());
+      const auto& box_fragment = *ToNGPhysicalBoxFragment(actual_child.get());
       if (!IsFirstFragment(constraint_space, box_fragment))
         continue;
       // TODO(mstensho): writing modes

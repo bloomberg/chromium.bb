@@ -48,11 +48,11 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   do {
     // Lay out one column. Each column will become a fragment.
-    NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.Get(),
-                                           break_token.Get());
+    NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
+                                           break_token.get());
     RefPtr<NGLayoutResult> result = child_algorithm.Layout();
     RefPtr<NGPhysicalBoxFragment> column(
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().Get()));
+        ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
 
     NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
     container_builder_.AddChild(column, logical_offset);

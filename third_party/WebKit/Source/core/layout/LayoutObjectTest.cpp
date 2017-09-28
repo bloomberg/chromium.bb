@@ -384,7 +384,7 @@ TEST_F(LayoutObjectTest, VisualRect) {
 
   MockLayoutObject mock_object;
   auto style = ComputedStyle::Create();
-  mock_object.SetStyle(style.Get());
+  mock_object.SetStyle(style.get());
   EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
   EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
 

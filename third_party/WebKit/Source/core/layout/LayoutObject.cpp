@@ -1580,11 +1580,11 @@ void LayoutObject::SetStyle(RefPtr<ComputedStyle> style) {
   UpdateCursorImages(old_style ? old_style->Cursors() : nullptr,
                      style_->Cursors());
 
-  CheckCounterChanges(old_style.Get(), style_.Get());
+  CheckCounterChanges(old_style.get(), style_.get());
 
   bool does_not_need_layout_or_paint_invalidation = !parent_;
 
-  StyleDidChange(diff, old_style.Get());
+  StyleDidChange(diff, old_style.get());
 
   // FIXME: |this| might be destroyed here. This can currently happen for a
   // LayoutTextFragment when its first-letter block gets an update in
@@ -3001,17 +3001,17 @@ RefPtr<ComputedStyle> LayoutObject::UncachedFirstLineStyle() const {
 
   DCHECK(!IsText());
 
-  return FirstLineStyleForCachedUncachedType(kUncached, this, style_.Get());
+  return FirstLineStyleForCachedUncachedType(kUncached, this, style_.get());
 }
 
 ComputedStyle* LayoutObject::CachedFirstLineStyle() const {
   DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
 
   if (RefPtr<ComputedStyle> style = FirstLineStyleForCachedUncachedType(
-          kCached, IsText() ? Parent() : this, style_.Get()))
-    return style.Get();
+          kCached, IsText() ? Parent() : this, style_.get()))
+    return style.get();
 
-  return style_.Get();
+  return style_.get();
 }
 
 ComputedStyle* LayoutObject::GetCachedPseudoStyle(

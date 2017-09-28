@@ -62,7 +62,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
 
-  const ShapeResult* TextShapeResult() const { return shape_result_.Get(); }
+  const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
 
   // Deprecating ItemIndex in favor of storing and accessing each component;
   // e.g., text, style, ShapeResult, etc. Currently used for CreateBidiRuns and

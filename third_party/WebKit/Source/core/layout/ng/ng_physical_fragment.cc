@@ -72,7 +72,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     if (flags & NGPhysicalFragment::DumpSubtree) {
       const auto& children = box->Children();
       for (unsigned i = 0; i < children.size(); i++)
-        AppendFragmentToString(children[i].Get(), builder, flags, indent + 2);
+        AppendFragmentToString(children[i].get(), builder, flags, indent + 2);
     }
     return;
   }
@@ -90,7 +90,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
       const auto* line_box = ToNGPhysicalLineBoxFragment(fragment);
       const auto& children = line_box->Children();
       for (unsigned i = 0; i < children.size(); i++)
-        AppendFragmentToString(children[i].Get(), builder, flags, indent + 2);
+        AppendFragmentToString(children[i].get(), builder, flags, indent + 2);
       return;
     }
   }

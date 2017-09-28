@@ -53,7 +53,7 @@ class NGInlineItemsBuilderTest : public ::testing::Test {
     items_.clear();
     NGInlineItemsBuilderForOffsetMapping builder(&items_);
     for (int i = 0; i < size; i++)
-      builder.Append(inputs[i], style_.Get());
+      builder.Append(inputs[i], style_.get());
     text_ = builder.ToString();
     collapsed_ = GetCollapsed(builder.GetOffsetMappingBuilder());
     ValidateItems();
@@ -248,8 +248,8 @@ TEST_F(NGInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
   RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
-  builder.Append("text ", pre_wrap.Get());
-  builder.Append(" text", style_.Get());
+  builder.Append("text ", pre_wrap.get());
+  builder.Append(" text", style_.get());
   EXPECT_EQ("text  text", builder.ToString())
       << "The whitespace in constructions like '<span style=\"white-space: "
          "pre-wrap\">text <span><span> text</span>' does not collapse.";
@@ -309,22 +309,22 @@ TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
 
 TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
-  builder.Append("Hello ", style_.Get());
+  builder.Append("Hello ", style_.get());
   builder.AppendOpaque(NGInlineItem::kBidiControl,
                        kFirstStrongIsolateCharacter);
-  builder.Append(" ", style_.Get());
+  builder.Append(" ", style_.get());
   builder.AppendOpaque(NGInlineItem::kBidiControl,
                        kFirstStrongIsolateCharacter);
-  builder.Append(" World", style_.Get());
+  builder.Append(" World", style_.get());
   EXPECT_EQ(String(u"Hello \u2068\u2068World"), builder.ToString());
   EXPECT_EQ("{7, 9}", GetCollapsed(builder.GetOffsetMappingBuilder()));
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
-  builder.Append("Hello ", style_.Get());
+  builder.Append("Hello ", style_.get());
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
-  builder.Append(" World", style_.Get());
+  builder.Append(" World", style_.get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
   EXPECT_EQ("{}", GetCollapsed(builder.GetOffsetMappingBuilder()));
 }
@@ -332,12 +332,12 @@ TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
 TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
-  builder.Append("\n", style_.Get());
+  builder.Append("\n", style_.get());
   builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
   EXPECT_EQ(nullptr, items_[0].Style());
-  EXPECT_EQ(style_.Get(), items_[1].Style());
+  EXPECT_EQ(style_.get(), items_[1].Style());
   EXPECT_EQ(nullptr, items_[2].Style());
   EXPECT_EQ("{}", GetCollapsed(builder.GetOffsetMappingBuilder()));
 }
@@ -365,7 +365,7 @@ TEST_F(NGInlineItemsBuilderTest, Empty) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
-  builder.EnterBlock(block_style.Get());
+  builder.EnterBlock(block_style.get());
   builder.ExitBlock();
 
   EXPECT_EQ("", builder.ToString());
@@ -378,8 +378,8 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
   block_style->SetDirection(TextDirection::kRtl);
-  builder.EnterBlock(block_style.Get());
-  builder.Append("Hello", style_.Get());
+  builder.EnterBlock(block_style.get());
+  builder.Append("Hello", style_.get());
   builder.ExitBlock();
 
   // Expected control characters as defined in:
@@ -394,7 +394,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
 static std::unique_ptr<LayoutInline> CreateLayoutInline(
     void (*initialize_style)(ComputedStyle*)) {
   RefPtr<ComputedStyle> style(ComputedStyle::Create());
-  initialize_style(style.Get());
+  initialize_style(style.get());
   std::unique_ptr<LayoutInline> node = WTF::MakeUnique<LayoutInline>(nullptr);
   node->SetStyleInternal(std::move(style));
   return node;
@@ -403,16 +403,16 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
 TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
-  builder.Append("Hello ", style_.Get());
+  builder.Append("Hello ", style_.get());
   std::unique_ptr<LayoutInline> isolate_rtl(
       CreateLayoutInline([](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolate);
         style->SetDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolate_rtl.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.Get());
+  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
   builder.ExitInline(isolate_rtl.get());
-  builder.Append(" World", style_.Get());
+  builder.Append(" World", style_.get());
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
@@ -428,16 +428,16 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
 TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
-  builder.Append("Hello ", style_.Get());
+  builder.Append("Hello ", style_.get());
   std::unique_ptr<LayoutInline> isolate_override_rtl(
       CreateLayoutInline([](ComputedStyle* style) {
         style->SetUnicodeBidi(UnicodeBidi::kIsolateOverride);
         style->SetDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolate_override_rtl.get());
-  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.Get());
+  builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
   builder.ExitInline(isolate_override_rtl.get());
-  builder.Append(" World", style_.Get());
+  builder.Append(" World", style_.get());
 
   // Expected control characters as defined in:
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table

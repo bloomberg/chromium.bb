@@ -554,7 +554,7 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(
   if (result->Status() == NGLayoutResult::kSuccess &&
       result->UnpositionedFloats().IsEmpty() &&
       !RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-    CopyFragmentDataToLayoutBox(constraint_space, result.Get());
+    CopyFragmentDataToLayoutBox(constraint_space, result.get());
   }
 
   return result;
@@ -652,11 +652,11 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
   BidiRunList<BidiRun> bidi_runs;
   LineInfo line_info;
   NGPhysicalBoxFragment* box_fragment =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
   for (const auto& container_child : box_fragment->Children()) {
     // Skip any float children we might have, these are handled by the wrapping
     // parent NGBlockNode.
-    if (!container_child.Get()->IsLineBox())
+    if (!container_child.get()->IsLineBox())
       continue;
 
     const auto& physical_line_box =

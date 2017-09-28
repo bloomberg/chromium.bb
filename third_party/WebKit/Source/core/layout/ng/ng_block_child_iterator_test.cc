@@ -69,7 +69,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 
   // The iterator should loop through two children.
-  NGBlockChildIterator iterator(node1, parent_token.Get());
+  NGBlockChildIterator iterator(node1, parent_token.get());
   ASSERT_EQ(NGBlockChildIterator::Entry(node2, nullptr), iterator.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(node3, nullptr), iterator.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),
@@ -82,7 +82,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   // The first break token is for the #child2. That means that everything
   // preceding it (i.e. #child1) has already been finished. The break token for
   // #child2 is marked as finished, so all we need to visit is #child3.
-  NGBlockChildIterator iterator2(node1, parent_token.Get());
+  NGBlockChildIterator iterator2(node1, parent_token.get());
   ASSERT_EQ(NGBlockChildIterator::Entry(node3, nullptr), iterator2.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),
             iterator2.NextChild());
@@ -110,8 +110,8 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 
   // The iterator should loop through three children, one with a break token.
-  NGBlockChildIterator iterator(node1, parent_token.Get());
-  ASSERT_EQ(NGBlockChildIterator::Entry(node1, child_token.Get()),
+  NGBlockChildIterator iterator(node1, parent_token.get());
+  ASSERT_EQ(NGBlockChildIterator::Entry(node1, child_token.get()),
             iterator.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(node2, nullptr), iterator.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(node3, nullptr), iterator.NextChild());
@@ -128,8 +128,8 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
   // preceding it (i.e. #child1) has already been finished. The break token for
   // #child2 is not marked as finished, so we need to visit that child, and
   // #child3.
-  NGBlockChildIterator iterator2(node1, parent_token.Get());
-  ASSERT_EQ(NGBlockChildIterator::Entry(node2, child_token.Get()),
+  NGBlockChildIterator iterator2(node1, parent_token.get());
+  ASSERT_EQ(NGBlockChildIterator::Entry(node2, child_token.get()),
             iterator2.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(node3, nullptr), iterator2.NextChild());
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),

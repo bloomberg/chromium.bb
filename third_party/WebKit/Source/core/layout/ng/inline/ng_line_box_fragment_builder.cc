@@ -83,7 +83,7 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
           .ConvertToPhysical(writing_mode);
 
   for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragment* child = children_[i].Get();
+    NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode, Direction(), physical_size, child->Size()));
   }

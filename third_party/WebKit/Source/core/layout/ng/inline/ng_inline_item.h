@@ -59,7 +59,7 @@ class CORE_EXPORT NGInlineItem {
   NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
   const char* NGInlineItemTypeToString(int val) const;
 
-  const ShapeResult* TextShapeResult() const { return shape_result_.Get(); }
+  const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
   NGLayoutInlineShapeOptions ShapeOptions() const {
     return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
   }
@@ -70,7 +70,7 @@ class CORE_EXPORT NGInlineItem {
   TextDirection Direction() const { return DirectionFromLevel(BidiLevel()); }
   UBiDiLevel BidiLevel() const { return static_cast<UBiDiLevel>(bidi_level_); }
   UScriptCode GetScript() const { return script_; }
-  const ComputedStyle* Style() const { return style_.Get(); }
+  const ComputedStyle* Style() const { return style_.get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   void SetOffset(unsigned start, unsigned end);
