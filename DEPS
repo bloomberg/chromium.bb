@@ -304,8 +304,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/chromium/dom-distiller-dist.git' + '@' + '232c293a4d3ebcbc4320f642af017ee054b3be93',
 
   'src/third_party/catapult':
-    Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
-    Var('catapult_revision'),
+    Var('chromium_git') + '/catapult.git' + '@' + Var('catapult_revision'),
 
   'src/third_party/openh264/src':
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '0fd88df93c5dcaf858c57eb7892bd27763f0f0ac',
