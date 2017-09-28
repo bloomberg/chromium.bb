@@ -106,11 +106,6 @@ bool AllowedByFeaturePolicy(RenderFrameHost* rfh, PermissionType type) {
   if (feature_policy_feature == blink::WebFeaturePolicyFeature::kNotFound)
     return true;
 
-  // If there is no frame, there is no policy, so disable the feature for
-  // safety.
-  if (!rfh)
-    return false;
-
   return rfh->IsFeatureEnabled(feature_policy_feature);
 }
 
@@ -342,7 +337,11 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
   if (!browser_context)
     return PermissionStatus::DENIED;
 
-  if (!browser_context->GetPermissionManager() ||
+  if (!browser_context->GetPermissionManager())
+    return PermissionStatus::DENIED;
+
+  // If there is no frame (i.e. this is a worker) ignore the feature policy.
+  if (context_->render_frame_host() &&
       !AllowedByFeaturePolicy(context_->render_frame_host(), type)) {
     return PermissionStatus::DENIED;
   }
