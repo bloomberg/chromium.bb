@@ -76,7 +76,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
     context.DrawImage(
         layout_list_marker_.GetImage()
             ->GetImage(layout_list_marker_, layout_list_marker_.GetDocument(),
-                       layout_list_marker_.StyleRef(), marker.Size())
+                       layout_list_marker_.StyleRef(), marker.Size(), nullptr)
             .get(),
         marker);
     if (layout_list_marker_.GetSelectionState() != SelectionState::kNone) {

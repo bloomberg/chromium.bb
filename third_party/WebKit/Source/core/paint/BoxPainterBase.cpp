@@ -557,7 +557,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                        scrolled_paint_rect);
     image = info.image->GetImage(
         geometry.ImageClient(), geometry.ImageDocument(), geometry.ImageStyle(),
-        FlooredIntSize(geometry.TileSize()));
+        FlooredIntSize(geometry.TileSize()), &geometry.LogicalTileSize());
     interpolation_quality_context.emplace(geometry.ImageStyle(), context);
 
     if (bg_layer.MaskSourceType() == kMaskLuminance)

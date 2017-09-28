@@ -117,10 +117,12 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   document_.Clear();
 }
 
-RefPtr<Image> StyleFetchedImage::GetImage(const ImageResourceObserver&,
-                                          const Document&,
-                                          const ComputedStyle& style,
-                                          const IntSize& container_size) const {
+RefPtr<Image> StyleFetchedImage::GetImage(
+    const ImageResourceObserver&,
+    const Document&,
+    const ComputedStyle& style,
+    const IntSize& container_size,
+    const LayoutSize* logical_size) const {
   if (!image_->GetImage()->IsSVGImage())
     return image_->GetImage();
 

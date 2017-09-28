@@ -123,21 +123,24 @@ RefPtr<Image> CSSImageGeneratorValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,
     const ComputedStyle& style,
-    const IntSize& size) {
+    const IntSize& container_size,
+    const LayoutSize* logical_size) {
   switch (GetClassType()) {
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->GetImage(client, document, style, size);
+      return ToCSSCrossfadeValue(this)->GetImage(client, document, style,
+                                                 container_size);
     case kLinearGradientClass:
       return ToCSSLinearGradientValue(this)->GetImage(client, document, style,
-                                                      size);
+                                                      container_size);
     case kPaintClass:
-      return ToCSSPaintValue(this)->GetImage(client, document, style, size);
+      return ToCSSPaintValue(this)->GetImage(client, document, style,
+                                             container_size, logical_size);
     case kRadialGradientClass:
       return ToCSSRadialGradientValue(this)->GetImage(client, document, style,
-                                                      size);
+                                                      container_size);
     case kConicGradientClass:
       return ToCSSConicGradientValue(this)->GetImage(client, document, style,
-                                                     size);
+                                                     container_size);
     default:
       NOTREACHED();
   }

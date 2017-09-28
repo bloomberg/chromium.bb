@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSizeHash.h"
+#include "platform/geometry/LayoutSize.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/RefPtr.h"
@@ -58,10 +59,13 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 
   void AddClient(const ImageResourceObserver*, const IntSize&);
   void RemoveClient(const ImageResourceObserver*);
+  // The |container_size| is the container size with subpixel snapping, where
+  // the |logical_size| is without it. Both sizes include zoom.
   RefPtr<Image> GetImage(const ImageResourceObserver&,
                          const Document&,
                          const ComputedStyle&,
-                         const IntSize&);
+                         const IntSize& container_size,
+                         const LayoutSize* logical_size);
 
   bool IsFixedSize() const;
   IntSize FixedSize(const Document&, const FloatSize& default_object_size);

@@ -89,8 +89,9 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // scale of them again.
   IntSize image_size = RoundedIntSize(
       style_image->ImageSize(document, 1, border_image_rect.Size()));
-  RefPtr<Image> image =
-      style_image->GetImage(observer, document, style, image_size);
+  LayoutSize logical_image_size(image_size);
+  RefPtr<Image> image = style_image->GetImage(observer, document, style,
+                                              image_size, &logical_image_size);
 
   InterpolationQuality interpolation_quality = style.GetInterpolationQuality();
   InterpolationQuality previous_interpolation_quality =

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<script src="../resources/test-runner-paint-worklet.js"></script>
+<style>
+html, body { margin: 0; padding: 0; }
+.container {
+  width: 187px;
+  height: 187px;
+}
+
+#canvas-geometry {
+  background-image: paint(geometry);
+}
+</style>
+<body>
+<div id="canvas-geometry" class="container"></div>
+
+<script id="code" type="text/worklet">
+registerPaint('geometry', class {
+    paint(ctx, geom) {
+        if (geom.width == 187 && geom.height == 187)
+            ctx.fillStyle = 'green';
+        else
+            ctx.fillStyle = 'red';
+        ctx.fillRect(0, 0, geom.width, geom.height);
+    }
+});
+</script>
+
+<script>
+    document.body.style.zoom = "33%";
+    importPaintWorkletAndTerminateTestAfterAsyncPaint(document.getElementById('code').textContent);
+</script>
+</body>
+</html>

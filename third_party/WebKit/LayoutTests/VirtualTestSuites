@@ -295,6 +295,11 @@
     "args": ["--force-device-scale-factor=2"]
   },
   {
+    "prefix": "scalefactor200",
+    "base": "http/tests/csspaint/hidpi",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
     "prefix": "scalefactor150",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=1.5"]
