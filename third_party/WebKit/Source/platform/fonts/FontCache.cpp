@@ -53,7 +53,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/ListHashSet.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/debug/Alias.h"
@@ -186,7 +185,7 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
 #if defined(OS_MACOSX)
   return CreateFontPlatformData(font_description, creation_params, font_size);
 #else
-  return WTF::MakeUnique<FontPlatformData>(font_platform_data, font_size);
+  return std::make_unique<FontPlatformData>(font_platform_data, font_size);
 #endif
 }
 

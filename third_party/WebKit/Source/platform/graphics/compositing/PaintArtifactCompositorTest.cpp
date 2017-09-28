@@ -103,7 +103,7 @@ class PaintArtifactCompositorTest : public ::testing::Test,
     settings.single_thread_proxy_scheduler = false;
     settings.use_layer_lists = true;
     web_layer_tree_view_ =
-        WTF::MakeUnique<WebLayerTreeViewWithLayerTreeFrameSink>(settings);
+        std::make_unique<WebLayerTreeViewWithLayerTreeFrameSink>(settings);
     web_layer_tree_view_->SetRootLayer(
         *paint_artifact_compositor_->GetWebLayer());
   }

@@ -13,7 +13,6 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
@@ -28,7 +27,7 @@ namespace blink {
 class RecordingImageBufferSurfaceTest : public Test {
  protected:
   RecordingImageBufferSurfaceTest() {
-    auto test_surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+    auto test_surface = std::make_unique<RecordingImageBufferSurface>(
         IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback,
         kNonOpaque);
     test_surface_ = test_surface.get();

@@ -4,6 +4,7 @@
 
 #include "platform/graphics/compositing/ContentLayerClientImpl.h"
 
+#include <memory>
 #include "cc/paint/paint_op_buffer.h"
 #include "platform/geometry/GeometryAsJSON.h"
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
@@ -20,7 +21,7 @@ namespace blink {
 void ContentLayerClientImpl::SetTracksRasterInvalidations(bool should_track) {
   if (should_track) {
     raster_invalidation_tracking_info_ =
-        WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+        std::make_unique<RasterInvalidationTrackingInfo>();
 
     for (const auto& info : paint_chunks_info_) {
       raster_invalidation_tracking_info_->old_client_debug_names.Set(
@@ -349,7 +350,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       !raster_invalidation_tracking_info_) {
     raster_invalidation_tracking_info_ =
-        WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+        std::make_unique<RasterInvalidationTrackingInfo>();
   }
 
   bool layer_bounds_was_empty = layer_bounds_.IsEmpty();

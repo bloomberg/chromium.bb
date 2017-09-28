@@ -8,7 +8,6 @@
 #include <memory>
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
@@ -171,7 +170,7 @@ ContiguousContainerBase::AllocateNewBufferForNextAllocation(
     const char* type_name) {
   DCHECK(buffers_.IsEmpty() || end_index_ == buffers_.size() - 1);
   std::unique_ptr<Buffer> new_buffer =
-      WTF::MakeUnique<Buffer>(buffer_size, type_name);
+      std::make_unique<Buffer>(buffer_size, type_name);
   Buffer* buffer_to_return = new_buffer.get();
   buffers_.push_back(std::move(new_buffer));
   end_index_ = buffers_.size() - 1;

@@ -5,12 +5,12 @@
 #include "platform/fonts/SmallCapsIterator.h"
 
 #include <unicode/utypes.h>
-#include "platform/wtf/PtrUtil.h"
+#include <memory>
 
 namespace blink {
 
 SmallCapsIterator::SmallCapsIterator(const UChar* buffer, unsigned buffer_size)
-    : utf16_iterator_(WTF::MakeUnique<UTF16TextIterator>(buffer, buffer_size)),
+    : utf16_iterator_(std::make_unique<UTF16TextIterator>(buffer, buffer_size)),
       buffer_size_(buffer_size),
       next_u_char32_(0),
       at_end_(buffer_size == 0),

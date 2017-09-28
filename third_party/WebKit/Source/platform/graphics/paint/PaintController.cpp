@@ -4,6 +4,7 @@
 
 #include "platform/graphics/paint/PaintController.h"
 
+#include <memory>
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -20,7 +21,7 @@ namespace blink {
 void PaintController::SetTracksRasterInvalidations(bool value) {
   if (value) {
     raster_invalidation_tracking_info_ =
-        WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+        std::make_unique<RasterInvalidationTrackingInfo>();
 
     // This is called just after a full document cycle update, so all clients in
     // current_paint_artifact_ should be still alive.
@@ -41,7 +42,7 @@ void PaintController::SetupRasterUnderInvalidationChecking() {
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       !raster_invalidation_tracking_info_) {
     raster_invalidation_tracking_info_ =
-        WTF::MakeUnique<RasterInvalidationTrackingInfo>();
+        std::make_unique<RasterInvalidationTrackingInfo>();
   }
 }
 

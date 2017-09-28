@@ -4,8 +4,8 @@
 
 #include "public/platform/WebCredential.h"
 
+#include <memory>
 #include "platform/credentialmanager/PlatformCredential.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebPasswordCredential.h"
 
@@ -14,11 +14,11 @@ namespace blink {
 std::unique_ptr<WebCredential> WebCredential::Create(
     PlatformCredential* credential) {
   if (credential->IsPassword()) {
-    return WTF::MakeUnique<WebPasswordCredential>(credential);
+    return std::make_unique<WebPasswordCredential>(credential);
   }
 
   if (credential->IsFederated()) {
-    return WTF::MakeUnique<WebFederatedCredential>(credential);
+    return std::make_unique<WebFederatedCredential>(credential);
   }
 
   NOTREACHED();

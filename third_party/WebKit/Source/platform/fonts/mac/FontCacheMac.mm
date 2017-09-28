@@ -40,7 +40,6 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/mac/FontFamilyMatcherMac.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
@@ -288,7 +287,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   // stored in non-system locations.  When loading fails, we do not want to use
   // the returned FontPlatformData since it will not have a valid SkTypeface.
   std::unique_ptr<FontPlatformData> platform_data =
-      WTF::MakeUnique<FontPlatformData>(
+      std::make_unique<FontPlatformData>(
           platform_font, size, synthetic_bold, synthetic_italic,
           font_description.Orientation(), font_description.VariationSettings());
   if (!platform_data->Typeface()) {

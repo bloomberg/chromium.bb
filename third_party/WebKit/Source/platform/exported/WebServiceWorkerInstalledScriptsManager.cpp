@@ -4,6 +4,8 @@
 
 #include "public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 
+#include <memory>
+
 namespace blink {
 
 // static
@@ -35,7 +37,7 @@ WebServiceWorkerInstalledScriptsManager::RawScriptData::RawScriptData(
       encoding_(std::move(encoding)),
       script_text_(std::move(script_text)),
       meta_data_(std::move(meta_data)),
-      headers_(WTF::MakeUnique<CrossThreadHTTPHeaderMapData>()) {}
+      headers_(std::make_unique<CrossThreadHTTPHeaderMapData>()) {}
 
 WebServiceWorkerInstalledScriptsManager::RawScriptData::~RawScriptData() =
     default;

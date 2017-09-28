@@ -9,7 +9,6 @@
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutator.h"
-#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +34,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply) {
 
   CompositorMutatorClient client(new StubCompositorMutator, &target);
   std::unique_ptr<CompositorMutations> mutations =
-      WTF::MakeUnique<CompositorMutations>();
+      std::make_unique<CompositorMutations>();
   client.SetMutationsForTesting(std::move(mutations));
 
   EXPECT_CALL(target, ApplyMutations(_));

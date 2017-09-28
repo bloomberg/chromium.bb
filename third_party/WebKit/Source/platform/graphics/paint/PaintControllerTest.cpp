@@ -538,7 +538,7 @@ TEST_P(PaintControllerTest, IncrementalRasterInvalidation) {
   LayoutRect initial_rect(100, 100, 100, 100);
   std::unique_ptr<FakeDisplayItemClient> clients[6];
   for (auto& client : clients)
-    client = WTF::MakeUnique<FakeDisplayItemClient>("", initial_rect);
+    client = std::make_unique<FakeDisplayItemClient>("", initial_rect);
   GraphicsContext context(GetPaintController());
 
   GetPaintController().UpdateCurrentPaintChunkProperties(

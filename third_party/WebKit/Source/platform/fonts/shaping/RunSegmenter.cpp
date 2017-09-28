@@ -4,13 +4,13 @@
 
 #include "platform/fonts/shaping/RunSegmenter.h"
 
+#include <memory>
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/SymbolsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
 #include "platform/text/Character.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -20,14 +20,14 @@ RunSegmenter::RunSegmenter(const UChar* buffer,
     : buffer_size_(buffer_size),
       candidate_range_(NullRange()),
       script_run_iterator_(
-          WTF::MakeUnique<ScriptRunIterator>(buffer, buffer_size)),
+          std::make_unique<ScriptRunIterator>(buffer, buffer_size)),
       orientation_iterator_(
           run_orientation == FontOrientation::kVerticalMixed
               ? WTF::WrapUnique(new OrientationIterator(buffer,
                                                         buffer_size,
                                                         run_orientation))
               : nullptr),
-      symbols_iterator_(WTF::MakeUnique<SymbolsIterator>(buffer, buffer_size)),
+      symbols_iterator_(std::make_unique<SymbolsIterator>(buffer, buffer_size)),
       last_split_(0),
       script_run_iterator_position_(0),
       orientation_iterator_position_(
