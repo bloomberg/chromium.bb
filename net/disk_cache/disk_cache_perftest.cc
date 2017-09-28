@@ -5,6 +5,7 @@
 #include <limits>
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
@@ -13,6 +14,7 @@
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"
 #include "base/test/scoped_task_environment.h"
@@ -300,6 +302,89 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
 
   timer2.Done();
   base::RunLoop().RunUntilIdle();
+}
+
+void VerifyRvAndCallClosure(base::Closure* c, int expect_rv, int rv) {
+  EXPECT_EQ(expect_rv, rv);
+  c->Run();
+}
+
+TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
+  // A benchmark that aims to measure how much time we take in I/O thread
+  // for initial bookkeeping before returning to the caller, and how much
+  // after (batched up some). The later portion includes some event loop
+  // overhead.
+  const int kBatchSize = 100;
+
+  SetSimpleCacheMode();
+
+  InitCache();
+  // Write out the entries, and keep their objects around.
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
+
+  CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
+  CacheTestFillBuffer(buffer2->data(), kBodySize, false);
+
+  disk_cache::Entry* cache_entry[kBatchSize];
+  for (int i = 0; i < kBatchSize; ++i) {
+    net::TestCompletionCallback cb;
+    int rv = cache_->CreateEntry(base::IntToString(i), &cache_entry[i],
+                                 cb.callback());
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+
+    rv = cache_entry[i]->WriteData(0, 0, buffer1.get(), kHeadersSize,
+                                   cb.callback(), false);
+    ASSERT_EQ(kHeadersSize, cb.GetResult(rv));
+    rv = cache_entry[i]->WriteData(1, 0, buffer2.get(), kBodySize,
+                                   cb.callback(), false);
+    ASSERT_EQ(kBodySize, cb.GetResult(rv));
+  }
+
+  // Now repeatedly read these, batching up the waiting to try to
+  // account for the two portions separately. Note that we need separate entries
+  // since we are trying to keep interesting work from being on the delayed-done
+  // portion.
+  const int kIterations = 50000;
+
+  double elapsed_early = 0.0;
+  double elapsed_late = 0.0;
+
+  for (int i = 0; i < kIterations; ++i) {
+    base::RunLoop event_loop;
+    base::Closure barrier =
+        base::BarrierClosure(kBatchSize, event_loop.QuitWhenIdleClosure());
+    net::CompletionCallback cb_batch(base::Bind(
+        VerifyRvAndCallClosure, base::Unretained(&barrier), kHeadersSize));
+
+    base::ElapsedTimer timer_early;
+    for (int e = 0; e < kBatchSize; ++e) {
+      int rv =
+          cache_entry[e]->ReadData(0, 0, buffer1.get(), kHeadersSize, cb_batch);
+      if (rv != net::ERR_IO_PENDING) {
+        barrier.Run();
+        ASSERT_EQ(kHeadersSize, rv);
+      }
+    }
+    elapsed_early += timer_early.Elapsed().InMillisecondsF();
+
+    base::ElapsedTimer timer_late;
+    event_loop.Run();
+    elapsed_late += timer_late.Elapsed().InMillisecondsF();
+  }
+
+  // Cleanup
+  for (int i = 0; i < kBatchSize; ++i)
+    cache_entry[i]->Close();
+
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+  LOG(ERROR) << "Early portion:" << elapsed_early << " ms";
+  LOG(ERROR) << "\tPer entry:"
+             << 1000 * (elapsed_early / (kIterations * kBatchSize)) << " us";
+  LOG(ERROR) << "Event loop portion: " << elapsed_late << " ms";
+  LOG(ERROR) << "\tPer entry:"
+             << 1000 * (elapsed_late / (kIterations * kBatchSize)) << " us";
 }
 
 // Measures how quickly SimpleIndex can compute which entries to evict.

@@ -571,13 +571,13 @@ void DiskCacheEntryTest::ExternalAsyncIO() {
   if (net::ERR_IO_PENDING == ret)
     expected++;
 
-  EXPECT_EQ(0,
-            entry->ReadData(
-                1,
-                35000,
-                buffer2.get(),
-                kSize2,
-                base::Bind(&CallbackTest::Run, base::Unretained(&callback7))));
+  ret = entry->ReadData(
+      1, 35000, buffer2.get(), kSize2,
+      base::Bind(&CallbackTest::Run, base::Unretained(&callback7)));
+  EXPECT_TRUE(0 == ret || net::ERR_IO_PENDING == ret);
+  if (net::ERR_IO_PENDING == ret)
+    expected++;
+
   ret = entry->ReadData(
       1,
       0,
@@ -4601,4 +4601,23 @@ TEST_F(DiskCacheSimplePrefetchTest, NoChecksumPrefetch) {
   // EOF check is recorded even if there is no CRC there.
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
+}
+
+TEST_F(DiskCacheSimplePrefetchTest, PrefetchReadsSync) {
+  // Make sure we can read things synchronously after prefetch.
+  SetupPrefetch(32768);  // way bigger than kEntrySize
+  const char kKey[] = "a key";
+  InitCacheAndCreateEntry(kKey);
+
+  disk_cache::Entry* entry = NULL;
+  ASSERT_THAT(OpenEntry(kKey, &entry), IsOk());
+  scoped_refptr<net::IOBuffer> read_buf(new net::IOBuffer(kEntrySize));
+
+  // That this is entry->ReadData(...) rather than ReadData(entry, ...) is
+  // meaningful here, as the latter is a helper in the test fixture that blocks
+  // if needed.
+  EXPECT_EQ(kEntrySize, entry->ReadData(1, 0, read_buf.get(), kEntrySize,
+                                        net::CompletionCallback()));
+  EXPECT_EQ(0, memcmp(read_buf->data(), payload_->data(), kEntrySize));
+  entry->Close();
 }
