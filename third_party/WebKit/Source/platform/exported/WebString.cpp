@@ -59,7 +59,7 @@ void WebString::Assign(const WebString& other) {
 }
 
 void WebString::Assign(const WebUChar* data, size_t length) {
-  Assign(StringImpl::Create8BitIfPossible(data, length).Get());
+  Assign(StringImpl::Create8BitIfPossible(data, length).get());
 }
 
 size_t WebString::length() const {

@@ -53,7 +53,7 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   const String& Lang() const { return lang_; }
   void SetLang(const String& lang) { lang_ = lang; }
 
-  PlatformSpeechSynthesisVoice* Voice() const { return voice_.Get(); }
+  PlatformSpeechSynthesisVoice* Voice() const { return voice_.get(); }
   void SetVoice(PlatformSpeechSynthesisVoice* voice) { voice_ = voice; }
 
   // Range = [0, 1] where 1 is the default.

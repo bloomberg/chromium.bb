@@ -663,7 +663,7 @@ RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
   RefPtr<AudioBus> mixed_mono_bus;
   if (mix_to_mono) {
     mixed_mono_bus = AudioBus::CreateByMixingToMono(source_bus);
-    resampler_source_bus = mixed_mono_bus.Get();
+    resampler_source_bus = mixed_mono_bus.get();
   } else {
     // Directly resample without down-mixing.
     resampler_source_bus = source_bus;
@@ -759,14 +759,14 @@ RefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
   RefPtr<AudioBus> audio_bus =
       DecodeAudioFileData(flat_data.Data(), flat_data.size());
 
-  if (!audio_bus.Get())
+  if (!audio_bus.get())
     return nullptr;
 
   // If the bus is already at the requested sample-rate then return as is.
   if (audio_bus->SampleRate() == sample_rate)
     return audio_bus;
 
-  return AudioBus::CreateBySampleRateConverting(audio_bus.Get(), false,
+  return AudioBus::CreateBySampleRateConverting(audio_bus.get(), false,
                                                 sample_rate);
 }
 
@@ -776,7 +776,7 @@ RefPtr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
                                                 float sample_rate) {
   RefPtr<AudioBus> audio_bus =
       DecodeAudioFileData(static_cast<const char*>(data), data_size);
-  if (!audio_bus.Get())
+  if (!audio_bus.get())
     return nullptr;
 
   // If the bus needs no conversion then return as is.
@@ -784,7 +784,7 @@ RefPtr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
       audio_bus->SampleRate() == sample_rate)
     return audio_bus;
 
-  return AudioBus::CreateBySampleRateConverting(audio_bus.Get(), mix_to_mono,
+  return AudioBus::CreateBySampleRateConverting(audio_bus.get(), mix_to_mono,
                                                 sample_rate);
 }
 

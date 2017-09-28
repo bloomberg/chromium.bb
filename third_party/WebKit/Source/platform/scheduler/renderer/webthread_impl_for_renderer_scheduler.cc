@@ -44,7 +44,7 @@ WebThreadImplForRendererScheduler::GetIdleTaskRunner() const {
 }
 
 blink::WebTaskRunner* WebThreadImplForRendererScheduler::GetWebTaskRunner() {
-  return web_task_runner_.Get();
+  return web_task_runner_.get();
 }
 
 void WebThreadImplForRendererScheduler::AddTaskObserverInternal(

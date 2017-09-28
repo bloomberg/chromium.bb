@@ -92,7 +92,7 @@ void AudioResampler::Process(AudioSourceProvider* provider,
   }
 
   // Ask the provider to supply the desired number of source frames.
-  provider->ProvideInput(source_bus_.Get(), source_bus_->length());
+  provider->ProvideInput(source_bus_.get(), source_bus_->length());
 
   // Now that we have the source data, resample each channel into the
   // destination bus.

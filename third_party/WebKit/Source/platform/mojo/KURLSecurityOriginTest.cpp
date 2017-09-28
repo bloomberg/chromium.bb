@@ -78,8 +78,8 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
       SecurityOrigin::Create("http", "www.google.com", 80);
   RefPtr<SecurityOrigin> output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
-  EXPECT_TRUE(non_unique->IsSameSchemeHostPortAndSuborigin(output.Get()));
-  EXPECT_TRUE(non_unique->IsSameSchemeHostPort(output.Get()));
+  EXPECT_TRUE(non_unique->IsSameSchemeHostPortAndSuborigin(output.get()));
+  EXPECT_TRUE(non_unique->IsSameSchemeHostPort(output.get()));
   EXPECT_FALSE(output->HasSuborigin());
   EXPECT_FALSE(output->IsUnique());
 
@@ -90,8 +90,8 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   RefPtr<SecurityOrigin> with_sub_origin =
       SecurityOrigin::Create("http", "www.google.com", 80, "suborigin");
   EXPECT_TRUE(proxy->BounceOrigin(with_sub_origin, &output));
-  EXPECT_TRUE(with_sub_origin->IsSameSchemeHostPortAndSuborigin(output.Get()));
-  EXPECT_TRUE(with_sub_origin->IsSameSchemeHostPort(output.Get()));
+  EXPECT_TRUE(with_sub_origin->IsSameSchemeHostPortAndSuborigin(output.get()));
+  EXPECT_TRUE(with_sub_origin->IsSameSchemeHostPort(output.get()));
   EXPECT_TRUE(output->HasSuborigin());
   EXPECT_FALSE(output->IsUnique());
 }

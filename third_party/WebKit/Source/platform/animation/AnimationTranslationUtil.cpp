@@ -51,7 +51,7 @@ void ToCompositorTransformOperations(
       case TransformOperation::kScale3D:
       case TransformOperation::kScale: {
         auto transform =
-            static_cast<const ScaleTransformOperation*>(operation.Get());
+            static_cast<const ScaleTransformOperation*>(operation.get());
         out_transform_operations->AppendScale(transform->X(), transform->Y(),
                                               transform->Z());
         break;
@@ -62,7 +62,7 @@ void ToCompositorTransformOperations(
       case TransformOperation::kTranslate3D:
       case TransformOperation::kTranslate: {
         auto transform =
-            static_cast<const TranslateTransformOperation*>(operation.Get());
+            static_cast<const TranslateTransformOperation*>(operation.get());
         DCHECK(transform->X().IsFixed() && transform->Y().IsFixed());
         out_transform_operations->AppendTranslate(
             transform->X().Value(), transform->Y().Value(), transform->Z());
@@ -73,7 +73,7 @@ void ToCompositorTransformOperations(
       case TransformOperation::kRotate3D:
       case TransformOperation::kRotate: {
         auto transform =
-            static_cast<const RotateTransformOperation*>(operation.Get());
+            static_cast<const RotateTransformOperation*>(operation.get());
         out_transform_operations->AppendRotate(
             transform->X(), transform->Y(), transform->Z(), transform->Angle());
         break;
@@ -82,14 +82,14 @@ void ToCompositorTransformOperations(
       case TransformOperation::kSkewY:
       case TransformOperation::kSkew: {
         auto transform =
-            static_cast<const SkewTransformOperation*>(operation.Get());
+            static_cast<const SkewTransformOperation*>(operation.get());
         out_transform_operations->AppendSkew(transform->AngleX(),
                                              transform->AngleY());
         break;
       }
       case TransformOperation::kMatrix: {
         auto transform =
-            static_cast<const MatrixTransformOperation*>(operation.Get());
+            static_cast<const MatrixTransformOperation*>(operation.get());
         TransformationMatrix m = transform->Matrix();
         out_transform_operations->AppendMatrix(
             TransformationMatrix::ToSkMatrix44(m));
@@ -97,7 +97,7 @@ void ToCompositorTransformOperations(
       }
       case TransformOperation::kMatrix3D: {
         auto transform =
-            static_cast<const Matrix3DTransformOperation*>(operation.Get());
+            static_cast<const Matrix3DTransformOperation*>(operation.get());
         TransformationMatrix m = transform->Matrix();
         out_transform_operations->AppendMatrix(
             TransformationMatrix::ToSkMatrix44(m));
@@ -105,7 +105,7 @@ void ToCompositorTransformOperations(
       }
       case TransformOperation::kPerspective: {
         auto transform =
-            static_cast<const PerspectiveTransformOperation*>(operation.Get());
+            static_cast<const PerspectiveTransformOperation*>(operation.get());
         out_transform_operations->AppendPerspective(transform->Perspective());
         break;
       }

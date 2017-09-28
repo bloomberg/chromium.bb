@@ -84,7 +84,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   EXPECT_EQ(*original, *copy);
 
   // Check pointers are different, i.e. deep-copied.
-  ASSERT_NE(original.Get(), copy.Get());
+  ASSERT_NE(original.get(), copy.get());
 
   for (size_t i = 0; i < 4; ++i) {
     if (copy_elements[i].filename_.Impl()) {

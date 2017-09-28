@@ -26,10 +26,10 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/lenna.bmp";  // 256x256
   RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
-  ASSERT_TRUE(data.Get());
+  ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
   EXPECT_TRUE(decoder->IsSizeAvailable());
   EXPECT_EQ(256, decoder->Size().Width());
   EXPECT_EQ(256, decoder->Size().Height());
@@ -39,10 +39,10 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/lenna.bmp";  // 256x256
   RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
-  ASSERT_TRUE(data.Get());
+  ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
@@ -57,10 +57,10 @@ TEST(BMPImageDecoderTest, emptyImage) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/0x0.bmp";  // 0x0
   RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
-  ASSERT_TRUE(data.Get());
+  ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
@@ -74,7 +74,7 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
   RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   // Test when not all data is received.
-  decoder->SetData(data.Get(), false);
+  decoder->SetData(data.get(), false);
   EXPECT_FALSE(decoder->IsSizeAvailable());
   EXPECT_TRUE(decoder->Failed());
 }
@@ -93,10 +93,10 @@ TEST(BMPImageDecoderTest, crbug752898) {
   static constexpr char kBmpFile[] =
       "/LayoutTests/images/resources/crbug752898.bmp";
   RefPtr<SharedBuffer> data = ReadFile(kBmpFile);
-  ASSERT_TRUE(data.Get());
+  ASSERT_TRUE(data.get());
 
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
   decoder->DecodeFrameBufferAtIndex(0);
 }
 

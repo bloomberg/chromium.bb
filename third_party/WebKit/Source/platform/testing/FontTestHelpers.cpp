@@ -22,7 +22,7 @@ class TestFontSelector : public FontSelector {
     RefPtr<SharedBuffer> font_buffer = testing::ReadFromFile(path);
     String ots_parse_message;
     return new TestFontSelector(
-        FontCustomPlatformData::Create(font_buffer.Get(), ots_parse_message));
+        FontCustomPlatformData::Create(font_buffer.get(), ots_parse_message));
   }
 
   ~TestFontSelector() override {}

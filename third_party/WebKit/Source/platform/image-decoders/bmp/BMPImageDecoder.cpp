@@ -84,7 +84,7 @@ bool BMPImageDecoder::DecodeHelper(bool only_size) {
   if (!reader_) {
     reader_ = WTF::WrapUnique(
         new BMPImageReader(this, decoded_offset_, img_data_offset, false));
-    reader_->SetData(data_.Get());
+    reader_->SetData(data_.get());
   }
 
   if (!frame_buffer_cache_.IsEmpty())

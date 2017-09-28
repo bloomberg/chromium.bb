@@ -554,7 +554,7 @@ void ResourceResponse::SetConnectionID(unsigned connection_id) {
 }
 
 ResourceLoadTiming* ResourceResponse::GetResourceLoadTiming() const {
-  return resource_load_timing_.Get();
+  return resource_load_timing_.get();
 }
 
 void ResourceResponse::SetResourceLoadTiming(
@@ -563,7 +563,7 @@ void ResourceResponse::SetResourceLoadTiming(
 }
 
 RefPtr<ResourceLoadInfo> ResourceResponse::GetResourceLoadInfo() const {
-  return resource_load_info_.Get();
+  return resource_load_info_.get();
 }
 
 void ResourceResponse::SetResourceLoadInfo(RefPtr<ResourceLoadInfo> load_info) {

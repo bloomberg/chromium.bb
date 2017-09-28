@@ -38,20 +38,20 @@ TEST(PushPullFIFOBasicTest, BasicTests) {
   // i.e.) input_bus->length() == kRenderQuantumFrames
   RefPtr<AudioBus> input_bus_129_frames =
       AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames + 1);
-  EXPECT_DEATH(test_fifo->Push(input_bus_129_frames.Get()), "");
+  EXPECT_DEATH(test_fifo->Push(input_bus_129_frames.get()), "");
   RefPtr<AudioBus> input_bus_127_frames =
       AudioBus::Create(2, AudioUtilities::kRenderQuantumFrames - 1);
-  EXPECT_DEATH(test_fifo->Push(input_bus_127_frames.Get()), "");
+  EXPECT_DEATH(test_fifo->Push(input_bus_127_frames.get()), "");
 
   // Pull request frames cannot exceed the length of output bus.
   // i.e.) frames_requested <= output_bus->length()
   RefPtr<AudioBus> output_bus_512_frames = AudioBus::Create(2, 512);
-  EXPECT_DEATH(test_fifo->Pull(output_bus_512_frames.Get(), 513), "");
+  EXPECT_DEATH(test_fifo->Pull(output_bus_512_frames.get(), 513), "");
 
   // Pull request frames cannot exceed the length of FIFO.
   // i.e.) frames_requested <= fifo_length_
   RefPtr<AudioBus> output_bus_1025_frames = AudioBus::Create(2, 1025);
-  EXPECT_DEATH(test_fifo->Pull(output_bus_1025_frames.Get(), 1025), "");
+  EXPECT_DEATH(test_fifo->Pull(output_bus_1025_frames.get(), 1025), "");
 }
 
 // Fills each AudioChannel in an AudioBus with a series of linearly increasing
@@ -152,14 +152,14 @@ TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
     if (strcmp(action.action, "PUSH") == 0) {
       RefPtr<AudioBus> input_bus =
           AudioBus::Create(setup.number_of_channels, action.number_of_frames);
-      frame_counter = FillBusWithLinearRamp(input_bus.Get(), frame_counter);
-      fifo->Push(input_bus.Get());
+      frame_counter = FillBusWithLinearRamp(input_bus.get(), frame_counter);
+      fifo->Push(input_bus.get());
       LOG(INFO) << "PUSH " << action.number_of_frames
                 << " frames (frameCounter=" << frame_counter << ")";
     } else {
       output_bus =
           AudioBus::Create(setup.number_of_channels, action.number_of_frames);
-      fifo->Pull(output_bus.Get(), action.number_of_frames);
+      fifo->Pull(output_bus.get(), action.number_of_frames);
       LOG(INFO) << "PULL " << action.number_of_frames << " frames";
     }
   }
@@ -182,7 +182,7 @@ TEST_P(PushPullFIFOFeatureTest, FeatureTests) {
   // Verify samples from the most recent output bus.
   for (const auto& sample : expected_state.output_samples) {
     EXPECT_TRUE(
-        VerifyBusValueAtIndex(output_bus.Get(), sample.index, sample.value));
+        VerifyBusValueAtIndex(output_bus.get(), sample.index, sample.value));
   }
 }
 

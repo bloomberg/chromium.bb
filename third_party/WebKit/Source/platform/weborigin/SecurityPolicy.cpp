@@ -119,7 +119,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       RefPtr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.Get())) {
+      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(origin + "/", referrer_policy_no_default);
       }
@@ -129,7 +129,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       RefPtr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.Get())) {
+      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
       }
       return Referrer(referrer, referrer_policy_no_default);
@@ -145,7 +145,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       RefPtr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.Get())) {
+      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(ShouldHideReferrer(url, referrer_url)
                             ? Referrer::NoReferrer()
@@ -190,7 +190,7 @@ bool SecurityPolicy::IsUrlWhiteListedTrustworthy(const KURL& url) {
   // Early return to avoid initializing the SecurityOrigin.
   if (TrustworthyOriginSet().IsEmpty())
     return false;
-  return IsOriginWhiteListedTrustworthy(*SecurityOrigin::Create(url).Get());
+  return IsOriginWhiteListedTrustworthy(*SecurityOrigin::Create(url).get());
 }
 
 bool SecurityPolicy::IsAccessWhiteListed(const SecurityOrigin* active_origin,
@@ -212,7 +212,7 @@ bool SecurityPolicy::IsAccessToURLWhiteListed(
     const SecurityOrigin* active_origin,
     const KURL& url) {
   RefPtr<SecurityOrigin> target_origin = SecurityOrigin::Create(url);
-  return IsAccessWhiteListed(active_origin, target_origin.Get());
+  return IsAccessWhiteListed(active_origin, target_origin.get());
 }
 
 void SecurityPolicy::AddOriginAccessWhitelistEntry(

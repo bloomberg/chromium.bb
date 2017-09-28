@@ -71,8 +71,8 @@ void TestInvalidImage(const char* webp_file, bool parse_error_expected) {
   std::unique_ptr<ImageDecoder> decoder = CreateWEBPDecoder();
 
   RefPtr<SharedBuffer> data = ReadFile(webp_file);
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   if (parse_error_expected) {
     EXPECT_EQ(0u, decoder->FrameCount());
@@ -94,8 +94,8 @@ TEST(AnimatedWebPTests, uniqueGenerationIDs) {
 
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/webp-animated.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   uint32_t generation_id0 = frame->Bitmap().getGenerationID();
@@ -111,8 +111,8 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage) {
 
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/webp-animated.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   const int kCanvasWidth = 11;
   const int kCanvasHeight = 29;
@@ -155,8 +155,8 @@ TEST(AnimatedWebPTests,
 
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/webp-animated-opaque.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   const int kCanvasWidth = 94;
   const int kCanvasHeight = 87;
@@ -201,8 +201,8 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
 
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/webp-animated-no-blend.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   const int kCanvasWidth = 94;
   const int kCanvasHeight = 87;
@@ -260,8 +260,8 @@ TEST(AnimatedWebPTests, truncatedLastFrame) {
 
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/invalid-animated-webp2.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
 
   size_t frame_count = 8;
   EXPECT_EQ(frame_count, decoder->FrameCount());
@@ -286,7 +286,7 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame) {
           ->Copy();
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(full_data.data(), full_data.size() - 1);
-  decoder->SetData(data.Get(), false);
+  decoder->SetData(data.get(), false);
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(1);
   ASSERT_TRUE(frame);
@@ -304,7 +304,7 @@ TEST(AnimatedWebPTests, reproCrash) {
 
   RefPtr<SharedBuffer> full_data_buffer =
       ReadFile("/LayoutTests/images/resources/invalid_vp8_vp8x.webp");
-  ASSERT_TRUE(full_data_buffer.Get());
+  ASSERT_TRUE(full_data_buffer.get());
   const Vector<char> full_data = full_data_buffer->Copy();
 
   // Parse partial data up to which error in bitstream is not detected.
@@ -312,7 +312,7 @@ TEST(AnimatedWebPTests, reproCrash) {
   ASSERT_GT(full_data.size(), kPartialSize);
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(full_data.data(), kPartialSize);
-  decoder->SetData(data.Get(), false);
+  decoder->SetData(data.get(), false);
   EXPECT_EQ(1u, decoder->FrameCount());
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
@@ -320,7 +320,7 @@ TEST(AnimatedWebPTests, reproCrash) {
   EXPECT_FALSE(decoder->Failed());
 
   // Parse full data now. The error in bitstream should now be detected.
-  decoder->SetData(full_data_buffer.Get(), true);
+  decoder->SetData(full_data_buffer.get(), true);
   EXPECT_EQ(1u, decoder->FrameCount());
   frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
@@ -339,13 +339,13 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
 
   RefPtr<SharedBuffer> data_buffer =
       ReadFile("/LayoutTests/images/resources/webp-animated.webp");
-  ASSERT_TRUE(data_buffer.Get());
+  ASSERT_TRUE(data_buffer.get());
   const Vector<char> data = data_buffer->Copy();
 
   ASSERT_GE(data.size(), 10u);
   RefPtr<SharedBuffer> temp_data =
       SharedBuffer::Create(data.data(), data.size() - 10);
-  decoder->SetData(temp_data.Get(), false);
+  decoder->SetData(temp_data.get(), false);
 
   EXPECT_EQ(2u, decoder->FrameCount());
   EXPECT_FALSE(decoder->Failed());
@@ -355,7 +355,7 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
   EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(1));
   EXPECT_EQ(TimeDelta::FromMilliseconds(500), decoder->FrameDurationAtIndex(1));
 
-  decoder->SetData(data_buffer.Get(), true);
+  decoder->SetData(data_buffer.get(), true);
   EXPECT_EQ(3u, decoder->FrameCount());
   EXPECT_TRUE(decoder->FrameIsReceivedAtIndex(0));
   EXPECT_EQ(TimeDelta::FromMilliseconds(1000),
@@ -450,8 +450,8 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
 
   RefPtr<SharedBuffer> full_data =
       ReadFile("/LayoutTests/images/resources/webp-animated.webp");
-  ASSERT_TRUE(full_data.Get());
-  decoder->SetData(full_data.Get(), true);
+  ASSERT_TRUE(full_data.get());
+  decoder->SetData(full_data.get(), true);
 
   ASSERT_EQ(3u, decoder->FrameCount());
   // We need to store pointers to the image frames, since calling
@@ -550,8 +550,8 @@ TEST(StaticWebPTests, notAnimated) {
   std::unique_ptr<ImageDecoder> decoder = CreateWEBPDecoder();
   RefPtr<SharedBuffer> data =
       ReadFile("/LayoutTests/images/resources/webp-color-profile-lossy.webp");
-  ASSERT_TRUE(data.Get());
-  decoder->SetData(data.Get(), true);
+  ASSERT_TRUE(data.get());
+  decoder->SetData(data.get(), true);
   EXPECT_EQ(1u, decoder->FrameCount());
   EXPECT_EQ(kAnimationNone, decoder->RepetitionCount());
 }

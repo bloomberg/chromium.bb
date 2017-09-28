@@ -298,10 +298,10 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
 
   // We call isSameSchemeHostPort here instead of canAccess because we want
   // to ignore document.domain effects.
-  if (IsSameSchemeHostPort(target_origin.Get()))
+  if (IsSameSchemeHostPort(target_origin.get()))
     return true;
 
-  if (SecurityPolicy::IsAccessWhiteListed(this, target_origin.Get()))
+  if (SecurityPolicy::IsAccessWhiteListed(this, target_origin.get()))
     return true;
 
   return false;
@@ -587,13 +587,13 @@ bool SecurityOrigin::HasSuboriginAndShouldAllowCredentialsFor(
     return false;
 
   RefPtr<SecurityOrigin> other = SecurityOrigin::Create(url);
-  return IsSameSchemeHostPort(other.Get());
+  return IsSameSchemeHostPort(other.get());
 }
 
 bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
   RefPtr<SecurityOrigin> origin_a = SecurityOrigin::Create(a);
   RefPtr<SecurityOrigin> origin_b = SecurityOrigin::Create(b);
-  return origin_b->IsSameSchemeHostPort(origin_a.Get());
+  return origin_b->IsSameSchemeHostPort(origin_a.get());
 }
 
 const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {

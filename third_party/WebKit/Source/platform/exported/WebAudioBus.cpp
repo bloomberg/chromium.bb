@@ -41,7 +41,7 @@ void WebAudioBus::Initialize(unsigned number_of_channels,
     (static_cast<AudioBus*>(private_))->Deref();
 
   audio_bus->Ref();
-  private_ = static_cast<WebAudioBusPrivate*>(audio_bus.Get());
+  private_ = static_cast<WebAudioBusPrivate*>(audio_bus.get());
 }
 
 void WebAudioBus::ResizeSmaller(size_t new_length) {

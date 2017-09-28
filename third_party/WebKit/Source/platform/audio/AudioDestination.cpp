@@ -127,7 +127,7 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   for (unsigned i = 0; i < number_of_output_channels_; ++i)
     output_bus_->SetChannelMemory(i, destination_data[i], number_of_frames);
 
-  size_t frames_to_render = fifo_->Pull(output_bus_.Get(), number_of_frames);
+  size_t frames_to_render = fifo_->Pull(output_bus_.get(), number_of_frames);
 
   // Use the dual-thread rendering model if the thread from AudioWorkletThread
   // is available.
@@ -180,9 +180,9 @@ void AudioDestination::RequestRender(size_t frames_requested,
       output_position.position = 0.0;
 
     // Process WebAudio graph and push the rendered output to FIFO.
-    callback_.Render(nullptr, render_bus_.Get(),
+    callback_.Render(nullptr, render_bus_.get(),
                      AudioUtilities::kRenderQuantumFrames, output_position);
-    fifo_->Push(render_bus_.Get());
+    fifo_->Push(render_bus_.get());
   }
 
   frames_elapsed_ += frames_requested;

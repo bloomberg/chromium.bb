@@ -122,7 +122,7 @@ class PLATFORM_EXPORT ImageDecoder {
       return;
     data_ = std::move(data);
     is_all_data_received_ = all_data_received;
-    OnSetData(data_.Get());
+    OnSetData(data_.get());
   }
 
   void SetData(RefPtr<SharedBuffer> data, bool all_data_received) {

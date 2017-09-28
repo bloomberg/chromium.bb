@@ -359,7 +359,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         params.Options().initiator_info.name, MonotonicallyIncreasingTime(),
         resource->GetType() == Resource::kMainResource);
-    PopulateTimingInfo(info.Get(), resource);
+    PopulateTimingInfo(info.get(), resource);
     info->ClearLoadTimings();
     info->SetLoadFinishTime(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
@@ -884,7 +884,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   }
 
   if (!is_main_resource ||
-      Context().UpdateTimingInfoForIFrameNavigation(info.Get())) {
+      Context().UpdateTimingInfoForIFrameNavigation(info.get())) {
     resource_timing_info_map_.insert(resource, std::move(info));
   }
 }
@@ -1306,7 +1306,7 @@ ArchiveResource* ResourceFetcher::CreateArchive(Resource* resource) {
 }
 
 ResourceTimingInfo* ResourceFetcher::GetNavigationTimingInfo() {
-  return navigation_timing_info_.Get();
+  return navigation_timing_info_.get();
 }
 
 void ResourceFetcher::HandleLoadCompletion(Resource* resource) {
@@ -1337,9 +1337,9 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   if (resource->GetType() == Resource::kMainResource) {
     DCHECK(navigation_timing_info_);
     // Store redirect responses that were packed inside the final response.
-    AddRedirectsToTimingInfo(resource, navigation_timing_info_.Get());
+    AddRedirectsToTimingInfo(resource, navigation_timing_info_.get());
     if (resource->GetResponse().IsHTTP()) {
-      PopulateTimingInfo(navigation_timing_info_.Get(), resource);
+      PopulateTimingInfo(navigation_timing_info_.get(), resource);
       navigation_timing_info_->AddFinalTransferSize(
           encoded_data_length == -1 ? 0 : encoded_data_length);
     }
@@ -1347,11 +1347,11 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   if (RefPtr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     // Store redirect responses that were packed inside the final response.
-    AddRedirectsToTimingInfo(resource, info.Get());
+    AddRedirectsToTimingInfo(resource, info.get());
 
     if (resource->GetResponse().IsHTTP() &&
         resource->GetResponse().HttpStatusCode() < 400) {
-      PopulateTimingInfo(info.Get(), resource);
+      PopulateTimingInfo(info.get(), resource);
       info->SetLoadFinishTime(finish_time);
       // encodedDataLength == -1 means "not available".
       // TODO(ricea): Find cases where it is not available but the

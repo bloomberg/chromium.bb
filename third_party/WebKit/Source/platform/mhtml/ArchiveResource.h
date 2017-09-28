@@ -50,7 +50,7 @@ class PLATFORM_EXPORT ArchiveResource final
 
   const KURL& Url() const { return url_; }
   const String& ContentID() const { return content_id_; }
-  SharedBuffer* Data() const { return data_.Get(); }
+  SharedBuffer* Data() const { return data_.get(); }
   const AtomicString& MimeType() const { return mime_type_; }
   const AtomicString& TextEncoding() const { return text_encoding_; }
 

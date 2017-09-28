@@ -66,7 +66,7 @@ void Downsample(size_t max_decoded_bytes,
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
@@ -85,7 +85,7 @@ void ReadYUV(size_t max_decoded_bytes,
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
@@ -260,7 +260,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   ASSERT_TRUE(data);
 
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
 
   std::unique_ptr<ImagePlanes> image_planes = WTF::MakeUnique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(image_planes));
@@ -303,10 +303,10 @@ TEST(JPEGImageDecoderTest, mergeBuffer) {
 TEST(JPEGImageDecoderTest, manyProgressiveScans) {
   RefPtr<SharedBuffer> test_data =
       ReadFile(kDecodersTestingDir, "many-progressive-scans.jpg");
-  ASSERT_TRUE(test_data.Get());
+  ASSERT_TRUE(test_data.get());
 
   std::unique_ptr<ImageDecoder> test_decoder = CreateJPEGDecoder();
-  test_decoder->SetData(test_data.Get(), true);
+  test_decoder->SetData(test_data.get(), true);
   EXPECT_EQ(1u, test_decoder->FrameCount());
   ASSERT_TRUE(test_decoder->DecodeFrameBufferAtIndex(0));
   EXPECT_TRUE(test_decoder->Failed());
@@ -319,7 +319,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
 
   std::unique_ptr<ImageDecoder> decoder =
       CreateJPEGDecoder(std::numeric_limits<int>::max());
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
   std::vector<SkISize> expected_sizes = {
@@ -345,7 +345,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
 
   std::unique_ptr<ImageDecoder> decoder =
       CreateJPEGDecoder(std::numeric_limits<int>::max());
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
   std::vector<SkISize> expected_sizes = {
@@ -370,7 +370,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
 
   // Limit the memory so that 128 would be the largest size possible.
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(130 * 130 * 4);
-  decoder->SetData(data.Get(), true);
+  decoder->SetData(data.get(), true);
   // This will decode the size and needs to be called to avoid DCHECKs
   ASSERT_TRUE(decoder->IsSizeAvailable());
   std::vector<SkISize> expected_sizes = {

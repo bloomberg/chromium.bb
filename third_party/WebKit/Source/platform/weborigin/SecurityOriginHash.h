@@ -49,7 +49,7 @@ struct SecurityOriginHash {
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
   static unsigned GetHash(const RefPtr<SecurityOrigin>& origin) {
-    return GetHash(origin.Get());
+    return GetHash(origin.get());
   }
 
   static bool Equal(SecurityOrigin* a, SecurityOrigin* b) {
@@ -71,14 +71,14 @@ struct SecurityOriginHash {
     return true;
   }
   static bool Equal(SecurityOrigin* a, const RefPtr<SecurityOrigin>& b) {
-    return Equal(a, b.Get());
+    return Equal(a, b.get());
   }
   static bool Equal(const RefPtr<SecurityOrigin>& a, SecurityOrigin* b) {
-    return Equal(a.Get(), b);
+    return Equal(a.get(), b);
   }
   static bool Equal(const RefPtr<SecurityOrigin>& a,
                     const RefPtr<SecurityOrigin>& b) {
-    return Equal(a.Get(), b.Get());
+    return Equal(a.get(), b.get());
   }
 
   static const bool safe_to_compare_to_empty_or_deleted = false;

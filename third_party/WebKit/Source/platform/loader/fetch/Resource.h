@@ -389,7 +389,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetPreviewsState(WebURLRequest::PreviewsState);
   void ClearRangeRequestHeader();
 
-  SharedBuffer* Data() const { return data_.Get(); }
+  SharedBuffer* Data() const { return data_.get(); }
   void ClearData();
 
   void TriggerNotificationForFinishObservers();

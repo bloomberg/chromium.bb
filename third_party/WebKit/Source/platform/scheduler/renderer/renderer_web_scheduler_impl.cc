@@ -28,7 +28,7 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() {}
 
 WebTaskRunner* RendererWebSchedulerImpl::CompositorTaskRunner() {
-  return compositor_task_runner_.Get();
+  return compositor_task_runner_.get();
 }
 
 void RendererWebSchedulerImpl::PauseTimerQueue() {

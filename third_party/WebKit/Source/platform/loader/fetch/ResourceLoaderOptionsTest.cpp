@@ -59,7 +59,7 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
   // Check that pointers are different between |original| and |copyData|
   EXPECT_NE(original.initiator_info.name.Impl(),
             copy_data.initiator_info.name.Impl());
-  EXPECT_NE(original.security_origin.Get(), copy_data.security_origin.Get());
+  EXPECT_NE(original.security_origin.get(), copy_data.security_origin.get());
   EXPECT_NE(original.security_origin->Protocol().Impl(),
             copy_data.security_origin->Protocol().Impl());
   EXPECT_NE(original.security_origin->Host().Impl(),
@@ -89,7 +89,7 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
   //           copy.initiatorInfo.name.impl());
   // should pass. However, in the unit test here, these two pointers are the
   // same, because initiatorInfo.name is AtomicString.
-  EXPECT_NE(original.security_origin.Get(), copy.security_origin.Get());
+  EXPECT_NE(original.security_origin.get(), copy.security_origin.get());
   EXPECT_NE(original.security_origin->Protocol().Impl(),
             copy.security_origin->Protocol().Impl());
   EXPECT_NE(original.security_origin->Host().Impl(),

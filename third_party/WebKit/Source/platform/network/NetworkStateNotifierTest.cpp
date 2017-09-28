@@ -138,8 +138,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
     notifier_.SetOnLine(false);
   }
 
-  WebTaskRunner* GetTaskRunner() { return task_runner_.Get(); }
-  WebTaskRunner* GetTaskRunner2() { return task_runner2_.Get(); }
+  WebTaskRunner* GetTaskRunner() { return task_runner_.get(); }
+  WebTaskRunner* GetTaskRunner2() { return task_runner2_.get(); }
 
   void TearDown() override {
     RunPendingTasks();

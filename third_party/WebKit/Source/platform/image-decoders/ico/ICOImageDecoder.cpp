@@ -150,7 +150,7 @@ void ICOImageDecoder::SetDataForPNGDecoderAtIndex(size_t index) {
   if (!png_decoders_[index])
     return;
 
-  png_decoders_[index]->SetData(data_.Get(), IsAllDataReceived());
+  png_decoders_[index]->SetData(data_.get(), IsAllDataReceived());
 }
 
 void ICOImageDecoder::Decode(size_t index, bool only_size) {
@@ -199,7 +199,7 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
     if (!bmp_readers_[index]) {
       bmp_readers_[index] = WTF::WrapUnique(
           new BMPImageReader(this, dir_entry.image_offset_, 0, true));
-      bmp_readers_[index]->SetData(data_.Get());
+      bmp_readers_[index]->SetData(data_.get());
     }
     // Update the pointer to the buffer as it could change after
     // frame_buffer_cache_.resize().
