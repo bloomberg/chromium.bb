@@ -195,26 +195,18 @@ public class SigninAndSyncView extends LinearLayout
                 ? R.string.bookmark_sign_in_promo_description
                 : R.string.recent_tabs_sign_in_promo_description;
 
-        ButtonState positiveButton = new ButtonPresent(
-                R.string.sign_in_button,
-                new OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        AccountSigninActivity.startAccountSigninActivity(
-                                getContext(), mAccessPoint, false);
-                    }
-                });
+        ButtonState positiveButton = new ButtonPresent(R.string.sign_in_button, view -> {
+            Context context = getContext();
+            context.startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
+                    context, mAccessPoint, false));
+        });
 
         ButtonState negativeButton;
         if (mAccessPoint == SigninAccessPoint.RECENT_TABS) {
             negativeButton = new ButtonAbsent();
         } else {
-            negativeButton = new ButtonPresent(R.string.no_thanks, new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    mListener.onViewDismissed();
-                }
-            });
+            negativeButton =
+                    new ButtonPresent(R.string.no_thanks, view -> mListener.onViewDismissed());
         }
 
         return new ViewState(descId, positiveButton, negativeButton);
@@ -226,18 +218,13 @@ public class SigninAndSyncView extends LinearLayout
 
         int descId = R.string.recent_tabs_sync_promo_enable_android_sync;
 
-        ButtonState positiveButton = new ButtonPresent(
-                R.string.open_settings_button,
-                new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // TODO(crbug.com/557784): Like AccountManagementFragment, this would also
-                        // benefit from going directly to an account.
-                        Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
-                        intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
-                        getContext().startActivity(intent);
-                    }
-                });
+        ButtonState positiveButton = new ButtonPresent(R.string.open_settings_button, view -> {
+            // TODO(crbug.com/557784): Like AccountManagementFragment, this would also
+            // benefit from going directly to an account.
+            Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
+            intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
+            getContext().startActivity(intent);
+        });
 
         return new ViewState(descId, positiveButton, new ButtonAbsent());
     }
@@ -247,15 +234,9 @@ public class SigninAndSyncView extends LinearLayout
                 ? R.string.bookmarks_sync_promo_enable_sync
                 : R.string.recent_tabs_sync_promo_enable_chrome_sync;
 
-        ButtonState positiveButton = new ButtonPresent(
-                R.string.enable_sync_button,
-                new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PreferencesLauncher.launchSettingsPage(getContext(),
-                                SyncCustomizationFragment.class.getName());
-                    }
-                });
+        ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button,
+                view -> PreferencesLauncher.launchSettingsPage(
+                        getContext(), SyncCustomizationFragment.class.getName()));
 
         return new ViewState(descId, positiveButton, new ButtonAbsent());
     }
