@@ -1116,6 +1116,18 @@ void Window::ConvertEventToTarget(ui::EventTarget* target,
                                  static_cast<Window*>(target));
 }
 
+std::unique_ptr<ui::Layer> Window::RecreateLayer() {
+  std::unique_ptr<ui::Layer> old_layer = LayerOwner::RecreateLayer();
+
+  // If a frame sink is attached to the window, then allocate a new surface
+  // id when layers are recreated, so the old layer contents are not affected
+  // by a frame sent to the frame sink.
+  if (GetFrameSinkId().is_valid() && old_layer)
+    AllocateLocalSurfaceId();
+
+  return old_layer;
+}
+
 void Window::UpdateLayerName() {
 #if !defined(NDEBUG)
   DCHECK(layer());

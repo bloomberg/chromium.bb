@@ -75,21 +75,23 @@ void ContentsWebView::OnThemeChanged() {
   }
 }
 
-void ContentsWebView::OnLayerRecreated(ui::Layer* old_layer,
-                                       ui::Layer* new_layer) {
-  if (!cloned_layer_tree_)
-    return;
+std::unique_ptr<ui::Layer> ContentsWebView::RecreateLayer() {
+  std::unique_ptr<ui::Layer> old_layer = View::RecreateLayer();
 
-  // Our layer has been recreated and we have a clone of the WebContents
-  // layer. Combined this means we're about to be destroyed and an animation is
-  // in effect. The animation cloned our layer, but it won't create another
-  // clone of the WebContents layer (|cloned_layer_tree_|). Another clone
-  // is not created as the clone has no owner (see CloneChildren()). Because we
-  // want the WebContents layer clone to be animated we move it to the
-  // old_layer, which is the layer the animation happens on. This animation ends
-  // up owning the layer (and all its descendants).
-  old_layer->Add(cloned_layer_tree_->release());
-  cloned_layer_tree_.reset();
+  if (cloned_layer_tree_ && old_layer) {
+    // Our layer has been recreated and we have a clone of the WebContents
+    // layer. Combined this means we're about to be destroyed and an animation
+    // is in effect. The animation cloned our layer, but it won't create another
+    // clone of the WebContents layer (|cloned_layer_tree_|). Another clone
+    // is not created as the clone has no owner (see CloneChildren()). Because
+    // we want the WebContents layer clone to be animated we move it to the
+    // old_layer, which is the layer the animation happens on. This animation
+    // ends up owning the layer (and all its descendants).
+    old_layer->Add(cloned_layer_tree_->release());
+    cloned_layer_tree_.reset();
+  }
+
+  return old_layer;
 }
 
 void ContentsWebView::CloneWebContentsLayer() {
@@ -106,7 +108,6 @@ void ContentsWebView::CloneWebContentsLayer() {
   }
 
   SetPaintToLayer();
-  set_layer_owner_delegate(this);
 
   // The cloned layer is in a different coordinate system them our layer (which
   // is now the new parent of the cloned layer). Convert coordinates so that the
@@ -121,7 +122,6 @@ void ContentsWebView::CloneWebContentsLayer() {
 void ContentsWebView::DestroyClonedLayer() {
   cloned_layer_tree_.reset();
   DestroyLayer();
-  set_layer_owner_delegate(nullptr);
 }
 
 void ContentsWebView::RenderViewReady() {

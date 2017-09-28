@@ -7,12 +7,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "ui/compositor/layer_owner_delegate.h"
 
 namespace ui {
 
-LayerOwner::LayerOwner() : layer_(NULL), layer_owner_delegate_(NULL) {
-}
+LayerOwner::LayerOwner() : layer_(NULL) {}
 
 LayerOwner::~LayerOwner() {
 }
@@ -63,9 +61,6 @@ std::unique_ptr<Layer> LayerOwner::RecreateLayer() {
   // Install the delegate last so that the delegate isn't notified as we copy
   // state to the new layer.
   layer_->set_delegate(old_delegate);
-
-  if (layer_owner_delegate_)
-    layer_owner_delegate_->OnLayerRecreated(old_layer.get(), layer_);
 
   return old_layer;
 }

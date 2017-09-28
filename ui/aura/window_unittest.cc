@@ -2919,11 +2919,20 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(local_surface_id1, local_surface_id3);
   EXPECT_NE(local_surface_id2, local_surface_id3);
 
-  window.AllocateLocalSurfaceId();
+  window.RecreateLayer();
   viz::LocalSurfaceId local_surface_id4 = window.GetLocalSurfaceId();
+  EXPECT_TRUE(local_surface_id4.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id4);
   EXPECT_NE(local_surface_id2, local_surface_id4);
   EXPECT_NE(local_surface_id3, local_surface_id4);
+
+  window.AllocateLocalSurfaceId();
+  viz::LocalSurfaceId local_surface_id5 = window.GetLocalSurfaceId();
+  EXPECT_TRUE(local_surface_id5.is_valid());
+  EXPECT_NE(local_surface_id1, local_surface_id5);
+  EXPECT_NE(local_surface_id2, local_surface_id5);
+  EXPECT_NE(local_surface_id3, local_surface_id5);
+  EXPECT_NE(local_surface_id4, local_surface_id5);
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,

@@ -310,6 +310,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
 
+  // Overridden from ui::LayerOwner:
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
+
 #if !defined(NDEBUG)
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;

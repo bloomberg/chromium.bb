@@ -53,7 +53,6 @@ component("compositor") {
     "layer_observer.h",
     "layer_owner.cc",
     "layer_owner.h",
-    "layer_owner_delegate.h",
     "layer_threaded_animation_delegate.h",
     "layer_tree_owner.cc",
     "layer_tree_owner.h",
