@@ -58,7 +58,7 @@ source_set("auditor_sources") {
     "traffic_annotation_file_filter.h",
   ]
   data = [
-    "white_list.txt",
+    "safe_list.txt",
   ]
 
   public_deps = [
@@ -84,6 +84,8 @@ test("traffic_annotation_auditor_unittests") {
     "traffic_annotation_auditor_unittest.cc",
   ]
   data = [
+    "tests/extractor_outputs/bad_assignment1.txt",
+    "tests/extractor_outputs/bad_assignment2.txt",
     "tests/extractor_outputs/bad_call.txt",
     "tests/extractor_outputs/bad_syntax_annotation1.txt",
     "tests/extractor_outputs/bad_syntax_annotation2.txt",
@@ -92,6 +94,7 @@ test("traffic_annotation_auditor_unittests") {
     "tests/extractor_outputs/fatal_annotation1.txt",
     "tests/extractor_outputs/fatal_annotation2.txt",
     "tests/extractor_outputs/fatal_annotation3.txt",
+    "tests/extractor_outputs/good_assignment.txt",
     "tests/extractor_outputs/good_branched_completing_annotation.txt",
     "tests/extractor_outputs/good_call.txt",
     "tests/extractor_outputs/good_complete_annotation.txt",

@@ -121,7 +121,8 @@ AuditorResult::Type TrafficAnnotationAuditorTest::Deserialize(
   EXPECT_TRUE(base::ReadFileToString(
       tests_folder_.Append(FILE_PATH_LITERAL("extractor_outputs"))
           .AppendASCII(file_name),
-      &file_content));
+      &file_content))
+      << file_name;
   base::RemoveChars(file_content, "\r", &file_content);
   std::vector<std::string> lines = base::SplitString(
       file_content, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
