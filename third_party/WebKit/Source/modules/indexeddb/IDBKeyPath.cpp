@@ -114,16 +114,16 @@ IDBKeyPath::IDBKeyPath(const Vector<String>& array)
 }
 
 IDBKeyPath::IDBKeyPath(const StringOrStringSequence& key_path) {
-  if (key_path.isNull()) {
+  if (key_path.IsNull()) {
     type_ = kNullType;
-  } else if (key_path.isString()) {
+  } else if (key_path.IsString()) {
     type_ = kStringType;
-    string_ = key_path.getAsString();
+    string_ = key_path.GetAsString();
     DCHECK(!string_.IsNull());
   } else {
-    DCHECK(key_path.isStringSequence());
+    DCHECK(key_path.IsStringSequence());
     type_ = kArrayType;
-    array_ = key_path.getAsStringSequence();
+    array_ = key_path.GetAsStringSequence();
 #if DCHECK_IS_ON()
     for (size_t i = 0; i < array_.size(); ++i)
       DCHECK(!array_[i].IsNull());

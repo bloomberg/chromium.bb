@@ -50,20 +50,20 @@ ScriptPromise ShapeDetector::detect(
   ScriptPromise promise = resolver->Promise();
 
   // ImageDatas cannot be tainted by definition.
-  if (image_source.isImageData())
-    return DetectShapesOnImageData(resolver, image_source.getAsImageData());
+  if (image_source.IsImageData())
+    return DetectShapesOnImageData(resolver, image_source.GetAsImageData());
 
   CanvasImageSource* canvas_image_source;
-  if (image_source.isHTMLImageElement()) {
-    canvas_image_source = image_source.getAsHTMLImageElement();
-  } else if (image_source.isImageBitmap()) {
-    canvas_image_source = image_source.getAsImageBitmap();
-  } else if (image_source.isHTMLVideoElement()) {
-    canvas_image_source = image_source.getAsHTMLVideoElement();
-  } else if (image_source.isHTMLCanvasElement()) {
-    canvas_image_source = image_source.getAsHTMLCanvasElement();
-  } else if (image_source.isOffscreenCanvas()) {
-    canvas_image_source = image_source.getAsOffscreenCanvas();
+  if (image_source.IsHTMLImageElement()) {
+    canvas_image_source = image_source.GetAsHTMLImageElement();
+  } else if (image_source.IsImageBitmap()) {
+    canvas_image_source = image_source.GetAsImageBitmap();
+  } else if (image_source.IsHTMLVideoElement()) {
+    canvas_image_source = image_source.GetAsHTMLVideoElement();
+  } else if (image_source.IsHTMLCanvasElement()) {
+    canvas_image_source = image_source.GetAsHTMLCanvasElement();
+  } else if (image_source.IsOffscreenCanvas()) {
+    canvas_image_source = image_source.GetAsOffscreenCanvas();
   } else {
     NOTREACHED() << "Unsupported CanvasImageSource";
     resolver->Reject(
@@ -78,9 +78,9 @@ ScriptPromise ShapeDetector::detect(
     return promise;
   }
 
-  if (image_source.isHTMLImageElement()) {
+  if (image_source.IsHTMLImageElement()) {
     return DetectShapesOnImageElement(resolver,
-                                      image_source.getAsHTMLImageElement());
+                                      image_source.GetAsHTMLImageElement());
   }
 
   // TODO(mcasas): Check if |video| is actually playing a MediaStream by using

@@ -365,14 +365,14 @@ ImageData* ImageData::CreateImageData(ImageDataArray& data,
   // pixels.
   String storage_format_name;
 
-  if (data.isUint8ClampedArray()) {
-    buffer_view = data.getAsUint8ClampedArray().View();
+  if (data.IsUint8ClampedArray()) {
+    buffer_view = data.GetAsUint8ClampedArray().View();
     storage_format_name = kUint8ClampedArrayStorageFormatName;
-  } else if (data.isUint16Array()) {
-    buffer_view = data.getAsUint16Array().View();
+  } else if (data.IsUint16Array()) {
+    buffer_view = data.GetAsUint16Array().View();
     storage_format_name = kUint16ArrayStorageFormatName;
-  } else if (data.isFloat32Array()) {
-    buffer_view = data.getAsFloat32Array().View();
+  } else if (data.IsFloat32Array()) {
+    buffer_view = data.GetAsFloat32Array().View();
     storage_format_name = kFloat32ArrayStorageFormatName;
   } else {
     NOTREACHED();
@@ -814,7 +814,7 @@ ImageData::ImageData(const IntSize& size,
       data_ = const_cast<DOMUint8ClampedArray*>(
           static_cast<const DOMUint8ClampedArray*>(data));
       DCHECK(data_);
-      data_union_.setUint8ClampedArray(data_);
+      data_union_.SetUint8ClampedArray(data_);
       SECURITY_CHECK(static_cast<unsigned>(size.Width() * size.Height() * 4) <=
                      data_->length());
       break;
@@ -824,7 +824,7 @@ ImageData::ImageData(const IntSize& size,
       data_u16_ =
           const_cast<DOMUint16Array*>(static_cast<const DOMUint16Array*>(data));
       DCHECK(data_u16_);
-      data_union_.setUint16Array(data_u16_);
+      data_union_.SetUint16Array(data_u16_);
       SECURITY_CHECK(static_cast<unsigned>(size.Width() * size.Height() * 4) <=
                      data_u16_->length());
       break;
@@ -834,7 +834,7 @@ ImageData::ImageData(const IntSize& size,
       data_f32_ = const_cast<DOMFloat32Array*>(
           static_cast<const DOMFloat32Array*>(data));
       DCHECK(data_f32_);
-      data_union_.setFloat32Array(data_f32_);
+      data_union_.SetFloat32Array(data_f32_);
       SECURITY_CHECK(static_cast<unsigned>(size.Width() * size.Height() * 4) <=
                      data_f32_->length());
       break;

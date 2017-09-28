@@ -45,7 +45,7 @@ TEST(AnimationEffectInputTest, SortedOffsets) {
   Element* element = AppendElement(scope.GetDocument());
   EffectModel* animation_effect = EffectInput::Convert(
       element,
-      DictionarySequenceOrDictionary::fromDictionarySequence(js_keyframes),
+      DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       nullptr, scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   const KeyframeEffectModelBase& keyframe_effect =
@@ -72,7 +72,7 @@ TEST(AnimationEffectInputTest, UnsortedOffsets) {
   Element* element = AppendElement(scope.GetDocument());
   EffectInput::Convert(
       element,
-      DictionarySequenceOrDictionary::fromDictionarySequence(js_keyframes),
+      DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       nullptr, scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(kV8TypeError, scope.GetExceptionState().Code());
@@ -101,7 +101,7 @@ TEST(AnimationEffectInputTest, LooslySorted) {
   Element* element = AppendElement(scope.GetDocument());
   EffectModel* animation_effect = EffectInput::Convert(
       element,
-      DictionarySequenceOrDictionary::fromDictionarySequence(js_keyframes),
+      DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       nullptr, scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   const KeyframeEffectModelBase& keyframe_effect =
@@ -137,7 +137,7 @@ TEST(AnimationEffectInputTest, OutOfOrderWithNullOffsets) {
   Element* element = AppendElement(scope.GetDocument());
   EffectInput::Convert(
       element,
-      DictionarySequenceOrDictionary::fromDictionarySequence(js_keyframes),
+      DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       nullptr, scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
@@ -166,7 +166,7 @@ TEST(AnimationEffectInputTest, Invalid) {
   Element* element = AppendElement(scope.GetDocument());
   EffectInput::Convert(
       element,
-      DictionarySequenceOrDictionary::fromDictionarySequence(js_keyframes),
+      DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       nullptr, scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(kV8TypeError, scope.GetExceptionState().Code());

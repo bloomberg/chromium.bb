@@ -40,14 +40,14 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
   }
 
   // TODO(smcgruer): Support 'auto' value.
-  if (options.timeRange().isScrollTimelineAutoKeyword()) {
+  if (options.timeRange().IsScrollTimelineAutoKeyword()) {
     exception_state.ThrowDOMException(
         kNotSupportedError, "'auto' value for timeRange not yet supported");
     return nullptr;
   }
 
   return new ScrollTimeline(document, scroll_source, orientation,
-                            options.timeRange().getAsDouble());
+                            options.timeRange().GetAsDouble());
 }
 
 ScrollTimeline::ScrollTimeline(const Document& document,
@@ -138,7 +138,7 @@ String ScrollTimeline::orientation() {
 }
 
 void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
-  result.setDouble(time_range_);
+  result.SetDouble(time_range_);
 }
 
 DEFINE_TRACE(ScrollTimeline) {

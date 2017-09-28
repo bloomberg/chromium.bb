@@ -63,7 +63,7 @@ inline const KURL& Location::Url() const {
 }
 
 void Location::href(StringOrTrustedURL& result) const {
-  result.setString(Url().StrippedForUseAsHref());
+  result.SetString(Url().StrippedForUseAsHref());
 }
 
 String Location::protocol() const {
@@ -109,8 +109,8 @@ DOMStringList* Location::ancestorOrigins() const {
 String Location::toString() const {
   StringOrTrustedURL result;
   href(result);
-  DCHECK(result.isString());
-  return result.getAsString();
+  DCHECK(result.IsString());
+  return result.GetAsString();
 }
 
 String Location::hash() const {
@@ -121,19 +121,19 @@ void Location::setHref(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
                        const StringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  DCHECK(stringOrUrl.isString() ||
+  DCHECK(stringOrUrl.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrUrl.isString() &&
+  if (stringOrUrl.IsString() &&
       current_window->document()->RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedURL` assignment.");
     return;
   }
 
-  String url = stringOrUrl.isString()
-                   ? stringOrUrl.getAsString()
-                   : stringOrUrl.getAsTrustedURL()->toString();
+  String url = stringOrUrl.IsString()
+                   ? stringOrUrl.GetAsString()
+                   : stringOrUrl.GetAsTrustedURL()->toString();
   SetLocation(url, current_window, entered_window, &exception_state);
 }
 

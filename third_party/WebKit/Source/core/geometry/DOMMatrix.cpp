@@ -20,7 +20,7 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
 DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
                              StringOrUnrestrictedDoubleSequence& init,
                              ExceptionState& exception_state) {
-  if (init.isString()) {
+  if (init.IsString()) {
     if (!execution_context->IsDocument()) {
       exception_state.ThrowTypeError(
           "DOMMatrix can't be constructed with strings on workers.");
@@ -28,12 +28,12 @@ DOMMatrix* DOMMatrix::Create(ExecutionContext* execution_context,
     }
 
     DOMMatrix* matrix = new DOMMatrix(TransformationMatrix());
-    matrix->SetMatrixValueFromString(init.getAsString(), exception_state);
+    matrix->SetMatrixValueFromString(init.GetAsString(), exception_state);
     return matrix;
   }
 
-  if (init.isUnrestrictedDoubleSequence()) {
-    const Vector<double>& sequence = init.getAsUnrestrictedDoubleSequence();
+  if (init.IsUnrestrictedDoubleSequence()) {
+    const Vector<double>& sequence = init.GetAsUnrestrictedDoubleSequence();
     if (sequence.size() != 6 && sequence.size() != 16) {
       exception_state.ThrowTypeError(
           "The sequence must contain 6 elements for a 2D matrix or 16 elements "

@@ -318,7 +318,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // We don't create a copy of r's Headers object when init's headers member
   // is present.
   Headers* headers = nullptr;
-  if (init.headers.isNull()) {
+  if (init.headers.IsNull()) {
     headers = r->getHeaders()->Clone();
   }
   // "Empty |r|'s request's header list."
@@ -336,7 +336,7 @@ Request* Request::CreateRequestWithRequestOrString(
     r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
   }
   // "Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
-  if (!init.headers.isNull()) {
+  if (!init.headers.IsNull()) {
     r->getHeaders()->FillWith(init.headers, exception_state);
   } else {
     DCHECK(headers);
@@ -428,10 +428,10 @@ Request* Request::Create(ScriptState* script_state,
                          const RequestInfo& input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  DCHECK(!input.isNull());
-  if (input.isUSVString())
-    return Create(script_state, input.getAsUSVString(), init, exception_state);
-  return Create(script_state, input.getAsRequest(), init, exception_state);
+  DCHECK(!input.IsNull());
+  if (input.IsUSVString())
+    return Create(script_state, input.GetAsUSVString(), init, exception_state);
+  return Create(script_state, input.GetAsRequest(), init, exception_state);
 }
 
 Request* Request::Create(ScriptState* script_state,

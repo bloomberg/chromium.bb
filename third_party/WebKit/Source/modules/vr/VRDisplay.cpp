@@ -350,7 +350,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 
   // If what we were given has an invalid source, need to exit fullscreen with
   // previous, valid source, so delay m_layer reassignment
-  if (layers[0].source().isNull()) {
+  if (layers[0].source().IsNull()) {
     ForceExitPresent();
     DOMException* exception =
         DOMException::Create(kInvalidStateError, "Invalid layer source.");
@@ -361,13 +361,13 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   layer_ = layers[0];
 
   CanvasRenderingContext* rendering_context;
-  if (layer_.source().isHTMLCanvasElement()) {
+  if (layer_.source().IsHTMLCanvasElement()) {
     rendering_context =
-        layer_.source().getAsHTMLCanvasElement()->RenderingContext();
+        layer_.source().GetAsHTMLCanvasElement()->RenderingContext();
   } else {
-    DCHECK(layer_.source().isOffscreenCanvas());
+    DCHECK(layer_.source().IsOffscreenCanvas());
     rendering_context =
-        layer_.source().getAsOffscreenCanvas()->RenderingContext();
+        layer_.source().GetAsOffscreenCanvas()->RenderingContext();
   }
 
   if (!rendering_context || !rendering_context->Is3d()) {
@@ -513,12 +513,12 @@ void VRDisplay::BeginPresent() {
         PresentationResult::kPresentationNotSupportedByDisplay);
     return;
   } else {
-    if (layer_.source().isHTMLCanvasElement()) {
+    if (layer_.source().IsHTMLCanvasElement()) {
       // TODO(klausw,crbug.com/698923): suppress compositor updates
       // since they aren't needed, they do a fair amount of extra
       // work.
     } else {
-      DCHECK(layer_.source().isOffscreenCanvas());
+      DCHECK(layer_.source().IsOffscreenCanvas());
       // TODO(junov, crbug.com/695497): Implement OffscreenCanvas presentation
       ForceExitPresent();
       DOMException* exception = DOMException::Create(
@@ -805,7 +805,7 @@ void VRDisplay::OnDisconnected() {
 void VRDisplay::StopPresenting() {
   if (is_presenting_) {
     if (!capabilities_->hasExternalDisplay()) {
-      if (layer_.source().isHTMLCanvasElement()) {
+      if (layer_.source().IsHTMLCanvasElement()) {
         // TODO(klausw,crbug.com/698923): If compositor updates are
         // suppressed, restore them here.
       } else {

@@ -25,7 +25,7 @@ ImageBitmapRenderingContext::~ImageBitmapRenderingContext() {}
 
 void ImageBitmapRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
-  result.setImageBitmapRenderingContext(this);
+  result.SetImageBitmapRenderingContext(this);
 }
 
 void ImageBitmapRenderingContext::transferFromImageBitmap(

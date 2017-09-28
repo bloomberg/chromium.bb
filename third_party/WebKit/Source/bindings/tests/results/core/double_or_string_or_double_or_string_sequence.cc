@@ -18,56 +18,56 @@
 
 namespace blink {
 
-DoubleOrStringOrDoubleOrStringSequence::DoubleOrStringOrDoubleOrStringSequence() : type_(SpecificTypeNone) {}
+DoubleOrStringOrDoubleOrStringSequence::DoubleOrStringOrDoubleOrStringSequence() : type_(SpecificType::kNone) {}
 
-double DoubleOrStringOrDoubleOrStringSequence::getAsDouble() const {
-  DCHECK(isDouble());
+double DoubleOrStringOrDoubleOrStringSequence::GetAsDouble() const {
+  DCHECK(IsDouble());
   return double_;
 }
 
-void DoubleOrStringOrDoubleOrStringSequence::setDouble(double value) {
-  DCHECK(isNull());
+void DoubleOrStringOrDoubleOrStringSequence::SetDouble(double value) {
+  DCHECK(IsNull());
   double_ = value;
-  type_ = SpecificTypeDouble;
+  type_ = SpecificType::kDouble;
 }
 
-DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromDouble(double value) {
+DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::FromDouble(double value) {
   DoubleOrStringOrDoubleOrStringSequence container;
-  container.setDouble(value);
+  container.SetDouble(value);
   return container;
 }
 
-const HeapVector<DoubleOrString>& DoubleOrStringOrDoubleOrStringSequence::getAsDoubleOrStringSequence() const {
-  DCHECK(isDoubleOrStringSequence());
+const HeapVector<DoubleOrString>& DoubleOrStringOrDoubleOrStringSequence::GetAsDoubleOrStringSequence() const {
+  DCHECK(IsDoubleOrStringSequence());
   return double_or_string_sequence_;
 }
 
-void DoubleOrStringOrDoubleOrStringSequence::setDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
-  DCHECK(isNull());
+void DoubleOrStringOrDoubleOrStringSequence::SetDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
+  DCHECK(IsNull());
   double_or_string_sequence_ = value;
-  type_ = SpecificTypeDoubleOrStringSequence;
+  type_ = SpecificType::kDoubleOrStringSequence;
 }
 
-DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
+DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::FromDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
   DoubleOrStringOrDoubleOrStringSequence container;
-  container.setDoubleOrStringSequence(value);
+  container.SetDoubleOrStringSequence(value);
   return container;
 }
 
-const String& DoubleOrStringOrDoubleOrStringSequence::getAsString() const {
-  DCHECK(isString());
+const String& DoubleOrStringOrDoubleOrStringSequence::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void DoubleOrStringOrDoubleOrStringSequence::setString(const String& value) {
-  DCHECK(isNull());
+void DoubleOrStringOrDoubleOrStringSequence::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromString(const String& value) {
+DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::FromString(const String& value) {
   DoubleOrStringOrDoubleOrStringSequence container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
@@ -90,7 +90,7 @@ void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(v8::Isolate* isolate, v8::
     HeapVector<DoubleOrString> cppValue = NativeValueTraits<IDLSequence<DoubleOrString>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDoubleOrStringSequence(cppValue);
+    impl.SetDoubleOrStringSequence(cppValue);
     return;
   }
 
@@ -98,7 +98,7 @@ void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(v8::Isolate* isolate, v8::
     double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDouble(cppValue);
+    impl.SetDouble(cppValue);
     return;
   }
 
@@ -106,21 +106,21 @@ void V8DoubleOrStringOrDoubleOrStringSequence::ToImpl(v8::Isolate* isolate, v8::
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeNone:
+    case DoubleOrStringOrDoubleOrStringSequence::SpecificType::kNone:
       return v8::Null(isolate);
-    case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeDouble:
-      return v8::Number::New(isolate, impl.getAsDouble());
-    case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeDoubleOrStringSequence:
-      return ToV8(impl.getAsDoubleOrStringSequence(), creationContext, isolate);
-    case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
+    case DoubleOrStringOrDoubleOrStringSequence::SpecificType::kDouble:
+      return v8::Number::New(isolate, impl.GetAsDouble());
+    case DoubleOrStringOrDoubleOrStringSequence::SpecificType::kDoubleOrStringSequence:
+      return ToV8(impl.GetAsDoubleOrStringSequence(), creationContext, isolate);
+    case DoubleOrStringOrDoubleOrStringSequence::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
     default:
       NOTREACHED();
   }

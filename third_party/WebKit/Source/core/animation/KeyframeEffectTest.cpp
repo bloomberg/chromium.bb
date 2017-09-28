@@ -51,9 +51,9 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         nullptr, element,
-        DictionarySequenceOrDictionary::fromDictionarySequence(
+        DictionarySequenceOrDictionary::FromDictionarySequence(
             keyframe_dictionary_vector),
-        UnrestrictedDoubleOrKeyframeEffectOptions::fromUnrestrictedDouble(
+        UnrestrictedDoubleOrKeyframeEffectOptions::FromUnrestrictedDouble(
             timing_input),
         exception_state);
   }
@@ -64,9 +64,9 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         nullptr, element,
-        DictionarySequenceOrDictionary::fromDictionarySequence(
+        DictionarySequenceOrDictionary::FromDictionarySequence(
             keyframe_dictionary_vector),
-        UnrestrictedDoubleOrKeyframeEffectOptions::fromKeyframeEffectOptions(
+        UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
             timing_input),
         exception_state);
   }
@@ -76,7 +76,7 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         nullptr, element,
-        DictionarySequenceOrDictionary::fromDictionarySequence(
+        DictionarySequenceOrDictionary::FromDictionarySequence(
             keyframe_dictionary_vector),
         exception_state);
   }
@@ -215,9 +215,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
       animation_with_duration->timing();
   UnrestrictedDoubleOrString duration;
   specified_with_duration->duration(duration);
-  EXPECT_TRUE(duration.isUnrestrictedDouble());
-  EXPECT_EQ(2.5, duration.getAsUnrestrictedDouble());
-  EXPECT_FALSE(duration.isString());
+  EXPECT_TRUE(duration.IsUnrestrictedDouble());
+  EXPECT_EQ(2.5, duration.GetAsUnrestrictedDouble());
+  EXPECT_FALSE(duration.IsString());
 
   v8::Local<v8::Object> timing_input_no_duration =
       v8::Object::New(scope.GetIsolate());
@@ -234,9 +234,9 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
       animation_no_duration->timing();
   UnrestrictedDoubleOrString duration2;
   specified_no_duration->duration(duration2);
-  EXPECT_FALSE(duration2.isUnrestrictedDouble());
-  EXPECT_TRUE(duration2.isString());
-  EXPECT_EQ("auto", duration2.getAsString());
+  EXPECT_FALSE(duration2.IsUnrestrictedDouble());
+  EXPECT_TRUE(duration2.IsString());
+  EXPECT_EQ("auto", duration2.GetAsString());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters) {
@@ -305,19 +305,19 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration) {
 
   UnrestrictedDoubleOrString duration;
   specified->duration(duration);
-  EXPECT_FALSE(duration.isUnrestrictedDouble());
-  EXPECT_TRUE(duration.isString());
-  EXPECT_EQ("auto", duration.getAsString());
+  EXPECT_FALSE(duration.IsUnrestrictedDouble());
+  EXPECT_TRUE(duration.IsString());
+  EXPECT_EQ("auto", duration.GetAsString());
 
   UnrestrictedDoubleOrString in_duration;
-  in_duration.setUnrestrictedDouble(2.5);
+  in_duration.SetUnrestrictedDouble(2.5);
   specified->setDuration(in_duration, exception_state);
   ASSERT_FALSE(exception_state.HadException());
   UnrestrictedDoubleOrString duration2;
   specified->duration(duration2);
-  EXPECT_TRUE(duration2.isUnrestrictedDouble());
-  EXPECT_EQ(2.5, duration2.getAsUnrestrictedDouble());
-  EXPECT_FALSE(duration2.isString());
+  EXPECT_TRUE(duration2.IsUnrestrictedDouble());
+  EXPECT_EQ(2.5, duration2.GetAsUnrestrictedDouble());
+  EXPECT_FALSE(duration2.IsString());
 }
 
 TEST_F(KeyframeEffectTest, TimeToEffectChange) {

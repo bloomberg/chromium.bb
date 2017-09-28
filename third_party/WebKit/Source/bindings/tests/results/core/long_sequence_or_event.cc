@@ -18,39 +18,39 @@
 
 namespace blink {
 
-LongSequenceOrEvent::LongSequenceOrEvent() : type_(SpecificTypeNone) {}
+LongSequenceOrEvent::LongSequenceOrEvent() : type_(SpecificType::kNone) {}
 
-Event* LongSequenceOrEvent::getAsEvent() const {
-  DCHECK(isEvent());
+Event* LongSequenceOrEvent::GetAsEvent() const {
+  DCHECK(IsEvent());
   return event_;
 }
 
-void LongSequenceOrEvent::setEvent(Event* value) {
-  DCHECK(isNull());
+void LongSequenceOrEvent::SetEvent(Event* value) {
+  DCHECK(IsNull());
   event_ = value;
-  type_ = SpecificTypeEvent;
+  type_ = SpecificType::kEvent;
 }
 
-LongSequenceOrEvent LongSequenceOrEvent::fromEvent(Event* value) {
+LongSequenceOrEvent LongSequenceOrEvent::FromEvent(Event* value) {
   LongSequenceOrEvent container;
-  container.setEvent(value);
+  container.SetEvent(value);
   return container;
 }
 
-const Vector<int32_t>& LongSequenceOrEvent::getAsLongSequence() const {
-  DCHECK(isLongSequence());
+const Vector<int32_t>& LongSequenceOrEvent::GetAsLongSequence() const {
+  DCHECK(IsLongSequence());
   return long_sequence_;
 }
 
-void LongSequenceOrEvent::setLongSequence(const Vector<int32_t>& value) {
-  DCHECK(isNull());
+void LongSequenceOrEvent::SetLongSequence(const Vector<int32_t>& value) {
+  DCHECK(IsNull());
   long_sequence_ = value;
-  type_ = SpecificTypeLongSequence;
+  type_ = SpecificType::kLongSequence;
 }
 
-LongSequenceOrEvent LongSequenceOrEvent::fromLongSequence(const Vector<int32_t>& value) {
+LongSequenceOrEvent LongSequenceOrEvent::FromLongSequence(const Vector<int32_t>& value) {
   LongSequenceOrEvent container;
-  container.setLongSequence(value);
+  container.SetLongSequence(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
 
   if (V8Event::hasInstance(v8Value, isolate)) {
     Event* cppValue = V8Event::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setEvent(cppValue);
+    impl.SetEvent(cppValue);
     return;
   }
 
@@ -79,7 +79,7 @@ void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     Vector<int32_t> cppValue = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setLongSequence(cppValue);
+    impl.SetLongSequence(cppValue);
     return;
   }
 
@@ -88,12 +88,12 @@ void V8LongSequenceOrEvent::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
 
 v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case LongSequenceOrEvent::SpecificTypeNone:
+    case LongSequenceOrEvent::SpecificType::kNone:
       return v8::Null(isolate);
-    case LongSequenceOrEvent::SpecificTypeEvent:
-      return ToV8(impl.getAsEvent(), creationContext, isolate);
-    case LongSequenceOrEvent::SpecificTypeLongSequence:
-      return ToV8(impl.getAsLongSequence(), creationContext, isolate);
+    case LongSequenceOrEvent::SpecificType::kEvent:
+      return ToV8(impl.GetAsEvent(), creationContext, isolate);
+    case LongSequenceOrEvent::SpecificType::kLongSequence:
+      return ToV8(impl.GetAsLongSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

@@ -17,56 +17,56 @@
 
 namespace blink {
 
-BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble() : type_(SpecificTypeNone) {}
+BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble() : type_(SpecificType::kNone) {}
 
-bool BooleanOrStringOrUnrestrictedDouble::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool BooleanOrStringOrUnrestrictedDouble::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void BooleanOrStringOrUnrestrictedDouble::setBoolean(bool value) {
-  DCHECK(isNull());
+void BooleanOrStringOrUnrestrictedDouble::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromBoolean(bool value) {
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::FromBoolean(bool value) {
   BooleanOrStringOrUnrestrictedDouble container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-const String& BooleanOrStringOrUnrestrictedDouble::getAsString() const {
-  DCHECK(isString());
+const String& BooleanOrStringOrUnrestrictedDouble::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void BooleanOrStringOrUnrestrictedDouble::setString(const String& value) {
-  DCHECK(isNull());
+void BooleanOrStringOrUnrestrictedDouble::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromString(const String& value) {
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::FromString(const String& value) {
   BooleanOrStringOrUnrestrictedDouble container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-double BooleanOrStringOrUnrestrictedDouble::getAsUnrestrictedDouble() const {
-  DCHECK(isUnrestrictedDouble());
+double BooleanOrStringOrUnrestrictedDouble::GetAsUnrestrictedDouble() const {
+  DCHECK(IsUnrestrictedDouble());
   return unrestricted_double_;
 }
 
-void BooleanOrStringOrUnrestrictedDouble::setUnrestrictedDouble(double value) {
-  DCHECK(isNull());
+void BooleanOrStringOrUnrestrictedDouble::SetUnrestrictedDouble(double value) {
+  DCHECK(IsNull());
   unrestricted_double_ = value;
-  type_ = SpecificTypeUnrestrictedDouble;
+  type_ = SpecificType::kUnrestrictedDouble;
 }
 
-BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromUnrestrictedDouble(double value) {
+BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::FromUnrestrictedDouble(double value) {
   BooleanOrStringOrUnrestrictedDouble container;
-  container.setUnrestrictedDouble(value);
+  container.SetUnrestrictedDouble(value);
   return container;
 }
 
@@ -85,7 +85,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Loc
     return;
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
@@ -93,7 +93,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Loc
     double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setUnrestrictedDouble(cppValue);
+    impl.SetUnrestrictedDouble(cppValue);
     return;
   }
 
@@ -101,21 +101,21 @@ void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Loc
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeNone:
+    case BooleanOrStringOrUnrestrictedDouble::SpecificType::kNone:
       return v8::Null(isolate);
-    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeUnrestrictedDouble:
-      return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
+    case BooleanOrStringOrUnrestrictedDouble::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case BooleanOrStringOrUnrestrictedDouble::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case BooleanOrStringOrUnrestrictedDouble::SpecificType::kUnrestrictedDouble:
+      return v8::Number::New(isolate, impl.GetAsUnrestrictedDouble());
     default:
       NOTREACHED();
   }

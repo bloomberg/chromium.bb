@@ -44,7 +44,7 @@ void SequenceTest::setElementSequence(const HeapVector<Member<Element>>& arg) {
 }
 
 bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
-  return arg.isDoubleSequence();
+  return arg.IsDoubleSequence();
 }
 
 DEFINE_TRACE(SequenceTest) {

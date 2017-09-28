@@ -25,22 +25,22 @@ class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrStringOrUnrestrictedDouble();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
-  bool getAsBoolean() const;
-  void setBoolean(bool);
-  static BooleanOrStringOrUnrestrictedDouble fromBoolean(bool);
+  bool IsBoolean() const { return type_ == SpecificType::kBoolean; }
+  bool GetAsBoolean() const;
+  void SetBoolean(bool);
+  static BooleanOrStringOrUnrestrictedDouble FromBoolean(bool);
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static BooleanOrStringOrUnrestrictedDouble fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static BooleanOrStringOrUnrestrictedDouble FromString(const String&);
 
-  bool isUnrestrictedDouble() const { return type_ == SpecificTypeUnrestrictedDouble; }
-  double getAsUnrestrictedDouble() const;
-  void setUnrestrictedDouble(double);
-  static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
+  bool IsUnrestrictedDouble() const { return type_ == SpecificType::kUnrestrictedDouble; }
+  double GetAsUnrestrictedDouble() const;
+  void SetUnrestrictedDouble(double);
+  static BooleanOrStringOrUnrestrictedDouble FromUnrestrictedDouble(double);
 
   BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
   ~BooleanOrStringOrUnrestrictedDouble();
@@ -48,13 +48,13 @@ class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeBoolean,
-    SpecificTypeString,
-    SpecificTypeUnrestrictedDouble,
+  enum class SpecificType {
+    kNone,
+    kBoolean,
+    kString,
+    kUnrestrictedDouble,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   bool boolean_;
   String string_;

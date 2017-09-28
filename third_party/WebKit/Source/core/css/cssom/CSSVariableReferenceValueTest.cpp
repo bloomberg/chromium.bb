@@ -22,9 +22,9 @@ TEST(CSSVariableReferenceValueTest, EmptyList) {
 
 TEST(CSSVariableReferenceValueTest, MixedList) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
+  fragments.push_back(StringOrCSSVariableReferenceValue::FromString("string"));
   fragments.push_back(
-      StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+      StringOrCSSVariableReferenceValue::FromCSSVariableReferenceValue(
           CSSStyleVariableReferenceValue::Create(
               "Variable", CSSUnparsedValue::FromString("Fallback"))));
   fragments.push_back(StringOrCSSVariableReferenceValue());

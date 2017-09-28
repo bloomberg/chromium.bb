@@ -183,13 +183,13 @@ void HTMLFormControlsCollection::namedGetter(
 
   if (named_items.size() == 1) {
     if (!isHTMLImageElement(*named_items[0]))
-      return_value.setElement(named_items.at(0));
+      return_value.SetElement(named_items.at(0));
     return;
   }
 
   // This path never returns a RadioNodeList for <img> because
   // onlyMatchingImgElements flag is false by default.
-  return_value.setRadioNodeList(ownerNode().GetRadioNodeList(name));
+  return_value.SetRadioNodeList(ownerNode().GetRadioNodeList(name));
 }
 
 void HTMLFormControlsCollection::SupportedPropertyNames(Vector<String>& names) {

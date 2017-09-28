@@ -133,7 +133,7 @@ String ShadowRoot::InnerHTMLAsString() const {
 }
 
 void ShadowRoot::innerHTML(StringOrTrustedHTML& result) const {
-  result.setString(InnerHTMLAsString());
+  result.SetString(InnerHTMLAsString());
 }
 
 void ShadowRoot::SetInnerHTMLFromString(const String& markup,
@@ -146,18 +146,18 @@ void ShadowRoot::SetInnerHTMLFromString(const String& markup,
 
 void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                               ExceptionState& exception_state) {
-  DCHECK(stringOrHtml.isString() ||
+  DCHECK(stringOrHtml.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+  if (stringOrHtml.IsString() && GetDocument().RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
     return;
   }
 
-  String html = stringOrHtml.isString()
-                    ? stringOrHtml.getAsString()
-                    : stringOrHtml.getAsTrustedHTML()->toString();
+  String html = stringOrHtml.IsString()
+                    ? stringOrHtml.GetAsString()
+                    : stringOrHtml.GetAsTrustedHTML()->toString();
 
   // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
   // is treated as an extended attribute on the `DOMString` type rather than

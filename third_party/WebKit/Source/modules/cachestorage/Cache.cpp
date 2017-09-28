@@ -386,11 +386,11 @@ ScriptPromise Cache::match(ScriptState* script_state,
                            const RequestInfo& request,
                            const CacheQueryOptions& options,
                            ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
-  if (request.isRequest())
-    return MatchImpl(script_state, request.getAsRequest(), options);
+  DCHECK(!request.IsNull());
+  if (request.IsRequest())
+    return MatchImpl(script_state, request.GetAsRequest(), options);
   Request* new_request =
-      Request::Create(script_state, request.getAsUSVString(), exception_state);
+      Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return MatchImpl(script_state, new_request, options);
@@ -405,11 +405,11 @@ ScriptPromise Cache::matchAll(ScriptState* script_state,
                               const RequestInfo& request,
                               const CacheQueryOptions& options,
                               ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
-  if (request.isRequest())
-    return MatchAllImpl(script_state, request.getAsRequest(), options);
+  DCHECK(!request.IsNull());
+  if (request.IsRequest())
+    return MatchAllImpl(script_state, request.GetAsRequest(), options);
   Request* new_request =
-      Request::Create(script_state, request.getAsUSVString(), exception_state);
+      Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return MatchAllImpl(script_state, new_request, options);
@@ -418,12 +418,12 @@ ScriptPromise Cache::matchAll(ScriptState* script_state,
 ScriptPromise Cache::add(ScriptState* script_state,
                          const RequestInfo& request,
                          ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
+  DCHECK(!request.IsNull());
   HeapVector<Member<Request>> requests;
-  if (request.isRequest()) {
-    requests.push_back(request.getAsRequest());
+  if (request.IsRequest()) {
+    requests.push_back(request.GetAsRequest());
   } else {
-    requests.push_back(Request::Create(script_state, request.getAsUSVString(),
+    requests.push_back(Request::Create(script_state, request.GetAsUSVString(),
                                        exception_state));
     if (exception_state.HadException())
       return ScriptPromise();
@@ -437,10 +437,10 @@ ScriptPromise Cache::addAll(ScriptState* script_state,
                             ExceptionState& exception_state) {
   HeapVector<Member<Request>> requests;
   for (RequestInfo request : raw_requests) {
-    if (request.isRequest()) {
-      requests.push_back(request.getAsRequest());
+    if (request.IsRequest()) {
+      requests.push_back(request.GetAsRequest());
     } else {
-      requests.push_back(Request::Create(script_state, request.getAsUSVString(),
+      requests.push_back(Request::Create(script_state, request.GetAsUSVString(),
                                          exception_state));
       if (exception_state.HadException())
         return ScriptPromise();
@@ -454,11 +454,11 @@ ScriptPromise Cache::deleteFunction(ScriptState* script_state,
                                     const RequestInfo& request,
                                     const CacheQueryOptions& options,
                                     ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
-  if (request.isRequest())
-    return DeleteImpl(script_state, request.getAsRequest(), options);
+  DCHECK(!request.IsNull());
+  if (request.IsRequest())
+    return DeleteImpl(script_state, request.GetAsRequest(), options);
   Request* new_request =
-      Request::Create(script_state, request.getAsUSVString(), exception_state);
+      Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return DeleteImpl(script_state, new_request, options);
@@ -468,13 +468,13 @@ ScriptPromise Cache::put(ScriptState* script_state,
                          const RequestInfo& request,
                          Response* response,
                          ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
-  if (request.isRequest())
+  DCHECK(!request.IsNull());
+  if (request.IsRequest())
     return PutImpl(script_state,
-                   HeapVector<Member<Request>>(1, request.getAsRequest()),
+                   HeapVector<Member<Request>>(1, request.GetAsRequest()),
                    HeapVector<Member<Response>>(1, response));
   Request* new_request =
-      Request::Create(script_state, request.getAsUSVString(), exception_state);
+      Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return PutImpl(script_state, HeapVector<Member<Request>>(1, new_request),
@@ -489,11 +489,11 @@ ScriptPromise Cache::keys(ScriptState* script_state,
                           const RequestInfo& request,
                           const CacheQueryOptions& options,
                           ExceptionState& exception_state) {
-  DCHECK(!request.isNull());
-  if (request.isRequest())
-    return KeysImpl(script_state, request.getAsRequest(), options);
+  DCHECK(!request.IsNull());
+  if (request.IsRequest())
+    return KeysImpl(script_state, request.GetAsRequest(), options);
   Request* new_request =
-      Request::Create(script_state, request.getAsUSVString(), exception_state);
+      Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return KeysImpl(script_state, new_request, options);
@@ -585,7 +585,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
           V8ThrowException::CreateTypeError(
               script_state->GetIsolate(),
               "Add/AddAll only supports the GET request method."));
-    request_infos[i].setRequest(requests[i]);
+    request_infos[i].SetRequest(requests[i]);
 
     promises[i] = scoped_fetcher_->Fetch(script_state, request_infos[i],
                                          Dictionary(), exception_state);

@@ -27,17 +27,17 @@ class CORE_EXPORT DoubleOrLongOrBooleanSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   DoubleOrLongOrBooleanSequence();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isDouble() const { return type_ == SpecificTypeDouble; }
-  double getAsDouble() const;
-  void setDouble(double);
-  static DoubleOrLongOrBooleanSequence fromDouble(double);
+  bool IsDouble() const { return type_ == SpecificType::kDouble; }
+  double GetAsDouble() const;
+  void SetDouble(double);
+  static DoubleOrLongOrBooleanSequence FromDouble(double);
 
-  bool isLongOrBooleanSequence() const { return type_ == SpecificTypeLongOrBooleanSequence; }
-  const HeapVector<LongOrBoolean>& getAsLongOrBooleanSequence() const;
-  void setLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
-  static DoubleOrLongOrBooleanSequence fromLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
+  bool IsLongOrBooleanSequence() const { return type_ == SpecificType::kLongOrBooleanSequence; }
+  const HeapVector<LongOrBoolean>& GetAsLongOrBooleanSequence() const;
+  void SetLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
+  static DoubleOrLongOrBooleanSequence FromLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
 
   DoubleOrLongOrBooleanSequence(const DoubleOrLongOrBooleanSequence&);
   ~DoubleOrLongOrBooleanSequence();
@@ -45,12 +45,12 @@ class CORE_EXPORT DoubleOrLongOrBooleanSequence final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeDouble,
-    SpecificTypeLongOrBooleanSequence,
+  enum class SpecificType {
+    kNone,
+    kDouble,
+    kLongOrBooleanSequence,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   double double_;
   HeapVector<LongOrBoolean> long_or_boolean_sequence_;

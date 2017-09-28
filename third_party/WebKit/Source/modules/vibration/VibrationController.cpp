@@ -67,10 +67,10 @@ VibrationController::SanitizeVibrationPattern(
     const UnsignedLongOrUnsignedLongSequence& pattern) {
   VibrationPattern sanitized;
 
-  if (pattern.isUnsignedLong())
-    sanitized.push_back(pattern.getAsUnsignedLong());
-  else if (pattern.isUnsignedLongSequence())
-    sanitized = pattern.getAsUnsignedLongSequence();
+  if (pattern.IsUnsignedLong())
+    sanitized.push_back(pattern.GetAsUnsignedLong());
+  else if (pattern.IsUnsignedLongSequence())
+    sanitized = pattern.GetAsUnsignedLongSequence();
 
   return sanitizeVibrationPatternInternal(sanitized);
 }

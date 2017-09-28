@@ -23,39 +23,39 @@
 
 namespace blink {
 
-BooleanOrElementSequence::BooleanOrElementSequence() : type_(SpecificTypeNone) {}
+BooleanOrElementSequence::BooleanOrElementSequence() : type_(SpecificType::kNone) {}
 
-bool BooleanOrElementSequence::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool BooleanOrElementSequence::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void BooleanOrElementSequence::setBoolean(bool value) {
-  DCHECK(isNull());
+void BooleanOrElementSequence::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-BooleanOrElementSequence BooleanOrElementSequence::fromBoolean(bool value) {
+BooleanOrElementSequence BooleanOrElementSequence::FromBoolean(bool value) {
   BooleanOrElementSequence container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-const HeapVector<Member<Element>>& BooleanOrElementSequence::getAsElementSequence() const {
-  DCHECK(isElementSequence());
+const HeapVector<Member<Element>>& BooleanOrElementSequence::GetAsElementSequence() const {
+  DCHECK(IsElementSequence());
   return element_sequence_;
 }
 
-void BooleanOrElementSequence::setElementSequence(const HeapVector<Member<Element>>& value) {
-  DCHECK(isNull());
+void BooleanOrElementSequence::SetElementSequence(const HeapVector<Member<Element>>& value) {
+  DCHECK(IsNull());
   element_sequence_ = value;
-  type_ = SpecificTypeElementSequence;
+  type_ = SpecificType::kElementSequence;
 }
 
-BooleanOrElementSequence BooleanOrElementSequence::fromElementSequence(const HeapVector<Member<Element>>& value) {
+BooleanOrElementSequence BooleanOrElementSequence::FromElementSequence(const HeapVector<Member<Element>>& value) {
   BooleanOrElementSequence container;
-  container.setElementSequence(value);
+  container.SetElementSequence(value);
   return container;
 }
 
@@ -78,29 +78,29 @@ void V8BooleanOrElementSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8::Valu
     HeapVector<Member<Element>> cppValue = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setElementSequence(cppValue);
+    impl.SetElementSequence(cppValue);
     return;
   }
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
   {
-    impl.setBoolean(v8Value->BooleanValue());
+    impl.SetBoolean(v8Value->BooleanValue());
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case BooleanOrElementSequence::SpecificTypeNone:
+    case BooleanOrElementSequence::SpecificType::kNone:
       return v8::Null(isolate);
-    case BooleanOrElementSequence::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case BooleanOrElementSequence::SpecificTypeElementSequence:
-      return ToV8(impl.getAsElementSequence(), creationContext, isolate);
+    case BooleanOrElementSequence::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case BooleanOrElementSequence::SpecificType::kElementSequence:
+      return ToV8(impl.GetAsElementSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

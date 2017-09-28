@@ -21,10 +21,10 @@
 namespace blink {
 
 TestDictionary::TestDictionary() {
-  setDoubleOrStringMember(DoubleOrString::fromDouble(3.14));
+  setDoubleOrStringMember(DoubleOrString::FromDouble(3.14));
   setEnumMember("foo");
   setLongMember(1);
-  setOtherDoubleOrStringMember(DoubleOrString::fromString("default string value"));
+  setOtherDoubleOrStringMember(DoubleOrString::FromString("default string value"));
   setRestrictedDoubleMember(3.14);
   setStringOrNullMember("default string value");
   setStringSequenceMember(Vector<String>());

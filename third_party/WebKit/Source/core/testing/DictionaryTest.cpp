@@ -113,7 +113,7 @@ void DictionaryTest::get(InternalDictionary& result) {
     result.setElementOrNullMember(element_or_null_member_);
   result.setObjectMember(object_member_);
   result.setObjectOrNullMemberWithDefault(object_or_null_member_with_default_);
-  if (!double_or_string_member_.isNull())
+  if (!double_or_string_member_.IsNull())
     result.setDoubleOrStringMember(double_or_string_member_);
   if (!double_or_string_sequence_member_.IsNull())
     result.setDoubleOrStringSequenceMember(

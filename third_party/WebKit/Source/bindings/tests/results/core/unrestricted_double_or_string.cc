@@ -17,39 +17,39 @@
 
 namespace blink {
 
-UnrestrictedDoubleOrString::UnrestrictedDoubleOrString() : type_(SpecificTypeNone) {}
+UnrestrictedDoubleOrString::UnrestrictedDoubleOrString() : type_(SpecificType::kNone) {}
 
-const String& UnrestrictedDoubleOrString::getAsString() const {
-  DCHECK(isString());
+const String& UnrestrictedDoubleOrString::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void UnrestrictedDoubleOrString::setString(const String& value) {
-  DCHECK(isNull());
+void UnrestrictedDoubleOrString::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(const String& value) {
+UnrestrictedDoubleOrString UnrestrictedDoubleOrString::FromString(const String& value) {
   UnrestrictedDoubleOrString container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-double UnrestrictedDoubleOrString::getAsUnrestrictedDouble() const {
-  DCHECK(isUnrestrictedDouble());
+double UnrestrictedDoubleOrString::GetAsUnrestrictedDouble() const {
+  DCHECK(IsUnrestrictedDouble());
   return unrestricted_double_;
 }
 
-void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value) {
-  DCHECK(isNull());
+void UnrestrictedDoubleOrString::SetUnrestrictedDouble(double value) {
+  DCHECK(IsNull());
   unrestricted_double_ = value;
-  type_ = SpecificTypeUnrestrictedDouble;
+  type_ = SpecificType::kUnrestrictedDouble;
 }
 
-UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromUnrestrictedDouble(double value) {
+UnrestrictedDoubleOrString UnrestrictedDoubleOrString::FromUnrestrictedDouble(double value) {
   UnrestrictedDoubleOrString container;
-  container.setUnrestrictedDouble(value);
+  container.SetUnrestrictedDouble(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8UnrestrictedDoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
     double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setUnrestrictedDouble(cppValue);
+    impl.SetUnrestrictedDouble(cppValue);
     return;
   }
 
@@ -79,19 +79,19 @@ void V8UnrestrictedDoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Va
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case UnrestrictedDoubleOrString::SpecificTypeNone:
+    case UnrestrictedDoubleOrString::SpecificType::kNone:
       return v8::Null(isolate);
-    case UnrestrictedDoubleOrString::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case UnrestrictedDoubleOrString::SpecificTypeUnrestrictedDouble:
-      return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
+    case UnrestrictedDoubleOrString::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case UnrestrictedDoubleOrString::SpecificType::kUnrestrictedDouble:
+      return v8::Number::New(isolate, impl.GetAsUnrestrictedDouble());
     default:
       NOTREACHED();
   }

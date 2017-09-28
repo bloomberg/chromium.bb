@@ -15,7 +15,7 @@ CSSUnparsedValue* UnparsedValueFromCSSVariableReferenceValue(
     CSSStyleVariableReferenceValue* variable_reference_value) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
   fragments.push_back(
-      StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+      StringOrCSSVariableReferenceValue::FromCSSVariableReferenceValue(
           variable_reference_value));
   return CSSUnparsedValue::Create(fragments);
 }
@@ -34,12 +34,12 @@ TEST(CSSUnparsedValueTest, ListOfStrings) {
 
   EXPECT_EQ(unparsed_value->length(), 1UL);
 
-  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isString());
-  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isNull());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).IsString());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).IsNull());
   EXPECT_FALSE(
-      unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
+      unparsed_value->fragmentAtIndex(0).IsCSSVariableReferenceValue());
 
-  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsString(), "string");
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).GetAsString(), "string");
 }
 
 TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValues) {
@@ -52,11 +52,11 @@ TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValues) {
 
   EXPECT_EQ(unparsed_value->length(), 1UL);
 
-  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isString());
-  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).isNull());
-  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).IsString());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(0).IsNull());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).IsCSSVariableReferenceValue());
 
-  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsCSSVariableReferenceValue(),
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).GetAsCSSVariableReferenceValue(),
             variable_reference_value);
 }
 
@@ -66,9 +66,9 @@ TEST(CSSUnparsedValueTest, MixedList) {
           "Ref", CSSUnparsedValue::FromString("string"));
 
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
+  fragments.push_back(StringOrCSSVariableReferenceValue::FromString("string"));
   fragments.push_back(
-      StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+      StringOrCSSVariableReferenceValue::FromCSSVariableReferenceValue(
           variable_reference_value));
   fragments.push_back(StringOrCSSVariableReferenceValue());
 
@@ -76,17 +76,17 @@ TEST(CSSUnparsedValueTest, MixedList) {
 
   EXPECT_EQ(unparsed_value->length(), fragments.size());
 
-  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).isString());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(0).IsString());
   EXPECT_FALSE(
-      unparsed_value->fragmentAtIndex(0).isCSSVariableReferenceValue());
-  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).getAsString(), "string");
+      unparsed_value->fragmentAtIndex(0).IsCSSVariableReferenceValue());
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(0).GetAsString(), "string");
 
-  EXPECT_TRUE(unparsed_value->fragmentAtIndex(1).isCSSVariableReferenceValue());
-  EXPECT_FALSE(unparsed_value->fragmentAtIndex(1).isString());
-  EXPECT_EQ(unparsed_value->fragmentAtIndex(1).getAsCSSVariableReferenceValue(),
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(1).IsCSSVariableReferenceValue());
+  EXPECT_FALSE(unparsed_value->fragmentAtIndex(1).IsString());
+  EXPECT_EQ(unparsed_value->fragmentAtIndex(1).GetAsCSSVariableReferenceValue(),
             variable_reference_value);
 
-  EXPECT_TRUE(unparsed_value->fragmentAtIndex(2).isNull());
+  EXPECT_TRUE(unparsed_value->fragmentAtIndex(2).IsNull());
 }
 
 }  // namespace blink

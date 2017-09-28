@@ -362,9 +362,9 @@ void FileReader::result(ScriptState* state,
   }
 
   if (read_type_ == FileReaderLoader::kReadAsArrayBuffer)
-    result_attribute.setArrayBuffer(loader_->ArrayBufferResult());
+    result_attribute.SetArrayBuffer(loader_->ArrayBufferResult());
   else
-    result_attribute.setString(loader_->StringResult());
+    result_attribute.SetString(loader_->StringResult());
 }
 
 void FileReader::Terminate() {

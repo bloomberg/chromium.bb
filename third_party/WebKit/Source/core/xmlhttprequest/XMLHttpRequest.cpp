@@ -779,43 +779,43 @@ void XMLHttpRequest::send(
     ExceptionState& exception_state) {
   probe::willSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
 
-  if (body.isNull()) {
+  if (body.IsNull()) {
     send(String(), exception_state);
     return;
   }
 
-  if (body.isArrayBuffer()) {
-    send(body.getAsArrayBuffer(), exception_state);
+  if (body.IsArrayBuffer()) {
+    send(body.GetAsArrayBuffer(), exception_state);
     return;
   }
 
-  if (body.isArrayBufferView()) {
-    send(body.getAsArrayBufferView().View(), exception_state);
+  if (body.IsArrayBufferView()) {
+    send(body.GetAsArrayBufferView().View(), exception_state);
     return;
   }
 
-  if (body.isBlob()) {
-    send(body.getAsBlob(), exception_state);
+  if (body.IsBlob()) {
+    send(body.GetAsBlob(), exception_state);
     return;
   }
 
-  if (body.isDocument()) {
-    send(body.getAsDocument(), exception_state);
+  if (body.IsDocument()) {
+    send(body.GetAsDocument(), exception_state);
     return;
   }
 
-  if (body.isFormData()) {
-    send(body.getAsFormData(), exception_state);
+  if (body.IsFormData()) {
+    send(body.GetAsFormData(), exception_state);
     return;
   }
 
-  if (body.isURLSearchParams()) {
-    send(body.getAsURLSearchParams(), exception_state);
+  if (body.IsURLSearchParams()) {
+    send(body.GetAsURLSearchParams(), exception_state);
     return;
   }
 
-  DCHECK(body.isString());
-  send(body.getAsString(), exception_state);
+  DCHECK(body.IsString());
+  send(body.GetAsString(), exception_state);
 }
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {

@@ -18,39 +18,39 @@
 
 namespace blink {
 
-DoubleOrLongOrBooleanSequence::DoubleOrLongOrBooleanSequence() : type_(SpecificTypeNone) {}
+DoubleOrLongOrBooleanSequence::DoubleOrLongOrBooleanSequence() : type_(SpecificType::kNone) {}
 
-double DoubleOrLongOrBooleanSequence::getAsDouble() const {
-  DCHECK(isDouble());
+double DoubleOrLongOrBooleanSequence::GetAsDouble() const {
+  DCHECK(IsDouble());
   return double_;
 }
 
-void DoubleOrLongOrBooleanSequence::setDouble(double value) {
-  DCHECK(isNull());
+void DoubleOrLongOrBooleanSequence::SetDouble(double value) {
+  DCHECK(IsNull());
   double_ = value;
-  type_ = SpecificTypeDouble;
+  type_ = SpecificType::kDouble;
 }
 
-DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::fromDouble(double value) {
+DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::FromDouble(double value) {
   DoubleOrLongOrBooleanSequence container;
-  container.setDouble(value);
+  container.SetDouble(value);
   return container;
 }
 
-const HeapVector<LongOrBoolean>& DoubleOrLongOrBooleanSequence::getAsLongOrBooleanSequence() const {
-  DCHECK(isLongOrBooleanSequence());
+const HeapVector<LongOrBoolean>& DoubleOrLongOrBooleanSequence::GetAsLongOrBooleanSequence() const {
+  DCHECK(IsLongOrBooleanSequence());
   return long_or_boolean_sequence_;
 }
 
-void DoubleOrLongOrBooleanSequence::setLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
-  DCHECK(isNull());
+void DoubleOrLongOrBooleanSequence::SetLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
+  DCHECK(IsNull());
   long_or_boolean_sequence_ = value;
-  type_ = SpecificTypeLongOrBooleanSequence;
+  type_ = SpecificType::kLongOrBooleanSequence;
 }
 
-DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::fromLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
+DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::FromLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
   DoubleOrLongOrBooleanSequence container;
-  container.setLongOrBooleanSequence(value);
+  container.SetLongOrBooleanSequence(value);
   return container;
 }
 
@@ -73,7 +73,7 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8:
     HeapVector<LongOrBoolean> cppValue = NativeValueTraits<IDLSequence<LongOrBoolean>>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setLongOrBooleanSequence(cppValue);
+    impl.SetLongOrBooleanSequence(cppValue);
     return;
   }
 
@@ -81,7 +81,7 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8:
     double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDouble(cppValue);
+    impl.SetDouble(cppValue);
     return;
   }
 
@@ -89,19 +89,19 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(v8::Isolate* isolate, v8::Local<v8:
     double cppValue = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDouble(cppValue);
+    impl.SetDouble(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const DoubleOrLongOrBooleanSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case DoubleOrLongOrBooleanSequence::SpecificTypeNone:
+    case DoubleOrLongOrBooleanSequence::SpecificType::kNone:
       return v8::Null(isolate);
-    case DoubleOrLongOrBooleanSequence::SpecificTypeDouble:
-      return v8::Number::New(isolate, impl.getAsDouble());
-    case DoubleOrLongOrBooleanSequence::SpecificTypeLongOrBooleanSequence:
-      return ToV8(impl.getAsLongOrBooleanSequence(), creationContext, isolate);
+    case DoubleOrLongOrBooleanSequence::SpecificType::kDouble:
+      return v8::Number::New(isolate, impl.GetAsDouble());
+    case DoubleOrLongOrBooleanSequence::SpecificType::kLongOrBooleanSequence:
+      return ToV8(impl.GetAsLongOrBooleanSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

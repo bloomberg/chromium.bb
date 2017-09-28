@@ -491,7 +491,7 @@ def argument_set_default_value(argument):
         member_type_name = (member_type.inner_type.name
                             if member_type.is_nullable else
                             member_type.name)
-        return '%s.set%s(%s)' % (argument.name, member_type_name,
+        return '%s.Set%s(%s)' % (argument.name, member_type_name,
                                  member_type.literal_cpp_value(default_value))
     return '%s = %s' % (argument.name,
                         idl_type.literal_cpp_value(default_value))

@@ -31,17 +31,17 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterface2OrUint8Array();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isTestInterface2() const { return type_ == SpecificTypeTestInterface2; }
-  TestInterface2* getAsTestInterface2() const;
-  void setTestInterface2(TestInterface2*);
-  static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
+  bool IsTestInterface2() const { return type_ == SpecificType::kTestInterface2; }
+  TestInterface2* GetAsTestInterface2() const;
+  void SetTestInterface2(TestInterface2*);
+  static TestInterface2OrUint8Array FromTestInterface2(TestInterface2*);
 
-  bool isUint8Array() const { return type_ == SpecificTypeUint8Array; }
-  NotShared<DOMUint8Array> getAsUint8Array() const;
-  void setUint8Array(NotShared<DOMUint8Array>);
-  static TestInterface2OrUint8Array fromUint8Array(NotShared<DOMUint8Array>);
+  bool IsUint8Array() const { return type_ == SpecificType::kUint8Array; }
+  NotShared<DOMUint8Array> GetAsUint8Array() const;
+  void SetUint8Array(NotShared<DOMUint8Array>);
+  static TestInterface2OrUint8Array FromUint8Array(NotShared<DOMUint8Array>);
 
   TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
   ~TestInterface2OrUint8Array();
@@ -49,12 +49,12 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeTestInterface2,
-    SpecificTypeUint8Array,
+  enum class SpecificType {
+    kNone,
+    kTestInterface2,
+    kUint8Array,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   Member<TestInterface2> test_interface_2_;
   Member<DOMUint8Array> uint8_array_;

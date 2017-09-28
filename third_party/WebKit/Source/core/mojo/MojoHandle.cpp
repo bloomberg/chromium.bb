@@ -62,12 +62,12 @@ MojoResult MojoHandle::writeMessage(
 
   const void* bytes = nullptr;
   uint32_t num_bytes = 0;
-  if (buffer.isArrayBuffer()) {
-    DOMArrayBuffer* array = buffer.getAsArrayBuffer();
+  if (buffer.IsArrayBuffer()) {
+    DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     bytes = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     bytes = view->BaseAddress();
     num_bytes = view->byteLength();
   }
@@ -138,12 +138,12 @@ void MojoHandle::writeData(const ArrayBufferOrArrayBufferView& buffer,
 
   const void* elements = nullptr;
   uint32_t num_bytes = 0;
-  if (buffer.isArrayBuffer()) {
-    DOMArrayBuffer* array = buffer.getAsArrayBuffer();
+  if (buffer.IsArrayBuffer()) {
+    DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     elements = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();
     num_bytes = view->byteLength();
   }
@@ -186,12 +186,12 @@ void MojoHandle::readData(ArrayBufferOrArrayBufferView& buffer,
 
   void* elements = nullptr;
   unsigned num_bytes = 0;
-  if (buffer.isArrayBuffer()) {
-    DOMArrayBuffer* array = buffer.getAsArrayBuffer();
+  if (buffer.IsArrayBuffer()) {
+    DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     elements = array->Data();
     num_bytes = array->ByteLength();
   } else {
-    DOMArrayBufferView* view = buffer.getAsArrayBufferView().View();
+    DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();
     num_bytes = view->byteLength();
   }

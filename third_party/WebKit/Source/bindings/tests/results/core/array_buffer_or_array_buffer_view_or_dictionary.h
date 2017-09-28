@@ -30,22 +30,22 @@ class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ArrayBufferOrArrayBufferViewOrDictionary();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isArrayBuffer() const { return type_ == SpecificTypeArrayBuffer; }
-  TestArrayBuffer* getAsArrayBuffer() const;
-  void setArrayBuffer(TestArrayBuffer*);
-  static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBuffer(TestArrayBuffer*);
+  bool IsArrayBuffer() const { return type_ == SpecificType::kArrayBuffer; }
+  TestArrayBuffer* GetAsArrayBuffer() const;
+  void SetArrayBuffer(TestArrayBuffer*);
+  static ArrayBufferOrArrayBufferViewOrDictionary FromArrayBuffer(TestArrayBuffer*);
 
-  bool isArrayBufferView() const { return type_ == SpecificTypeArrayBufferView; }
-  NotShared<TestArrayBufferView> getAsArrayBufferView() const;
-  void setArrayBufferView(NotShared<TestArrayBufferView>);
-  static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBufferView(NotShared<TestArrayBufferView>);
+  bool IsArrayBufferView() const { return type_ == SpecificType::kArrayBufferView; }
+  NotShared<TestArrayBufferView> GetAsArrayBufferView() const;
+  void SetArrayBufferView(NotShared<TestArrayBufferView>);
+  static ArrayBufferOrArrayBufferViewOrDictionary FromArrayBufferView(NotShared<TestArrayBufferView>);
 
-  bool isDictionary() const { return type_ == SpecificTypeDictionary; }
-  Dictionary getAsDictionary() const;
-  void setDictionary(Dictionary);
-  static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
+  bool IsDictionary() const { return type_ == SpecificType::kDictionary; }
+  Dictionary GetAsDictionary() const;
+  void SetDictionary(Dictionary);
+  static ArrayBufferOrArrayBufferViewOrDictionary FromDictionary(Dictionary);
 
   ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
   ~ArrayBufferOrArrayBufferViewOrDictionary();
@@ -53,13 +53,13 @@ class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeArrayBuffer,
-    SpecificTypeArrayBufferView,
-    SpecificTypeDictionary,
+  enum class SpecificType {
+    kNone,
+    kArrayBuffer,
+    kArrayBufferView,
+    kDictionary,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   Member<TestArrayBuffer> array_buffer_;
   Member<TestArrayBufferView> array_buffer_view_;

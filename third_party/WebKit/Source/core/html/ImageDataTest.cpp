@@ -476,7 +476,7 @@ TEST_F(ImageDataTest, TestCropRect) {
             } else if (image_data_storage_formats[i] ==
                        kUint16ArrayStorageFormat) {
               if (cropped_image_data->dataUnion()
-                      .getAsUint16Array()
+                      .GetAsUint16Array()
                       .View()
                       ->Data()[index] != expected_value) {
                 test_passed = false;
@@ -484,7 +484,7 @@ TEST_F(ImageDataTest, TestCropRect) {
               }
             } else {
               if (cropped_image_data->dataUnion()
-                      .getAsFloat32Array()
+                      .GetAsFloat32Array()
                       .View()
                       ->Data()[index] != fexpected_value) {
                 test_passed = false;

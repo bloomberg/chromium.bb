@@ -82,7 +82,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
-  vibration_sequence.setUnsignedLongSequence(vibration_pattern);
+  vibration_sequence.SetUnsignedLongSequence(vibration_pattern);
 
   HeapVector<NotificationAction> actions;
   for (size_t i = 0; i < Notification::maxActions(); ++i) {
@@ -158,7 +158,7 @@ TEST_F(NotificationDataTest, SilentNotificationWithVibration) {
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
-  vibration_sequence.setUnsignedLongSequence(vibration_pattern);
+  vibration_sequence.SetUnsignedLongSequence(vibration_pattern);
 
   NotificationOptions options;
   options.setVibrate(vibration_sequence);
@@ -242,7 +242,7 @@ TEST_F(NotificationDataTest, VibrationNormalization) {
     unnormalized_pattern.push_back(kNotificationVibrationUnnormalized[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
-  vibration_sequence.setUnsignedLongSequence(unnormalized_pattern);
+  vibration_sequence.SetUnsignedLongSequence(unnormalized_pattern);
 
   NotificationOptions options;
   options.setVibrate(vibration_sequence);

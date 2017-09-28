@@ -206,17 +206,17 @@ void HTMLSelectElement::add(
     const HTMLElementOrLong& before,
     ExceptionState& exception_state) {
   HTMLElement* element_to_insert;
-  DCHECK(!element.isNull());
-  if (element.isHTMLOptionElement())
-    element_to_insert = element.getAsHTMLOptionElement();
+  DCHECK(!element.IsNull());
+  if (element.IsHTMLOptionElement())
+    element_to_insert = element.GetAsHTMLOptionElement();
   else
-    element_to_insert = element.getAsHTMLOptGroupElement();
+    element_to_insert = element.GetAsHTMLOptGroupElement();
 
   HTMLElement* before_element;
-  if (before.isHTMLElement())
-    before_element = before.getAsHTMLElement();
-  else if (before.isLong())
-    before_element = options()->item(before.getAsLong());
+  if (before.IsHTMLElement())
+    before_element = before.GetAsHTMLElement();
+  else if (before.IsLong())
+    before_element = options()->item(before.GetAsLong());
   else
     before_element = nullptr;
 
@@ -379,14 +379,14 @@ void HTMLSelectElement::SetOption(unsigned index,
     return;
   }
   HTMLOptionElementOrHTMLOptGroupElement element;
-  element.setHTMLOptionElement(option);
+  element.SetHTMLOptionElement(option);
   HTMLElementOrLong before;
   // Out of array bounds? First insert empty dummies.
   if (diff > 0) {
     setLength(index, exception_state);
     // Replace an existing entry?
   } else if (diff < 0) {
-    before.setHTMLElement(options()->item(index + 1));
+    before.SetHTMLElement(options()->item(index + 1));
     remove(index);
   }
   if (exception_state.HadException())

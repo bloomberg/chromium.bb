@@ -150,14 +150,14 @@ bool CallErrorCallbackIfSignalingStateClosed(
 
 bool IsIceCandidateMissingSdp(
     const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
-  if (candidate.isRTCIceCandidateInit()) {
+  if (candidate.IsRTCIceCandidateInit()) {
     const RTCIceCandidateInit& ice_candidate_init =
-        candidate.getAsRTCIceCandidateInit();
+        candidate.GetAsRTCIceCandidateInit();
     return !ice_candidate_init.hasSdpMid() &&
            !ice_candidate_init.hasSdpMLineIndex();
   }
 
-  DCHECK(candidate.isRTCIceCandidate());
+  DCHECK(candidate.IsRTCIceCandidate());
   return false;
 }
 
@@ -184,10 +184,10 @@ WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
 WebRTCICECandidate ConvertToWebRTCIceCandidate(
     ExecutionContext* context,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
-  DCHECK(!candidate.isNull());
-  if (candidate.isRTCIceCandidateInit()) {
+  DCHECK(!candidate.IsNull());
+  if (candidate.IsRTCIceCandidateInit()) {
     const RTCIceCandidateInit& ice_candidate_init =
-        candidate.getAsRTCIceCandidateInit();
+        candidate.GetAsRTCIceCandidateInit();
     // TODO(guidou): Change default value to -1. crbug.com/614958.
     unsigned short sdp_m_line_index = 0;
     if (ice_candidate_init.hasSdpMLineIndex()) {
@@ -200,8 +200,8 @@ WebRTCICECandidate ConvertToWebRTCIceCandidate(
                               ice_candidate_init.sdpMid(), sdp_m_line_index);
   }
 
-  DCHECK(candidate.isRTCIceCandidate());
-  return candidate.getAsRTCIceCandidate()->WebCandidate();
+  DCHECK(candidate.IsRTCIceCandidate());
+  return candidate.GetAsRTCIceCandidate()->WebCandidate();
 }
 
 // Helper class for RTCPeerConnection::generateCertificate.
@@ -281,11 +281,11 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
       if (ice_server.hasURLs()) {
         UseCounter::Count(context, WebFeature::kRTCIceServerURLs);
         const StringOrStringSequence& urls = ice_server.urls();
-        if (urls.isString()) {
-          url_strings.push_back(urls.getAsString());
+        if (urls.IsString()) {
+          url_strings.push_back(urls.GetAsString());
         } else {
-          DCHECK(urls.isStringSequence());
-          url_strings = urls.getAsStringSequence();
+          DCHECK(urls.IsStringSequence());
+          url_strings = urls.GetAsStringSequence();
         }
       } else if (ice_server.hasURL()) {
         UseCounter::Count(context, WebFeature::kRTCIceServerURL);
@@ -859,8 +859,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires|
   // attribute.
   Nullable<DOMTimeStamp> expires;
-  if (keygen_algorithm.isDictionary()) {
-    Dictionary keygen_algorithm_dict = keygen_algorithm.getAsDictionary();
+  if (keygen_algorithm.IsDictionary()) {
+    Dictionary keygen_algorithm_dict = keygen_algorithm.GetAsDictionary();
     if (keygen_algorithm_dict.HasProperty("expires", exception_state)) {
       v8::Local<v8::Value> expires_value;
       keygen_algorithm_dict.Get("expires", expires_value);

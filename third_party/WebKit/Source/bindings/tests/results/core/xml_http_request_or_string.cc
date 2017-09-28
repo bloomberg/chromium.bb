@@ -18,39 +18,39 @@
 
 namespace blink {
 
-XMLHttpRequestOrString::XMLHttpRequestOrString() : type_(SpecificTypeNone) {}
+XMLHttpRequestOrString::XMLHttpRequestOrString() : type_(SpecificType::kNone) {}
 
-const String& XMLHttpRequestOrString::getAsString() const {
-  DCHECK(isString());
+const String& XMLHttpRequestOrString::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void XMLHttpRequestOrString::setString(const String& value) {
-  DCHECK(isNull());
+void XMLHttpRequestOrString::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-XMLHttpRequestOrString XMLHttpRequestOrString::fromString(const String& value) {
+XMLHttpRequestOrString XMLHttpRequestOrString::FromString(const String& value) {
   XMLHttpRequestOrString container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-XMLHttpRequest* XMLHttpRequestOrString::getAsXMLHttpRequest() const {
-  DCHECK(isXMLHttpRequest());
+XMLHttpRequest* XMLHttpRequestOrString::GetAsXMLHttpRequest() const {
+  DCHECK(IsXMLHttpRequest());
   return xml_http_request_;
 }
 
-void XMLHttpRequestOrString::setXMLHttpRequest(XMLHttpRequest* value) {
-  DCHECK(isNull());
+void XMLHttpRequestOrString::SetXMLHttpRequest(XMLHttpRequest* value) {
+  DCHECK(IsNull());
   xml_http_request_ = value;
-  type_ = SpecificTypeXMLHttpRequest;
+  type_ = SpecificType::kXMLHttpRequest;
 }
 
-XMLHttpRequestOrString XMLHttpRequestOrString::fromXMLHttpRequest(XMLHttpRequest* value) {
+XMLHttpRequestOrString XMLHttpRequestOrString::FromXMLHttpRequest(XMLHttpRequest* value) {
   XMLHttpRequestOrString container;
-  container.setXMLHttpRequest(value);
+  container.SetXMLHttpRequest(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8XMLHttpRequestOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 
   if (V8XMLHttpRequest::hasInstance(v8Value, isolate)) {
     XMLHttpRequest* cppValue = V8XMLHttpRequest::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setXMLHttpRequest(cppValue);
+    impl.SetXMLHttpRequest(cppValue);
     return;
   }
 
@@ -79,19 +79,19 @@ void V8XMLHttpRequestOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case XMLHttpRequestOrString::SpecificTypeNone:
+    case XMLHttpRequestOrString::SpecificType::kNone:
       return v8::Null(isolate);
-    case XMLHttpRequestOrString::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case XMLHttpRequestOrString::SpecificTypeXMLHttpRequest:
-      return ToV8(impl.getAsXMLHttpRequest(), creationContext, isolate);
+    case XMLHttpRequestOrString::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case XMLHttpRequestOrString::SpecificType::kXMLHttpRequest:
+      return ToV8(impl.GetAsXMLHttpRequest(), creationContext, isolate);
     default:
       NOTREACHED();
   }

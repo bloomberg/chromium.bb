@@ -127,12 +127,12 @@ WebGLRenderingContext::WebGLRenderingContext(
 
 void WebGLRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
-  result.setWebGLRenderingContext(this);
+  result.SetWebGLRenderingContext(this);
 }
 
 void WebGLRenderingContext::SetOffscreenCanvasGetContextResult(
     OffscreenRenderingContext& result) {
-  result.setWebGLRenderingContext(this);
+  result.SetWebGLRenderingContext(this);
 }
 
 ImageBitmap* WebGLRenderingContext::TransferToImageBitmap(

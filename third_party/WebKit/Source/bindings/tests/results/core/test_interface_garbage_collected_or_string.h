@@ -27,17 +27,17 @@ class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterfaceGarbageCollectedOrString();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
-  bool isString() const { return type_ == SpecificTypeString; }
-  const String& getAsString() const;
-  void setString(const String&);
-  static TestInterfaceGarbageCollectedOrString fromString(const String&);
+  bool IsString() const { return type_ == SpecificType::kString; }
+  const String& GetAsString() const;
+  void SetString(const String&);
+  static TestInterfaceGarbageCollectedOrString FromString(const String&);
 
-  bool isTestInterfaceGarbageCollected() const { return type_ == SpecificTypeTestInterfaceGarbageCollected; }
-  TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
-  void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
-  static TestInterfaceGarbageCollectedOrString fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
+  bool IsTestInterfaceGarbageCollected() const { return type_ == SpecificType::kTestInterfaceGarbageCollected; }
+  TestInterfaceGarbageCollected* GetAsTestInterfaceGarbageCollected() const;
+  void SetTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
+  static TestInterfaceGarbageCollectedOrString FromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
 
   TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
   ~TestInterfaceGarbageCollectedOrString();
@@ -45,12 +45,12 @@ class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
-    SpecificTypeString,
-    SpecificTypeTestInterfaceGarbageCollected,
+  enum class SpecificType {
+    kNone,
+    kString,
+    kTestInterfaceGarbageCollected,
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   String string_;
   Member<TestInterfaceGarbageCollected> test_interface_garbage_collected_;

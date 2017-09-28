@@ -136,8 +136,8 @@ TEST(MediaTrackConstraintsTest, ConvertWebSingleStringConstraint) {
   input.Initialize(basic, advanced);
   MediaConstraintsImpl::ConvertConstraints(input, output);
   ASSERT_TRUE(output.hasFacingMode());
-  ASSERT_TRUE(output.facingMode().isString());
-  EXPECT_EQ("foo", output.facingMode().getAsString());
+  ASSERT_TRUE(output.facingMode().IsString());
+  EXPECT_EQ("foo", output.facingMode().GetAsString());
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
@@ -154,8 +154,8 @@ TEST(MediaTrackConstraintsTest, ConvertWebDoubleStringConstraint) {
   input.Initialize(basic, advanced);
   MediaConstraintsImpl::ConvertConstraints(input, output);
   ASSERT_TRUE(output.hasFacingMode());
-  ASSERT_TRUE(output.facingMode().isStringSequence());
-  auto out_buffer = output.facingMode().getAsStringSequence();
+  ASSERT_TRUE(output.facingMode().IsStringSequence());
+  auto out_buffer = output.facingMode().GetAsStringSequence();
   EXPECT_EQ("foo", out_buffer[0]);
   EXPECT_EQ("bar", out_buffer[1]);
 }
@@ -164,7 +164,7 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkStringConstraint) {
   MediaTrackConstraints input;
   WebMediaConstraints output;
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
-  parameter.setString("foo");
+  parameter.SetString("foo");
   input.setFacingMode(parameter);
   output = MediaConstraintsImpl::ConvertConstraintsToWeb(input);
   ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
@@ -178,9 +178,9 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
   ConstrainDOMStringParameters subparameter;
   StringOrStringSequence inner_string;
-  inner_string.setString("foo");
+  inner_string.SetString("foo");
   subparameter.setIdeal(inner_string);
-  parameter.setConstrainDOMStringParameters(subparameter);
+  parameter.SetConstrainDOMStringParameters(subparameter);
   input.setFacingMode(parameter);
   output = MediaConstraintsImpl::ConvertConstraintsToWeb(input);
   ASSERT_TRUE(output.Basic().facing_mode.HasIdeal());
@@ -191,15 +191,15 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   MediaTrackConstraints recycled;
   MediaConstraintsImpl::ConvertConstraints(output, recycled);
   ASSERT_TRUE(recycled.hasFacingMode());
-  ASSERT_TRUE(recycled.facingMode().isString());
-  ASSERT_EQ("foo", recycled.facingMode().getAsString());
+  ASSERT_TRUE(recycled.facingMode().IsString());
+  ASSERT_EQ("foo", recycled.facingMode().GetAsString());
 }
 
 TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
   MediaTrackConstraints input;
   WebMediaConstraints output;
   StringOrStringSequenceOrConstrainDOMStringParameters parameter;
-  parameter.setString("foo");
+  parameter.SetString("foo");
   input.setFacingMode(parameter);
   HeapVector<MediaTrackConstraintSet> advanced(1);
   advanced[0].setFacingMode(parameter);
@@ -246,19 +246,19 @@ TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
   MediaTrackConstraintSet element2 = output.advanced()[1];
 
   ASSERT_TRUE(output.hasFacingMode());
-  ASSERT_TRUE(output.facingMode().isString());
-  EXPECT_EQ("ideal", output.facingMode().getAsString());
+  ASSERT_TRUE(output.facingMode().IsString());
+  EXPECT_EQ("ideal", output.facingMode().GetAsString());
 
   ASSERT_TRUE(element1.hasFacingMode());
-  ASSERT_TRUE(element1.facingMode().isConstrainDOMStringParameters());
+  ASSERT_TRUE(element1.facingMode().IsConstrainDOMStringParameters());
   EXPECT_EQ("ideal", element1.facingMode()
-                         .getAsConstrainDOMStringParameters()
+                         .GetAsConstrainDOMStringParameters()
                          .ideal()
-                         .getAsString());
+                         .GetAsString());
 
   ASSERT_TRUE(element2.hasFacingMode());
-  ASSERT_TRUE(element2.facingMode().isString());
-  EXPECT_EQ("exact", element2.facingMode().getAsString());
+  ASSERT_TRUE(element2.facingMode().IsString());
+  EXPECT_EQ("exact", element2.facingMode().GetAsString());
 }
 
 }  // namespace blink

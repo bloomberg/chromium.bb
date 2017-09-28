@@ -18,13 +18,13 @@ class {{exported}}{{cpp_class}} final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   {{cpp_class}}();
-  bool isNull() const { return type_ == SpecificTypeNone; }
+  bool IsNull() const { return type_ == SpecificType::kNone; }
 
   {% for member in members %}
-  bool is{{member.type_name}}() const { return type_ == {{member.specific_type_enum}}; }
-  {{member.rvalue_cpp_type}} getAs{{member.type_name}}() const;
-  void set{{member.type_name}}({{member.rvalue_cpp_type}});
-  static {{cpp_class}} from{{member.type_name}}({{member.rvalue_cpp_type}});
+  bool Is{{member.type_name}}() const { return type_ == SpecificType::{{member.specific_type_enum}}; }
+  {{member.rvalue_cpp_type}} GetAs{{member.type_name}}() const;
+  void Set{{member.type_name}}({{member.rvalue_cpp_type}});
+  static {{cpp_class}} From{{member.type_name}}({{member.rvalue_cpp_type}});
 
   {% endfor %}
   {{cpp_class}}(const {{cpp_class}}&);
@@ -33,13 +33,13 @@ class {{exported}}{{cpp_class}} final {
   DECLARE_TRACE();
 
  private:
-  enum SpecificTypes {
-    SpecificTypeNone,
+  enum class SpecificType {
+    kNone,
     {% for member in members %}
     {{member.specific_type_enum}},
     {% endfor %}
   };
-  SpecificTypes type_;
+  SpecificType type_;
 
   {% for member in members %}
   {{member.cpp_type}} {{member.cpp_name}}_;

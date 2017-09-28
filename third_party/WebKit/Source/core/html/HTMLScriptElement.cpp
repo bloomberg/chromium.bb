@@ -225,7 +225,7 @@ void HTMLScriptElement::DispatchErrorEvent() {
 void HTMLScriptElement::SetScriptElementForBinding(
     HTMLScriptElementOrSVGScriptElement& element) {
   if (!IsInV1ShadowTree())
-    element.setHTMLScriptElement(this);
+    element.SetHTMLScriptElement(this);
 }
 
 Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {

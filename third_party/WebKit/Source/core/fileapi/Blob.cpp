@@ -127,18 +127,18 @@ void Blob::PopulateBlobData(
     const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,
     bool normalize_line_endings_to_native) {
   for (const auto& item : parts) {
-    if (item.isArrayBuffer()) {
-      DOMArrayBuffer* array_buffer = item.getAsArrayBuffer();
+    if (item.IsArrayBuffer()) {
+      DOMArrayBuffer* array_buffer = item.GetAsArrayBuffer();
       blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
-    } else if (item.isArrayBufferView()) {
+    } else if (item.IsArrayBufferView()) {
       DOMArrayBufferView* array_buffer_view =
-          item.getAsArrayBufferView().View();
+          item.GetAsArrayBufferView().View();
       blob_data->AppendBytes(array_buffer_view->BaseAddress(),
                              array_buffer_view->byteLength());
-    } else if (item.isBlob()) {
-      item.getAsBlob()->AppendTo(*blob_data);
-    } else if (item.isUSVString()) {
-      blob_data->AppendText(item.getAsUSVString(),
+    } else if (item.IsBlob()) {
+      item.GetAsBlob()->AppendTo(*blob_data);
+    } else if (item.IsUSVString()) {
+      blob_data->AppendText(item.GetAsUSVString(),
                             normalize_line_endings_to_native);
     } else {
       NOTREACHED();

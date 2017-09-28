@@ -291,14 +291,14 @@ struct TypeConverter<NFCMessagePtr, blink::DOMArrayBuffer*> {
 template <>
 struct TypeConverter<NFCMessagePtr, blink::NFCPushMessage> {
   static NFCMessagePtr Convert(const blink::NFCPushMessage& message) {
-    if (message.isString())
-      return NFCMessage::From(message.getAsString());
+    if (message.IsString())
+      return NFCMessage::From(message.GetAsString());
 
-    if (message.isNFCMessage())
-      return NFCMessage::From(message.getAsNFCMessage());
+    if (message.IsNFCMessage())
+      return NFCMessage::From(message.GetAsNFCMessage());
 
-    if (message.isArrayBuffer())
-      return NFCMessage::From(message.getAsArrayBuffer());
+    if (message.IsArrayBuffer())
+      return NFCMessage::From(message.GetAsArrayBuffer());
 
     NOTREACHED();
     return nullptr;
@@ -502,16 +502,16 @@ ScriptPromise RejectIfInvalidNFCPushMessage(
     ScriptState* script_state,
     const NFCPushMessage& push_message) {
   // If NFCPushMessage of invalid type, reject promise with TypeError
-  if (!push_message.isNFCMessage() && !push_message.isString() &&
-      !push_message.isArrayBuffer()) {
+  if (!push_message.IsNFCMessage() && !push_message.IsString() &&
+      !push_message.IsArrayBuffer()) {
     return RejectWithTypeError(script_state,
                                "Invalid NFCPushMessage type was provided.");
   }
 
-  if (push_message.isNFCMessage()) {
+  if (push_message.IsNFCMessage()) {
     // https://w3c.github.io/web-nfc/#the-push-method
     // If NFCMessage.records is empty, reject promise with TypeError
-    const NFCMessage& message = push_message.getAsNFCMessage();
+    const NFCMessage& message = push_message.GetAsNFCMessage();
     if (!message.hasRecords() || message.records().IsEmpty()) {
       return RejectWithTypeError(script_state,
                                  "Empty NFCMessage was provided.");

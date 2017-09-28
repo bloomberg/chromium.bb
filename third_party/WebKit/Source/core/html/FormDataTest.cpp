@@ -14,8 +14,8 @@ TEST(FormDataTest, get) {
 
   FileOrUSVString result;
   fd->get("name1", result);
-  EXPECT_TRUE(result.isUSVString());
-  EXPECT_EQ("value1", result.getAsUSVString());
+  EXPECT_TRUE(result.IsUSVString());
+  EXPECT_EQ("value1", result.GetAsUSVString());
 
   const FormData::Entry& entry = *fd->Entries()[0];
   EXPECT_STREQ("name1", entry.name().data());
@@ -28,8 +28,8 @@ TEST(FormDataTest, getAll) {
 
   HeapVector<FormDataEntryValue> results = fd->getAll("name1");
   EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(results[0].isUSVString());
-  EXPECT_EQ("value1", results[0].getAsUSVString());
+  EXPECT_TRUE(results[0].IsUSVString());
+  EXPECT_EQ("value1", results[0].GetAsUSVString());
 
   EXPECT_EQ(1u, fd->size());
 }

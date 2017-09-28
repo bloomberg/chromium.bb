@@ -493,7 +493,7 @@ Node* Node::appendChild(Node* new_child) {
 static bool IsNodeInNodes(const Node* const node,
                           const HeapVector<NodeOrString>& nodes) {
   for (const NodeOrString& node_or_string : nodes) {
-    if (node_or_string.isNode() && node_or_string.getAsNode() == node)
+    if (node_or_string.IsNode() && node_or_string.GetAsNode() == node)
       return true;
   }
   return false;
@@ -521,9 +521,9 @@ static Node* FindViableNextSibling(const Node& node,
 
 static Node* NodeOrStringToNode(const NodeOrString& node_or_string,
                                 Document& document) {
-  if (node_or_string.isNode())
-    return node_or_string.getAsNode();
-  return Text::Create(document, node_or_string.getAsString());
+  if (node_or_string.IsNode())
+    return node_or_string.GetAsNode();
+  return Text::Create(document, node_or_string.GetAsString());
 }
 
 // Returns nullptr if an exception was thrown.

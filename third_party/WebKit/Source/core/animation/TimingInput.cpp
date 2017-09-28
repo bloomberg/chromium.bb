@@ -69,8 +69,8 @@ bool TimingInput::SetIterationDuration(
     ExceptionState& exception_state) {
   static const char* error_message = "duration must be non-negative or auto.";
 
-  if (iteration_duration.isUnrestrictedDouble()) {
-    double duration_number = iteration_duration.getAsUnrestrictedDouble();
+  if (iteration_duration.IsUnrestrictedDouble()) {
+    double duration_number = iteration_duration.GetAsUnrestrictedDouble();
     if (std::isnan(duration_number) || duration_number < 0) {
       exception_state.ThrowTypeError(error_message);
       return false;
@@ -79,7 +79,7 @@ bool TimingInput::SetIterationDuration(
     return true;
   }
 
-  if (iteration_duration.getAsString() != "auto") {
+  if (iteration_duration.GetAsString() != "auto") {
     exception_state.ThrowTypeError(error_message);
     return false;
   }
@@ -126,13 +126,13 @@ bool TimingInput::Convert(
     Timing& timing_output,
     Document* document,
     ExceptionState& exception_state) {
-  if (options.isKeyframeEffectOptions()) {
-    return Convert(options.getAsKeyframeEffectOptions(), timing_output,
+  if (options.IsKeyframeEffectOptions()) {
+    return Convert(options.GetAsKeyframeEffectOptions(), timing_output,
                    document, exception_state);
-  } else if (options.isUnrestrictedDouble()) {
-    return Convert(options.getAsUnrestrictedDouble(), timing_output,
+  } else if (options.IsUnrestrictedDouble()) {
+    return Convert(options.GetAsUnrestrictedDouble(), timing_output,
                    exception_state);
-  } else if (options.isNull()) {
+  } else if (options.IsNull()) {
     return true;
   }
   NOTREACHED();
@@ -144,13 +144,13 @@ bool TimingInput::Convert(
     Timing& timing_output,
     Document* document,
     ExceptionState& exception_state) {
-  if (options.isKeyframeAnimationOptions()) {
-    return Convert(options.getAsKeyframeAnimationOptions(), timing_output,
+  if (options.IsKeyframeAnimationOptions()) {
+    return Convert(options.GetAsKeyframeAnimationOptions(), timing_output,
                    document, exception_state);
-  } else if (options.isUnrestrictedDouble()) {
-    return Convert(options.getAsUnrestrictedDouble(), timing_output,
+  } else if (options.IsUnrestrictedDouble()) {
+    return Convert(options.GetAsUnrestrictedDouble(), timing_output,
                    exception_state);
-  } else if (options.isNull()) {
+  } else if (options.IsNull()) {
     return true;
   }
   NOTREACHED();
@@ -204,7 +204,7 @@ bool TimingInput::Convert(double duration,
   DCHECK(timing_output == Timing::Defaults());
   return SetIterationDuration(
       timing_output,
-      UnrestrictedDoubleOrString::fromUnrestrictedDouble(duration),
+      UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration),
       exception_state);
 }
 

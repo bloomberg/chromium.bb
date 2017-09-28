@@ -48,22 +48,22 @@ bool CompareParams(const std::pair<String, String>& a,
 
 URLSearchParams* URLSearchParams::Create(const URLSearchParamsInit& init,
                                          ExceptionState& exception_state) {
-  if (init.isUSVString()) {
-    const String& query_string = init.getAsUSVString();
+  if (init.IsUSVString()) {
+    const String& query_string = init.GetAsUSVString();
     if (query_string.StartsWith('?'))
       return new URLSearchParams(query_string.Substring(1));
     return new URLSearchParams(query_string);
   }
-  if (init.isUSVStringUSVStringRecord()) {
-    return URLSearchParams::Create(init.getAsUSVStringUSVStringRecord(),
+  if (init.IsUSVStringUSVStringRecord()) {
+    return URLSearchParams::Create(init.GetAsUSVStringUSVStringRecord(),
                                    exception_state);
   }
-  if (init.isUSVStringSequenceSequence()) {
-    return URLSearchParams::Create(init.getAsUSVStringSequenceSequence(),
+  if (init.IsUSVStringSequenceSequence()) {
+    return URLSearchParams::Create(init.GetAsUSVStringSequenceSequence(),
                                    exception_state);
   }
 
-  DCHECK(init.isNull());
+  DCHECK(init.IsNull());
   return new URLSearchParams(String());
 }
 

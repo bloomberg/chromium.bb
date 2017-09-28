@@ -73,12 +73,12 @@ TEST(PaymentEventDataConversionTest, ToCanMakePaymentEventData) {
   ASSERT_EQ(1UL, data.methodData()
                      .front()
                      .supportedMethods()
-                     .getAsStringSequence()
+                     .GetAsStringSequence()
                      .size());
   ASSERT_EQ("foo", data.methodData()
                        .front()
                        .supportedMethods()
-                       .getAsStringSequence()
+                       .GetAsStringSequence()
                        .front());
   ASSERT_TRUE(data.methodData().front().hasData());
   ASSERT_TRUE(data.methodData().front().data().IsObject());
@@ -114,12 +114,12 @@ TEST(PaymentEventDataConversionTest, ToPaymentRequestEventData) {
   ASSERT_EQ(1UL, data.methodData()
                      .front()
                      .supportedMethods()
-                     .getAsStringSequence()
+                     .GetAsStringSequence()
                      .size());
   ASSERT_EQ("foo", data.methodData()
                        .front()
                        .supportedMethods()
-                       .getAsStringSequence()
+                       .GetAsStringSequence()
                        .front());
   ASSERT_TRUE(data.methodData().front().hasData());
   ASSERT_TRUE(data.methodData().front().data().IsObject());

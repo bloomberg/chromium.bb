@@ -289,7 +289,7 @@ void HTMLMarqueeElement::ContinueAnimation() {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   TimingInput::SetIterationDuration(
-      timing, UnrestrictedDoubleOrString::fromUnrestrictedDouble(duration),
+      timing, UnrestrictedDoubleOrString::FromUnrestrictedDouble(duration),
       ASSERT_NO_EXCEPTION);
 
   KeyframeEffect* keyframe_effect =

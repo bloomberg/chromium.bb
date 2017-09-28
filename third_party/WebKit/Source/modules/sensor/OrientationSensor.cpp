@@ -100,12 +100,12 @@ void OrientationSensor::PopulateMatrixInternal(
 void OrientationSensor::populateMatrix(
     Float32ArrayOrFloat64ArrayOrDOMMatrix& matrix,
     ExceptionState& exception_state) {
-  if (matrix.isFloat32Array())
-    PopulateMatrixInternal(matrix.getAsFloat32Array().View(), exception_state);
-  else if (matrix.isFloat64Array())
-    PopulateMatrixInternal(matrix.getAsFloat64Array().View(), exception_state);
-  else if (matrix.isDOMMatrix())
-    PopulateMatrixInternal(matrix.getAsDOMMatrix(), exception_state);
+  if (matrix.IsFloat32Array())
+    PopulateMatrixInternal(matrix.GetAsFloat32Array().View(), exception_state);
+  else if (matrix.IsFloat64Array())
+    PopulateMatrixInternal(matrix.GetAsFloat64Array().View(), exception_state);
+  else if (matrix.IsDOMMatrix())
+    PopulateMatrixInternal(matrix.GetAsDOMMatrix(), exception_state);
   else
     NOTREACHED() << "Unexpected rotation matrix type.";
 }

@@ -224,7 +224,7 @@ void CanvasRenderingContext2DTest::SetUp() {
   EXPECT_FALSE(exception_state.HadException());
   opaque_gradient->addColorStop(1, String("blue"), exception_state);
   EXPECT_FALSE(exception_state.HadException());
-  this->OpaqueGradient().setCanvasGradient(opaque_gradient);
+  this->OpaqueGradient().SetCanvasGradient(opaque_gradient);
 
   CanvasGradient* alpha_gradient =
       CanvasGradient::Create(FloatPoint(0, 0), FloatPoint(10, 0));
@@ -234,7 +234,7 @@ void CanvasRenderingContext2DTest::SetUp() {
                                exception_state);
   EXPECT_FALSE(exception_state.HadException());
   StringOrCanvasGradientOrCanvasPattern wrapped_alpha_gradient;
-  this->AlphaGradient().setCanvasGradient(alpha_gradient);
+  this->AlphaGradient().SetCanvasGradient(alpha_gradient);
 
   global_memory_cache_ = ReplaceMemoryCacheForTesting(MemoryCache::Create());
 }
@@ -841,7 +841,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
       canvas->GetCanvasRenderingContext("2d", attributes));
   DummyExceptionStateForTesting exception_state;
   CanvasImageSourceUnion image_source;
-  image_source.setImageBitmap(image_bitmap_derived);
+  image_source.SetImageBitmap(image_bitmap_derived);
   context->drawImage(GetScriptState(), image_source, 0, 0, exception_state);
 }
 
@@ -1103,7 +1103,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->GetCanvasRenderingContext("2d", attributes));
   StringOrCanvasGradientOrCanvasPattern fill_style;
-  fill_style.setString("#FF0000");
+  fill_style.SetString("#FF0000");
   context->setFillStyle(fill_style);
   context->fillRect(0, 0, 10, 10);
   NonThrowableExceptionState exception_state;
@@ -1412,7 +1412,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
         pixels_from_get_image_data =
             context->getImageData(0, 0, 2, 2, exception_state)
                 ->dataUnion()
-                .getAsFloat32Array()
+                .GetAsFloat32Array()
                 .View()
                 ->Data();
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(

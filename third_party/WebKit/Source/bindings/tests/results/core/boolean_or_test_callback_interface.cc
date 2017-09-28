@@ -18,39 +18,39 @@
 
 namespace blink {
 
-BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface() : type_(SpecificTypeNone) {}
+BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface() : type_(SpecificType::kNone) {}
 
-bool BooleanOrTestCallbackInterface::getAsBoolean() const {
-  DCHECK(isBoolean());
+bool BooleanOrTestCallbackInterface::GetAsBoolean() const {
+  DCHECK(IsBoolean());
   return boolean_;
 }
 
-void BooleanOrTestCallbackInterface::setBoolean(bool value) {
-  DCHECK(isNull());
+void BooleanOrTestCallbackInterface::SetBoolean(bool value) {
+  DCHECK(IsNull());
   boolean_ = value;
-  type_ = SpecificTypeBoolean;
+  type_ = SpecificType::kBoolean;
 }
 
-BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::fromBoolean(bool value) {
+BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::FromBoolean(bool value) {
   BooleanOrTestCallbackInterface container;
-  container.setBoolean(value);
+  container.SetBoolean(value);
   return container;
 }
 
-TestCallbackInterface* BooleanOrTestCallbackInterface::getAsTestCallbackInterface() const {
-  DCHECK(isTestCallbackInterface());
+TestCallbackInterface* BooleanOrTestCallbackInterface::GetAsTestCallbackInterface() const {
+  DCHECK(IsTestCallbackInterface());
   return test_callback_interface_;
 }
 
-void BooleanOrTestCallbackInterface::setTestCallbackInterface(TestCallbackInterface* value) {
-  DCHECK(isNull());
+void BooleanOrTestCallbackInterface::SetTestCallbackInterface(TestCallbackInterface* value) {
+  DCHECK(IsNull());
   test_callback_interface_ = value;
-  type_ = SpecificTypeTestCallbackInterface;
+  type_ = SpecificType::kTestCallbackInterface;
 }
 
-BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::fromTestCallbackInterface(TestCallbackInterface* value) {
+BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::FromTestCallbackInterface(TestCallbackInterface* value) {
   BooleanOrTestCallbackInterface container;
-  container.setTestCallbackInterface(value);
+  container.SetTestCallbackInterface(value);
   return container;
 }
 
@@ -71,29 +71,29 @@ void V8BooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8
 
   if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
     TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestCallbackInterface(cppValue);
+    impl.SetTestCallbackInterface(cppValue);
     return;
   }
 
   if (v8Value->IsBoolean()) {
-    impl.setBoolean(v8Value.As<v8::Boolean>()->Value());
+    impl.SetBoolean(v8Value.As<v8::Boolean>()->Value());
     return;
   }
 
   {
-    impl.setBoolean(v8Value->BooleanValue());
+    impl.SetBoolean(v8Value->BooleanValue());
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case BooleanOrTestCallbackInterface::SpecificTypeNone:
+    case BooleanOrTestCallbackInterface::SpecificType::kNone:
       return v8::Null(isolate);
-    case BooleanOrTestCallbackInterface::SpecificTypeBoolean:
-      return v8::Boolean::New(isolate, impl.getAsBoolean());
-    case BooleanOrTestCallbackInterface::SpecificTypeTestCallbackInterface:
-      return ToV8(impl.getAsTestCallbackInterface(), creationContext, isolate);
+    case BooleanOrTestCallbackInterface::SpecificType::kBoolean:
+      return v8::Boolean::New(isolate, impl.GetAsBoolean());
+    case BooleanOrTestCallbackInterface::SpecificType::kTestCallbackInterface:
+      return ToV8(impl.GetAsTestCallbackInterface(), creationContext, isolate);
     default:
       NOTREACHED();
   }

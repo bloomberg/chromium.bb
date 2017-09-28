@@ -266,16 +266,16 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
   DOMWebSocket* web_socket = new DOMWebSocket(context);
   web_socket->SuspendIfNeeded();
 
-  if (protocols.isNull()) {
+  if (protocols.IsNull()) {
     Vector<String> protocols_vector;
     web_socket->Connect(url, protocols_vector, exception_state);
-  } else if (protocols.isString()) {
+  } else if (protocols.IsString()) {
     Vector<String> protocols_vector;
-    protocols_vector.push_back(protocols.getAsString());
+    protocols_vector.push_back(protocols.GetAsString());
     web_socket->Connect(url, protocols_vector, exception_state);
   } else {
-    DCHECK(protocols.isStringSequence());
-    web_socket->Connect(url, protocols.getAsStringSequence(), exception_state);
+    DCHECK(protocols.IsStringSequence());
+    web_socket->Connect(url, protocols.GetAsStringSequence(), exception_state);
   }
 
   if (exception_state.HadException())

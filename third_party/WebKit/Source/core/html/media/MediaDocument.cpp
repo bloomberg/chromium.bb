@@ -134,7 +134,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
     AddEventListenerOptions options;
     options.setOnce(true);
     AddEventListenerOptionsOrBoolean options_or_boolean;
-    options_or_boolean.setAddEventListenerOptions(options);
+    options_or_boolean.SetAddEventListenerOptions(options);
     media->addEventListener(EventTypeNames::loadedmetadata, listener,
                             options_or_boolean);
   }

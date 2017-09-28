@@ -460,14 +460,14 @@ void Element::setNonce(const AtomicString& nonce) {
 
 void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
   ScrollIntoViewOptions options;
-  if (arg.isBoolean()) {
-    if (arg.getAsBoolean())
+  if (arg.IsBoolean()) {
+    if (arg.GetAsBoolean())
       options.setBlock("start");
     else
       options.setBlock("end");
     options.setInlinePosition("nearest");
-  } else if (arg.isScrollIntoViewOptions()) {
-    options = arg.getAsScrollIntoViewOptions();
+  } else if (arg.IsScrollIntoViewOptions()) {
+    options = arg.GetAsScrollIntoViewOptions();
     if (!RuntimeEnabledFeatures::CSSOMSmoothScrollEnabled() &&
         options.behavior() == "smooth") {
       options.setBehavior("instant");
@@ -478,7 +478,7 @@ void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
 
 void Element::scrollIntoView(bool align_to_top) {
   ScrollIntoViewOptionsOrBoolean arg;
-  arg.setBoolean(align_to_top);
+  arg.SetBoolean(align_to_top);
   scrollIntoView(arg);
 }
 
@@ -1366,17 +1366,17 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScriptURL& stringOrURL,
                            ExceptionState& exception_state) {
-  DCHECK(stringOrURL.isString() ||
+  DCHECK(stringOrURL.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
-  if (stringOrURL.isString() && GetDocument().RequireTrustedTypes()) {
+  if (stringOrURL.IsString() && GetDocument().RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedScriptURL` assignment.");
     return;
   }
 
-  String valueString = stringOrURL.isString()
-                           ? stringOrURL.getAsString()
-                           : stringOrURL.getAsTrustedScriptURL()->toString();
+  String valueString = stringOrURL.IsString()
+                           ? stringOrURL.GetAsString()
+                           : stringOrURL.GetAsTrustedScriptURL()->toString();
 
   setAttribute(name, AtomicString(valueString));
 }
@@ -3067,11 +3067,11 @@ String Element::OuterHTMLAsString() const {
 }
 
 void Element::innerHTML(StringOrTrustedHTML& result) const {
-  result.setString(InnerHTMLAsString());
+  result.SetString(InnerHTMLAsString());
 }
 
 void Element::outerHTML(StringOrTrustedHTML& result) const {
-  result.setString(OuterHTMLAsString());
+  result.SetString(OuterHTMLAsString());
 }
 
 void Element::SetInnerHTMLFromString(const String& html,
@@ -3090,20 +3090,20 @@ void Element::SetInnerHTMLFromString(const String& html) {
   SetInnerHTMLFromString(html, ASSERT_NO_EXCEPTION);
 }
 
-void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
+void Element::setInnerHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
-  DCHECK(stringOrHtml.isString() ||
+  DCHECK(string_or_html.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+  if (string_or_html.IsString() && GetDocument().RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
     return;
   }
 
-  String html = stringOrHtml.isString()
-                    ? stringOrHtml.getAsString()
-                    : stringOrHtml.getAsTrustedHTML()->toString();
+  String html = string_or_html.IsString()
+                    ? string_or_html.GetAsString()
+                    : string_or_html.GetAsTrustedHTML()->toString();
 
   // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
   // is treated as an extended attribute on the `DOMString` type rather than
@@ -3114,8 +3114,8 @@ void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
   SetInnerHTMLFromString(html, exception_state);
 }
 
-void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml) {
-  setInnerHTML(stringOrHtml, ASSERT_NO_EXCEPTION);
+void Element::setInnerHTML(const StringOrTrustedHTML& string_or_html) {
+  setInnerHTML(string_or_html, ASSERT_NO_EXCEPTION);
 }
 
 void Element::SetOuterHTMLFromString(const String& html,
@@ -3152,20 +3152,20 @@ void Element::SetOuterHTMLFromString(const String& html,
     MergeWithNextTextNode(ToText(prev), exception_state);
 }
 
-void Element::setOuterHTML(const StringOrTrustedHTML& stringOrHtml,
+void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
                            ExceptionState& exception_state) {
-  DCHECK(stringOrHtml.isString() ||
+  DCHECK(string_or_html.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+  if (string_or_html.IsString() && GetDocument().RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
     return;
   }
 
-  String html = stringOrHtml.isString()
-                    ? stringOrHtml.getAsString()
-                    : stringOrHtml.getAsTrustedHTML()->toString();
+  String html = string_or_html.IsString()
+                    ? string_or_html.GetAsString()
+                    : string_or_html.GetAsTrustedHTML()->toString();
 
   // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
   // is treated as an extended attribute on the `DOMString` type rather than
@@ -3297,20 +3297,20 @@ void Element::insertAdjacentHTML(const String& where,
 }
 
 void Element::insertAdjacentHTML(const String& where,
-                                 const StringOrTrustedHTML& stringOrHtml,
+                                 const StringOrTrustedHTML& string_or_html,
                                  ExceptionState& exception_state) {
-  DCHECK(stringOrHtml.isString() ||
+  DCHECK(string_or_html.IsString() ||
          RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
 
-  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+  if (string_or_html.IsString() && GetDocument().RequireTrustedTypes()) {
     exception_state.ThrowTypeError(
         "This document requires `TrustedHTML` assignment.");
     return;
   }
 
-  String markup = stringOrHtml.isString()
-                      ? stringOrHtml.getAsString()
-                      : stringOrHtml.getAsTrustedHTML()->toString();
+  String markup = string_or_html.IsString()
+                      ? string_or_html.GetAsString()
+                      : string_or_html.GetAsTrustedHTML()->toString();
 
   insertAdjacentHTML(where, markup, exception_state);
 }
@@ -3803,7 +3803,7 @@ KURL Element::GetURLAttribute(const QualifiedName& name) const {
 void Element::GetURLAttribute(const QualifiedName& name,
                               StringOrTrustedScriptURL& result) const {
   KURL url = GetURLAttribute(name);
-  result.setString(url.GetString());
+  result.SetString(url.GetString());
 }
 
 KURL Element::GetNonEmptyURLAttribute(const QualifiedName& name) const {

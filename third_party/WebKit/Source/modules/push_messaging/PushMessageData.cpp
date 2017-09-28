@@ -26,28 +26,28 @@ PushMessageData* PushMessageData::Create(const String& message_string) {
   if (message_string.IsNull())
     return nullptr;
   return PushMessageData::Create(
-      ArrayBufferOrArrayBufferViewOrUSVString::fromUSVString(message_string));
+      ArrayBufferOrArrayBufferViewOrUSVString::FromUSVString(message_string));
 }
 
 PushMessageData* PushMessageData::Create(
     const ArrayBufferOrArrayBufferViewOrUSVString& message_data) {
-  if (message_data.isArrayBuffer() || message_data.isArrayBufferView()) {
+  if (message_data.IsArrayBuffer() || message_data.IsArrayBufferView()) {
     DOMArrayBuffer* buffer =
-        message_data.isArrayBufferView()
-            ? message_data.getAsArrayBufferView().View()->buffer()
-            : message_data.getAsArrayBuffer();
+        message_data.IsArrayBufferView()
+            ? message_data.GetAsArrayBufferView().View()->buffer()
+            : message_data.GetAsArrayBuffer();
 
     return new PushMessageData(static_cast<const char*>(buffer->Data()),
                                buffer->ByteLength());
   }
 
-  if (message_data.isUSVString()) {
+  if (message_data.IsUSVString()) {
     CString encoded_string = UTF8Encoding().Encode(
-        message_data.getAsUSVString(), WTF::kEntitiesForUnencodables);
+        message_data.GetAsUSVString(), WTF::kEntitiesForUnencodables);
     return new PushMessageData(encoded_string.data(), encoded_string.length());
   }
 
-  DCHECK(message_data.isNull());
+  DCHECK(message_data.IsNull());
   return nullptr;
 }
 

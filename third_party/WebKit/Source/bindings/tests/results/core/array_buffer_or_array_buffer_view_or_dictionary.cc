@@ -17,56 +17,56 @@
 
 namespace blink {
 
-ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary() : type_(SpecificTypeNone) {}
+ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary() : type_(SpecificType::kNone) {}
 
-TestArrayBuffer* ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBuffer() const {
-  DCHECK(isArrayBuffer());
+TestArrayBuffer* ArrayBufferOrArrayBufferViewOrDictionary::GetAsArrayBuffer() const {
+  DCHECK(IsArrayBuffer());
   return array_buffer_;
 }
 
-void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBuffer(TestArrayBuffer* value) {
-  DCHECK(isNull());
+void ArrayBufferOrArrayBufferViewOrDictionary::SetArrayBuffer(TestArrayBuffer* value) {
+  DCHECK(IsNull());
   array_buffer_ = value;
-  type_ = SpecificTypeArrayBuffer;
+  type_ = SpecificType::kArrayBuffer;
 }
 
-ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBuffer(TestArrayBuffer* value) {
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::FromArrayBuffer(TestArrayBuffer* value) {
   ArrayBufferOrArrayBufferViewOrDictionary container;
-  container.setArrayBuffer(value);
+  container.SetArrayBuffer(value);
   return container;
 }
 
-NotShared<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const {
-  DCHECK(isArrayBufferView());
+NotShared<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::GetAsArrayBufferView() const {
+  DCHECK(IsArrayBufferView());
   return array_buffer_view_;
 }
 
-void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(NotShared<TestArrayBufferView> value) {
-  DCHECK(isNull());
+void ArrayBufferOrArrayBufferViewOrDictionary::SetArrayBufferView(NotShared<TestArrayBufferView> value) {
+  DCHECK(IsNull());
   array_buffer_view_ = Member<TestArrayBufferView>(value.View());
-  type_ = SpecificTypeArrayBufferView;
+  type_ = SpecificType::kArrayBufferView;
 }
 
-ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBufferView(NotShared<TestArrayBufferView> value) {
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::FromArrayBufferView(NotShared<TestArrayBufferView> value) {
   ArrayBufferOrArrayBufferViewOrDictionary container;
-  container.setArrayBufferView(value);
+  container.SetArrayBufferView(value);
   return container;
 }
 
-Dictionary ArrayBufferOrArrayBufferViewOrDictionary::getAsDictionary() const {
-  DCHECK(isDictionary());
+Dictionary ArrayBufferOrArrayBufferViewOrDictionary::GetAsDictionary() const {
+  DCHECK(IsDictionary());
   return dictionary_;
 }
 
-void ArrayBufferOrArrayBufferViewOrDictionary::setDictionary(Dictionary value) {
-  DCHECK(isNull());
+void ArrayBufferOrArrayBufferViewOrDictionary::SetDictionary(Dictionary value) {
+  DCHECK(IsNull());
   dictionary_ = value;
-  type_ = SpecificTypeDictionary;
+  type_ = SpecificType::kDictionary;
 }
 
-ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromDictionary(Dictionary value) {
+ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::FromDictionary(Dictionary value) {
   ArrayBufferOrArrayBufferViewOrDictionary container;
-  container.setDictionary(value);
+  container.SetDictionary(value);
   return container;
 }
 
@@ -88,7 +88,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::ToImpl(v8::Isolate* isolate, v8
 
   if (v8Value->IsArrayBuffer()) {
     TestArrayBuffer* cppValue = V8ArrayBuffer::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setArrayBuffer(cppValue);
+    impl.SetArrayBuffer(cppValue);
     return;
   }
 
@@ -96,7 +96,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::ToImpl(v8::Isolate* isolate, v8
     NotShared<TestArrayBufferView> cppValue = ToNotShared<NotShared<TestArrayBufferView>>(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setArrayBufferView(cppValue);
+    impl.SetArrayBufferView(cppValue);
     return;
   }
 
@@ -104,7 +104,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::ToImpl(v8::Isolate* isolate, v8
     Dictionary cppValue = NativeValueTraits<Dictionary>::NativeValue(isolate, v8Value, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setDictionary(cppValue);
+    impl.SetDictionary(cppValue);
     return;
   }
 
@@ -113,14 +113,14 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::ToImpl(v8::Isolate* isolate, v8
 
 v8::Local<v8::Value> ToV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeNone:
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificType::kNone:
       return v8::Null(isolate);
-    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBuffer:
-      return ToV8(impl.getAsArrayBuffer(), creationContext, isolate);
-    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBufferView:
-      return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
-    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeDictionary:
-      return impl.getAsDictionary().V8Value();
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificType::kArrayBuffer:
+      return ToV8(impl.GetAsArrayBuffer(), creationContext, isolate);
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificType::kArrayBufferView:
+      return ToV8(impl.GetAsArrayBufferView(), creationContext, isolate);
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificType::kDictionary:
+      return impl.GetAsDictionary().V8Value();
     default:
       NOTREACHED();
   }

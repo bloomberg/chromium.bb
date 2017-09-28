@@ -60,10 +60,10 @@ class FormDataIterationSource final
     const FormData::Entry& entry = *form_data_->Entries()[current_++];
     name = form_data_->Decode(entry.name());
     if (entry.IsString()) {
-      value.setUSVString(form_data_->Decode(entry.Value()));
+      value.SetUSVString(form_data_->Decode(entry.Value()));
     } else {
       DCHECK(entry.isFile());
-      value.setFile(entry.GetFile());
+      value.SetFile(entry.GetFile());
     }
     return true;
   }
@@ -130,10 +130,10 @@ void FormData::get(const String& name, FormDataEntryValue& result) {
   for (const auto& entry : Entries()) {
     if (entry->name() == encoded_name) {
       if (entry->IsString()) {
-        result.setUSVString(Decode(entry->Value()));
+        result.SetUSVString(Decode(entry->Value()));
       } else {
         DCHECK(entry->isFile());
-        result.setFile(entry->GetFile());
+        result.SetFile(entry->GetFile());
       }
       return;
     }
@@ -149,10 +149,10 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
       continue;
     FormDataEntryValue value;
     if (entry->IsString()) {
-      value.setUSVString(Decode(entry->Value()));
+      value.SetUSVString(Decode(entry->Value()));
     } else {
       DCHECK(entry->isFile());
-      value.setFile(entry->GetFile());
+      value.SetFile(entry->GetFile());
     }
     results.push_back(value);
   }

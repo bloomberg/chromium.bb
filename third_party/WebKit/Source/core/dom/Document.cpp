@@ -851,17 +851,17 @@ Element* Document::createElement(const AtomicString& name,
 String GetTypeExtension(Document* document,
                         const StringOrDictionary& string_or_options,
                         ExceptionState& exception_state) {
-  if (string_or_options.isNull())
+  if (string_or_options.IsNull())
     return g_empty_string;
 
-  if (string_or_options.isString()) {
+  if (string_or_options.IsString()) {
     UseCounter::Count(document,
                       WebFeature::kDocumentCreateElement2ndArgStringHandling);
-    return string_or_options.getAsString();
+    return string_or_options.GetAsString();
   }
 
-  if (string_or_options.isDictionary()) {
-    Dictionary dict = string_or_options.getAsDictionary();
+  if (string_or_options.IsDictionary()) {
+    Dictionary dict = string_or_options.GetAsDictionary();
     ElementCreationOptions impl;
     V8ElementCreationOptions::ToImpl(dict.GetIsolate(), dict.V8Value(), impl,
                                      exception_state);
@@ -890,12 +890,12 @@ Element* Document::createElement(const AtomicString& local_name,
   // 2. localName converted to ASCII lowercase
   const AtomicString& converted_local_name = ConvertLocalName(local_name);
 
-  bool is_v1 = string_or_options.isDictionary() || !RegistrationContext();
+  bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
   bool create_v1_builtin =
-      string_or_options.isDictionary() &&
+      string_or_options.IsDictionary() &&
       RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
   bool should_create_builtin =
-      create_v1_builtin || string_or_options.isString();
+      create_v1_builtin || string_or_options.IsString();
 
   // 3.
   const AtomicString& is =
@@ -943,10 +943,10 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty()) {
-    if (string_or_options.isString()) {
+    if (string_or_options.IsString()) {
       V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
           element, is);
-    } else if (string_or_options.isDictionary()) {
+    } else if (string_or_options.IsDictionary()) {
       element->setAttribute(HTMLNames::isAttr, is);
     }
   }
@@ -1000,12 +1000,12 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   if (q_name == QualifiedName::Null())
     return nullptr;
 
-  bool is_v1 = string_or_options.isDictionary() || !RegistrationContext();
+  bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
   bool create_v1_builtin =
-      string_or_options.isDictionary() &&
+      string_or_options.IsDictionary() &&
       RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
   bool should_create_builtin =
-      create_v1_builtin || string_or_options.isString();
+      create_v1_builtin || string_or_options.IsString();
 
   // 2.
   const AtomicString& is =
@@ -1054,7 +1054,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
     if (element->GetCustomElementState() != CustomElementState::kCustom) {
       V0CustomElementRegistrationContext::SetIsAttributeAndTypeExtension(
           element, is);
-    } else if (string_or_options.isDictionary()) {
+    } else if (string_or_options.IsDictionary()) {
       element->setAttribute(HTMLNames::isAttr, is);
     }
   }

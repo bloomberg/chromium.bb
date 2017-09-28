@@ -588,11 +588,11 @@ void ValidateAndConvertPaymentDetailsModifiers(
     }
 
     Vector<String> supported_methods;
-    if (modifier.supportedMethods().isString()) {
-      supported_methods.push_back(modifier.supportedMethods().getAsString());
+    if (modifier.supportedMethods().IsString()) {
+      supported_methods.push_back(modifier.supportedMethods().GetAsString());
     }
-    if (modifier.supportedMethods().isStringSequence()) {
-      supported_methods = modifier.supportedMethods().getAsStringSequence();
+    if (modifier.supportedMethods().IsStringSequence()) {
+      supported_methods = modifier.supportedMethods().GetAsStringSequence();
       if (supported_methods.size() > 1) {
         Deprecation::CountDeprecation(
             &execution_context,
@@ -741,13 +741,13 @@ void ValidateAndConvertPaymentMethodData(
 
   for (const PaymentMethodData payment_method_data : input) {
     Vector<String> supported_methods;
-    if (payment_method_data.supportedMethods().isString()) {
+    if (payment_method_data.supportedMethods().IsString()) {
       supported_methods.push_back(
-          payment_method_data.supportedMethods().getAsString());
+          payment_method_data.supportedMethods().GetAsString());
     }
-    if (payment_method_data.supportedMethods().isStringSequence()) {
+    if (payment_method_data.supportedMethods().IsStringSequence()) {
       supported_methods =
-          payment_method_data.supportedMethods().getAsStringSequence();
+          payment_method_data.supportedMethods().GetAsStringSequence();
       if (supported_methods.size() > 1) {
         Deprecation::CountDeprecation(
             &execution_context,

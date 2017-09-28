@@ -119,7 +119,7 @@ void AnimationEffectReadOnly::getComputedTiming(
   computed_timing.setIterations(SpecifiedTiming().iteration_count);
 
   UnrestrictedDoubleOrString duration;
-  duration.setUnrestrictedDouble(IterationDuration() * 1000);
+  duration.SetUnrestrictedDouble(IterationDuration() * 1000);
   computed_timing.setDuration(duration);
 
   computed_timing.setDirection(

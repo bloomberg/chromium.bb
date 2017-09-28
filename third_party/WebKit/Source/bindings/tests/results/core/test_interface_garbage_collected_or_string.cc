@@ -18,39 +18,39 @@
 
 namespace blink {
 
-TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString() : type_(SpecificTypeNone) {}
+TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString() : type_(SpecificType::kNone) {}
 
-const String& TestInterfaceGarbageCollectedOrString::getAsString() const {
-  DCHECK(isString());
+const String& TestInterfaceGarbageCollectedOrString::GetAsString() const {
+  DCHECK(IsString());
   return string_;
 }
 
-void TestInterfaceGarbageCollectedOrString::setString(const String& value) {
-  DCHECK(isNull());
+void TestInterfaceGarbageCollectedOrString::SetString(const String& value) {
+  DCHECK(IsNull());
   string_ = value;
-  type_ = SpecificTypeString;
+  type_ = SpecificType::kString;
 }
 
-TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromString(const String& value) {
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::FromString(const String& value) {
   TestInterfaceGarbageCollectedOrString container;
-  container.setString(value);
+  container.SetString(value);
   return container;
 }
 
-TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const {
-  DCHECK(isTestInterfaceGarbageCollected());
+TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::GetAsTestInterfaceGarbageCollected() const {
+  DCHECK(IsTestInterfaceGarbageCollected());
   return test_interface_garbage_collected_;
 }
 
-void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
-  DCHECK(isNull());
+void TestInterfaceGarbageCollectedOrString::SetTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+  DCHECK(IsNull());
   test_interface_garbage_collected_ = value;
-  type_ = SpecificTypeTestInterfaceGarbageCollected;
+  type_ = SpecificType::kTestInterfaceGarbageCollected;
 }
 
-TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
+TestInterfaceGarbageCollectedOrString TestInterfaceGarbageCollectedOrString::FromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value) {
   TestInterfaceGarbageCollectedOrString container;
-  container.setTestInterfaceGarbageCollected(value);
+  container.SetTestInterfaceGarbageCollected(value);
   return container;
 }
 
@@ -71,7 +71,7 @@ void V8TestInterfaceGarbageCollectedOrString::ToImpl(v8::Isolate* isolate, v8::L
 
   if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
-    impl.setTestInterfaceGarbageCollected(cppValue);
+    impl.SetTestInterfaceGarbageCollected(cppValue);
     return;
   }
 
@@ -79,19 +79,19 @@ void V8TestInterfaceGarbageCollectedOrString::ToImpl(v8::Isolate* isolate, v8::L
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.Prepare(exceptionState))
       return;
-    impl.setString(cppValue);
+    impl.SetString(cppValue);
     return;
   }
 }
 
 v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.type_) {
-    case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
+    case TestInterfaceGarbageCollectedOrString::SpecificType::kNone:
       return v8::Null(isolate);
-    case TestInterfaceGarbageCollectedOrString::SpecificTypeString:
-      return V8String(isolate, impl.getAsString());
-    case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
-      return ToV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
+    case TestInterfaceGarbageCollectedOrString::SpecificType::kString:
+      return V8String(isolate, impl.GetAsString());
+    case TestInterfaceGarbageCollectedOrString::SpecificType::kTestInterfaceGarbageCollected:
+      return ToV8(impl.GetAsTestInterfaceGarbageCollected(), creationContext, isolate);
     default:
       NOTREACHED();
   }
