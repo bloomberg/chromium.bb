@@ -108,8 +108,7 @@ BASE_EXPORT bool CopyFile(const FilePath& from_path, const FilePath& to_path);
 // If there are files existing under to_path, always overwrite. Returns true
 // if successful, false otherwise. Wildcards on the names are not supported.
 //
-// This function calls into CopyFile() so the same behavior w.r.t. metadata
-// applies.
+// This function has the same metadata behavior as CopyFile().
 //
 // If you only need to copy a file use CopyFile, it's faster.
 BASE_EXPORT bool CopyDirectory(const FilePath& from_path,

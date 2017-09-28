@@ -176,7 +176,46 @@ bool DetermineDevShmExecutable() {
   }
   return result;
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_AIX)
+
+bool AdvanceEnumeratorWithStat(FileEnumerator* traversal,
+                               FilePath* out_next_path,
+                               struct stat* out_next_stat) {
+  DCHECK(out_next_path);
+  DCHECK(out_next_stat);
+  *out_next_path = traversal->Next();
+  if (out_next_path->empty())
+    return false;
+
+  *out_next_stat = traversal->GetInfo().stat();
+  return true;
+}
+
+bool CopyFileContents(File* infile, File* outfile) {
+  static constexpr size_t kBufferSize = 32768;
+  std::vector<char> buffer(kBufferSize);
+
+  for (;;) {
+    ssize_t bytes_read = infile->ReadAtCurrentPos(buffer.data(), buffer.size());
+    if (bytes_read < 0)
+      return false;
+    if (bytes_read == 0)
+      return true;
+    // Allow for partial writes
+    ssize_t bytes_written_per_read = 0;
+    do {
+      ssize_t bytes_written_partial = outfile->WriteAtCurrentPos(
+          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
+      if (bytes_written_partial < 0)
+        return false;
+
+      bytes_written_per_read += bytes_written_partial;
+    } while (bytes_written_per_read < bytes_read);
+  }
+
+  NOTREACHED();
+  return false;
+}
 #endif  // !defined(OS_NACL_NONSFI)
 
 #if !defined(OS_MACOSX)
@@ -294,8 +333,8 @@ bool CopyDirectory(const FilePath& from_path,
   struct stat from_stat;
   FilePath current = from_path;
   if (stat(from_path.value().c_str(), &from_stat) < 0) {
-    DLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
-                << from_path.value() << " errno = " << errno;
+    DPLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
+                 << from_path.value();
     return false;
   }
   FilePath from_path_base = from_path;
@@ -310,44 +349,81 @@ bool CopyDirectory(const FilePath& from_path,
   // TODO(maruel): This is not necessary anymore.
   DCHECK(recursive || S_ISDIR(from_stat.st_mode));
 
-  bool success = true;
-  while (success && !current.empty()) {
+  do {
     // current is the source path, including from_path, so append
     // the suffix after from_path to to_path to create the target_path.
     FilePath target_path(to_path);
-    if (from_path_base != current) {
-      if (!from_path_base.AppendRelativePath(current, &target_path)) {
-        success = false;
-        break;
-      }
+    if (from_path_base != current &&
+        !from_path_base.AppendRelativePath(current, &target_path)) {
+      return false;
     }
 
     if (S_ISDIR(from_stat.st_mode)) {
       if (mkdir(target_path.value().c_str(),
-                (from_stat.st_mode & 01777) | S_IRUSR | S_IXUSR | S_IWUSR) !=
-              0 &&
-          errno != EEXIST) {
-        DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
-                    << target_path.value() << " errno = " << errno;
-        success = false;
+                (from_stat.st_mode & 01777) | S_IRUSR | S_IXUSR | S_IWUSR) ==
+              0 ||
+          errno == EEXIST) {
+        continue;
       }
-    } else if (S_ISREG(from_stat.st_mode)) {
-      if (!CopyFile(current, target_path)) {
-        DLOG(ERROR) << "CopyDirectory() couldn't create file: "
-                    << target_path.value();
-        success = false;
-      }
-    } else {
-      DLOG(WARNING) << "CopyDirectory() skipping non-regular file: "
-                    << current.value();
+
+      DPLOG(ERROR) << "CopyDirectory() couldn't create directory: "
+                   << target_path.value();
+      return false;
     }
 
-    current = traversal.Next();
-    if (!current.empty())
-      from_stat = traversal.GetInfo().stat();
-  }
+    if (!S_ISREG(from_stat.st_mode)) {
+      DLOG(WARNING) << "CopyDirectory() skipping non-regular file: "
+                    << current.value();
+      continue;
+    }
 
-  return success;
+    // Add O_NONBLOCK so we can't block opening a pipe.
+    base::File infile(open(current.value().c_str(), O_RDONLY | O_NONBLOCK));
+    if (!infile.IsValid()) {
+      DPLOG(ERROR) << "CopyDirectory() couldn't open file: " << current.value();
+      return false;
+    }
+
+    struct stat stat_at_use;
+    if (fstat(infile.GetPlatformFile(), &stat_at_use) < 0) {
+      DPLOG(ERROR) << "CopyDirectory() couldn't stat file: " << current.value();
+      return false;
+    }
+
+    if (!S_ISREG(stat_at_use.st_mode)) {
+      DLOG(WARNING) << "CopyDirectory() skipping non-regular file: "
+                    << current.value();
+      continue;
+    }
+
+    // Each platform has different default file opening modes for CopyFile which
+    // we want to replicate here. On OS X, we use copyfile(3) which takes the
+    // source file's permissions into account. On the other platforms, we just
+    // use the base::File constructor. On Chrome OS, base::File uses a different
+    // set of permissions than it does on other POSIX platforms.
+#if defined(OS_MACOSX)
+    int mode = 0600 | (stat_at_use.st_mode & 0177);
+#elif defined(OS_CHROMEOS)
+    int mode = 0644;
+#else
+    int mode = 0600;
+#endif
+    base::File outfile(
+        open(target_path.value().c_str(),
+             O_WRONLY | O_CREAT | O_TRUNC | O_NONBLOCK, mode));
+    if (!outfile.IsValid()) {
+      DPLOG(ERROR) << "CopyDirectory() couldn't create file: "
+                   << target_path.value();
+      return false;
+    }
+
+    if (!CopyFileContents(&infile, &outfile)) {
+      DLOG(ERROR) << "CopyDirectory() couldn't copy file: " << current.value();
+      return false;
+    }
+  } while (AdvanceEnumeratorWithStat(&traversal, &current, &from_stat));
+
+  return true;
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
@@ -943,32 +1019,7 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   if (!outfile.IsValid())
     return false;
 
-  const size_t kBufferSize = 32768;
-  std::vector<char> buffer(kBufferSize);
-  bool result = true;
-
-  while (result) {
-    ssize_t bytes_read = infile.ReadAtCurrentPos(&buffer[0], buffer.size());
-    if (bytes_read < 0) {
-      result = false;
-      break;
-    }
-    if (bytes_read == 0)
-      break;
-    // Allow for partial writes
-    ssize_t bytes_written_per_read = 0;
-    do {
-      ssize_t bytes_written_partial = outfile.WriteAtCurrentPos(
-          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
-      if (bytes_written_partial < 0) {
-        result = false;
-        break;
-      }
-      bytes_written_per_read += bytes_written_partial;
-    } while (bytes_written_per_read < bytes_read);
-  }
-
-  return result;
+  return CopyFileContents(&infile, &outfile);
 }
 #endif  // !defined(OS_MACOSX)
 

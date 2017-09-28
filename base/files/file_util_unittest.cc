@@ -903,6 +903,121 @@ TEST_F(FileUtilTest, ExecutableExistsInPath) {
   EXPECT_FALSE(ExecutableExistsInPath(scoped_env.GetEnv(), kDneFileName));
 }
 
+
+TEST_F(FileUtilTest, CopyDirectoryPermissions) {
+  // Create a directory.
+  FilePath dir_name_from =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_From_Subdir"));
+  CreateDirectory(dir_name_from);
+  ASSERT_TRUE(PathExists(dir_name_from));
+
+  // Create some regular files under the directory with various permissions.
+  FilePath file_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Reggy-1.txt"));
+  CreateTextFile(file_name_from, L"Mordecai");
+  ASSERT_TRUE(PathExists(file_name_from));
+  ASSERT_TRUE(SetPosixFilePermissions(file_name_from, 0755));
+
+  FilePath file2_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Reggy-2.txt"));
+  CreateTextFile(file2_name_from, L"Rigby");
+  ASSERT_TRUE(PathExists(file2_name_from));
+  ASSERT_TRUE(SetPosixFilePermissions(file2_name_from, 0777));
+
+  FilePath file3_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Reggy-3.txt"));
+  CreateTextFile(file3_name_from, L"Benson");
+  ASSERT_TRUE(PathExists(file3_name_from));
+  ASSERT_TRUE(SetPosixFilePermissions(file3_name_from, 0400));
+
+  // Copy the directory recursively.
+  FilePath dir_name_to =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_To_Subdir"));
+  FilePath file_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Reggy-1.txt"));
+  FilePath file2_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Reggy-2.txt"));
+  FilePath file3_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Reggy-3.txt"));
+
+  ASSERT_FALSE(PathExists(dir_name_to));
+
+  EXPECT_TRUE(CopyDirectory(dir_name_from, dir_name_to, true));
+  ASSERT_TRUE(PathExists(file_name_to));
+  ASSERT_TRUE(PathExists(file2_name_to));
+  ASSERT_TRUE(PathExists(file3_name_to));
+
+  int mode = 0;
+  int expected_mode;
+  ASSERT_TRUE(GetPosixFilePermissions(file_name_to, &mode));
+#if defined(OS_MACOSX)
+  expected_mode = 0755;
+#elif defined(OS_CHROMEOS)
+  expected_mode = 0644;
+#else
+  expected_mode = 0600;
+#endif
+  EXPECT_EQ(expected_mode, mode);
+
+  ASSERT_TRUE(GetPosixFilePermissions(file2_name_to, &mode));
+#if defined(OS_MACOSX)
+  expected_mode = 0755;
+#elif defined(OS_CHROMEOS)
+  expected_mode = 0644;
+#else
+  expected_mode = 0600;
+#endif
+  EXPECT_EQ(expected_mode, mode);
+
+  ASSERT_TRUE(GetPosixFilePermissions(file3_name_to, &mode));
+#if defined(OS_MACOSX)
+  expected_mode = 0600;
+#elif defined(OS_CHROMEOS)
+  expected_mode = 0644;
+#else
+  expected_mode = 0600;
+#endif
+  EXPECT_EQ(expected_mode, mode);
+}
+
+TEST_F(FileUtilTest, CopyDirectoryPermissionsOverExistingFile) {
+  // Create a directory.
+  FilePath dir_name_from =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_From_Subdir"));
+  CreateDirectory(dir_name_from);
+  ASSERT_TRUE(PathExists(dir_name_from));
+
+  // Create a file under the directory.
+  FilePath file_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Reggy-1.txt"));
+  CreateTextFile(file_name_from, L"Mordecai");
+  ASSERT_TRUE(PathExists(file_name_from));
+  ASSERT_TRUE(SetPosixFilePermissions(file_name_from, 0644));
+
+  // Create a directory.
+  FilePath dir_name_to =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_To_Subdir"));
+  CreateDirectory(dir_name_to);
+  ASSERT_TRUE(PathExists(dir_name_to));
+
+  // Create a file under the directory with wider permissions.
+  FilePath file_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Reggy-1.txt"));
+  CreateTextFile(file_name_to, L"Rigby");
+  ASSERT_TRUE(PathExists(file_name_to));
+  ASSERT_TRUE(SetPosixFilePermissions(file_name_to, 0777));
+
+  // Ensure that when we copy the directory, the file contents are copied
+  // but the permissions on the destination are left alone.
+  EXPECT_TRUE(CopyDirectory(dir_name_from, dir_name_to, false));
+  ASSERT_TRUE(PathExists(file_name_to));
+  ASSERT_EQ(L"Mordecai", ReadTextFile(file_name_to));
+
+  int mode = 0;
+  ASSERT_TRUE(GetPosixFilePermissions(file_name_to, &mode));
+  EXPECT_EQ(0777, mode);
+}
+
 #endif  // !defined(OS_FUCHSIA) && defined(OS_POSIX)
 
 #if !defined(OS_FUCHSIA)
@@ -1545,6 +1660,58 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
   EXPECT_TRUE(PathExists(dir_name_to));
   EXPECT_TRUE(PathExists(file_name_to));
 }
+
+#if !defined(OS_FUCHSIA) && defined(OS_POSIX)
+TEST_F(FileUtilTest, CopyDirectoryWithNonRegularFiles) {
+  // Create a directory.
+  FilePath dir_name_from =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_From_Subdir"));
+  ASSERT_TRUE(CreateDirectory(dir_name_from));
+  ASSERT_TRUE(PathExists(dir_name_from));
+
+  // Create a file under the directory.
+  FilePath file_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Copy_Test_File.txt"));
+  CreateTextFile(file_name_from, L"Gooooooooooooooooooooogle");
+  ASSERT_TRUE(PathExists(file_name_from));
+
+  // Create a symbolic link under the directory pointing to that file.
+  FilePath symlink_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Symlink"));
+  ASSERT_TRUE(CreateSymbolicLink(file_name_from, symlink_name_from));
+  ASSERT_TRUE(PathExists(symlink_name_from));
+
+  // Create a fifo under the directory.
+  FilePath fifo_name_from =
+      dir_name_from.Append(FILE_PATH_LITERAL("Fifo"));
+  ASSERT_EQ(0, mkfifo(fifo_name_from.value().c_str(), 0644));
+  ASSERT_TRUE(PathExists(fifo_name_from));
+
+  // Copy the directory.
+  FilePath dir_name_to =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Copy_To_Subdir"));
+  FilePath file_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Copy_Test_File.txt"));
+  FilePath symlink_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Symlink"));
+  FilePath fifo_name_to =
+      dir_name_to.Append(FILE_PATH_LITERAL("Fifo"));
+
+  ASSERT_FALSE(PathExists(dir_name_to));
+
+  EXPECT_TRUE(CopyDirectory(dir_name_from, dir_name_to, false));
+
+  // Check that only directories and regular files are copied.
+  EXPECT_TRUE(PathExists(dir_name_from));
+  EXPECT_TRUE(PathExists(file_name_from));
+  EXPECT_TRUE(PathExists(symlink_name_from));
+  EXPECT_TRUE(PathExists(fifo_name_from));
+  EXPECT_TRUE(PathExists(dir_name_to));
+  EXPECT_TRUE(PathExists(file_name_to));
+  EXPECT_FALSE(PathExists(symlink_name_to));
+  EXPECT_FALSE(PathExists(fifo_name_to));
+}
+#endif  // !defined(OS_FUCHSIA) && defined(OS_POSIX)
 
 TEST_F(FileUtilTest, CopyFile) {
   // Create a directory
