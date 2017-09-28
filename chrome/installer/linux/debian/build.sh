@@ -51,6 +51,7 @@ stage_install_debian() {
   # use update-alternatives for /usr/bin/google-chrome.
   local USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
 
+  local PACKAGE_ORIG="${PACKAGE}"
   if [ "$CHANNEL" != "stable" ]; then
     # Avoid file collisions between channels.
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
