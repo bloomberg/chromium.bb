@@ -422,10 +422,9 @@ public class NewTabPageRecyclerViewTest {
         List<SnippetArticle> suggestions = new ArrayList<>();
         for (int i = 0; i < suggestionsCount; i++) {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
-            suggestions.add(
-                    new SnippetArticle(TEST_CATEGORY, "id" + i, "title" + i, "publisher" + i,
-                            "previewText" + i, url, FAKE_PUBLISH_TIMESTAMP + i, FAKE_SNIPPET_SCORE,
-                            FAKE_FETCH_TIMESTAMP, false, /* thumbnailDominantColor = */ null));
+            suggestions.add(new SnippetArticle(TEST_CATEGORY, "id" + i, "title" + i,
+                    "publisher" + i, url, FAKE_PUBLISH_TIMESTAMP + i, FAKE_SNIPPET_SCORE,
+                    FAKE_FETCH_TIMESTAMP, false, /* thumbnailDominantColor = */ null));
         }
         return suggestions;
     }

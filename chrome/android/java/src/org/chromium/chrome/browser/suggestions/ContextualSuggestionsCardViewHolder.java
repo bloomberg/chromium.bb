@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -51,15 +50,9 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
                 (ViewGroup.MarginLayoutParams) itemView.getLayoutParams(), startMargin);
 
         mDisplayStyleObserver =
-                new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
-                    @Override
-                    public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
-                        updateCardWidth(newDisplayStyle);
-                    }
-                });
+                new DisplayStyleObserverAdapter(itemView, uiConfig, this::updateCardWidth);
         mSuggestionsBinder.updateFieldsVisibility(/* showHeadline = */ true,
-                /* showDescription = */ false, /* showThumbnail = */ true,
-                /* showThumbnailVideoOverlay = */ false, /* headerMaxLines = */ 3);
+                /* showThumbnail = */ true, /* showThumbnailVideoOverlay = */ false);
     }
 
     public void onBindViewHolder(SnippetArticle suggestion) {

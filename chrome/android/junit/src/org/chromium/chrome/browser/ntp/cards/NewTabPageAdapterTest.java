@@ -391,8 +391,7 @@ public class NewTabPageAdapterTest {
 
         // Add another suggestion.
         suggestions.add(new SnippetArticle(TEST_CATEGORY, "https://site.com/url3", "title3", "pub3",
-                "txt3", "https://site.com/url3", 0, 0, 0, false,
-                /* thumbnailDominantColor = */ null));
+                "https://site.com/url3", 0, 0, 0, false, /* thumbnailDominantColor = */ null));
 
         // When the provider is removed, we should not be able to load suggestions. The UI should
         // stay the same though.

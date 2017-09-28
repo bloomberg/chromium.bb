@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.support.annotation.LayoutRes;
-import android.text.TextUtils;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -21,9 +20,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
-import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /**
@@ -139,38 +136,19 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      * Updates the layout taking into account screen dimensions and the type of snippet displayed.
      */
     private void updateLayout() {
-        final int horizontalStyle = mUiConfig.getCurrentDisplayStyle().horizontal;
-        final int verticalStyle = mUiConfig.getCurrentDisplayStyle().vertical;
         final int layout = mCategoryInfo.getCardLayout();
 
         boolean showHeadline = shouldShowHeadline();
-        boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
         boolean showThumbnail = shouldShowThumbnail(layout);
         boolean showThumbnailVideoOverlay = shouldShowThumbnailVideoOverlay(showThumbnail);
 
-        mSuggestionsBinder.updateFieldsVisibility(showHeadline, showDescription, showThumbnail,
-                showThumbnailVideoOverlay,
-                getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
+        mSuggestionsBinder.updateFieldsVisibility(
+                showHeadline, showThumbnail, showThumbnailVideoOverlay);
     }
 
     /** If the title is empty (or contains only whitespace characters), we do not show it. */
     private boolean shouldShowHeadline() {
         return !mArticle.mTitle.trim().isEmpty();
-    }
-
-    private boolean shouldShowDescription(int horizontalStyle, int verticalStyle, int layout) {
-        // Minimal cards don't have a description.
-        if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
-
-        // When the screen is too small (narrow or flat) we don't show the description to have more
-        // space for the header.
-        if (horizontalStyle == HorizontalDisplayStyle.NARROW) return false;
-        if (verticalStyle == VerticalDisplayStyle.FLAT) return false;
-
-        // When article's description is empty, we do not want empty space.
-        if (mArticle != null && TextUtils.isEmpty(mArticle.mPreviewText)) return false;
-
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SHOW_SUMMARY);
     }
 
     private boolean shouldShowThumbnail(int layout) {
@@ -184,14 +162,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (!showThumbnail) return false;
         if (!mArticle.mIsVideoSuggestion) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_VIDEO_OVERLAY);
-    }
-
-    /**
-     * If no summary (no description) is shown, allow more lines for the header (title).
-     * @return The maximum number of header text lines.
-     */
-    private int getHeaderMaxLines(int horizontalStyle, int verticalStyle, int layout) {
-        return shouldShowDescription(horizontalStyle, verticalStyle, layout) ? 2 : 3;
     }
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */

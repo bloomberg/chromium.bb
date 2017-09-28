@@ -193,7 +193,7 @@ public class ArticleSnippetsTest {
                 /* show_if_empty = */ true, "No suggestions");
 
         SnippetArticle shortSnippet = new SnippetArticle(FULL_CATEGORY, "id1", "Snippet",
-                "Publisher", "Preview Text", "www.google.com",
+                "Publisher", "www.google.com",
                 mTimestamp, // Publish timestamp
                 10f, // Score
                 mTimestamp, // Fetch timestamp
@@ -210,7 +210,7 @@ public class ArticleSnippetsTest {
         SnippetArticle longSnippet = new SnippetArticle(FULL_CATEGORY, "id2",
                 new String(new char[20]).replace("\0", "Snippet "),
                 new String(new char[20]).replace("\0", "Publisher "),
-                new String(new char[80]).replace("\0", "Preview Text "), "www.google.com",
+                "www.google.com",
                 mTimestamp, // Publish timestamp
                 20f, // Score
                 mTimestamp, // Fetch timestamp
@@ -225,7 +225,7 @@ public class ArticleSnippetsTest {
 
         SnippetArticle minimalSnippet = new SnippetArticle(MINIMAL_CATEGORY, "id3",
                 new String(new char[20]).replace("\0", "Bookmark "), "Publisher",
-                "This should not be displayed", "www.google.com",
+                "www.google.com",
                 mTimestamp, // Publish timestamp
                 10f, // Score
                 mTimestamp, // Fetch timestamp
@@ -234,7 +234,7 @@ public class ArticleSnippetsTest {
         renderSuggestion(minimalSnippet, minimalCategory, "minimal_snippet");
 
         SnippetArticle minimalSnippet2 = new SnippetArticle(MINIMAL_CATEGORY, "id4", "Bookmark",
-                "Publisher", "This should not be displayed", "www.google.com",
+                "Publisher", "www.google.com",
                 mTimestamp, // Publish timestamp
                 10f, // Score
                 mTimestamp, // Fetch timestamp
@@ -272,7 +272,7 @@ public class ArticleSnippetsTest {
                 UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/capybara.jpg");
         ThreadUtils.runOnUiThreadBlocking(() -> {
             SnippetArticle downloadSuggestion = new SnippetArticle(KnownCategories.DOWNLOADS, "id1",
-                    "test_image.jpg", "example.com", null, "http://example.com",
+                    "test_image.jpg", "example.com", "http://example.com",
                     mTimestamp, // Publish timestamp
                     10f, // Score
                     mTimestamp, // Fetch timestamp

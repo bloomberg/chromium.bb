@@ -29,7 +29,6 @@ extern const base::Feature kChromeHomeSwipeLogic;
 extern const base::Feature kContentSuggestionsLargeThumbnail;
 extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsSettings;
-extern const base::Feature kContentSuggestionsShowSummary;
 extern const base::Feature kContentSuggestionsThumbnailDominantColor;
 extern const base::Feature kContentSuggestionsVideoOverlay;
 extern const base::Feature kContextualSearchSingleActions;
