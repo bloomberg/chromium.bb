@@ -402,7 +402,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       _browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
   const ntp_tiles::NTPTile& tile = _mostVisitedData[visitedIndex];
-  ntp_tiles::metrics::RecordTileClick(visitedIndex, tile.source, tileType);
+  ntp_tiles::metrics::RecordTileClick(visitedIndex, tile.title_source,
+                                      tile.source, tileType);
 }
 
 - (ReadingListModel*)readingListModel {
@@ -468,7 +469,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     ntp_tiles::NTPTile& ntpTile = _mostVisitedDataForLogging[i];
     if (ntpTile.url == URL) {
       ntp_tiles::metrics::RecordTileImpression(
-          i, ntpTile.source, tileType, URL,
+          i, ntpTile.title_source, ntpTile.source, tileType, URL,
           GetApplicationContext()->GetRapporServiceImpl());
       // Reset the URL to be sure to log the impression only once.
       ntpTile.url = GURL();

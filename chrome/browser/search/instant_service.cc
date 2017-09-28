@@ -224,6 +224,7 @@ void InstantService::OnURLsAvailable(
     item.thumbnail = tile.thumbnail_url;
     item.favicon = tile.favicon_url;
     item.source = tile.source;
+    item.title_source = tile.title_source;
     most_visited_items_.push_back(item);
   }
 

@@ -243,18 +243,22 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
   embedded_search_service_->LogEvent(page_seq_no_, event, delta);
 }
 
-void SearchBox::LogMostVisitedImpression(int position,
-                                         ntp_tiles::TileSource tile_source,
-                                         ntp_tiles::TileVisualType tile_type) {
-  embedded_search_service_->LogMostVisitedImpression(page_seq_no_, position,
-                                                     tile_source, tile_type);
+void SearchBox::LogMostVisitedImpression(
+    int position,
+    ntp_tiles::TileTitleSource tile_title_source,
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
+  embedded_search_service_->LogMostVisitedImpression(
+      page_seq_no_, position, tile_title_source, tile_source, tile_type);
 }
 
-void SearchBox::LogMostVisitedNavigation(int position,
-                                         ntp_tiles::TileSource tile_source,
-                                         ntp_tiles::TileVisualType tile_type) {
-  embedded_search_service_->LogMostVisitedNavigation(page_seq_no_, position,
-                                                     tile_source, tile_type);
+void SearchBox::LogMostVisitedNavigation(
+    int position,
+    ntp_tiles::TileTitleSource tile_title_source,
+    ntp_tiles::TileSource tile_source,
+    ntp_tiles::TileVisualType tile_type) {
+  embedded_search_service_->LogMostVisitedNavigation(
+      page_seq_no_, position, tile_title_source, tile_source, tile_type);
 }
 
 void SearchBox::CheckIsUserSignedInToChromeAs(const base::string16& identity) {

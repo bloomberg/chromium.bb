@@ -12,6 +12,7 @@
 
 #include "base/strings/string16.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_title_source.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
@@ -126,6 +127,9 @@ struct InstantMostVisitedItem {
 
   // The external URL of the favicon associated with this page.
   GURL favicon;
+
+  // The source of the item's |title|.
+  ntp_tiles::TileTitleSource title_source;
 
   // The source of the item, e.g. server-side or client-side.
   ntp_tiles::TileSource source;

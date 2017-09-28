@@ -148,6 +148,7 @@ ContentSuggestionsMostVisitedItem* ConvertNTPTile(
   suggestion.title = base::SysUTF16ToNSString(tile.title);
   suggestion.URL = tile.url;
   suggestion.source = tile.source;
+  suggestion.titleSource = tile.title_source;
 
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.IDInSection = tile.url.spec();

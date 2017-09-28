@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/ntp_tiles/section_type.h"
+#include "components/ntp_tiles/tile_title_source.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -30,7 +31,8 @@ class PopularSites {
          const GURL& url,
          const GURL& favicon_url,
          const GURL& large_icon_url,
-         const GURL& thumbnail_url);
+         const GURL& thumbnail_url,
+         TileTitleSource title_source);
     Site(const Site& other);
     ~Site();
 
@@ -39,6 +41,8 @@ class PopularSites {
     GURL favicon_url;
     GURL large_icon_url;
     GURL thumbnail_url;
+
+    TileTitleSource title_source;
     bool baked_in;
     int default_icon_resource;  // < 0 if there is none. Used for popular sites.
   };

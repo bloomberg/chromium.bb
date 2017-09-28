@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
+import org.chromium.chrome.browser.suggestions.TileTitleSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,12 +53,12 @@ public class FakeMostVisitedSites implements MostVisitedSites {
     }
 
     @Override
-    public void recordTileImpression(int index, int type, int source, String url) {
+    public void recordTileImpression(int index, int type, int titleSource, int source, String url) {
         // Metrics are stubbed out.
     }
 
     @Override
-    public void recordOpenedMostVisitedItem(int index, int tileType, int source) {
+    public void recordOpenedMostVisitedItem(int index, int tileType, int titleSource, int source) {
         //  Metrics are stubbed out.
     }
 
@@ -113,8 +114,8 @@ public class FakeMostVisitedSites implements MostVisitedSites {
     }
 
     public static SiteSuggestion createSiteSuggestion(String title, String url) {
-        return new SiteSuggestion(
-                title, url, "", TileSource.TOP_SITES, TileSectionType.PERSONALIZED);
+        return new SiteSuggestion(title, url, "", TileTitleSource.TITLE_TAG, TileSource.TOP_SITES,
+                TileSectionType.PERSONALIZED);
     }
 
     private void notifyTileSuggestionsAvailable() {

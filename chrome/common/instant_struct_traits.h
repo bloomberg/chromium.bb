@@ -6,6 +6,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/tile_source.h"
+#include "components/ntp_tiles/tile_title_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "ipc/ipc_message_macros.h"
@@ -16,6 +17,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
                           OMNIBOX_FOCUS_CHANGE_REASON_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType, NTP_EVENT_TYPE_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::TileTitleSource,
+                          ntp_tiles::TileTitleSource::LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::TileSource, ntp_tiles::TileSource::LAST)
 

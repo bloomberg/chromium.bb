@@ -167,6 +167,8 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
              UTF8ToV8String(isolate, mv_item.favicon.spec()));
   }
 
+  obj->Set(v8::String::NewFromUtf8(isolate, "tileTitleSource"),
+           v8::Integer::New(isolate, static_cast<int>(mv_item.title_source)));
   obj->Set(v8::String::NewFromUtf8(isolate, "tileSource"),
            v8::Integer::New(isolate, static_cast<int>(mv_item.source)));
   obj->Set(v8::String::NewFromUtf8(isolate, "title"),
@@ -862,23 +864,27 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
   if (!render_frame)
     return;
 
-  if (args.Length() < 3 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
-      !args[2]->IsNumber()) {
+  if (args.Length() < 4 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+      !args[2]->IsNumber() || !args[3]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
   DVLOG(1) << render_frame << " LogMostVisitedImpression";
 
-  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
-      args[2]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+  if (args[1]->Uint32Value() <=
+          static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
+      args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    auto tile_title_source =
+        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value());
     auto tile_source =
-        static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
+        static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value());
     auto tile_type =
-        static_cast<ntp_tiles::TileVisualType>(args[2]->Uint32Value());
+        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value());
     SearchBox::Get(render_frame)
-        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_source,
-                                   tile_type);
+        ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_title_source,
+                                   tile_source, tile_type);
   }
 }
 
@@ -890,22 +896,27 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
   if (!render_frame)
     return;
 
-  if (args.Length() < 2 || !args[0]->IsNumber() || !args[1]->IsNumber()) {
+  if (args.Length() < 4 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+      !args[2]->IsNumber() || !args[3]->IsNumber()) {
     ThrowInvalidParameters(args);
     return;
   }
 
   DVLOG(1) << render_frame << " LogMostVisitedNavigation";
 
-  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
-      args[2]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+  if (args[1]->Uint32Value() <=
+          static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
+      args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    auto tile_title_source =
+        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value());
     auto tile_source =
-        static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
+        static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value());
     auto tile_type =
-        static_cast<ntp_tiles::TileVisualType>(args[2]->Uint32Value());
+        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value());
     SearchBox::Get(render_frame)
-        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_source,
-                                   tile_type);
+        ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_title_source,
+                                   tile_source, tile_type);
   }
 }
 
