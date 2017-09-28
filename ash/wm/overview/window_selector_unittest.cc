@@ -1467,6 +1467,22 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
   }
 }
 
+// Verifies hitting the escape and back keys exit overview mode.
+TEST_F(WindowSelectorTest, ExitOverviewWithKey) {
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+  SendKey(ui::VKEY_ESCAPE);
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+  SendKey(ui::VKEY_BROWSER_BACK);
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+}
+
 // Tests basic selection across multiple monitors.
 TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
   UpdateDisplay("400x400,400x400");
