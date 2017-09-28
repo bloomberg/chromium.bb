@@ -633,11 +633,11 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!contents->GetRenderProcessHost()) {
+  if (!contents->GetRenderViewHost()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
-  if (!contents->GetRenderViewHost()) {
+  if (!contents->GetRenderViewHost()->GetProcess()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);
     return;
   }
@@ -656,7 +656,8 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_WEBSTORE_INSTALLER);
-  int render_process_host_id = contents->GetRenderProcessHost()->GetID();
+  int render_process_host_id =
+      contents->GetRenderViewHost()->GetProcess()->GetID();
   int render_view_host_routing_id =
       contents->GetRenderViewHost()->GetRoutingID();
 
