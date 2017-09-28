@@ -397,7 +397,8 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
       if (profiles::IsPublicSession()) {
         UpdateExclusiveAccessExitBubbleContent(
             GURL(),
-            fullscreen_types & AppWindow::FULLSCREEN_TYPE_HTML_API
+            fullscreen_types & (AppWindow::FULLSCREEN_TYPE_HTML_API |
+                                AppWindow::FULLSCREEN_TYPE_WINDOW_API)
                 ? EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION
                 : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
             ExclusiveAccessBubbleHideCallback());

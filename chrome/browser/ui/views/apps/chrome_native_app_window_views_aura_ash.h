@@ -125,7 +125,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
                            NoImmersiveOrBubbleOutsidePublicSessionDom);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
-                           ImmersiveNoBubbleInsidePublicSessionWindow);
+                           ImmersiveAndBubbleInsidePublicSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
                            ImmersiveAndBubbleInsidePublicSessionDom);
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
