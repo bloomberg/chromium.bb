@@ -56,7 +56,7 @@ bool RenderPDFPagesToPWGRaster(base::File pdf_file,
     }
 
     cloud_print::PwgHeaderInfo header_info;
-    header_info.dpi = settings.dpi;
+    header_info.dpi = gfx::Size(settings.dpi, settings.dpi);
     header_info.total_pages = total_page_count;
 
     // Transform odd pages.

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cloud_print {
 
@@ -17,7 +18,7 @@ class BitmapImage;
 
 struct PwgHeaderInfo {
   PwgHeaderInfo()
-      : dpi(300),
+      : dpi(300, 300),
         total_pages(1),
         flipx(false),
         flipy(false),
@@ -25,7 +26,7 @@ struct PwgHeaderInfo {
         duplex(false),
         tumble(false) {}
   enum ColorSpace { SGRAY = 18, SRGB = 19 };
-  uint32_t dpi;
+  gfx::Size dpi;
   uint32_t total_pages;
   bool flipx;
   bool flipy;
