@@ -34,7 +34,6 @@
 #include "net/cert/x509_util_mac.h"
 #elif defined(OS_FUCHSIA)
 #include "third_party/boringssl/src/include/openssl/pool.h"
-#include "third_party/boringssl/src/include/openssl/x509.h"
 #endif
 
 namespace net {
