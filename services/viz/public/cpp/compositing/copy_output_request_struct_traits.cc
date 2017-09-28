@@ -80,6 +80,17 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
   auto request = std::make_unique<viz::CopyOutputRequest>(
       result_format, base::BindOnce(SendResult, base::Passed(&result_sender)));
 
+  gfx::Vector2d scale_from;
+  if (!data.ReadScaleFrom(&scale_from) || scale_from.x() <= 0 ||
+      scale_from.y() <= 0) {
+    return false;
+  }
+  gfx::Vector2d scale_to;
+  if (!data.ReadScaleTo(&scale_to) || scale_to.x() <= 0 || scale_to.y() <= 0) {
+    return false;
+  }
+  request->SetScaleRatio(scale_from, scale_to);
+
   if (!data.ReadSource(&request->source_))
     return false;
 

@@ -246,6 +246,10 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   const gfx::Rect area(5, 7, 44, 55);
   const auto source =
       base::UnguessableToken::Deserialize(0xdeadbeef, 0xdeadf00d);
+  // Requesting 2:3 scale in X dimension, 5:4 in Y dimension.
+  const gfx::Vector2d scale_from(2, 5);
+  const gfx::Vector2d scale_to(3, 4);
+  const gfx::Rect result_rect(7, 8, 132, 44);
 
   base::RunLoop run_loop;
   std::unique_ptr<CopyOutputRequest> input(new CopyOutputRequest(
@@ -256,21 +260,29 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
             EXPECT_EQ(expected_rect, result->rect());
             quit_closure.Run();
           },
-          run_loop.QuitClosure(), area)));
+          run_loop.QuitClosure(), result_rect)));
+  input->SetScaleRatio(scale_from, scale_to);
+  EXPECT_EQ(scale_from, input->scale_from());
+  EXPECT_EQ(scale_to, input->scale_to());
   input->set_area(area);
   input->set_source(source);
+  EXPECT_TRUE(input->is_scaled());
   std::unique_ptr<CopyOutputRequest> output;
   SerializeAndDeserialize<mojom::CopyOutputRequest>(input, &output);
 
-  EXPECT_EQ(output->result_format(), result_format);
+  EXPECT_EQ(result_format, output->result_format());
+  EXPECT_TRUE(output->is_scaled());
+  EXPECT_EQ(scale_from, output->scale_from());
+  EXPECT_EQ(scale_to, output->scale_to());
   EXPECT_TRUE(output->has_source());
   EXPECT_EQ(source, output->source());
   EXPECT_TRUE(output->has_area());
   EXPECT_EQ(area, output->area());
 
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(area.width(), area.height());
-  output->SendResult(std::make_unique<CopyOutputSkBitmapResult>(area, bitmap));
+  bitmap.allocN32Pixels(result_rect.width(), result_rect.height());
+  output->SendResult(
+      std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap));
   // If the CopyOutputRequest callback is called, this ends. Otherwise, the test
   // will time out and fail.
   run_loop.Run();
@@ -321,10 +333,12 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
           },
           run_loop_for_result.QuitClosure(), result_rect)));
   input->SetTextureMailbox(texture_mailbox);
+  EXPECT_FALSE(input->is_scaled());
   std::unique_ptr<CopyOutputRequest> output;
   SerializeAndDeserialize<mojom::CopyOutputRequest>(input, &output);
 
   EXPECT_EQ(output->result_format(), result_format);
+  EXPECT_FALSE(output->is_scaled());
   EXPECT_FALSE(output->has_source());
   EXPECT_FALSE(output->has_area());
   EXPECT_TRUE(output->has_texture_mailbox());
