@@ -19,6 +19,7 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/content_setting_domain_list_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -506,18 +507,10 @@ void ContentSettingBubbleContents::Init() {
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
            bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
+    auto list_view =
+        base::MakeUnique<ContentSettingDomainListView>(i->title, i->hosts);
     layout->StartRow(0, kSingleColumnSetId);
-    views::Label* section_title = new views::Label(i->title);
-    section_title->SetMultiLine(true);
-    section_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
-    for (std::set<std::string>::const_iterator j = i->hosts.begin();
-         j != i->hosts.end(); ++j) {
-      layout->StartRow(0, kIndentedSingleColumnSetId);
-      // TODO(tapted): Verify this when we have a mock. http://crbug.com/700196.
-      layout->AddView(new views::Label(
-          base::UTF8ToUTF16(*j), CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED));
-    }
+    layout->AddView(list_view.release());
     bubble_content_empty = false;
   }
 
