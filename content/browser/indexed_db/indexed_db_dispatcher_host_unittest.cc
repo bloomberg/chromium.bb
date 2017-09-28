@@ -411,7 +411,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
     // Call Put with an invalid blob.
     std::vector<::indexed_db::mojom::BlobInfoPtr> blobs;
     blobs.push_back(::indexed_db::mojom::BlobInfo::New(
-        "fakeUUID", base::string16(), 100, nullptr));
+        nullptr, "fakeUUID", base::string16(), 100, nullptr));
     connection.database->Put(kTransactionId, kObjectStoreId,
                              Value::New("hello", std::move(blobs)),
                              content::IndexedDBKey(base::UTF8ToUTF16("hello")),
