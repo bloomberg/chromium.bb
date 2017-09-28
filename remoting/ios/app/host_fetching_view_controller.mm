@@ -11,16 +11,15 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "remoting/ios/app/remoting_theme.h"
 
-static const CGFloat kActivityIndicatorStrokeWidth = 4.f;
-static const CGFloat kActivityIndicatorRadius = 32.f;
+static const CGFloat kActivityIndicatorStrokeWidth = 2.5f;
+static const CGFloat kActivityIndicatorRadius = 20.f;
 
 @implementation HostFetchingViewController
 
 - (void)viewDidLoad {
   MDCActivityIndicator* activityIndicator = [[MDCActivityIndicator alloc] init];
   activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
-  activityIndicator.cycleColors =
-      @[ RemotingTheme.hostListRefreshIndicatorColor ];
+  activityIndicator.cycleColors = @[ RemotingTheme.refreshIndicatorColor ];
   activityIndicator.radius = kActivityIndicatorRadius;
   activityIndicator.strokeWidth = kActivityIndicatorStrokeWidth;
   [self.view addSubview:activityIndicator];
