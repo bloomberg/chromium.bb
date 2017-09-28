@@ -310,6 +310,10 @@ void EnterTabSwitcherWithCommand() {
   // The TabSwitcherController is only used on iPhones.
   if (!IsIPadIdiom())
     EARL_GREY_TEST_SKIPPED(@"TabSwitcherController is only used on iPads.");
+  // TODO(crbug.com/769708): reenable on iOS11.
+  if (@available(iOS 11, *)) {
+    EARL_GREY_TEST_SKIPPED(@"Test failing on iOS11.");
+  }
 
   // Load the blank test page so that JavaScript can be executed.
   const GURL kBlankPageURL = HttpServer::MakeUrl("http://blank-page");
