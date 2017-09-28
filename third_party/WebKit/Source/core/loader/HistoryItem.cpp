@@ -147,7 +147,7 @@ void HistoryItem::SetFormContentType(const AtomicString& form_content_type) {
 }
 
 EncodedFormData* HistoryItem::FormData() {
-  return form_data_.Get();
+  return form_data_.get();
 }
 
 ResourceRequest HistoryItem::GenerateResourceRequest(

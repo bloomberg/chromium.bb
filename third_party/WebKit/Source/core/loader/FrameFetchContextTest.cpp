@@ -1190,7 +1190,7 @@ TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  fetch_context->UpdateTimingInfoForIFrameNavigation(info.Get());
+  fetch_context->UpdateTimingInfoForIFrameNavigation(info.get());
   // Should not crash.
 }
 
@@ -1216,7 +1216,7 @@ TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
   document->SetSecurityOrigin(origin);
 
   dummy_page_holder = nullptr;
-  EXPECT_EQ(origin.Get(), fetch_context->GetSecurityOrigin());
+  EXPECT_EQ(origin.get(), fetch_context->GetSecurityOrigin());
 }
 
 TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {

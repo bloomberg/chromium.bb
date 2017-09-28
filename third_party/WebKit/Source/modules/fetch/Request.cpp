@@ -194,7 +194,7 @@ Request* Request::CreateRequestWithRequestOrString(
         // substeps."
         request->SetReferrerString(FetchRequestData::ClientReferrerString());
       } else if (!origin->IsSameSchemeHostPortAndSuborigin(
-                     SecurityOrigin::Create(parsed_referrer).Get())) {
+                     SecurityOrigin::Create(parsed_referrer).get())) {
         // "If |parsedReferrer|'s origin is not same origin with
         // |origin|, throw a TypeError."
         exception_state.ThrowTypeError(
@@ -244,7 +244,7 @@ Request* Request::CreateRequestWithRequestOrString(
   } else if (init.credentials == "include") {
     request->SetCredentials(WebURLRequest::kFetchCredentialsModeInclude);
   } else if (init.credentials == "password") {
-    if (!init.attached_credential.Get()) {
+    if (!init.attached_credential.get()) {
       exception_state.ThrowTypeError(
           "Cannot construct a Request with a credential mode of 'password' "
           "without a PasswordCredential.");

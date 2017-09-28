@@ -387,7 +387,7 @@ void FetchManager::Loader::DidReceiveResponse(
       }
     }
   } else if (!SecurityOrigin::Create(response.Url())
-                  ->IsSameSchemeHostPort(request_->Origin().Get())) {
+                  ->IsSameSchemeHostPort(request_->Origin().get())) {
     // Recompute the tainting if the request was redirected to a different
     // origin.
     switch (request_->Mode()) {
@@ -595,7 +595,7 @@ void FetchManager::Loader::Start() {
   // Note we don't support to call this method with |CORS flag|
   // "- |request|'s mode is |navigate|".
   if ((SecurityOrigin::Create(request_->Url())
-           ->IsSameSchemeHostPortAndSuborigin(request_->Origin().Get())) ||
+           ->IsSameSchemeHostPortAndSuborigin(request_->Origin().get())) ||
       (request_->Url().ProtocolIsData() && request_->SameOriginDataURLFlag()) ||
       (request_->Url().ProtocolIsAbout()) ||
       (request_->Mode() == WebURLRequest::kFetchRequestModeNavigate)) {
@@ -764,7 +764,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
-  resource_loader_options.security_origin = request_->Origin().Get();
+  resource_loader_options.security_origin = request_->Origin().get();
 
   ThreadableLoaderOptions threadable_loader_options;
 
@@ -793,7 +793,7 @@ void FetchManager::Loader::PerformDataFetch() {
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
-  resource_loader_options.security_origin = request_->Origin().Get();
+  resource_loader_options.security_origin = request_->Origin().get();
 
   ThreadableLoaderOptions threadable_loader_options;
 

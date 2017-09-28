@@ -105,7 +105,7 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
   const AtomicString& Target() const { return target_; }
   void ClearTarget() { target_ = g_null_atom; }
   HTMLFormElement* Form() const { return form_.Get(); }
-  EncodedFormData* Data() const { return form_data_.Get(); }
+  EncodedFormData* Data() const { return form_data_.get(); }
 
   const String& Result() const { return result_; }
 

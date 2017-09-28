@@ -62,7 +62,7 @@ class DataConsumerHandleTestUtil {
 
     WebThreadSupportingGC* GetThread() { return thread_.get(); }
     ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }
-    ScriptState* GetScriptState() { return script_state_.Get(); }
+    ScriptState* GetScriptState() { return script_state_.get(); }
     v8::Isolate* GetIsolate() { return isolate_holder_->isolate(); }
 
    private:
@@ -396,7 +396,7 @@ class DataConsumerHandleTestUtil {
       std::unique_ptr<WaitableEvent> detached_;
     };
 
-    Context* GetContext() { return context_.Get(); }
+    Context* GetContext() { return context_.get(); }
     std::unique_ptr<Reader> ObtainReader(Client*) override;
 
    private:

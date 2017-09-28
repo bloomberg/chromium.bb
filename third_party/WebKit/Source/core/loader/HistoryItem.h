@@ -93,7 +93,7 @@ class CORE_EXPORT HistoryItem final
   void SetReferrer(const Referrer&);
 
   void SetStateObject(RefPtr<SerializedScriptValue>);
-  SerializedScriptValue* StateObject() const { return state_object_.Get(); }
+  SerializedScriptValue* StateObject() const { return state_object_.get(); }
 
   void SetItemSequenceNumber(long long number) {
     item_sequence_number_ = number;

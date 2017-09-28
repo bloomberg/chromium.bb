@@ -162,7 +162,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   if (ShouldBlockRequestByInspector(resource_request.Url()))
     return ResourceRequestBlockedReason::kInspector;
 
-  SecurityOrigin* security_origin = options.security_origin.Get();
+  SecurityOrigin* security_origin = options.security_origin.get();
   if (!security_origin)
     security_origin = GetSecurityOrigin();
 

@@ -65,7 +65,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       const KURL& url,
       const Vector<String>& dependency_module_specifiers,
       ScriptModuleState state) {
-    ScriptState::Scope scope(script_state_.Get());
+    ScriptState::Scope scope(script_state_.get());
 
     StringBuilder source_text;
     Vector<ModuleRequest> dependency_module_requests;
@@ -97,7 +97,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
       module_script->SetErrorAndClearRecord(
-          ScriptValue(script_state_.Get(), error));
+          ScriptValue(script_state_.get(), error));
     }
 
     if (state == ScriptModuleState::kErrored) {
@@ -125,7 +125,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
  private:
   // Implements Modulator:
 
-  ScriptState* GetScriptState() override { return script_state_.Get(); }
+  ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
                    ModuleGraphLevel,
@@ -144,11 +144,11 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
   ScriptValue InstantiateModule(ScriptModule record) override {
     if (instantiate_should_fail_) {
-      ScriptState::Scope scope(script_state_.Get());
+      ScriptState::Scope scope(script_state_.get());
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
       errored_records_.insert(record);
-      return ScriptValue(script_state_.Get(), error);
+      return ScriptValue(script_state_.get(), error);
     }
     instantiated_records_.insert(record);
     return ScriptValue();
@@ -163,8 +163,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   }
 
   ScriptValue GetError(const ModuleScript* module_script) override {
-    ScriptState::Scope scope(script_state_.Get());
-    return ScriptValue(script_state_.Get(), module_script->CreateErrorInternal(
+    ScriptState::Scope scope(script_state_.get());
+    return ScriptValue(script_state_.get(), module_script->CreateErrorInternal(
                                                 script_state_->GetIsolate()));
   }
 

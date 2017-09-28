@@ -743,7 +743,7 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
     RefPtr<SecurityOrigin> original_origin =
         SecurityOrigin::Create(original_url);
     RefPtr<SecurityOrigin> new_origin = SecurityOrigin::Create(new_url);
-    if (!original_origin->IsSameSchemeHostPort(new_origin.Get()))
+    if (!original_origin->IsSameSchemeHostPort(new_origin.get()))
       security_origin_ = SecurityOrigin::CreateUnique();
   }
 
@@ -1326,7 +1326,7 @@ bool DocumentThreadableLoader::IsAllowedRedirect(
 
 SecurityOrigin* DocumentThreadableLoader::GetSecurityOrigin() const {
   return security_origin_
-             ? security_origin_.Get()
+             ? security_origin_.get()
              : loading_context_->GetFetchContext()->GetSecurityOrigin();
 }
 

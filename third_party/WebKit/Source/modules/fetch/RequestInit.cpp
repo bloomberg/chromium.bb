@@ -138,7 +138,7 @@ RequestInit::RequestInit(ExecutionContext* context,
     }
   }
 
-  if (attached_credential.Get() || !is_body_set || v8_body->IsUndefined() ||
+  if (attached_credential.get() || !is_body_set || v8_body->IsUndefined() ||
       v8_body->IsNull())
     return;
 
