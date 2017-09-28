@@ -4,10 +4,12 @@
 
 #include "content/browser/download/resource_downloader.h"
 
+#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
 
@@ -47,6 +49,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     uint32_t download_id,
     bool is_parallel_request) {
   mojom::URLLoaderFactoryPtr* factory =
@@ -57,8 +60,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       delegate, std::move(request),
       base::MakeUnique<DownloadSaveInfo>(params->GetSaveInfo()), download_id,
       params->guid(), is_parallel_request, params->is_transient());
-  downloader->Start(factory, std::move(params));
-
+  downloader->Start(factory, file_system_context, std::move(params));
   return downloader;
 }
 
@@ -97,6 +99,7 @@ ResourceDownloader::ResourceDownloader(
                         std::move(save_info),
                         is_parallel_request,
                         is_transient),
+      blob_client_binding_(&response_handler_),
       download_id_(download_id),
       guid_(guid),
       weak_ptr_factory_(this) {}
@@ -105,17 +108,28 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     mojom::URLLoaderFactoryPtr* factory,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     std::unique_ptr<DownloadUrlParameters> download_url_parameters) {
   callback_ = download_url_parameters->callback();
-  url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-      factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-      0,  // routing_id
-      0,  // request_id
-      mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
-      *(resource_request_.get()), &response_handler_,
-      download_url_parameters->GetNetworkTrafficAnnotation());
-  url_loader_->SetPriority(net::RequestPriority::IDLE,
-                           0 /* intra_priority_value */);
+  if (download_url_parameters->url().SchemeIs(url::kBlobScheme)) {
+    mojom::URLLoaderRequest url_loader_request;
+    mojom::URLLoaderClientPtr client;
+    blob_client_binding_.Bind(mojo::MakeRequest(&client));
+    BlobURLLoaderFactory::CreateLoaderAndStart(
+        std::move(url_loader_request), *(resource_request_.get()),
+        std::move(client), download_url_parameters->GetBlobDataHandle(),
+        file_system_context.get());
+  } else {
+    url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+        factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        0,  // routing_id
+        0,  // request_id
+        mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
+        *(resource_request_.get()), &response_handler_,
+        download_url_parameters->GetNetworkTrafficAnnotation());
+    url_loader_->SetPriority(net::RequestPriority::IDLE,
+                             0 /* intra_priority_value */);
+  }
 }
 
 void ResourceDownloader::InterceptResponse(
