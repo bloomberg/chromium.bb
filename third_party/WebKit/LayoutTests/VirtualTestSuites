@@ -533,6 +533,11 @@
   },
   {
     "prefix": "mojo-blobs",
+    "base": "external/wpt/IndexedDB",
+    "args": ["--enable-features=MojoBlobs"]
+  },
+  {
+    "prefix": "mojo-blobs",
     "base": "external/wpt/fetch",
     "args": ["--enable-features=MojoBlobs"]
   },
