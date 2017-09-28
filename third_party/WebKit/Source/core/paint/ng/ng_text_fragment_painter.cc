@@ -5,6 +5,8 @@
 #include "core/paint/ng/ng_text_fragment_painter.h"
 
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_text_decoration_offset.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainterBase.h"
 #include "core/paint/ng/ng_paint_fragment.h"
@@ -15,33 +17,6 @@
 #include "platform/text/Truncation.h"
 
 namespace blink {
-
-namespace {
-
-static void PaintDecorationsExceptLineThrough(
-    NGTextPainter& text_painter,
-    bool& has_line_through_decoration,
-    const NGPhysicalTextFragment& fragment,
-    const DecorationInfo& decoration_info,
-    const PaintInfo& paint_info,
-    const Vector<AppliedTextDecoration>& decorations) {
-  GraphicsContext& context = paint_info.context;
-  GraphicsContextStateSaver state_saver(context);
-  context.SetStrokeThickness(decoration_info.thickness);
-
-  // text-underline-position may flip underline and overline.
-  ResolvedUnderlinePosition underline_position =
-      decoration_info.underline_position;
-  bool flip_underline_and_overline = false;
-  if (underline_position == ResolvedUnderlinePosition::kOver) {
-    flip_underline_and_overline = true;
-    underline_position = ResolvedUnderlinePosition::kUnder;
-  }
-
-  // TODO(layout-dev): Add support for text decorations.
-}
-
-}  // anonymous namespace
 
 NGTextFragmentPainter::NGTextFragmentPainter(
     const NGPaintFragment& text_fragment)
@@ -108,10 +83,11 @@ void NGTextFragmentPainter::Paint(const Document& document,
   int selection_start = 0;
   int selection_end = 0;
 
-  // TODO(layout-dev): Add hyphen support.
-
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
+
+  // TODO(layout-dev): Truncation and hyphens are computed during layout.
+  // Remove the concept of truncation?
   unsigned length = text_fragment.Text().length();
   unsigned truncation = kCNoTruncation;
 
@@ -149,20 +125,23 @@ void NGTextFragmentPainter::Paint(const Document& document,
         truncation != kCFullTruncation) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
       LayoutUnit width = fragment_.Size().width;
-      const ComputedStyle* decorating_box_style = nullptr;
-      // TODO(layout-dev): Implement.
+      const NGPhysicalBoxFragment* decorating_box = nullptr;
+      const ComputedStyle* decorating_box_style =
+          decorating_box ? &decorating_box->Style() : nullptr;
+
+      // TODO(eae): Use correct baseline when available.
       FontBaseline baseline_type = kAlphabeticBaseline;
 
       text_painter.ComputeDecorationInfo(decoration_info, box_origin,
                                          local_origin, width, baseline_type,
                                          style_to_use, decorating_box_style);
-      GraphicsContextStateSaver state_saver(context, false);
-      TextPainterBase::UpdateGraphicsContext(
-          context, text_style, text_fragment.IsHorizontal(), state_saver);
 
-      PaintDecorationsExceptLineThrough(
-          text_painter, has_line_through_decoration, text_fragment,
-          decoration_info, paint_info, style_to_use.AppliedTextDecorations());
+      NGTextDecorationOffset decoration_offset(*decoration_info.style,
+                                               text_fragment, decorating_box);
+      text_painter.PaintDecorationsExceptLineThrough(
+          decoration_offset, decoration_info, paint_info,
+          style_to_use.AppliedTextDecorations(), text_style,
+          &has_line_through_decoration);
     }
 
     int start_offset = 0;

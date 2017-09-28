@@ -439,6 +439,8 @@ blink_core_sources("layout") {
     "ng/ng_relative_utils.h",
     "ng/ng_space_utils.cc",
     "ng/ng_space_utils.h",
+    "ng/ng_text_decoration_offset.cc",
+    "ng/ng_text_decoration_offset.h",
     "ng/ng_unpositioned_float.cc",
     "ng/ng_unpositioned_float.h",
     "ng/ng_writing_mode.cc",
