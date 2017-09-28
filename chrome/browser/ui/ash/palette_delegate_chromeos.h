@@ -43,7 +43,7 @@ class PaletteDelegateChromeOS
   void TakeScreenshot() override;
   void TakePartialScreenshot(const base::Closure& done) override;
   void CancelPartialScreenshot() override;
-  void ShowMetalayer(base::OnceClosure done) override;
+  void ShowMetalayer(base::OnceClosure done, bool via_button) override;
   void HideMetalayer() override;
 
   // user_manager::UserManager::UserSessionStateObserver:

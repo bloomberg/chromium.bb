@@ -46,8 +46,6 @@ class TestPaletteDelegate : public PaletteDelegate {
 
   int hide_metalayer_count() const { return hide_metalayer_count_; }
 
-  void CallMetalayerDone() { std::move(metalayer_done_).Run(); }
-
   void set_highlighter_test_api(HighlighterControllerTestApi* api) {
     highlighter_test_api_ = api;
   }
@@ -63,7 +61,7 @@ class TestPaletteDelegate : public PaletteDelegate {
   void TakeScreenshot() override;
   void TakePartialScreenshot(const base::Closure& done) override;
   void CancelPartialScreenshot() override;
-  void ShowMetalayer(base::OnceClosure done) override;
+  void ShowMetalayer(base::OnceClosure done, bool via_button) override;
   void HideMetalayer() override;
 
   int create_note_count_ = 0;
@@ -76,7 +74,6 @@ class TestPaletteDelegate : public PaletteDelegate {
   bool should_show_palette_ = false;
   int show_metalayer_count_ = 0;
   int hide_metalayer_count_ = 0;
-  base::OnceClosure metalayer_done_;
 
   HighlighterControllerTestApi* highlighter_test_api_ = nullptr;
 

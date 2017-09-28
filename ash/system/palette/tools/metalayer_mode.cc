@@ -56,8 +56,10 @@ PaletteToolId MetalayerMode::GetToolId() const {
 void MetalayerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::Get()->palette_delegate()->ShowMetalayer(base::BindOnce(
-      &MetalayerMode::OnMetalayerSessionComplete, weak_factory_.GetWeakPtr()));
+  Shell::Get()->palette_delegate()->ShowMetalayer(
+      base::BindOnce(&MetalayerMode::OnMetalayerSessionComplete,
+                     weak_factory_.GetWeakPtr()),
+      activated_via_button_);
   delegate()->HidePalette();
 }
 
@@ -65,6 +67,7 @@ void MetalayerMode::OnDisable() {
   CommonPaletteTool::OnDisable();
 
   Shell::Get()->palette_delegate()->HideMetalayer();
+  activated_via_button_ = false;
 }
 
 const gfx::VectorIcon& MetalayerMode::GetActiveTrayIcon() const {
@@ -130,6 +133,7 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
     delegate()->RecordPaletteOptionsUsage(
         PaletteToolIdToPaletteTrayOptions(GetToolId()),
         PaletteInvocationMethod::SHORTCUT);
+    activated_via_button_ = true;
     delegate()->EnableTool(GetToolId());
   }
   event->StopPropagation();

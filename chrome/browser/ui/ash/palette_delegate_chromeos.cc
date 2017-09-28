@@ -50,6 +50,10 @@ class VoiceInteractionSelectionObserver
     delay_timer_.reset();
   }
 
+  void set_disable_on_failed_selection(bool disable_on_failed_selection) {
+    disable_on_failed_selection_ = disable_on_failed_selection;
+  }
+
   bool start_session_pending() const { return delay_timer_.get(); }
 
  private:
@@ -63,7 +67,15 @@ class VoiceInteractionSelectionObserver
                    base::Unretained(this), rect),
         false /* not repeating */);
     delay_timer_->Reset();
+    DisableMetalayer();
+  }
 
+  void HandleFailedSelection() override {
+    if (disable_on_failed_selection_)
+      DisableMetalayer();
+  }
+
+  void DisableMetalayer() {
     DCHECK(on_selection_done_);
     // This will disable the metalayer tool, which will result in a synchronous
     // call to PaletteDelegateChromeOS::HideMetalayer.
@@ -83,6 +95,7 @@ class VoiceInteractionSelectionObserver
 
   std::unique_ptr<base::Timer> delay_timer_;
   base::OnceClosure on_selection_done_;
+  bool disable_on_failed_selection_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionSelectionObserver);
 };
@@ -219,7 +232,8 @@ void PaletteDelegateChromeOS::CancelPartialScreenshot() {
   ash::Shell::Get()->screenshot_controller()->CancelScreenshotSession();
 }
 
-void PaletteDelegateChromeOS::ShowMetalayer(base::OnceClosure done) {
+void PaletteDelegateChromeOS::ShowMetalayer(base::OnceClosure done,
+                                            bool via_button) {
   auto* service =
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (!service)
@@ -231,6 +245,7 @@ void PaletteDelegateChromeOS::ShowMetalayer(base::OnceClosure done) {
         base::MakeUnique<VoiceInteractionSelectionObserver>(profile_);
   }
   highlighter_selection_observer_->set_on_selection_done(std::move(done));
+  highlighter_selection_observer_->set_disable_on_failed_selection(via_button);
   ash::Shell::Get()->highlighter_controller()->SetEnabled(true);
 }
 
