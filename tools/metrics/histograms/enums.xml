@@ -3547,6 +3547,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="FMP not OK, network was already quiet"/>
 </enum>
 
+<enum name="BooleanNull">
+  <int value="0" label="Is not a nullptr"/>
+  <int value="1" label="Is a nullptr"/>
+</enum>
+
 <enum name="BooleanNullStream">
   <int value="0" label="Stream is not a nullptr"/>
   <int value="1" label="Stream is a nullptr"/>

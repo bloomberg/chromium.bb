@@ -55052,6 +55052,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PartnerBookmark.Count" units="bookmarks">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    The number of partner bookmark entries. Note that zero would be
+    under-represented because reading is throttled if the last result is zero.
+    Logged on every cold start except when it is skipped (
+    PartnerBookmark.Skipped == True).
+  </summary>
+</histogram>
+
+<histogram name="PartnerBookmark.Null" enum="BooleanNull">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Whether there's no partner bookmark provider. By default, the system image
+    contains a dummy partner bookmarks provider that provides zero entries.
+    Logged on every cold start.
+  </summary>
+</histogram>
+
+<histogram name="PartnerBookmark.Skipped" enum="BooleanSkipped">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Whether reading of partner bookmark is skipped. Logged on every cold start.
+  </summary>
+</histogram>
+
 <histogram name="PasswordBubble.DisplayDisposition"
     enum="PasswordBubbleDisplayDisposition">
   <owner>vasilii@chromium.org</owner>
