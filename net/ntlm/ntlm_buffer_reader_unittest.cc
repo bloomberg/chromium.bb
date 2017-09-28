@@ -127,6 +127,51 @@ TEST(NtlmBufferReaderTest, ReadSecurityBufferPastEob) {
   ASSERT_FALSE(reader.ReadSecurityBuffer(&sec_buf));
 }
 
+TEST(NtlmBufferReaderTest, ReadPayloadAsBufferReader) {
+  const uint8_t buf[8] = {0xff, 0xff, 0x11, 0x22, 0x33, 0x44, 0xff, 0xff};
+  const uint32_t expected = 0x44332211;
+  NtlmBufferReader reader(buf, arraysize(buf));
+  ASSERT_EQ(0u, reader.GetCursor());
+
+  // Create a security buffer with offset 2 and length 4.
+  SecurityBuffer sec_buf(2, 4);
+  NtlmBufferReader sub_reader;
+  ASSERT_EQ(0u, sub_reader.GetLength());
+  ASSERT_EQ(0u, sub_reader.GetCursor());
+
+  // Read the 4 non-0xff bytes from the middle of |buf|.
+  ASSERT_TRUE(reader.ReadPayloadAsBufferReader(sec_buf, &sub_reader));
+
+  // |reader| cursor should not move.
+  ASSERT_EQ(0u, reader.GetCursor());
+  ASSERT_EQ(sec_buf.length, sub_reader.GetLength());
+  ASSERT_EQ(0u, sub_reader.GetCursor());
+
+  // Read from the payload in |sub_reader|.
+  uint32_t actual;
+  ASSERT_TRUE(sub_reader.ReadUInt32(&actual));
+  ASSERT_EQ(expected, actual);
+  ASSERT_TRUE(sub_reader.IsEndOfBuffer());
+}
+
+TEST(NtlmBufferReaderTest, ReadPayloadBadOffset) {
+  const uint8_t buf[4] = {0};
+  NtlmBufferReader reader(buf, arraysize(buf));
+
+  NtlmBufferReader sub_reader;
+  ASSERT_FALSE(
+      reader.ReadPayloadAsBufferReader(SecurityBuffer(4, 1), &sub_reader));
+}
+
+TEST(NtlmBufferReaderTest, ReadPayloadBadLength) {
+  const uint8_t buf[4] = {0};
+  NtlmBufferReader reader(buf, arraysize(buf));
+
+  NtlmBufferReader sub_reader;
+  ASSERT_FALSE(
+      reader.ReadPayloadAsBufferReader(SecurityBuffer(3, 2), &sub_reader));
+}
+
 TEST(NtlmBufferReaderTest, SkipSecurityBuffer) {
   const uint8_t buf[kSecurityBufferLen] = {0};
 
@@ -279,6 +324,15 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnly) {
 
   std::vector<ntlm::AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_TRUE(reader.IsEndOfBuffer());
+  ASSERT_TRUE(av_pairs.empty());
+}
+
+TEST(NtlmBufferReaderTest, ReadTargetInfoEmpty) {
+  NtlmBufferReader reader;
+
+  std::vector<ntlm::AvPair> av_pairs;
+  ASSERT_TRUE(reader.ReadTargetInfo(0, &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_TRUE(av_pairs.empty());
 }
