@@ -258,7 +258,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   Mock::VerifyAndClearExpectations(this);
 
   {
-    const size_t kEncodedSizeThreshold = 13;
+    const size_t kEncodedSizeThreshold = 12;
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
