@@ -44,7 +44,7 @@ const AtomicString& Worker::InterfaceName() const {
   return EventTargetNames::Worker;
 }
 
-InProcessWorkerMessagingProxy* Worker::CreateInProcessWorkerMessagingProxy(
+DedicatedWorkerMessagingProxy* Worker::CreateMessagingProxy(
     ExecutionContext* context) {
   Document* document = ToDocument(context);
   WebLocalFrameImpl* web_frame =
@@ -57,7 +57,7 @@ InProcessWorkerMessagingProxy* Worker::CreateInProcessWorkerMessagingProxy(
       *worker_clients);
   ProvideContentSettingsClientToWorker(
       worker_clients, web_frame->Client()->CreateWorkerContentSettingsClient());
-  return new DedicatedWorkerMessagingProxy(this, worker_clients);
+  return new DedicatedWorkerMessagingProxy(context, this, worker_clients);
 }
 
 }  // namespace blink

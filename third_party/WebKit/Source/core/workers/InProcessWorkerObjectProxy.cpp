@@ -38,7 +38,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/workers/InProcessWorkerMessagingProxy.h"
+#include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -51,7 +51,7 @@
 namespace blink {
 
 std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::Create(
-    InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
+    DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(messaging_proxy_weak_ptr);
   return WTF::WrapUnique(new InProcessWorkerObjectProxy(
@@ -67,7 +67,7 @@ void InProcessWorkerObjectProxy::PostMessageToWorkerObject(
       ->Get(TaskType::kPostedMessage)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
-                     &InProcessWorkerMessagingProxy::PostMessageToWorkerObject,
+                     &DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
                      messaging_proxy_weak_ptr_, std::move(message),
                      WTF::Passed(std::move(channels))));
 }
@@ -99,7 +99,7 @@ void InProcessWorkerObjectProxy::ReportException(
       ->Get(TaskType::kUnspecedTimer)
       ->PostTask(
           BLINK_FROM_HERE,
-          CrossThreadBind(&InProcessWorkerMessagingProxy::DispatchErrorEvent,
+          CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
                           messaging_proxy_weak_ptr_, error_message,
                           WTF::Passed(location->Clone()), exception_id));
 }
@@ -115,7 +115,7 @@ void InProcessWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
-    InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
+    DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners)
     : ThreadedObjectProxyBase(parent_frame_task_runners),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}

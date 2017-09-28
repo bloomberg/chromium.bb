@@ -9,7 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/probe/CoreProbes.h"
-#include "core/workers/InProcessWorkerMessagingProxy.h"
+#include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -67,7 +67,7 @@ bool InProcessWorkerBase::Initialize(ExecutionContext* context,
       WTF::Bind(&InProcessWorkerBase::OnResponse, WrapPersistent(this)),
       WTF::Bind(&InProcessWorkerBase::OnFinished, WrapPersistent(this)));
 
-  context_proxy_ = CreateInProcessWorkerMessagingProxy(context);
+  context_proxy_ = CreateMessagingProxy(context);
 
   return true;
 }

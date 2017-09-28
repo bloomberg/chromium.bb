@@ -18,8 +18,6 @@ blink_core_sources("workers") {
     "GlobalScopeCreationParams.h",
     "InProcessWorkerBase.cpp",
     "InProcessWorkerBase.h",
-    "InProcessWorkerMessagingProxy.cpp",
-    "InProcessWorkerMessagingProxy.h",
     "InProcessWorkerObjectProxy.cpp",
     "InProcessWorkerObjectProxy.h",
     "InstalledScriptsManager.cpp",
