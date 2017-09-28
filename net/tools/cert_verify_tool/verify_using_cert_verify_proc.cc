@@ -110,6 +110,7 @@ void PrintCertVerifyResult(const net::CertVerifyResult& result) {
 }  // namespace
 
 bool VerifyUsingCertVerifyProc(
+    net::CertVerifyProc* cert_verify_proc,
     const CertInput& target_der_cert,
     const std::string& hostname,
     const std::vector<CertInput>& intermediate_der_certs,
@@ -152,8 +153,6 @@ bool VerifyUsingCertVerifyProc(
   int flags = net::CertVerifier::VERIFY_EV_CERT |
               net::CertVerifier::VERIFY_CERT_IO_ENABLED;
 
-  scoped_refptr<net::CertVerifyProc> cert_verify_proc =
-      net::CertVerifyProc::CreateDefault();
   if (!x509_additional_trust_anchors.empty() &&
       !cert_verify_proc->SupportsAdditionalTrustAnchors()) {
     std::cerr << "WARNING: Additional trust anchors not supported on this "
