@@ -255,8 +255,8 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   cc::ScrollNode& compositor_node = *GetScrollTree().Node(id);
   compositor_node.scrollable = true;
 
-  compositor_node.container_bounds = scroll_node->ContainerBounds();
-  compositor_node.bounds = scroll_node->Bounds();
+  compositor_node.container_bounds = scroll_node->ContainerRect().Size();
+  compositor_node.bounds = scroll_node->ContentsRect().Size();
   compositor_node.user_scrollable_horizontal =
       scroll_node->UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =

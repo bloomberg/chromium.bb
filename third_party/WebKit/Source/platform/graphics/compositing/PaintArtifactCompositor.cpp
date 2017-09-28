@@ -178,13 +178,13 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   }
 
   // TODO(pdr): Add a helper for blink::FloatPoint to gfx::Vector2dF.
-  auto offset = scroll_node.Offset();
+  auto offset = scroll_node.ContainerRect().Location();
   layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
   // TODO(pdr): The scroll layer's bounds are currently set to the clipped
   // container bounds but this does not include the border. We may want to
   // change this behavior to make non-composited and composited hit testing
   // match (see: crbug.com/753124).
-  auto bounds = scroll_node.ContainerBounds();
+  auto bounds = scroll_node.ContainerRect().Size();
   // Mark the layer as scrollable.
   // TODO(pdr): When SPV2 launches this parameter for bounds will not be needed.
   scroll_layer->SetScrollable(bounds);
@@ -261,7 +261,8 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
     const PaintChunk& first_paint_chunk,
     bool chunk_requires_own_layer)
     : bounds(first_paint_chunk.bounds),
-      known_to_be_opaque(first_paint_chunk.known_to_be_opaque),
+      rect_known_to_be_opaque(
+          first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
       backface_hidden(first_paint_chunk.properties.backface_hidden),
       property_tree_state(first_paint_chunk.properties.property_tree_state),
       requires_own_layer(chunk_requires_own_layer) {
@@ -276,13 +277,11 @@ void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   FloatClipRect guest_bounds_in_home(guest.bounds);
   GeometryMapper::LocalToAncestorVisualRect(
       guest.property_tree_state, property_tree_state, guest_bounds_in_home);
-  FloatRect old_bounds = bounds;
   bounds.Unite(guest_bounds_in_home.Rect());
-  if (bounds != old_bounds)
-    known_to_be_opaque = false;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
   // If we knew the new bounds is enclosed by the mapped opaque region of
-  // the guest layer, we can deduce the merged layer being opaque too.
+  // the guest layer, we can deduce the merged layer being opaque too, and
+  // update rect_known_to_be_opaque accordingly.
 }
 
 static bool CanUpcastTo(const PropertyTreeState& guest,
@@ -313,7 +312,7 @@ void PaintArtifactCompositor::PendingLayer::Upcast(
   // region. To determine whether the layer is still opaque, we need to
   // query conservative opaque rect after mapping to an ancestor space,
   // which is not supported by GeometryMapper yet.
-  known_to_be_opaque = false;
+  rect_known_to_be_opaque = FloatRect();
 }
 
 static bool IsNonCompositingAncestorOf(
@@ -665,20 +664,31 @@ void PaintArtifactCompositor::Update(
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
-  for (const PendingLayer& pending_layer : pending_layers) {
+  for (auto& pending_layer : pending_layers) {
+    const auto& property_state = pending_layer.property_tree_state;
+    const auto* transform = property_state.Transform();
+    const auto* clip = property_state.Clip();
+
+    if (clip->LocalTransformSpace() == transform) {
+      // Limit layer bounds to hide the areas that will be never visible because
+      // of the clip.
+      pending_layer.bounds.Intersect(clip->ClipRect().Rect());
+    } else if (const auto* scroll = transform->ScrollNode()) {
+      // Limit layer bounds to the scroll range to hide the areas that will
+      // never be scrolled into the visible area.
+      pending_layer.bounds.Intersect(FloatRect(scroll->ContentsRect()));
+    }
+
     gfx::Vector2dF layer_offset;
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
 
-    auto property_state = pending_layer.property_tree_state;
-    const auto* transform = property_state.Transform();
     int transform_id =
         property_tree_manager.EnsureCompositorTransformNode(transform);
-    int clip_id =
-        property_tree_manager.EnsureCompositorClipNode(property_state.Clip());
+    int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
     int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
-        *property_state.Effect(), *property_state.Clip());
+        *property_state.Effect(), *clip);
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
@@ -719,11 +729,8 @@ void PaintArtifactCompositor::Update(
     layer->SetScrollTreeIndex(scroll_id);
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
-
-    layer->SetContentsOpaque(
-        // Don't set opaque if the pending_layer's bounds are at subpixels.
-        EnclosingIntRect(pending_layer.bounds) == pending_layer.bounds &&
-        pending_layer.known_to_be_opaque);
+    layer->SetContentsOpaque(pending_layer.rect_known_to_be_opaque.Contains(
+        FloatRect(EnclosingIntRect(pending_layer.bounds))));
     layer->SetDoubleSided(!pending_layer.backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
   }

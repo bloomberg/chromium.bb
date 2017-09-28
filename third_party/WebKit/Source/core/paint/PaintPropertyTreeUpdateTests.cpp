@@ -753,8 +753,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                           ->PaintProperties()
                           ->ScrollTranslation()
                           ->ScrollNode();
-  EXPECT_EQ(IntSize(100, 100), scroll_node->ContainerBounds());
-  EXPECT_EQ(IntSize(200, 200), scroll_node->Bounds());
+  EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
+  EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContentsRect());
 
   GetDocument().getElementById("content")->setAttribute(
       HTMLNames::styleAttr, "width: 200px; height: 300px");
@@ -763,8 +763,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                              ->PaintProperties()
                              ->ScrollTranslation()
                              ->ScrollNode());
-  EXPECT_EQ(IntSize(100, 100), scroll_node->ContainerBounds());
-  EXPECT_EQ(IntSize(200, 300), scroll_node->Bounds());
+  EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
+  EXPECT_EQ(IntRect(0, 0, 200, 300), scroll_node->ContentsRect());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {

@@ -79,28 +79,46 @@ static bool UpdateContentClip(
   return true;
 }
 
+static MainThreadScrollingReasons GetMainThreadScrollingReasons(
+    const LocalFrameView& frame_view,
+    MainThreadScrollingReasons ancestor_reasons) {
+  auto reasons = ancestor_reasons;
+  if (!frame_view.GetFrame().GetSettings()->GetThreadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+  if (frame_view.HasBackgroundAttachmentFixedObjects())
+    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  return reasons;
+}
+
 // True if a new property was created or a main thread scrolling reason changed
 // (which can affect descendants), false if an existing one was updated.
-static bool UpdateScroll(
-    LocalFrameView& frame_view,
-    RefPtr<const ScrollPaintPropertyNode> parent,
-    const IntSize& clip,
-    const IntSize& bounds,
-    bool user_scrollable_horizontal,
-    bool user_scrollable_vertical,
-    MainThreadScrollingReasons main_thread_scrolling_reasons) {
+static bool UpdateScroll(LocalFrameView& frame_view,
+                         PaintPropertyTreeBuilderFragmentContext& context) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
+  IntRect container_rect(IntPoint(), frame_view.VisibleContentSize());
+  IntRect contents_rect(-frame_view.ScrollOrigin(), frame_view.ContentsSize());
+  bool user_scrollable_horizontal =
+      frame_view.UserInputScrollable(kHorizontalScrollbar);
+  bool user_scrollable_vertical =
+      frame_view.UserInputScrollable(kVerticalScrollbar);
+  auto ancestor_reasons =
+      context.current.scroll->GetMainThreadScrollingReasons();
+  auto main_thread_scrolling_reasons =
+      GetMainThreadScrollingReasons(frame_view, ancestor_reasons);
   auto element_id = frame_view.GetCompositorElementId();
+
   if (auto* existing_scroll = frame_view.ScrollNode()) {
     auto existing_reasons = existing_scroll->GetMainThreadScrollingReasons();
-    existing_scroll->Update(
-        std::move(parent), IntPoint(), clip, bounds, user_scrollable_horizontal,
-        user_scrollable_vertical, main_thread_scrolling_reasons, element_id);
+    existing_scroll->Update(context.current.scroll, container_rect,
+                            contents_rect, user_scrollable_horizontal,
+                            user_scrollable_vertical,
+                            main_thread_scrolling_reasons, element_id);
     return existing_reasons != main_thread_scrolling_reasons;
   }
   frame_view.SetScrollNode(ScrollPaintPropertyNode::Create(
-      std::move(parent), IntPoint(), clip, bounds, user_scrollable_horizontal,
-      user_scrollable_vertical, main_thread_scrolling_reasons, element_id));
+      context.current.scroll, container_rect, contents_rect,
+      user_scrollable_horizontal, user_scrollable_vertical,
+      main_thread_scrolling_reasons, element_id));
   return true;
 }
 
@@ -122,17 +140,6 @@ static bool UpdateScrollTranslation(
       std::move(parent), matrix, FloatPoint3D(), false, 0,
       kCompositingReasonNone, CompositorElementId(), std::move(scroll)));
   return true;
-}
-
-static MainThreadScrollingReasons GetMainThreadScrollingReasons(
-    const LocalFrameView& frame_view,
-    MainThreadScrollingReasons ancestor_reasons) {
-  auto reasons = ancestor_reasons;
-  if (!frame_view.GetFrame().GetSettings()->GetThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  if (frame_view.HasBackgroundAttachmentFixedObjects())
-    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-  return reasons;
 }
 
 void PaintPropertyTreeBuilder::UpdateProperties(
@@ -179,21 +186,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
         content_clip, full_context.clip_changed);
 
     if (frame_view.IsScrollable()) {
-      IntSize scroll_clip = frame_view.VisibleContentSize();
-      IntSize scroll_bounds = frame_view.ContentsSize();
-      bool user_scrollable_horizontal =
-          frame_view.UserInputScrollable(kHorizontalScrollbar);
-      bool user_scrollable_vertical =
-          frame_view.UserInputScrollable(kVerticalScrollbar);
-
-      auto ancestor_reasons =
-          context.current.scroll->GetMainThreadScrollingReasons();
-      auto reasons =
-          GetMainThreadScrollingReasons(frame_view, ancestor_reasons);
-
-      full_context.force_subtree_update |= UpdateScroll(
-          frame_view, context.current.scroll, scroll_clip, scroll_bounds,
-          user_scrollable_horizontal, user_scrollable_vertical, reasons);
+      full_context.force_subtree_update |= UpdateScroll(frame_view, context);
     } else if (frame_view.ScrollNode()) {
       // Ensure pre-existing properties are cleared if there is no scrolling.
       frame_view.SetScrollNode(nullptr);
@@ -1098,11 +1091,19 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
       // The container bounds are snapped to integers to match the equivalent
       // bounds on cc::ScrollNode. The offset is snapped to match the current
       // integer offsets used in CompositedLayerMapping.
-      auto clip_rect = PixelSnappedIntRect(
+      auto container_rect = PixelSnappedIntRect(
           box.OverflowClipRect(context.current.paint_offset));
-      IntPoint bounds_offset = clip_rect.Location();
-      IntSize container_bounds = clip_rect.Size();
-      IntSize scroll_bounds = scrollable_area->ContentsSize();
+
+      IntRect contents_rect(-scrollable_area->ScrollOrigin(),
+                            scrollable_area->ContentsSize());
+      contents_rect.MoveBy(container_rect.Location());
+      // In flipped blocks writing mode, if there is scrollbar on the right,
+      // we move the contents to the left with extra amount of ScrollTranslation
+      // (-VerticalScrollbarWidth, 0). As contents_rect is in the space of
+      // ScrollTranslation, we need to compensate the extra ScrollTranslation
+      // to get correct contents_rect origin.
+      if (box.HasFlippedBlocksWritingMode())
+        contents_rect.Move(box.VerticalScrollbarWidth(), 0);
 
       bool user_scrollable_horizontal =
           scrollable_area->UserInputScrollable(kHorizontalScrollbar);
@@ -1124,9 +1125,9 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
 
       // TODO(pdr): Set the correct compositing reasons here.
       auto result = properties.UpdateScroll(
-          context.current.scroll, bounds_offset, container_bounds,
-          scroll_bounds, user_scrollable_horizontal, user_scrollable_vertical,
-          reasons, element_id);
+          context.current.scroll, container_rect, contents_rect,
+          user_scrollable_horizontal, user_scrollable_vertical, reasons,
+          element_id);
       force_subtree_update |= result.NewNodeCreated();
     } else {
       // Ensure pre-existing properties are cleared.

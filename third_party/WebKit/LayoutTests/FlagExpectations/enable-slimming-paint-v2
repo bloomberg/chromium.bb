@@ -1051,6 +1051,7 @@ Bug(none) paint/invalidation/filters/effect-reference-repaint-gaussianblur.html 
 Bug(none) paint/invalidation/filters/effect-reference-repaint-lighting.html [ Failure ]
 Bug(none) paint/invalidation/filters/effect-reference-repaint-merge.html [ Failure ]
 Bug(none) paint/invalidation/filters/effect-reference-repaint-offset.html [ Failure ]
+Bug(none) paint/invalidation/reflection-invalidation-after-display.html [ Failure ]
 Bug(none) paint/invalidation/reflection-invalidation-positioned-child.html [ Failure ]
 Bug(none) paint/invalidation/reflection-redraw.html [ Failure ]
 
@@ -1088,6 +1089,7 @@ Bug(none) paint/invalidation/svg/mask-invalidation.svg [ Failure ]
 Bug(none) paint/invalidation/svg/text-mask-update.svg [ Failure ]
 
 # Other extra layers.
+Bug(none) paint/invalidation/abspos-shift-image-incorrect-repaint.html [ Failure ]
 Bug(none) paint/invalidation/clipped-overflow-visible-subtree.html [ Failure ]
 Bug(none) paint/invalidation/compositing/fixed-pos-with-abs-pos-child-scroll.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-scrolling-contents-outline-change.html [ Failure ]
@@ -1139,25 +1141,6 @@ Bug(none) paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Fai
 Bug(none) paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 Bug(none) paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Failure ]
-
-# Negative layer position because of negative content position. Extra invalidation caused by layer position change.
-crbug.com/757090 paint/invalidation/abspos-shift-image-incorrect-repaint.html [ Failure ]
-crbug.com/757090 paint/invalidation/inline-focus.html [ Failure ]
-crbug.com/757090 paint/invalidation/justify-items-overflow-change.html [ Failure ]
-crbug.com/757090 paint/invalidation/justify-self-overflow-change.html [ Failure ]
-crbug.com/757090 paint/invalidation/offset-change-wrong-invalidation-with-float.html [ Failure ]
-crbug.com/757090 paint/invalidation/outline-add-repaint.html [ Failure ]
-crbug.com/757090 paint/invalidation/outline-change-repaint.html [ Failure ]
-crbug.com/757090 paint/invalidation/overflow-flipped-writing-mode-block.html [ Failure ]
-crbug.com/757090 paint/invalidation/overflow-flipped-writing-mode-table.html [ Failure ]
-crbug.com/757090 paint/invalidation/reflection-invalidation-after-display.html [ Failure ]
-crbug.com/757090 paint/invalidation/repaint-subrect-grid.html [ Failure ]
-crbug.com/757090 paint/invalidation/selection/invalidation-rect-includes-newline-for-rtl.html [ Failure ]
-crbug.com/757090 paint/invalidation/svg/add-outline-property-on-root.html [ Failure ]
-crbug.com/757090 paint/invalidation/svg/remove-outline-property-on-root.html [ Failure ]
-crbug.com/757090 paint/invalidation/transform-replaced-shadows.html [ Failure ]
-crbug.com/757090 paint/invalidation/transform-rotate-and-remove.html [ Failure ]
-crbug.com/757090 paint/invalidation/window-resize-vertical-writing-mode.html [ Failure ]
 
 # Need to support partial invalidation for some changes.
 crbug.com/732612 paint/invalidation/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
@@ -1328,6 +1311,8 @@ Bug(none) transforms/rotated-transform-affects-scrolling-2.html [ Failure ]
 Bug(none) transforms/transformed-caret.html [ Pass Failure ]
 Bug(none) transforms/transformed-focused-text-input.html [ Failure ]
 Bug(none) compositing/geometry/transformed-abs-position-inside-composited.html [ Failure ]
+Bug(none) fast/table/border-collapsing/001-vertical.html [ Failure ]
+Bug(none) fast/table/border-collapsing/001.html [ Failure ]
 
 # crashes due to unexpected calls to GeometryMapper (inverted scroll clip)
 crbug.com/768102 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Crash ]

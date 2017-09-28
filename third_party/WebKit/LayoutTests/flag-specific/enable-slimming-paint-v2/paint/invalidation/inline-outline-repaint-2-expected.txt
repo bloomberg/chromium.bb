@@ -2,18 +2,18 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "position": [0, -5],
-      "bounds": [800, 605],
+      "bounds": [800, 600],
+      "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN",
-          "rect": [210, 0, 50, 20],
+          "rect": [210, -5, 50, 20],
           "reason": "outline"
         },
         {
           "object": "InlineTextBox 'Test'",
-          "rect": [215, 5, 40, 10],
+          "rect": [215, 0, 40, 10],
           "reason": "style change"
         }
       ]
