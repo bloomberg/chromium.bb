@@ -24,6 +24,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
@@ -58,16 +59,16 @@
 
 namespace {
 
-static std::string kAddNamedFrameScript =
-      "var f = document.createElement('iframe');"
-      "f.name = 'foo-frame-name';"
-      "document.body.appendChild(f);";
-static std::string kAddFrameScript =
-      "var f = document.createElement('iframe');"
-      "document.body.appendChild(f);";
-static std::string kRemoveFrameScript =
-      "var f = document.querySelector('iframe');"
-      "f.parentNode.removeChild(f);";
+static const char kAddNamedFrameScript[] =
+    "var f = document.createElement('iframe');"
+    "f.name = 'foo-frame-name';"
+    "document.body.appendChild(f);";
+static const char kAddFrameScript[] =
+    "var f = document.createElement('iframe');"
+    "document.body.appendChild(f);";
+static const char kRemoveFrameScript[] =
+    "var f = document.querySelector('iframe');"
+    "f.parentNode.removeChild(f);";
 
 }  // namespace
 
@@ -4087,7 +4088,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Also check going back in the original tab after a renderer crash.
   NavigationController& controller = shell()->web_contents()->GetController();
-  RenderProcessHost* process = shell()->web_contents()->GetRenderProcessHost();
+  RenderProcessHost* process =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher crash_observer(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   process->Shutdown(0, false);
@@ -4864,7 +4866,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 namespace {
 class RenderProcessKilledObserver : public WebContentsObserver {
  public:
-  RenderProcessKilledObserver(WebContents* web_contents)
+  explicit RenderProcessKilledObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
   ~RenderProcessKilledObserver() override {}
 
@@ -4873,7 +4875,7 @@ class RenderProcessKilledObserver : public WebContentsObserver {
              base::TerminationStatus::TERMINATION_STATUS_PROCESS_WAS_KILLED);
   }
 };
-}
+}  // namespace
 
 // This tests a race in Reload with ReloadType::ORIGINAL_REQUEST_URL, where a
 // cross-origin reload was causing an in-flight replaceState to look like a
@@ -6365,7 +6367,7 @@ namespace {
 class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
                                      public WebContentsDelegate {
  public:
-  AllowDialogIPCOnCommitFilter(WebContents* web_contents)
+  explicit AllowDialogIPCOnCommitFilter(WebContents* web_contents)
       : BrowserMessageFilter(FrameMsgStart),
         render_frame_host_(web_contents->GetMainFrame()) {
     web_contents_observer_.Observe(web_contents);
@@ -6675,7 +6677,7 @@ class WebContentsLoadFinishedWaiter : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
-}  // namespace {
+}  // namespace
 
 // Check that NavigationController::LoadURLParams::extra_headers are not copied
 // to subresource requests.
@@ -6785,7 +6787,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(navigation_observer.has_committed());
   EXPECT_FALSE(navigation_observer.was_same_document());
   EXPECT_FALSE(navigation_observer.was_renderer_initiated());
-
 }
 
 // Tests that a same document browser-initiated navigation is properly reported
