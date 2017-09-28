@@ -116,7 +116,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   web_stream.Initialize(WebVector<WebMediaStreamTrack>(),
                         WebVector<WebMediaStreamTrack>());
 
-  // create() duplicates the MediaStreamTracks inside |webStream|.
+  // Create() duplicates the MediaStreamTracks inside |webStream|.
   MediaStream* stream =
       MediaStream::Create(element.GetExecutionContext(), web_stream);
 
@@ -126,10 +126,13 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   // If |element| is actually playing a MediaStream, just clone it.
   if (element.GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {
-    return MediaStream::Create(
-        element.GetExecutionContext(),
-        MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
-            element.currentSrc().GetString()));
+    MediaStreamDescriptor* const descriptor =
+        element.currentSrc().IsNull()
+            ? element.GetSrcObject()
+            : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
+                  element.currentSrc().GetString());
+    DCHECK(descriptor);
+    return MediaStream::Create(element.GetExecutionContext(), descriptor);
   }
 
   if (element.HasVideo()) {
