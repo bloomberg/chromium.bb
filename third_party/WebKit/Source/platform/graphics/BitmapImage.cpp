@@ -403,7 +403,10 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
 
 RefPtr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
-    return StaticBitmapImage::Create(FrameAtIndex(0u));
+    PaintImage paint_image = FrameAtIndex(PaintImage::kDefaultFrameIndex);
+    if (paint_image.ShouldAnimate())
+      paint_image = paint_image.MakeStatic();
+    return StaticBitmapImage::Create(std::move(paint_image));
   }
 
   return Image::ImageForDefaultFrame();
