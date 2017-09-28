@@ -229,6 +229,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   aura::Window* window = browser()->window()->GetNativeWindow();
 
   EXPECT_FALSE(chrome::MultiUserWindowManager::ShouldShowAvatar(window));
+  EXPECT_FALSE(frame_view->profile_indicator_icon());
 
   const AccountId current_account_id =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());

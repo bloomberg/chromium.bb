@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -231,8 +232,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
 
   // On Chrome OS using multi profile we want to switch the content of the shelf
   // with a user change. Note that for unit tests the instance can be NULL.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_OFF) {
+  if (SessionControllerClient::IsMultiProfileAvailable()) {
     user_switch_observer_.reset(
         new ChromeLauncherControllerUserSwitchObserver(this));
   }
@@ -240,8 +240,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   std::unique_ptr<AppWindowLauncherController> extension_app_window_controller;
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_ON) {
+  if (SessionControllerClient::IsMultiProfileAvailable()) {
     // If running in separated destkop mode, we create the multi profile version
     // of status monitor.
     browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
