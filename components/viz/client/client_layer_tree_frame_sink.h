@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/trees/layer_tree_frame_sink.h"
+#include "components/viz/client/viz_client_export.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -21,11 +22,12 @@ class HitTestDataProvider;
 class LocalSurfaceIdProvider;
 class SharedBitmapManager;
 
-class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
-                                 public mojom::CompositorFrameSinkClient,
-                                 public ExternalBeginFrameSourceClient {
+class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
+    : public cc::LayerTreeFrameSink,
+      public mojom::CompositorFrameSinkClient,
+      public ExternalBeginFrameSourceClient {
  public:
-  struct InitParams {
+  struct VIZ_CLIENT_EXPORT InitParams {
     InitParams();
     ~InitParams();
 
