@@ -282,44 +282,46 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
     data_callback_map_.erase(it);
   }
   // Registers a callback which is called when the result for AsyncXXX is ready.
-  void RegisterAsyncCallback(
-      Callback callback, const char* error, int async_id) {
-    if (async_id == chromeos::CryptohomeClient::kNotReadyAsyncId) {
+  void RegisterAsyncCallback(Callback callback,
+                             const char* error,
+                             base::Optional<int> async_id) {
+    if (!async_id.has_value()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback,
-                                false,  // return status
-                                cryptohome::MOUNT_ERROR_FATAL));
+          FROM_HERE, base::BindOnce(callback,
+                                    false,  // return status
+                                    cryptohome::MOUNT_ERROR_FATAL));
       return;
     }
 
-    if (async_id == 0) {
+    if (async_id.value() == 0) {
       LOG(ERROR) << error;
       return;
     }
-    VLOG(1) << "Adding handler for " << async_id;
-    DCHECK_EQ(callback_map_.count(async_id), 0U);
-    DCHECK_EQ(data_callback_map_.count(async_id), 0U);
-    callback_map_[async_id] = CallbackElement(callback);
+    VLOG(1) << "Adding handler for " << async_id.value();
+    DCHECK_EQ(callback_map_.count(async_id.value()), 0U);
+    DCHECK_EQ(data_callback_map_.count(async_id.value()), 0U);
+    callback_map_[async_id.value()] = CallbackElement(callback);
   }
 
   // Registers a callback which is called when the result for AsyncXXX is ready.
-  void RegisterAsyncDataCallback(
-      DataCallback callback, const char* error, int async_id) {
-    if (async_id == chromeos::CryptohomeClient::kNotReadyAsyncId) {
+  void RegisterAsyncDataCallback(DataCallback callback,
+                                 const char* error,
+                                 base::Optional<int> async_id) {
+    if (!async_id.has_value()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback,
-                                false,  // return status
-                                std::string()));
+          FROM_HERE, base::BindOnce(callback,
+                                    false,  // return status
+                                    std::string()));
       return;
     }
-    if (async_id == 0) {
+    if (async_id.value() == 0) {
       LOG(ERROR) << error;
       return;
     }
-    VLOG(1) << "Adding handler for " << async_id;
-    DCHECK_EQ(callback_map_.count(async_id), 0U);
-    DCHECK_EQ(data_callback_map_.count(async_id), 0U);
-    data_callback_map_[async_id] = DataCallbackElement(callback);
+    VLOG(1) << "Adding handler for " << async_id.value();
+    DCHECK_EQ(callback_map_.count(async_id.value()), 0U);
+    DCHECK_EQ(data_callback_map_.count(async_id.value()), 0U);
+    data_callback_map_[async_id.value()] = DataCallbackElement(callback);
   }
 
   CallbackMap callback_map_;

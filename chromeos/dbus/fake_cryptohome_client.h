@@ -39,13 +39,13 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void Unmount(DBusMethodCallback<bool> callback) override;
   void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,
                      const std::string& key,
-                     const AsyncMethodCallback& callback) override;
+                     AsyncMethodCallback callback) override;
   void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
                        const std::string& from_key,
                        const std::string& to_key,
-                       const AsyncMethodCallback& callback) override;
+                       AsyncMethodCallback callback) override;
   void AsyncRemove(const cryptohome::Identification& cryptohome_id,
-                   const AsyncMethodCallback& callback) override;
+                   AsyncMethodCallback callback) override;
   void RenameCryptohome(const cryptohome::Identification& cryptohome_id_from,
                         const cryptohome::Identification& cryptohome_id_to,
                         const ProtobufMethodCallback& callback) override;
@@ -59,15 +59,15 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void AsyncMount(const cryptohome::Identification& cryptohome_id,
                   const std::string& key,
                   int flags,
-                  const AsyncMethodCallback& callback) override;
+                  AsyncMethodCallback callback) override;
   void AsyncAddKey(const cryptohome::Identification& cryptohome_id,
                    const std::string& key,
                    const std::string& new_key,
-                   const AsyncMethodCallback& callback) override;
-  void AsyncMountGuest(const AsyncMethodCallback& callback) override;
+                   AsyncMethodCallback callback) override;
+  void AsyncMountGuest(AsyncMethodCallback callback) override;
   void AsyncMountPublic(const cryptohome::Identification& public_mount_id,
                         int flags,
-                        const AsyncMethodCallback& callback) override;
+                        AsyncMethodCallback callback) override;
   void TpmIsReady(DBusMethodCallback<bool> callback) override;
   void TpmIsEnabled(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
@@ -99,22 +99,22 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override;
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void AsyncTpmAttestationEnroll(chromeos::attestation::PrivacyCAType pca_type,
                                  const std::string& pca_response,
-                                 const AsyncMethodCallback& callback) override;
+                                 AsyncMethodCallback callback) override;
   void AsyncTpmAttestationCreateCertRequest(
       chromeos::attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
       const cryptohome::Identification& cryptohome_id,
       const std::string& request_origin,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void TpmAttestationDoesKeyExist(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
@@ -134,7 +134,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
@@ -143,13 +143,13 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) override;
+      AsyncMethodCallback callback) override;
   void TpmAttestationGetKeyPayload(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
@@ -272,17 +272,17 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const ProtobufMethodCallback& callback);
 
   // Posts tasks which return fake results to the UI thread.
-  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback);
+  void ReturnAsyncMethodResult(AsyncMethodCallback callback);
 
   // Posts tasks which return fake data to the UI thread.
-  void ReturnAsyncMethodData(const AsyncMethodCallback& callback,
+  void ReturnAsyncMethodData(AsyncMethodCallback callback,
                              const std::string& data);
 
   // This method is used to implement ReturnAsyncMethodResult without data.
-  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback);
+  void ReturnAsyncMethodResultInternal(AsyncMethodCallback callback);
 
   // This method is used to implement ReturnAsyncMethodResult with data.
-  void ReturnAsyncMethodDataInternal(const AsyncMethodCallback& callback,
+  void ReturnAsyncMethodDataInternal(AsyncMethodCallback callback,
                                      const std::string& data);
 
   // This method is used to implement MigrateToDircrypto with simulated progress
