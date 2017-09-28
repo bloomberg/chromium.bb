@@ -717,8 +717,6 @@ split_static_library("browser") {
     "mod_pagespeed/mod_pagespeed_metrics.cc",
     "mod_pagespeed/mod_pagespeed_metrics.h",
     "native_window_notification_source.h",
-    "net/async_dns_field_trial.cc",
-    "net/async_dns_field_trial.h",
     "net/chrome_cookie_notification_details.h",
     "net/chrome_extensions_network_delegate.cc",
     "net/chrome_extensions_network_delegate.h",

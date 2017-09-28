@@ -23493,6 +23493,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1099142083" label="V8Ignition:disabled"/>
+  <int value="-1099135056" label="AsyncDns:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
@@ -23881,6 +23882,7 @@ from previous Chrome versions.
   <int value="59784035" label="ImeThread:disabled"/>
   <int value="59964519" label="OmniboxEnableClipboardProvider:disabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
+  <int value="61466986" label="AsyncDns:disabled"/>
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
   <int value="70878462" label="WebAssembly:disabled"/>
   <int value="75747474" label="disable-webview-signin-flow"/>

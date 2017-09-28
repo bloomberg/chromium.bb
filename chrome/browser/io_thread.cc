@@ -34,13 +34,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
-#include "chrome/browser/net/async_dns_field_trial.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/tree_state_tracker.h"
@@ -354,11 +354,9 @@ IOThread::IOThread(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   base::Value* dns_client_enabled_default =
-      new base::Value(chrome_browser_net::ConfigureAsyncDnsFieldTrial());
+      new base::Value(base::FeatureList::IsEnabled(features::kAsyncDns));
   local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                    dns_client_enabled_default);
-  chrome_browser_net::LogAsyncDnsPrefSource(
-      local_state->FindPreference(prefs::kBuiltInDnsClientEnabled));
 
   dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
                            local_state,

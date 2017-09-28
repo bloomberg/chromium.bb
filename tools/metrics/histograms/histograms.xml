@@ -3667,6 +3667,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="AsyncDNS.PrefDefaultSource" enum="AsyncDNSPrefDefaultSource">
+  <obsolete>
+    Deprecated as of 9/2017.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     The source of the async DNS preference's default. Logged at startup, when
@@ -3675,6 +3678,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="AsyncDNS.PrefSource" enum="AsyncDNSPrefSource">
+  <obsolete>
+    Deprecated as of 9/2017.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     The source of the async DNS preference's value. Logged at startup, when the
