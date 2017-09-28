@@ -5411,8 +5411,6 @@ TEST_F(AutofillManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  base::HistogramTester histogram_tester;
-
   // Confirm upload happened and the new UI flag was sent in the request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
@@ -5446,9 +5444,7 @@ TEST_F(AutofillManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  base::HistogramTester histogram_tester;
-
-  // Confirm upload happened and the new UI flag was sent in the request.
+  // Confirm upload happened and the new UI flag was not sent in the request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
@@ -5480,8 +5476,6 @@ TEST_F(AutofillManagerTest,
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
 
   // Confirm upload happened and the show Google logo flag was sent in the
   // request.
@@ -5517,9 +5511,7 @@ TEST_F(AutofillManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  base::HistogramTester histogram_tester;
-
-  // Confirm upload happened and the show Google logo flag was sent in the
+  // Confirm upload happened and the show Google logo flag was not sent in the
   // request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
