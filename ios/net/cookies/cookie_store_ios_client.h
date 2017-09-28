@@ -24,13 +24,6 @@ class CookieStoreIOSClient {
   CookieStoreIOSClient();
   virtual ~CookieStoreIOSClient();
 
-  // Gives the embedder a chance to perform tasks before the cookie storage is
-  // changed.
-  virtual void WillChangeCookieStorage() const;
-
-  // Informs the embedder after the cookie storage has been changed.
-  virtual void DidChangeCookieStorage() const;
-
   // Returns instance of SequencedTaskRunner used for blocking file I/O.
   virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const;
 
