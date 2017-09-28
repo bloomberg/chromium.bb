@@ -2068,7 +2068,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
         mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
-        const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, plane_bsize);
+        const TX_SIZE max_tx_size = get_vartx_max_txsize(
+            mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
         int block = 0;

@@ -1473,13 +1473,28 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 
 #if CONFIG_VAR_TX
 static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
-                                       BLOCK_SIZE bsize) {
+                                       BLOCK_SIZE bsize, int subsampled) {
 #if CONFIG_CB4X4
   (void)mbmi;
-  return max_txsize_rect_lookup[bsize];
+  TX_SIZE max_txsize = max_txsize_rect_lookup[bsize];
+#else
+  TX_SIZE max_txsize = mbmi->sb_type < BLOCK_8X8
+                           ? max_txsize_rect_lookup[mbmi->sb_type]
+                           : max_txsize_rect_lookup[bsize];
 #endif  // CONFIG_C4X4
-  return mbmi->sb_type < BLOCK_8X8 ? max_txsize_rect_lookup[mbmi->sb_type]
-                                   : max_txsize_rect_lookup[bsize];
+
+#if CONFIG_EXT_PARTITION && CONFIG_TX64X64
+  // The decoder is designed so that it can process 64x64 luma pixels at a
+  // time. If this is a chroma plane with subsampling and bsize corresponds to
+  // a subsampled BLOCK_128X128 then the lookup above will give TX_64X64. That
+  // mustn't be used for the subsampled plane (because it would be bigger than
+  // a 64x64 luma block) so we round down to TX_32X32.
+  if (subsampled && max_txsize == TX_64X64) max_txsize = TX_32X32;
+#else
+  (void)subsampled;
+#endif
+
+  return max_txsize;
 }
 #endif  // CONFIG_VAR_TX
 
