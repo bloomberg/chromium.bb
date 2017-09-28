@@ -22619,6 +22619,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Messaging.MessageSize" units="bytes">
+  <owner>redevlin.cronin@chromium.org</owner>
+  <summary>
+    The size, in bytes, of a message sent from an extension using one of the
+    messaging APIs (e.g. chrome.runtime.sendMessage). All message sizes are
+    logged, but messages over 64 MB in size aren't sent.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Messaging.SetPortIdTime" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>

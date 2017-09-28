@@ -27,6 +27,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "gin/converter.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
 
@@ -109,11 +110,36 @@ void MessagingBindings::PostMessage(
 
   int js_port_id = args[0].As<v8::Int32>()->Value();
   auto iter = ports_.find(js_port_id);
-  if (iter != ports_.end()) {
-    iter->second->PostExtensionMessage(std::make_unique<Message>(
-        *v8::String::Utf8Value(args[1]),
-        blink::WebUserGestureIndicator::IsProcessingUserGesture()));
+
+  if (iter == ports_.end())
+    return;
+
+  ExtensionPort& port = *iter->second;
+
+  auto message = std::make_unique<Message>(
+      *v8::String::Utf8Value(args[1]),
+      blink::WebUserGestureIndicator::IsProcessingUserGesture());
+
+  size_t message_length = message->data.length();
+
+  // Max bucket at 512 MB - anything over that, and we don't care.
+  static constexpr int kMaxUmaLength = 1024 * 1024 * 512;
+  static constexpr int kMinUmaLength = 1;
+  static constexpr int kBucketCount = 50;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.Messaging.MessageSize",
+                              message_length, kMinUmaLength, kMaxUmaLength,
+                              kBucketCount);
+
+  // IPC messages will fail at > 128 MB. Restrict extension messages to 64 MB.
+  // A 64 MB JSON-ifiable object is scary enough as is.
+  static constexpr size_t kMaxMessageLength = 1024 * 1024 * 64;
+  if (message_length > kMaxMessageLength) {
+    args.GetReturnValue().Set(gin::StringToV8(
+        args.GetIsolate(), "Message length exceeded maximum allowed length."));
+    return;
   }
+
+  port.PostExtensionMessage(std::move(message));
 }
 
 void MessagingBindings::CloseChannel(

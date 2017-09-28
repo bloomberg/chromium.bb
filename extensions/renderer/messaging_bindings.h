@@ -35,7 +35,8 @@ class MessagingBindings : public ObjectBackedNativeHandler {
  private:
   using PortMap = std::map<int, std::unique_ptr<ExtensionPort>>;
 
-  // JS Exposed Function: Sends a message along the given channel.
+  // JS Exposed Function: Sends a message along the given channel. If an error
+  // occurs, returns the error, else returns nothing.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // JS Exposed Function: Close a port, optionally forcefully (i.e. close the
