@@ -108,9 +108,12 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->SetJsonPath("strings.js");
 
   // Add common strings.
-  source->AddLocalizedString("close", IDS_CLOSE);
-  source->AddLocalizedString("ok", IDS_OK);
+  source->AddLocalizedString("add", IDS_ADD);
   source->AddLocalizedString("cancel", IDS_CANCEL);
+  source->AddLocalizedString("close", IDS_CLOSE);
+  source->AddLocalizedString("confirm", IDS_CONFIRM);
+  source->AddLocalizedString("done", IDS_DONE);
+  source->AddLocalizedString("ok", IDS_OK);
 
   // Add extension-specific strings.
   source->AddLocalizedString("title",
@@ -253,6 +256,32 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_EXTENSIONS_VIEW_INACTIVE);
   source->AddLocalizedString("viewIframe",
                              IDS_EXTENSIONS_VIEW_IFRAME);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("manageKioskApp",
+                             IDS_MD_EXTENSIONS_MANAGE_KIOSK_APP);
+  source->AddLocalizedString("kioskAddApp", IDS_MD_EXTENSIONS_KIOSK_ADD_APP);
+  source->AddLocalizedString("kioskAddAppHint",
+                             IDS_MD_EXTENSIONS_KIOSK_ADD_APP_HINT);
+  source->AddLocalizedString("kioskEnableAutoLaunch",
+                             IDS_MD_EXTENSIONS_KIOSK_ENABLE_AUTO_LAUNCH);
+  source->AddLocalizedString("kioskDisableAutoLaunch",
+                             IDS_MD_EXTENSIONS_KIOSK_DISABLE_AUTO_LAUNCH);
+  source->AddLocalizedString("kioskAutoLaunch",
+                             IDS_MD_EXTENSIONS_KIOSK_AUTO_LAUNCH);
+  source->AddLocalizedString("kioskInvalidApp",
+                             IDS_MD_EXTENSIONS_KIOSK_INVALID_APP);
+  source->AddLocalizedString(
+      "kioskDisableBailout",
+      IDS_MD_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL);
+  source->AddLocalizedString(
+      "kioskDisableBailoutWarningTitle",
+      IDS_MD_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_TITLE);
+  source->AddString(
+      "kioskDisableBailoutWarningBody",
+      l10n_util::GetStringFUTF16(
+          IDS_MD_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BODY,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME)));
+#endif
   source->AddString(
       "getMoreExtensionsUrl",
       base::ASCIIToUTF16(
@@ -280,6 +309,15 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
   source->AddResourcePath("keyboard_shortcuts.js",
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS);
+#if defined(OS_CHROMEOS)
+  source->AddResourcePath("kiosk_browser_proxy.html",
+                          IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_HTML);
+  source->AddResourcePath("kiosk_browser_proxy.js",
+                          IDR_MD_EXTENSIONS_KIOSK_BROWSER_PROXY_JS);
+  source->AddResourcePath("kiosk_dialog.html",
+                          IDR_MD_EXTENSIONS_KIOSK_DIALOG_HTML);
+  source->AddResourcePath("kiosk_dialog.js", IDR_MD_EXTENSIONS_KIOSK_DIALOG_JS);
+#endif
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
   source->AddResourcePath("icons.html", IDR_MD_EXTENSIONS_ICONS_HTML);
@@ -380,17 +418,17 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     web_ui->AddMessageHandler(std::move(install_extension_handler));
     install_handler->GetLocalizedValues(source);
 
-#if defined(OS_CHROMEOS)
-    auto kiosk_app_handler = base::MakeUnique<chromeos::KioskAppsHandler>(
-        chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-            profile));
-    chromeos::KioskAppsHandler* kiosk_handler = kiosk_app_handler.get();
-    web_ui->AddMessageHandler(std::move(kiosk_app_handler));
-    kiosk_handler->GetLocalizedValues(source);
-#endif
-
     web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
   }
+
+#if defined(OS_CHROMEOS)
+  auto kiosk_app_handler = base::MakeUnique<chromeos::KioskAppsHandler>(
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+          profile));
+  chromeos::KioskAppsHandler* kiosk_handler = kiosk_app_handler.get();
+  web_ui->AddMessageHandler(std::move(kiosk_app_handler));
+  kiosk_handler->GetLocalizedValues(source);
+#endif
 
   // Need to allow <object> elements so that the <extensionoptions> browser
   // plugin can be loaded within chrome://extensions.
