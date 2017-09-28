@@ -256,6 +256,16 @@ public class FeatureUtilities {
     }
 
     /**
+     * Update the user's setting for Chrome Home. This is a user-facing setting different from the
+     * one in chrome://flags. This setting will take prescience over the one in flags.
+     * @param enabled Whether or not the feature should be enabled.
+     */
+    public static void switchChromeHomeUserSetting(boolean enabled) {
+        ChromePreferenceManager.getInstance().setChromeHomeUserEnabled(enabled);
+        sChromeHomeEnabled = enabled;
+    }
+
+    /**
      * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
      */
     @CalledByNative
@@ -263,17 +273,25 @@ public class FeatureUtilities {
         if (DeviceFormFactor.isTablet()) return false;
 
         if (sChromeHomeEnabled == null) {
+            boolean isUserPreferenceSet = false;
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
             // Allow disk access for preferences while Chrome Home is in experimentation.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             try {
-                sChromeHomeEnabled = ChromePreferenceManager.getInstance().isChromeHomeEnabled();
+                if (ChromePreferenceManager.getInstance().isChromeHomeUserPreferenceSet()) {
+                    isUserPreferenceSet = true;
+                    sChromeHomeEnabled = prefManager.isChromeHomeUserEnabled();
+                } else {
+                    sChromeHomeEnabled = prefManager.isChromeHomeEnabled();
+                }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
 
             // If the browser has been initialized by this point, check the experiment as well to
             // avoid the restart logic in cacheChromeHomeEnabled.
-            if (ChromeFeatureList.isInitialized()) {
+            if (ChromeFeatureList.isInitialized() && !isUserPreferenceSet) {
                 boolean chromeHomeExperimentEnabled =
                         ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
 

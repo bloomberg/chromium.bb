@@ -1577,6 +1577,10 @@ const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 const char kChromeHomeExpandButtonDescription[] =
     "Enables the expand button for Chrome Home.";
 
+const char kChromeHomePromoName[] = "Chrome Home Promo";
+const char kChromeHomePromoDescription[] =
+    "Force the Chrome Home promotion to show each time the browser restarts.";
+
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =
     "Various swipe logic options for Chrome Home for sheet expansion.";

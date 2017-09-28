@@ -143,7 +143,6 @@
     <dimen name="promo_dialog_max_content_width">320dp</dimen>
     <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
     <dimen name="promo_dialog_title_text_size">23sp</dimen>
-    <dimen name="promo_dialog_normal_text_size">14sp</dimen>
 
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">252dp</dimen>
