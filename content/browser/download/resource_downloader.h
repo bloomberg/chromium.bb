@@ -47,7 +47,8 @@ class ResourceDownloader : public UrlDownloadHandler,
                      uint32_t download_id,
                      std::string guid,
                      bool is_parallel_request,
-                     bool is_transient);
+                     bool is_transient,
+                     bool fetch_error_body);
   ResourceDownloader(base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
                      std::unique_ptr<ThrottlingURLLoader> url_loader);
   ~ResourceDownloader() override;

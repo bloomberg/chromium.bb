@@ -126,6 +126,7 @@ class CONTENT_EXPORT DownloadRequestCore
   std::unique_ptr<DownloadSaveInfo> save_info_;
   uint32_t download_id_;
   std::string guid_;
+  bool fetch_error_body_;
   bool transient_;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 

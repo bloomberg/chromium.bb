@@ -59,7 +59,8 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
   auto downloader = base::MakeUnique<ResourceDownloader>(
       delegate, std::move(request),
       base::MakeUnique<DownloadSaveInfo>(params->GetSaveInfo()), download_id,
-      params->guid(), is_parallel_request, params->is_transient());
+      params->guid(), is_parallel_request, params->is_transient(),
+      params->fetch_error_body());
   downloader->Start(factory, file_system_context, std::move(params));
   return downloader;
 }
@@ -77,7 +78,7 @@ ResourceDownloader::InterceptNavigationResponse(
   auto downloader = base::MakeUnique<ResourceDownloader>(
       delegate, std::move(resource_request),
       base::MakeUnique<DownloadSaveInfo>(), content::DownloadItem::kInvalidId,
-      std::string(), false, false);
+      std::string(), false, false, false);
   downloader->InterceptResponse(std::move(url_loader), response,
                                 std::move(consumer_handle), ssl_status,
                                 std::move(completion_status));
@@ -91,14 +92,16 @@ ResourceDownloader::ResourceDownloader(
     uint32_t download_id,
     std::string guid,
     bool is_parallel_request,
-    bool is_transient)
+    bool is_transient,
+    bool fetch_error_body)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       response_handler_(resource_request_.get(),
                         this,
                         std::move(save_info),
                         is_parallel_request,
-                        is_transient),
+                        is_transient,
+                        fetch_error_body),
       blob_client_binding_(&response_handler_),
       download_id_(download_id),
       guid_(guid),

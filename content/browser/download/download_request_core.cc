@@ -65,6 +65,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   uint32_t download_id() const { return download_id_; }
   std::string guid() const { return guid_; }
   bool is_transient() const { return transient_; }
+  bool fetch_error_body() const { return fetch_error_body_; }
   const DownloadUrlParameters::OnStartedCallback& callback() const {
     return on_started_callback_;
   }
@@ -75,6 +76,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   std::unique_ptr<DownloadSaveInfo> save_info_;
   uint32_t download_id_ = DownloadItem::kInvalidId;
   std::string guid_;
+  bool fetch_error_body_ = false;
   bool transient_ = false;
   DownloadUrlParameters::OnStartedCallback on_started_callback_;
 };
@@ -91,6 +93,7 @@ void DownloadRequestData::Attach(net::URLRequest* request,
       new DownloadSaveInfo(parameters->GetSaveInfo()));
   request_data->download_id_ = download_id;
   request_data->guid_ = parameters->guid();
+  request_data->fetch_error_body_ = parameters->fetch_error_body();
   request_data->transient_ = parameters->is_transient();
   request_data->on_started_callback_ = parameters->callback();
   request->SetUserData(&kKey, std::move(request_data));
@@ -131,6 +134,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
     : delegate_(delegate),
       request_(request),
       download_id_(DownloadItem::kInvalidId),
+      fetch_error_body_(false),
       transient_(false),
       bytes_read_(0),
       pause_count_(0),
@@ -165,6 +169,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
     save_info_ = request_data->TakeSaveInfo();
     download_id_ = request_data->download_id();
     guid_ = request_data->guid();
+    fetch_error_body_ = request_data->fetch_error_body();
     transient_ = request_data->is_transient();
     on_started_callback_ = request_data->callback();
     DownloadRequestData::Detach(request_);
@@ -200,6 +205,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
   create_info->transient = transient_;
   create_info->response_headers = request()->response_headers();
   create_info->offset = create_info->save_info->offset;
+  create_info->fetch_error_body = fetch_error_body_;
   return create_info;
 }
 
@@ -212,7 +218,7 @@ bool DownloadRequestCore::OnResponseStarted(
   DownloadInterruptReason result =
       request()->response_headers()
           ? HandleSuccessfulServerResponse(*request()->response_headers(),
-                                           save_info_.get())
+                                           save_info_.get(), fetch_error_body_)
           : DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (request()->response_headers()) {

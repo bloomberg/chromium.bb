@@ -759,6 +759,10 @@ class CONTENT_EXPORT DownloadItemImpl
   // Check whether the download item is updating its observers.
   bool is_updating_observers_;
 
+  // Whether the download should fetch the response body for non successful HTTP
+  // response.
+  bool fetch_error_body_ = false;
+
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);

@@ -302,6 +302,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       etag_(info.etag),
       net_log_(net_log),
       is_updating_observers_(false),
+      fetch_error_body_(info.fetch_error_body),
       weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, SRC_ACTIVE_DOWNLOAD);
@@ -2201,6 +2202,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_etag(GetETag());
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
+  download_params->set_fetch_error_body(fetch_error_body_);
 
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)
