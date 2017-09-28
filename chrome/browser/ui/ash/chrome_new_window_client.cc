@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
@@ -35,10 +36,19 @@
 
 namespace {
 
+ChromeNewWindowClient* g_instance = nullptr;
+
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile);
   service->RestoreMostRecentEntry(nullptr);
+}
+
+bool IsIncognitoAllowed() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  return profile && profile->GetProfileType() != Profile::GUEST_PROFILE &&
+         IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
+             IncognitoModePrefs::DISABLED;
 }
 
 }  // namespace
@@ -52,9 +62,20 @@ ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   new_window_controller_->SetClient(std::move(ptr_info));
+
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
-ChromeNewWindowClient::~ChromeNewWindowClient() {}
+ChromeNewWindowClient::~ChromeNewWindowClient() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
+
+// static
+ChromeNewWindowClient* ChromeNewWindowClient::Get() {
+  return g_instance;
+}
 
 // TabRestoreHelper is used to restore a tab. In particular when the user
 // attempts to a restore a tab if the TabRestoreService hasn't finished loading
@@ -118,6 +139,9 @@ void ChromeNewWindowClient::NewTab() {
 }
 
 void ChromeNewWindowClient::NewWindow(bool is_incognito) {
+  if (is_incognito && !IsIncognitoAllowed())
+    return;
+
   Browser* browser = chrome::FindBrowserWithActiveWindow();
   Profile* profile = (browser && browser->profile())
                          ? browser->profile()->GetOriginalProfile()

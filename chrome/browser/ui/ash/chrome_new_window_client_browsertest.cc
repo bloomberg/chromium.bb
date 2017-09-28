@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/new_window_controller.h"
-#include "ash/shell.h"
+#include "chrome/browser/ui/ash/chrome_new_window_client.h"
+
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -48,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
   Browser* browser1 = CreateBrowser(profile1);
   // The newly created window should be created for the current active profile.
-  ash::Shell::Get()->new_window_controller()->NewWindow(false);
+  ChromeNewWindowClient::Get()->NewWindow(false /* incognito */);
   EXPECT_EQ(GetLastActiveBrowser()->profile(), profile1);
 
   // Login another user and make sure the current active user changes.
@@ -59,25 +60,45 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
   Browser* browser2 = CreateBrowser(profile2);
   // The newly created window should be created for the current active window's
   // profile, which is |profile2|.
-  ash::Shell::Get()->new_window_controller()->NewWindow(false);
+  ChromeNewWindowClient::Get()->NewWindow(false /* incognito */);
   EXPECT_EQ(GetLastActiveBrowser()->profile(), profile2);
 
   // After activating |browser1|, the newly created window should be created
   // against |browser1|'s profile.
   browser1->window()->Show();
-  ash::Shell::Get()->new_window_controller()->NewWindow(false);
+  ChromeNewWindowClient::Get()->NewWindow(false /* incognito */);
   EXPECT_EQ(GetLastActiveBrowser()->profile(), profile1);
 
   // Test for incognito windows.
   // The newly created incoginito window should be created against the current
   // active |browser1|'s profile.
   browser1->window()->Show();
-  ash::Shell::Get()->new_window_controller()->NewWindow(true);
+  ChromeNewWindowClient::Get()->NewWindow(true /* incognito */);
   EXPECT_EQ(GetLastActiveBrowser()->profile()->GetOriginalProfile(), profile1);
 
   // The newly created incoginito window should be created against the current
   // active |browser2|'s profile.
   browser2->window()->Show();
-  ash::Shell::Get()->new_window_controller()->NewWindow(true);
+  ChromeNewWindowClient::Get()->NewWindow(true /* incognito */);
   EXPECT_EQ(GetLastActiveBrowser()->profile()->GetOriginalProfile(), profile2);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, IncognitoDisabled) {
+  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName1));
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Disabling incognito mode disables creation of new incognito windows.
+  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+  ChromeNewWindowClient::Get()->NewWindow(true /* incognito */);
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Enabling incognito mode enables creation of new incognito windows.
+  IncognitoModePrefs::SetAvailability(profile->GetPrefs(),
+                                      IncognitoModePrefs::ENABLED);
+  ChromeNewWindowClient::Get()->NewWindow(true /* incognito */);
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(Profile::INCOGNITO_PROFILE,
+            GetLastActiveBrowser()->profile()->GetProfileType());
 }

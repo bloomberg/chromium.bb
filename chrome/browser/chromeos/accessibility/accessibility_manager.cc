@@ -49,7 +49,6 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -394,13 +393,6 @@ void AccessibilityManager::OnLargeCursorChanged() {
                                           IsLargeCursorEnabled(),
                                           ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
-}
-
-bool AccessibilityManager::IsIncognitoAllowed() {
-  return profile_ != NULL &&
-         profile_->GetProfileType() != Profile::GUEST_PROFILE &&
-         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
-             IncognitoModePrefs::DISABLED;
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() const {

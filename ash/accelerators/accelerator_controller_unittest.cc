@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -1372,6 +1373,20 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
   }
 
   RemoveAllNotifications();
+}
+
+using AcceleratorControllerGuestModeTest = NoSessionAshTestBase;
+
+TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
+  // Simulate a guest mode login.
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->Reset();
+  session->AddUserSession("user1@test.com", user_manager::USER_TYPE_GUEST);
+  session->SetSessionState(session_manager::SessionState::ACTIVE);
+
+  // New incognito window is disabled.
+  EXPECT_FALSE(Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      NEW_INCOGNITO_WINDOW));
 }
 
 }  // namespace ash

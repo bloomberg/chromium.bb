@@ -19,7 +19,6 @@ class TestShellDelegate : public ShellDelegate {
 
   // Overridden from ShellDelegate:
   ::service_manager::Connector* GetShellConnector() const override;
-  bool IsIncognitoAllowed() const override;
   bool IsRunningInForcedAppMode() const override;
   bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
