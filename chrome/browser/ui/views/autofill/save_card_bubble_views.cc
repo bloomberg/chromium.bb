@@ -221,13 +221,14 @@ base::string16 SaveCardBubbleViews::GetWindowTitle() const {
 }
 
 gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
-  if (IsAutofillUpstreamShowGoogleLogoExperimentEnabled())
-    return gfx::CreateVectorIcon(kGoogleGLogoIcon, 16, gfx::kPlaceholderColor);
-  return gfx::ImageSkia();
+  return gfx::CreateVectorIcon(kGoogleGLogoIcon, 16, gfx::kPlaceholderColor);
 }
 
 bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
-  return IsAutofillUpstreamShowGoogleLogoExperimentEnabled();
+  // We show the window icon (Google "G") in non-local save scenarios where the
+  // new UI is enabled.
+  return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP &&
+         IsAutofillUpstreamShowGoogleLogoExperimentEnabled();
 }
 
 void SaveCardBubbleViews::WindowClosing() {
