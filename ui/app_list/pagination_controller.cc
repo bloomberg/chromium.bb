@@ -28,7 +28,7 @@ PaginationController::PaginationController(PaginationModel* model,
     : pagination_model_(model), scroll_axis_(scroll_axis) {}
 
 bool PaginationController::OnScroll(const gfx::Vector2d& offset,
-                                    ScrollEventType type) {
+                                    ui::EventType type) {
   int offset_magnitude;
   if (scroll_axis_ == SCROLL_AXIS_HORIZONTAL) {
     // If the view scrolls horizontally, both horizontal and vertical scroll
@@ -47,10 +47,11 @@ bool PaginationController::OnScroll(const gfx::Vector2d& offset,
       !pagination_model_->has_transition()) {
     const int delta = offset_magnitude > 0 ? -1 : 1;
     if (pagination_model_->IsValidPageRelative(delta)) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAppListPageSwitcherSourceHistogram,
-          type == SCROLL_MOUSE_WHEEL ? kMouseWheelScroll : kMousePadScroll,
-          kMaxAppListPageSwitcherSource);
+      UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
+                                type == ui::EventType::ET_MOUSEWHEEL
+                                    ? kMouseWheelScroll
+                                    : kMousePadScroll,
+                                kMaxAppListPageSwitcherSource);
     }
     pagination_model_->SelectPageRelative(delta, true);
     return true;

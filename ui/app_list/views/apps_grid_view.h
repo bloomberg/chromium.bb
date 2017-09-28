@@ -139,7 +139,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   bool GetDropFormats(
@@ -155,7 +154,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
@@ -210,6 +208,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Starts a timer during which we ignore scroll events.
   void StartTimerToIgnoreScrollEvents();
+
+  // Passes scroll information from AppListView to the PaginationController,
+  // returns true if this scroll would change pages.
+  bool HandleScrollFromAppListView(int offset, ui::EventType type);
 
   // Return the view model for test purposes.
   const views::ViewModelT<AppListItemView>* view_model_for_test() const {
@@ -297,6 +299,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void UpdatePulsingBlockViews();
 
   AppListItemView* CreateViewForItemAtIndex(size_t index);
+
+  // Returns true if the event was handled by the pagination controller.
+  bool HandleScroll(int offset, ui::EventType type);
 
   // Convert between the model index and the visual index. The model index
   // is the index of the item in AppListModel. The visual index is the Index

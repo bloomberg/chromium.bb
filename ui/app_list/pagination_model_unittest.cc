@@ -439,5 +439,24 @@ TEST_F(PaginationModelTest, SelectedPageIsLost) {
   EXPECT_EQ(0, pagination_.selected_page());
 }
 
+TEST_F(PaginationModelTest, SelectPageRelativeBeginning) {
+  // Test starts with 5 pages. Select Page 1.
+  pagination_.SelectPage(1, false);
+
+  pagination_.SelectPageRelative(-1, false);
+  EXPECT_EQ(0, pagination_.selected_page());
+}
+
+TEST_F(PaginationModelTest, SelectPageRelativeMiddle) {
+  // Test starts with 5 pages. Select page 2.
+  pagination_.SelectPage(2, false);
+
+  pagination_.SelectPageRelative(-1, false);
+  EXPECT_EQ(1, pagination_.selected_page());
+
+  pagination_.SelectPageRelative(1, false);
+  EXPECT_EQ(2, pagination_.selected_page());
+}
+
 }  // namespace test
 }  // namespace app_list

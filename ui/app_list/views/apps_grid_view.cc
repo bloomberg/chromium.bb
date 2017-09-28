@@ -1035,21 +1035,6 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
   return handled;
 }
 
-bool AppsGridView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (is_ignoring_scroll_events_)
-    return true;
-
-  // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == AppListModel::STATE_START ||
-      pagination_model_.total_pages() <= 0) {
-    return false;
-  }
-
-  return pagination_controller_->OnScroll(
-      gfx::Vector2d(event.x_offset(), event.y_offset()),
-      PaginationController::SCROLL_MOUSE_WHEEL);
-}
-
 void AppsGridView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (!details.is_add && details.parent == this) {
@@ -1083,26 +1068,6 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
         static_cast<View*>(this),
         static_cast<View*>(contents_view_->app_list_view()));
     contents_view_->app_list_view()->OnGestureEvent(event);
-  }
-}
-
-void AppsGridView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (is_ignoring_scroll_events_)
-    return;
-  // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == AppListModel::STATE_START ||
-      pagination_model_.total_pages() <= 0) {
-    return;
-  }
-
-  if (event->type() == ui::ET_SCROLL_FLING_CANCEL)
-    return;
-
-  gfx::Vector2dF offset(event->x_offset(), event->y_offset());
-  if (pagination_controller_->OnScroll(gfx::ToFlooredVector2d(offset),
-                                       PaginationController::SCROLL_TOUCHPAD)) {
-    event->SetHandled();
-    event->StopPropagation();
   }
 }
 
@@ -1190,6 +1155,21 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   view->SetPaintToLayer();
   view->layer()->SetFillsBoundsOpaquely(false);
   return view;
+}
+
+bool AppsGridView::HandleScroll(int offset, ui::EventType type) {
+  if (is_ignoring_scroll_events_)
+    return false;
+
+  // Bail on STATE_START or no apps page to make PaginationModel happy.
+  if (contents_view_->GetActiveState() == AppListModel::STATE_START ||
+      pagination_model_.total_pages() <= 0) {
+    return false;
+  }
+
+  const gfx::Vector2dF scroll_offset_vector(0, offset);
+  return pagination_controller_->OnScroll(
+      gfx::ToFlooredVector2d(scroll_offset_vector), type);
 }
 
 AppsGridView::Index AppsGridView::GetIndexFromModelIndex(
@@ -2042,6 +2022,14 @@ void AppsGridView::StartTimerToIgnoreScrollEvents() {
   is_ignoring_scroll_events_ = true;
   scroll_ignore_timer_.Start(FROM_HERE, kIgnoreScrollEventsDurationMs, this,
                              &AppsGridView::StopIgnoringScrollEvents);
+}
+
+bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
+  if (!pagination_model()->IsValidPageRelative(offset <= 0 ? 1 : -1))
+    return false;
+
+  HandleScroll(offset, type);
+  return true;
 }
 
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {

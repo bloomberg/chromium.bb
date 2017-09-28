@@ -209,7 +209,6 @@ class AppListViewFullscreenTest : public AppListViewTest {
     params.is_tablet_mode = is_tablet_mode;
     params.is_side_shelf = is_side_shelf;
     view_->Initialize(params);
-    // Initialize around a point that ensures the window is wholly shown.
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
 
@@ -696,6 +695,24 @@ TEST_F(AppListViewFullscreenTest, EmptySearchTextStillPeeking) {
   search_box->SetText(base::string16());
 
   ASSERT_EQ(AppListView::PEEKING, view_->app_list_state());
+}
+
+TEST_F(AppListViewFullscreenTest, MouseWheelScrollTransitionsToFullscreen) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+
+  view_->HandleScroll(-30, ui::ET_MOUSEWHEEL);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
+}
+
+TEST_F(AppListViewFullscreenTest, GestureScrollTransitionsToFullscreen) {
+  Initialize(0, false, false);
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  Show();
+
+  view_->HandleScroll(-30, ui::ET_SCROLL);
+  EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
 // Tests that typing text after opening transitions from peeking to half.
