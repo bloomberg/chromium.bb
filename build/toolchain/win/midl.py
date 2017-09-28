@@ -113,6 +113,8 @@ def main(arch, outdir, tlb, h, dlldata, iid, proxy, idl, *flags):
       return popen.returncode
     if is_chromoting:
       return 0
+    # Skip checking of results until crbug.com/756607 is fixed.
+    return 0
 
     for f in os.listdir(tmp_dir):
       ZapTimestamp(os.path.join(tmp_dir, f))
