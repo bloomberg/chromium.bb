@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/navigation_metrics/navigation_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -662,6 +663,15 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         SEARCH_ENGINE_OTHER;
     UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
                               SEARCH_ENGINE_MAX);
+  } else {
+    // |match| is a URL navigation, not a search.
+    // For logging the below histogram, only record uses that depend on the
+    // omnibox suggestion system, i.e., TYPED navigations.  That is, exclude
+    // omnibox URL interactions that are treated as reloads or link-following
+    // (i.e., cut-and-paste of URLs).
+    if (ui::PageTransitionTypeIncludingQualifiersIs(match.transition,
+                                                    ui::PAGE_TRANSITION_TYPED))
+      navigation_metrics::RecordOmniboxURLNavigation(match.destination_url);
   }
 
   if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB) {

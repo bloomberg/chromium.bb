@@ -145,6 +145,7 @@ static_library("browser") {
     "//components/data_use_measurement/core",
     "//components/keyed_service/core",
     "//components/metrics",
+    "//components/navigation_metrics",
     "//components/open_from_clipboard",
     "//components/physical_web/data_source",
     "//components/pref_registry",
