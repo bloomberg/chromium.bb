@@ -34,7 +34,6 @@
 namespace blink {
 
 class HTMLOListElement;
-class LayoutListItem;
 class LayoutObject;
 class Node;
 
@@ -76,7 +75,7 @@ class ListItemOrdinal {
   static void InvalidateAllItemsForOrderedList(const HTMLOListElement*);
 
   // Invalidate items that are affected by an insertion or a removal.
-  static void ItemInsertedOrRemoved(const LayoutListItem*);
+  static void ItemInsertedOrRemoved(const LayoutObject*);
 
  private:
   enum ValueType { kNeedsUpdate, kUpdated, kExplicit };

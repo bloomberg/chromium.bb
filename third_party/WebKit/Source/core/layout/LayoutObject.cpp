@@ -78,6 +78,7 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/layout/svg/SVGResources.h"
@@ -196,6 +197,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
         return new LayoutNGBlockFlow(element);
       return new LayoutBlockFlow(element);
     case EDisplay::kListItem:
+      if (RuntimeEnabledFeatures::LayoutNGEnabled())
+        return new LayoutNGListItem(element);
       return new LayoutListItem(element);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
