@@ -40,7 +40,9 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 @property(nonatomic, readwrite, strong) NSArray* buttons;
-@property(nonatomic, readwrite, strong) UIButton* popupButton;
+
+// View containing the content and respecting the safe area.
+@property(nonatomic, strong) UIView* contentView;
 
 - (void)setup;
 - (void)calculateButtonWidth;
@@ -50,29 +52,23 @@ const int kNumberOfTabsIncognito = 2;
 @end
 
 @implementation NewTabPageBar {
-  // Which button is currently selected.
-  NSUInteger selectedIndex_;
   // Don't allow tabbar animations on startup, only after first tap.
   BOOL canAnimate_;
-  __weak id<NewTabPageBarDelegate> delegate_;
-  // Logo view, used to center the tab buttons.
-  UIImageView* logoView_;
   // Overlay view, used to highlight the selected button.
   UIImageView* overlayView_;
   // Overlay view, used to highlight the selected button.
   UIView* overlayColorView_;
   // Width of a button.
   CGFloat buttonWidth_;
-  // Percentage overlay sits over tab bar buttons.
-  CGFloat overlayPercentage_;
 }
 
 @synthesize items = items_;
 @synthesize selectedIndex = selectedIndex_;
-@synthesize popupButton = popupButton_;
 @synthesize buttons = buttons_;
 @synthesize delegate = delegate_;
 @synthesize overlayPercentage = overlayPercentage_;
+@synthesize contentView = _contentView;
+@synthesize safeAreaInsetFromNTPView = _safeAreaInsetFromNTPView;
 
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -93,10 +89,10 @@ const int kNumberOfTabsIncognito = 2;
 - (void)setup {
   self.selectedIndex = NSNotFound;
   canAnimate_ = NO;
-  self.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-  self.autoresizesSubviews = YES;
-  self.backgroundColor = [UIColor clearColor];
+  self.backgroundColor = [UIColor whiteColor];
+
+  _contentView = [[UIView alloc] initWithFrame:CGRectZero];
+  [self addSubview:_contentView];
 
   if ([self showOverlay]) {
     overlayView_ =
@@ -113,7 +109,7 @@ const int kNumberOfTabsIncognito = 2;
         setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin |
                             UIViewAutoresizingFlexibleRightMargin];
     [overlayView_ addSubview:overlayColorView_];
-    [self addSubview:overlayView_];
+    [_contentView addSubview:overlayView_];
   }
 
   // Make the drop shadow.
@@ -132,22 +128,25 @@ const int kNumberOfTabsIncognito = 2;
 - (void)layoutSubviews {
   [super layoutSubviews];
 
+  CGRect contentViewFrame =
+      UIEdgeInsetsInsetRect(self.frame, self.safeAreaInsetFromNTPView);
+  contentViewFrame.origin.y = 0;
+  self.contentView.frame = contentViewFrame;
+
   // |buttonWidth_| changes with the screen orientation when the NTP button bar
   // is enabled.
   [self calculateButtonWidth];
 
-  CGFloat logoWidth = logoView_.image.size.width;
-  CGFloat padding = [self useIconsInButtons] ? logoWidth : 0;
-  CGFloat buttonPadding = floor((CGRectGetWidth(self.bounds) - padding -
+  CGFloat buttonPadding = floor((CGRectGetWidth(self.contentView.bounds) -
                                  buttonWidth_ * self.buttons.count) /
-                                    2 +
-                                padding);
+                                2);
 
   for (NSUInteger i = 0; i < self.buttons.count; ++i) {
     NewTabPageBarButton* button = [self.buttons objectAtIndex:i];
-    LayoutRect layout = LayoutRectMake(
-        buttonPadding + (i * buttonWidth_), CGRectGetWidth(self.bounds), 0,
-        buttonWidth_, CGRectGetHeight(self.bounds));
+    LayoutRect layout =
+        LayoutRectMake(buttonPadding + (i * buttonWidth_),
+                       CGRectGetWidth(self.contentView.bounds), 0, buttonWidth_,
+                       CGRectGetHeight(self.contentView.bounds));
     button.frame = LayoutRectGetRect(layout);
     [button
         setContentToDisplay:[self useIconsInButtons]
@@ -166,13 +165,14 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-  return CGSizeMake(size.width, kBarHeight);
+  return CGSizeMake(size.width,
+                    kBarHeight + self.safeAreaInsetFromNTPView.bottom);
 }
 
 - (void)calculateButtonWidth {
   if (IsCompact()) {
     if ([items_ count] > 0) {
-      buttonWidth_ = self.bounds.size.width / [items_ count];
+      buttonWidth_ = self.contentView.bounds.size.width / [items_ count];
     } else {
       // In incognito on phones, there are no items shown.
       buttonWidth_ = 0;
@@ -202,10 +202,10 @@ const int kNumberOfTabsIncognito = 2;
     for (NSUInteger i = 0; i < newItems.count; ++i) {
       NewTabPageBarItem* item = [newItems objectAtIndex:i];
       NewTabPageBarButton* button = [NewTabPageBarButton buttonWithItem:item];
-      button.frame = CGRectIntegral(CGRectMake(
-          i * buttonWidth_, 0, buttonWidth_, self.bounds.size.height));
+      button.frame = CGRectIntegral(
+          CGRectMake(i * buttonWidth_, 0, buttonWidth_, kBarHeight));
       [self setupButton:button];
-      [self addSubview:button];
+      [self.contentView addSubview:button];
       [newButtons addObject:button];
     }
     self.buttons = newButtons;
