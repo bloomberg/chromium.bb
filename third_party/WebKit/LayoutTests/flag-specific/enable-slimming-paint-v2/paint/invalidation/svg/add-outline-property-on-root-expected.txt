@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 192, 192],
+          "object": "LayoutSVGRoot svg",
+          "rect": [-2, -2, 120, 120],
           "reason": "appeared"
         }
       ]
@@ -17,15 +17,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "geometry"
     }
   ]
 }

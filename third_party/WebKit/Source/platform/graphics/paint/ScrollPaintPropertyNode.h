@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/paint/PaintPropertyNode.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
@@ -39,31 +40,28 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
   static RefPtr<ScrollPaintPropertyNode> Create(
       RefPtr<const ScrollPaintPropertyNode> parent,
-      const IntPoint& bounds_offset,
-      const IntSize& container_bounds,
-      const IntSize& bounds,
+      const IntRect& container_rect,
+      const IntRect& contents_rect,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
       CompositorElementId compositor_element_id) {
     return WTF::AdoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), bounds_offset, container_bounds, bounds,
+        std::move(parent), container_rect, contents_rect,
         user_scrollable_horizontal, user_scrollable_vertical,
         main_thread_scrolling_reasons, compositor_element_id));
   }
 
   bool Update(RefPtr<const ScrollPaintPropertyNode> parent,
-              const IntPoint& bounds_offset,
-              const IntSize& container_bounds,
-              const IntSize& bounds,
+              const IntRect& container_rect,
+              const IntRect& contents_rect,
               bool user_scrollable_horizontal,
               bool user_scrollable_vertical,
               MainThreadScrollingReasons main_thread_scrolling_reasons,
               CompositorElementId compositor_element_id) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
-    if (bounds_offset == bounds_offset_ &&
-        container_bounds == container_bounds_ && bounds == bounds_ &&
+    if (container_rect == container_rect_ && contents_rect == contents_rect_ &&
         user_scrollable_horizontal == user_scrollable_horizontal_ &&
         user_scrollable_vertical == user_scrollable_vertical_ &&
         main_thread_scrolling_reasons == main_thread_scrolling_reasons_ &&
@@ -71,9 +69,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       return parent_changed;
 
     SetChanged();
-    bounds_offset_ = bounds_offset;
-    container_bounds_ = container_bounds;
-    bounds_ = bounds;
+    container_rect_ = container_rect;
+    contents_rect_ = contents_rect;
     user_scrollable_horizontal_ = user_scrollable_horizontal;
     user_scrollable_vertical_ = user_scrollable_vertical;
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
@@ -82,15 +79,15 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return true;
   }
 
-  // Offset for |ContainerBounds| and |Bounds|.
-  const IntPoint& Offset() const { return bounds_offset_; }
+  // Rect of the container area that the contents scrolls in, in the space of
+  // the parent of the associated transform node (ScrollTranslation).
+  // It doesn't include non-overlay scrollbars. Overlay scrollbars do not affect
+  // the rect.
+  const IntRect& ContainerRect() const { return container_rect_; }
 
-  // Size of the container area that the contents scrolls in, not including
-  // non-overlay scrollbars. Overlay scrollbars do not affect these bounds.
-  const IntSize& ContainerBounds() const { return container_bounds_; }
-
-  // Size of the content that is scrolled within the container bounds.
-  const IntSize& Bounds() const { return bounds_; }
+  // Rect of the contents that is scrolled within the container rect, in the
+  // space of the associated transform node (ScrollTranslation).
+  const IntRect& ContentsRect() const { return contents_rect_; }
 
   bool UserScrollableHorizontal() const { return user_scrollable_horizontal_; }
   bool UserScrollableVertical() const { return user_scrollable_vertical_; }
@@ -122,7 +119,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   RefPtr<ScrollPaintPropertyNode> Clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
         WTF::AdoptRef(new ScrollPaintPropertyNode(
-            Parent(), bounds_offset_, container_bounds_, bounds_,
+            Parent(), container_rect_, contents_rect_,
             user_scrollable_horizontal_, user_scrollable_vertical_,
             main_thread_scrolling_reasons_, compositor_element_id_));
     return cloned;
@@ -131,8 +128,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && bounds_offset_ == o.bounds_offset_ &&
-           container_bounds_ == o.container_bounds_ && bounds_ == o.bounds_ &&
+    return Parent() == o.Parent() && container_rect_ == o.container_rect_ &&
+           contents_rect_ == o.contents_rect_ &&
            user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
            user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
            main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
@@ -147,17 +144,15 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
  private:
   ScrollPaintPropertyNode(
       RefPtr<const ScrollPaintPropertyNode> parent,
-      IntPoint bounds_offset,
-      IntSize container_bounds,
-      IntSize bounds,
+      const IntRect& container_rect,
+      const IntRect& contents_rect,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
       CompositorElementId compositor_element_id)
       : PaintPropertyNode(std::move(parent)),
-        bounds_offset_(bounds_offset),
-        container_bounds_(container_bounds),
-        bounds_(bounds),
+        container_rect_(container_rect),
+        contents_rect_(contents_rect),
         user_scrollable_horizontal_(user_scrollable_horizontal),
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
@@ -171,9 +166,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
                CompositorElementIdNamespace::kScroll;
   }
 
-  IntPoint bounds_offset_;
-  IntSize container_bounds_;
-  IntSize bounds_;
+  IntRect container_rect_;
+  IntRect contents_rect_;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
   MainThreadScrollingReasons main_thread_scrolling_reasons_;

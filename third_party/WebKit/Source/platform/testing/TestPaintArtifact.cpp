@@ -23,25 +23,22 @@ namespace blink {
 
 class TestPaintArtifact::DummyRectClient : public FakeDisplayItemClient {
  public:
-  DummyRectClient(const FloatRect& rect = FloatRect(),
-                  Color color = Color::kTransparent)
-      : rect_(rect), color_(color) {}
   LayoutRect VisualRect() const final { return EnclosingLayoutRect(rect_); }
-  sk_sp<PaintRecord> MakeRecord() const;
+  void SetVisualRect(const FloatRect& rect) { rect_ = rect; }
+
+  sk_sp<PaintRecord> MakeRecord(const FloatRect& rect, Color color) {
+    rect_ = rect;
+    PaintRecorder recorder;
+    PaintCanvas* canvas = recorder.beginRecording(rect);
+    PaintFlags flags;
+    flags.setColor(color.Rgb());
+    canvas->drawRect(rect, flags);
+    return recorder.finishRecordingAsPicture();
+  }
 
  private:
   FloatRect rect_;
-  Color color_;
 };
-
-sk_sp<PaintRecord> TestPaintArtifact::DummyRectClient::MakeRecord() const {
-  PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(rect_);
-  PaintFlags flags;
-  flags.setColor(color_.Rgb());
-  canvas->drawRect(rect_, flags);
-  return recorder.finishRecordingAsPicture();
-}
 
 TestPaintArtifact::TestPaintArtifact() : display_item_list_(0), built_(false) {}
 
@@ -51,30 +48,49 @@ TestPaintArtifact& TestPaintArtifact::Chunk(
     RefPtr<const TransformPaintPropertyNode> transform,
     RefPtr<const ClipPaintPropertyNode> clip,
     RefPtr<const EffectPaintPropertyNode> effect) {
+  return Chunk(NewClient(), transform, clip, effect);
+}
+
+TestPaintArtifact& TestPaintArtifact::Chunk(
+    DisplayItemClient& client,
+    RefPtr<const TransformPaintPropertyNode> transform,
+    RefPtr<const ClipPaintPropertyNode> clip,
+    RefPtr<const EffectPaintPropertyNode> effect) {
   PropertyTreeState property_tree_state(transform.Get(), clip.Get(),
                                         effect.Get());
   PaintChunkProperties properties(property_tree_state);
-  return Chunk(properties);
+  return Chunk(client, properties);
 }
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
     const PaintChunkProperties& properties) {
+  return Chunk(NewClient(), properties);
+}
+
+TestPaintArtifact& TestPaintArtifact::Chunk(
+    DisplayItemClient& client,
+    const PaintChunkProperties& properties) {
   if (!paint_chunks_.IsEmpty())
     paint_chunks_.back().end_index = display_item_list_.size();
-  auto client = WTF::MakeUnique<DummyRectClient>();
   paint_chunks_.push_back(PaintChunk(
       display_item_list_.size(), 0,
-      PaintChunk::Id(*client, DisplayItem::kDrawingFirst), properties));
-  dummy_clients_.push_back(std::move(client));
+      PaintChunk::Id(client, DisplayItem::kDrawingFirst), properties));
+  // Assume PaintController has processed this chunk.
+  paint_chunks_.back().client_is_just_created = false;
   return *this;
 }
 
 TestPaintArtifact& TestPaintArtifact::RectDrawing(const FloatRect& bounds,
                                                   Color color) {
-  auto client = WTF::MakeUnique<DummyRectClient>(bounds, color);
+  return RectDrawing(NewClient(), bounds, color);
+}
+
+TestPaintArtifact& TestPaintArtifact::RectDrawing(DisplayItemClient& client,
+                                                  const FloatRect& bounds,
+                                                  Color color) {
   display_item_list_.AllocateAndConstruct<DrawingDisplayItem>(
-      *client, DisplayItem::kDrawingFirst, client->MakeRecord(), bounds);
-  dummy_clients_.push_back(std::move(client));
+      client, DisplayItem::kDrawingFirst,
+      static_cast<DummyRectClient&>(client).MakeRecord(bounds, color), bounds);
   return *this;
 }
 
@@ -82,21 +98,32 @@ TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     const FloatPoint& location,
     const IntSize& size,
     scoped_refptr<cc::Layer> layer) {
-  FloatRect float_bounds(location, FloatSize(size));
-  auto client = WTF::MakeUnique<DummyRectClient>(float_bounds);
+  return ForeignLayer(NewClient(), location, size, layer);
+}
+
+TestPaintArtifact& TestPaintArtifact::ForeignLayer(
+    DisplayItemClient& client,
+    const FloatPoint& location,
+    const IntSize& size,
+    scoped_refptr<cc::Layer> layer) {
+  static_cast<DummyRectClient&>(client).SetVisualRect(
+      FloatRect(location, FloatSize(size)));
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      *client, DisplayItem::kForeignLayerFirst, std::move(layer), location,
+      client, DisplayItem::kForeignLayerFirst, std::move(layer), location,
       size);
-  dummy_clients_.push_back(std::move(client));
   return *this;
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     RefPtr<const TransformPaintPropertyNode> scroll_offset) {
-  auto client = WTF::MakeUnique<DummyRectClient>();
+  return ScrollHitTest(NewClient(), scroll_offset);
+}
+
+TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
+    DisplayItemClient& client,
+    RefPtr<const TransformPaintPropertyNode> scroll_offset) {
   display_item_list_.AllocateAndConstruct<ScrollHitTestDisplayItem>(
-      *client, DisplayItem::kScrollHitTest, std::move(scroll_offset));
-  dummy_clients_.push_back(std::move(client));
+      client, DisplayItem::kScrollHitTest, std::move(scroll_offset));
   return *this;
 }
 
@@ -115,6 +142,15 @@ const PaintArtifact& TestPaintArtifact::Build() {
       PaintArtifact(std::move(display_item_list_), std::move(paint_chunks_));
   built_ = true;
   return paint_artifact_;
+}
+
+DisplayItemClient& TestPaintArtifact::NewClient() {
+  dummy_clients_.push_back(WTF::MakeUnique<DummyRectClient>());
+  return *dummy_clients_.back();
+}
+
+DisplayItemClient& TestPaintArtifact::Client(size_t i) const {
+  return *dummy_clients_[i];
 }
 
 }  // namespace blink
