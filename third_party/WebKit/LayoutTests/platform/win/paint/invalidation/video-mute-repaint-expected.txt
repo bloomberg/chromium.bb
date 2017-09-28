@@ -61,7 +61,7 @@
           "reason": "full"
         },
         {
-          "object": "LayoutButton INPUT",
+          "object": "LayoutButton INPUT class='muted'",
           "rect": [530, 493, 32, 32],
           "reason": "full"
         }
@@ -86,7 +86,7 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutButton INPUT",
+      "object": "LayoutButton INPUT class='muted'",
       "reason": "full"
     },
     {
