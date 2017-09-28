@@ -83,7 +83,11 @@ class RefPtr {
 
   ALWAYS_INLINE ~RefPtr() { DerefIfNotNull(ptr_); }
 
-  ALWAYS_INLINE T* Get() const { return ptr_; }
+  // TODO(tzik): Get() is being renamed to get(). Once the rename finished,
+  // remove Get().
+  ALWAYS_INLINE T* Get() const { return get(); }
+
+  ALWAYS_INLINE T* get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
 
   T& operator*() const { return *ptr_; }
