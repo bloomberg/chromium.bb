@@ -31,9 +31,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       layout_object_(layout_object),
       type_(type),
       bidi_level_(UBIDI_LTR),
-      shape_options_(kPreContext | kPostContext),
-      rotate_sideways_(false),
-      fallback_priority_(FontFallbackPriority::kInvalid) {
+      shape_options_(kPreContext | kPostContext) {
   DCHECK_GE(end, start);
 }
 

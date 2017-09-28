@@ -104,11 +104,6 @@ class CORE_EXPORT NGInlineItem {
   unsigned type_ : 3;
   unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
-  unsigned rotate_sideways_ : 1;
-
-  // TODO(layout-ng): Do we need fallback_priority_ here? If so we should pack
-  // it with the bit field above.
-  FontFallbackPriority fallback_priority_;
 
   friend class NGInlineNode;
 };
