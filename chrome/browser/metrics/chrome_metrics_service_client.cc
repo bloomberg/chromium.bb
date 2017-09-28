@@ -208,10 +208,10 @@ void RegisterOrRemovePreviousRunMetricsFile(
 
   if (metrics_reporting_enabled) {
     // Enable reading any existing saved metrics.
-    file_metrics_provider->RegisterSource(
+    file_metrics_provider->RegisterSource(metrics::FileMetricsProvider::Params(
         metrics_file,
         metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
-        association, metrics_name);
+        association, metrics_name));
   } else {
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
@@ -246,10 +246,11 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
         ChromeMetricsServiceClient::kBrowserMetricsName);
     if (metrics_reporting_enabled) {
       file_metrics_provider->RegisterSource(
-          browser_metrics_upload_dir,
-          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
-          metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
-          ChromeMetricsServiceClient::kBrowserMetricsName);
+          metrics::FileMetricsProvider::Params(
+              browser_metrics_upload_dir,
+              metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+              metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+              ChromeMetricsServiceClient::kBrowserMetricsName));
 
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(
@@ -258,10 +259,10 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
       // Register data that will be populated for the current run. "Active"
       // files need an empty "prefs_key" because they update the file itself.
       file_metrics_provider->RegisterSource(
-          active_path,
-          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
-          metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
-          base::StringPiece());
+          metrics::FileMetricsProvider::Params(
+              active_path,
+              metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
+              metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN));
     } else {
       // When metrics reporting is not enabled, any existing files should be
       // deleted in order to preserve user privacy.
@@ -279,11 +280,11 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
   // Read metrics file from setup.exe.
   base::FilePath program_dir;
   base::PathService::Get(base::DIR_EXE, &program_dir);
-  file_metrics_provider->RegisterSource(
+  file_metrics_provider->RegisterSource(metrics::FileMetricsProvider::Params(
       program_dir.AppendASCII(installer::kSetupHistogramAllocatorName),
       metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
       metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
-      installer::kSetupHistogramAllocatorName);
+      installer::kSetupHistogramAllocatorName));
 #endif
 
   return file_metrics_provider;

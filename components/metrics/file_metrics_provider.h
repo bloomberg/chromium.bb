@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -34,6 +34,8 @@ namespace metrics {
 class FileMetricsProvider : public MetricsProvider,
                             public base::StatisticsRecorder::HistogramProvider {
  public:
+  struct Params;
+
   enum SourceType {
     // "Atomic" files are a collection of histograms that are written
     // completely in a single atomic operation (typically a write followed
@@ -97,6 +99,51 @@ class FileMetricsProvider : public MetricsProvider,
     ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
   };
 
+  enum FilterAction {
+    // Process this file normally.
+    FILTER_PROCESS_FILE,
+
+    // Try again. This could happen within milliseconds or minutes but no other
+    // files from the same source will get processed in between. The process
+    // must have permission to "touch" the file and alter its last-modified
+    // time because files are always processed in order of those stamps.
+    FILTER_TRY_LATER,
+
+    // Skip this file. This file will not be processed until it has changed
+    // (i.e. had its last-modifided time updated). If it is "atomic", an
+    // attempt will be made to delete it.
+    FILTER_SKIP_FILE,
+  };
+
+  // A "filter" can be defined to determine what to do on a per-file basis.
+  // This is called only after a file has been found to be the next one to
+  // be processed so it's okay if filter calls are relatively expensive.
+  // Calls are made on a background thread of low-priority and capable of
+  // doing I/O.
+  using FilterCallback =
+      base::RepeatingCallback<FilterAction(const base::FilePath& path)>;
+
+  // Parameters for RegisterSource, defined as a structure to allow new
+  // ones to be added (with default values) that doesn't require changes
+  // to all call sites.
+  struct Params {
+    Params(const base::FilePath& path,
+           SourceType type,
+           SourceAssociation association,
+           base::StringPiece prefs_key = base::StringPiece());
+
+    ~Params();
+
+    // The standard parameters, set during construction.
+    const base::FilePath path;
+    const SourceType type;
+    const SourceAssociation association;
+    const base::StringPiece prefs_key;
+
+    // Other parameters that can be set after construction.
+    FilterCallback filter;
+  };
+
   explicit FileMetricsProvider(PrefService* local_state);
   ~FileMetricsProvider() override;
 
@@ -107,10 +154,7 @@ class FileMetricsProvider : public MetricsProvider,
   // necessary keys in advance. Set |prefs_key| empty (nullptr will work) if
   // no persistence is required. ACTIVE files shouldn't have a pref key as
   // they update internal state about what has been previously sent.
-  void RegisterSource(const base::FilePath& path,
-                      SourceType type,
-                      SourceAssociation source_association,
-                      const base::StringPiece prefs_key);
+  void RegisterSource(const Params& params);
 
   // Registers all necessary preferences for maintaining persistent state
   // about a monitored file across process restarts. The |prefs_key| is
@@ -151,6 +195,12 @@ class FileMetricsProvider : public MetricsProvider,
     // File contents were internally deleted.
     ACCESS_RESULT_MEMORY_DELETED,
 
+    // File is scheduled to be tried again later.
+    ACCESS_RESULT_FILTER_TRY_LATER,
+
+    // The file was skipped according to filtering rules.
+    ACCESS_RESULT_FILTER_SKIP_FILE,
+
     ACCESS_RESULT_MAX
   };
 
@@ -158,6 +208,9 @@ class FileMetricsProvider : public MetricsProvider,
   // inside the .cc file.
   struct SourceInfo;
   using SourceInfoList = std::list<std::unique_ptr<SourceInfo>>;
+
+  // Records an access result in a histogram.
+  static void RecordAccessResult(AccessResult result);
 
   // Looks for the next file to read within a directory. Returns true if a
   // file was found. This is part of CheckAndMapNewMetricSourcesOnTaskRunner
@@ -182,6 +235,10 @@ class FileMetricsProvider : public MetricsProvider,
   static void RecordHistogramSnapshotsFromSource(
       base::HistogramSnapshotManager* snapshot_manager,
       SourceInfo* source);
+
+  // Calls source filter (if any) and returns the desired action.
+  static AccessResult HandleFilterSource(SourceInfo* source,
+                                         const base::FilePath& path);
 
   // Creates a task to check all monitored sources for updates.
   void ScheduleSourcesCheck();
