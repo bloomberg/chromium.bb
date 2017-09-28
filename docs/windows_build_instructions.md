@@ -23,38 +23,23 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of September, 2017 Chromium requires Visual Studio 2015, with the 14393
-Windows SDK or later to build.
-
-Install Visual Studio 2015 Update 3 or later - Community Edition
-should work if its license is appropriate for you. Use the Custom Install option
-and select:
-
-- Visual C++, which will select three sub-categories including MFC
-- Universal Windows Apps Development Tools > Tools (1.4.1) and Windows 10 SDK
-
-You can also install Visual Studio 2017 Update 3 or later. You must install the
+As of September, 2017 Chromium requires Visual Studio 2017 update 3.2 with the
+15063 (Creators Update) Windows SDK or later to build. Visual Studio Community
+Edition should work if its license is appropriate for you. You must install the
 VC++ toolchain and MFC. This can be done from the command line like this:
 ```shell
 vs_professional.exe --add Microsoft.VisualStudio.Workload.NativeDesktop
     --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended
 ```
-You must also set GYP_MSVS_VERSION=2017 to tell the Chrome build system to use
-this toolchain. This generally works but is not yet officially supported.
-
-You must have the Windows 10 SDK installed, version 10.0.14393 or
-10.0.15063. The 10.0.15063 SDK initially had errors but the 10.0.15063.468
-version works well.
-
-When installing the Windows 10 SDK choose Debugging Tools For Windows in
-order to get windbg and cdb. The latter is required for the build to succeed as
-some tests use it for symbolizing crash dumps.
+You must have the Windows 10 SDK installed, version 10.0.15063 or later.
+The 10.0.15063 SDK initially had errors but the 10.0.15063.468 version works
+well. Most of this will be installed by Visual Studio.
 
 If the Windows 10 SDK was installed via the Visual Studio installer, the Debugging
 Tools can be installed by going to: Control Panel → Programs →
 Programs and Features → Select the "Windows Software Development Kit" →
 Change → Change → Check "Debugging Tools For Windows" → Change. Or, you can
-download the standalone installer and use it to install the Debugging Tools.
+download the standalone SDK installer and use it to install the Debugging Tools.
 
 ## Install `depot_tools`
 
