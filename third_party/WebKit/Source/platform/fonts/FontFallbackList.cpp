@@ -110,7 +110,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
       SimpleFontData* last_resort_fallback =
           FontCache::GetFontCache()
               ->GetLastResortFallbackFont(font_description)
-              .Get();
+              .get();
       DCHECK(last_resort_fallback);
       return last_resort_fallback;
     }
@@ -217,9 +217,10 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
 const FontData* FontFallbackList::FontDataAt(
     const FontDescription& font_description,
     unsigned realized_font_index) const {
-  if (realized_font_index < font_list_.size())
+  if (realized_font_index < font_list_.size()) {
     return font_list_[realized_font_index]
-        .Get();  // This fallback font is already in our list.
+        .get();  // This fallback font is already in our list.
+  }
 
   // Make sure we're not passing in some crazy value here.
   DCHECK_EQ(realized_font_index, font_list_.size());
@@ -239,7 +240,7 @@ const FontData* FontFallbackList::FontDataAt(
     if (result->IsLoadingFallback())
       has_loading_fallback_ = true;
   }
-  return result.Get();
+  return result.get();
 }
 
 bool FontFallbackList::IsValid() const {

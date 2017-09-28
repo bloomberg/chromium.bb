@@ -39,7 +39,7 @@ class CachingWordShaperTest : public ::testing::Test {
 
 static inline const ShapeResultTestInfo* TestInfo(
     RefPtr<const ShapeResult>& result) {
-  return static_cast<const ShapeResultTestInfo*>(result.Get());
+  return static_cast<const ShapeResultTestInfo*>(result.get());
 }
 
 TEST_F(CachingWordShaperTest, LatinLeftToRightByWord) {

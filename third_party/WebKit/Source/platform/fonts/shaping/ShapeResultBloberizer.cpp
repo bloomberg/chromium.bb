@@ -103,14 +103,14 @@ float ShapeResultBloberizer::FillGlyphs(
       const RefPtr<const ShapeResult>& word_result = results[resolved_index];
       word_offset -= word_result->NumCharacters();
       advance =
-          FillGlyphsForResult(word_result.Get(), run_info.run, run_info.from,
+          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
                               run_info.to, advance, word_offset);
     }
   } else {
     unsigned word_offset = 0;
     for (const auto& word_result : results) {
       advance =
-          FillGlyphsForResult(word_result.Get(), run_info.run, run_info.from,
+          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
                               run_info.to, advance, word_offset);
       word_offset += word_result->NumCharacters();
     }
@@ -264,7 +264,7 @@ float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
             uint16_t character_index) -> bool {
 
           AddGlyphToBloberizer(*this, total_advance, run->direction_,
-                               run->font_data_.Get(), glyph_data, text,
+                               run->font_data_.get(), glyph_data, text,
                                character_index);
           return true;
         });
@@ -293,7 +293,7 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   for (unsigned i = 0; i < results.size(); ++i) {
     const auto& word_result =
         IsLtr(text_direction) ? results[i] : results[results.size() - 1 - i];
-    advance = FillFastHorizontalGlyphs(word_result.Get(), advance);
+    advance = FillFastHorizontalGlyphs(word_result.get(), advance);
   }
 
   return advance;
@@ -314,7 +314,7 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
                           [&](const HarfBuzzRunGlyphData& glyph_data,
                               float total_advance) -> bool {
                             DCHECK(!glyph_data.offset.Height());
-                            Add(glyph_data.glyph, run->font_data_.Get(),
+                            Add(glyph_data.glyph, run->font_data_.get(),
                                 total_advance + glyph_data.offset.Width());
                             return true;
                           });

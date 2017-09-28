@@ -42,7 +42,7 @@ class HarfBuzzShaperTest : public ::testing::Test {
 };
 
 static inline ShapeResultTestInfo* TestInfo(RefPtr<ShapeResult>& result) {
-  return static_cast<ShapeResultTestInfo*>(result.Get());
+  return static_cast<ShapeResultTestInfo*>(result.get());
 }
 
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
@@ -52,12 +52,12 @@ TEST_F(HarfBuzzShaperTest, MutableUnique) {
 
   // At this point, |result| has only one ref count.
   RefPtr<ShapeResult> result2 = result->MutableUnique();
-  EXPECT_EQ(result.Get(), result2.Get());
+  EXPECT_EQ(result.get(), result2.get());
   EXPECT_FALSE(result2->HasOneRef());
 
   // Since |result| has 2 ref counts, it should return a clone.
   RefPtr<ShapeResult> result3 = result->MutableUnique();
-  EXPECT_NE(result.Get(), result3.Get());
+  EXPECT_NE(result.get(), result3.get());
   EXPECT_TRUE(result3->HasOneRef());
 }
 
@@ -319,8 +319,8 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
 
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result1->CopyRange(0, 3, composite_result.Get());
-  result2->CopyRange(3, string.length(), composite_result.Get());
+  result1->CopyRange(0, 3, composite_result.get());
+  result2->CopyRange(3, string.length(), composite_result.get());
 
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
@@ -347,8 +347,8 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
 
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result1->CopyRange(0, 3, composite_result.Get());
-  result2->CopyRange(3, string.length(), composite_result.Get());
+  result1->CopyRange(0, 3, composite_result.get());
+  result2->CopyRange(3, string.length(), composite_result.get());
 
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
@@ -532,17 +532,17 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
 
   // Split the result.
   RefPtr<ShapeResult> result1 = ShapeResult::Create(&font, 0, direction);
-  result->CopyRange(0, test_data.break_point, result1.Get());
+  result->CopyRange(0, test_data.break_point, result1.get());
   EXPECT_EQ(test_data.break_point, result1->NumCharacters());
   RefPtr<ShapeResult> result2 = ShapeResult::Create(&font, 0, direction);
-  result->CopyRange(test_data.break_point, string.length(), result2.Get());
+  result->CopyRange(test_data.break_point, string.length(), result2.get());
   EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
 
   // Combine them.
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result1->CopyRange(0, test_data.break_point, composite_result.Get());
-  result2->CopyRange(0, string.length(), composite_result.Get());
+  result1->CopyRange(0, test_data.break_point, composite_result.get());
+  result2->CopyRange(0, string.length(), composite_result.get());
   EXPECT_EQ(string.length(), composite_result->NumCharacters());
 
   // Test character indexes match.
@@ -574,8 +574,8 @@ TEST_P(ShapeResultCopyRangeTest, ShapeRange) {
   // Combine them.
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result1->CopyRange(0, test_data.break_point, composite_result.Get());
-  result2->CopyRange(0, string.length(), composite_result.Get());
+  result1->CopyRange(0, test_data.break_point, composite_result.get());
+  result2->CopyRange(0, string.length(), composite_result.get());
   EXPECT_EQ(string.length(), composite_result->NumCharacters());
 
   // Test character indexes match.
@@ -595,10 +595,10 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
 
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result->CopyRange(0, 10, composite_result.Get());
-  result->CopyRange(10, 20, composite_result.Get());
-  result->CopyRange(20, 30, composite_result.Get());
-  result->CopyRange(30, 33, composite_result.Get());
+  result->CopyRange(0, 10, composite_result.get());
+  result->CopyRange(10, 20, composite_result.get());
+  result->CopyRange(20, 30, composite_result.get());
+  result->CopyRange(30, 33, composite_result.get());
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
@@ -625,9 +625,9 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
 
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result->CopyRange(0, 4, composite_result.Get());
-  result->CopyRange(4, 6, composite_result.Get());
-  result->CopyRange(6, 8, composite_result.Get());
+  result->CopyRange(0, 4, composite_result.get());
+  result->CopyRange(4, 6, composite_result.get());
+  result->CopyRange(6, 8, composite_result.get());
 
   EXPECT_EQ(result->NumCharacters(), composite_result->NumCharacters());
   EXPECT_EQ(result->SnappedWidth(), composite_result->SnappedWidth());
@@ -667,7 +667,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
 
   // CopyRange(5, 7) should copy 1 character from [1] and 1 from [2].
   RefPtr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
-  result->CopyRange(5, 7, target.Get());
+  result->CopyRange(5, 7, target.get());
   EXPECT_EQ(2u, target->NumCharacters());
 }
 
@@ -682,8 +682,8 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
 
   RefPtr<ShapeResult> composite_result =
       ShapeResult::Create(&font, 0, direction);
-  result1->CopyRange(0, 6, composite_result.Get());
-  result2->CopyRange(6, string.length(), composite_result.Get());
+  result1->CopyRange(0, 6, composite_result.get());
+  result2->CopyRange(6, string.length(), composite_result.get());
 
   RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
@@ -719,8 +719,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
   // copying and multi-run break information works.
   RefPtr<ShapeResult> copied_result =
       ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
-  result->CopyRange(0, 3, copied_result.Get());
-  result->CopyRange(3, string.length(), copied_result.Get());
+  result->CopyRange(0, 3, copied_result.get());
+  result->CopyRange(3, string.length(), copied_result.get());
 
   EXPECT_EQ(0u, copied_result->NextSafeToBreakOffset(0));
   EXPECT_EQ(3u, copied_result->NextSafeToBreakOffset(1));
@@ -758,8 +758,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
   // copying and multi-run break information works.
   RefPtr<ShapeResult> copied_result =
       ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
-  result->CopyRange(0, 3, copied_result.Get());
-  result->CopyRange(3, string.length(), copied_result.Get());
+  result->CopyRange(0, 3, copied_result.get());
+  result->CopyRange(3, string.length(), copied_result.get());
 
   EXPECT_EQ(6u, copied_result->PreviousSafeToBreakOffset(6));
   EXPECT_EQ(4u, copied_result->PreviousSafeToBreakOffset(5));

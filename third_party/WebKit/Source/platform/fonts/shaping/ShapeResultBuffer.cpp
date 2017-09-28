@@ -206,7 +206,7 @@ Vector<ShapeResultBuffer::RunFontData> ShapeResultBuffer::GetRunFontData()
   for (const auto& result : results_) {
     for (const auto& run : result->runs_) {
       font_data.push_back(
-          RunFontData({run->font_data_.Get(), run->glyph_data_.size()}));
+          RunFontData({run->font_data_.get(), run->glyph_data_.size()}));
     }
   }
   return font_data;
@@ -222,7 +222,7 @@ GlyphData ShapeResultBuffer::EmphasisMarkGlyphData(
 
       return GlyphData(
           run->glyph_data_[0].glyph,
-          run->font_data_->EmphasisMarkFontData(font_description).Get());
+          run->font_data_->EmphasisMarkFontData(font_description).get());
     }
   }
 

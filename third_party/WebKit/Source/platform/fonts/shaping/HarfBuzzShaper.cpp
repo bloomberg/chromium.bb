@@ -415,7 +415,7 @@ static inline const SimpleFontData* FontDataAdjustedForOrientation(
   if (run_orientation == FontOrientation::kVerticalRotated ||
       (run_orientation == FontOrientation::kVerticalMixed &&
        render_orientation == OrientationIterator::kOrientationRotateSideways))
-    return original_font->VerticalRightOrientationFontData().Get();
+    return original_font->VerticalRightOrientationFontData().get();
 
   return original_font;
 }
@@ -801,7 +801,7 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
     const SimpleFontData* smallcaps_adjusted_font =
         needs_caps_handling &&
                 caps_support.NeedsSyntheticFont(small_caps_behavior)
-            ? font_data->SmallCapsFontData(font_description).Get()
+            ? font_data->SmallCapsFontData(font_description).get()
             : font_data;
 
     // Compatibility with SimpleFontData approach of keeping a flag for
@@ -881,11 +881,11 @@ RefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
     // Only shape segments overlapping with the range indicated by start and
     // end. Not only those strictly within.
     if (start < segment_range.end && end > segment_range.start)
-      ShapeSegment(&range_data, segment_range, result.Get());
+      ShapeSegment(&range_data, segment_range, result.get());
   }
 
 #if DCHECK_IS_ON()
-  CheckShapeResultRange(result.Get(), start, end, text_, font);
+  CheckShapeResultRange(result.get(), start, end, text_, font);
 #endif
 
   return result;

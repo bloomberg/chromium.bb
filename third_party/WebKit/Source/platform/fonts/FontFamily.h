@@ -88,7 +88,7 @@ inline FontFamily::~FontFamily() {
 }
 
 inline const FontFamily* FontFamily::Next() const {
-  return next_.Get();
+  return next_.get();
 }
 
 inline void FontFamily::AppendFamily(RefPtr<SharedFontFamily> family) {

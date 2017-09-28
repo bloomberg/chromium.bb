@@ -71,7 +71,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
         return false;
       *word_result = ShapeWord(text_run_, font_);
       start_index_ = 1;
-      return word_result->Get();
+      return word_result->get();
     }
 
     return NextWord(word_result);
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       *result = ShapeWord(sub_run, font_);
     }
     start_index_ = end_index;
-    return result->Get();
+    return result->get();
   }
 
   unsigned EndIndexUntil(UChar ch) const {

@@ -115,7 +115,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     FontCache* font_cache = FontCache::GetFontCache();
     fallback_stage_ = kOutOfLuck;
     RefPtr<SimpleFontData> last_resort =
-        font_cache->GetLastResortFallbackFont(font_description_).Get();
+        font_cache->GetLastResortFallbackFont(font_description_).get();
     if (!last_resort)
       FontCache::CrashWithFontInfo(&font_description_);
     // Don't skip the LastResort font in uniqueOrNext() since HarfBuzzShaper
@@ -175,7 +175,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     current_font_data_index_++;
   }
 
-  if (RangeSetContributesForHint(hint_list, current_segmented_face.Get())) {
+  if (RangeSetContributesForHint(hint_list, current_segmented_face.get())) {
     const SimpleFontData* font_data = current_segmented_face->FontData();
     if (const CustomFontData* custom_font_data = font_data->GetCustomFontData())
       custom_font_data->BeginLoadIfNeeded();

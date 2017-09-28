@@ -204,9 +204,9 @@ class PLATFORM_EXPORT FontDescription {
   TextRenderingMode TextRendering() const {
     return static_cast<TextRenderingMode>(fields_.text_rendering_);
   }
-  const LayoutLocale* Locale() const { return locale_.Get(); }
+  const LayoutLocale* Locale() const { return locale_.get(); }
   const LayoutLocale& LocaleOrDefault() const {
-    return LayoutLocale::ValueOrDefault(locale_.Get());
+    return LayoutLocale::ValueOrDefault(locale_.get());
   }
   UScriptCode GetScript() const { return LocaleOrDefault().GetScript(); }
   bool IsSyntheticBold() const { return fields_.synthetic_bold_; }
@@ -237,10 +237,10 @@ class PLATFORM_EXPORT FontDescription {
     return static_cast<FontWidthVariant>(fields_.width_variant_);
   }
   FontFeatureSettings* FeatureSettings() const {
-    return feature_settings_.Get();
+    return feature_settings_.get();
   }
   FontVariationSettings* VariationSettings() const {
-    return variation_settings_.Get();
+    return variation_settings_.get();
   }
 
   float EffectiveFontSize()
