@@ -46,6 +46,7 @@ TestExtensionRegistryObserver::TestExtensionRegistryObserver(
     : will_be_installed_waiter_(new Waiter()),
       uninstalled_waiter_(new Waiter()),
       loaded_waiter_(new Waiter()),
+      ready_waiter_(new Waiter()),
       unloaded_waiter_(new Waiter()),
       extension_registry_observer_(this),
       extension_id_(extension_id) {
@@ -72,6 +73,10 @@ const Extension* TestExtensionRegistryObserver::WaitForExtensionUnloaded() {
   return Wait(&unloaded_waiter_);
 }
 
+const Extension* TestExtensionRegistryObserver::WaitForExtensionReady() {
+  return Wait(&ready_waiter_);
+}
+
 void TestExtensionRegistryObserver::OnExtensionWillBeInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
@@ -94,6 +99,13 @@ void TestExtensionRegistryObserver::OnExtensionLoaded(
     const Extension* extension) {
   if (extension_id_.empty() || extension->id() == extension_id_)
     loaded_waiter_->OnObserved(extension);
+}
+
+void TestExtensionRegistryObserver::OnExtensionReady(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (extension_id_.empty() || extension->id() == extension_id_)
+    ready_waiter_->OnObserved(extension);
 }
 
 void TestExtensionRegistryObserver::OnExtensionUnloaded(
