@@ -81,13 +81,11 @@ class ASH_EXPORT NotifierSettingsView
     bool ShouldHaveLearnMoreButton() const;
     // Helper function to reset the layout when the view has substantially
     // changed.
-    void GridChanged(bool has_learn_more, bool has_icon_view);
+    void GridChanged(bool has_learn_more);
 
     message_center::NotifierSettingsProvider* provider_;  // Weak.
     std::unique_ptr<message_center::Notifier> notifier_;
-    // |icon_view_| is owned by us because sometimes we don't leave it
-    // in the view hierarchy.
-    std::unique_ptr<views::ImageView> icon_view_;
+    views::ImageView* icon_view_;
     views::Label* name_view_;
     views::Checkbox* checkbox_;
     views::ImageButton* learn_more_;
