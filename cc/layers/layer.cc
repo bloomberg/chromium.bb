@@ -25,7 +25,6 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/mutable_properties.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -61,7 +60,6 @@ Layer::Inputs::Inputs(int layer_id)
           MainThreadScrollingReason::kNotScrollingOnMain),
       is_resized_by_browser_controls(false),
       is_container_for_fixed_position_layers(false),
-      mutable_properties(MutableProperty::kNone),
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
@@ -1202,7 +1200,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   if (scrollable())
     layer->SetScrollable(inputs_.scroll_container_bounds);
-  layer->SetMutableProperties(inputs_.mutable_properties);
 
   // The property trees must be safe to access because they will be used below
   // to call |SetScrollOffsetClobberActiveValue|.
@@ -1436,16 +1433,6 @@ void Layer::SetElementId(ElementId id) {
                                       ElementListType::ACTIVE, this);
   }
 
-  SetNeedsCommit();
-}
-
-void Layer::SetMutableProperties(uint32_t properties) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.mutable_properties == properties)
-    return;
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "Layer::SetMutableProperties", "properties", properties);
-  inputs_.mutable_properties = properties;
   SetNeedsCommit();
 }
 

@@ -297,7 +297,6 @@ cc_component("cc") {
     "trees/layer_tree_settings.h",
     "trees/managed_memory_policy.cc",
     "trees/managed_memory_policy.h",
-    "trees/mutable_properties.h",
     "trees/mutator_host.h",
     "trees/mutator_host_client.h",
     "trees/occlusion.cc",

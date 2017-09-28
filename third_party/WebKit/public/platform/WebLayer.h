@@ -245,9 +245,6 @@ class WebLayer {
   virtual void SetElementId(const cc::ElementId&) = 0;
   virtual cc::ElementId GetElementId() const = 0;
 
-  virtual void SetCompositorMutableProperties(uint32_t) = 0;
-  virtual uint32_t CompositorMutableProperties() const = 0;
-
   virtual void SetHasWillChangeTransformHint(bool) = 0;
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
