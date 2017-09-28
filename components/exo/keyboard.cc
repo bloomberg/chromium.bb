@@ -24,6 +24,22 @@ namespace {
 // Delay until a key state change expected to be acknowledged is expired.
 const int kExpirationDelayForPendingKeyAcksMs = 1000;
 
+// This is a struct for accelerator keys.
+struct Accelerator {
+  ui::KeyboardCode keycode;
+  int modifiers;
+};
+
+// The accelerator keys reserved to be processed by chrome.
+const struct {
+  ui::KeyboardCode keycode;
+  int modifiers;
+} kReservedAccelerators[] = {
+    {ui::VKEY_SPACE, ui::EF_CONTROL_DOWN},
+    {ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
+    {ui::VKEY_F13, ui::EF_NONE},
+    {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}};
+
 bool ProcessAccelerator(Surface* surface, const ui::KeyEvent* event) {
   views::Widget* widget =
       views::Widget::GetTopLevelWidgetForNativeView(surface->window());
@@ -100,6 +116,16 @@ bool IsPhysicalKeyboardEnabled() {
   return false;
 }
 
+bool IsReservedAccelerator(const ui::KeyEvent* event) {
+  for (const auto& accelerator : kReservedAccelerators) {
+    if (event->flags() == accelerator.modifiers &&
+        event->key_code() == accelerator.keycode) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +137,7 @@ Keyboard::Keyboard(KeyboardDelegate* delegate)
           kExpirationDelayForPendingKeyAcksMs)),
       weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
-  helper->AddPostTargetHandler(this);
+  AddEventHandler();
   helper->AddFocusObserver(this);
   helper->AddTabletModeObserver(this);
   helper->AddInputDeviceEventObserver(this);
@@ -124,8 +150,8 @@ Keyboard::~Keyboard() {
   if (focus_)
     focus_->RemoveSurfaceObserver(this);
   auto* helper = WMHelper::GetInstance();
+  RemoveEventHandler();
   helper->RemoveFocusObserver(this);
-  helper->RemovePostTargetHandler(this);
   helper->RemoveTabletModeObserver(this);
   helper->RemoveInputDeviceEventObserver(this);
 }
@@ -153,7 +179,9 @@ void Keyboard::RemoveObserver(KeyboardObserver* observer) {
 }
 
 void Keyboard::SetNeedKeyboardKeyAcks(bool need_acks) {
+  RemoveEventHandler();
   are_keyboard_key_acks_needed_ = need_acks;
+  AddEventHandler();
 }
 
 bool Keyboard::AreKeyboardKeyAcksNeeded() const {
@@ -174,15 +202,6 @@ void Keyboard::AckKeyboardKey(uint32_t serial, bool handled) {
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
-  // Pass accelerators to ShellSurfaceWidget before passing it to the delegate
-  // if ack key event is not needed.
-  if (!are_keyboard_key_acks_needed_) {
-    if (focus_ && ProcessAccelerator(focus_, event)) {
-      event->StopPropagation();
-      return;
-    }
-  }
-
   // These modifiers reflect what Wayland is aware of.  For example,
   // EF_SCROLL_LOCK_ON is missing because Wayland doesn't support scroll lock.
   const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
@@ -206,7 +225,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       auto it =
           std::find(pressed_keys_.begin(), pressed_keys_.end(), event->code());
       if (it == pressed_keys_.end()) {
-        if (focus_ && !consumed_by_ime) {
+        if (focus_ && !consumed_by_ime && !IsReservedAccelerator(event)) {
           uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
                                                      event->code(), true);
           if (are_keyboard_key_acks_needed_) {
@@ -214,6 +233,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
                 {serial,
                  {*event, base::TimeTicks::Now() +
                               expiration_delay_for_pending_key_acks_}});
+            event->SetHandled();
           }
         }
 
@@ -224,7 +244,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
       auto it =
           std::find(pressed_keys_.begin(), pressed_keys_.end(), event->code());
       if (it != pressed_keys_.end()) {
-        if (focus_ && !consumed_by_ime) {
+        if (focus_ && !consumed_by_ime && !IsReservedAccelerator(event)) {
           uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
                                                      event->code(), false);
           if (are_keyboard_key_acks_needed_) {
@@ -232,6 +252,7 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
                 {serial,
                  {*event, base::TimeTicks::Now() +
                               expiration_delay_for_pending_key_acks_}});
+            event->SetHandled();
           }
         }
 
@@ -363,6 +384,22 @@ void Keyboard::ScheduleProcessExpiredPendingKeyAcks(base::TimeDelta delay) {
       base::BindOnce(&Keyboard::ProcessExpiredPendingKeyAcks,
                      weak_ptr_factory_.GetWeakPtr()),
       delay);
+}
+
+void Keyboard::AddEventHandler() {
+  auto* helper = WMHelper::GetInstance();
+  if (are_keyboard_key_acks_needed_)
+    helper->AddPreTargetHandler(this);
+  else
+    helper->AddPostTargetHandler(this);
+}
+
+void Keyboard::RemoveEventHandler() {
+  auto* helper = WMHelper::GetInstance();
+  if (are_keyboard_key_acks_needed_)
+    helper->RemovePreTargetHandler(this);
+  else
+    helper->RemovePostTargetHandler(this);
 }
 
 }  // namespace exo
