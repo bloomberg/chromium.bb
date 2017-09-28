@@ -15,7 +15,7 @@
 class BubbleDelegate;
 class BubbleManager;
 class BubbleUi;
-
+class ExtensionInstalledBubbleBrowserTest;
 namespace content {
 class RenderFrameHost;
 }
@@ -42,6 +42,7 @@ class BubbleController : public base::SupportsWeakPtr<BubbleController> {
 
  private:
   friend class BubbleManager;
+  friend class ExtensionInstalledBubbleBrowserTest;
 
   // Creates and shows the UI for the delegate.
   void Show();

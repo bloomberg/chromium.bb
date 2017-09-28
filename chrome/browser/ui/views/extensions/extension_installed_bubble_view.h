@@ -33,6 +33,7 @@ class ExtensionInstalledBubbleUi : public BubbleUi,
  private:
   ExtensionInstalledBubble* bubble_;
   ExtensionInstalledBubbleView* bubble_view_;
+  BubbleReference bubble_reference_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleUi);
 };
