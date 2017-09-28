@@ -593,7 +593,7 @@ bool LayoutBoxModelObject::HasNonEmptyLayoutSize() const {
   for (const LayoutBoxModelObject* root = this; root;
        root = root->Continuation()) {
     for (const LayoutObject* object = root; object;
-         object = object->NextInPreOrder(object)) {
+         object = object->NextInPreOrder(root)) {
       if (object->IsBox()) {
         const LayoutBox& box = ToLayoutBox(*object);
         if (box.LogicalHeight() && box.LogicalWidth())
