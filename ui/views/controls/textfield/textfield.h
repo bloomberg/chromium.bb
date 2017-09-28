@@ -210,6 +210,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Set the accessible name of the text field.
   void SetAccessibleName(const base::string16& name);
 
+  // Sets a password replacement char to override the default value.
+  void SetPasswordReplacementChar(base::char16 password_replacement_char);
+
   // View overrides:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;

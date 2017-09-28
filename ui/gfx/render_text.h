@@ -229,7 +229,8 @@ class GFX_EXPORT RenderText {
   bool clip_to_display_rect() const { return clip_to_display_rect_; }
   void set_clip_to_display_rect(bool clip) { clip_to_display_rect_ = clip; }
 
-  // In an obscured (password) field, all text is drawn as asterisks or bullets.
+  // In an obscured (password) field, all text is drawn as asterisks, bullets or
+  // a custom password replacement char.
   bool obscured() const { return obscured_; }
   void SetObscured(bool obscured);
 
@@ -488,6 +489,13 @@ class GFX_EXPORT RenderText {
   base::string16 GetTextFromRange(const Range& range) const;
 
   void set_strike_thickness_factor(SkScalar f) { strike_thickness_factor_ = f; }
+
+  // Sets a password replacement char to override the default value.
+  void SetPasswordReplacementChar(base::char16 password_replacement_char);
+
+  base::char16 password_replacement_char() const {
+    return password_replacement_char_;
+  }
 
  protected:
   RenderText();
@@ -827,6 +835,9 @@ class GFX_EXPORT RenderText {
 
   // The ratio of strike-through line thickness to text height.
   SkScalar strike_thickness_factor_;
+
+  // The character used for displaying obscured text.
+  base::char16 password_replacement_char_ = kPasswordReplacementChar;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

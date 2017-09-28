@@ -963,6 +963,14 @@ base::string16 RenderText::GetTextFromRange(const Range& range) const {
   return base::string16();
 }
 
+void RenderText::SetPasswordReplacementChar(
+    base::char16 password_replacement_char) {
+  if (password_replacement_char_ == password_replacement_char)
+    return;
+  password_replacement_char_ = password_replacement_char;
+  OnTextAttributeChanged();
+}
+
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
@@ -1346,8 +1354,7 @@ void RenderText::OnTextAttributeChanged() {
   if (obscured_) {
     size_t obscured_text_length =
         static_cast<size_t>(UTF16IndexToOffset(text_, 0, text_.length()));
-    layout_text_.assign(obscured_text_length,
-                        RenderText::kPasswordReplacementChar);
+    layout_text_.assign(obscured_text_length, password_replacement_char_);
 
     if (obscured_reveal_index_ >= 0 &&
         obscured_reveal_index_ < static_cast<int>(text_.length())) {
