@@ -290,9 +290,6 @@ class _SchemasHGenerator(object):
 
   def Generate(self, _):  # namespace not relevant, this is a bundle
     c = code.Code()
-    c.Append('#include <map>')
-    c.Append('#include <string>')
-    c.Append()
     c.Append('#include "base/strings/string_piece.h"')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
@@ -301,10 +298,10 @@ class _SchemasHGenerator(object):
              self._bundle._GenerateBundleClass('GeneratedSchemas'))
     c.Sblock(' public:')
     c.Append('// Determines if schema named |name| is generated.')
-    c.Append('static bool IsGenerated(std::string name);')
+    c.Append('static bool IsGenerated(base::StringPiece name);')
     c.Append()
     c.Append('// Gets the API schema named |name|.')
-    c.Append('static base::StringPiece Get(const std::string& name);')
+    c.Append('static base::StringPiece Get(base::StringPiece name);')
     c.Eblock('};')
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
@@ -332,8 +329,6 @@ class _SchemasCCGenerator(object):
     c.Append('#include "%s"' % (os.path.join(self._bundle._source_file_dir,
                                              'generated_schemas.h')))
     c.Append()
-    c.Append('#include "base/lazy_instance.h"')
-    c.Append()
     c.Append('namespace {')
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
@@ -350,35 +345,37 @@ class _SchemasCCGenerator(object):
                   for i in xrange(0, len(json_content), max_length)]
       c.Append('const char %s[] = "%s";' %
           (_FormatNameAsConstant(namespace.name), '" "'.join(segments)))
-    c.Append()
-    c.Sblock('struct Static {')
-    c.Sblock('Static() {')
-    for api in self._bundle._api_defs:
-      namespace = self._bundle._model.namespaces[api.get('namespace')]
-      c.Append('schemas["%s"] = %s;' % (namespace.name,
-                                        _FormatNameAsConstant(namespace.name)))
-    c.Eblock('}')
-    c.Append()
-    c.Append('std::map<std::string, const char*> schemas;')
-    c.Eblock('};')
-    c.Append()
-    c.Append('base::LazyInstance<Static>::DestructorAtExit g_lazy_instance;')
-    c.Append()
     c.Append('}  // namespace')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
     c.Append('// static')
-    c.Sblock('base::StringPiece %s::Get(const std::string& name) {' %
+    c.Sblock('bool %s::IsGenerated(base::StringPiece name) {' %
              self._bundle._GenerateBundleClass('GeneratedSchemas'))
-    c.Append('return IsGenerated(name) ? '
-             'g_lazy_instance.Get().schemas[name] : "";')
+    c.Append('return !Get(name).empty();')
     c.Eblock('}')
     c.Append()
     c.Append('// static')
-    c.Sblock('bool %s::IsGenerated(std::string name) {' %
+    c.Sblock('base::StringPiece %s::Get(base::StringPiece name) {' %
              self._bundle._GenerateBundleClass('GeneratedSchemas'))
-    c.Append('return g_lazy_instance.Get().schemas.count(name) > 0;')
+    c.Append('static const struct {')
+    c.Append('  base::StringPiece name;')
+    c.Append('  base::StringPiece schema;')
+    c.Sblock('} kSchemas[] = {')
+    namespaces = [self._bundle._model.namespaces[api.get('namespace')].name
+                  for api in self._bundle._api_defs]
+    for namespace in sorted(namespaces):
+      schema_constant_name = _FormatNameAsConstant(namespace)
+      c.Append('{{"%s", %d}, {%s, sizeof(%s) - 1}},' %
+               (namespace, len(namespace),
+                schema_constant_name, schema_constant_name))
+    c.Eblock('};')
+    c.Sblock('for (const auto& schema : kSchemas) {')
+    c.Sblock('if (schema.name == name)')
+    c.Append('return schema.schema;')
+    c.Eblock()
+    c.Eblock('}')
+    c.Append('return base::StringPiece();')
     c.Eblock('}')
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
