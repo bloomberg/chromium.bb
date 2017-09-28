@@ -666,6 +666,10 @@
     "label": "//components/leveldb:leveldb_service_unittests",
     "type": "console_test_launcher",
   },
+  "libfuzzer_tests": {
+    "label": "//testing/libfuzzer/tests:libfuzzer_tests",
+    "type": "console_test_launcher",
+  },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
     "type": "console_test_launcher",
