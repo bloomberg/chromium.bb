@@ -60,6 +60,14 @@ const char* const kSchemeNames[] = {
 static_assert(arraysize(kSchemeNames) == SCHEME_MAX,
               "kSchemeNames should have SCHEME_MAX elements");
 
+Scheme GetScheme(const GURL& url) {
+  for (int i = 1; i < SCHEME_MAX; ++i) {
+    if (url.SchemeIs(kSchemeNames[i]))
+      return static_cast<Scheme>(i);
+  }
+  return SCHEME_UNKNOWN;
+}
+
 }  // namespace
 
 namespace navigation_metrics {
@@ -67,14 +75,7 @@ namespace navigation_metrics {
 void RecordMainFrameNavigation(const GURL& url,
                                bool is_same_document,
                                bool is_off_the_record) {
-  Scheme scheme = SCHEME_UNKNOWN;
-  for (int i = 1; i < SCHEME_MAX; ++i) {
-    if (url.SchemeIs(kSchemeNames[i])) {
-      scheme = static_cast<Scheme>(i);
-      break;
-    }
-  }
-
+  Scheme scheme = GetScheme(url);
   UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme", scheme, SCHEME_MAX);
   if (!is_same_document) {
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage", scheme,
@@ -89,6 +90,11 @@ void RecordMainFrameNavigation(const GURL& url,
                                 scheme, SCHEME_MAX);
     }
   }
+}
+
+void RecordOmniboxURLNavigation(const GURL& url) {
+  UMA_HISTOGRAM_ENUMERATION("Omnibox.URLNavigationScheme", GetScheme(url),
+                            SCHEME_MAX);
 }
 
 }  // namespace navigation_metrics

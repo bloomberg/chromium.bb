@@ -52232,6 +52232,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.URLNavigationScheme" enum="NavigationScheme">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    The scheme of the destination URL for the selected omnibox suggestion. This
+    could be a what-you-typed suggestion (if the user fully typed a URL), an
+    inline autocompletion, or something in the dropdown, anything as long as
+    it's a URL navigation, not a search query.  Excludes omnibox URL navigations
+    that are effectively reloads as well as cut-and-pastes of URLs.  Also does
+    not take into account any redirects that destination URL may do before
+    finally serving a page. In other words, it's the scheme of the first request
+    in a possible chain.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.UserTextCleared" enum="OmniboxUserTextCleared">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>

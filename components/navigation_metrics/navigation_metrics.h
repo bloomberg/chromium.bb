@@ -13,6 +13,8 @@ void RecordMainFrameNavigation(const GURL& url,
                                bool is_same_document,
                                bool is_off_the_record);
 
+void RecordOmniboxURLNavigation(const GURL& url);
+
 }  // namespace navigation_metrics
 
 #endif  // COMPONENTS_NAVIGATION_METRICS_NAVIGATION_METRICS_H_
