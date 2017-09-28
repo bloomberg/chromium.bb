@@ -76,4 +76,40 @@ void CastDeviceCountMetrics::RecordResolvedFromSource(SinkSource sink_source) {
                             kTotalCount);
 }
 
+// static
+const char CastAnalytics::kHistogramCastChannelConnectResult[] =
+    "MediaRouter.Cast.Channel.ConnectResult";
+const char CastAnalytics::kHistogramCastChannelError[] =
+    "MediaRouter.Cast.Channel.Error";
+const char CastAnalytics::kHistogramCastMdnsChannelOpenSuccess[] =
+    "MediaRouter.Cast.Mdns.Channel.Open_Success";
+const char CastAnalytics::kHistogramCastMdnsChannelOpenFailure[] =
+    "MediaRouter.Cast.Mdns.Channel.Open_Failure";
+
+// static
+void CastAnalytics::RecordCastChannelConnectResult(
+    bool channel_opened_successfully) {
+  UMA_HISTOGRAM_BOOLEAN(kHistogramCastChannelConnectResult,
+                        channel_opened_successfully);
+}
+
+// static
+void CastAnalytics::RecordDeviceChannelError(
+    MediaRouterChannelError channel_error) {
+  DCHECK_LT(channel_error, MediaRouterChannelError::TOTAL_COUNT);
+  UMA_HISTOGRAM_ENUMERATION(kHistogramCastChannelError, channel_error,
+                            MediaRouterChannelError::TOTAL_COUNT);
+}
+
+// static
+void CastAnalytics::RecordDeviceChannelOpenDuration(
+    bool success,
+    const base::TimeDelta& duration) {
+  if (success) {
+    UMA_HISTOGRAM_TIMES(kHistogramCastMdnsChannelOpenSuccess, duration);
+  } else {
+    UMA_HISTOGRAM_TIMES(kHistogramCastMdnsChannelOpenFailure, duration);
+  }
+}
+
 }  // namespace media_router
