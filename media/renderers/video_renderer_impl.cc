@@ -740,6 +740,9 @@ void VideoRendererImpl::UpdateStats_Locked() {
   DCHECK_GE(frames_dropped_, 0);
 
   if (frames_decoded_ || frames_dropped_) {
+    if (frames_dropped_)
+      TRACE_EVENT_INSTANT1("media", "VideoFramesDropped",
+                           TRACE_EVENT_SCOPE_THREAD, "count", frames_dropped_);
     PipelineStatistics statistics;
     statistics.video_frames_decoded = frames_decoded_;
     statistics.video_frames_dropped = frames_dropped_;
