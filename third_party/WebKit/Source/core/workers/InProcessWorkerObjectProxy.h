@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class InProcessWorkerMessagingProxy;
+class DedicatedWorkerMessagingProxy;
 class ParentFrameTaskRunners;
 class ThreadedMessagingProxyBase;
 class WorkerGlobalScope;
@@ -60,7 +60,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
 
  public:
   static std::unique_ptr<InProcessWorkerObjectProxy> Create(
-      InProcessWorkerMessagingProxy*,
+      DedicatedWorkerMessagingProxy*,
       ParentFrameTaskRunners*);
   ~InProcessWorkerObjectProxy() override;
 
@@ -79,7 +79,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   void WillDestroyWorkerGlobalScope() override;
 
  protected:
-  InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy*,
+  InProcessWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
                              ParentFrameTaskRunners*);
 
   CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
@@ -89,9 +89,9 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   friend class InProcessWorkerObjectProxyForTest;
 
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
-  // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
+  // DedicatedWorkerMessagingProxy so a weak pointer must be used when posting
   // the tasks.
-  CrossThreadWeakPersistent<InProcessWorkerMessagingProxy>
+  CrossThreadWeakPersistent<DedicatedWorkerMessagingProxy>
       messaging_proxy_weak_ptr_;
 
   CrossThreadPersistent<WorkerGlobalScope> worker_global_scope_;

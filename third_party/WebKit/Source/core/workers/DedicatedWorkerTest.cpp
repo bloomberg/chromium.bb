@@ -9,9 +9,9 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
+#include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
 #include "core/workers/WorkerInspectorProxy.h"
@@ -79,11 +79,10 @@ class InProcessWorkerObjectProxyForTest final
     : public InProcessWorkerObjectProxy {
  public:
   InProcessWorkerObjectProxyForTest(
-      InProcessWorkerMessagingProxy* messaging_proxy,
+      DedicatedWorkerMessagingProxy* messaging_proxy,
       ParentFrameTaskRunners* parent_frame_task_runners)
       : InProcessWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
-        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
-  }
+        reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
@@ -103,19 +102,18 @@ class InProcessWorkerObjectProxyForTest final
   BitVector reported_features_;
 };
 
-class InProcessWorkerMessagingProxyForTest
-    : public InProcessWorkerMessagingProxy {
+class DedicatedWorkerMessagingProxyForTest
+    : public DedicatedWorkerMessagingProxy {
  public:
-  InProcessWorkerMessagingProxyForTest(ExecutionContext* execution_context)
-      : InProcessWorkerMessagingProxy(execution_context,
+  DedicatedWorkerMessagingProxyForTest(ExecutionContext* execution_context)
+      : DedicatedWorkerMessagingProxy(execution_context,
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
     worker_object_proxy_ = WTF::MakeUnique<InProcessWorkerObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }
 
-  ~InProcessWorkerMessagingProxyForTest() override {
-  }
+  ~DedicatedWorkerMessagingProxyForTest() override = default;
 
   void StartWithSourceCode(const String& source) {
     KURL script_url(kParsedURLString, "http://fake.url/");
@@ -133,7 +131,10 @@ class InProcessWorkerMessagingProxyForTest
             nullptr /* workerClients */, kWebAddressSpaceLocal,
             nullptr /* originTrialTokens */, nullptr /* workerSettings */,
             kV8CacheOptionsDefault),
-        CreateBackingThreadStartupData(nullptr /* isolate */), script_url);
+        WorkerBackingThreadStartupData(
+            WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
+            WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow),
+        script_url);
   }
 
   DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {
@@ -142,7 +143,7 @@ class InProcessWorkerMessagingProxyForTest
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(mock_worker_thread_lifecycle_observer_);
-    InProcessWorkerMessagingProxy::Trace(visitor);
+    DedicatedWorkerMessagingProxy::Trace(visitor);
   }
 
  private:
@@ -158,13 +159,6 @@ class InProcessWorkerMessagingProxyForTest
     return std::move(worker_thread);
   }
 
-  WTF::Optional<WorkerBackingThreadStartupData> CreateBackingThreadStartupData(
-      v8::Isolate*) override {
-    return WorkerBackingThreadStartupData(
-        WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
-        WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow);
-  }
-
   Member<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
   RefPtr<SecurityOrigin> security_origin_;
@@ -177,7 +171,7 @@ class DedicatedWorkerTest : public ::testing::Test {
   void SetUp() override {
     page_ = DummyPageHolder::Create();
     worker_messaging_proxy_ =
-        new InProcessWorkerMessagingProxyForTest(&page_->GetDocument());
+        new DedicatedWorkerMessagingProxyForTest(&page_->GetDocument());
   }
 
   void TearDown() override {
@@ -190,7 +184,7 @@ class DedicatedWorkerTest : public ::testing::Test {
         nullptr /* message */, MessagePortChannelArray());
   }
 
-  InProcessWorkerMessagingProxyForTest* WorkerMessagingProxy() {
+  DedicatedWorkerMessagingProxyForTest* WorkerMessagingProxy() {
     return worker_messaging_proxy_.Get();
   }
 
@@ -202,7 +196,7 @@ class DedicatedWorkerTest : public ::testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
-  Persistent<InProcessWorkerMessagingProxyForTest> worker_messaging_proxy_;
+  Persistent<DedicatedWorkerMessagingProxyForTest> worker_messaging_proxy_;
 };
 
 TEST_F(DedicatedWorkerTest, PendingActivity_NoActivityAfterContextDestroyed) {

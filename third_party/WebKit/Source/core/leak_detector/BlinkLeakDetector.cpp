@@ -11,7 +11,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/leak_detector/BlinkLeakDetectorClient.h"
-#include "core/workers/InProcessWorkerMessagingProxy.h"
+#include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/Timer.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -87,7 +87,7 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   if (--number_of_gc_needed_ > 0) {
     delayed_gc_timer_.StartOneShot(0, BLINK_FROM_HERE);
   } else if (number_of_gc_needed_ > -1 &&
-             InProcessWorkerMessagingProxy::ProxyCount()) {
+             DedicatedWorkerMessagingProxy::ProxyCount()) {
     // It is possible that all posted tasks for finalizing in-process proxy
     // objects will not have run before the final round of GCs started. If so,
     // do yet another pass, letting these tasks run and then afterwards perform

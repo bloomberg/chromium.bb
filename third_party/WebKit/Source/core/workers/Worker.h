@@ -11,9 +11,9 @@
 
 namespace blink {
 
+class DedicatedWorkerMessagingProxy;
 class ExceptionState;
 class ExecutionContext;
-class InProcessWorkerMessagingProxy;
 
 class CORE_EXPORT Worker final : public InProcessWorkerBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,7 +26,7 @@ class CORE_EXPORT Worker final : public InProcessWorkerBase {
  protected:
   explicit Worker(ExecutionContext*);
 
-  InProcessWorkerMessagingProxy* CreateInProcessWorkerMessagingProxy(
+  DedicatedWorkerMessagingProxy* CreateMessagingProxy(
       ExecutionContext*) override;
   const AtomicString& InterfaceName() const override;
 };

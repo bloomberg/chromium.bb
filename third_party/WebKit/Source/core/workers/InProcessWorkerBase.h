@@ -17,9 +17,9 @@
 
 namespace blink {
 
+class DedicatedWorkerMessagingProxy;
 class ExceptionState;
 class ExecutionContext;
-class InProcessWorkerMessagingProxy;
 class ScriptState;
 class WorkerScriptLoader;
 
@@ -60,7 +60,7 @@ class CORE_EXPORT InProcessWorkerBase
   // InProcessWorkerBase does not take ownership of the created proxy. The proxy
   // is expected to manage its own lifetime, and delete itself in response to
   // terminateWorkerGlobalScope().
-  virtual InProcessWorkerMessagingProxy* CreateInProcessWorkerMessagingProxy(
+  virtual DedicatedWorkerMessagingProxy* CreateMessagingProxy(
       ExecutionContext*) = 0;
 
  private:
@@ -70,7 +70,7 @@ class CORE_EXPORT InProcessWorkerBase
 
   RefPtr<WorkerScriptLoader> script_loader_;
 
-  Member<InProcessWorkerMessagingProxy> context_proxy_;
+  Member<DedicatedWorkerMessagingProxy> context_proxy_;
 };
 
 }  // namespace blink
