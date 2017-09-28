@@ -366,21 +366,14 @@ ARC_BUCKET_ACLS = {
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
-ARC_USE_FLAG_TO_ARCH = {
-    'arm': 'arm',
-    'x86': 'x86',
-    'amd64': 'x86_64',
-}
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
     '/%(branch)s-linux-cheets_%(arch)s-user/%(version)s'
     '/cheets_%(arch)s-symbols-%(version)s.zip')
-# See b/65549202. Currently only x86 is being actively used, so
-# we are dropping the architecture parameter for now.
 ANDROID_SYMBOLS_BERTHA_URL_TEMPLATE = (
     ARC_BUCKET_URL +
     '/%(branch)s-linux-aosp_bertha_x86-userdebug/%(version)s'
-    '/bertha_aosp_x86_userdebug-symbols-%(version)s.zip')
+    '/bertha_aosp_%(arch)s_userdebug-symbols-%(version)s.zip')
 ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # x86-user, x86-userdebug and x86-eng builders create build artifacts with the
 # same name, e.g. cheets_x86-target_files-${VERSION}.zip. Chrome OS builders

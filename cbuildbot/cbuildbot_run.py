@@ -110,6 +110,10 @@ class NoAndroidBranchError(Exception):
   """For when Android branch cannot be determined."""
 
 
+class NoAndroidABIError(Exception):
+  """For when Android ABI cannot be determined."""
+
+
 class NoAndroidVersionError(Exception):
   """For when Android version cannot be determined."""
 
@@ -823,6 +827,28 @@ class _BuilderRunBase(object):
           return branch.group(1)
     raise NoAndroidBranchError(
         'Android branch could not be determined for %s (ebuild empty?)' % board)
+
+  def DetermineAndroidABI(self, board):
+    """Returns the Android ABI in use by the active container ebuild."""
+    try:
+      android_package = self.DetermineAndroidPackage(board)
+    except cros_build_lib.RunCommandError:
+      raise NoAndroidABIError(
+          'Android ABI could not be determined for %s' % board)
+    if not android_package:
+      raise NoAndroidABIError(
+          'Android ABI could not be determined for %s (no package?)' % board)
+
+    use_flags = portage_util.GetInstalledPackageUseFlags(
+        'sys-devel/arc-build', board)
+    if 'abi_x86_64' in use_flags.get('sys-devel/arc-build', []):
+      return 'x86_64'
+    elif 'abi_x86_32' in use_flags.get('sys-devel/arc-build', []):
+      return 'x86'
+    else:
+      # ARM only supports 32-bit so it does not have abi_x86_{32,64} set. But it
+      # is also the last possible ABI, so returning by default.
+      return 'arm'
 
   def DetermineAndroidPackage(self, board):
     """Returns the active Android container package in use by the board."""

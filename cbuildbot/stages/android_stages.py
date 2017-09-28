@@ -18,7 +18,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import portage_util
 from chromite.lib import results_lib
 
 
@@ -226,14 +225,7 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
         'Downloading symbols of Android %s (%s)...',
         android_version, android_build_branch)
 
-    board_use_flags = portage_util.GetBoardUseFlags(self._current_board)
-    arch = None
-    for arch_use_flag, arch in constants.ARC_USE_FLAG_TO_ARCH.items():
-      if arch_use_flag in board_use_flags:
-        break
-    if not arch:
-      raise AssertionError(
-          'Could not determine the arch of %s.' % self._current_board)
+    arch = self._run.DetermineAndroidABI(self._current_board)
 
     if 'master-arc' in android_build_branch:
       symbols_file_url = constants.ANDROID_SYMBOLS_BERTHA_URL_TEMPLATE % {
