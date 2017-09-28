@@ -27,17 +27,6 @@ ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
       ref_count_(1),
       registration_(registration) {
   DCHECK(registration_.get());
-  ChangedVersionAttributesMask changed_mask;
-  if (registration->installing_version())
-    changed_mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
-  if (registration->waiting_version())
-    changed_mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
-  if (registration->active_version())
-    changed_mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
-  SetVersionAttributes(changed_mask,
-                       registration->installing_version(),
-                       registration->waiting_version(),
-                       registration->active_version());
   registration_->AddListener(this);
 }
 
