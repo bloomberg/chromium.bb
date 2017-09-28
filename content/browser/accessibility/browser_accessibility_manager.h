@@ -361,9 +361,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
-  void set_delegate(BrowserAccessibilityDelegate* delegate) {
-    delegate_ = delegate;
-  }
 
   // If this BrowserAccessibilityManager is a child frame or guest frame,
   // return the BrowserAccessibilityManager from the highest ancestor frame
