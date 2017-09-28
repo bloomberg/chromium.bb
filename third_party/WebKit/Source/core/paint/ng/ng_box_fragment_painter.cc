@@ -135,6 +135,11 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     paint_info.context.EndLayer();
 }
 
+static bool RequiresLegacyFallback(const NGPhysicalFragment& fragment) {
+  LayoutObject* layout_object = fragment.GetLayoutObject();
+  return layout_object->IsLayoutReplaced();
+}
+
 void NGBoxFragmentPainter::PaintChildren(
     const Vector<std::unique_ptr<const NGPaintFragment>>& children,
     const PaintInfo& paint_info,
@@ -149,7 +154,11 @@ void NGBoxFragmentPainter::PaintChildren(
       PaintChildren(child->Children(), child_info, child_offset);
     } else if (fragment.Type() == NGPhysicalBoxFragment::kFragmentBox) {
       PaintInfo child_paint_info(paint_info);
-      NGBoxFragmentPainter(*child).Paint(child_paint_info, child_offset);
+
+      if (RequiresLegacyFallback(fragment))
+        fragment.GetLayoutObject()->Paint(child_paint_info, child_offset);
+      else
+        NGBoxFragmentPainter(*child).Paint(child_paint_info, child_offset);
 
       // TODO(layout-dev): Implement support for this.
     } else if (fragment.Type() == NGPhysicalBoxFragment::kFragmentText) {
