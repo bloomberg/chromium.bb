@@ -67,6 +67,7 @@ var CLASSES = {
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
+  NON_WHITE_BG: 'non-white-bg',
   RTL: 'rtl'  // Right-to-left language text.
 };
 
@@ -89,6 +90,7 @@ var IDS = {
   LOGO_DOODLE: 'logo-doodle',
   LOGO_DOODLE_IMAGE: 'logo-doodle-image',
   LOGO_DOODLE_LINK: 'logo-doodle-link',
+  LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
@@ -98,6 +100,15 @@ var IDS = {
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo'
 };
+
+
+/**
+ * Background colors considered "white". Used to determine if it is possible
+ * to display a Google Doodle, or if the notifier should be used instead.
+ * @type {Array<string>}
+ * @const
+ */
+var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
 
 /**
@@ -130,13 +141,36 @@ var MAX_NUM_TILES_TO_SHOW = 8;
 
 
 /**
+ * Returns theme background info, first checking for history.state.notheme. If
+ * the page has notheme set, returns a fallback light-colored theme.
+ */
+function getThemeBackgroundInfo() {
+  if (history.state && history.state.notheme) {
+    return {
+      alternateLogo: false,
+      backgroundColorRgba: [255, 255, 255, 255],
+      colorRgba: [255, 255, 255, 255],
+      headerColorRgba: [150, 150, 150, 255],
+      linkColorRgba: [6, 55, 116, 255],
+      sectionBorderColorRgba: [150, 150, 150, 255],
+      textColorLightRgba: [102, 102, 102, 255],
+      textColorRgba: [0, 0, 0, 255],
+      usingDefaultTheme: true,
+    };
+  }
+  return ntpApiHandle.themeBackgroundInfo;
+}
+
+
+/**
  * Heuristic to determine whether a theme should be considered to be dark, so
  * the colors of various UI elements can be adjusted.
  * @param {ThemeBackgroundInfo|undefined} info Theme background information.
  * @return {boolean} Whether the theme is dark.
  * @private
  */
-function getIsThemeDark(info) {
+function getIsThemeDark() {
+  var info = getThemeBackgroundInfo();
   if (!info)
     return false;
   // Heuristic: light text implies dark theme.
@@ -151,8 +185,8 @@ function getIsThemeDark(info) {
  * @private
  */
 function renderTheme() {
-  var info = ntpApiHandle.themeBackgroundInfo;
-  var isThemeDark = getIsThemeDark(info);
+  var info = getThemeBackgroundInfo();
+  var isThemeDark = getIsThemeDark();
   $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, isThemeDark);
   if (!info) {
     return;
@@ -166,6 +200,8 @@ function renderTheme() {
 
   document.body.style.background = background;
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
+  var isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
+  document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
@@ -199,7 +235,7 @@ function renderOneGoogleBarTheme() {
     var oneGoogleBarApi = window.gbar.a;
     var oneGoogleBarPromise = oneGoogleBarApi.bf();
     oneGoogleBarPromise.then(function(oneGoogleBar) {
-      var isThemeDark = getIsThemeDark(ntpApiHandle.themeBackgroundInfo);
+      var isThemeDark = getIsThemeDark();
       var setForegroundStyle = oneGoogleBar.pc.bind(oneGoogleBar);
       setForegroundStyle(isThemeDark ? 1 : 0);
     });
@@ -595,6 +631,17 @@ function init() {
           }
         });
       }
+    });
+
+    // Set up doodle notifier (but it may be invisible).
+    var doodleNotifier = $(IDS.LOGO_DOODLE_NOTIFIER);
+    doodleNotifier.title = configData.translatedStrings.clickToViewDoodle;
+    doodleNotifier.addEventListener('click', function(e) {
+      e.preventDefault();
+      var state = window.history.state || {};
+      state.notheme = true;
+      window.history.replaceState(state, document.title);
+      onThemeChange();
     });
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);

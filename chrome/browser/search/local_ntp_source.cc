@@ -129,6 +129,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "audioError",
               IDS_NEW_TAB_VOICE_AUDIO_ERROR);
     AddString(translated_strings.get(), "details", IDS_NEW_TAB_VOICE_DETAILS);
+    AddString(translated_strings.get(), "clickToViewDoodle",
+              IDS_CLICK_TO_VIEW_DOODLE);
     AddString(translated_strings.get(), "fakeboxMicrophoneTooltip",
               IDS_TOOLTIP_MIC_SEARCH);
     AddString(translated_strings.get(), "languageError",
