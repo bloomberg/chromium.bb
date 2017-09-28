@@ -1326,6 +1326,12 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingOnUnload) {
   EXPECT_EQ(1, message_count);
 }
 
+// Tests that messages over a certain size are not sent.
+// https://crbug.com/766713.
+IN_PROC_BROWSER_TEST_F(MessagingApiTest, LargeMessages) {
+  ASSERT_TRUE(RunExtensionTest("messaging/large_messages"));
+}
+
 }  // namespace
 
 };  // namespace extensions

@@ -116,7 +116,9 @@
       console.error('Illegal argument to Port.postMessage');
       return;
     }
-    messagingNatives.PostMessage(this.portId_, msg);
+    var error = messagingNatives.PostMessage(this.portId_, msg);
+    if (error)
+      throw new Error(error);
   };
 
   // Disconnects the port from the other end.
