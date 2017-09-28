@@ -100,7 +100,7 @@ TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
 TEST_P(PaintLayerTest, RootLayerScrollBounds) {
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
     return;
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
   SetBodyInnerHTML(
       "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");

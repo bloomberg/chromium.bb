@@ -60,6 +60,18 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::MojoBlobsEnabled,
     RuntimeEnabledFeatures::SetMojoBlobsEnabled>
     ScopedMojoBlobsForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::OverlayScrollbarsEnabled,
+    RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled>
+    ScopedOverlayScrollbarsForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled,
+    RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled>
+    ScopedSkipCompositingSmallScrollersForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled,
+    RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled>
+    ScopedCompositeOpaqueScrollersForTest;
 
 }  // namespace blink
 
