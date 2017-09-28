@@ -64,7 +64,6 @@ struct DidOverscrollParams;
 
 namespace viz {
 class SurfaceHittestDelegate;
-class SurfaceInfo;
 }
 
 namespace content {
@@ -235,7 +234,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       viz::CompositorFrame frame) = 0;
 
   virtual void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {}
-  virtual void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) {}
 
   // This method exists to allow removing of displayed graphics, after a new
   // page has been loaded, to prevent the displayed URL from being out of sync

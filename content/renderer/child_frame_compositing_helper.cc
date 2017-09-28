@@ -173,17 +173,19 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
   enable_surface_references_ =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSurfaceReferences);
-  scoped_refptr<ThreadSafeSender> sender(
-      RenderThreadImpl::current()->thread_safe_sender());
   if (enable_surface_references_) {
     surface_reference_factory_ = new viz::StubSurfaceReferenceFactory();
-  } else if (render_frame_proxy_) {
-    surface_reference_factory_ =
-        new IframeSurfaceReferenceFactory(sender, host_routing_id_);
   } else {
-    surface_reference_factory_ = new BrowserPluginSurfaceReferenceFactory(
-        sender, host_routing_id_,
-        browser_plugin_->browser_plugin_instance_id());
+    scoped_refptr<ThreadSafeSender> sender(
+        RenderThreadImpl::current()->thread_safe_sender());
+    if (render_frame_proxy_) {
+      surface_reference_factory_ =
+          new IframeSurfaceReferenceFactory(sender, host_routing_id_);
+    } else {
+      surface_reference_factory_ = new BrowserPluginSurfaceReferenceFactory(
+          sender, host_routing_id_,
+          browser_plugin_->browser_plugin_instance_id());
+    }
   }
 }
 
@@ -271,6 +273,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
 
   surface_layer_ = cc::SurfaceLayer::Create(surface_reference_factory_);
   surface_layer_->SetMasksToBounds(true);
+  surface_layer_->SetDefaultBackgroundColor(SK_ColorTRANSPARENT);
 
   viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
                                          surface_info.size_in_pixels());
