@@ -50,7 +50,7 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutFlexibleBox (relative positioned) DIV",
+      "object": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
       "reason": "geometry"
     },
     {
