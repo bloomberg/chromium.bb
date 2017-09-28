@@ -696,7 +696,11 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
   }
 };
 
+#if defined(DISABLE_TRELLISQ_SEARCH) && DISABLE_TRELLISQ_SEARCH
+TEST_P(ResizeCspTest, DISABLED_TestResizeCspWorks) {
+#else
 TEST_P(ResizeCspTest, TestResizeCspWorks) {
+#endif
   ResizingCspVideoSource video;
   init_flags_ = AOM_CODEC_USE_PSNR;
   cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = 48;
