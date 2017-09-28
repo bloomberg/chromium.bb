@@ -6,6 +6,7 @@
 #define UI_APP_LIST_PAGINATION_CONTROLLER_H_
 
 #include "ui/app_list/app_list_export.h"
+#include "ui/events/event_constants.h"
 
 namespace gfx {
 class Vector2d;
@@ -24,8 +25,6 @@ class PaginationModel;
 // touch gestures) and manipulates a PaginationModel as necessary.
 class APP_LIST_EXPORT PaginationController {
  public:
-  enum ScrollEventType { SCROLL_MOUSE_WHEEL, SCROLL_TOUCHPAD };
-
   enum ScrollAxis { SCROLL_AXIS_HORIZONTAL, SCROLL_AXIS_VERTICAL };
 
   // Creates a PaginationController. Does not take ownership of |model|. The
@@ -38,7 +37,7 @@ class APP_LIST_EXPORT PaginationController {
   // Handles a mouse wheel or touchpad scroll event in the area represented by
   // the PaginationModel. |offset| is the number of units scrolled in each axis.
   // Returns true if the event was captured and there was some room to scroll.
-  bool OnScroll(const gfx::Vector2d& offset, ScrollEventType type);
+  bool OnScroll(const gfx::Vector2d& offset, ui::EventType type);
 
   // Handles a touch gesture event in the area represented by the
   // PaginationModel. Returns true if the event was captured.

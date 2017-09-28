@@ -866,47 +866,6 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   EXPECT_FALSE(app_list_presenter_impl()->IsVisible());
 }
 
-// Tests that the app list transitions on mousewheel and gesture scroll events.
-TEST_P(FullscreenAppListPresenterDelegateTest,
-       MouseWheelAndGestureScrollTransition) {
-  const bool test_mouse_event = GetParam();
-  app_list_presenter_impl()->ShowAndRunLoop(GetPrimaryDisplayId());
-  app_list::AppListView* view = app_list_presenter_impl()->GetView();
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
-
-  // Move mouse to over the searchbox, mousewheel scroll up.
-  generator.MoveMouseTo(GetPointInsideSearchbox());
-  if (test_mouse_event) {
-    generator.MoveMouseWheel(0, -30);
-  } else {
-    generator.ScrollSequence(GetPointInsideSearchbox(),
-                             base::TimeDelta::FromMilliseconds(5), 0, -300, 2,
-                             2);
-  }
-  EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
-
-  // Swipe down slowly, the app list should return to peeking mode.
-  gfx::Point start(0, 0);
-  gfx::Point end(0, 500);
-  generator.GestureScrollSequence(
-      start, end,
-      generator.CalculateScrollDurationForFlingVelocity(start, end, 1, 100),
-      100);
-  EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
-
-  // Move mouse away from the searchbox, mousewheel scroll up.
-  generator.MoveMouseTo(GetPointOutsideSearchbox());
-  if (test_mouse_event) {
-    generator.MoveMouseWheel(0, -30);
-  } else {
-    generator.ScrollSequence(GetPointOutsideSearchbox(),
-                             base::TimeDelta::FromMilliseconds(5), 0, -300, 2,
-                             2);
-  }
-  EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
-}
-
 // Tests that the search box is set active with a whitespace query and that the
 // app list state doesn't transition with a whitespace query.
 TEST_F(FullscreenAppListPresenterDelegateTest, WhitespaceQuery) {
