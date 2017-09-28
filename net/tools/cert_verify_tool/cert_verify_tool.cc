@@ -62,7 +62,7 @@ void PrintUsage(const char* argv0) {
 
   // TODO(mattm): allow <certs path> to be a directory containing DER/PEM files?
   // TODO(mattm): allow target to specify an HTTPS URL to check the cert of?
-  // TODO(mattm): allow target to be a verify_certificate_chain_unittest PEM
+  // TODO(mattm): allow target to be a verify_certificate_chain_unittest .test
   // file?
 }
 
