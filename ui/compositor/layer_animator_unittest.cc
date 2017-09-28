@@ -2839,6 +2839,7 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   EXPECT_FALSE(compositor_2->layer_animator_collection()->HasActiveAnimators());
 
   Layer layer;
+  layer.SetOpacity(0.5f);
   root_1.Add(&layer);
   LayerAnimator* animator = layer.GetAnimator();
   EXPECT_FALSE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
@@ -2879,6 +2880,7 @@ TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
   compositor->SetRootLayer(&root);
 
   Layer layer;
+  layer.SetOpacity(0.5f);
   root.Add(&layer);
 
   LayerAnimator* animator = layer.GetAnimator();

@@ -169,7 +169,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   void Start(LayerAnimationDelegate* delegate, int animation_group_id);
 
   // Returns true if the animation has started but hasn't finished.
-  bool Started() { return !first_frame_; }
+  bool Started() const { return !first_frame_; }
 
   // Updates the delegate to the appropriate value for |now|. Returns true
   // if a redraw is required.
@@ -195,7 +195,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   AnimatableProperties properties() const { return properties_; }
 
   // Whether this element animates on the compositor thread.
-  virtual bool IsThreaded() const;
+  virtual bool IsThreaded(LayerAnimationDelegate* delegate) const;
 
   gfx::Tween::Type tween_type() const { return tween_type_; }
   void set_tween_type(gfx::Tween::Type tween_type) { tween_type_ = tween_type; }

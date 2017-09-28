@@ -103,7 +103,7 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
       LayerAnimationElement::AnimatableProperties other) const;
 
   // Returns true if the first element animates on the compositor thread.
-  bool IsFirstElementThreaded() const;
+  bool IsFirstElementThreaded(LayerAnimationDelegate* delegate) const;
 
   // Used to identify groups of sequences that are supposed to start together.
   // Once started, used to identify the sequence that owns a particular
