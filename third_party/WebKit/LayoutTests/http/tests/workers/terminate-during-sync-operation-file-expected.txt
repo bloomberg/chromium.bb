@@ -23,16 +23,6 @@ Started worker count: 17
 Started worker count: 18
 Started worker count: 19
 Started worker count: 20
-Started worker count: 21
-Started worker count: 22
-Started worker count: 23
-Started worker count: 24
-Started worker count: 25
-Started worker count: 26
-Started worker count: 27
-Started worker count: 28
-Started worker count: 29
-Started worker count: 30
 Running operation.
 Closed worker count: 1
 Closed worker count: 2
@@ -54,15 +44,5 @@ Closed worker count: 17
 Closed worker count: 18
 Closed worker count: 19
 Closed worker count: 20
-Closed worker count: 21
-Closed worker count: 22
-Closed worker count: 23
-Closed worker count: 24
-Closed worker count: 25
-Closed worker count: 26
-Closed worker count: 27
-Closed worker count: 28
-Closed worker count: 29
-Closed worker count: 30
 DONE
 

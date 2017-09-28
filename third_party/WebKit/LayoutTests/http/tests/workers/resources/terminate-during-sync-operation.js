@@ -1,7 +1,8 @@
 var workersStarted;
 var workersClosed;
-// 30 workers seemed to cause the crash to happen frequently.
-var workers = new Array(30);
+// More than 20 workers causes OOM crashes (hitting RLIMIT_DATA memory limits)
+// on Linux.
+var workers = new Array(20);
 
 function startWorkers(operationName)
 {
