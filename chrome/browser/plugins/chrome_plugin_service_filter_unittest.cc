@@ -34,6 +34,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
@@ -94,7 +95,7 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
                                    content::WebPluginInfo plugin_info,
                                    bool* is_available) {
     *is_available = filter_->IsPluginAvailable(
-        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetMainFrame()->GetProcess()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID(), resource_context,
         plugin_content_url, main_frame_origin, &plugin_info);
   }

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 
+#include <set>
+#include <vector>
+
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_entry.h"
@@ -136,10 +139,9 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
                      new_hosts,
                      tab_id_);
       SendMessageToProcesses(
-          ProcessManager::Get(web_contents()->GetBrowserContext())->
-              GetRenderFrameHostsForExtension(extension->id()),
-          web_contents()->GetRenderProcessHost(),
-          update_message);
+          ProcessManager::Get(web_contents()->GetBrowserContext())
+              ->GetRenderFrameHostsForExtension(extension->id()),
+          web_contents()->GetMainFrame()->GetProcess(), update_message);
 
       // If more things ever need to know about this, we should consider making
       // an observer class.
@@ -218,9 +220,8 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   CreateMessageFunction clear_message =
       base::Bind(&CreateClearMessage, extension_ids, tab_id_);
-  SendMessageToProcesses(frame_hosts,
-                         web_contents()->GetRenderProcessHost(),
-                         clear_message);
+  SendMessageToProcesses(
+      frame_hosts, web_contents()->GetMainFrame()->GetProcess(), clear_message);
 
   granted_extensions_.Clear();
 }

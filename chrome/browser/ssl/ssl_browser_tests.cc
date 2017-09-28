@@ -2127,7 +2127,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   observer.Wait();
 
   // Both tabs should have the same process.
-  EXPECT_EQ(tab1->GetRenderProcessHost(), tab2->GetRenderProcessHost());
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
 
   // The new tab has insecure content.
   CheckAuthenticationBrokenState(tab2, CertError::NONE,

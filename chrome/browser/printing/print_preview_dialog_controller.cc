@@ -36,6 +36,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -268,10 +269,9 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
        iter != preview_dialog_map_.end(); ++iter) {
     WebContents* preview_dialog = iter->first;
     WebContents* initiator = iter->second;
-    if (preview_dialog->GetRenderProcessHost() == rph) {
+    if (preview_dialog->GetMainFrame()->GetProcess() == rph) {
       closed_preview_dialogs.push_back(preview_dialog);
-    } else if (initiator &&
-               initiator->GetRenderProcessHost() == rph) {
+    } else if (initiator && initiator->GetMainFrame()->GetProcess() == rph) {
       closed_initiators.push_back(initiator);
     }
   }
@@ -412,19 +412,19 @@ void PrintPreviewDialogController::AddObservers(WebContents* contents) {
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
   content::Source<content::RenderProcessHost> rph_source(
-      contents->GetRenderProcessHost());
+      contents->GetMainFrame()->GetProcess());
   if (!registrar_.IsRegistered(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     // Not registered for this host yet, so add the notification and add the
     // host to the count map with a count of 1.
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                    rph_source);
-    host_contents_count_map_[contents->GetRenderProcessHost()] = 1;
+    host_contents_count_map_[contents->GetMainFrame()->GetProcess()] = 1;
   } else {
     // This host's notification is already registered. Increment its count in
     // the map so that the notification will not be removed from the registry
     // until all web contents that use it are destroyed.
-    ++host_contents_count_map_[contents->GetRenderProcessHost()];
+    ++host_contents_count_map_[contents->GetMainFrame()->GetProcess()];
   }
 }
 
@@ -437,19 +437,19 @@ void PrintPreviewDialogController::RemoveObservers(WebContents* contents) {
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
   content::Source<content::RenderProcessHost> rph_source(
-      contents->GetRenderProcessHost());
+      contents->GetMainFrame()->GetProcess());
   if (registrar_.IsRegistered(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
-    if (host_contents_count_map_[contents->GetRenderProcessHost()] == 1) {
+    if (host_contents_count_map_[contents->GetMainFrame()->GetProcess()] == 1) {
       // This is the last contents that has this render process host, so we can
       // remove the notification.
       registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                         rph_source);
-      host_contents_count_map_.erase(contents->GetRenderProcessHost());
+      host_contents_count_map_.erase(contents->GetMainFrame()->GetProcess());
     } else {
       // Other initializers and/or dialogs are still connected to the host, so
       // we can't remove the notification. Decrement the count in the map.
-      --host_contents_count_map_[contents->GetRenderProcessHost()];
+      --host_contents_count_map_[contents->GetMainFrame()->GetProcess()];
     }
   }
 }

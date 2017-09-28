@@ -13,6 +13,7 @@
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/speech_recognition_messages.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
@@ -107,7 +108,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
     // the context of the outer WebContents or the embedder since we will use it
     // to decide permission.
     embedder_render_process_id =
-        outer_web_contents->GetRenderProcessHost()->GetID();
+        outer_web_contents->GetRenderViewHost()->GetProcess()->GetID();
     DCHECK_NE(embedder_render_process_id, 0);
     embedder_render_view_id =
         outer_web_contents->GetRenderViewHost()->GetRoutingID();

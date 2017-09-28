@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -25,6 +28,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -320,7 +324,7 @@ void WebViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   RenderProcessHost* owner_render_process_host =
-      owner_web_contents()->GetRenderProcessHost();
+      owner_web_contents()->GetMainFrame()->GetProcess();
   std::string storage_partition_id;
   bool persist_storage = false;
   ParsePartitionParam(create_params, &storage_partition_id, &persist_storage);
@@ -393,7 +397,7 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   web_view_permission_helper_ = std::make_unique<WebViewPermissionHelper>(this);
 
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
-      owner_web_contents()->GetRenderProcessHost()->GetID(),
+      owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
       view_instance_id());
 
   // We must install the mapping from guests to WebViews prior to resuming
@@ -484,7 +488,7 @@ void WebViewGuest::GuestDestroyed() {
 
 void WebViewGuest::GuestReady() {
   // The guest RenderView should always live in an isolated guest process.
-  CHECK(web_contents()->GetRenderProcessHost()->IsForGuestsOnly());
+  CHECK(web_contents()->GetMainFrame()->GetProcess()->IsForGuestsOnly());
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   main_frame->Send(
       new ExtensionMsg_SetFrameName(main_frame->GetRoutingID(), name_));
@@ -666,7 +670,7 @@ void WebViewGuest::NewGuestWebViewCallback(const content::OpenURLParams& params,
 void WebViewGuest::RendererResponsive(WebContents* source) {
   auto args = std::make_unique<base::DictionaryValue>();
   args->SetInteger(webview::kProcessId,
-                   web_contents()->GetRenderProcessHost()->GetID());
+                   web_contents()->GetMainFrame()->GetProcess()->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventResponsive, std::move(args)));
 }
@@ -676,7 +680,7 @@ void WebViewGuest::RendererUnresponsive(
     const content::WebContentsUnresponsiveState& unresponsive_state) {
   auto args = std::make_unique<base::DictionaryValue>();
   args->SetInteger(webview::kProcessId,
-                   web_contents()->GetRenderProcessHost()->GetID());
+                   web_contents()->GetMainFrame()->GetProcess()->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventUnresponsive, std::move(args)));
 }
@@ -725,9 +729,9 @@ void WebViewGuest::Stop() {
 void WebViewGuest::Terminate() {
   base::RecordAction(UserMetricsAction("WebView.Guest.Terminate"));
   base::ProcessHandle process_handle =
-      web_contents()->GetRenderProcessHost()->GetHandle();
+      web_contents()->GetMainFrame()->GetProcess()->GetHandle();
   if (process_handle)
-    web_contents()->GetRenderProcessHost()->Shutdown(
+    web_contents()->GetMainFrame()->GetProcess()->Shutdown(
         content::RESULT_CODE_KILLED, false);
 }
 
@@ -746,7 +750,8 @@ bool WebViewGuest::ClearData(base::Time remove_since,
   if (removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE) {
     // First clear http cache data and then clear the rest in
     // |ClearDataInternal|.
-    int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
+    int render_process_id =
+        web_contents()->GetMainFrame()->GetProcess()->GetID();
     // We need to clear renderer cache separately for our process because
     // StoragePartitionHttpCacheDataRemover::ClearData() does not clear that.
     web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
@@ -831,7 +836,7 @@ void WebViewGuest::DidFinishNavigation(
   args->SetInteger(webview::kInternalEntryCount,
                    web_contents()->GetController().GetEntryCount());
   args->SetInteger(webview::kInternalProcessId,
-                   web_contents()->GetRenderProcessHost()->GetID());
+                   web_contents()->GetMainFrame()->GetProcess()->GetID());
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventLoadCommit, std::move(args)));
 
@@ -863,7 +868,7 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
 
   auto args = std::make_unique<base::DictionaryValue>();
   args->SetInteger(webview::kProcessId,
-                   web_contents()->GetRenderProcessHost()->GetID());
+                   web_contents()->GetMainFrame()->GetProcess()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
   DispatchEventToView(
       std::make_unique<GuestViewEvent>(webview::kEventExit, std::move(args)));
@@ -922,7 +927,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
 
   WebViewRendererState::WebViewInfo web_view_info;
   web_view_info.embedder_process_id =
-      owner_web_contents()->GetRenderProcessHost()->GetID();
+      owner_web_contents()->GetMainFrame()->GetProcess()->GetID();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
   web_view_info.owner_host = owner_host();
@@ -939,7 +944,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&WebViewRendererState::AddGuest,
                  base::Unretained(WebViewRendererState::GetInstance()),
-                 web_contents()->GetRenderProcessHost()->GetID(),
+                 web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
                  web_contents()->GetRenderViewHost()->GetRoutingID(),
                  web_view_info));
 }
@@ -951,7 +956,7 @@ void WebViewGuest::RemoveWebViewStateFromIOThread(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&WebViewRendererState::RemoveGuest,
                  base::Unretained(WebViewRendererState::GetInstance()),
-                 web_contents->GetRenderProcessHost()->GetID(),
+                 web_contents->GetRenderViewHost()->GetProcess()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID()));
 }
 
@@ -995,7 +1000,7 @@ void WebViewGuest::SignalWhenReady(const base::Closure& callback) {
 
 void WebViewGuest::WillAttachToEmbedder() {
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
-      owner_web_contents()->GetRenderProcessHost()->GetID(),
+      owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
       view_instance_id());
 
   // We must install the mapping from guests to WebViews prior to resuming
@@ -1391,7 +1396,8 @@ void WebViewGuest::LoadURLWithParams(
     return;
 
   GURL validated_url(url);
-  web_contents()->GetRenderProcessHost()->FilterURL(false, &validated_url);
+  web_contents()->GetMainFrame()->GetProcess()->FilterURL(false,
+                                                          &validated_url);
   // As guests do not swap processes on navigation, only navigations to
   // normal web URLs are supported.  No protocol handlers are installed for
   // other schemes (e.g., WebUI or extensions), and no permissions or bindings
@@ -1463,9 +1469,9 @@ void WebViewGuest::OnWebViewNewWindowResponse(
     int new_window_instance_id,
     bool allow,
     const std::string& user_input) {
-  auto* guest =
-      WebViewGuest::From(owner_web_contents()->GetRenderProcessHost()->GetID(),
-                         new_window_instance_id);
+  auto* guest = WebViewGuest::From(
+      owner_web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      new_window_instance_id);
   if (!guest)
     return;
 

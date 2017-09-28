@@ -4,6 +4,8 @@
 
 #include "content/public/test/content_browser_test.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/process/launch.h"
@@ -13,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
@@ -44,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
 
 class CrashObserver : public RenderProcessHostObserver {
  public:
-  CrashObserver(const base::Closure& quit_closure)
+  explicit CrashObserver(const base::Closure& quit_closure)
       : quit_closure_(quit_closure) {}
   void RenderProcessExited(RenderProcessHost* host,
                            base::TerminationStatus status,
@@ -61,7 +64,8 @@ class CrashObserver : public RenderProcessHostObserver {
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
   scoped_refptr<MessageLoopRunner> message_loop_runner = new MessageLoopRunner;
   CrashObserver crash_observer(message_loop_runner->QuitClosure());
-  shell()->web_contents()->GetRenderProcessHost()->AddObserver(&crash_observer);
+  shell()->web_contents()->GetMainFrame()->GetProcess()->AddObserver(
+      &crash_observer);
 
   NavigateToURL(shell(), GURL("chrome:crash"));
   message_loop_runner->Run();

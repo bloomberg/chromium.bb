@@ -245,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   // RunLoop is quit when message received from page.
   other_run_loop.Run();
   EXPECT_TRUE(g_got_message);
-  EXPECT_EQ(shell()->web_contents()->GetRenderProcessHost(),
-            other_shell->web_contents()->GetRenderProcessHost());
+  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(),
+            other_shell->web_contents()->GetMainFrame()->GetProcess());
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, NativeMojoAvailable) {

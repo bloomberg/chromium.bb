@@ -482,7 +482,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, PostWithFileData) {
   EXPECT_TRUE(delegate->file_chosen());
 
   // Remember the old process id for a sanity check below.
-  int old_process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  int old_process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
 
   // Submit the form.
   TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
@@ -495,7 +496,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, PostWithFileData) {
             shell()->web_contents()->GetLastCommittedURL());
 
   // Verify that the test really verifies access of a *new* renderer process.
-  int new_process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  int new_process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   ASSERT_NE(new_process_id, old_process_id);
 
   // MAIN VERIFICATION: Check if the new renderer process is able to read the

@@ -12,6 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_switches.h"
@@ -44,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   ui_test_utils::NavigateToURL(browser(), web_ui_url);
   EXPECT_TRUE(
       content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          web_contents->GetRenderProcessHost()->GetID()));
+          web_contents->GetMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating for later comparison.
   scoped_refptr<content::SiteInstance> orig_site_instance(
@@ -60,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   EXPECT_NE(orig_site_instance, web_contents->GetSiteInstance());
   EXPECT_TRUE(
       content::ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          web_contents->GetRenderProcessHost()->GetID()));
+          web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, InPageNavigationsAndReload) {

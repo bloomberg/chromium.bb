@@ -76,7 +76,8 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
   EXPECT_EQ("NotFoundError: Bluetooth adapter not available.", result);
 
   // Crash the renderer process.
-  content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
+  content::RenderProcessHost* process =
+      web_contents_->GetMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   process->Shutdown(0, false);

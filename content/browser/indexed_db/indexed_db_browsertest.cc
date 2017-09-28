@@ -29,6 +29,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -582,7 +583,7 @@ static void CorruptIndexedDBDatabase(
   signal_when_finished->Signal();
 }
 
-const std::string s_corrupt_db_test_prefix = "/corrupt/test/";
+static const char s_corrupt_db_test_prefix[] = "/corrupt/test/";
 
 static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     IndexedDBContextImpl* context,
@@ -592,7 +593,8 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     const net::test_server::HttpRequest& request) {
   std::string request_path;
   if (path.find(s_corrupt_db_test_prefix) != std::string::npos)
-    request_path = request.relative_url.substr(s_corrupt_db_test_prefix.size());
+    request_path = request.relative_url.substr(
+        std::string(s_corrupt_db_test_prefix).size());
   else
     return std::unique_ptr<net::test_server::HttpResponse>();
 
@@ -711,11 +713,12 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
                  origin, s_corrupt_db_test_prefix, this));
   embedded_test_server()->StartAcceptingConnections();
 
-  std::string test_file = s_corrupt_db_test_prefix +
+  std::string test_file = std::string(s_corrupt_db_test_prefix) +
                           "corrupted_open_db_detection.html#" + GetParam();
   SimpleTest(embedded_test_server()->GetURL(test_file));
 
-  test_file = s_corrupt_db_test_prefix + "corrupted_open_db_recovery.html";
+  test_file =
+      std::string(s_corrupt_db_test_prefix) + "corrupted_open_db_recovery.html";
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
@@ -820,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(
   base::string16 expected_title16(ASCIIToUTF16("setVersion(3) complete"));
   TitleWatcher title_watcher(new_shell->web_contents(), expected_title16);
 
-  shell()->web_contents()->GetRenderProcessHost()->Shutdown(0, true);
+  shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0, true);
   shell()->Close();
 
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());

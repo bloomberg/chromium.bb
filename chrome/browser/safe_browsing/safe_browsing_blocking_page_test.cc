@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -961,7 +963,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     EXPECT_EQ(net::URLRequestMockHTTPJob::GetMockUrl(kMaliciousIframe).spec(),
               report.url());
     std::vector<ClientSafeBrowsingReportRequest::Resource> resources;
-    for (auto resource: report.resources()) {
+    for (auto resource : report.resources()) {
       resources.push_back(resource);
     }
     // Sort resources based on their urls.
@@ -1670,7 +1672,7 @@ class SafeBrowsingBlockingPageIDNTest
     resource.threat_type = testing::get<1>(GetParam());
     resource.web_contents_getter =
         security_interstitials::UnsafeResource::GetWebContentsGetter(
-            contents->GetRenderProcessHost()->GetID(),
+            contents->GetMainFrame()->GetProcess()->GetID(),
             contents->GetMainFrame()->GetRoutingID());
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
 

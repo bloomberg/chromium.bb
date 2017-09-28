@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -1813,7 +1814,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                         std::string(kChromeUIGpuHost));
   NavigateToURL(shell(), webui_url);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 
   // Crash the renderer of the WebUI page.
   RenderProcessHostWatcher crash_observer(
@@ -1859,7 +1860,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                         std::string(kChromeUIGpuHost));
   NavigateToURL(shell(), webui_url);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 
   // Visit a debug URL that manages to commit, then go back.
   NavigateToURL(shell(), GURL(kChromeUIDumpURL));
@@ -1892,7 +1893,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
                       std::string(kChromeUIGpuHost)));
   NavigateToURL(shell(), webui_url);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
@@ -1938,7 +1939,7 @@ IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, MAYBE_BackFromWebUI) {
                       std::string(kChromeUIGpuHost)));
   NavigateToURL(shell(), webui_url);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 
   // Go back and ensure we have no WebUI bindings.
   TestNavigationObserver back_nav_load_observer(shell()->web_contents());
@@ -1946,7 +1947,7 @@ IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, MAYBE_BackFromWebUI) {
   back_nav_load_observer.Wait();
   EXPECT_EQ(original_url, shell()->web_contents()->GetLastCommittedURL());
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 }
 
 // crbug.com/372360
@@ -1965,7 +1966,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
   // Visit a WebUI page with bindings.
   NavigateToURL(shell(), url1);
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
   SiteInstance* site_instance1 = shell()->web_contents()->GetSiteInstance();
 
   // Open a new tab. Initially it gets a render view in the original tab's
@@ -2009,7 +2010,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                         std::string(kChromeUIGpuHost));
   EXPECT_TRUE(NavigateToURL(shell(), web_ui_url));
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-      shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 
   // Capture the SiteInstance before navigating to about:blank to ensure
   // it doesn't change.
@@ -2022,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   GURL regular_page_url(embedded_test_server()->GetURL("/title2.html"));
   EXPECT_TRUE(NavigateToURL(shell(), regular_page_url));
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-      shell()->web_contents()->GetRenderProcessHost()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
 }
 
 // crbug.com/615274
@@ -2100,7 +2101,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
   // Navigate and try to get page to reference this file in its PageState.
   GURL url1(embedded_test_server()->GetURL("/file_input.html"));
   NavigateToURL(shell(), url1);
-  int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  int process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(
@@ -2120,12 +2122,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
 
   // Navigate to a different process and wait for the old process to exit.
   RenderProcessHostWatcher exit_observer(
-      shell()->web_contents()->GetRenderProcessHost(),
+      shell()->web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
 
   // The renderer process should not have been killed.  This is the important
   // part of the test.  If this fails, then we didn't get a PageState to check
@@ -2157,7 +2159,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate to url and get it to reference a file in its PageState.
   GURL url1(embedded_test_server()->GetURL("/file_input.html"));
   NavigateToURL(shell(), url1);
-  int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  int process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(
@@ -2174,12 +2177,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
   RenderProcessHostWatcher exit_observer(
-      shell()->web_contents()->GetRenderProcessHost(),
+      shell()->web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Ensure that the file ended up in the PageState of the previous entry.
   NavigationEntry* prev_entry =
@@ -2195,11 +2198,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   shell()->web_contents()->GetController().GoBack();
   back_nav_load_observer.Wait();
   EXPECT_NE(process_id,
-            shell()->web_contents()->GetRenderProcessHost()->GetID());
+            shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
 
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Navigate to a same site page to trigger a PageState update and ensure the
   // renderer is not killed.
@@ -2220,7 +2223,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   NavigateToURL(shell(), url1);
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
-  int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  int process_id =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file));
   shell()->web_contents()->SetDelegate(delegate.get());
   EXPECT_TRUE(ExecuteScript(root->child_at(0),
@@ -2247,12 +2251,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
   RenderProcessHostWatcher exit_observer(
-      shell()->web_contents()->GetRenderProcessHost(),
+      shell()->web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Ensure that the file ended up in the PageState of the previous entry.
   NavigationEntry* prev_entry =
@@ -2268,11 +2272,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   shell()->web_contents()->GetController().GoToIndex(0);
   back_nav_load_observer.Wait();
   EXPECT_NE(process_id,
-            shell()->web_contents()->GetRenderProcessHost()->GetID());
+            shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
 
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Do another in-page navigation in the child to make sure we hear a PageState
   // with the chosen file.

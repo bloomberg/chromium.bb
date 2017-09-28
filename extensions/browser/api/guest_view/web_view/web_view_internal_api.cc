@@ -4,7 +4,11 @@
 
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 
+#include <memory>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
@@ -531,8 +535,8 @@ WebViewInternalAddContentScriptsFunction::Run() {
   DCHECK(manager);
 
   manager->AddContentScripts(
-      sender_web_contents->GetRenderProcessHost()->GetID(), render_frame_host(),
-      params->instance_id, host_id, std::move(result));
+      sender_web_contents->GetMainFrame()->GetProcess()->GetID(),
+      render_frame_host(), params->instance_id, host_id, std::move(result));
 
   return RespondNow(NoArguments());
 }
@@ -565,7 +569,7 @@ WebViewInternalRemoveContentScriptsFunction::Run() {
   if (params->script_name_list)
     script_name_list.swap(*params->script_name_list);
   manager->RemoveContentScripts(
-      sender_web_contents->GetRenderProcessHost()->GetID(),
+      sender_web_contents->GetMainFrame()->GetProcess()->GetID(),
       params->instance_id, host_id, script_name_list);
   return RespondNow(NoArguments());
 }
