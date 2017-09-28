@@ -128,9 +128,11 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                context.transport_security_state,
                context.cert_transparency_verifier,
                context.ct_policy_enforcer,
-               (params->privacy_mode() == PRIVACY_MODE_ENABLED
-                    ? "pm/" + context.ssl_session_cache_shard
-                    : context.ssl_session_cache_shard)),
+               (context.ssl_session_cache_shard.empty()
+                    ? context.ssl_session_cache_shard
+                    : (params->privacy_mode() == PRIVACY_MODE_ENABLED
+                           ? "pm/" + context.ssl_session_cache_shard
+                           : context.ssl_session_cache_shard))),
       callback_(
           base::Bind(&SSLConnectJob::OnIOComplete, base::Unretained(this))),
       version_interference_probe_(false),
