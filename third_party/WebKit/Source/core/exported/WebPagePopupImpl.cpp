@@ -319,7 +319,7 @@ bool WebPagePopupImpl::InitializePage() {
   InitializeLayerTreeView();
 
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  popup_client_->WriteDocument(data.Get());
+  popup_client_->WriteDocument(data.get());
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
   frame->ForceSynchronousDocumentInstall("text/html", data);
   return true;

@@ -88,7 +88,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 PerformanceResourceTiming::~PerformanceResourceTiming() {}
 
 ResourceLoadTiming* PerformanceResourceTiming::GetResourceLoadTiming() const {
-  return timing_.Get();
+  return timing_.get();
 }
 
 bool PerformanceResourceTiming::AllowTimingDetails() const {

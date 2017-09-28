@@ -34,7 +34,7 @@ class DataRef {
   USING_FAST_MALLOC(DataRef);
 
  public:
-  const T* Get() const { return data_.Get(); }
+  const T* Get() const { return data_.get(); }
 
   const T& operator*() const { return *Get(); }
   const T* operator->() const { return Get(); }
@@ -42,7 +42,7 @@ class DataRef {
   T* Access() {
     if (!data_->HasOneRef())
       data_ = data_->Copy();
-    return data_.Get();
+    return data_.get();
   }
 
   void Init() {

@@ -13,7 +13,7 @@ TEST(PagePopupClientTest, AddJavaScriptString) {
   RefPtr<SharedBuffer> buffer = SharedBuffer::Create();
   PagePopupClient::AddJavaScriptString(
       String::FromUTF8("abc\r\n'\"</script>\t\f\v\xE2\x80\xA8\xE2\x80\xA9"),
-      buffer.Get());
+      buffer.get());
   const Vector<char> contiguous = buffer->Copy();
   EXPECT_EQ(
       "\"abc\\r\\n'\\\"\\x3C/script>\\u0009\\u000C\\u000B\\u2028\\u2029\"",

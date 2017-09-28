@@ -60,7 +60,7 @@ WebTaskRunner* ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
   return TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
                                GetExecutionContext())
-      .Get();
+      .get();
 }
 
 // TODO(garykac): This currently only handles plain text.

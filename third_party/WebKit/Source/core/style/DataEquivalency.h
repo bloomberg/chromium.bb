@@ -26,7 +26,7 @@ bool DataEquivalent(const T* a, const T* b) {
 
 template <typename T>
 bool DataEquivalent(const RefPtr<T>& a, const RefPtr<T>& b) {
-  return DataEquivalent(a.Get(), b.Get());
+  return DataEquivalent(a.get(), b.get());
 }
 
 template <typename T>

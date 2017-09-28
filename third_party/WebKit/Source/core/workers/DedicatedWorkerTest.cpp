@@ -127,7 +127,7 @@ class DedicatedWorkerMessagingProxyForTest
         WTF::MakeUnique<GlobalScopeCreationParams>(
             script_url, "fake user agent", source, nullptr /* cachedMetaData */,
             kDontPauseWorkerGlobalScopeOnStart, headers.get(),
-            "" /* referrerPolicy */, security_origin_.Get(),
+            "" /* referrerPolicy */, security_origin_.get(),
             nullptr /* workerClients */, kWebAddressSpaceLocal,
             nullptr /* originTrialTokens */, nullptr /* workerSettings */,
             kV8CacheOptionsDefault),

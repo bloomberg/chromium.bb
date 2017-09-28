@@ -78,7 +78,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   InterpolationQuality previous_interpolation_quality =
       paint_info.context.ImageInterpolationQuality();
   paint_info.context.SetImageInterpolationQuality(interpolation_quality);
-  paint_info.context.DrawImage(image.Get(), dest_rect, &src_rect);
+  paint_info.context.DrawImage(image.get(), dest_rect, &src_rect);
   paint_info.context.SetImageInterpolationQuality(
       previous_interpolation_quality);
 }

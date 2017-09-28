@@ -1030,7 +1030,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
     KURL url = element->GetDocument().CompleteURL(element->ImageSourceURL());
     svg_image = SVGImageForContainer::Create(
         ToSVGImage(image), image_element_size_in_pixels, 1, url);
-    image = svg_image.Get();
+    image = svg_image.get();
   }
 
   InterpolationQuality interpolation_quality =

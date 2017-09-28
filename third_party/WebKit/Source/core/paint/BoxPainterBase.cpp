@@ -575,7 +575,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   // Fast path for drawing simple color backgrounds.
   if (PaintFastBottomLayer(display_item_, node_, paint_info, info, rect,
-                           border_rect, geometry, image.Get(), composite_op)) {
+                           border_rect, geometry, image.get(), composite_op)) {
     return;
   }
 
@@ -585,7 +585,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
                            kApplyToContext);
   }
   if (bg_layer.Clip() == kTextFillBox) {
-    PaintFillLayerTextFillBox(context, info, image.Get(), composite_op,
+    PaintFillLayerTextFillBox(context, info, image.get(), composite_op,
                               geometry, rect, scrolled_paint_rect);
     return;
   }
@@ -615,7 +615,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       break;
   }
 
-  PaintFillLayerBackground(context, info, image.Get(), composite_op, geometry,
+  PaintFillLayerBackground(context, info, image.get(), composite_op, geometry,
                            scrolled_paint_rect);
 }
 

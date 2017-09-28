@@ -947,7 +947,7 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
   pending_request_type_ = InspectorPageAgent::kXHRResource;
   pending_xhr_replay_data_ = XHRReplayData::Create(
       xhr->GetExecutionContext(), method, UrlWithoutFragment(url), async,
-      form_data.Get(), include_credentials);
+      form_data.get(), include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
 }
@@ -1432,7 +1432,7 @@ Response InspectorNetworkAgent::getCertificate(
   for (auto& resource : resources_data_->Resources()) {
     RefPtr<SecurityOrigin> resource_origin =
         SecurityOrigin::Create(resource->RequestedURL());
-    if (resource_origin->IsSameSchemeHostPort(security_origin.Get()) &&
+    if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
         resource->Certificate().size()) {
       for (auto& cert : resource->Certificate())
         certificate->get()->addItem(Base64Encode(cert.Latin1()));

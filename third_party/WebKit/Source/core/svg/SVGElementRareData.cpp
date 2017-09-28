@@ -34,7 +34,7 @@ ComputedStyle* SVGElementRareData::OverrideComputedStyle(
     needs_override_computed_style_update_ = false;
   }
   DCHECK(override_computed_style_);
-  return override_computed_style_.Get();
+  return override_computed_style_.get();
 }
 
 DEFINE_TRACE(SVGElementRareData) {

@@ -89,7 +89,7 @@ class ErrorEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  DOMWrapperWorld* World() const { return world_.Get(); }
+  DOMWrapperWorld* World() const { return world_.get(); }
 
   void SetUnsanitizedMessage(const String&);
 

@@ -51,7 +51,7 @@ class PopStateEvent final : public Event {
 
   ScriptValue state(ScriptState*) const;
   SerializedScriptValue* SerializedState() const {
-    return serialized_state_.Get();
+    return serialized_state_.get();
   }
   void SetSerializedState(RefPtr<SerializedScriptValue> state) {
     DCHECK(!serialized_state_);

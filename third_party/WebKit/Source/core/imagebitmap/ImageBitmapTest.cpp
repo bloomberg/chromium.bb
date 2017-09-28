@@ -112,7 +112,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   sk_sp<SkImage> image = surface->makeImageSnapshot();
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(image).Get());
+          StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(original_image_resource);
 
   Optional<IntRect> crop_rect =
@@ -180,7 +180,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   sk_sp<SkImage> raster_image = raster_surface->makeImageSnapshot();
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(raster_image).Get());
+          StaticBitmapImage::Create(raster_image).get());
   image->SetImageForTest(original_image_resource);
 
   const ImageBitmapOptions default_options;
@@ -195,7 +195,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
           .GetSkImage());
 
   ImageResourceContent* new_image_resource = ImageResourceContent::CreateLoaded(
-      StaticBitmapImage::Create(image2_).Get());
+      StaticBitmapImage::Create(image2_).get());
   image->SetImageForTest(new_image_resource);
 
   {
@@ -297,7 +297,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
 
   ImageResourceContent* original_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(image).Get());
+          StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(original_image_resource);
 
   Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());
@@ -417,7 +417,7 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
 
   ImageResourceContent* source_image_resource =
       ImageResourceContent::CreateLoaded(
-          StaticBitmapImage::Create(image).Get());
+          StaticBitmapImage::Create(image).get());
   image_element->SetImageForTest(source_image_resource);
 
   Optional<IntRect> crop_rect = IntRect(0, 0, image->width(), image->height());

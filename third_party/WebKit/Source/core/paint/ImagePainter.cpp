@@ -173,7 +173,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       context.ImageInterpolationQuality();
   context.SetImageInterpolationQuality(interpolation_quality);
   context.DrawImage(
-      image.Get(), pixel_snapped_dest_rect, &src_rect, SkBlendMode::kSrcOver,
+      image.get(), pixel_snapped_dest_rect, &src_rect, SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
   context.SetImageInterpolationQuality(previous_interpolation_quality);
 }

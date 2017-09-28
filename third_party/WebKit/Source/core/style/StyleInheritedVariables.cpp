@@ -48,7 +48,7 @@ CSSVariableData* StyleInheritedVariables::GetVariable(
     return root_->GetVariable(name);
   if (result == data_.end())
     return nullptr;
-  return result->value.Get();
+  return result->value.get();
 }
 
 void StyleInheritedVariables::SetRegisteredVariable(

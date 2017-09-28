@@ -398,7 +398,7 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
     return 0;
 
   for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).Get();
+    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid)
       return pseudo_style;
   }
@@ -413,7 +413,7 @@ ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
 
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
-  ComputedStyle* result = pseudo.Get();
+  ComputedStyle* result = pseudo.get();
 
   if (!cached_pseudo_styles_)
     cached_pseudo_styles_ = WTF::WrapUnique(new PseudoStyleCache);
@@ -427,7 +427,7 @@ void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
   if (!cached_pseudo_styles_)
     return;
   for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).Get();
+    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid) {
       cached_pseudo_styles_->EraseAt(i);
       return;
@@ -1425,7 +1425,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
 }
 
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
-  return InheritedVariablesInternal().Get();
+  return InheritedVariablesInternal().get();
 }
 
 StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {

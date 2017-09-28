@@ -502,7 +502,7 @@ Response InspectorLayerTreeAgent::GetSnapshotById(
   SnapshotById::iterator it = snapshot_by_id_.find(snapshot_id);
   if (it == snapshot_by_id_.end())
     return Response::Error("Snapshot not found");
-  result = it->value.Get();
+  result = it->value.get();
   return Response::OK();
 }
 

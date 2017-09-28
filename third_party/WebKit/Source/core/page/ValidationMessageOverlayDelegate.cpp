@@ -148,7 +148,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   page_->GetVisualViewport().SetSize(view_size);
 
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
-  WriteDocument(data.Get());
+  WriteDocument(data.get());
   float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactor();
   frame->SetPageZoomFactor(zoom_factor);
   // Propagate deprecated DSF for platforms without use-zoom-for-dsf.
