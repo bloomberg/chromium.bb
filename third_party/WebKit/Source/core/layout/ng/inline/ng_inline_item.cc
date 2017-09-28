@@ -142,7 +142,8 @@ bool NGInlineItem::HasStartEdge() const {
 bool NGInlineItem::HasEndEdge() const {
   DCHECK(Type() == kOpenTag || Type() == kCloseTag);
   // TODO(kojii): Should use break token when NG has its own tree building.
-  return !ToLayoutInline(GetLayoutObject())->Continuation();
+  return !GetLayoutObject()->IsLayoutInline() ||
+         !ToLayoutInline(GetLayoutObject())->Continuation();
 }
 
 NGInlineItemRange::NGInlineItemRange(Vector<NGInlineItem>* items,

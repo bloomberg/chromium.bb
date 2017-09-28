@@ -18,7 +18,7 @@ struct NGInlineNodeData;
 class NGLayoutResult;
 
 // This overrides the default layout block algorithm to use Layout NG.
-class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
  public:
   explicit LayoutNGBlockFlow(Element*);
   ~LayoutNGBlockFlow() override;
@@ -49,11 +49,11 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   const NGPaintFragment* PaintFragment() const { return paint_fragment_.get(); }
 
  protected:
+  bool IsOfType(LayoutObjectType) const override;
+
   void AddOverflowFromChildren() override;
 
  private:
-  bool IsOfType(LayoutObjectType) const override;
-
   const NGPhysicalFragment* CurrentFragment() const;
 
   void UpdateMargins(const NGConstraintSpace&);
