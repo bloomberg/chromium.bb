@@ -179,7 +179,6 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 		drv_data.format = fd_data->format;
 		drv_data.fds[0] = fd_data->fd;
 		drv_data.strides[0] = fd_data->stride;
-		drv_data.sizes[0] = fd_data->height * fd_data->stride;
 		break;
 	case GBM_BO_IMPORT_FD_PLANAR:
 		gbm_format = fd_planar_data->format;
@@ -195,9 +194,6 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 			drv_data.offsets[i] = fd_planar_data->offsets[i];
 			drv_data.strides[i] = fd_planar_data->strides[i];
 			drv_data.format_modifiers[i] = fd_planar_data->format_modifiers[i];
-
-			drv_data.sizes[i] = drv_size_from_format(
-			    drv_data.format, drv_data.strides[i], drv_data.height, i);
 		}
 
 		for (i = num_planes; i < GBM_MAX_PLANES; i++)

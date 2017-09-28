@@ -580,24 +580,6 @@ size_t drv_num_planes_from_format(uint32_t format)
 	return 0;
 }
 
-uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane)
-{
-	assert(plane < drv_num_planes_from_format(format));
-	uint32_t vertical_subsampling;
-
-	switch (format) {
-	case DRM_FORMAT_NV12:
-	case DRM_FORMAT_YVU420:
-	case DRM_FORMAT_YVU420_ANDROID:
-		vertical_subsampling = (plane == 0) ? 1 : 2;
-		break;
-	default:
-		vertical_subsampling = 1;
-	}
-
-	return stride * DIV_ROUND_UP(height, vertical_subsampling);
-}
-
 uint32_t drv_num_buffers_per_bo(struct bo *bo)
 {
 	uint32_t count = 0;

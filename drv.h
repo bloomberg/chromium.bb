@@ -71,7 +71,6 @@ struct drv_import_fd_data {
 	int fds[DRV_MAX_PLANES];
 	uint32_t strides[DRV_MAX_PLANES];
 	uint32_t offsets[DRV_MAX_PLANES];
-	uint32_t sizes[DRV_MAX_PLANES];
 	uint64_t format_modifiers[DRV_MAX_PLANES];
 	uint32_t width;
 	uint32_t height;
@@ -144,8 +143,6 @@ uint32_t drv_bo_get_stride_in_pixels(struct bo *bo);
 uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t usage);
 
 size_t drv_num_planes_from_format(uint32_t format);
-
-uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane);
 
 uint32_t drv_num_buffers_per_bo(struct bo *bo);
 
