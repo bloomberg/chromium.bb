@@ -68,9 +68,6 @@ MidiManagerAndroid::MidiManagerAndroid(MidiService* service)
     : MidiManager(service) {}
 
 MidiManagerAndroid::~MidiManagerAndroid() {
-  bool result = service()->task_service()->UnbindInstance();
-  DCHECK(result);
-
   // TODO(toyoshim): Remove following code once the dynamic instantiation mode
   // is enabled by default.
   base::AutoLock lock(lock_);
