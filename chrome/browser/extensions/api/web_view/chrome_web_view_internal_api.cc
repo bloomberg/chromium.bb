@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
 
+#include <memory>
+
 #include "chrome/browser/extensions/api/context_menus/context_menus_api.h"
 #include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/error_utils.h"
 
@@ -27,7 +30,7 @@ bool ChromeWebViewInternalContextMenusCreateFunction::RunAsync() {
       Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
       MenuItem::ExtensionKey(
           extension_id(),
-          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          GetSenderWebContents()->GetMainFrame()->GetProcess()->GetID(),
           params->instance_id));
 
   if (params->create_properties.id.get()) {
@@ -61,7 +64,7 @@ bool ChromeWebViewInternalContextMenusUpdateFunction::RunAsync() {
       profile->IsOffTheRecord(),
       MenuItem::ExtensionKey(
           extension_id(),
-          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          GetSenderWebContents()->GetMainFrame()->GetProcess()->GetID(),
           params->instance_id));
 
   if (params->id.as_string)
@@ -89,7 +92,7 @@ bool ChromeWebViewInternalContextMenusRemoveFunction::RunAsync() {
       Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
       MenuItem::ExtensionKey(
           extension_id(),
-          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          GetSenderWebContents()->GetMainFrame()->GetProcess()->GetID(),
           params->instance_id));
 
   if (params->menu_item_id.as_string) {
@@ -125,7 +128,7 @@ bool ChromeWebViewInternalContextMenusRemoveAllFunction::RunAsync() {
       MenuManager::Get(Profile::FromBrowserContext(browser_context()));
   menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
       extension_id(),
-      GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+      GetSenderWebContents()->GetMainFrame()->GetProcess()->GetID(),
       params->instance_id));
 
   SendResponse(true);
