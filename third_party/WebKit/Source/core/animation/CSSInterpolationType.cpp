@@ -301,10 +301,12 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   // TODO(alancutter): Defer tokenization of the CSSValue until it is needed.
   String string_value = css_value->CssText();
   CSSTokenizer tokenizer(string_value);
+  const auto tokens = tokenizer.TokenizeToEOF();
   bool is_animation_tainted = true;
   bool needs_variable_resolution = false;
-  RefPtr<CSSVariableData> variable_data = CSSVariableData::Create(
-      tokenizer.TokenRange(), is_animation_tainted, needs_variable_resolution);
+  RefPtr<CSSVariableData> variable_data =
+      CSSVariableData::Create(CSSParserTokenRange(tokens), is_animation_tainted,
+                              needs_variable_resolution);
   ComputedStyle& style = *state.Style();
   const PropertyHandle property = GetProperty();
   const AtomicString& property_name = property.CustomPropertyName();

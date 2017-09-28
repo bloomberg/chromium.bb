@@ -12,7 +12,8 @@ namespace blink {
 
 RefPtr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(
     const String& query_string) {
-  return ParseMediaQuerySet(CSSTokenizer(query_string).TokenRange());
+  return ParseMediaQuerySet(
+      CSSParserTokenRange(CSSTokenizer(query_string).TokenizeToEOF()));
 }
 
 RefPtr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(

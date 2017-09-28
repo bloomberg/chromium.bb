@@ -72,7 +72,8 @@ void ParseRootMargin(String root_margin_parameter,
   // "1px 2px 3px" = top left/right bottom
   // "1px 2px 3px 4px" = top left right bottom
   CSSTokenizer tokenizer(root_margin_parameter);
-  CSSParserTokenRange token_range = tokenizer.TokenRange();
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange token_range(tokens);
   while (token_range.Peek().GetType() != kEOFToken &&
          !exception_state.HadException()) {
     if (root_margin.size() == 4) {

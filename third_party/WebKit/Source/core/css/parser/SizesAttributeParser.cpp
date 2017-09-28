@@ -15,7 +15,8 @@ SizesAttributeParser::SizesAttributeParser(MediaValues* media_values,
                                            const String& attribute)
     : media_values_(media_values), length_(0), length_was_set_(false) {
   DCHECK(media_values_.Get());
-  is_valid_ = Parse(CSSTokenizer(attribute).TokenRange());
+  is_valid_ =
+      Parse(CSSParserTokenRange(CSSTokenizer(attribute).TokenizeToEOF()));
 }
 
 float SizesAttributeParser::length() {

@@ -16,7 +16,6 @@
 namespace blink {
 
 class CSSLazyPropertyParserImpl;
-class CSSParserTokenRange;
 
 // This class helps lazy parsing by retaining necessary state. It should not
 // outlive the StyleSheetContents that initiated the parse, as it retains a raw
@@ -25,7 +24,6 @@ class CSSLazyParsingState
     : public GarbageCollectedFinalized<CSSLazyParsingState> {
  public:
   CSSLazyParsingState(const CSSParserContext*,
-                      Vector<String> escaped_strings,
                       const String& sheet_text,
                       StyleSheetContents*);
 
@@ -34,17 +32,16 @@ class CSSLazyParsingState
   void FinishInitialParsing();
 
   // Helper method used to bump total_style_rules_.
-  CSSLazyPropertyParserImpl* CreateLazyParser(const CSSParserTokenRange& block);
+  CSSLazyPropertyParserImpl* CreateLazyParser(size_t offset);
 
   const CSSParserContext* Context();
+  const String& SheetText() const { return sheet_text_; }
   StyleEngine& GetStyleEngine();
 
   RuleSet& GetRuleSet() { return owning_contents_->GetRuleSet(); }
   bool HasRuleSet() { return owning_contents_->HasRuleSet(); }
 
   void CountRuleParsed();
-
-  bool IsEmptyBlock(const CSSParserTokenRange& block) const;
 
   DECLARE_TRACE();
 
@@ -67,7 +64,6 @@ class CSSLazyParsingState
   void RecordUsageMetrics();
 
   Member<const CSSParserContext> context_;
-  Vector<String> escaped_strings_;
   // Also referenced on the css resource.
   String sheet_text_;
 

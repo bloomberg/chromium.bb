@@ -10,20 +10,15 @@
 
 namespace blink {
 
-CSSLazyPropertyParserImpl::CSSLazyPropertyParserImpl(CSSParserTokenRange block,
+CSSLazyPropertyParserImpl::CSSLazyPropertyParserImpl(size_t offset,
                                                      CSSLazyParsingState* state)
-    : CSSLazyPropertyParser(), lazy_state_(state) {
-  // Reserve capacity to minimize heap bloat.
-  size_t length = block.end() - block.begin();
-  tokens_.ReserveCapacity(length);
-  tokens_.Append(block.begin(), length);
-}
+    : CSSLazyPropertyParser(), offset_(offset), lazy_state_(state) {}
 
 StylePropertySet* CSSLazyPropertyParserImpl::ParseProperties() {
   lazy_state_->CountRuleParsed();
   StylePropertySet* property_set =
-      CSSParserImpl::ParseDeclarationListForLazyStyle(tokens_,
-                                                      lazy_state_->Context());
+      CSSParserImpl::ParseDeclarationListForLazyStyle(
+          lazy_state_->SheetText(), offset_, lazy_state_->Context());
   if (has_before_or_after_ && lazy_state_->HasRuleSet() &&
       property_set->FindPropertyIndex(CSSPropertyContent) != -1) {
     lazy_state_->GetRuleSet().UpdateInvalidationSetsForContentAttribute(

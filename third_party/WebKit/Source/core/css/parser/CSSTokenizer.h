@@ -18,26 +18,23 @@
 namespace blink {
 
 class CSSTokenizerInputStream;
-class CSSParserObserverWrapper;
-class CSSParserTokenRange;
 
 class CORE_EXPORT CSSTokenizer {
   WTF_MAKE_NONCOPYABLE(CSSTokenizer);
   DISALLOW_NEW();
 
  public:
-  CSSTokenizer(const String&);
-  CSSTokenizer(const String&, CSSParserObserverWrapper&);  // For the inspector
+  CSSTokenizer(const String&, size_t offset = 0);
 
-  CSSParserTokenRange TokenRange();
+  Vector<CSSParserToken, 32> TokenizeToEOF();
   unsigned TokenCount();
 
-  Vector<String> TakeEscapedStrings() { return std::move(string_pool_); }
+  size_t Offset() const { return input_.Offset(); }
+  size_t PreviousOffset() const { return prev_offset_; }
 
  private:
   CSSParserToken TokenizeSingle();
-  void EnsureTokenizedToEOF();
-  unsigned CurrentSize() const;
+  CSSParserToken TokenizeSingleWithComments();
 
   CSSParserToken NextToken();
 
@@ -107,11 +104,13 @@ class CORE_EXPORT CSSTokenizer {
   CSSTokenizerInputStream input_;
   Vector<CSSParserTokenType, 8> block_stack_;
 
-  Vector<CSSParserToken> tokens_;
   // We only allocate strings when escapes are used.
   Vector<String> string_pool_;
 
   friend class CSSParserTokenStream;
+
+  size_t prev_offset_ = 0;
+  size_t token_count_ = 0;
 };
 
 }  // namespace blink

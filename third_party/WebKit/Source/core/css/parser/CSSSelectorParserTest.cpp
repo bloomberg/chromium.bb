@@ -82,7 +82,8 @@ TEST(CSSSelectorParserTest, ValidANPlusB) {
 
     std::pair<int, int> ab;
     CSSTokenizer tokenizer(test_case.input);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     bool passed = CSSSelectorParser::ConsumeANPlusB(range, ab);
     EXPECT_TRUE(passed);
     EXPECT_EQ(test_case.a, ab.first);
@@ -104,7 +105,8 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
 
     std::pair<int, int> ab;
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     bool passed = CSSSelectorParser::ConsumeANPlusB(range, ab);
     EXPECT_FALSE(passed);
   }
@@ -121,7 +123,8 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
@@ -140,7 +143,8 @@ TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_FALSE(list.IsValid());
@@ -158,7 +162,8 @@ TEST(CSSSelectorParserTest, ValidSimpleAfterPseudoElementInCompound) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_TRUE(list.IsValid());
@@ -188,7 +193,8 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_FALSE(list.IsValid());
@@ -203,7 +209,8 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kUASheetMode), nullptr);
     EXPECT_TRUE(list.IsValid());
@@ -215,7 +222,8 @@ TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_TRUE(list.IsValid());
@@ -229,7 +237,8 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
     EXPECT_FALSE(list.IsValid());
@@ -244,7 +253,8 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
 
   for (auto test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_FALSE(list.IsValid());
@@ -271,7 +281,8 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
@@ -289,7 +300,8 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInDynamicProfile) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_FALSE(list.IsValid());
@@ -307,7 +319,8 @@ TEST(CSSSelectorParserTest, InvalidDescendantCombinatorInStaticProfile) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_FALSE(list.IsValid());
@@ -327,7 +340,8 @@ TEST(CSSSelectorParserTest, ShadowPiercingCombinatorInStaticProfile) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case[0]);
     CSSTokenizer tokenizer(test_case[0]);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
@@ -344,7 +358,8 @@ TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_FALSE(list.IsValid());
@@ -362,7 +377,8 @@ TEST(CSSSelectorParserTest, InternalPseudo) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case);
     CSSTokenizer tokenizer(test_case);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
 
     CSSSelectorList author_list = CSSSelectorParser::ParseSelector(
         range, CSSParserContext::Create(kHTMLStandardMode), nullptr);
@@ -409,7 +425,8 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLStrict) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.input);
     CSSTokenizer tokenizer(test_case.input);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
@@ -432,7 +449,8 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLQuirks) {
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.input);
     CSSTokenizer tokenizer(test_case.input);
-    CSSParserTokenRange range = tokenizer.TokenRange();
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
