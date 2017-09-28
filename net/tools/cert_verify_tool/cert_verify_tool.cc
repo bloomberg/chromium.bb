@@ -10,11 +10,94 @@
 #include "base/logging.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/time/time.h"
+#include "net/cert/cert_verify_proc.h"
+#include "net/cert/cert_verify_proc_builtin.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
 #include "net/tools/cert_verify_tool/verify_using_path_builder.h"
 
 namespace {
+
+// Base class to abstract running a particular implementation of certificate
+// verification.
+class CertVerifyImpl {
+ public:
+  virtual ~CertVerifyImpl() = default;
+
+  virtual std::string GetName() const = 0;
+
+  // Does certificate verification.
+  //
+  // Note that |hostname| may be empty to indicate that no name validation is
+  // requested, and a null value of |verify_time| means to use the current time.
+  virtual bool VerifyCert(const CertInput& target_der_cert,
+                          const std::string& hostname,
+                          const std::vector<CertInput>& intermediate_der_certs,
+                          const std::vector<CertInput>& root_der_certs,
+                          base::Time verify_time,
+                          const base::FilePath& dump_prefix_path) = 0;
+};
+
+// Runs certificate verification using a particular CertVerifyProc.
+class CertVerifyImplUsingProc : public CertVerifyImpl {
+ public:
+  CertVerifyImplUsingProc(const std::string& name,
+                          scoped_refptr<net::CertVerifyProc> proc)
+      : name_(name), proc_(std::move(proc)) {}
+
+  std::string GetName() const override { return name_; }
+
+  bool VerifyCert(const CertInput& target_der_cert,
+                  const std::string& hostname,
+                  const std::vector<CertInput>& intermediate_der_certs,
+                  const std::vector<CertInput>& root_der_certs,
+                  base::Time verify_time,
+                  const base::FilePath& dump_prefix_path) override {
+    if (!verify_time.is_null()) {
+      std::cerr << "WARNING: --time is not supported by " << GetName()
+                << ", will use current time.\n";
+    }
+
+    if (hostname.empty()) {
+      std::cerr << "ERROR: --hostname is required for " << GetName()
+                << ", skipping\n";
+      return true;  // "skipping" is considered a successful return.
+    }
+
+    return VerifyUsingCertVerifyProc(proc_.get(), target_der_cert, hostname,
+                                     intermediate_der_certs, root_der_certs,
+                                     dump_prefix_path);
+  }
+
+ private:
+  const std::string name_;
+  scoped_refptr<net::CertVerifyProc> proc_;
+};
+
+// Runs certificate verification using CertPathBuilder.
+class CertVerifyImplUsingPathBuilder : public CertVerifyImpl {
+ public:
+  std::string GetName() const override { return "CertPathBuilder"; }
+
+  bool VerifyCert(const CertInput& target_der_cert,
+                  const std::string& hostname,
+                  const std::vector<CertInput>& intermediate_der_certs,
+                  const std::vector<CertInput>& root_der_certs,
+                  base::Time verify_time,
+                  const base::FilePath& dump_prefix_path) override {
+    if (!hostname.empty()) {
+      std::cerr << "WARNING: --hostname is not verified with CertPathBuilder\n";
+    }
+
+    if (verify_time.is_null()) {
+      verify_time = base::Time::Now();
+    }
+
+    return VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
+                                  root_der_certs, verify_time,
+                                  dump_prefix_path);
+  }
+};
 
 const char kUsage[] =
     " [flags] <target/chain>\n"
@@ -97,8 +180,6 @@ int main(int argc, char** argv) {
       std::cerr << "Error parsing --time flag\n";
       return 1;
     }
-  } else {
-    verify_time = base::Time::Now();
   }
 
   base::FilePath roots_path = command_line.GetSwitchValuePath("roots");
@@ -128,31 +209,28 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  // TODO(eroman): Also use CertVerifyProcBuiltin.
+  // Sequentially run each of the certificate verifier implementations.
+  std::vector<std::unique_ptr<CertVerifyImpl>> impls;
 
-  std::cout << "CertVerifyProc:\n";
-  bool cert_verify_proc_ok = true;
-  if (!time_flag.empty()) {
-    std::cerr << "ERROR: --time is not supported with CertVerifyProc, "
-                 "skipping.\n";
-  } else if (hostname.empty()) {
-    std::cerr << "ERROR: --hostname is required for CertVerifyProc, skipping\n";
-  } else {
-    cert_verify_proc_ok = VerifyUsingCertVerifyProc(
-        target_der_cert, hostname, intermediate_der_certs, root_der_certs,
-        dump_prefix_path);
+  impls.push_back(
+      std::unique_ptr<CertVerifyImplUsingProc>(new CertVerifyImplUsingProc(
+          "CertVerifyProc (default)", net::CertVerifyProc::CreateDefault())));
+  impls.push_back(base::MakeUnique<CertVerifyImplUsingProc>(
+      "CertVerifyProcBuiltin", net::CreateCertVerifyProcBuiltin()));
+  impls.push_back(base::MakeUnique<CertVerifyImplUsingPathBuilder>());
+
+  bool all_impls_success = true;
+
+  for (size_t i = 0; i < impls.size(); ++i) {
+    if (i != 0)
+      std::cout << "\n";
+
+    std::cout << impls[i]->GetName() << ":\n";
+    if (!impls[i]->VerifyCert(target_der_cert, hostname, intermediate_der_certs,
+                              root_der_certs, verify_time, dump_prefix_path)) {
+      all_impls_success = false;
+    }
   }
 
-  std::cout << "\nCertPathBuilder:\n";
-
-  if (!hostname.empty()) {
-    std::cerr
-        << "WARNING: --hostname is not yet verified with CertPathBuilder\n";
-  }
-
-  bool path_builder_ok =
-      VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
-                             root_der_certs, verify_time, dump_prefix_path);
-
-  return (cert_verify_proc_ok && path_builder_ok) ? 0 : 1;
+  return all_impls_success ? 0 : 1;
 }
