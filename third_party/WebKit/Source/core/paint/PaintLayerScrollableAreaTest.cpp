@@ -212,7 +212,7 @@ TEST_F(PaintLayerScrollableAreaTest,
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
-  RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled(true);
+  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
 
   SetBodyInnerHTML(
       "<style>"
@@ -238,7 +238,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
 // Promoting the scroller would also require promoting the positioned div
 // which would lose subpixel anti-aliasing due to its transparent background.
 TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
-  RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled(true);
+  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
 
   SetBodyInnerHTML(
       "<style>"
@@ -264,7 +264,7 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
-  RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled(true);
+  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
 
   SetBodyInnerHTML(
       "<style>"
@@ -286,7 +286,7 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
-  RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled(true);
+  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
 
   SetBodyInnerHTML(
       "<style>"
@@ -316,7 +316,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
-  RuntimeEnabledFeatures::SetCompositeOpaqueScrollersEnabled(true);
+  ScopedCompositeOpaqueScrollersForTest composite_opaque_scrollers(true);
 
   SetBodyInnerHTML(
       "<style>"
@@ -459,7 +459,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
 TEST_F(PaintLayerScrollableAreaTest, SmallScrollerPromotionTest) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
-  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  ScopedSkipCompositingSmallScrollersForTest skip_compositing_small_scrollers(
+      true);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"
@@ -482,7 +483,8 @@ TEST_F(PaintLayerScrollableAreaTest, SmallScrollerPromotionTest) {
 TEST_F(PaintLayerScrollableAreaTest, LargeScrollerPromotionTest) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       false);
-  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  ScopedSkipCompositingSmallScrollersForTest skip_compositing_small_scrollers(
+      true);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"
@@ -521,7 +523,8 @@ TEST_F(PaintLayerScrollableAreaTest,
        SmallScrollerWithSeparateCompositingReasonPromotionTest) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
-  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  ScopedSkipCompositingSmallScrollersForTest skip_compositing_small_scrollers(
+      true);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"
@@ -715,7 +718,7 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(
       "<style>"
       "#scroller { overflow: overlay; height: 100px; width: 100px; }"
@@ -733,7 +736,7 @@ TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(
       "<style>"
       "#outerDiv {"
@@ -762,7 +765,7 @@ TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
 }
 
 TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<style>"
