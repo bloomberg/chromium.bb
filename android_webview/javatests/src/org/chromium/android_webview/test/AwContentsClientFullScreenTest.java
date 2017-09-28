@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -43,7 +42,7 @@ import java.util.concurrent.TimeoutException;
  * very common use case.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/615483,615184")
+@RetryOnFailure // crbug.com/615483
 public class AwContentsClientFullScreenTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
