@@ -5179,6 +5179,7 @@ test("net_unittests") {
     "tools/content_decoder_tool/content_decoder_tool_unittest.cc",
     "tools/quic/quic_simple_client_test.cc",
     "tools/tld_cleanup/tld_cleanup_util_unittest.cc",
+    "url_request/redirect_info_unittest.cc",
     "url_request/report_sender_unittest.cc",
     "url_request/url_fetcher_impl_unittest.cc",
     "url_request/url_fetcher_response_writer_unittest.cc",

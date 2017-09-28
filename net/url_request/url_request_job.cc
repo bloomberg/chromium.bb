@@ -15,8 +15,6 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/auth.h"
@@ -46,95 +44,6 @@ std::unique_ptr<base::Value> SourceStreamSetCallback(
       new base::DictionaryValue());
   event_params->SetString("filters", source_stream->Description());
   return std::move(event_params);
-}
-
-std::string ComputeMethodForRedirect(const std::string& method,
-                                     int http_status_code) {
-  // For 303 redirects, all request methods except HEAD are converted to GET,
-  // as per the latest httpbis draft.  The draft also allows POST requests to
-  // be converted to GETs when following 301/302 redirects, for historical
-  // reasons. Most major browsers do this and so shall we.  Both RFC 2616 and
-  // the httpbis draft say to prompt the user to confirm the generation of new
-  // requests, other than GET and HEAD requests, but IE omits these prompts and
-  // so shall we.
-  // See:
-  // https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
-  if ((http_status_code == 303 && method != "HEAD") ||
-      ((http_status_code == 301 || http_status_code == 302) &&
-       method == "POST")) {
-    return "GET";
-  }
-  return method;
-}
-
-// A redirect response can contain a Referrer-Policy header
-// (https://w3c.github.io/webappsec-referrer-policy/). This function
-// checks for a Referrer-Policy header, and parses it if
-// present. Returns the referrer policy that should be used for the
-// request.
-URLRequest::ReferrerPolicy ProcessReferrerPolicyHeaderOnRedirect(
-    URLRequest* request) {
-  URLRequest::ReferrerPolicy new_policy = request->referrer_policy();
-
-  std::string referrer_policy_header;
-  request->GetResponseHeaderByName("Referrer-Policy", &referrer_policy_header);
-  std::vector<std::string> policy_tokens =
-      base::SplitString(referrer_policy_header, ",", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-
-  UMA_HISTOGRAM_BOOLEAN("Net.URLRequest.ReferrerPolicyHeaderPresentOnRedirect",
-                        !policy_tokens.empty());
-
-  // Per https://w3c.github.io/webappsec-referrer-policy/#unknown-policy-values,
-  // use the last recognized policy value, and ignore unknown policies.
-  for (const auto& token : policy_tokens) {
-    if (base::CompareCaseInsensitiveASCII(token, "no-referrer") == 0) {
-      new_policy = URLRequest::NO_REFERRER;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token,
-                                          "no-referrer-when-downgrade") == 0) {
-      new_policy =
-          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token, "origin") == 0) {
-      new_policy = URLRequest::ORIGIN;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token, "origin-when-cross-origin") ==
-        0) {
-      new_policy = URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token, "unsafe-url") == 0) {
-      new_policy = URLRequest::NEVER_CLEAR_REFERRER;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token, "same-origin") == 0) {
-      new_policy = URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(token, "strict-origin") == 0) {
-      new_policy =
-          URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
-      continue;
-    }
-
-    if (base::CompareCaseInsensitiveASCII(
-            token, "strict-origin-when-cross-origin") == 0) {
-      new_policy =
-          URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
-      continue;
-    }
-  }
-  return new_policy;
 }
 
 }  // namespace
@@ -334,13 +243,13 @@ void URLRequestJob::ContinueDespiteLastError() {
 
 void URLRequestJob::FollowDeferredRedirect() {
   // OnReceivedRedirect must have been called.
-  DCHECK_NE(-1, deferred_redirect_info_.status_code);
+  DCHECK(deferred_redirect_info_);
 
   // It is possible that FollowRedirect will delete |this|, so it is not safe to
   // pass along a reference to |deferred_redirect_info_|.
-  RedirectInfo redirect_info = deferred_redirect_info_;
-  deferred_redirect_info_ = RedirectInfo();
-  FollowRedirect(redirect_info);
+  base::Optional<RedirectInfo> redirect_info =
+      std::move(deferred_redirect_info_);
+  FollowRedirect(*redirect_info);
 }
 
 bool URLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -494,8 +403,12 @@ void URLRequestJob::NotifyHeadersComplete() {
     // code must return immediately.
     base::WeakPtr<URLRequestJob> weak_this(weak_factory_.GetWeakPtr());
 
-    RedirectInfo redirect_info =
-        ComputeRedirectInfo(new_location, http_status_code);
+    RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
+        request_->method(), request_->url(), request_->site_for_cookies(),
+        request_->first_party_url_policy(), request_->referrer_policy(),
+        request_->referrer(), request_->response_headers(), http_status_code,
+        new_location, request_->ssl_info().token_binding_negotiated,
+        CopyFragmentOnRedirect(new_location));
     bool defer_redirect = false;
     request_->NotifyReceivedRedirect(redirect_info, &defer_redirect);
 
@@ -505,7 +418,7 @@ void URLRequestJob::NotifyHeadersComplete() {
       return;
 
     if (defer_redirect) {
-      deferred_redirect_info_ = redirect_info;
+      deferred_redirect_info_ = std::move(redirect_info);
     } else {
       FollowRedirect(redirect_info);
     }
@@ -813,62 +726,6 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
 }
 
 void URLRequestJob::UpdatePacketReadTimes() {
-}
-
-RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
-                                                int http_status_code) {
-  const GURL& url = request_->url();
-
-  RedirectInfo redirect_info;
-
-  redirect_info.status_code = http_status_code;
-
-  // The request method may change, depending on the status code.
-  redirect_info.new_method =
-      ComputeMethodForRedirect(request_->method(), http_status_code);
-
-  // Move the reference fragment of the old location to the new one if the
-  // new one has none. This duplicates mozilla's behavior.
-  if (url.is_valid() && url.has_ref() && !location.has_ref() &&
-      CopyFragmentOnRedirect(location)) {
-    GURL::Replacements replacements;
-    // Reference the |ref| directly out of the original URL to avoid a
-    // malloc.
-    replacements.SetRef(url.spec().data(),
-                        url.parsed_for_possibly_invalid_spec().ref);
-    redirect_info.new_url = location.ReplaceComponents(replacements);
-  } else {
-    redirect_info.new_url = location;
-  }
-
-  // Update the first-party URL if appropriate.
-  if (request_->first_party_url_policy() ==
-          URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT) {
-    redirect_info.new_site_for_cookies = redirect_info.new_url;
-  } else {
-    redirect_info.new_site_for_cookies = request_->site_for_cookies();
-  }
-
-  redirect_info.new_referrer_policy =
-      ProcessReferrerPolicyHeaderOnRedirect(request_);
-
-  // Alter the referrer if redirecting cross-origin (especially HTTP->HTTPS).
-  redirect_info.new_referrer =
-      ComputeReferrerForPolicy(redirect_info.new_referrer_policy,
-                               GURL(request_->referrer()),
-                               redirect_info.new_url)
-          .spec();
-
-  std::string include_referer;
-  request_->GetResponseHeaderByName("include-referred-token-binding-id",
-                                    &include_referer);
-  include_referer = base::ToLowerASCII(include_referer);
-  if (include_referer == "true" &&
-      request_->ssl_info().token_binding_negotiated) {
-    redirect_info.referred_token_binding_host = url.host();
-  }
-
-  return redirect_info;
 }
 
 void URLRequestJob::MaybeNotifyNetworkBytes() {

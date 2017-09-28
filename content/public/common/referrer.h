@@ -30,6 +30,10 @@ struct CONTENT_EXPORT Referrer {
   static void SetReferrerForRequest(net::URLRequest* request,
                                     const Referrer& referrer);
 
+  static void ComputeReferrerInfo(std::string* out_referrer_string,
+                                  net::URLRequest::ReferrerPolicy* out_policy,
+                                  const Referrer& referrer);
+
   static net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
       const Referrer& referrer);
 

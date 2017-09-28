@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_url_loader_job.h"
 
 #include "base/guid.h"
+#include "base/optional.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -25,49 +26,32 @@ namespace content {
 
 namespace {
 
-// TODO(horo): We should have shared logic with
-// net::URLRequestJob::ComputeRedirectInfo()
-std::unique_ptr<net::RedirectInfo> ComputeRedirectInfo(
+base::Optional<net::RedirectInfo> ComputeRedirectInfo(
     const ResourceRequest& original_request,
-    const ResourceResponseHead& response_head) {
+    const ResourceResponseHead& response_head,
+    bool token_binding_negotiated) {
   std::string new_location;
   if (!response_head.headers->IsRedirect(&new_location))
-    return nullptr;
+    return base::nullopt;
 
-  const int status = response_head.headers->response_code();
-  const std::string& method = original_request.method;
-  const GURL& url = original_request.url;
-  const GURL location = url.Resolve(new_location);
+  std::string referrer_string;
+  net::URLRequest::ReferrerPolicy referrer_policy;
+  Referrer::ComputeReferrerInfo(
+      &referrer_string, &referrer_policy,
+      Referrer(original_request.referrer, original_request.referrer_policy));
 
-  std::unique_ptr<net::RedirectInfo> redirect_info =
-      base::MakeUnique<net::RedirectInfo>();
-  redirect_info->status_code = status;
-  // The request method may change, depending on the status code.
-  // See the comments in net::URLRequestJob::ComputeRedirectInfo() for details.
-  redirect_info->new_method =
-      ((status == 303 && method != "HEAD") ||
-       ((status == 301 || status == 302) && method == "POST"))
-          ? "GET"
-          : method;
-  if (url.is_valid() && url.has_ref() && !location.has_ref()) {
-    GURL::Replacements replacements;
-    replacements.SetRef(url.spec().data(),
-                        url.parsed_for_possibly_invalid_spec().ref);
-    redirect_info->new_url = location.ReplaceComponents(replacements);
-  } else {
-    redirect_info->new_url = location;
-  }
-  // If the request is a MAIN_FRAME request, the first-party URL gets updated
-  // on redirects.
-  redirect_info->new_site_for_cookies =
+  // If the request is a MAIN_FRAME request, the first-party URL gets
+  // updated on redirects.
+  const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
       original_request.resource_type == RESOURCE_TYPE_MAIN_FRAME
-          ? redirect_info->new_url
-          : original_request.site_for_cookies;
-  // TODO(horo): Set new_referrer_policy and new_referrer by checking
-  // Referrer-Policy header.
-  // TODO(horo): Set referred_token_binding_host by checking
-  // include-referred-token-binding-id header.
-  return redirect_info;
+          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  return net::RedirectInfo::ComputeRedirectInfo(
+      original_request.method, original_request.url,
+      original_request.site_for_cookies, first_party_url_policy,
+      referrer_policy, referrer_string, response_head.headers.get(),
+      response_head.headers->response_code(),
+      original_request.url.Resolve(new_location), token_binding_negotiated);
 }
 
 }  // namespace
@@ -351,8 +335,12 @@ void ServiceWorkerURLLoaderJob::StartResponse(
       did_navigation_preload_;
   response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
 
-  if (std::unique_ptr<net::RedirectInfo> redirect_info =
-          ComputeRedirectInfo(resource_request_, response_head_)) {
+  // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
+  // info if the given response is a redirect.
+  base::Optional<net::RedirectInfo> redirect_info =
+      ComputeRedirectInfo(resource_request_, response_head_,
+                          ssl_info_ && ssl_info_->token_binding_negotiated);
+  if (redirect_info) {
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);
     status_ = Status::kCompleted;
