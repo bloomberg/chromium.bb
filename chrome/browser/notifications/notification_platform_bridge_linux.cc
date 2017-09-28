@@ -526,7 +526,8 @@ class NotificationPlatformBridgeLinuxImpl
                 notification->origin_url(),
                 url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
         EscapeUnsafeCharacters(&url_display_text);
-        if (base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
+        if (body_markup &&
+            base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
           body << "<a href=\""
                << net::EscapePath(notification->origin_url().spec()) << "\">"
                << url_display_text << "</a>";
