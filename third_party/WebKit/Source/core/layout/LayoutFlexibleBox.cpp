@@ -1178,17 +1178,23 @@ LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 DISABLE_CFI_PERF
 FlexItem LayoutFlexibleBox::ConstructFlexItem(LayoutBox& child,
                                               ChildLayoutType layout_type) {
-  // If this condition is true, then computeMainAxisExtentForChild will call
-  // child.intrinsicContentLogicalHeight() and
-  // child.scrollbarLogicalHeight(), so if the child has intrinsic
-  // min/max/preferred size, run layout on it now to make sure its logical
-  // height and scroll bars are up to date.
-  if (layout_type != kNeverLayout && ChildHasIntrinsicMainAxisSize(child) &&
-      (child.NeedsLayout() || IsColumnFlow())) {
-    child.ClearOverrideSize();
-    child.ForceChildLayout();
-    CacheChildMainSize(child);
-    layout_type = kLayoutIfNeeded;
+  if (layout_type != kNeverLayout && ChildHasIntrinsicMainAxisSize(child)) {
+    // If this condition is true, then ComputeMainAxisExtentForChild will call
+    // child.IntrinsicContentLogicalHeight() and
+    // child.ScrollbarLogicalHeight(), so if the child has intrinsic
+    // min/max/preferred size, run layout on it now to make sure its logical
+    // height and scroll bars are up to date.
+    // For column flow flex containers, we even need to do this for children
+    // that don't need layout, if there's a chance that the logical width of
+    // the flex container has changed (because that may affect the intrinsic
+    // height of the child).
+    if (child.NeedsLayout() ||
+        (IsColumnFlow() && layout_type == kForceLayout)) {
+      child.ClearOverrideSize();
+      child.ForceChildLayout();
+      CacheChildMainSize(child);
+      layout_type = kLayoutIfNeeded;
+    }
   }
 
   MinMaxSize sizes = ComputeMinAndMaxSizesForChild(child);
