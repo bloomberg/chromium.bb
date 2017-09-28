@@ -19,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -145,6 +146,34 @@ id<GREYMatcher> RecentlyClosedLabelMatcher() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(
                             testPageURL.GetContent())];
+}
+
+// Tests that tapping "Show Full History" open the history.
+- (void)testOpenHistory {
+  OpenRecentTabsPanel();
+
+  // Tap "Show Full History"
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(
+                                       IDS_HISTORY_SHOWFULLHISTORY_LINK))]
+      performAction:grey_tap()];
+
+  // Make sure history is opened.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(
+                                   l10n_util::GetNSString(IDS_HISTORY_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Close History.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(
+                                       IDS_IOS_NAVIGATION_BAR_DONE_BUTTON))]
+      performAction:grey_tap()];
+
+  // Close tab.
+  chrome_test_util::CloseCurrentTab();
 }
 
 @end
