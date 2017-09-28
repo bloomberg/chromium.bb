@@ -1293,6 +1293,14 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         dest_url.SchemeIs(kChromeUIScheme)) {
       return SiteInstanceDescriptor(parent_site_instance);
     }
+
+    // TEMPORARY HACK: Don't create OOPIFs on the NTP.  Remove this when the NTP
+    // supports OOPIFs or is otherwise omitted from site isolation policy.
+    // See https://crbug.com/566091.
+    if (GetContentClient()->browser()->ShouldStayInParentProcessForNTP(
+            dest_url, parent_site_instance)) {
+      return SiteInstanceDescriptor(parent_site_instance);
+    }
   }
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it

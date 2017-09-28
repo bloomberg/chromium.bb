@@ -117,6 +117,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
       const GURL& url,
       content::SiteInstance* parent_site_instance) override;
+  bool ShouldStayInParentProcessForNTP(
+      const GURL& url,
+      content::SiteInstance* parent_site_instance) override;
+
   bool IsSuitableHost(content::RenderProcessHost* process_host,
                       const GURL& site_url) override;
   bool MayReuseHost(content::RenderProcessHost* process_host) override;

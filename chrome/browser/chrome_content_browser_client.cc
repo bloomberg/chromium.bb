@@ -1282,6 +1282,13 @@ bool ChromeContentBrowserClient::
 #endif
 }
 
+bool ChromeContentBrowserClient::ShouldStayInParentProcessForNTP(
+    const GURL& url,
+    SiteInstance* parent_site_instance) {
+  return url.SchemeIs(chrome::kChromeSearchScheme) &&
+         IsNTPSiteInstance(parent_site_instance);
+}
+
 bool ChromeContentBrowserClient::IsSuitableHost(
     content::RenderProcessHost* process_host,
     const GURL& site_url) {
