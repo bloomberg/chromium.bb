@@ -231,18 +231,6 @@
             ]
         }
     ],
-    "AsyncDNS": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "AsyncDNSA"
-                }
-            ]
-        }
-    ],
     "AsyncDns": [
         {
             "platforms": [
@@ -250,13 +238,10 @@
             ],
             "experiments": [
                 {
-                    "name": "AsyncDnsA"
-                },
-                {
-                    "name": "SystemDnsA"
-                },
-                {
-                    "name": "AsyncDnsNoFallbackA"
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AsyncDns"
+                    ]
                 }
             ]
         }
