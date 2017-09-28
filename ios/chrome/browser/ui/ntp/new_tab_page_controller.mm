@@ -220,7 +220,8 @@ enum {
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
                              OmniboxFocuser,
-                             UrlLoader>)dispatcher {
+                             UrlLoader>)dispatcher
+           safeAreaInset:(UIEdgeInsets)safeAreaInset {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
@@ -240,11 +241,12 @@ enum {
         [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 412)];
     [scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                      UIViewAutoresizingFlexibleHeight)];
-    NewTabPageBar* tabBar =
-        [[NewTabPageBar alloc] initWithFrame:CGRectMake(0, 412, 320, 48)];
-    _view = [[NewTabPageView alloc] initWithFrame:CGRectMake(0, 0, 320, 460)
+
+    NewTabPageBar* tabBar = [[NewTabPageBar alloc] init];
+    _view = [[NewTabPageView alloc] initWithFrame:CGRectZero
                                     andScrollView:scrollView
                                         andTabBar:tabBar];
+    _view.safeAreaInsetForToolbar = safeAreaInset;
     [tabBar setDelegate:self];
 
     bool isIncognito = _browserState->IsOffTheRecord();
@@ -476,7 +478,7 @@ enum {
 
 // Update selectedIndex and scroll position as the scroll view moves.
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (!_scrollInitialized)
+  if (!_scrollInitialized || PresentNTPPanelModally())
     return;
 
   // Position is used to track the exact X position of the scroll view, whereas
