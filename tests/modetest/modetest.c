@@ -251,6 +251,89 @@ static void dump_blob(struct device *dev, uint32_t blob_id)
 	drmModeFreePropertyBlob(blob);
 }
 
+static const char *modifier_to_string(uint64_t modifier)
+{
+	switch (modifier) {
+	case DRM_FORMAT_MOD_INVALID:
+		return "INVALID";
+	case DRM_FORMAT_MOD_LINEAR:
+		return "LINEAR";
+	case I915_FORMAT_MOD_X_TILED:
+		return "X_TILED";
+	case I915_FORMAT_MOD_Y_TILED:
+		return "Y_TILED";
+	case I915_FORMAT_MOD_Yf_TILED:
+		return "Yf_TILED";
+	case I915_FORMAT_MOD_Y_TILED_CCS:
+		return "Y_TILED_CCS";
+	case I915_FORMAT_MOD_Yf_TILED_CCS:
+		return "Yf_TILED_CCS";
+	case DRM_FORMAT_MOD_SAMSUNG_64_32_TILE:
+		return "SAMSUNG_64_32_TILE";
+	case DRM_FORMAT_MOD_VIVANTE_TILED:
+		return "VIVANTE_TILED";
+	case DRM_FORMAT_MOD_VIVANTE_SUPER_TILED:
+		return "VIVANTE_SUPER_TILED";
+	case DRM_FORMAT_MOD_VIVANTE_SPLIT_TILED:
+		return "VIVANTE_SPLIT_TILED";
+	case DRM_FORMAT_MOD_VIVANTE_SPLIT_SUPER_TILED:
+		return "VIVANTE_SPLIT_SUPER_TILED";
+	case NV_FORMAT_MOD_TEGRA_TILED:
+		return "MOD_TEGRA_TILED";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(0):
+		return "MOD_TEGRA_16BX2_BLOCK(0)";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(1):
+		return "MOD_TEGRA_16BX2_BLOCK(1)";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(2):
+		return "MOD_TEGRA_16BX2_BLOCK(2)";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(3):
+		return "MOD_TEGRA_16BX2_BLOCK(3)";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(4):
+		return "MOD_TEGRA_16BX2_BLOCK(4)";
+	case NV_FORMAT_MOD_TEGRA_16BX2_BLOCK(5):
+		return "MOD_TEGRA_16BX2_BLOCK(5)";
+	case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
+		return "MOD_BROADCOM_VC4_T_TILED";
+	default:
+		return "(UNKNOWN MODIFIER)";
+	}
+}
+
+static void dump_in_formats(struct device *dev, uint32_t blob_id)
+{
+	uint32_t i, j;
+	drmModePropertyBlobPtr blob;
+	struct drm_format_modifier_blob *header;
+	uint32_t *formats;
+	struct drm_format_modifier *modifiers;
+
+	printf("\t\tin_formats blob decoded:\n");
+	blob = drmModeGetPropertyBlob(dev->fd, blob_id);
+	if (!blob) {
+		printf("\n");
+		return;
+	}
+
+	header = blob->data;
+	formats = (uint32_t *) ((char *) header + header->formats_offset);
+	modifiers = (struct drm_format_modifier *)
+		((char *) header + header->modifiers_offset);
+
+	for (i = 0; i < header->count_formats; i++) {
+		printf("\t\t\t");
+		dump_fourcc(formats[i]);
+		printf(": ");
+		for (j = 0; j < header->count_modifiers; j++) {
+			uint64_t mask = 1ULL << i;
+			if (modifiers[j].formats & mask)
+				printf(" %s", modifier_to_string(modifiers[j].modifier));
+		}
+		printf("\n");
+	}
+
+	drmModeFreePropertyBlob(blob);
+}
+
 static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 		      uint32_t prop_id, uint64_t value)
 {
@@ -328,6 +411,9 @@ static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 		printf(" %"PRId64"\n", value);
 	else
 		printf(" %"PRIu64"\n", value);
+
+	if (strcmp(prop->name, "IN_FORMATS") == 0)
+		dump_in_formats(dev, value);
 }
 
 static void dump_connectors(struct device *dev)
