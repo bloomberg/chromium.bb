@@ -111,6 +111,15 @@ gfx::Image DeepCopyImage(const gfx::Image& image) {
   return gfx::Image(*image_skia);
 }
 
+void EscapeUnsafeCharacters(std::string* message) {
+  // Canonical's notification development guidelines recommends only
+  // escaping the '&', '<', and '>' characters:
+  // https://wiki.ubuntu.com/NotificationDevelopmentGuidelines
+  base::ReplaceChars(*message, "&", "&amp;", message);
+  base::ReplaceChars(*message, "<", "&lt;", message);
+  base::ReplaceChars(*message, ">", "&gt;", message);
+}
+
 int NotificationPriorityToFdoUrgency(int priority) {
   enum FdoUrgency {
     LOW = 0,
@@ -512,10 +521,11 @@ class NotificationPlatformBridgeLinuxImpl
           base::ContainsKey(capabilities_, kCapabilityBodyMarkup);
 
       if (notification->UseOriginAsContextMessage()) {
-        std::string url_display_text = net::EscapeForHTML(
+        std::string url_display_text =
             base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
                 notification->origin_url(),
-                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)));
+                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+        EscapeUnsafeCharacters(&url_display_text);
         if (base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
           body << "<a href=\""
                << net::EscapePath(notification->origin_url().spec()) << "\">"
@@ -527,13 +537,13 @@ class NotificationPlatformBridgeLinuxImpl
         std::string context =
             base::UTF16ToUTF8(notification->context_message());
         if (body_markup)
-          context = net::EscapeForHTML(context);
+          EscapeUnsafeCharacters(&context);
         body << context;
       }
 
       std::string message = base::UTF16ToUTF8(notification->message());
       if (body_markup)
-        message = net::EscapeForHTML(message);
+        EscapeUnsafeCharacters(&message);
       if (body.tellp())
         body << "\n";
       body << message;
