@@ -606,8 +606,6 @@ cc_test("cc_unittests") {
     "paint/display_item_list_unittest.cc",
     "paint/paint_image_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",
-    "paint/paint_shader_unittest.cc",
-    "paint/scoped_image_flags_unittest.cc",
     "paint/solid_color_analyzer_unittest.cc",
     "raster/playback_image_provider_unittest.cc",
     "raster/raster_buffer_provider_unittest.cc",
