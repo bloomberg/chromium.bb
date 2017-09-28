@@ -91,7 +91,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
     descendant.node.UseOldOutOfFlowPositioning();
 
   NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
 
   // This object has already been positioned in legacy layout by our containing
   // block. Copy the position and place the fragment.
@@ -137,7 +137,7 @@ void LayoutNGBlockFlow::ResetNGInlineNodeData() {
 // cache evolves.
 const NGPhysicalFragment* LayoutNGBlockFlow::CurrentFragment() const {
   if (cached_result_)
-    return cached_result_->PhysicalFragment().Get();
+    return cached_result_->PhysicalFragment().get();
   return nullptr;
 }
 

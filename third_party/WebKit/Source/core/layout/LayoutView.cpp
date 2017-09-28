@@ -848,7 +848,7 @@ void LayoutView::SetIsInWindow(bool is_in_window) {
 IntervalArena* LayoutView::GetIntervalArena() {
   if (!interval_arena_)
     interval_arena_ = IntervalArena::Create();
-  return interval_arena_.Get();
+  return interval_arena_.get();
 }
 
 bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {

@@ -125,7 +125,7 @@ void LayoutTextFragment::TransformText() {
 
 UChar LayoutTextFragment::PreviousCharacter() const {
   if (Start()) {
-    StringImpl* original = CompleteText().Get();
+    StringImpl* original = CompleteText().get();
     if (original && Start() <= original->length())
       return (*original)[Start() - 1];
   }

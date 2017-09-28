@@ -48,26 +48,26 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   RefPtr<NGLayoutResult> layout_result =
       inline_node.Layout(*constraint_space, nullptr);
   auto* wrapper =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
 
   // Test that the anonymous wrapper has 2 line boxes, and both have unfinished
   // break tokens.
   EXPECT_EQ(2u, wrapper->Children().size());
-  auto* line1 = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
+  auto* line1 = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
-  auto* line2 = ToNGPhysicalLineBoxFragment(wrapper->Children()[1].Get());
+  auto* line2 = ToNGPhysicalLineBoxFragment(wrapper->Children()[1].get());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Perform 2nd layout with the break token from the 2nd line.
   RefPtr<NGLayoutResult> layout_result2 =
       inline_node.Layout(*constraint_space, line2->BreakToken());
   auto* wrapper2 =
-      ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().get());
 
   // Test that the anonymous wrapper has 1 line boxes, and has a finished break
   // token.
   EXPECT_EQ(1u, wrapper2->Children().size());
-  auto* line3 = ToNGPhysicalLineBoxFragment(wrapper2->Children()[0].Get());
+  auto* line3 = ToNGPhysicalLineBoxFragment(wrapper2->Children()[0].get());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 
   // Test that the wrapper has the break token without children.
@@ -100,16 +100,16 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
   RefPtr<NGLayoutResult> layout_result = block_node.Layout(*space);
 
   auto* block_box =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
   EXPECT_TRUE(layout_result->BfcOffset().has_value());
   EXPECT_EQ(0, layout_result->BfcOffset().value().line_offset);
   EXPECT_EQ(0, layout_result->BfcOffset().value().block_offset);
 
-  auto* wrapper = ToNGPhysicalBoxFragment(block_box->Children()[0].Get());
+  auto* wrapper = ToNGPhysicalBoxFragment(block_box->Children()[0].get());
   EXPECT_EQ(5, wrapper->Offset().left);
   EXPECT_EQ(10, wrapper->Offset().top);
 
-  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
+  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
   EXPECT_EQ(0, line->Offset().left);
   EXPECT_EQ(0, line->Offset().top);
 }
@@ -136,11 +136,11 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   RefPtr<NGLayoutResult> layout_result = inline_node.Layout(*space);
   auto* wrapper =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
+      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
   EXPECT_EQ(1u, wrapper->Children().size());
-  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].Get());
+  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
   EXPECT_EQ(LayoutUnit(96), line->Size().height);
-  auto* img = line->Children()[0].Get();
+  auto* img = line->Children()[0].get();
   EXPECT_EQ(LayoutUnit(0), img->Offset().top);
 }
 
@@ -181,16 +181,16 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   std::tie(html_fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
-      ToNGPhysicalBoxFragment(html_fragment->Children()[0].Get());
+      ToNGPhysicalBoxFragment(html_fragment->Children()[0].get());
   auto* container_fragment =
-      ToNGPhysicalBoxFragment(body_fragment->Children()[0].Get());
+      ToNGPhysicalBoxFragment(body_fragment->Children()[0].get());
   auto* span_box_fragments_wrapper =
-      ToNGPhysicalBoxFragment(container_fragment->Children()[3].Get());
+      ToNGPhysicalBoxFragment(container_fragment->Children()[3].get());
   auto* line_box_fragments_wrapper =
-      ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].Get());
+      ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].get());
   Vector<NGPhysicalLineBoxFragment*> line_boxes;
   for (const auto& child : line_box_fragments_wrapper->Children()) {
-    line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.Get()));
+    line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.get()));
   }
 
   LayoutText* layout_text =

@@ -132,7 +132,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   if (AbsoluteNeedsChildBlockSize(descendant.Style())) {
     layout_result = GenerateFragment(descendant, block_estimate, node_position);
 
-    DCHECK(layout_result->PhysicalFragment().Get());
+    DCHECK(layout_result->PhysicalFragment().get());
     NGFragment fragment(descendant_writing_mode,
                         *layout_result->PhysicalFragment());
 

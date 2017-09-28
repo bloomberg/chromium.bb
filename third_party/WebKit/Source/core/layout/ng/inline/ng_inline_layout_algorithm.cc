@@ -182,7 +182,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
           box->ActivateTextMetrics();
         // Take all used fonts into account if 'line-height: normal'.
         if (box->include_used_fonts && item.Type() == NGInlineItem::kText) {
-          box->AccumulateUsedFonts(item_result.shape_result.Get(),
+          box->AccumulateUsedFonts(item_result.shape_result.get(),
                                    baseline_type_);
         }
         text_builder.SetEndEffect(item_result.text_end_effect);
@@ -501,14 +501,14 @@ void NGInlineLayoutAlgorithm::PropagateBaselinesFromChildren() {
       case NGBaselineAlgorithmType::kAtomicInline:
       case NGBaselineAlgorithmType::kAtomicInlineForFirstLine:
         for (unsigned i = container_builder_.Children().size(); i--;) {
-          if (AddBaseline(request, container_builder_.Children()[i].Get(),
+          if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))
             break;
         }
         break;
       case NGBaselineAlgorithmType::kFirstLine:
         for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
-          if (AddBaseline(request, container_builder_.Children()[i].Get(),
+          if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))
             break;
         }

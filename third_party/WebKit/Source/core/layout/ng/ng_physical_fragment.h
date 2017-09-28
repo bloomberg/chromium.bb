@@ -75,7 +75,7 @@ class CORE_EXPORT NGPhysicalFragment
     return offset_;
   }
 
-  NGBreakToken* BreakToken() const { return break_token_.Get(); }
+  NGBreakToken* BreakToken() const { return break_token_.get(); }
   const ComputedStyle& Style() const;
   Node* GetNode() const;
 

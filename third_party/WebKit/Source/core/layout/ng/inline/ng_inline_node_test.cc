@@ -106,12 +106,12 @@ class NGInlineNodeTest : public RenderingTest {
         NGInlineLayoutAlgorithm(node, *constraint_space).Layout();
 
     const NGPhysicalBoxFragment* container =
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().Get());
+        ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
     EXPECT_EQ(container->Children().size(), 1u);
     const NGPhysicalLineBoxFragment* line =
-        ToNGPhysicalLineBoxFragment(container->Children()[0].Get());
+        ToNGPhysicalLineBoxFragment(container->Children()[0].get());
     for (const auto& child : line->Children()) {
-      fragments_out->push_back(ToNGPhysicalTextFragment(child.Get()));
+      fragments_out->push_back(ToNGPhysicalTextFragment(child.get()));
     }
   }
 
@@ -288,7 +288,7 @@ static NGInlineNodeForTest CreateBidiIsolateNode(NGInlineNodeForTest node,
 
 TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, style_.Get(), layout_object_);
+  node = CreateBidiIsolateNode(node, style_.get(), layout_object_);
   Vector<NGInlineItem>& items = node.Items();
   ASSERT_EQ(9u, items.size());
   TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::kLtr);
@@ -314,7 +314,7 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   style->SetLineHeight(Length(1, kFixed));
   style->GetFont().Update(nullptr);
   NGInlineNodeForTest node = CreateInlineNode();
-  node = CreateBidiIsolateNode(node, style.Get(), layout_object_);
+  node = CreateBidiIsolateNode(node, style.get(), layout_object_);
   node.ShapeText();
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);

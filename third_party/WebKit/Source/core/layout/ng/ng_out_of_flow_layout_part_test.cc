@@ -113,7 +113,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode1) {
       node.Layout(*space)->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
-  fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
+  fragment = ToNGPhysicalBoxFragment(fragment.get())->Children()[0];
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(0), LayoutUnit(30)), fragment->Size());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(10)),
             fragment->Offset());
@@ -152,7 +152,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode2) {
       node.Layout(*space)->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
-  fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
+  fragment = ToNGPhysicalBoxFragment(fragment.get())->Children()[0];
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(40), LayoutUnit(30)), fragment->Size());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(10)),
             fragment->Offset());

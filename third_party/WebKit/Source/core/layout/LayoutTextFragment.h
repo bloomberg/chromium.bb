@@ -59,7 +59,7 @@ class LayoutTextFragment final : public LayoutText {
   unsigned TextStartOffset() const override { return Start(); }
 
   void SetContentString(StringImpl*);
-  StringImpl* ContentString() const { return content_string_.Get(); }
+  StringImpl* ContentString() const { return content_string_.get(); }
   // The complete text is all of the text in the associated DOM text node.
   RefPtr<StringImpl> CompleteText() const;
   // The fragment text is the text which will be used by this

@@ -1328,8 +1328,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // TODO(jchaffraix): We will probably want to rename it to match CSS 3.
   virtual LayoutUnit MaxPreferredLogicalWidth() const { return LayoutUnit(); }
 
-  const ComputedStyle* Style() const { return style_.Get(); }
-  ComputedStyle* MutableStyle() const { return style_.Get(); }
+  const ComputedStyle* Style() const { return style_.get(); }
+  ComputedStyle* MutableStyle() const { return style_.get(); }
 
   // style_ can only be nullptr before the first style is set, thus most
   // callers will never see a nullptr style and should use StyleRef().

@@ -205,7 +205,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   NGPhysicalSize physical_size = size_.ConvertToPhysical(WritingMode());
 
   for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragment* child = children_[i].Get();
+    NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         WritingMode(), Direction(), physical_size, child->Size()));
   }

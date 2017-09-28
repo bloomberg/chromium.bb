@@ -26,7 +26,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     RefPtr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
-    return ToNGPhysicalBoxFragment(result->PhysicalFragment().Get());
+    return ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
   }
 
   RefPtr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(Element* element) {
@@ -48,7 +48,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
 
   String DumpFragmentTree(Element* element) {
     auto fragment = RunBlockLayoutAlgorithm(element);
-    return DumpFragmentTree(fragment.Get());
+    return DumpFragmentTree(fragment.get());
   }
 
   RefPtr<ComputedStyle> style_;
@@ -76,7 +76,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(*space, container);
-  FragmentChildIterator iterator(parent_fragment.Get());
+  FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
@@ -117,7 +117,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(*space, container);
-  FragmentChildIterator iterator(parent_fragment.Get());
+  FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
   ASSERT_TRUE(fragment);
@@ -166,7 +166,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   RefPtr<const NGPhysicalBoxFragment> parent_fragment =
       RunBlockLayoutAlgorithm(*space, container);
 
-  FragmentChildIterator iterator(parent_fragment.Get());
+  FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(310), LayoutUnit(100)), fragment->Size());

@@ -392,7 +392,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
     }
 
     if (result.is_hyphenated) {
-      AppendHyphen(*item.Style(), shape_result.Get());
+      AppendHyphen(*item.Style(), shape_result.get());
       item_result->inline_size = shape_result->SnappedWidth();
       // TODO(kojii): Implement when adding a hyphen caused overflow.
       item_result->text_end_effect = NGTextEndEffect::kHyphen;
@@ -565,7 +565,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
       /* break_token */ nullptr);
 
   LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
-      constraint_space_, unpositioned_float.Get());
+      constraint_space_, unpositioned_float.get());
 
   // We can only determine if our float will fit if we have an available_width
   // I.e. we may not have come across any text yet, in order to be able to
@@ -589,7 +589,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
 
     NGPositionedFloat positioned_float = PositionFloat(
         origin_block_offset, container_bfc_offset.block_offset,
-        unpositioned_float.Get(), constraint_space_,
+        unpositioned_float.get(), constraint_space_,
         container_builder_->Size().inline_size, line_.exclusion_space.get());
     container_builder_->AddChild(positioned_float.layout_result,
                                  positioned_float.logical_offset);
