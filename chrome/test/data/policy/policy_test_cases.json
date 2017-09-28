@@ -1657,6 +1657,14 @@
     ]
   },
 
+  "RunAllFlashInAllowMode": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "RunAllFlashInAllowMode": true },
+    "pref_mappings": [
+      { "pref": "plugins.run_all_flash_in_allow_mode" }
+    ]
+  },
+
   "BookmarkBarEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

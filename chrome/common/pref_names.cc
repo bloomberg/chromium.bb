@@ -991,6 +991,11 @@ const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 // be always allowed or not.
 const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 
+// Boolean that indicates whether all Flash content (including cross-origin and
+// small content) is allowed to run when it is explicitly allowed via content
+// settings.
+const char kRunAllFlashInAllowMode[] = "plugins.run_all_flash_in_allow_mode";
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Dictionary holding plugins metadata.
 const char kPluginsMetadata[] = "plugins.metadata";

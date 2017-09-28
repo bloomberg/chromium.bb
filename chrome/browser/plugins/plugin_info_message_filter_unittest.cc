@@ -32,6 +32,7 @@
 #include "url/origin.h"
 
 using content::PluginService;
+using testing::Eq;
 
 namespace {
 
@@ -271,6 +272,49 @@ TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
                                 security_status, content::kFlashPluginName,
                                 &status);
   EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading, status);
+}
+
+TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
+  filter_.set_plugin_enabled(fake_flash_path_, true);
+
+  // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
+  // origins are blocked.
+  url::Origin main_frame_origin(GURL("http://example.com"));
+
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  content::WebPluginInfo plugin;
+  std::string actual_mime_type;
+  ASSERT_TRUE(context()->FindEnabledPlugin(
+      0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
+      &plugin, &actual_mime_type, nullptr));
+  ASSERT_THAT(status, Eq(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed));
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetContentSettingDefaultScope(main_frame_origin.GetURL(), GURL(),
+                                      CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kRunAllFlashInAllowMode));
+
+  PluginMetadata::SecurityStatus security_status =
+      PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
+  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
+                                security_status, content::kFlashPluginName,
+                                &status);
+  EXPECT_THAT(
+      status,
+      Eq(ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent));
+
+  // Reset the status to allowed.
+  status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+
+  profile()->GetPrefs()->SetBoolean(prefs::kRunAllFlashInAllowMode, true);
+
+  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
+                                security_status, content::kFlashPluginName,
+                                &status);
+  EXPECT_THAT(status, Eq(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed));
 }
 
 TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {

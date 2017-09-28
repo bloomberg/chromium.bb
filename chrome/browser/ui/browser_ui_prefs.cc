@@ -98,8 +98,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.
-  registry->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
-  registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   registry->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, true);
   registry->RegisterBooleanPref(prefs::kHideWebStoreIcon, false);
 #if defined(OS_MACOSX)
