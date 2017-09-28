@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -20,10 +19,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -45,6 +48,9 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/point.h"
+
+using testing::_;
+using testing::Return;
 
 namespace {
 
@@ -286,6 +292,12 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableGpu);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
  protected:
   void LoadHTML(const std::string& file) {
     if (PixelTestsEnabled()) {
@@ -401,8 +413,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 #endif
   }
 
- private:
-  base::test::ScopedFeatureList feature_list;
+ protected:
+  policy::MockConfigurationPolicyProvider provider_;
 };
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
@@ -581,4 +593,25 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, RunAllFlashInAllowMode) {
+  LoadHTML("/run_all_flash.html");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "small");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "cross_origin");
+
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kRunAllFlashInAllowMode,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             nullptr);
+  provider_.UpdateChromePolicy(policy);
+  content::RunAllPendingInMessageLoop();
+
+  ASSERT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kRunAllFlashInAllowMode));
+
+  LoadHTML("/run_all_flash.html");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "small");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "cross_origin");
 }

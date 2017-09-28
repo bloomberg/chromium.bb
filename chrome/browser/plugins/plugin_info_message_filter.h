@@ -34,6 +34,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace component_updater {
+struct ComponentInfo;
+}
+
 namespace content {
 class ResourceContext;
 struct WebPluginInfo;
@@ -43,8 +47,8 @@ namespace extensions {
 class ExtensionRegistry;
 }
 
-namespace component_updater {
-struct ComponentInfo;
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace url {
@@ -86,6 +90,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
     bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
 
     void ShutdownOnUIThread();
+
    private:
     int render_process_id_;
     content::ResourceContext* resource_context_;
@@ -97,6 +102,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
     BooleanPrefMember allow_outdated_plugins_;
     BooleanPrefMember always_authorize_plugins_;
+    BooleanPrefMember run_all_flash_in_allow_mode_;
   };
 
   PluginInfoMessageFilter(int render_process_id, Profile* profile);
@@ -104,6 +110,8 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   // content::BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
+
+  static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<

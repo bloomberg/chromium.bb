@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 390
+#   For your editing convenience: highest ID currently used: 391
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -4314,6 +4314,25 @@
       'desc': '''If you enable this setting, plugins that are not outdated always run.
 
       If this setting is disabled or not set, users will be asked for permission to run plugins that require authorization. These are plugins that can compromise security.''',
+    },
+    {
+      'name': 'RunAllFlashInAllowMode',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 391,
+      'caption': '''Extend Flash content setting to all content''',
+      'tags': ['system-security'],
+      'desc': '''If you enable this setting, all Flash content embedded on websites that have been set to allow Flash in content settings -- either by the user or by enterprise policy -- will be run, including content from other origins or small content.
+
+      To control which websites are allowed to run Flash, see the "DefaultPluginsSetting", "PluginsAllowedForUrls", and "PluginsBlockedForUrls" policies.
+
+      If this setting is disabled or not set, Flash content from other origins or small content might be blocked.''',
     },
     {
       'name': 'BookmarkBarEnabled',

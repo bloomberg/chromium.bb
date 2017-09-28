@@ -39,6 +39,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/nacl/common/features.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -169,6 +170,11 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
   always_authorize_plugins_.MoveToThread(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
+  run_all_flash_in_allow_mode_.Init(prefs::kRunAllFlashInAllowMode,
+                                    profile->GetPrefs());
+  run_all_flash_in_allow_mode_.MoveToThread(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO));
 }
 
 PluginInfoMessageFilter::Context::~Context() {
@@ -178,6 +184,7 @@ void PluginInfoMessageFilter::Context::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   always_authorize_plugins_.Destroy();
   allow_outdated_plugins_.Destroy();
+  run_all_flash_in_allow_mode_.Destroy();
 }
 
 PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
@@ -215,6 +222,14 @@ bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void PluginInfoMessageFilter::OnDestruct() const {
   // Destroy on the UI thread because we contain a |PrefMember|.
   content::BrowserThread::DeleteOnUIThread::Destruct(this);
+}
+
+// static
+void PluginInfoMessageFilter::RegisterUserPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
+  registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
+  registry->RegisterBooleanPref(prefs::kRunAllFlashInAllowMode, false);
 }
 
 PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
@@ -388,7 +403,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
       (plugin_setting == CONTENT_SETTING_ALLOW &&
-       PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_))) {
+       PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
+       !run_all_flash_in_allow_mode_.GetValue())) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
     // For managed users with the ASK policy, we allow manually running plugins
