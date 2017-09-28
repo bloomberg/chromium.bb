@@ -23,9 +23,6 @@ namespace chromeos {
 class FakeCryptohomeClientTest : public ::testing::Test {
  public:
   FakeCryptohomeClientTest() : weak_ptr_factory_(this) {
-    async_method_callback_ =
-        base::Bind(&FakeCryptohomeClientTest::MockHandleAsyncMethodCallback,
-                   weak_ptr_factory_.GetWeakPtr());
     fake_cryptohome_client_.SetAsyncCallStatusHandlers(
         base::Bind(
             &FakeCryptohomeClientTest::MockHandleAsyncMethodResultResponse,
@@ -34,7 +31,6 @@ class FakeCryptohomeClientTest : public ::testing::Test {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  MOCK_METHOD1(MockHandleAsyncMethodCallback, void(int));
   MOCK_METHOD3(MockHandleAsyncMethodResultResponse, void(int, bool, int));
   MOCK_METHOD3(MockHandleAsyncMethodDataResponse,
                void(int, bool, const std::string&));
@@ -43,7 +39,6 @@ class FakeCryptohomeClientTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   FakeCryptohomeClient fake_cryptohome_client_;
-  CryptohomeClient::AsyncMethodCallback async_method_callback_;
 
   base::WeakPtrFactory<FakeCryptohomeClientTest> weak_ptr_factory_;
 
@@ -54,18 +49,20 @@ class FakeCryptohomeClientTest : public ::testing::Test {
 TEST_F(FakeCryptohomeClientTest, SignSimpleChallenge) {
   const std::string challenge{"challenge"};
 
-  EXPECT_CALL(*this, MockHandleAsyncMethodCallback(_));
-
   std::string return_data;
   EXPECT_CALL(*this, MockHandleAsyncMethodDataResponse(_, true, _))
       .WillOnce(SaveArg<2>(&return_data));
 
   cryptohome::Identification cryptohome_id;
+  bool called = false;
   fake_cryptohome_client_.TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType::KEY_DEVICE, cryptohome_id, "key_name",
-      challenge, async_method_callback_);
-
+      challenge,
+      base::BindOnce(
+          [](bool* called, base::Optional<int> async_id) { *called = true; },
+          &called));
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
 
   chromeos::attestation::SignedData signed_data;
   ASSERT_TRUE(signed_data.ParseFromString(return_data));

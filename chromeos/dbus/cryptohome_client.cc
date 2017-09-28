@@ -29,9 +29,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-const int CryptohomeClient::kNotReadyAsyncId = -1;
-
 namespace {
 
 // This suffix is appended to cryptohome_id to get hash in stub implementation:
@@ -101,7 +98,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,
                      const std::string& key,
-                     const AsyncMethodCallback& callback) override {
+                     AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncCheckKey);
     dbus::MessageWriter writer(&method_call);
@@ -110,14 +107,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
                        const std::string& from_key,
                        const std::string& to_key,
-                       const AsyncMethodCallback& callback) override {
+                       AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMigrateKey);
     dbus::MessageWriter writer(&method_call);
@@ -127,12 +124,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void AsyncRemove(const cryptohome::Identification& cryptohome_id,
-                   const AsyncMethodCallback& callback) override {
+                   AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
@@ -140,7 +137,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -227,7 +224,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   void AsyncMount(const cryptohome::Identification& cryptohome_id,
                   const std::string& key,
                   int flags,
-                  const AsyncMethodCallback& callback) override {
+                  AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMount);
     dbus::MessageWriter writer(&method_call);
@@ -240,14 +237,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void AsyncAddKey(const cryptohome::Identification& cryptohome_id,
                    const std::string& key,
                    const std::string& new_key,
-                   const AsyncMethodCallback& callback) override {
+                   AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncAddKey);
     dbus::MessageWriter writer(&method_call);
@@ -257,23 +254,23 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
-  void AsyncMountGuest(const AsyncMethodCallback& callback) override {
+  void AsyncMountGuest(AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMountGuest);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void AsyncMountPublic(const cryptohome::Identification& public_mount_id,
                         int flags,
-                        const AsyncMethodCallback& callback) override {
+                        AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMountPublic);
     dbus::MessageWriter writer(&method_call);
@@ -283,7 +280,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -490,7 +487,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // CryptohomeClient override.
   void AsyncTpmAttestationCreateEnrollRequest(
       attestation::PrivacyCAType pca_type,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
@@ -499,13 +496,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
   void AsyncTpmAttestationEnroll(attestation::PrivacyCAType pca_type,
                                  const std::string& pca_response,
-                                 const AsyncMethodCallback& callback) override {
+                                 AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationEnroll);
@@ -517,7 +514,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -526,7 +523,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationCertificateProfile certificate_profile,
       const cryptohome::Identification& cryptohome_id,
       const std::string& request_origin,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
@@ -538,7 +535,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -547,7 +544,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequest);
@@ -562,7 +559,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -627,7 +624,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationRegisterKey);
@@ -639,7 +636,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -651,7 +648,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationSignEnterpriseChallenge);
@@ -671,7 +668,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -680,7 +677,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& challenge,
-      const AsyncMethodCallback& callback) override {
+      AsyncMethodCallback callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationSignSimpleChallenge);
@@ -694,7 +691,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -1006,19 +1003,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
  private:
   // Handles the result of AsyncXXX methods.
-  void OnAsyncMethodCall(const AsyncMethodCallback& callback,
+  void OnAsyncMethodCall(AsyncMethodCallback callback,
                          dbus::Response* response) {
     if (!response) {
-      callback.Run(kNotReadyAsyncId);
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
     int async_id = 0;
     if (!reader.PopInt32(&async_id)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(async_id);
+    std::move(callback).Run(async_id);
   }
 
   // Handles the result of GetSystemSalt().
