@@ -167,9 +167,6 @@ unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
   base::Time oldest_server_failure(base::Time::Now());
   unsigned oldest_server_failure_index = 0;
 
-  UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ServerIsGood",
-                        server_stats_[server_index]->last_failure.is_null());
-
   do {
     base::Time cur_server_failure = server_stats_[index]->last_failure;
     // If number of failures on this server doesn't exceed number of allowed

@@ -317,7 +317,6 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
     }
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ConfigParsePosix",
                               result, CONFIG_PARSE_POSIX_MAX);
-    UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ConfigParseResult", success_);
     UMA_HISTOGRAM_TIMES("AsyncDNS.ConfigParseDuration",
                         base::TimeTicks::Now() - start_time);
   }
