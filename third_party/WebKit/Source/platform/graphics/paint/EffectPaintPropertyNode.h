@@ -83,9 +83,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
-    return local_transform_space_.Get();
+    return local_transform_space_.get();
   }
-  const ClipPaintPropertyNode* OutputClip() const { return output_clip_.Get(); }
+  const ClipPaintPropertyNode* OutputClip() const { return output_clip_.get(); }
 
   SkBlendMode BlendMode() const { return blend_mode_; }
   float Opacity() const { return opacity_; }

@@ -28,22 +28,18 @@ class PLATFORM_EXPORT PropertyTreeState {
   bool HasDirectCompositingReasons() const;
 
   const TransformPaintPropertyNode* Transform() const {
-    return transform_.Get();
+    return transform_.get();
   }
   void SetTransform(RefPtr<const TransformPaintPropertyNode> node) {
     transform_ = std::move(node);
   }
 
-  const ClipPaintPropertyNode* Clip() const {
-    return clip_.Get();
-  }
+  const ClipPaintPropertyNode* Clip() const { return clip_.get(); }
   void SetClip(RefPtr<const ClipPaintPropertyNode> node) {
     clip_ = std::move(node);
   }
 
-  const EffectPaintPropertyNode* Effect() const {
-    return effect_.Get();
-  }
+  const EffectPaintPropertyNode* Effect() const { return effect_.get(); }
   void SetEffect(RefPtr<const EffectPaintPropertyNode> node) {
     effect_ = std::move(node);
   }

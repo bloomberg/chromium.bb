@@ -64,7 +64,7 @@ sk_sp<SkImageFilter> FELighting::CreateImageFilter() {
   switch (light_source_->GetType()) {
     case LS_DISTANT: {
       DistantLightSource* distant_light_source =
-          static_cast<DistantLightSource*>(light_source_.Get());
+          static_cast<DistantLightSource*>(light_source_.get());
       float azimuth_rad = deg2rad(distant_light_source->Azimuth());
       float elevation_rad = deg2rad(distant_light_source->Elevation());
       const SkPoint3 direction = SkPoint3::Make(
@@ -80,7 +80,7 @@ sk_sp<SkImageFilter> FELighting::CreateImageFilter() {
     }
     case LS_POINT: {
       PointLightSource* point_light_source =
-          static_cast<PointLightSource*>(light_source_.Get());
+          static_cast<PointLightSource*>(light_source_.get());
       const FloatPoint3D position = point_light_source->GetPosition();
       const SkPoint3 sk_position =
           SkPoint3::Make(position.X(), position.Y(), position.Z());
@@ -94,7 +94,7 @@ sk_sp<SkImageFilter> FELighting::CreateImageFilter() {
     }
     case LS_SPOT: {
       SpotLightSource* spot_light_source =
-          static_cast<SpotLightSource*>(light_source_.Get());
+          static_cast<SpotLightSource*>(light_source_.get());
       const SkPoint3 location =
           SkPoint3::Make(spot_light_source->GetPosition().X(),
                          spot_light_source->GetPosition().Y(),

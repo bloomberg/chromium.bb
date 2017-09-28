@@ -36,7 +36,7 @@ template <typename NodeType>
 class PaintPropertyNode : public RefCounted<NodeType> {
  public:
   // Parent property node, or nullptr if this is the root node.
-  const NodeType* Parent() const { return parent_.Get(); }
+  const NodeType* Parent() const { return parent_.get(); }
   bool IsRoot() const { return !parent_; }
 
   bool IsAncestorOf(const NodeType& other) const {

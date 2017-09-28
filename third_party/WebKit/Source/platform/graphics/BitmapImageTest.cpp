@@ -92,7 +92,7 @@ class BitmapImageTest : public ::testing::Test {
 
   void LoadImage(const char* file_name, bool load_all_frames = true) {
     RefPtr<SharedBuffer> image_data = ReadFile(file_name);
-    ASSERT_TRUE(image_data.Get());
+    ASSERT_TRUE(image_data.get());
 
     image_->SetData(image_data, true);
     EXPECT_EQ(0u, DecodedSize());
@@ -183,7 +183,7 @@ TEST_F(BitmapImageTest, animationRepetitions) {
 TEST_F(BitmapImageTest, isAllDataReceived) {
   RefPtr<SharedBuffer> image_data =
       ReadFile("/LayoutTests/images/resources/green.jpg");
-  ASSERT_TRUE(image_data.Get());
+  ASSERT_TRUE(image_data.get());
 
   RefPtr<BitmapImage> image = BitmapImage::Create();
   EXPECT_FALSE(image->IsAllDataReceived());
@@ -264,7 +264,7 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
 TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
   RefPtr<SharedBuffer> image_data =
       ReadFile("/LayoutTests/images/resources/green.jpg");
-  ASSERT_TRUE(image_data.Get());
+  ASSERT_TRUE(image_data.get());
 
   // Create a new buffer to partially supply the data.
   RefPtr<SharedBuffer> partial_buffer = SharedBuffer::Create();

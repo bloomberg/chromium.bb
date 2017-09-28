@@ -54,7 +54,7 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
                     compositor_element_id_.ToString().c_str());
   }
   if (scroll_)
-    json->SetString("scroll", String::Format("%p", scroll_.Get()));
+    json->SetString("scroll", String::Format("%p", scroll_.get()));
   return json;
 }
 

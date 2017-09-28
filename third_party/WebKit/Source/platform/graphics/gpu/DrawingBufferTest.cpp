@@ -246,7 +246,7 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
   drawing_buffer_->BeginDestruction();
   ASSERT_EQ(live, true);
 
-  DrawingBufferForTests* raw_pointer = drawing_buffer_.Get();
+  DrawingBufferForTests* raw_pointer = drawing_buffer_.get();
   drawing_buffer_ = nullptr;
   ASSERT_EQ(live, true);
 
@@ -294,7 +294,7 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_EQ(live, true);
 
-  DrawingBufferForTests* raw_ptr = drawing_buffer_.Get();
+  DrawingBufferForTests* raw_ptr = drawing_buffer_.get();
   drawing_buffer_ = nullptr;
   EXPECT_EQ(live, true);
 

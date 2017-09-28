@@ -97,7 +97,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   const FloatPoint3D& Origin() const { return origin_; }
 
   // The associated scroll node, or nullptr otherwise.
-  const ScrollPaintPropertyNode* ScrollNode() const { return scroll_.Get(); }
+  const ScrollPaintPropertyNode* ScrollNode() const { return scroll_.get(); }
 
   // If this is a scroll offset translation (i.e., has an associated scroll
   // node), returns this. Otherwise, returns the transform node that this node

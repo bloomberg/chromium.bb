@@ -31,8 +31,8 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", local_transform_space_.Get()));
-  json->SetString("outputClip", String::Format("%p", output_clip_.Get()));
+                  String::Format("%p", local_transform_space_.get()));
+  json->SetString("outputClip", String::Format("%p", output_clip_.get()));
   if (color_filter_ != kColorFilterNone)
     json->SetInteger("colorFilter", color_filter_);
   if (!filter_.IsEmpty())

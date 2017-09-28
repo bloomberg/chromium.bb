@@ -164,14 +164,14 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, memory_allocator_set_count_);
 
   AddNewData();
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(2, decode_request_count_);
@@ -191,7 +191,7 @@ TEST_F(ImageFrameGeneratorTest, LowEndDeviceDestroysDecoderOnPartialDecode) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
@@ -200,7 +200,7 @@ TEST_F(ImageFrameGeneratorTest, LowEndDeviceDestroysDecoderOnPartialDecode) {
   EXPECT_EQ(2, memory_allocator_set_count_);
 
   AddNewData();
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(2, decode_request_count_);
@@ -213,7 +213,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
@@ -223,14 +223,14 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
   SetFrameStatus(ImageFrame::kFrameComplete);
   AddNewData();
 
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(1, decoders_destroyed_);
 
   // Decoder created again.
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(3, decode_request_count_);
@@ -247,7 +247,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
@@ -266,7 +266,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
   EXPECT_EQ(1, decoders_destroyed_);
 
   // Decoder created again.
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(3, decode_request_count_);
@@ -281,7 +281,7 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
   SetFrameStatus(ImageFrame::kFramePartial);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_TRUE(generator_->HasAlpha(0));
@@ -289,15 +289,15 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
 
   ImageDecoder* temp_decoder = 0;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), FullSize(), ImageDecoder::kAlphaPremultiplied,
+      generator_.get(), FullSize(), ImageDecoder::kAlphaPremultiplied,
       &temp_decoder));
   ASSERT_TRUE(temp_decoder);
   temp_decoder->DecodeFrameBufferAtIndex(0)->SetHasAlpha(false);
-  ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), temp_decoder);
+  ImageDecodingStore::Instance().UnlockDecoder(generator_.get(), temp_decoder);
   EXPECT_EQ(2, decode_request_count_);
 
   SetFrameStatus(ImageFrame::kFrameComplete);
-  generator_->DecodeAndScale(segment_reader_.Get(), false, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(3, decode_request_count_);
@@ -309,7 +309,7 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   SetFrameStatus(ImageFrame::kFrameComplete);
 
   char buffer[100 * 100 * 4];
-  generator_->DecodeAndScale(segment_reader_.Get(), true, 0, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), true, 0, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(1, decode_request_count_);
@@ -318,7 +318,7 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
 
   SetFrameStatus(ImageFrame::kFrameComplete);
 
-  generator_->DecodeAndScale(segment_reader_.Get(), true, 1, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), true, 1, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(2, decode_request_count_);
@@ -330,7 +330,7 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   // Decoding the last frame of a multi-frame images should trigger clearing
   // all the frame data, but not destroying the decoder.  See comments in
   // ImageFrameGenerator::tryToResumeDecode().
-  generator_->DecodeAndScale(segment_reader_.Get(), true, 2, ImageInfo(),
+  generator_->DecodeAndScale(segment_reader_.get(), true, 2, ImageInfo(),
                              buffer, 100 * 4,
                              ImageDecoder::kAlphaPremultiplied);
   EXPECT_EQ(3, decode_request_count_);

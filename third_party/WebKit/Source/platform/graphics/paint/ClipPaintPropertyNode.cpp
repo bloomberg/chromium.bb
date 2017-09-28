@@ -22,7 +22,7 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   json->SetString("localTransformSpace",
-                  String::Format("%p", local_transform_space_.Get()));
+                  String::Format("%p", local_transform_space_.get()));
   json->SetString("rect", clip_rect_.ToString());
   if (direct_compositing_reasons_ != kCompositingReasonNone) {
     json->SetString("directCompositingReasons",
