@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -56,6 +57,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/host/service_process_launcher.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/cpp/constants.h"
@@ -65,6 +67,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/ContentNfcDelegate_jni.h"
+#endif
+
+#if defined(OS_WIN)
+#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #endif
 
 namespace content {
@@ -84,12 +90,18 @@ void StartServiceInUtilityProcess(
     service_manager::mojom::ConnectResult query_result,
     const std::string& sandbox_string) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  service_manager::SandboxType sandbox_type =
+      service_manager::UtilitySandboxTypeFromString(sandbox_string);
+
   UtilityProcessHostImpl* process_host =
       new UtilityProcessHostImpl(nullptr, nullptr);
+#if defined(OS_WIN)
+  if (sandbox_type == service_manager::SANDBOX_TYPE_PPAPI)
+    process_host->AddFilter(new DWriteFontProxyMessageFilter());
+#endif
   process_host->SetName(process_name);
   process_host->SetServiceIdentity(service_manager::Identity(service_name));
-  process_host->SetSandboxType(
-      service_manager::UtilitySandboxTypeFromString(sandbox_string));
+  process_host->SetSandboxType(sandbox_type);
   process_host->Start();
 
   service_manager::mojom::ServiceFactoryPtr service_factory;

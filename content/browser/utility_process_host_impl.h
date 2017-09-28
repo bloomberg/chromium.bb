@@ -24,6 +24,7 @@ class Thread;
 }
 
 namespace content {
+class BrowserMessageFilter;
 class BrowserChildProcessHostImpl;
 class InProcessChildThreadParams;
 
@@ -58,6 +59,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void SetName(const base::string16& name) override;
+  void AddFilter(BrowserMessageFilter* filter) override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }
 
