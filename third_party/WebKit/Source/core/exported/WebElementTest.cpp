@@ -65,6 +65,12 @@ static const char kBlockWithEmptyInlines[] =
     "  <span></span> "
     "</div>";
 
+static const char kBlockWithEmptyFirstChild[] =
+    "<div id='testElement'>"
+    "  <div style='position: absolute'></div> "
+    "  <div style='position: absolute'>Hello</div> "
+    "</div>";
+
 class WebElementTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
@@ -123,6 +129,9 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
   ShadowRoot& root =
       GetDocument().getElementById("testElement")->CreateShadowRootInternal();
   root.SetInnerHTMLFromString("<div>Hello World</div>");
+  EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
+
+  InsertHTML(kBlockWithEmptyFirstChild);
   EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 }
 
