@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 
-#if !defined(__clang__) && _MSC_FULL_VER < 190024213
-#error VS 2015 Update 3 with Cumulative Servicing Release or higher is required
+#if !defined(__clang__) && _MSC_FULL_VER < 191125507
+#error VS 2017 Update 3.2 or higher is required
 #endif
 
 #if !defined(NTDDI_WIN10_RS2)
