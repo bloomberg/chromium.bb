@@ -102,9 +102,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   void OnCleanerProcessDone(ChromeCleanerRunner::ProcessStatus process_status);
   void InitiateReboot();
 
-  // Invoked once settings reset is done for tagged profiles.
-  void OnSettingsResetCompleted();
-
   std::unique_ptr<ChromeCleanerControllerDelegate> real_delegate_;
   // Pointer to either real_delegate_ or one set by tests.
   ChromeCleanerControllerDelegate* delegate_;
