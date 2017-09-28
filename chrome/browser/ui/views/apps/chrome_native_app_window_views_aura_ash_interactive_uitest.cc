@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
-                       ImmersiveNoBubbleInsidePublicSessionWindow) {
+                       ImmersiveAndBubbleInsidePublicSessionWindow) {
   chromeos::ScopedTestPublicSessionLoginState state;
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
   }
 
   EXPECT_TRUE(GetWindowAsh()->IsImmersiveModeEnabled());
-  EXPECT_FALSE(GetWindowAsh()->exclusive_access_bubble_);
+  EXPECT_TRUE(GetWindowAsh()->exclusive_access_bubble_);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
