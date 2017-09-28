@@ -661,8 +661,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
         self.device, devserver_bin, self.is_au_endtoendtest,
         static_dir=self.device_static_dir,
         log_dir=self.device.work_dir)
-    self._StartPerformanceMonitoringForAUTest()
-
     try:
       ds.Start()
       logging.debug('Successfully started devserver on the device on port '
@@ -674,6 +672,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           ip='127.0.0.1', port=ds.port, sub_dir='update/pregenerated')
       cmd = [self.REMOTE_UPDATE_ENGINE_BIN_FILENAME, '-check_for_update',
              '-omaha_url=%s' % omaha_url]
+
+      self._StartPerformanceMonitoringForAUTest()
       self.device.RunCommand(cmd, **self._cmd_kwargs)
 
       # If we are using a progress bar, update it every 0.5s instead of 10s.
