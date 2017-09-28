@@ -28,6 +28,8 @@ source_set("feedback_private") {
 
   if (is_chromeos) {
     sources += [
+      "access_rate_limiter.cc",
+      "access_rate_limiter.h",
       "log_source_access_manager.cc",
       "log_source_access_manager.h",
       "log_source_resource.cc",
