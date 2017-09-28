@@ -762,6 +762,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   if (_startupParameters) {
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[_startupParameters externalURL]
+                                 dismissOmnibox:YES
                                      transition:ui::PAGE_TRANSITION_LINK
                                      completion:^{
                                        [self setStartupParameters:nil];
@@ -1337,7 +1338,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 #pragma mark - ApplicationCommands
 
 - (void)dismissModalDialogs {
-  [self dismissModalDialogsWithCompletion:nil];
+  [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
 }
 
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
@@ -1459,6 +1460,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   if ([command fromChrome]) {
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[command url]
+                                 dismissOmnibox:YES
                                      transition:ui::PAGE_TRANSITION_TYPED
                                      completion:nil];
   } else {
@@ -1468,7 +1470,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                  referrer:[command referrer]
                              inBackground:[command inBackground]
                                  appendTo:[command appendTo]];
-    }];
+    }
+                             dismissOmnibox:YES];
   }
 }
 
@@ -1580,6 +1583,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   ProceduralBlock completion = ^{
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[command url]
+                                 dismissOmnibox:YES
                                      transition:ui::PAGE_TRANSITION_TYPED
                                      completion:nil];
   };
@@ -1865,7 +1869,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   if ([_tabSwitcherController
           respondsToSelector:@selector(tabSwitcherDismissWithModel:
                                                           animated:)]) {
-    [self dismissModalDialogsWithCompletion:nil];
+    [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
     [_tabSwitcherController tabSwitcherDismissWithModel:tabModel animated:NO];
   } else {
     [self beginDismissingStackViewWithCurrentModel:tabModel];
@@ -2266,7 +2270,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   return tab;
 }
 
-- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion {
+- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
   // Immediately hide modals from the provider (alert views, action sheets,
   // popovers). They will be ultimately dismissed by their owners, but at least,
   // they are not visible.
@@ -2284,7 +2289,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   // it.
   ProceduralBlock completionWithBVC = ^{
     // This will dismiss the SSO view controller.
-    [self.currentBVC clearPresentedStateWithCompletion:completion];
+    [self.currentBVC clearPresentedStateWithCompletion:completion
+                                        dismissOmnibox:dismissOmnibox];
   };
   ProceduralBlock completionWithoutBVC = ^{
     // This will dismiss the SSO view controller.
@@ -2371,6 +2377,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
+                               dismissOmnibox:(BOOL)dismissOmnibox
                                    transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion {
   GURL copyOfURL = url;
@@ -2379,7 +2386,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                         withURL:copyOfURL
                      transition:transition
                      completion:completion];
-  }];
+  }
+                           dismissOmnibox:dismissOmnibox];
 }
 
 - (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions

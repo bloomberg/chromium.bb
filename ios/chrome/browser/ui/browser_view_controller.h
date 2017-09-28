@@ -142,8 +142,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Focuses the omnibox.
 - (void)focusOmnibox;
 
-// Dismisses all presented views then calls |completion|.
-- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion;
+// Dismisses all presented views, excluding the omnibox if |dismissOmnibox| is
+// NO, then calls |completion|.
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox;
 
 // Returns a tab strip placeholder view created from the current state of the
 // tab strip. It is used to animate the transition from the browser view
