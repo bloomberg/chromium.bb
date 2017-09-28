@@ -916,10 +916,6 @@ void LocalizedError::GetStrings(
   summary->SetString(
       "msg", l10n_util::GetStringUTF16(options.summary_resource_id));
 
-  // Add a DNS definition string.
-  summary->SetString("dnsDefinition",
-      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUMMARY_DNS_DEFINITION));
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Check if easter egg should be disabled.
