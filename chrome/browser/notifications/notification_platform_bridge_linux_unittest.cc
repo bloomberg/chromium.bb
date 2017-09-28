@@ -349,14 +349,14 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
       nullptr);
 }
 
-TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
-  const int32_t kExpireTimeoutDefault = -1;
+TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeoutsNoPersistence) {
+  const int32_t kExpireTimeout = 25000;
   const int32_t kExpireTimeoutNever = 0;
   EXPECT_CALL(*mock_notification_proxy_.get(),
               CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [=](const NotificationRequest& request) {
-            EXPECT_EQ(kExpireTimeoutDefault, request.expire_timeout);
+            EXPECT_EQ(kExpireTimeout, request.expire_timeout);
           },
           1))
       .WillOnce(OnNotify(
@@ -372,6 +372,25 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
   notification_bridge_linux_->Display(
       NotificationCommon::PERSISTENT, "", "", false,
       NotificationBuilder("2").SetNeverTimeout(true).GetResult(), nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest,
+       NotificationTimeoutWithPersistence) {
+  const int32_t kExpireTimeoutDefault = -1;
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_EQ(kExpireTimeoutDefault, request.expire_timeout);
+          },
+          1));
+
+  CreateNotificationBridgeLinux(
+      std::vector<std::string>{"actions", "body", "persistence"}, true, true,
+      true);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("1").GetResult(), nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
