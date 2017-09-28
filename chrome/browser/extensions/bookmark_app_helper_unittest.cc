@@ -29,6 +29,7 @@ namespace extensions {
 
 namespace {
 
+const char kManifestUrl[] = "http://www.chromium.org/manifest.json";
 const char kAppUrl[] = "http://www.chromium.org/index.html";
 const char kAlternativeAppUrl[] = "http://www.notchromium.org";
 const char kAppScope[] = "http://www.chromium.org/scope/";
@@ -297,8 +298,9 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
     extension_ = extension;
   }
 
-  void CompleteGetManifest(const content::Manifest& manifest) {
-    BookmarkAppHelper::OnDidGetManifest(GURL(), manifest);
+  void CompleteGetManifest(const char* manifest_url,
+                           const content::Manifest& manifest) {
+    BookmarkAppHelper::OnDidGetManifest(GURL(manifest_url), manifest);
   }
 
   void CompleteIconDownload(
@@ -367,7 +369,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
-  helper.CompleteGetManifest(manifest);
+  helper.CompleteGetManifest(kManifestUrl, manifest);
 
   std::map<GURL, std::vector<SkBitmap> > icon_map;
   helper.CompleteIconDownload(true, icon_map);
@@ -402,7 +404,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   content::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
-  helper.CompleteGetManifest(manifest);
+  helper.CompleteGetManifest(kManifestUrl, manifest);
 
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
@@ -427,7 +429,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
-  helper.CompleteGetManifest(content::Manifest());
+  helper.CompleteGetManifest(kManifestUrl, content::Manifest());
   std::map<GURL, std::vector<SkBitmap>> icon_map;
   helper.CompleteIconDownload(true, icon_map);
   content::RunAllTasksUntilIdle();
