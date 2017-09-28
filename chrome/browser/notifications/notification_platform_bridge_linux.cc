@@ -620,6 +620,14 @@ class NotificationPlatformBridgeLinuxImpl
         NotificationPriorityToFdoUrgency(notification->priority()));
     hints_writer.CloseContainer(&urgency_writer);
 
+    if (notification->silent()) {
+      dbus::MessageWriter suppress_sound_writer(nullptr);
+      hints_writer.OpenDictEntry(&suppress_sound_writer);
+      suppress_sound_writer.AppendString("suppress-sound");
+      suppress_sound_writer.AppendVariantOfBool(true);
+      hints_writer.CloseContainer(&suppress_sound_writer);
+    }
+
     std::unique_ptr<base::Environment> env = base::Environment::Create();
     base::FilePath desktop_file(
         shell_integration_linux::GetDesktopName(env.get()));

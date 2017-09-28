@@ -84,6 +84,11 @@ class NotificationBuilder {
     return *this;
   }
 
+  NotificationBuilder& SetSilent(bool silent) {
+    notification_.set_silent(silent);
+    return *this;
+  }
+
   NotificationBuilder& SetTitle(const base::string16& title) {
     notification_.set_title(title);
     return *this;
@@ -102,6 +107,7 @@ struct NotificationRequest {
   std::string summary;
   std::string body;
   int32_t expire_timeout = 0;
+  bool silent = false;
 };
 
 const SkBitmap CreateBitmap(int width, int height) {
@@ -147,7 +153,13 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
       EXPECT_TRUE(hints_reader.PopDictEntry(&dict_entry_reader));
       EXPECT_TRUE(dict_entry_reader.PopString(&str));
       dbus::MessageReader variant_reader(nullptr);
-      EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
+      if (str == "suppress-sound") {
+        bool suppress_sound;
+        EXPECT_TRUE(dict_entry_reader.PopVariantOfBool(&suppress_sound));
+        request.silent = suppress_sound;
+      } else {
+        EXPECT_TRUE(dict_entry_reader.PopVariant(&variant_reader));
+      }
       EXPECT_FALSE(dict_entry_reader.HasMoreData());
     }
   }
@@ -484,4 +496,27 @@ TEST_F(NotificationPlatformBridgeLinuxTest, EscapeHtml) {
               base::ASCIIToUTF16("<span id='1' class=\"2\">&#39;</span>"))
           .GetResult(),
       nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, Silent) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_FALSE(request.silent);
+          },
+          1))
+      .WillOnce(OnNotify(
+          [=](const NotificationRequest& request) {
+            EXPECT_TRUE(request.silent);
+          },
+          2));
+
+  CreateNotificationBridgeLinux();
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("1").SetSilent(false).GetResult(), nullptr);
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("2").SetSilent(true).GetResult(), nullptr);
 }
