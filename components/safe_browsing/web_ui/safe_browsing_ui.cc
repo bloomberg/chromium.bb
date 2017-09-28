@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/base64url.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
@@ -253,10 +254,8 @@ std::string ParseThreatDetailsInfo(
   std::string serialized;
   if (report.SerializeToString(&serialized)) {
     std::string base64_encoded;
-    base::Base64UrlEncode(serialized,
-                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                          &base64_encoded);
-    report_request.SetString("base64(serialized)", base64_encoded);
+    base::Base64Encode(serialized, &base64_encoded);
+    report_request.SetString("csbrr(base64)", base64_encoded);
   }
 
   base::Value* report_request_tree = &report_request;
