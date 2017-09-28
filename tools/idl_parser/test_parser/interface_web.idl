@@ -555,3 +555,70 @@ interface MyIFaceArgumentWithAnnotatedType2 {
   void voidMethodTestArgumentWithExtAttribute1([Clamp, XAttr] long long myLong);
   void voidMethodTestArgumentWithExtAttribute2([EnforceRange] long longArg);
 };
+
+/** TREE
+ *Interface(InterfaceConstructors)
+ *  ExtAttributes()
+ *    ExtAttribute(Constructor)
+ *    ExtAttribute(Constructor)
+ *      Arguments()
+ *        Argument(doubleArg)
+ *          Type()
+ *            PrimitiveType(double)
+ *    ExtAttribute(CustomConstructor)
+ *    ExtAttribute(CustomConstructor)
+ *      Arguments()
+ *        Argument(doubleArg)
+ *          Type()
+ *            PrimitiveType(double)
+ *    ExtAttribute(NamedConstructor) = "Audio"
+ *    ExtAttribute(NamedConstructor)
+ *      Call(Audio)
+ *        Arguments()
+ *          Argument(src)
+ *            Type()
+ *              StringType(DOMString)
+ */
+[
+    Constructor,
+    Constructor(double doubleArg),
+    CustomConstructor,
+    CustomConstructor(double doubleArg),
+    NamedConstructor=Audio,
+    NamedConstructor=Audio(DOMString src)
+] interface InterfaceConstructors { };
+
+/** TREE
+ *Interface(InterfaceExposed)
+ *  ExtAttributes()
+ *    ExtAttribute(Exposed) = "Window"
+ *    ExtAttribute(Exposed) = "['Window', 'Worker']"
+ *    ExtAttribute(Exposed)
+ *      Arguments()
+ *        Argument(Feature1)
+ *          Type()
+ *            Typeref(Window)
+ *    ExtAttribute(Exposed)
+ *      Arguments()
+ *        Argument(Feature1)
+ *          Type()
+ *            Typeref(Window)
+ *        Argument(Feature2)
+ *          Type()
+ *            Typeref(Worker)
+ */
+[
+    Exposed=Window,
+    Exposed=(Window, Worker),
+    Exposed(Window Feature1),
+    Exposed(Window Feature1, Worker Feature2)
+] interface InterfaceExposed { };
+
+/** TREE
+ *Interface(InterfaceExposedError)
+ *  ExtAttributes()
+ *    ExtAttribute(Exposed)
+ *      Arguments()
+ *        Error(Unexpected ,.)
+ */
+[ Exposed(Window, Worker) ] interface InterfaceExposedError { };
