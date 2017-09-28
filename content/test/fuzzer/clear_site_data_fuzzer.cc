@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "content/browser/browsing_data/clear_site_data_throttle.h"
+#include "content/browser/browsing_data/clear_site_data_throttle.h"  // nogncheck
 
 namespace content {
 
