@@ -47,6 +47,8 @@ class ViewMatrix {
   // Sets the offset.
   void SetOffset(const Point& offset);
 
+  const Vector2D& GetOffset() const;
+
   // Adjust the matrix M to M' such that:
   // M * p_a = p_b => M' * p_a = scale * (p_b - pivot) + pivot
   void PostScale(const Point& pivot, float scale);

@@ -61,6 +61,9 @@ class DesktopViewport {
   // Returns true if |point| is within the bounds of the desktop.
   bool IsPointWithinDesktopBounds(const ViewMatrix::Point& point) const;
 
+  // True if desktop size and surface size are set.
+  bool IsViewportReady() const;
+
   // Constrains |point| within the bounds of the desktop. Do nothing if the
   // desktop size is not set.
   ViewMatrix::Point ConstrainPointToDesktop(
@@ -88,9 +91,6 @@ class DesktopViewport {
   // minimum possible zoom-level. This will be called once both the desktop
   // and the surface size are set.
   void ResizeToFit();
-
-  // True if desktop size and surface size are set.
-  bool IsViewportReady() const;
 
   // Adjusts the size and position of the viewport so that the constrains always
   // hold, then feed the matrix to |on_transformation_changed_|.
