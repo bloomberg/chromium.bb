@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/policy_tool_ui_handler.h"
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -12,17 +13,28 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 
+// static
+const base::FilePath::CharType PolicyToolUIHandler::kPolicyToolSessionsDir[] =
+    FILE_PATH_LITERAL("Policy sessions");
+
+// static
+const base::FilePath::CharType
+    PolicyToolUIHandler::kPolicyToolDefaultSessionName[] =
+        FILE_PATH_LITERAL("policy");
+
+// static
+const base::FilePath::CharType
+    PolicyToolUIHandler::kPolicyToolSessionExtension[] =
+        FILE_PATH_LITERAL("json");
+
 PolicyToolUIHandler::PolicyToolUIHandler() : callback_weak_ptr_factory_(this) {}
 
 PolicyToolUIHandler::~PolicyToolUIHandler() {}
 
 void PolicyToolUIHandler::RegisterMessages() {
   // Set directory for storing sessions.
-  sessions_dir_ = Profile::FromWebUI(web_ui())->GetPath().Append(
-      FILE_PATH_LITERAL("Policy sessions"));
-  // Set current session name.
-  // TODO(urusant): do so in a smarter way, e.g. choose the last edited session.
-  session_name_ = FILE_PATH_LITERAL("policy");
+  sessions_dir_ =
+      Profile::FromWebUI(web_ui())->GetPath().Append(kPolicyToolSessionsDir);
 
   web_ui()->RegisterMessageCallback(
       "initialized", base::Bind(&PolicyToolUIHandler::HandleInitializedAdmin,
@@ -44,6 +56,45 @@ base::FilePath PolicyToolUIHandler::GetSessionPath(
   return sessions_dir_.Append(name).AddExtension(FILE_PATH_LITERAL("json"));
 }
 
+base::ListValue PolicyToolUIHandler::GetSessionsList() {
+  base::FilePath::StringType sessions_pattern =
+      FILE_PATH_LITERAL("*.") +
+      base::FilePath::StringType(kPolicyToolSessionExtension);
+  base::FileEnumerator enumerator(sessions_dir_, /*recursive=*/false,
+                                  base::FileEnumerator::FILES,
+                                  sessions_pattern);
+  // A vector of session names and their last access times.
+  using Session = std::pair<base::Time, base::FilePath::StringType>;
+  std::vector<Session> sessions;
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    base::File::Info info;
+    base::GetFileInfo(name, &info);
+    sessions.push_back(
+        {info.last_accessed, name.BaseName().RemoveExtension().value()});
+  }
+  // Sort the sessions by the the time of last access in decreasing order.
+  std::sort(sessions.begin(), sessions.end(), std::greater<Session>());
+
+  // Convert sessions to the list containing only names.
+  base::ListValue session_names;
+  for (const Session& session : sessions)
+    session_names.GetList().push_back(base::Value(session.second));
+  return session_names;
+}
+
+void PolicyToolUIHandler::SetDefaultSessionName() {
+  base::ListValue sessions = GetSessionsList();
+  if (sessions.empty()) {
+    // If there are no sessions, fallback to the default session name.
+    session_name_ = kPolicyToolDefaultSessionName;
+  } else {
+    session_name_ =
+        base::FilePath::FromUTF8Unsafe(sessions.GetList()[0].GetString())
+            .value();
+  }
+}
+
 std::string PolicyToolUIHandler::ReadOrCreateFileCallback() {
   // Create sessions directory, if it doesn't exist yet.
   // If unable to create a directory, just silently return a dictionary
@@ -53,7 +104,12 @@ std::string PolicyToolUIHandler::ReadOrCreateFileCallback() {
   if (!base::CreateDirectory(sessions_dir_))
     return "{\"logged\": false}";
 
+  // Initialize session name if it is not initialized yet.
+  if (session_name_.empty())
+    SetDefaultSessionName();
+
   const base::FilePath session_path = GetSessionPath(session_name_);
+
   // Check if the file for the current session already exists. If not, create it
   // and put an empty dictionary in it.
   base::File session_file(session_path, base::File::Flags::FLAG_CREATE |
@@ -76,6 +132,12 @@ std::string PolicyToolUIHandler::ReadOrCreateFileCallback() {
   // Read file contents.
   std::string contents;
   base::ReadFileToString(session_path, &contents);
+
+  // Touch the file to remember the last session.
+  base::File::Info info;
+  base::GetFileInfo(session_path, &info);
+  base::TouchFile(session_path, base::Time::Now(), info.last_modified);
+
   return contents;
 }
 
@@ -132,12 +194,8 @@ bool PolicyToolUIHandler::IsValidSessionName(
 
 void PolicyToolUIHandler::HandleLoadSession(const base::ListValue* args) {
   DCHECK_EQ(1U, args->GetSize());
-#if defined(OS_WIN)
   base::FilePath::StringType new_session_name =
-      base::UTF8ToUTF16(args->GetList()[0].GetString());
-#else
-  base::FilePath::StringType new_session_name = args->GetList()[0].GetString();
-#endif
+      base::FilePath::FromUTF8Unsafe(args->GetList()[0].GetString()).value();
   if (!IsValidSessionName(new_session_name)) {
     ShowErrorMessageToUser("errorInvalidSessionName");
     return;
