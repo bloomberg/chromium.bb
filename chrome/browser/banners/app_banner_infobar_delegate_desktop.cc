@@ -26,22 +26,25 @@ infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
     content::WebContents* web_contents,
     base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
+    const GURL& manifest_url,
     const content::Manifest& manifest) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
           new AppBannerInfoBarDelegateDesktop(weak_manager, bookmark_app_helper,
-                                              manifest))));
+                                              manifest_url, manifest))));
 }
 
 AppBannerInfoBarDelegateDesktop::AppBannerInfoBarDelegateDesktop(
     base::WeakPtr<AppBannerManager> weak_manager,
     extensions::BookmarkAppHelper* bookmark_app_helper,
+    const GURL& manifest_url,
     const content::Manifest& manifest)
     : ConfirmInfoBarDelegate(),
       weak_manager_(weak_manager),
       bookmark_app_helper_(bookmark_app_helper),
+      manifest_url_(manifest_url),
       manifest_(manifest),
       has_user_interaction_(false) {}
 
@@ -99,7 +102,7 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   bookmark_app_helper_->CreateFromAppBanner(
       base::Bind(&AppBannerManager::DidFinishCreatingBookmarkApp,
                  weak_manager_),
-      manifest_);
+      manifest_url_, manifest_);
   return true;
 }
 
