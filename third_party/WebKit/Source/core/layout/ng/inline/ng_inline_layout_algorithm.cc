@@ -315,7 +315,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       {line_info.UseFirstLineStyle()
            ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
            : NGBaselineAlgorithmType::kAtomicInline,
-       baseline_type_});
+       baseline_type_},
+      ConstraintSpace().WritingMode());
   box->metrics.Unite(metrics);
 
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
