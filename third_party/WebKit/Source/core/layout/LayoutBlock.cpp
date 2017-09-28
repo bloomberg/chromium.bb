@@ -1810,15 +1810,6 @@ LayoutBlockFlow* LayoutBlock::NearestInnerBlockWithFirstLine() {
   return nullptr;
 }
 
-void LayoutBlock::UpdateHitTestResult(HitTestResult& result,
-                                      const LayoutPoint& point) {
-  if (result.InnerNode())
-    return;
-
-  if (Node* n = NodeForHitTest())
-    result.SetNodeAndPosition(n, point);
-}
-
 // An inline-block uses its inlineBox as the inlineBoxWrapper,
 // so the firstChild() is nullptr if the only child is an empty inline-block.
 inline bool LayoutBlock::IsInlineBoxWrapperActuallyChild() const {

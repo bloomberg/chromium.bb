@@ -4047,7 +4047,8 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
   // If we are in the margins of block elements that are part of a
   // continuation we're actually still inside the enclosing element
   // that was split. Use the appropriate inner node.
-  return IsAnonymousBlockContinuation() ? Continuation()->GetNode() : GetNode();
+  return IsAnonymousBlockContinuation() ? Continuation()->NodeForHitTest()
+                                        : LayoutBlock::NodeForHitTest();
 }
 
 bool LayoutBlockFlow::HitTestChildren(
