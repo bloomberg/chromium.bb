@@ -3847,6 +3847,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Wasted"/>
 </enum>
 
+<enum name="BooleanWebApkNotificationPermission">
+  <int value="0" label="WebAPK notification permission disabled"/>
+  <int value="1" label="WebAPK notification permission enabled"/>
+</enum>
+
 <enum name="BooleanWiped">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>

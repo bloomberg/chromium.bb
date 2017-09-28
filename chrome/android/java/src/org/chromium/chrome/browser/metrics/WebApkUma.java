@@ -98,6 +98,13 @@ public class WebApkUma {
         RecordHistogram.recordEnumeratedHistogram("WebApk.OpenFromMenu", type, WEBAPK_OPEN_MAX);
     }
 
+    /** Records whether a WebAPK has permission to display notifications. */
+    public static void recordNotificationPermissionStatus(boolean permissionEnabled) {
+        int status = permissionEnabled ? 1 : 0;
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebApk.Notification.Permission.Status", status, 2);
+    }
+
     /**
      * Records whether installing a WebAPK from Google Play succeeded. If not, records the reason
      * that the install failed.
