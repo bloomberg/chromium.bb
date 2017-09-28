@@ -81,11 +81,9 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
 }
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
-                          const SearchTermsData& search_terms_data,
-                          bool append_extra_query_params) {
+                          const SearchTermsData& search_terms_data) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
-  search_terms_args.append_extra_query_params = append_extra_query_params;
   return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
 }
 
@@ -170,9 +168,8 @@ struct NewTabURLDetails {
     if (!profile || !template_url)
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
 
-    GURL search_provider_url =
-        TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                             UIThreadSearchTermsData(profile), false);
+    GURL search_provider_url = TemplateURLRefToGURL(
+        template_url->new_tab_url_ref(), UIThreadSearchTermsData(profile));
 
     if (ShouldShowLocalNewTab(search_provider_url, profile))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
@@ -195,22 +192,10 @@ struct NewTabURLDetails {
   NewTabURLState state;
 };
 
-base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
-  const TemplateURL* template_url =
-      GetDefaultSearchProviderTemplateURL(profile);
-  base::string16 search_terms;
-  if (template_url)
-    template_url->ExtractSearchTermsFromURL(
-        url, UIThreadSearchTermsData(profile), &search_terms);
-  return search_terms;
-}
-
 }  // namespace
 
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
-  return url.is_valid() &&
-         profile &&
-         IsInstantExtendedAPIEnabled() &&
+  return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
           IsInstantURL(url, profile));
 }
@@ -261,8 +246,8 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return url == chrome::kChromeUINewTabURL;
 
-  const base::string16 search_terms = ExtractSearchTermsFromURL(profile, url);
-  return profile && ((IsInstantURL(url, profile) && search_terms.empty()) ||
+  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
+  return profile && (IsInstantURL(url, profile) ||
                      url == chrome::kChromeSearchLocalNtpUrl);
 }
 
@@ -290,6 +275,7 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
+  // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
   if (url == chrome::kChromeSearchLocalNtpUrl)
     return true;
 
@@ -311,7 +297,7 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
     return result;
   for (const TemplateURLRef& ref : template_url->url_refs()) {
     result.push_back(
-        TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile), false));
+        TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile)));
   }
   return result;
 }
