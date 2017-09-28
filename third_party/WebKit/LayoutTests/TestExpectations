@@ -622,7 +622,7 @@ crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-sa
 crbug.com/521858 [ Win7 ] virtual/mojo-loading/http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/devtools/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
-crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass ]
+crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
