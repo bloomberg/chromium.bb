@@ -2038,14 +2038,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
 }
 #endif
 
-// Disabled due to flaky timeout on Win7 Tests (dbg): https://crbug.com/753691.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_WindowOpenClose DISABLED_WindowOpenClose
-#else
-#define MAYBE_WindowOpenClose WindowOpenClose
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url = ui_test_utils::GetTestUrl(
