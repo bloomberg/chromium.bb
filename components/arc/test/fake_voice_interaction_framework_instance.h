@@ -23,7 +23,9 @@ class FakeVoiceInteractionFrameworkInstance
   void ToggleVoiceInteractionSession(bool homescreen_is_active) override;
   void StartVoiceInteractionSessionForRegion(const gfx::Rect& region) override;
   void SetMetalayerVisibility(bool visible) override;
-  void SetVoiceInteractionEnabled(bool enable) override;
+  void SetVoiceInteractionEnabled(
+      bool enable,
+      SetVoiceInteractionEnabledCallback callback) override;
   void SetVoiceInteractionContextEnabled(bool enable) override;
   void StartVoiceInteractionSetupWizard() override;
   void ShowVoiceInteractionSettings() override;
