@@ -334,10 +334,6 @@
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
 -WindowTreeHostManagerTest.UpdateMouseocationfterisplayChange
-# TODO: fix this. It fails because a container used in the test has more
-# children in mash.
-# http://crbug.com/764577.
--WorkspaceLayoutManagerBackdropTest.BackdropForSplitScreenTest
 -WorkspaceLayoutManagerKeyboardTest2.ChangeWorkAreaInNonStickyMode
 -WorkspaceLayoutManagerKeyboardTest2.IgnoreWorkAreaChangeinNonStickyMode
 # TODO: fix these. They fail because DeviceDataManager isn't created.
