@@ -754,6 +754,81 @@ test.speech.testNoSpeechInputMatched = function() {
 
 
 /**
+ * Tests showing the proper error when there is no network connectivity.
+ */
+test.speech.testNetworkError = function() {
+  test.speech.initSpeech();
+  speech.start();
+  speech.recognition_.onerror({error: 'network'});
+
+  assertFalse(speech.isRecognizing());
+  assertEquals(1, test.speech.recognitionActiveCount);
+  assertEquals(1, test.speech.viewActiveCount);
+  assertEquals(RecognitionError.NETWORK, test.speech.viewState.error);
+
+  test.speech.clock.advanceTime(7999);
+  assertEquals(1, test.speech.viewActiveCount);
+
+  test.speech.clock.advanceTime(1);
+  test.speech.clock.pendingTimeouts.shift().callback();
+  test.speech.validateInactive();
+};
+
+
+/**
+ * Tests showing the proper error when there is no network connectivity, after
+ * interim results have been received.
+ */
+test.speech.testNetworkErrorAfterInterimResults = function() {
+  test.speech.initSpeech();
+
+  const lowConfidenceText = 'low';
+  const highConfidenceText = 'high';
+  const viewText = highConfidenceText + lowConfidenceText;
+  const responseEvent =
+      test.speech.createInterimResponse(lowConfidenceText, highConfidenceText);
+
+  speech.start();
+  speech.recognition_.onresult(responseEvent);
+  speech.recognition_.onerror({error: 'network'});
+
+  assertFalse(speech.isRecognizing());
+  assertEquals(1, test.speech.recognitionActiveCount);
+  assertEquals(1, test.speech.viewActiveCount);
+  assertEquals(RecognitionError.NETWORK, test.speech.viewState.error);
+
+  test.speech.clock.advanceTime(7999);
+  assertEquals(1, test.speech.viewActiveCount);
+
+  test.speech.clock.advanceTime(1);
+  test.speech.clock.pendingTimeouts.shift().callback();
+  test.speech.validateInactive();
+};
+
+
+/**
+ * Tests showing the proper error when microphone permission is denied.
+ */
+test.speech.testPermissionError = function() {
+  test.speech.initSpeech();
+  speech.start();
+  speech.recognition_.onerror({error: 'not-allowed'});
+
+  assertFalse(speech.isRecognizing());
+  assertEquals(1, test.speech.recognitionActiveCount);
+  assertEquals(1, test.speech.viewActiveCount);
+  assertEquals(RecognitionError.NOT_ALLOWED, test.speech.viewState.error);
+
+  test.speech.clock.advanceTime(7999);
+  assertEquals(1, test.speech.viewActiveCount);
+
+  test.speech.clock.advanceTime(1);
+  test.speech.clock.pendingTimeouts.shift().callback();
+  test.speech.validateInactive();
+};
+
+
+/**
  * Tests that if no interactions occurs for some time during speech recognition,
  * the current high confidence speech results are submitted for search.
  */
