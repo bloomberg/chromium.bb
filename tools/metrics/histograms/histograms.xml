@@ -42535,6 +42535,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PlatformNotification"
+    enum="QuicPlatformNotification">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The platform notification received by QUIC when network change happens.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PreferAesGcm" enum="BooleanPreferred">
   <owner>rch@chromium.org</owner>
   <summary>

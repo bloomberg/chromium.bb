@@ -32815,6 +32815,14 @@ from previous Chrome versions.
   <int value="2" label="REF_COUNT"/>
 </enum>
 
+<enum name="QuicPlatformNotification">
+  <int value="0" label="NETWORK_CONNECTED"/>
+  <int value="1" label="NETWORK_MADE_DEFAULT"/>
+  <int value="2" label="NETWORK_DISCONNECTED"/>
+  <int value="3" label="NETWORK_SOON_TO_DISCONNECT"/>
+  <int value="4" label="NETWORK_IP_ADDRESS_CHANGED"/>
+</enum>
+
 <enum name="QuicRejectReasons">
   <int value="1" label="CLIENT_NONCE_UNKNOWN_FAILURE"/>
   <int value="2" label="CLIENT_NONCE_INVALID_FAILURE"/>
