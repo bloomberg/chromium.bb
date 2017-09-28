@@ -75,7 +75,7 @@ class CORE_EXPORT SpellCheckRequest final : public TextCheckingRequest {
   int request_number_;
 };
 
-class SpellCheckRequester final
+class CORE_EXPORT SpellCheckRequester final
     : public GarbageCollectedFinalized<SpellCheckRequester> {
   WTF_MAKE_NONCOPYABLE(SpellCheckRequester);
 
