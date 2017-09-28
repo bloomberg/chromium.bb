@@ -36,7 +36,6 @@
 namespace blink {
 
 class CSSStyleDeclaration;
-class CSSLazyParsingState;
 class ImmutableStylePropertySet;
 class MutableStylePropertySet;
 class PropertyRegistry;
@@ -166,7 +165,7 @@ class CSSLazyPropertyParser
   CSSLazyPropertyParser() {}
   virtual ~CSSLazyPropertyParser() {}
   virtual StylePropertySet* ParseProperties() = 0;
-  virtual CSSLazyParsingState* LazyState() const = 0;
+  virtual void SetHasBeforeOrAfter() = 0;
 
   DECLARE_VIRTUAL_TRACE();
 };

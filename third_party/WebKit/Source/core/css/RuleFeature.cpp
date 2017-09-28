@@ -454,7 +454,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
   return nullptr;
 }
 
-void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
+void RuleFeatureSet::UpdateInvalidationSets(RuleData& rule_data) {
   // Given a rule, update the descendant invalidation sets for the features
   // found in its selector. The first step is to extract the features from the
   // rightmost compound selector (extractInvalidationSetFeaturesFromCompound).
@@ -479,7 +479,7 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
     AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
   if (features.has_before_or_after) {
     if (rule_data.Rule()->LazyParser())
-      rule_data.Rule()->LazyParser()->LazyState()->SetHasBeforeOrAfter();
+      rule_data.Rule()->LazyParser()->SetHasBeforeOrAfter();
     UpdateInvalidationSetsForContentAttribute(
         rule_data.Rule()->ParsedProperties());
   }
@@ -806,7 +806,7 @@ void RuleFeatureSet::AddFeaturesToInvalidationSets(
 }
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
-    const RuleData& rule_data) {
+    RuleData& rule_data) {
   CHECK(is_alive_);
   FeatureMetadata metadata;
   if (CollectFeaturesFromSelector(rule_data.Selector(), metadata) ==
