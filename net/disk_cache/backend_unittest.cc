@@ -3846,7 +3846,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   ASSERT_THAT(OpenEntry(key, &entry), IsError(net::ERR_FAILED));
 
   // Confirm the rest of the files are gone.
-  for (int i = 1; i < disk_cache::kSimpleEntryFileCount; ++i) {
+  for (int i = 1; i < disk_cache::kSimpleEntryNormalFileCount; ++i) {
     base::FilePath should_be_gone_file(cache_path_.AppendASCII(
         disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, i)));
     EXPECT_FALSE(base::PathExists(should_be_gone_file));

@@ -414,15 +414,15 @@ class SimpleSynchronousEntry {
   // Normally false. This is set to true when an entry is opened without
   // checking the file headers. Any subsequent read will perform the check
   // before completing.
-  bool header_and_key_check_needed_[kSimpleEntryFileCount] = {
+  bool header_and_key_check_needed_[kSimpleEntryNormalFileCount] = {
       false,
   };
 
-  base::File files_[kSimpleEntryFileCount];
+  base::File files_[kSimpleEntryNormalFileCount];
 
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
-  bool empty_file_omitted_[kSimpleEntryFileCount];
+  bool empty_file_omitted_[kSimpleEntryNormalFileCount];
 
   typedef std::map<int64_t, SparseRange> SparseRangeOffsetMap;
   typedef SparseRangeOffsetMap::iterator SparseRangeIterator;
