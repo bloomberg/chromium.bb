@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -105,7 +106,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return ProcessFromHandle(wc->GetRenderProcessHost()->GetHandle());
+    return ProcessFromHandle(wc->GetMainFrame()->GetProcess()->GetHandle());
   }
 
   // Loads the given url in a new background tab and returns the handle of its
@@ -122,7 +123,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return ProcessFromHandle(wc->GetRenderProcessHost()->GetHandle());
+    return ProcessFromHandle(wc->GetMainFrame()->GetProcess()->GetHandle());
   }
 
   // Ensures that the backgrounding / foregrounding gets a chance to run.
@@ -164,7 +165,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     ui_test_utils::NavigateToURL(browser(), omnibox);
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph1 = tab1->GetRenderProcessHost();
+    rph1 = tab1->GetMainFrame()->GetProcess();
     EXPECT_EQ(omnibox, tab1->GetURL());
     EXPECT_EQ(host_count, RenderProcessHostCount());
 
@@ -180,7 +181,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph2 = tab1->GetRenderProcessHost();
+    rph2 = tab1->GetMainFrame()->GetProcess();
     EXPECT_EQ(tab1->GetURL(), page1);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_NE(rph1, rph2);
@@ -196,7 +197,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), page2);
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_EQ(tab2->GetRenderProcessHost(), rph2);
+    EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
 
     // Create another TYPE_WEBUI tab.  It should share the process with omnibox.
     // Note: intentionally create this tab after the TYPE_TABBED tabs to
@@ -212,7 +213,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), GURL(history));
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_EQ(tab2->GetRenderProcessHost(), rph1);
+    EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph1);
 
     // Create a TYPE_EXTENSION tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
@@ -225,7 +226,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab1 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
-    rph3 = tab1->GetRenderProcessHost();
+    rph3 = tab1->GetMainFrame()->GetProcess();
     EXPECT_EQ(tab1->GetURL(), extension_url);
     EXPECT_EQ(host_count, RenderProcessHostCount());
     EXPECT_NE(rph1, rph3);
@@ -573,7 +574,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
 
   WebContents* wc1 = browser()->tab_strip_model()->GetWebContentsAt(0);
   WebContents* wc2 = browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_EQ(wc1->GetRenderProcessHost(), wc2->GetRenderProcessHost());
+  EXPECT_EQ(wc1->GetMainFrame()->GetProcess(),
+            wc2->GetMainFrame()->GetProcess());
 
   // Create an object that will close the window on a process crash.
   WindowDestroyer destroyer(wc1, browser()->tab_strip_model());
@@ -585,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   // Kill the renderer process, simulating a crash. This should the ProcessDied
   // method to be called. Alternatively, RenderProcessHost::OnChannelError can
   // be called to directly force a call to ProcessDied.
-  wc1->GetRenderProcessHost()->Shutdown(-1, true);
+  wc1->GetMainFrame()->GetProcess()->Shutdown(-1, true);
 
   observer.Wait();
 }
@@ -627,14 +629,14 @@ class ChromeRenderProcessHostBackgroundingTest
     // Create a new tab for the no audio page and confirm that the process of
     // each tab is different and that both are valid.
     audio_process_ = ProcessFromHandle(
-        audio_tab_web_contents_->GetRenderProcessHost()->GetHandle());
+        audio_tab_web_contents_->GetMainFrame()->GetProcess()->GetHandle());
     no_audio_process_ = ShowSingletonTab(no_audio_url_);
     ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
     ASSERT_TRUE(no_audio_process_.IsValid());
     ASSERT_TRUE(audio_process_.IsValid());
 #if defined(OS_MACOSX)
     port_provider_ = content::BrowserChildProcessHost::GetPortProvider();
-#endif //  defined(OS_MACOSX)
+#endif  //  defined(OS_MACOSX)
   }
 
  protected:
