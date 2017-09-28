@@ -468,7 +468,7 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
     // during shutdown. See https://codereview.chromium.org/146693011/
     // and http://crbug.com/338709 for details.
     content::RenderProcessHost* process =
-        web_contents()->GetMainFrame()->GetProcess();
+        web_contents()->GetRenderProcessHost();
     if (process)
       process->FastShutdownIfPossible(1, false);
 

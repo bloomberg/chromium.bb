@@ -103,7 +103,7 @@ ContentInfo NavigateAndGetInfo(
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  content::RenderProcessHost* process = contents->GetMainFrame()->GetProcess();
+  content::RenderProcessHost* process = contents->GetRenderProcessHost();
   return ContentInfo(contents, process->GetID(),
                      process->GetStoragePartition());
 }
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, MAYBE_DifferentStorageId) {
   ASSERT_EQ(1u, set.size());
   content::WebContents* webview_contents = *set.begin();
   content::RenderProcessHost* process =
-      webview_contents->GetMainFrame()->GetProcess();
+      webview_contents->GetRenderProcessHost();
   ASSERT_NE(info.pid, process->GetID());
   ASSERT_NE(info.storage_partition, process->GetStoragePartition());
 }

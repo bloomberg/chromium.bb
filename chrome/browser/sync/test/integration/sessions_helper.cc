@@ -133,7 +133,7 @@ bool OpenTabFromSourceIndex(int index,
   open_url_params.source_render_frame_id =
       source_contents->GetMainFrame()->GetRoutingID();
   open_url_params.source_render_process_id =
-      source_contents->GetMainFrame()->GetProcess()->GetID();
+      source_contents->GetRenderProcessHost()->GetID();
 
   content::WebContents* new_contents =
       source_contents->OpenURL(open_url_params);

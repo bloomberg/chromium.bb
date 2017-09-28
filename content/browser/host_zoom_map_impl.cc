@@ -6,8 +6,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
-#include <utility>
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +18,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -321,8 +318,7 @@ void HostZoomMapImpl::SetDefaultZoomLevel(double level) {
     if (GetForWebContents(web_contents) != this)
       continue;
 
-    int render_process_id =
-        web_contents->GetRenderViewHost()->GetProcess()->GetID();
+    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
     int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
     // Get the url from the navigation controller directly, as calling
@@ -367,8 +363,7 @@ HostZoomMapImpl::AddZoomLevelChangedCallback(
 
 double HostZoomMapImpl::GetZoomLevelForWebContents(
     const WebContentsImpl& web_contents_impl) const {
-  int render_process_id =
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID();
+  int render_process_id = web_contents_impl.GetRenderProcessHost()->GetID();
   int routing_id = web_contents_impl.GetRenderViewHost()->GetRoutingID();
 
   if (UsesTemporaryZoomLevel(render_process_id, routing_id))
@@ -391,8 +386,7 @@ double HostZoomMapImpl::GetZoomLevelForWebContents(
 void HostZoomMapImpl::SetZoomLevelForWebContents(
     const WebContentsImpl& web_contents_impl,
     double level) {
-  int render_process_id =
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID();
+  int render_process_id = web_contents_impl.GetRenderProcessHost()->GetID();
   int render_view_id = web_contents_impl.GetRenderViewHost()->GetRoutingID();
   if (UsesTemporaryZoomLevel(render_process_id, render_view_id)) {
     SetTemporaryZoomLevel(render_process_id, render_view_id, level);
@@ -438,12 +432,12 @@ void HostZoomMapImpl::SetPageScaleFactorIsOneForView(int render_process_id,
 
 bool HostZoomMapImpl::PageScaleFactorIsOneForWebContents(
     const WebContentsImpl& web_contents_impl) const {
-  if (!web_contents_impl.GetRenderViewHost()->GetProcess())
+  if (!web_contents_impl.GetRenderProcessHost())
     return true;
   base::AutoLock auto_lock(lock_);
-  auto found = view_page_scale_factors_are_one_.find(RenderViewKey(
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID(),
-      web_contents_impl.GetRenderViewHost()->GetRoutingID()));
+  auto found = view_page_scale_factors_are_one_.find(
+      RenderViewKey(web_contents_impl.GetRenderProcessHost()->GetID(),
+                    web_contents_impl.GetRenderViewHost()->GetRoutingID()));
   if (found == view_page_scale_factors_are_one_.end())
     return true;
   return found->second;
@@ -556,8 +550,7 @@ void HostZoomMapImpl::SendZoomLevelChange(const std::string& scheme,
     if (GetForWebContents(web_contents) != this)
       continue;
 
-    int render_process_id =
-        web_contents->GetRenderViewHost()->GetProcess()->GetID();
+    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
     int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
     if (!UsesTemporaryZoomLevel(render_process_id, render_view_id))

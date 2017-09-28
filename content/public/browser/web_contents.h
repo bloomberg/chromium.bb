@@ -65,6 +65,7 @@ class BrowserPluginGuestDelegate;
 class InterstitialPage;
 class PageState;
 class RenderFrameHost;
+class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
@@ -238,8 +239,16 @@ class WebContents : public PageNavigator,
   // See also GetVisibleURL above, which may differ from this URL.
   virtual const GURL& GetLastCommittedURL() const = 0;
 
+  // Returns the main frame's process.  This may change over time (e.g. if the
+  // main frame is navigated to another origin).
+  // DEPRECATED: Explicitly specify which frame's process is needed, by instead
+  // calling something like web_contents->GetMainFrame()->GetProcess() or
+  // web_contents->GetFocusedFrame()->GetProcess().
+  // TODO(https://crbug.com/666525): Remove this method when possible.
+  virtual RenderProcessHost* GetRenderProcessHost() const = 0;
+
   // Returns the main frame for the currently active view.
-  virtual RenderFrameHost* GetMainFrame() const = 0;
+  virtual RenderFrameHost* GetMainFrame() = 0;
 
   // Returns the focused frame for the currently active view.
   virtual RenderFrameHost* GetFocusedFrame() = 0;

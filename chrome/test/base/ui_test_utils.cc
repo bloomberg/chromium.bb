@@ -430,10 +430,8 @@ void GetCookies(const GURL& url,
   *value_size = -1;
   if (url.is_valid() && contents) {
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->GetMainFrame()
-            ->GetProcess()
-            ->GetStoragePartition()
-            ->GetURLRequestContext();
+        contents->GetRenderProcessHost()->GetStoragePartition()->
+            GetURLRequestContext();
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     CHECK(content::BrowserThread::PostTask(

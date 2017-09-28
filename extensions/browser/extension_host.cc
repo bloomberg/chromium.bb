@@ -13,7 +13,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -250,8 +249,7 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // During browser shutdown, we may use sudden termination on an extension
   // process, so it is expected to lose our connection to the render view.
   // Do nothing.
-  RenderProcessHost* process_host =
-      host_contents_->GetMainFrame()->GetProcess();
+  RenderProcessHost* process_host = host_contents_->GetRenderProcessHost();
   if (process_host && process_host->FastShutdownStarted())
     return;
 

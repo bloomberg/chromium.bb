@@ -4,8 +4,6 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 
-#include <map>
-
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -184,7 +182,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
 
   content::WebContents* web_contents =
       web_view_guest()->embedder_web_contents();
-  int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
 
   const PermissionRequestID request_id(

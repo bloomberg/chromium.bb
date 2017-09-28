@@ -47,8 +47,7 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
                                                              &pdf_plugin_info);
 
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  int process_id =
-      handle->GetWebContents()->GetMainFrame()->GetProcess()->GetID();
+  int process_id = handle->GetWebContents()->GetRenderProcessHost()->GetID();
   int routing_id = handle->GetWebContents()->GetMainFrame()->GetRoutingID();
   content::ResourceContext* resource_context =
       handle->GetWebContents()->GetBrowserContext()->GetResourceContext();

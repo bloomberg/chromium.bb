@@ -136,7 +136,7 @@ void ChromeDataUseAscriberService::DidStartNavigation(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ChromeDataUseAscriber::DidStartMainFrameNavigation,
                      base::Unretained(ascriber_), navigation_handle->GetURL(),
-                     web_contents->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents->GetRenderProcessHost()->GetID(),
                      web_contents->GetMainFrame()->GetRoutingID(),
                      navigation_handle));
 }
@@ -157,7 +157,7 @@ void ChromeDataUseAscriberService::ReadyToCommitNavigation(
       base::BindOnce(&ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation,
                      base::Unretained(ascriber_),
                      navigation_handle->GetGlobalRequestID(),
-                     web_contents->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents->GetRenderProcessHost()->GetID(),
                      web_contents->GetMainFrame()->GetRoutingID()));
 }
 
@@ -177,7 +177,7 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
       base::BindOnce(
           &ChromeDataUseAscriber::DidFinishMainFrameNavigation,
           base::Unretained(ascriber_),
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
+          web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetMainFrame()->GetRoutingID(),
           navigation_handle->GetURL(), navigation_handle->IsSameDocument(),
           navigation_handle->GetPageTransition(), base::TimeTicks::Now()));

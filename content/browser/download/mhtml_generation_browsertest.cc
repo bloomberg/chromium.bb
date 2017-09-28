@@ -47,7 +47,7 @@ namespace {
 // A dummy WebContentsDelegate which tracks the results of a find operation.
 class FindTrackingDelegate : public WebContentsDelegate {
  public:
-  explicit FindTrackingDelegate(const std::string& search)
+  FindTrackingDelegate(const std::string& search)
       : search_(search), matches_(-1) {}
 
   // Returns number of results.
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLAndExitRenderer) {
 
   RenderProcessHostImpl* render_process_host =
       static_cast<RenderProcessHostImpl*>(
-          shell()->web_contents()->GetMainFrame()->GetProcess());
+          shell()->web_contents()->GetRenderProcessHost());
   scoped_refptr<BrowserMessageFilter> filter =
       new GenerateMHTMLAndExitRendererMessageFilter(render_process_host);
   render_process_host->AddFilter(filter.get());

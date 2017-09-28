@@ -23,7 +23,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -271,9 +270,9 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // response to call to AsyncResourceHandler::OnResponseComplete.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SyncXMLHttpRequest_Cancelled) {
-  embedded_test_server()->RegisterRequestHandler(base::Bind(
-      &CancelOnRequest, "/hung",
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&CancelOnRequest, "/hung",
+                 shell()->web_contents()->GetRenderProcessHost()->GetID()));
 
   ASSERT_TRUE(embedded_test_server()->Start());
   WaitForLoadStop(shell()->web_contents());

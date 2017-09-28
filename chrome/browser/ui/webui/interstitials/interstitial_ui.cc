@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 
-#include <memory>
-
 #include "base/atomic_sequence_num.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -285,9 +283,9 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.is_subframe = false;
   resource.threat_type = threat_type;
   resource.web_contents_getter =
-      security_interstitials::UnsafeResource::GetWebContentsGetter(
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID());
+      security_interstitials::UnsafeResource::
+          GetWebContentsGetter(web_contents->GetRenderProcessHost()->GetID(),
+                               web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = g_browser_process->safe_browsing_service()
                                ->database_manager()
                                ->GetThreatSource();
@@ -334,7 +332,7 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
   resource.threat_type = threat_type;
   resource.web_contents_getter =
       security_interstitials::UnsafeResource::GetWebContentsGetter(
-          web_contents->GetMainFrame()->GetProcess()->GetID(),
+          web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = g_browser_process->safe_browsing_service()
                                ->database_manager()
@@ -395,7 +393,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 }
 #endif
 
-}  //  namespace
+} //  namespace
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {

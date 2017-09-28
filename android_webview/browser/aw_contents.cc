@@ -224,10 +224,9 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
 
   CompositorID compositor_id;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
+  if (web_contents_->GetRenderProcessHost() &&
+      web_contents_->GetRenderViewHost()) {
+    compositor_id.process_id = web_contents_->GetRenderProcessHost()->GetID();
     compositor_id.routing_id =
         web_contents_->GetRenderViewHost()->GetRoutingID();
   }
@@ -1213,9 +1212,7 @@ void AwContents::InsertVisualStateCallback(
 jint AwContents::GetEffectivePriority(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  switch (web_contents_->GetMainFrame()
-              ->GetProcess()
-              ->ComputeEffectiveImportance()) {
+  switch (web_contents_->GetRenderProcessHost()->ComputeEffectiveImportance()) {
     case content::ChildProcessImportance::NORMAL:
       return static_cast<jint>(RendererPriority::WAIVED);
     case content::ChildProcessImportance::MODERATE:
@@ -1287,7 +1284,7 @@ void AwContents::GrantFileSchemeAccesstoChildProcess(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      web_contents_->GetMainFrame()->GetProcess()->GetID(), url::kFileScheme);
+      web_contents_->GetRenderProcessHost()->GetID(), url::kFileScheme);
 }
 
 void AwContents::ResumeLoadingCreatedPopupWebContents(
@@ -1334,10 +1331,9 @@ void AwContents::DidDetachInterstitialPage() {
   CompositorID compositor_id;
   if (!web_contents_)
     return;
-  if (web_contents_->GetRenderViewHost() &&
-      web_contents_->GetRenderViewHost()->GetProcess()) {
-    compositor_id.process_id =
-        web_contents_->GetRenderViewHost()->GetProcess()->GetID();
+  if (web_contents_->GetRenderProcessHost() &&
+      web_contents_->GetRenderViewHost()) {
+    compositor_id.process_id = web_contents_->GetRenderProcessHost()->GetID();
     compositor_id.routing_id =
         web_contents_->GetRenderViewHost()->GetRoutingID();
   } else {

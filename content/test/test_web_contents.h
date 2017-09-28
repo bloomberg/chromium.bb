@@ -10,7 +10,6 @@
 #include <list>
 #include <map>
 #include <string>
-#include <utility>
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
@@ -48,7 +47,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                  scoped_refptr<SiteInstance> instance);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)
-  TestRenderFrameHost* GetMainFrame() const override;
+  TestRenderFrameHost* GetMainFrame() override;
   TestRenderViewHost* GetRenderViewHost() const override;
   // Overrides to avoid establishing Mojo connection with renderer process.
   int DownloadImage(const GURL& url,

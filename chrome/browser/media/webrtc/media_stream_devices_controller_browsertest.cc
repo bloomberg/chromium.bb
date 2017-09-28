@@ -138,8 +138,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
                          : content::MEDIA_DEVICE_VIDEO_CAPTURE;
     EXPECT_EQ(example_url(),
               GetWebContents()->GetMainFrame()->GetLastCommittedURL());
-    int render_process_id =
-        GetWebContents()->GetMainFrame()->GetProcess()->GetID();
+    int render_process_id = GetWebContents()->GetRenderProcessHost()->GetID();
     int render_frame_id = GetWebContents()->GetMainFrame()->GetRoutingID();
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, example_url(), false,

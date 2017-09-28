@@ -591,7 +591,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
           UnsafeResource::GetWebContentsGetter(
-              web_contents()->GetMainFrame()->GetProcess()->GetID(),
+              web_contents()->GetRenderProcessHost()->GetID(),
               web_contents()->GetMainFrame()->GetRoutingID());
       if (!ui_manager_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstitial
@@ -627,7 +627,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
           UnsafeResource::GetWebContentsGetter(
-              web_contents()->GetMainFrame()->GetProcess()->GetID(),
+              web_contents()->GetRenderProcessHost()->GetID(),
               web_contents()->GetMainFrame()->GetRoutingID());
 
       if (!ui_manager_->IsWhitelisted(resource)) {

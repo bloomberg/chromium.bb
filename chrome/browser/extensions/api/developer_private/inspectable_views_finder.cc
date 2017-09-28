@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 
-#include <set>
-
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "content/public/browser/render_frame_host.h"
@@ -195,10 +193,10 @@ void InspectableViewsFinder::GetAppWindowViewsForExtension(
     if (url.is_empty())
       url = window->initial_url();
 
-    result->push_back(
-        ConstructView(url, web_contents->GetMainFrame()->GetProcess()->GetID(),
-                      web_contents->GetMainFrame()->GetRoutingID(), false,
-                      false, GetViewType(web_contents)));
+    content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
+    result->push_back(ConstructView(
+        url, process->GetID(), web_contents->GetMainFrame()->GetRoutingID(),
+        false, false, GetViewType(web_contents)));
   }
 }
 

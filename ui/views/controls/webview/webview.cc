@@ -4,14 +4,12 @@
 
 #include "ui/views/controls/webview/webview.h"
 
-#include <string>
 #include <utility>
 
 #include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -64,9 +62,8 @@ void WebView::SetWebContents(content::WebContents* replacement) {
     observing_render_process_host_->RemoveObserver(this);
     observing_render_process_host_ = nullptr;
   }
-  if (web_contents() && web_contents()->GetMainFrame()->GetProcess()) {
-    observing_render_process_host_ =
-        web_contents()->GetMainFrame()->GetProcess();
+  if (web_contents() && web_contents()->GetRenderProcessHost()) {
+    observing_render_process_host_ = web_contents()->GetRenderProcessHost();
     observing_render_process_host_->AddObserver(this);
   }
   // web_contents() now returns |replacement| from here onwards.

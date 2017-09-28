@@ -4,8 +4,6 @@
 
 #include "components/safe_browsing/triggers/ad_sampler_trigger.h"
 
-#include <string>
-
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -147,7 +145,7 @@ void AdSamplerTrigger::DidFinishLoad(
   resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;
   resource.url = web_contents()->GetURL();
   resource.web_contents_getter = resource.GetWebContentsGetter(
-      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetRenderProcessHost()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID());
 
   if (!trigger_manager_->StartCollectingThreatDetails(

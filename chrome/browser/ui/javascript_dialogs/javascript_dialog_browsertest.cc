@@ -52,8 +52,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
       base::UTF8ToUTF16("window.open('about:blank');"));
   content::WebContents* tab2 = new_wc_observer.GetWebContents();
   ASSERT_NE(tab1, tab2);
-  ASSERT_EQ(tab1->GetMainFrame()->GetProcess(),
-            tab2->GetMainFrame()->GetProcess());
+  ASSERT_EQ(tab1->GetRenderProcessHost(), tab2->GetRenderProcessHost());
 
   // Tab two shows a dialog.
   scoped_refptr<content::MessageLoopRunner> runner =

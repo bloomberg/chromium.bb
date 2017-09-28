@@ -12,7 +12,6 @@
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/content_features.h"
@@ -223,8 +222,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestWithInvalidInstanceID) {
       extensions::AppWindowRegistry::Get(browser()->profile())
           ->GetCurrentAppWindowForApp(bad_app->id())
           ->web_contents()
-          ->GetMainFrame()
-          ->GetProcess();
+          ->GetRenderProcessHost();
 
   // Monitor |bad_app|'s RenderProcessHost for its exiting.
   RenderProcessHostObserverForExit exit_observer(bad_app_render_process_host);

@@ -240,7 +240,7 @@ void CoreTabHelper::DidStartLoading() {
 
 void CoreTabHelper::WasShown() {
   web_cache::WebCacheManager::GetInstance()->ObserveActivity(
-      web_contents()->GetMainFrame()->GetProcess()->GetID());
+      web_contents()->GetRenderProcessHost()->GetID());
 }
 
 void CoreTabHelper::WebContentsDestroyed() {

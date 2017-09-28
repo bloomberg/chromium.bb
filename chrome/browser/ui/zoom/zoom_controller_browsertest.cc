@@ -20,7 +20,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -113,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest,
   double old_zoom_level = zoom_controller->GetZoomLevel();
   double new_zoom_level = old_zoom_level + 0.5;
 
-  content::RenderProcessHost* host = web_contents->GetMainFrame()->GetProcess();
+  content::RenderProcessHost* host = web_contents->GetRenderProcessHost();
   {
     content::RenderProcessHostWatcher crash_observer(
         host, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);

@@ -769,8 +769,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_TRUE(params.target_contents->GetMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(
       params.target_contents->GetController().IsInitialBlankNavigation());
-  int renderer_id =
-      params.target_contents->GetMainFrame()->GetProcess()->GetID();
+  int renderer_id = params.target_contents->GetRenderProcessHost()->GetID();
 
   // We should have one window, with one tab of WebContents differ from
   // params.target_contents.
@@ -787,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
             params.target_contents);
   EXPECT_EQ(renderer_id,
-            params.target_contents->GetMainFrame()->GetProcess()->GetID());
+            params.target_contents->GetRenderProcessHost()->GetID());
 
   // We should have one window, with two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());

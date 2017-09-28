@@ -8,11 +8,8 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <list>
 #include <map>
-#include <memory>
 #include <set>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -41,7 +38,6 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -528,7 +524,7 @@ class UserInteractionObserver : public WebContentsObserver {
 // This observer is used to wait for its owner FrameTreeNode to become deleted.
 class FrameDeletedObserver : public FrameTreeNode::Observer {
  public:
-  explicit FrameDeletedObserver(FrameTreeNode* owner)
+  FrameDeletedObserver(FrameTreeNode* owner)
       : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
     owner->AddObserver(this);
   }
@@ -627,7 +623,8 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
 // SitePerProcessBrowserTest
 //
 
-SitePerProcessBrowserTest::SitePerProcessBrowserTest() {}
+SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
+};
 
 std::string SitePerProcessBrowserTest::DepictFrameTree(FrameTreeNode* node) {
   return visualizer_.DepictFrameTree(node);
@@ -852,7 +849,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   RenderProcessHost* rph = child->current_frame_host()->GetProcess();
   EXPECT_NE(shell()->web_contents()->GetRenderViewHost(), rvh);
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site_instance);
-  EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetProcess(), rph);
+  EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(), rph);
   {
     // There should be now two RenderWidgetHosts, one for each process
     // rendering a frame.
@@ -903,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
             child->current_frame_host()->GetSiteInstance());
   EXPECT_NE(site_instance,
             child->current_frame_host()->GetSiteInstance());
-  EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetProcess(),
+  EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(),
             child->current_frame_host()->GetProcess());
   EXPECT_NE(rph, child->current_frame_host()->GetProcess());
   {
@@ -972,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
 class InputEventAckWaiter
     : public content::RenderWidgetHost::InputEventObserver {
  public:
-  explicit InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
+  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
       : message_loop_runner_(new content::MessageLoopRunner),
         ack_type_waiting_for_(ack_type_waiting_for),
         desired_ack_type_received_(false) {}
@@ -2810,8 +2807,7 @@ class FailingLoadFactory : public mojom::URLLoaderFactory {
 
   void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
 };
-
-}  // namespace
+}
 
 // Ensure that a cross-site page ends up in the correct process when it
 // successfully loads after earlier encountering a network error for it.
@@ -3394,7 +3390,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
     EXPECT_EQ(observer.last_navigation_url(), https_url);
     EXPECT_FALSE(observer.last_navigation_succeeded());
-  }
+   }
 
   {
     // Load same-site client-redirect page into Iframe,
@@ -3429,7 +3425,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                     server_redirect_http_url));
     EXPECT_EQ(observer.last_navigation_url(), http_url);
     EXPECT_TRUE(observer.last_navigation_succeeded());
-  }
+   }
 
   {
     // Load same-site client-redirect page into Iframe,
@@ -6332,7 +6328,7 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
   runner->Quit();
 }
 
-}  // anonymous namespace
+}  // namespace anonymous
 
 // https://crbug.com/592320
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
@@ -6551,7 +6547,7 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
 }
 #endif
 
-}  // anonymous namespace
+}  // namespace anonymous
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        InputEventRouterGestureTargetMapTest) {
@@ -9968,7 +9964,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 class NavigationHandleWatcher : public WebContentsObserver {
  public:
-  explicit NavigationHandleWatcher(WebContents* web_contents)
+  NavigationHandleWatcher(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     DCHECK_EQ(GURL("http://b.com/"),
