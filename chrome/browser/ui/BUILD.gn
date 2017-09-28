@@ -653,19 +653,6 @@ split_static_library("ui") {
   ]
   allow_circular_includes_from = []
 
-  if (enable_extensions) {
-    deps += [
-      "//components/drive",
-      "//components/guest_view/browser",
-      "//extensions/browser",
-      "//extensions/strings",
-    ]
-  }
-
-  if (is_chromeos && use_cras) {
-    defines += [ "USE_CRAS" ]
-  }
-
   if (is_android || is_linux) {
     sources += [
       "webui/sandbox_internals_ui.cc",
@@ -1076,8 +1063,6 @@ split_static_library("ui") {
       "unload_controller_web_contents_delegate.h",
       "user_manager.cc",
       "user_manager.h",
-      "views/toolbar/media_router_action_platform_delegate_views.cc",
-      "views/toolbar/media_router_action_platform_delegate_views.h",
       "webui/app_launcher_login_handler.cc",
       "webui/app_launcher_login_handler.h",
       "webui/bookmarks_ui.cc",
@@ -1315,35 +1300,6 @@ split_static_library("ui") {
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
     ]
-
-    if (enable_extensions) {
-      deps += [
-        "//apps",
-        "//extensions/common:mojo",
-      ]
-
-      if (!is_mac) {
-        deps += [ "//apps/ui/views" ]
-      }
-    }
-
-    if (is_mac && !mac_views_browser) {
-      sources -= [
-        # This file is compiled on GYP but never referenced on Mac. Since it's
-        # in a static library, it never gets pulled in and we never try to link
-        # it (it doesn't link). In GN, source sets force us to get this rule
-        # correct.
-        "views/toolbar/media_router_action_platform_delegate_views.cc",
-        "views/toolbar/media_router_action_platform_delegate_views.h",
-      ]
-    }
-
-    if (is_chromeos || is_mac || is_win) {
-      sources += [
-        "webui/cast/cast_ui.cc",
-        "webui/cast/cast_ui.h",
-      ]
-    }
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -1374,16 +1330,9 @@ split_static_library("ui") {
     ]
   }
 
-  if (is_chromeos && !is_official_build) {
-    sources += [
-      "webui/chromeos/emulator/device_emulator_message_handler.cc",
-      "webui/chromeos/emulator/device_emulator_message_handler.h",
-      "webui/chromeos/emulator/device_emulator_ui.cc",
-      "webui/chromeos/emulator/device_emulator_ui.h",
-    ]
-  }
-
   if (is_chromeos) {
+    assert(enable_extensions)
+    assert(toolkit_views)
     sources += [
       "app_list/search/launcher_search/launcher_search_icon_image_loader.cc",
       "app_list/search/launcher_search/launcher_search_icon_image_loader.h",
@@ -1405,8 +1354,12 @@ split_static_library("ui") {
       "extensions/extension_installed_notification.h",
       "input_method/input_method_engine_base.cc",
       "input_method/input_method_engine_base.h",
+      "views/apps/app_info_dialog/arc_app_info_links_panel.cc",
+      "views/apps/app_info_dialog/arc_app_info_links_panel.h",
       "views/apps/chrome_native_app_window_views_aura_ash.cc",
       "views/apps/chrome_native_app_window_views_aura_ash.h",
+      "views/extensions/request_file_system_dialog_view.cc",
+      "views/extensions/request_file_system_dialog_view.h",
       "views/intent_picker_bubble_view.cc",
       "views/intent_picker_bubble_view.h",
 
@@ -1441,11 +1394,26 @@ split_static_library("ui") {
       "//ui/chromeos",
       "//ui/chromeos/events",
     ]
+    allow_circular_includes_from = [ "//chrome/browser/chromeos" ]
+
     if (enable_rlz) {
       deps += [ "//chrome/browser:rlz" ]
     }
-    allow_circular_includes_from = [ "//chrome/browser/chromeos" ]
+
+    if (!is_official_build) {
+      sources += [
+        "webui/chromeos/emulator/device_emulator_message_handler.cc",
+        "webui/chromeos/emulator/device_emulator_message_handler.h",
+        "webui/chromeos/emulator/device_emulator_ui.cc",
+        "webui/chromeos/emulator/device_emulator_ui.h",
+      ]
+    }
+
+    if (use_cras) {
+      defines += [ "USE_CRAS" ]
+    }
   }
+
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }
@@ -1581,6 +1549,7 @@ split_static_library("ui") {
       "views/touch_uma/touch_uma.h",
     ]
   }
+
   if (toolkit_views) {
     sources += [
       "autofill/save_card_bubble_controller_impl.cc",
@@ -1606,14 +1575,8 @@ split_static_library("ui") {
       "views/apps/app_info_dialog/app_info_permissions_panel.h",
       "views/apps/app_info_dialog/app_info_summary_panel.cc",
       "views/apps/app_info_dialog/app_info_summary_panel.h",
-      "views/apps/app_window_native_widget_mac.h",
-      "views/apps/app_window_native_widget_mac.mm",
       "views/apps/chrome_native_app_window_views.cc",
       "views/apps/chrome_native_app_window_views.h",
-      "views/apps/chrome_native_app_window_views_mac.h",
-      "views/apps/chrome_native_app_window_views_mac.mm",
-      "views/apps/native_app_window_frame_view_mac.h",
-      "views/apps/native_app_window_frame_view_mac.mm",
       "views/autofill/card_unmask_prompt_views.cc",
       "views/autofill/card_unmask_prompt_views.h",
       "views/autofill/save_card_bubble_views.cc",
@@ -1631,8 +1594,6 @@ split_static_library("ui") {
       "views/chrome_constrained_window_views_client.h",
       "views/chrome_views_delegate.cc",
       "views/chrome_views_delegate.h",
-      "views/chrome_views_delegate_mac.cc",
-      "views/chrome_views_delegate_win.cc",
       "views/collected_cookies_views.cc",
       "views/collected_cookies_views.h",
       "views/confirm_bubble_views.cc",
@@ -1662,8 +1623,6 @@ split_static_library("ui") {
       "views/extensions/extension_uninstall_dialog_view.cc",
       "views/first_run_bubble.cc",
       "views/first_run_bubble.h",
-      "views/frame/native_widget_mac_frameless_nswindow.h",
-      "views/frame/native_widget_mac_frameless_nswindow.mm",
       "views/fullscreen_control/fullscreen_control_host.cc",
       "views/fullscreen_control/fullscreen_control_host.h",
       "views/fullscreen_control/fullscreen_control_popup.cc",
@@ -1789,88 +1748,42 @@ split_static_library("ui") {
       "//services/ui/public/cpp/input_devices",
     ]
 
-    if (use_aura) {
-      deps += [ "//components/ui_devtools/views" ]
-    }
-
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]
 
-    if (enable_extensions) {
-      deps += [ "//extensions/components/native_app_window" ]
+    if (is_mac) {
+      sources += [
+        "views/apps/app_window_native_widget_mac.h",
+        "views/apps/app_window_native_widget_mac.mm",
+        "views/apps/chrome_native_app_window_views_mac.h",
+        "views/apps/chrome_native_app_window_views_mac.mm",
+        "views/apps/native_app_window_frame_view_mac.h",
+        "views/apps/native_app_window_frame_view_mac.mm",
+        "views/chrome_views_delegate_mac.cc",
+        "views/frame/native_widget_mac_frameless_nswindow.h",
+        "views/frame/native_widget_mac_frameless_nswindow.mm",
+      ]
+    } else {
+      sources += [
+        "views/create_application_shortcut_view.cc",
+        "views/create_application_shortcut_view.h",
+
+        # TODO(ellyjones): Mus is not supported on Mac (there is no ui::Window
+        # apart from aura::Window, which is also not supported).
+        "views/ime_driver/ime_driver_mus.cc",
+        "views/ime_driver/ime_driver_mus.h",
+        "views/ime_driver/input_method_bridge_chromeos.cc",
+        "views/ime_driver/input_method_bridge_chromeos.h",
+        "views/ime_driver/remote_text_input_client.cc",
+        "views/ime_driver/remote_text_input_client.h",
+        "views/ime_driver/simple_input_method.cc",
+        "views/ime_driver/simple_input_method.h",
+        "views/tabs/window_finder_mus.cc",
+        "views/tabs/window_finder_mus.h",
+      ]
+
+      deps += [ "//ui/views/mus" ]
     }
 
-    if (is_chromeos) {
-      sources += [
-        "views/apps/app_info_dialog/arc_app_info_links_panel.cc",
-        "views/apps/app_info_dialog/arc_app_info_links_panel.h",
-      ]
-    } else if (!is_mac || mac_views_browser) {
-      sources += [
-        "views/frame/opaque_browser_frame_view.cc",
-        "views/frame/opaque_browser_frame_view.h",
-        "views/frame/opaque_browser_frame_view_layout.cc",
-        "views/frame/opaque_browser_frame_view_layout.h",
-        "views/frame/opaque_browser_frame_view_layout_delegate.h",
-        "views/frame/opaque_browser_frame_view_linux.cc",
-        "views/frame/opaque_browser_frame_view_linux.h",
-        "views/frame/opaque_browser_frame_view_platform_specific.cc",
-        "views/frame/opaque_browser_frame_view_platform_specific.h",
-        "views/outdated_upgrade_bubble_view.cc",
-        "views/outdated_upgrade_bubble_view.h",
-        "views/profiles/forced_reauthentication_dialog_view.cc",
-        "views/profiles/forced_reauthentication_dialog_view.h",
-        "views/profiles/profile_chooser_view.cc",
-        "views/profiles/profile_chooser_view.h",
-        "views/screen_capture_notification_ui_views.cc",
-        "views/sync/one_click_signin_dialog_view.cc",
-        "views/sync/one_click_signin_dialog_view.h",
-      ]
-    }
-
-    # These files do Gtk+-based theming, but Gtk+ is not available on
-    # Ozone builds, or on common environments where Ozone will be used.
-    #
-    # TODO(tonikitoo): It seems sensible to make it possible to opt-in
-    # the use of these files in case Gtk is available with its Wayland.
-    if (use_aura && !use_ozone && is_desktop_linux) {
-      sources += [
-        "views/chrome_browser_main_extra_parts_views_linux.cc",
-        "views/chrome_browser_main_extra_parts_views_linux.h",
-      ]
-    }
-    if (enable_extensions && (!is_mac || mac_views_browser)) {
-      sources += [
-        "views/extensions/browser_action_drag_data.cc",
-        "views/extensions/browser_action_drag_data.h",
-        "views/extensions/extension_action_platform_delegate_views.cc",
-        "views/extensions/extension_action_platform_delegate_views.h",
-        "views/extensions/extension_dialog.cc",
-        "views/extensions/extension_dialog.h",
-        "views/extensions/extension_dialog_observer.cc",
-        "views/extensions/extension_dialog_observer.h",
-        "views/extensions/extension_popup.cc",
-        "views/extensions/extension_popup.h",
-        "views/extensions/extension_view_views.cc",
-        "views/extensions/extension_view_views.h",
-        "views/extensions/media_galleries_dialog_views.cc",
-        "views/extensions/media_galleries_dialog_views.h",
-        "views/extensions/media_gallery_checkbox_view.cc",
-        "views/extensions/media_gallery_checkbox_view.h",
-      ]
-      if (use_aura) {
-        sources += [
-          "views/extensions/extension_popup_aura.cc",
-          "views/extensions/extension_popup_aura.h",
-        ]
-        deps += [ "//ui/wm/public" ]
-      }
-      if (is_chromeos) {
-        sources += [
-          "views/extensions/request_file_system_dialog_view.cc",
-          "views/extensions/request_file_system_dialog_view.h",
-        ]
-      }
-    }
     if (!is_mac || mac_views_browser) {
       sources += [
         "javascript_dialogs/javascript_dialog.cc",
@@ -1902,13 +1815,9 @@ split_static_library("ui") {
         "views/bubble_anchor_util_views.cc",
         "views/certificate_selector.cc",
         "views/certificate_selector.h",
-        "views/certificate_viewer_win.cc",
         "views/chrome_javascript_native_dialog_factory_views.cc",
         "views/chrome_views_delegate_chromeos.cc",
         "views/chrome_web_dialog_view.cc",
-        "views/color_chooser_win.cc",
-        "views/conflicting_module_view_win.cc",
-        "views/conflicting_module_view_win.h",
         "views/constrained_web_dialog_delegate_views.cc",
         "views/download/download_feedback_dialog_view.cc",
         "views/download/download_feedback_dialog_view.h",
@@ -1950,8 +1859,6 @@ split_static_library("ui") {
         "views/frame/browser_view_layout.h",
         "views/frame/browser_view_layout_delegate.h",
         "views/frame/browser_window_factory.cc",
-        "views/frame/browser_window_property_manager_win.cc",
-        "views/frame/browser_window_property_manager_win.h",
         "views/frame/contents_layout_manager.cc",
         "views/frame/contents_layout_manager.h",
         "views/frame/contents_web_view.cc",
@@ -1961,20 +1868,14 @@ split_static_library("ui") {
         "views/frame/immersive_mode_controller_factory_views.cc",
         "views/frame/immersive_mode_controller_stub.cc",
         "views/frame/immersive_mode_controller_stub.h",
-        "views/frame/minimize_button_metrics_win.cc",
-        "views/frame/minimize_button_metrics_win.h",
         "views/frame/native_browser_frame.h",
         "views/frame/native_browser_frame_factory.cc",
         "views/frame/native_browser_frame_factory.h",
         "views/frame/native_browser_frame_factory_chromeos.cc",
-        "views/frame/system_menu_insertion_delegate_win.cc",
-        "views/frame/system_menu_insertion_delegate_win.h",
         "views/frame/system_menu_model_builder.cc",
         "views/frame/system_menu_model_builder.h",
         "views/frame/system_menu_model_delegate.cc",
         "views/frame/system_menu_model_delegate.h",
-        "views/frame/taskbar_decorator_win.cc",
-        "views/frame/taskbar_decorator_win.h",
         "views/frame/top_container_view.cc",
         "views/frame/top_container_view.h",
         "views/frame/web_contents_close_handler.cc",
@@ -2043,14 +1944,8 @@ split_static_library("ui") {
         "views/ssl_client_certificate_selector.h",
         "views/status_bubble_views.cc",
         "views/status_bubble_views.h",
-        "views/status_icons/status_icon_win.cc",
-        "views/status_icons/status_icon_win.h",
         "views/status_icons/status_tray_linux.cc",
         "views/status_icons/status_tray_linux.h",
-        "views/status_icons/status_tray_state_changer_win.cc",
-        "views/status_icons/status_tray_state_changer_win.h",
-        "views/status_icons/status_tray_win.cc",
-        "views/status_icons/status_tray_win.h",
         "views/tab_dialogs_views.cc",
         "views/tab_dialogs_views.h",
         "views/tab_icon_view.cc",
@@ -2078,7 +1973,6 @@ split_static_library("ui") {
         "views/tabs/window_finder.cc",
         "views/tabs/window_finder.h",
         "views/tabs/window_finder_chromeos.cc",
-        "views/tabs/window_finder_win.cc",
         "views/theme_copying_widget.cc",
         "views/theme_copying_widget.h",
         "views/toolbar/app_menu.cc",
@@ -2092,6 +1986,8 @@ split_static_library("ui") {
         "views/toolbar/extension_toolbar_menu_view.h",
         "views/toolbar/home_button.cc",
         "views/toolbar/home_button.h",
+        "views/toolbar/media_router_action_platform_delegate_views.cc",
+        "views/toolbar/media_router_action_platform_delegate_views.h",
         "views/toolbar/reload_button.cc",
         "views/toolbar/reload_button.h",
         "views/toolbar/toolbar_action_view.cc",
@@ -2117,41 +2013,45 @@ split_static_library("ui") {
         ]
       }
 
-      if (is_win) {
-        sources += [
-          "views/try_chrome_dialog.cc",
-          "views/try_chrome_dialog.h",
-        ]
-      }
-
-      if (!is_mac) {
-        sources += [
-          "views/create_application_shortcut_view.cc",
-          "views/create_application_shortcut_view.h",
-
-          # TODO(ellyjones): Mus is not supported on Mac (there is no ui::Window
-          # apart from aura::Window, which is also not supported).
-          "views/ime_driver/ime_driver_mus.cc",
-          "views/ime_driver/ime_driver_mus.h",
-          "views/ime_driver/input_method_bridge_chromeos.cc",
-          "views/ime_driver/input_method_bridge_chromeos.h",
-          "views/ime_driver/remote_text_input_client.cc",
-          "views/ime_driver/remote_text_input_client.h",
-          "views/ime_driver/simple_input_method.cc",
-          "views/ime_driver/simple_input_method.h",
-          "views/tabs/window_finder_mus.cc",
-          "views/tabs/window_finder_mus.h",
-        ]
-
-        deps += [ "//ui/views/mus" ]
-      }
-
       if (!is_chromeos) {
         sources += [
+          "views/frame/opaque_browser_frame_view.cc",
+          "views/frame/opaque_browser_frame_view.h",
+          "views/frame/opaque_browser_frame_view_layout.cc",
+          "views/frame/opaque_browser_frame_view_layout.h",
+          "views/frame/opaque_browser_frame_view_layout_delegate.h",
+          "views/frame/opaque_browser_frame_view_linux.cc",
+          "views/frame/opaque_browser_frame_view_linux.h",
+          "views/frame/opaque_browser_frame_view_platform_specific.cc",
+          "views/frame/opaque_browser_frame_view_platform_specific.h",
+          "views/outdated_upgrade_bubble_view.cc",
+          "views/outdated_upgrade_bubble_view.h",
+          "views/profiles/forced_reauthentication_dialog_view.cc",
+          "views/profiles/forced_reauthentication_dialog_view.h",
+          "views/profiles/profile_chooser_view.cc",
+          "views/profiles/profile_chooser_view.h",
           "views/profiles/signin_view_controller_delegate_views.cc",
           "views/profiles/signin_view_controller_delegate_views.h",
+          "views/screen_capture_notification_ui_views.cc",
+          "views/sync/one_click_signin_dialog_view.cc",
+          "views/sync/one_click_signin_dialog_view.h",
         ]
       }
+    }
+
+    if (is_desktop_linux) {
+      sources += [ "views/chrome_views_delegate_linux.cc" ]
+    }
+
+    if (is_win) {
+      sources += [ "views/chrome_views_delegate_win.cc" ]
+    }
+
+    if (is_win || is_desktop_linux) {
+      sources += [
+        "views/native_widget_factory.cc",
+        "views/native_widget_factory.h",
+      ]
     }
 
     if (use_ash) {
@@ -2172,21 +2072,32 @@ split_static_library("ui") {
       ]
     }
 
-    if (is_win || is_desktop_linux) {
-      sources += [
-        "views/chrome_views_delegate_linux.cc",
-        "views/native_widget_factory.cc",
-        "views/native_widget_factory.h",
-      ]
+    if (use_aura) {
+      deps += [ "//components/ui_devtools/views" ]
+
+      # These files do Gtk+-based theming, but Gtk+ is not available on
+      # Ozone builds, or on common environments where Ozone will be used.
+      #
+      # TODO(tonikitoo): It seems sensible to make it possible to opt-in
+      # the use of these files in case Gtk is available with its Wayland.
+      if (!use_ozone && is_desktop_linux) {
+        sources += [
+          "views/chrome_browser_main_extra_parts_views_linux.cc",
+          "views/chrome_browser_main_extra_parts_views_linux.h",
+        ]
+      }
     }
   }
+
   if (use_gio) {
     deps += [ "//build/linux/libgio" ]
   }
+
   if (use_aura && !use_ozone && is_desktop_linux) {
     # This is the only component that can interact with gtk.
     deps += [ "//chrome/browser/ui/libgtkui" ]
   }
+
   if (is_win || is_mac || is_desktop_linux) {
     sources += [
       "avatar_button_error_controller.cc",
@@ -2367,6 +2278,12 @@ split_static_library("ui") {
       "webui/certificate_manager_localized_strings_provider.h",
       "webui/certificates_handler.cc",
       "webui/certificates_handler.h",
+    ]
+  }
+  if (is_chromeos || is_mac || is_win) {
+    sources += [
+      "webui/cast/cast_ui.cc",
+      "webui/cast/cast_ui.h",
     ]
   }
   if (is_mac || is_win) {
@@ -3160,6 +3077,7 @@ split_static_library("ui") {
   }
 
   if (is_win) {
+    assert(toolkit_views)
     sources += [
       "desktop_ios_promotion/desktop_ios_promotion_bubble_controller.cc",
       "desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h",
@@ -3178,10 +3096,14 @@ split_static_library("ui") {
       "input_method/input_method_engine_base.h",
       "network_profile_bubble.cc",
       "network_profile_bubble.h",
+      "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
       "views/chrome_cleaner_dialog_win.h",
       "views/color_chooser_dialog.cc",
       "views/color_chooser_dialog.h",
+      "views/color_chooser_win.cc",
+      "views/conflicting_module_view_win.cc",
+      "views/conflicting_module_view_win.h",
       "views/critical_notification_bubble_view.cc",
       "views/critical_notification_bubble_view.h",
       "views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.cc",
@@ -3191,14 +3113,31 @@ split_static_library("ui") {
       "views/frame/browser_desktop_window_tree_host.h",
       "views/frame/browser_desktop_window_tree_host_win.cc",
       "views/frame/browser_desktop_window_tree_host_win.h",
+      "views/frame/browser_window_property_manager_win.cc",
+      "views/frame/browser_window_property_manager_win.h",
       "views/frame/glass_browser_frame_view.cc",
       "views/frame/glass_browser_frame_view.h",
+      "views/frame/minimize_button_metrics_win.cc",
+      "views/frame/minimize_button_metrics_win.h",
       "views/frame/native_browser_frame_factory_aurawin.cc",
+      "views/frame/system_menu_insertion_delegate_win.cc",
+      "views/frame/system_menu_insertion_delegate_win.h",
+      "views/frame/taskbar_decorator_win.cc",
+      "views/frame/taskbar_decorator_win.h",
       "views/frame/windows_10_caption_button.cc",
       "views/frame/windows_10_caption_button.h",
       "views/network_profile_bubble_view.cc",
       "views/settings_reset_prompt_dialog.cc",
       "views/settings_reset_prompt_dialog.h",
+      "views/status_icons/status_icon_win.cc",
+      "views/status_icons/status_icon_win.h",
+      "views/status_icons/status_tray_state_changer_win.cc",
+      "views/status_icons/status_tray_state_changer_win.h",
+      "views/status_icons/status_tray_win.cc",
+      "views/status_icons/status_tray_win.h",
+      "views/tabs/window_finder_win.cc",
+      "views/try_chrome_dialog.cc",
+      "views/try_chrome_dialog.h",
       "views/uninstall_view.cc",
       "views/uninstall_view.h",
       "webui/conflicts_handler.cc",
@@ -3502,12 +3441,20 @@ split_static_library("ui") {
       "app_list/app_list_service_disabled_mac.mm",
     ]
   }
+
   if (enable_extensions) {
     deps += [
+      "//apps",
       "//chrome/browser/apps",
       "//chrome/browser/extensions",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
+      "//components/drive",
+      "//components/guest_view/browser",
+      "//extensions/browser",
+      "//extensions/common:mojo",
+      "//extensions/components/native_app_window",
+      "//extensions/strings",
     ]
     allow_circular_includes_from += [
       "//chrome/browser/apps",
@@ -3551,7 +3498,39 @@ split_static_library("ui") {
       "webui/extensions/extension_icon_source.cc",
       "webui/extensions/extension_icon_source.h",
     ]
+
+    if (!is_mac) {
+      deps += [ "//apps/ui/views" ]
+    }
+    if (!is_mac || mac_views_browser) {
+      sources += [
+        "views/extensions/browser_action_drag_data.cc",
+        "views/extensions/browser_action_drag_data.h",
+        "views/extensions/extension_action_platform_delegate_views.cc",
+        "views/extensions/extension_action_platform_delegate_views.h",
+        "views/extensions/extension_dialog.cc",
+        "views/extensions/extension_dialog.h",
+        "views/extensions/extension_dialog_observer.cc",
+        "views/extensions/extension_dialog_observer.h",
+        "views/extensions/extension_popup.cc",
+        "views/extensions/extension_popup.h",
+        "views/extensions/extension_view_views.cc",
+        "views/extensions/extension_view_views.h",
+        "views/extensions/media_galleries_dialog_views.cc",
+        "views/extensions/media_galleries_dialog_views.h",
+        "views/extensions/media_gallery_checkbox_view.cc",
+        "views/extensions/media_gallery_checkbox_view.h",
+      ]
+    }
+    if (use_aura) {
+      sources += [
+        "views/extensions/extension_popup_aura.cc",
+        "views/extensions/extension_popup_aura.h",
+      ]
+      deps += [ "//ui/wm/public" ]
+    }
   }
+
   if (enable_webrtc) {
     sources += [
       "webui/media/webrtc_logs_ui.cc",
