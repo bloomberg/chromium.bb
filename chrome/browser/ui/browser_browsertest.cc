@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_CrossProcessNavCancelsDialogs) {
   EXPECT_FALSE(js_helper->IsShowingDialogForTesting());
 
   // Make sure input events still work in the renderer process.
-  EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IgnoreInputEvents());
 }
 
 // Make sure that dialogs are closed after a renderer process dies, and that
@@ -625,7 +625,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   EXPECT_TRUE(dialog_queue->HasActiveDialog());
 
   // Crash the renderer process and ensure the dialog is gone.
-  content::RenderProcessHost* child_process = contents->GetRenderProcessHost();
+  content::RenderProcessHost* child_process =
+      contents->GetMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       child_process,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
@@ -658,7 +659,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
   // Crash the renderer process and ensure the dialog is gone.
-  content::RenderProcessHost* child_process = contents->GetRenderProcessHost();
+  content::RenderProcessHost* child_process =
+      contents->GetMainFrame()->GetProcess();
   content::RenderProcessHostWatcher crash_observer(
       child_process,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
@@ -1044,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   WebContents* oldtab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
+  content::RenderProcessHost* process = oldtab->GetMainFrame()->GetProcess();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -1076,7 +1078,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // Popup window should not be in the opener's process.
   content::RenderProcessHost* popup_process =
-      newtab->GetRenderProcessHost();
+      newtab->GetMainFrame()->GetProcess();
   EXPECT_NE(process, popup_process);
 
   // Now open a tab to a blank page, set its opener to null, and use a
@@ -1110,7 +1112,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 
   // This popup window should also not be in the opener's process.
   content::RenderProcessHost* popup_process2 =
-      newtab2->GetRenderProcessHost();
+      newtab2->GetMainFrame()->GetProcess();
   EXPECT_NE(process, popup_process2);
 }
 
@@ -1133,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   WebContents* oldtab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderProcessHost* process = oldtab->GetRenderProcessHost();
+  content::RenderProcessHost* process = oldtab->GetMainFrame()->GetProcess();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -1164,7 +1166,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
 
   // Popup window should still be in the opener's process.
   content::RenderProcessHost* popup_process =
-      newtab->GetRenderProcessHost();
+      newtab->GetMainFrame()->GetProcess();
   EXPECT_EQ(process, popup_process);
 
   // Same thing if the current tab tries to navigate itself.
@@ -1183,7 +1185,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
             oldtab->GetController().GetLastCommittedEntry()->GetURL().spec());
 
   // Original window should still be in the original process.
-  content::RenderProcessHost* new_process = newtab->GetRenderProcessHost();
+  content::RenderProcessHost* new_process =
+      newtab->GetMainFrame()->GetProcess();
   EXPECT_EQ(process, new_process);
 }
 
@@ -1887,7 +1890,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   // interstitial is deleted now.
 
   // Make sure input events still work in the renderer process.
-  EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
+  EXPECT_FALSE(contents->GetMainFrame()->GetProcess()->IgnoreInputEvents());
 }
 
 
