@@ -72,10 +72,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   };
 
 #if defined(NTLM_PORTABLE)
-  // A function that returns the time as the number of 100 nanosecond ticks
-  // since Jan 1, 1601 (UTC).
-  typedef uint64_t (*GetMSTimeProc)();
-
   // A function that generates n random bytes in the output buffer.
   typedef void (*GenerateRandomProc)(uint8_t* output, size_t n);
 
@@ -87,22 +83,18 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   // GetHostName functions.
   class ScopedProcSetter {
    public:
-    ScopedProcSetter(GetMSTimeProc ms_time_proc,
-                     GenerateRandomProc random_proc,
+    ScopedProcSetter(GenerateRandomProc random_proc,
                      HostNameProc host_name_proc) {
-      old_ms_time_proc_ = SetGetMSTimeProc(ms_time_proc);
       old_random_proc_ = SetGenerateRandomProc(random_proc);
       old_host_name_proc_ = SetHostNameProc(host_name_proc);
     }
 
     ~ScopedProcSetter() {
-      SetGetMSTimeProc(old_ms_time_proc_);
       SetGenerateRandomProc(old_random_proc_);
       SetHostNameProc(old_host_name_proc_);
     }
 
    private:
-    GetMSTimeProc old_ms_time_proc_;
     GenerateRandomProc old_random_proc_;
     HostNameProc old_host_name_proc_;
   };
@@ -140,9 +132,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   ~HttpAuthHandlerNTLM() override;
 
 #if defined(NTLM_PORTABLE)
-  // For unit tests to override the GetMSTime, GenerateRandom and GetHostName
-  // functions. Returns the old function.
-  static GetMSTimeProc SetGetMSTimeProc(GetMSTimeProc proc);
+  // For unit tests to override the GenerateRandom and GetHostName functions.
+  // Returns the old function.
   static GenerateRandomProc SetGenerateRandomProc(GenerateRandomProc proc);
   static HostNameProc SetHostNameProc(HostNameProc proc);
 
@@ -165,7 +156,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 #endif
 
 #if defined(NTLM_PORTABLE)
-  static GetMSTimeProc get_ms_time_proc_;
   static GenerateRandomProc generate_random_proc_;
   static HostNameProc get_host_name_proc_;
 #endif

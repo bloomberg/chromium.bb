@@ -32,19 +32,9 @@ struct SecurityBuffer {
   uint16_t length;
 };
 
-struct NtlmFeatures {
-  explicit NtlmFeatures(bool enable_NTLMv2) : enable_NTLMv2(enable_NTLMv2) {}
-
-  // Whether the use NTLMv2.
-  bool enable_NTLMv2 = true;
-
-  // Enables Message Integrity Check (MIC). This flag is ignored if
-  // enable_NTLMv2 is false.
-  bool enable_MIC = true;
-
-  // Enables Extended Protection for Authentication (EPA). This flag is
-  // ignored if enable_NTLMv2 is false.
-  bool enable_EPA = true;
+enum class NtlmVersion {
+  kNtlmV1 = 0x01,
+  kNtlmV2 = 0x02,
 };
 
 // There are 3 types of messages in NTLM. The message type is a field in
@@ -65,7 +55,6 @@ enum class NegotiateFlags : uint32_t {
   kNtlm = 0x200,
   kAlwaysSign = 0x8000,
   kExtendedSessionSecurity = 0x80000,
-  kTargetInfo = 0x800000,
 };
 
 constexpr inline NegotiateFlags operator|(NegotiateFlags lhs,
@@ -84,96 +73,17 @@ constexpr inline NegotiateFlags operator&(NegotiateFlags lhs,
                                      static_cast<TFlagsInt>(rhs));
 }
 
-// Identifies the payload type in an AV Pair. See [MS-NLMP] 2.2.2.1
-enum class TargetInfoAvId : uint16_t {
-  kEol = 0x0000,
-  kServerName = 0x00001,
-  kDomainName = 0x00002,
-  kFlags = 0x0006,
-  kTimestamp = 0x0007,
-  kTargetName = 0x0009,
-  kChannelBindings = 0x000A,
-};
-
-// Flags used in an TargetInfoAvId::kFlags AV Pair. See [MS-NLMP] 2.2.2.1
-enum class TargetInfoAvFlags : uint32_t {
-  kNone = 0,
-  kMicPresent = 0x00000002,
-};
-
-using TAvFlagsInt = std::underlying_type<TargetInfoAvFlags>::type;
-
-constexpr inline TargetInfoAvFlags operator|(TargetInfoAvFlags lhs,
-                                             TargetInfoAvFlags rhs) {
-  return static_cast<TargetInfoAvFlags>(static_cast<TAvFlagsInt>(lhs) |
-                                        static_cast<TAvFlagsInt>(rhs));
-}
-
-constexpr inline TargetInfoAvFlags operator&(TargetInfoAvFlags lhs,
-                                             TargetInfoAvFlags rhs) {
-  return static_cast<TargetInfoAvFlags>(static_cast<TAvFlagsInt>(lhs) &
-                                        static_cast<TAvFlagsInt>(rhs));
-}
-
-// An AV Pair is a structure that appears inside the target info field. It
-// consists of an |avid| to identify the data type and an |avlen| specifying
-// the size of the payload. Following that is |avlen| bytes of inline payload.
-// AV Pairs are concatenated together and a special terminator with |avid|
-// equal to |kEol| and |avlen| equal to zero signals that no further pairs
-// follow. See [MS-NLMP] 2.2.2.1
-//
-// AV Pairs from the Challenge message are read from the challenge message
-// and a potentially modified version is written into the authenticate
-// message. In some cases the existing AV Pair is modified, eg. flags. In
-// some cases new AV Pairs are add, eg. channel bindings and spn.
-//
-// For simplicity of processing two special fields |flags|, and |timestamp|
-// are populated during the initial parsing phase for AVIDs |kFlags| and
-// |kTimestamp| respectively. This avoids subsequent code having to
-// manipulate the payload value through the buffer directly. For all
-// other AvPairs the value of these 2 fields is undefined and the payload
-// is in the |buffer| field. For these fields the payload is copied verbatim
-// and it's content is not read or validated in any way.
-struct AvPair {
-  AvPair() {}
-  AvPair(TargetInfoAvId avid, uint16_t avlen) : avid(avid), avlen(avlen) {}
-  AvPair(TargetInfoAvId avid, Buffer buffer)
-      : buffer(std::move(buffer)), avid(avid) {
-    avlen = this->buffer.size();
-  }
-
-  Buffer buffer;
-  uint64_t timestamp;
-  TargetInfoAvFlags flags;
-  TargetInfoAvId avid;
-  uint16_t avlen;
-};
-
 static constexpr uint8_t kSignature[] = "NTLMSSP";
 static constexpr size_t kSignatureLen = arraysize(kSignature);
-static constexpr uint16_t kProofInputVersionV2 = 0x0101;
 static constexpr size_t kSecurityBufferLen =
     (2 * sizeof(uint16_t)) + sizeof(uint32_t);
 static constexpr size_t kNegotiateMessageLen = 32;
 static constexpr size_t kMinChallengeHeaderLen = 32;
-static constexpr size_t kChallengeHeaderLen = 48;
+static constexpr size_t kChallengeHeaderLen = 32;
 static constexpr size_t kResponseLenV1 = 24;
 static constexpr size_t kChallengeLen = 8;
-static constexpr size_t kVersionFieldLen = 8;
 static constexpr size_t kNtlmHashLen = 16;
-static constexpr size_t kNtlmProofLenV2 = kNtlmHashLen;
-static constexpr size_t kSessionKeyLenV2 = kNtlmHashLen;
-static constexpr size_t kMicLenV2 = kNtlmHashLen;
-static constexpr size_t kChannelBindingsHashLen = kNtlmHashLen;
-static constexpr size_t kEpaUnhashedStructHeaderLen = 20;
-static constexpr size_t kProofInputLenV2 = 28;
-static constexpr size_t kAvPairHeaderLen = 2 * sizeof(uint16_t);
-static constexpr size_t kNtlmResponseHeaderLenV2 =
-    kNtlmProofLenV2 + kProofInputLenV2;
 static constexpr size_t kAuthenticateHeaderLenV1 = 64;
-static constexpr size_t kMicOffsetV2 = 72;
-static constexpr size_t kAuthenticateHeaderLenV2 = 88;
-
 static constexpr size_t kMaxFqdnLen = 255;
 static constexpr size_t kMaxUsernameLen = 104;
 static constexpr size_t kMaxPasswordLen = 256;

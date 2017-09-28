@@ -75,9 +75,9 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   // the buffer, it returns false.
   bool WriteBytes(const uint8_t* buffer, size_t len) WARN_UNUSED_RESULT;
 
-  // Writes the bytes from the |Buffer|. If there are not enough
+  // Writes the bytes from the |base::StringPiece|. If there are not enough
   // bytes in the buffer, it returns false.
-  bool WriteBytes(const Buffer& buffer) WARN_UNUSED_RESULT;
+  bool WriteBytes(base::StringPiece bytes) WARN_UNUSED_RESULT;
 
   // Writes |count| bytes of zeros to the buffer. If there are not |count|
   // more bytes in available in the buffer, it returns false.
@@ -92,30 +92,6 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   //     uint16 - Allocation (ignored and always set to |length|)
   //     uint32 - |offset| Offset from start of message
   bool WriteSecurityBuffer(SecurityBuffer sec_buf) WARN_UNUSED_RESULT;
-
-  // Writes an AvPair header. See [MS-NLMP] Section 2.2.2.1.
-  //
-  // The header has the following structure:
-  //    uint16 - |avid| The identifier of the following payload.
-  //    uint16 - |avlen| The length of the following payload.
-  bool WriteAvPairHeader(ntlm::TargetInfoAvId avid,
-                         uint16_t avlen) WARN_UNUSED_RESULT;
-
-  // Writes an AvPair header for an |AvPair|. See [MS-NLMP] Section 2.2.2.1.
-  bool WriteAvPairHeader(const AvPair& pair) WARN_UNUSED_RESULT {
-    return WriteAvPairHeader(pair.avid, pair.avlen);
-  }
-
-  // Writes a special AvPair header with both fields equal to 0. This zero
-  // length AvPair signals the end of the AvPair list.
-  bool WriteAvPairTerminator() WARN_UNUSED_RESULT;
-
-  // Writes an |AvPair| header and its payload to the buffer. If the |avid|
-  // is of type |TargetInfoAvId::kFlags| the |flags| field of |pair| will be
-  // used as the payload and the |buffer| field is ignored. In all other cases
-  // |buffer| is used as the payload. See also
-  // |NtlmBufferReader::ReadTargetInfo|.
-  bool WriteAvPair(const AvPair& pair) WARN_UNUSED_RESULT;
 
   // Writes a string of 8 bit characters to the buffer.
   //

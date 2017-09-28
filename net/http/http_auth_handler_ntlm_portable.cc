@@ -5,7 +5,6 @@
 #include "net/http/http_auth_handler_ntlm.h"
 
 #include "base/rand_util.h"
-#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 
@@ -13,19 +12,11 @@ namespace net {
 
 namespace {
 
-uint64_t GetMSTime() {
-  return base::Time::Now().since_origin().InMicroseconds() * 10;
-}
-
 void GenerateRandom(uint8_t* output, size_t n) {
   base::RandBytes(output, n);
 }
 
 }  // namespace
-
-// static
-HttpAuthHandlerNTLM::GetMSTimeProc HttpAuthHandlerNTLM::get_ms_time_proc_ =
-    GetMSTime;
 
 // static
 HttpAuthHandlerNTLM::GenerateRandomProc
@@ -35,8 +26,7 @@ HttpAuthHandlerNTLM::GenerateRandomProc
 HttpAuthHandlerNTLM::HostNameProc HttpAuthHandlerNTLM::get_host_name_proc_ =
     GetHostName;
 
-HttpAuthHandlerNTLM::HttpAuthHandlerNTLM()
-    : ntlm_client_(ntlm::NtlmFeatures(false)) {}
+HttpAuthHandlerNTLM::HttpAuthHandlerNTLM() : ntlm_client_() {}
 
 bool HttpAuthHandlerNTLM::NeedsIdentity() {
   // This gets called for each round-trip.  Only require identity on
@@ -56,14 +46,6 @@ int HttpAuthHandlerNTLM::InitializeBeforeFirstChallenge() {
 }
 
 HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {}
-
-// static
-HttpAuthHandlerNTLM::GetMSTimeProc HttpAuthHandlerNTLM::SetGetMSTimeProc(
-    GetMSTimeProc proc) {
-  GetMSTimeProc old_proc = get_ms_time_proc_;
-  get_ms_time_proc_ = proc;
-  return old_proc;
-}
 
 // static
 HttpAuthHandlerNTLM::GenerateRandomProc
@@ -98,12 +80,10 @@ ntlm::Buffer HttpAuthHandlerNTLM::GetNextToken(const ntlm::Buffer& in_token) {
     return ntlm::Buffer();
   uint8_t client_challenge[8];
   generate_random_proc_(client_challenge, 8);
-  uint64_t client_time = get_ms_time_proc_();
 
   return ntlm_client_.GenerateAuthenticateMessage(
       domain_, credentials_.username(), credentials_.password(), hostname,
-      channel_bindings_, CreateSPN(origin_), client_time, client_challenge,
-      in_token);
+      client_challenge, in_token);
 }
 
 int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
