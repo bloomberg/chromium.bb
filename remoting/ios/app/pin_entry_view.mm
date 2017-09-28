@@ -39,15 +39,13 @@ static const int kMinPinLength = 6;
     self.backgroundColor = [UIColor clearColor];
 
     _pairingSwitch = [[UISwitch alloc] init];
-    _pairingSwitch.tintColor =
-        [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5];
+    _pairingSwitch.tintColor = RemotingTheme.pinEntryPairingColor;
     _pairingSwitch.transform = CGAffineTransformMakeScale(0.5, 0.5);
     _pairingSwitch.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingSwitch];
 
     _pairingLabel = [[UILabel alloc] init];
-    _pairingLabel.textColor =
-        [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5];
+    _pairingLabel.textColor = RemotingTheme.pinEntryPairingColor;
     _pairingLabel.font = [UIFont systemFontOfSize:12.f];
     _pairingLabel.text =
         l10n_util::GetNSString(IDS_REMEMBER_PIN_ON_THIS_DEVICE);
@@ -81,14 +79,14 @@ static const int kMinPinLength = 6;
     [self addSubview:_pinButton];
 
     _pinEntry = [[UITextField alloc] init];
-    _pinEntry.textColor = [UIColor whiteColor];
+    _pinEntry.textColor = RemotingTheme.pinEntryTextColor;
     _pinEntry.secureTextEntry = YES;
     _pinEntry.keyboardType = UIKeyboardTypeNumberPad;
     _pinEntry.attributedPlaceholder = [[NSAttributedString alloc]
         initWithString:l10n_util::GetNSString(IDS_ENTER_PIN)
             attributes:@{
               NSForegroundColorAttributeName :
-                  [UIColor colorWithWhite:1.f alpha:0.26f]
+                  RemotingTheme.pinEntryPlaceholderColor
             }];
     _pinEntry.translatesAutoresizingMaskIntoConstraints = NO;
     _pinEntry.delegate = self;
