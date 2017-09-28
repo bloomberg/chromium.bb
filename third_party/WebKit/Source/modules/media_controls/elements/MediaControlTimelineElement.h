@@ -5,7 +5,7 @@
 #ifndef MediaControlTimelineElement_h
 #define MediaControlTimelineElement_h
 
-#include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "modules/media_controls/elements/MediaControlSliderElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineMetrics.h"
 
 namespace blink {
@@ -13,7 +13,7 @@ namespace blink {
 class Event;
 class MediaControlsImpl;
 
-class MediaControlTimelineElement final : public MediaControlInputElement {
+class MediaControlTimelineElement final : public MediaControlSliderElement {
  public:
   explicit MediaControlTimelineElement(MediaControlsImpl&);
 
@@ -29,16 +29,14 @@ class MediaControlTimelineElement final : public MediaControlInputElement {
 
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(event); }
 
+  void RenderBarSegments();
+
  protected:
   const char* GetNameForHistograms() const override;
 
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
-
-  // Width in CSS pixels * pageZoomFactor (ignores CSS transforms for
-  // simplicity; deliberately ignores pinch zoom's pageScaleFactor).
-  int TimelineWidth();
 
   MediaControlTimelineMetrics metrics_;
 };

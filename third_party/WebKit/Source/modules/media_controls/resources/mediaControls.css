@@ -375,7 +375,7 @@ audio::-webkit-media-controls-time-remaining-display, video::-webkit-media-contr
 }
 
 audio::-webkit-media-controls-timeline, video::-webkit-media-controls-timeline {
-    -webkit-appearance: media-slider;
+    -webkit-appearance: -internal-media-control;
     display: flex;
     flex: 1 1 auto;
     height: 2px;
@@ -392,7 +392,7 @@ audio::-webkit-media-controls-timeline, video::-webkit-media-controls-timeline {
 }
 
 audio::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volume-slider {
-    -webkit-appearance: media-volume-slider;
+    -webkit-appearance: -internal-media-control;
     display: flex;
     /* The 1.9 value was empirically chosen to match old-flexbox behaviour
      * and be aesthetically pleasing.
@@ -412,32 +412,65 @@ audio::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volum
     color: inherit;
 }
 
-/* FIXME these shouldn't use special pseudoShadowIds, but nicer rules.
-   https://code.google.com/p/chromium/issues/detail?id=112508
-   https://bugs.webkit.org/show_bug.cgi?id=62218
-*/
-input[type="range" i]::-webkit-media-slider-container {
-    display: flex;
-    align-items: center;
-    flex-direction: row; /* This property is updated by C++ code. */
-    box-sizing: border-box;
-    /** this positions the slider thumb for both time and volume. */
+/**
+ * Segmented Track
+ */
+
+div.-internal-media-controls-segmented-track {
+    margin: 0 -18px;
+    position: relative;
+}
+
+div.-internal-media-controls-segmented-track .-internal-track-segment-background {
+    width: auto;
+    position: absolute;
+    background: #dadada;
     height: 2px;
-    width: 100%;
-    background-color: transparent; /* Background drawing is managed by C++ code to draw ranges. */
+    margin-top: -1px;
+    left: 18px;
+    right: 18px;
+    top: 50%;
 }
 
-/* The negative right margin causes the track to overflow its container. */
-input[type="range" i]::-webkit-media-slider-container > div {
-    margin-right: -18px;  /* box is 36px wide, get to the middle */
-    margin-left:  -18px;
+div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before,
+div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
+    height: auto;
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    z-index: 1;
+    height: 2px;
+    margin-top: -1px;
 }
 
-input[type="range" i]::-webkit-media-slider-thumb {
-    box-sizing: border-box;
-    width: 48px;
-    height: 48px;
-    padding: 0px;
+div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
+    background-color: #4285f4;
+}
+
+div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before {
+    background-color: #5a5a5a;
+}
+
+/**
+ * Track Thumb
+ */
+
+input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
+    -webkit-appearance: -internal-media-control;
+    background-image: -webkit-image-set(
+      url(default_100_percent/mediaplayer_slider_thumb.png) 1x);
+    background-size: 12px;
+    background-repeat: no-repeat;
+    background-position: center center;
+
+    height: 36px;
+    z-index: 2;
+    width: 36px;
+    margin: 0;
+    padding: 0;
+    top: -24px;
+    position: absolute;
 }
 
 audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-fullscreen-button {
@@ -729,6 +762,13 @@ video::cue(i) {
 .state-no-source input[pseudo="-webkit-media-controls-mute-button"],
 .state-no-source input[pseudo="-webkit-media-controls-overlay-play-button"],
 .state-no-source input[pseudo="-webkit-media-controls-fullscreen-button"],
-.state-no-source input[pseudo="-internal-media-controls-download-button"] {
+.state-no-source input[pseudo="-internal-media-controls-download-button"],
+.state-no-source input[pseudo="-webkit-media-controls-timeline"],
+.state-no-source input[pseudo="-webkit-media-controls-volume-slider"] {
     opacity: 0.4;
+}
+
+.state-no-source input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
+.state-no-source input[pseudo="-webkit-media-controls-volume-slider" i]::-webkit-slider-thumb {
+    display: none;
 }

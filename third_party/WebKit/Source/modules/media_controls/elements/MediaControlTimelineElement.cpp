@@ -20,14 +20,17 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 
+namespace {
+
+const double kCurrentTimeBufferedDelta = 1.0;
+
+}  // namespace.
+
 namespace blink {
 
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaSlider) {
-  EnsureUserAgentShadowRoot();
-  setType(InputTypeNames::range);
-  setAttribute(HTMLNames::stepAttr, "any");
+    : MediaControlSliderElement(media_controls, kMediaSlider) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
 }
 
@@ -37,17 +40,13 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
-
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    layout_object->SetShouldDoFullPaintInvalidation();
+  RenderBarSegments();
 }
 
 void MediaControlTimelineElement::SetDuration(double duration) {
   SetFloatingPointAttribute(HTMLNames::maxAttr,
                             std::isfinite(duration) ? duration : 0);
-
-  if (LayoutObject* layout_object = this->GetLayoutObject())
-    layout_object->SetShouldDoFullPaintInvalidation();
+  RenderBarSegments();
 }
 
 void MediaControlTimelineElement::OnPlaying() {
@@ -56,7 +55,7 @@ void MediaControlTimelineElement::OnPlaying() {
     return;
   metrics_.RecordPlaying(
       frame->GetChromeClient().GetScreenInfo().orientation_type,
-      MediaElement().IsFullscreen(), TimelineWidth());
+      MediaElement().IsFullscreen(), Width());
 }
 
 const char* MediaControlTimelineElement::GetNameForHistograms() const {
@@ -66,6 +65,8 @@ const char* MediaControlTimelineElement::GetNameForHistograms() const {
 void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
   if (!isConnected() || !GetDocument().IsActive())
     return;
+
+  RenderBarSegments();
 
   // Only respond to main button of primary pointer(s).
   if (event->IsPointerEvent() && ToPointerEvent(event)->isPrimary() &&
@@ -84,7 +85,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.ScrubbingEnd"));
       GetMediaControls().EndScrubbing();
-      metrics_.RecordEndGesture(TimelineWidth(), MediaElement().duration());
+      metrics_.RecordEndGesture(Width(), MediaElement().duration());
     }
   }
 
@@ -92,7 +93,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event* event) {
     metrics_.StartKey();
   }
   if (event->type() == EventTypeNames::keyup && event->IsKeyboardEvent()) {
-    metrics_.RecordEndKey(TimelineWidth(), ToKeyboardEvent(event)->keyCode());
+    metrics_.RecordEndKey(Width(), ToKeyboardEvent(event)->keyCode());
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
@@ -131,10 +132,64 @@ bool MediaControlTimelineElement::KeepEventInNode(Event* event) {
       event, GetLayoutObject());
 }
 
-int MediaControlTimelineElement::TimelineWidth() {
-  if (LayoutBoxModelObject* box = GetLayoutBoxModelObject())
-    return box->OffsetWidth().Round();
-  return 0;
+void MediaControlTimelineElement::RenderBarSegments() {
+  SetupBarSegments();
+
+  double current_time = MediaElement().currentTime();
+  double duration = MediaElement().duration();
+
+  // Draw the buffered range. Since the element may have multiple buffered
+  // ranges and it'd be distracting/'busy' to show all of them, show only the
+  // buffered range containing the current play head.
+  TimeRanges* buffered_time_ranges = MediaElement().buffered();
+  DCHECK(buffered_time_ranges);
+  if (std::isnan(duration) || std::isinf(duration) || !duration ||
+      std::isnan(current_time)) {
+    SetBeforeSegmentPosition(MediaControlSliderElement::Position(0, 0));
+    SetAfterSegmentPosition(MediaControlSliderElement::Position(0, 0));
+    return;
+  }
+
+  // int current_position = int(current_time * Width() / duration);
+  double current_position = current_time / duration;
+  for (unsigned i = 0; i < buffered_time_ranges->length(); ++i) {
+    float start = buffered_time_ranges->start(i, ASSERT_NO_EXCEPTION);
+    float end = buffered_time_ranges->end(i, ASSERT_NO_EXCEPTION);
+    // The delta is there to avoid corner cases when buffered
+    // ranges is out of sync with current time because of
+    // asynchronous media pipeline and current time caching in
+    // HTMLMediaElement.
+    // This is related to https://www.w3.org/Bugs/Public/show_bug.cgi?id=28125
+    // FIXME: Remove this workaround when WebMediaPlayer
+    // has an asynchronous pause interface.
+    if (std::isnan(start) || std::isnan(end) ||
+        start > current_time + kCurrentTimeBufferedDelta ||
+        end < current_time) {
+      continue;
+    }
+
+    // int start_position = int(start * Width() / duration);
+    // int end_position = int(end * Width() / duration);
+    double start_position = start / duration;
+    double end_position = end / duration;
+
+    // Draw highlight to show what we have played.
+    if (current_position > start_position) {
+      SetAfterSegmentPosition(MediaControlSliderElement::Position(
+          start_position, current_position));
+    }
+
+    // Draw dark grey highlight to show what we have loaded.
+    if (end_position > current_position) {
+      SetBeforeSegmentPosition(MediaControlSliderElement::Position(
+          current_position, end_position - current_position));
+    }
+    return;
+  }
+
+  // Reset the widths to hide the segments.
+  SetBeforeSegmentPosition(MediaControlSliderElement::Position(0, 0));
+  SetAfterSegmentPosition(MediaControlSliderElement::Position(0, 0));
 }
 
 }  // namespace blink
