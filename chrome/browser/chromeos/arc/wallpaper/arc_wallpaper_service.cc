@@ -218,13 +218,13 @@ void ArcWallpaperService::SetDefaultWallpaper() {
                                                          account.is_active);
 }
 
-void ArcWallpaperService::GetWallpaper(const GetWallpaperCallback& callback) {
+void ArcWallpaperService::GetWallpaper(GetWallpaperCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ash::WallpaperController* wc = ash::Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = wc->GetWallpaper();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&EncodeImagePng, wallpaper), callback);
+      base::BindOnce(&EncodeImagePng, wallpaper), std::move(callback));
 }
 
 void ArcWallpaperService::OnWallpaperDataChanged() {

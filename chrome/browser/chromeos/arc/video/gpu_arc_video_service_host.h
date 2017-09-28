@@ -45,7 +45,7 @@ class GpuArcVideoServiceHost
 
   // arc::mojom::VideoHost implementation.
   void OnBootstrapVideoAcceleratorFactory(
-      const OnBootstrapVideoAcceleratorFactoryCallback& callback) override;
+      OnBootstrapVideoAcceleratorFactoryCallback callback) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

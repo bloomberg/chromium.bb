@@ -57,14 +57,12 @@ class ArcAuthService : public KeyedService,
   // Deprecated methods:
   // For security reason this code can be used only once and exists for specific
   // period of time.
-  void GetAuthCodeDeprecated0(
-      const GetAuthCodeDeprecated0Callback& callback) override;
-  void GetAuthCodeDeprecated(
-      const GetAuthCodeDeprecatedCallback& callback) override;
+  void GetAuthCodeDeprecated0(GetAuthCodeDeprecated0Callback callback) override;
+  void GetAuthCodeDeprecated(GetAuthCodeDeprecatedCallback callback) override;
   void GetAuthCodeAndAccountTypeDeprecated(
-      const GetAuthCodeAndAccountTypeDeprecatedCallback& callback) override;
+      GetAuthCodeAndAccountTypeDeprecatedCallback callback) override;
   void GetIsAccountManagedDeprecated(
-      const GetIsAccountManagedDeprecatedCallback& callback) override;
+      GetIsAccountManagedDeprecatedCallback callback) override;
 
  private:
   using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;

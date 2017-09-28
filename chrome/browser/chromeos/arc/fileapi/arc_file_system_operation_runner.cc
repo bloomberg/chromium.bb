@@ -117,168 +117,170 @@ void ArcFileSystemOperationRunner::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ArcFileSystemOperationRunner::GetFileSize(
-    const GURL& url,
-    const GetFileSizeCallback& callback) {
+void ArcFileSystemOperationRunner::GetFileSize(const GURL& url,
+                                               GetFileSizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
-    deferred_operations_.emplace_back(
-        base::Bind(&ArcFileSystemOperationRunner::GetFileSize,
-                   weak_ptr_factory_.GetWeakPtr(), url, callback));
+    deferred_operations_.emplace_back(base::BindOnce(
+        &ArcFileSystemOperationRunner::GetFileSize,
+        weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), GetFileSize);
   if (!file_system_instance) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::BindOnce(callback, -1));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), -1));
     return;
   }
-  file_system_instance->GetFileSize(url.spec(), callback);
+  file_system_instance->GetFileSize(url.spec(), std::move(callback));
 }
 
-void ArcFileSystemOperationRunner::GetMimeType(
-    const GURL& url,
-    const GetMimeTypeCallback& callback) {
+void ArcFileSystemOperationRunner::GetMimeType(const GURL& url,
+                                               GetMimeTypeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
-    deferred_operations_.emplace_back(
-        base::Bind(&ArcFileSystemOperationRunner::GetMimeType,
-                   weak_ptr_factory_.GetWeakPtr(), url, callback));
+    deferred_operations_.emplace_back(base::BindOnce(
+        &ArcFileSystemOperationRunner::GetMimeType,
+        weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), GetMimeType);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::nullopt));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
-  file_system_instance->GetMimeType(url.spec(), callback);
+  file_system_instance->GetMimeType(url.spec(), std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::OpenFileToRead(
     const GURL& url,
-    const OpenFileToReadCallback& callback) {
+    OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
-    deferred_operations_.emplace_back(
-        base::Bind(&ArcFileSystemOperationRunner::OpenFileToRead,
-                   weak_ptr_factory_.GetWeakPtr(), url, callback));
+    deferred_operations_.emplace_back(base::BindOnce(
+        &ArcFileSystemOperationRunner::OpenFileToRead,
+        weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), OpenFileToRead);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, base::Passed(mojo::ScopedHandle())));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::Passed(mojo::ScopedHandle())));
     return;
   }
-  file_system_instance->OpenFileToRead(url.spec(), callback);
+  file_system_instance->OpenFileToRead(url.spec(), std::move(callback));
 }
 
-void ArcFileSystemOperationRunner::GetDocument(
-    const std::string& authority,
-    const std::string& document_id,
-    const GetDocumentCallback& callback) {
+void ArcFileSystemOperationRunner::GetDocument(const std::string& authority,
+                                               const std::string& document_id,
+                                               GetDocumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
-    deferred_operations_.emplace_back(base::Bind(
-        &ArcFileSystemOperationRunner::GetDocument,
-        weak_ptr_factory_.GetWeakPtr(), authority, document_id, callback));
+    deferred_operations_.emplace_back(
+        base::BindOnce(&ArcFileSystemOperationRunner::GetDocument,
+                       weak_ptr_factory_.GetWeakPtr(), authority, document_id,
+                       std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), GetDocument);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, base::Passed(mojom::DocumentPtr())));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::Passed(mojom::DocumentPtr())));
     return;
   }
-  file_system_instance->GetDocument(authority, document_id, callback);
+  file_system_instance->GetDocument(authority, document_id,
+                                    std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::GetChildDocuments(
     const std::string& authority,
     const std::string& parent_document_id,
-    const GetChildDocumentsCallback& callback) {
+    GetChildDocumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(
-        base::Bind(&ArcFileSystemOperationRunner::GetChildDocuments,
-                   weak_ptr_factory_.GetWeakPtr(), authority,
-                   parent_document_id, callback));
+        base::BindOnce(&ArcFileSystemOperationRunner::GetChildDocuments,
+                       weak_ptr_factory_.GetWeakPtr(), authority,
+                       parent_document_id, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), GetChildDocuments);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::nullopt));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
   file_system_instance->GetChildDocuments(authority, parent_document_id,
-                                          callback);
+                                          std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::GetRecentDocuments(
     const std::string& authority,
     const std::string& root_id,
-    const GetRecentDocumentsCallback& callback) {
+    GetRecentDocumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
-    deferred_operations_.emplace_back(base::Bind(
-        &ArcFileSystemOperationRunner::GetRecentDocuments,
-        weak_ptr_factory_.GetWeakPtr(), authority, root_id, callback));
+    deferred_operations_.emplace_back(
+        base::BindOnce(&ArcFileSystemOperationRunner::GetRecentDocuments,
+                       weak_ptr_factory_.GetWeakPtr(), authority, root_id,
+                       std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), GetRecentDocuments);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::nullopt));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
-  file_system_instance->GetRecentDocuments(authority, root_id, callback);
+  file_system_instance->GetRecentDocuments(authority, root_id,
+                                           std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::AddWatcher(
     const std::string& authority,
     const std::string& document_id,
     const WatcherCallback& watcher_callback,
-    const AddWatcherCallback& callback) {
+    AddWatcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (should_defer_) {
     deferred_operations_.emplace_back(
-        base::Bind(&ArcFileSystemOperationRunner::AddWatcher,
-                   weak_ptr_factory_.GetWeakPtr(), authority, document_id,
-                   watcher_callback, callback));
+        base::BindOnce(&ArcFileSystemOperationRunner::AddWatcher,
+                       weak_ptr_factory_.GetWeakPtr(), authority, document_id,
+                       watcher_callback, std::move(callback)));
     return;
   }
   auto* file_system_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->file_system(), AddWatcher);
   if (!file_system_instance) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::BindOnce(callback, -1));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), -1));
     return;
   }
   file_system_instance->AddWatcher(
       authority, document_id,
-      base::Bind(&ArcFileSystemOperationRunner::OnWatcherAdded,
-                 weak_ptr_factory_.GetWeakPtr(), watcher_callback, callback));
+      base::BindOnce(&ArcFileSystemOperationRunner::OnWatcherAdded,
+                     weak_ptr_factory_.GetWeakPtr(), watcher_callback,
+                     std::move(callback)));
 }
 
 void ArcFileSystemOperationRunner::RemoveWatcher(
     int64_t watcher_id,
-    const RemoveWatcherCallback& callback) {
+    RemoveWatcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // RemoveWatcher() is never deferred since watchers do not persist across
   // container reboots.
   if (should_defer_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -288,7 +290,7 @@ void ArcFileSystemOperationRunner::RemoveWatcher(
   auto iter = watcher_callbacks_.find(watcher_id);
   if (iter == watcher_callbacks_.end()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
   watcher_callbacks_.erase(iter);
@@ -297,10 +299,10 @@ void ArcFileSystemOperationRunner::RemoveWatcher(
       arc_bridge_service_->file_system(), AddWatcher);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
-  file_system_instance->RemoveWatcher(watcher_id, callback);
+  file_system_instance->RemoveWatcher(watcher_id, std::move(callback));
 }
 
 void ArcFileSystemOperationRunner::Shutdown() {
@@ -349,20 +351,20 @@ void ArcFileSystemOperationRunner::OnInstanceClosed() {
 
 void ArcFileSystemOperationRunner::OnWatcherAdded(
     const WatcherCallback& watcher_callback,
-    const AddWatcherCallback& callback,
+    AddWatcherCallback callback,
     int64_t watcher_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (watcher_id < 0) {
-    callback.Run(-1);
+    std::move(callback).Run(-1);
     return;
   }
   if (watcher_callbacks_.count(watcher_id)) {
     NOTREACHED();
-    callback.Run(-1);
+    std::move(callback).Run(-1);
     return;
   }
   watcher_callbacks_.insert(std::make_pair(watcher_id, watcher_callback));
-  callback.Run(watcher_id);
+  std::move(callback).Run(watcher_id);
 }
 
 void ArcFileSystemOperationRunner::OnStateChanged() {
@@ -383,11 +385,10 @@ void ArcFileSystemOperationRunner::SetShouldDefer(bool should_defer) {
     return;
 
   // Run deferred operations.
-  std::vector<base::Closure> deferred_operations;
+  std::vector<base::OnceClosure> deferred_operations;
   deferred_operations.swap(deferred_operations_);
-  for (const base::Closure& operation : deferred_operations) {
-    operation.Run();
-  }
+  for (base::OnceClosure& operation : deferred_operations)
+    std::move(operation).Run();
 
   // No deferred operations should be left at this point.
   DCHECK(deferred_operations_.empty());

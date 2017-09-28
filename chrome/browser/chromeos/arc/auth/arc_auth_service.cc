@@ -107,19 +107,18 @@ ArcAuthService* ArcAuthService::GetForBrowserContext(
 // deprecated interfaces and only need to care about one type of callback.
 class ArcAuthService::AccountInfoNotifier {
  public:
-  explicit AccountInfoNotifier(
-      const GetAuthCodeDeprecatedCallback& auth_callback)
+  explicit AccountInfoNotifier(GetAuthCodeDeprecatedCallback auth_callback)
       : callback_type_(CallbackType::AUTH_CODE),
-        auth_callback_(auth_callback) {}
+        auth_callback_(std::move(auth_callback)) {}
 
   explicit AccountInfoNotifier(
-      const GetAuthCodeAndAccountTypeDeprecatedCallback& auth_account_callback)
+      GetAuthCodeAndAccountTypeDeprecatedCallback auth_account_callback)
       : callback_type_(CallbackType::AUTH_CODE_AND_ACCOUNT),
-        auth_account_callback_(auth_account_callback) {}
+        auth_account_callback_(std::move(auth_account_callback)) {}
 
-  explicit AccountInfoNotifier(const AccountInfoCallback& account_info_callback)
+  explicit AccountInfoNotifier(AccountInfoCallback account_info_callback)
       : callback_type_(CallbackType::ACCOUNT_INFO),
-        account_info_callback_(account_info_callback) {}
+        account_info_callback_(std::move(account_info_callback)) {}
 
   void Notify(bool is_enforced,
               const std::string& auth_info,
@@ -129,11 +128,12 @@ class ArcAuthService::AccountInfoNotifier {
     switch (callback_type_) {
       case CallbackType::AUTH_CODE:
         DCHECK(!auth_callback_.is_null());
-        auth_callback_.Run(auth_info, is_enforced);
+        std::move(auth_callback_).Run(auth_info, is_enforced);
         break;
       case CallbackType::AUTH_CODE_AND_ACCOUNT:
         DCHECK(!auth_account_callback_.is_null());
-        auth_account_callback_.Run(auth_info, is_enforced, account_type);
+        std::move(auth_account_callback_)
+            .Run(auth_info, is_enforced, account_type);
         break;
       case CallbackType::ACCOUNT_INFO:
         DCHECK(!account_info_callback_.is_null());
@@ -150,7 +150,7 @@ class ArcAuthService::AccountInfoNotifier {
         }
         account_info->account_type = account_type;
         account_info->is_managed = is_managed;
-        account_info_callback_.Run(std::move(account_info));
+        std::move(account_info_callback_).Run(std::move(account_info));
         break;
     }
   }
@@ -159,9 +159,9 @@ class ArcAuthService::AccountInfoNotifier {
   enum class CallbackType { AUTH_CODE, AUTH_CODE_AND_ACCOUNT, ACCOUNT_INFO };
 
   const CallbackType callback_type_;
-  const GetAuthCodeDeprecatedCallback auth_callback_;
-  const GetAuthCodeAndAccountTypeDeprecatedCallback auth_account_callback_;
-  const AccountInfoCallback account_info_callback_;
+  GetAuthCodeDeprecatedCallback auth_callback_;
+  GetAuthCodeAndAccountTypeDeprecatedCallback auth_account_callback_;
+  AccountInfoCallback account_info_callback_;
 };
 
 ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
@@ -246,30 +246,32 @@ void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info) {
 }
 
 void ArcAuthService::GetAuthCodeDeprecated0(
-    const GetAuthCodeDeprecated0Callback& callback) {
+    GetAuthCodeDeprecated0Callback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NOTREACHED() << "GetAuthCodeDeprecated0() should no longer be callable";
 }
 
 void ArcAuthService::GetAuthCodeDeprecated(
-    const GetAuthCodeDeprecatedCallback& callback) {
+    GetAuthCodeDeprecatedCallback callback) {
   // For robot account we must use RequestAccountInfo because it allows
   // to specify account type.
   DCHECK(!IsArcKioskMode());
   RequestAccountInfoInternal(
-      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
+      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(
+          std::move(callback)));
 }
 
 void ArcAuthService::GetAuthCodeAndAccountTypeDeprecated(
-    const GetAuthCodeAndAccountTypeDeprecatedCallback& callback) {
+    GetAuthCodeAndAccountTypeDeprecatedCallback callback) {
   RequestAccountInfoInternal(
-      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
+      base::MakeUnique<ArcAuthService::AccountInfoNotifier>(
+          std::move(callback)));
 }
 
 void ArcAuthService::GetIsAccountManagedDeprecated(
-    const GetIsAccountManagedDeprecatedCallback& callback) {
+    GetIsAccountManagedDeprecatedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback.Run(policy_util::IsAccountManaged(profile_));
+  std::move(callback).Run(policy_util::IsAccountManaged(profile_));
 }
 
 void ArcAuthService::RequestAccountInfoInternal(

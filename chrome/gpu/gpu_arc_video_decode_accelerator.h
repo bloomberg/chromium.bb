@@ -45,7 +45,7 @@ class GpuArcVideoDecodeAccelerator
   // ::arc::mojom::VideoDecodeAccelerator implementation.
   void Initialize(::arc::mojom::VideoDecodeAcceleratorConfigPtr config,
                   ::arc::mojom::VideoDecodeClientPtr client,
-                  const InitializeCallback& callback) override;
+                  InitializeCallback callback) override;
   void BindSharedMemory(::arc::mojom::PortType port,
                         uint32_t index,
                         mojo::ScopedHandle ashmem_handle,

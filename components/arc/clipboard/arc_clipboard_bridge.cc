@@ -234,8 +234,7 @@ void ArcClipboardBridge::SetClipContent(mojom::ClipDataPtr clip_data) {
   }
 }
 
-void ArcClipboardBridge::GetClipContent(
-    const GetClipContentCallback& callback) {
+void ArcClipboardBridge::GetClipContent(GetClipContentCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
@@ -268,7 +267,7 @@ void ArcClipboardBridge::GetClipContent(
 
   // Invoke the |callback|, even if |clip_data| is empty, since Instance is
   // waiting for a response.
-  callback.Run(std::move(clip_data));
+  std::move(callback).Run(std::move(clip_data));
 }
 
 }  // namespace arc

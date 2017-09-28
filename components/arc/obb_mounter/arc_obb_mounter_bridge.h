@@ -43,9 +43,9 @@ class ArcObbMounterBridge
   void MountObb(const std::string& obb_file,
                 const std::string& target_path,
                 int32_t owner_gid,
-                const MountObbCallback& callback) override;
+                MountObbCallback callback) override;
   void UnmountObb(const std::string& target_path,
-                  const UnmountObbCallback& callback) override;
+                  UnmountObbCallback callback) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

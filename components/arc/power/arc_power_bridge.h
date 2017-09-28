@@ -54,7 +54,7 @@ class ArcPowerBridge : public KeyedService,
   // mojom::PowerHost overrides.
   void OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) override;
   void OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) override;
-  void IsDisplayOn(const IsDisplayOnCallback& callback) override;
+  void IsDisplayOn(IsDisplayOnCallback callback) override;
   void OnScreenBrightnessUpdateRequest(double percent) override;
 
  private:

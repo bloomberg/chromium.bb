@@ -18,7 +18,7 @@ class FakePolicyInstance : public mojom::PolicyInstance {
   void Init(mojom::PolicyHostPtr host_ptr) override;
   void OnPolicyUpdated() override;
 
-  void CallGetPolicies(const mojom::PolicyHost::GetPoliciesCallback& callback);
+  void CallGetPolicies(mojom::PolicyHost::GetPoliciesCallback callback);
 
  private:
   mojom::PolicyHostPtr host_ptr_;

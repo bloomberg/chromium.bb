@@ -66,9 +66,8 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   void AddPreferredPackage(const std::string& package_name) override;
 
-  void GetFileSizeDeprecated(
-      const std::string& url,
-      const GetFileSizeDeprecatedCallback& callback) override;
+  void GetFileSizeDeprecated(const std::string& url,
+                             GetFileSizeDeprecatedCallback callback) override;
 
   void HandleIntent(mojom::IntentInfoPtr intent,
                     mojom::ActivityNamePtr activity) override;
@@ -84,24 +83,22 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   void OpenFileToReadDeprecated(
       const std::string& url,
-      const OpenFileToReadDeprecatedCallback& callback) override;
+      OpenFileToReadDeprecatedCallback callback) override;
 
-  void RequestActivityIcons(
-      std::vector<mojom::ActivityNamePtr> activities,
-      ::arc::mojom::ScaleFactor scale_factor,
-      const RequestActivityIconsCallback& callback) override;
+  void RequestActivityIcons(std::vector<mojom::ActivityNamePtr> activities,
+                            ::arc::mojom::ScaleFactor scale_factor,
+                            RequestActivityIconsCallback callback) override;
 
   void RequestIntentHandlerList(
       mojom::IntentInfoPtr intent,
-      const RequestIntentHandlerListCallback& callback) override;
+      RequestIntentHandlerListCallback callback) override;
 
-  void RequestUrlHandlerList(
-      const std::string& url,
-      const RequestUrlHandlerListCallback& callback) override;
+  void RequestUrlHandlerList(const std::string& url,
+                             RequestUrlHandlerListCallback callback) override;
 
   void RequestUrlListHandlerList(
       std::vector<mojom::UrlWithMimeTypePtr> urls,
-      const RequestUrlListHandlerListCallback& callback) override;
+      RequestUrlListHandlerListCallback callback) override;
 
   void SendBroadcast(const std::string& action,
                      const std::string& package_name,

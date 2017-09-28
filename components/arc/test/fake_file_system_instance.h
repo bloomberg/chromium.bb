@@ -138,25 +138,25 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   // mojom::FileSystemInstance:
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
-                  const AddWatcherCallback& callback) override;
+                  AddWatcherCallback callback) override;
   void GetChildDocuments(const std::string& authority,
                          const std::string& document_id,
-                         const GetChildDocumentsCallback& callback) override;
+                         GetChildDocumentsCallback callback) override;
   void GetDocument(const std::string& authority,
                    const std::string& document_id,
-                   const GetDocumentCallback& callback) override;
+                   GetDocumentCallback callback) override;
   void GetFileSize(const std::string& url,
-                   const GetFileSizeCallback& callback) override;
+                   GetFileSizeCallback callback) override;
   void GetMimeType(const std::string& url,
-                   const GetMimeTypeCallback& callback) override;
+                   GetMimeTypeCallback callback) override;
   void GetRecentDocuments(const std::string& authority,
                           const std::string& root_id,
-                          const GetRecentDocumentsCallback& callback) override;
+                          GetRecentDocumentsCallback callback) override;
   void Init(mojom::FileSystemHostPtr host) override;
   void OpenFileToRead(const std::string& url,
-                      const OpenFileToReadCallback& callback) override;
+                      OpenFileToReadCallback callback) override;
   void RemoveWatcher(int64_t watcher_id,
-                     const RemoveWatcherCallback& callback) override;
+                     RemoveWatcherCallback callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
 
  private:
