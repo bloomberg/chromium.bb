@@ -2646,12 +2646,12 @@ static const aom_cdf_prob
       { AOM_ICDF(63 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
 #if CONFIG_TX64X64
-      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
-                                                    AOM_ICDF(32768), 0 } {
-          AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
-                                                      AOM_ICDF(32768), 0 } {
-          AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 } { AOM_ICDF(128 * 128),
-                                                      AOM_ICDF(32768), 0 }
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 }
 #endif  // CONFIG_TX64X64
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
