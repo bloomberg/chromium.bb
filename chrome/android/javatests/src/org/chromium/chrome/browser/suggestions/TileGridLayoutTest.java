@@ -186,9 +186,8 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    // @MediumTest
-    // @Feature({"NewTabPage", "RenderTest"})
-    @DisabledTest
+    @MediumTest
+    @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
