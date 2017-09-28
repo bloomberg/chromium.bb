@@ -1036,7 +1036,12 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
                                              ConnectionCloseSource::FROM_SELF));
     // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
     // packet call to the visitor.
-    ProcessDataPacket(6000);
+    if (FLAGS_quic_restart_flag_quic_enable_accept_random_ipn) {
+      ProcessDataPacket(kMaxRandomInitialPacketNumber + 6000);
+    } else {
+      ProcessDataPacket(6000);
+    }
+
     EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                  nullptr);
   }
@@ -1438,9 +1443,14 @@ TEST_P(QuicConnectionTest, PacketsOutOfOrderWithAdditionsAndLeastAwaiting) {
 TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, _,
                                            ConnectionCloseSource::FROM_SELF));
+
   // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
   // packet call to the visitor.
-  ProcessDataPacket(6000);
+  if (FLAGS_quic_restart_flag_quic_enable_accept_random_ipn) {
+    ProcessDataPacket(kMaxRandomInitialPacketNumber + 6000);
+  } else {
+    ProcessDataPacket(6000);
+  }
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
 }

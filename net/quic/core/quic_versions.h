@@ -39,6 +39,11 @@ enum QuicVersion {
   // http://sites/quic/adding-and-removing-versions
 };
 
+// Representation of the on-the-wire QUIC version number. Will be written/read
+// to the wire in network-byte-order.
+using QuicVersionLabel = uint32_t;
+using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
+
 // This vector contains QUIC versions which we currently support.
 // This should be ordered such that the highest supported version is the first
 // element, with subsequent elements in descending order (versions can be
@@ -69,15 +74,21 @@ FilterSupportedVersions(QuicVersionVector versions);
 QUIC_EXPORT_PRIVATE QuicVersionVector
 VersionOfIndex(const QuicVersionVector& versions, int index);
 
-// QuicTag is written to and read from the wire, but we prefer to use
+// QuicVersionLabel is written to and read from the wire, but we prefer to use
 // the more readable QuicVersion at other levels.
-// Helper function which translates from a QuicVersion to a QuicTag. Returns 0
-// if QuicVersion is unsupported.
-QUIC_EXPORT_PRIVATE QuicTag QuicVersionToQuicTag(const QuicVersion version);
+// Helper function which translates from a QuicVersion to a QuicVersionLabel.
+// Returns 0 if |version| is unsupported.
+QUIC_EXPORT_PRIVATE QuicVersionLabel
+QuicVersionToQuicVersionLabel(const QuicVersion version);
 
-// Returns appropriate QuicVersion from a QuicTag.
+// Helper function which translates from a QuicVersionLabel to a std::string.
+QUIC_EXPORT_PRIVATE std::string QuicVersionLabelToString(
+    QuicVersionLabel version_label);
+
+// Returns appropriate QuicVersion from a QuicVersionLabel.
 // Returns QUIC_VERSION_UNSUPPORTED if version_tag cannot be understood.
-QUIC_EXPORT_PRIVATE QuicVersion QuicTagToQuicVersion(const QuicTag version_tag);
+QUIC_EXPORT_PRIVATE QuicVersion
+QuicVersionLabelToQuicVersion(QuicVersionLabel version_label);
 
 // Helper function which translates from a QuicVersion to a string.
 // Returns strings corresponding to enum names (e.g. QUIC_VERSION_6).

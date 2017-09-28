@@ -373,7 +373,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       framer_.SetSupportedVersions(GetSupportedVersions());
     }
     if (!framer_.IsSupportedVersion(packet_version)) {
-      if (ShouldCreateSessionForUnknownVersion(framer_.last_version_tag())) {
+      if (ShouldCreateSessionForUnknownVersion(framer_.last_version_label())) {
         return true;
       }
       // Since the version is not supported, send a version negotiation
@@ -483,14 +483,32 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
     return kFateTimeWait;
   }
 
-  // Check that the sequence number is within the range that the client is
-  // expected to send before receiving a response from the server.
+  // initial packet number of 0 is always invalid.
   const int kInvalidPacketNumber = 0;
-  if (header.packet_number == kInvalidPacketNumber ||
-      header.packet_number > kMaxReasonableInitialPacketNumber) {
+  if (header.packet_number == kInvalidPacketNumber) {
     return kFateTimeWait;
   }
-
+  if (FLAGS_quic_restart_flag_quic_enable_accept_random_ipn) {
+    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_enable_accept_random_ipn, 1, 2);
+    // Accepting Initial Packet Numbers in 1...((2^31)-1) range... check
+    // maximum accordingly.
+    if (header.packet_number > kMaxRandomInitialPacketNumber) {
+      return kFateTimeWait;
+    }
+  } else {
+    // Count those that would have been accepted if FLAGS..random_ipn
+    // were true -- to detect/diagnose potential issues prior to
+    // enabling the flag.
+    if ((header.packet_number > kMaxReasonableInitialPacketNumber) &&
+        (header.packet_number <= kMaxRandomInitialPacketNumber)) {
+      QUIC_CODE_COUNT_N(had_possibly_random_ipn, 1, 2);
+    }
+    // Check that the sequence number is within the range that the client is
+    // expected to send before receiving a response from the server.
+    if (header.packet_number > kMaxReasonableInitialPacketNumber) {
+      return kFateTimeWait;
+    }
+  }
   return kFateProcess;
 }
 
@@ -607,17 +625,19 @@ void QuicDispatcher::OnError(QuicFramer* framer) {
   QUIC_DLOG(INFO) << QuicErrorCodeToString(error);
 }
 
-bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(QuicTag version_tag) {
+bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(
+    QuicVersionLabel /*version_label*/) {
   return false;
 }
 
 bool QuicDispatcher::OnProtocolVersionMismatch(
     QuicVersion /*received_version*/) {
-  QUIC_BUG_IF(!time_wait_list_manager_->IsConnectionIdInTimeWait(
-                  current_connection_id_) &&
-              !ShouldCreateSessionForUnknownVersion(framer_.last_version_tag()))
+  QUIC_BUG_IF(
+      !time_wait_list_manager_->IsConnectionIdInTimeWait(
+          current_connection_id_) &&
+      !ShouldCreateSessionForUnknownVersion(framer_.last_version_label()))
       << "Unexpected version mismatch: "
-      << QuicTagToString(framer_.last_version_tag());
+      << QuicVersionLabelToString(framer_.last_version_label());
 
   // Keep processing after protocol mismatch - this will be dealt with by the
   // time wait list or connection that we will create.

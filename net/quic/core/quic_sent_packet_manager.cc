@@ -281,8 +281,6 @@ void QuicSentPacketManager::MaybeInvokeCongestionEvent(
 
 void QuicSentPacketManager::HandleAckForSentPackets(
     const QuicAckFrame& ack_frame) {
-  const bool skip_unackable_packets_early =
-      FLAGS_quic_reloadable_flag_quic_handle_acks;
   // Go through the packets we have not received an ack for and see if this
   // incoming_ack shows they've been seen by the peer.
   QuicTime::Delta ack_delay_time = ack_frame.ack_delay_time;
@@ -293,8 +291,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       // These packets are still in flight.
       break;
     }
-    if (skip_unackable_packets_early && it->is_unackable) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_handle_acks);
+    if (it->is_unackable) {
       continue;
     }
     if (!ack_frame.packets.Contains(packet_number)) {
@@ -312,8 +309,8 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     if (it->in_flight) {
       packets_acked_.push_back(SendAlgorithmInterface::AckedPacket(
           packet_number, it->bytes_sent, QuicTime::Zero()));
-    } else if (skip_unackable_packets_early || !it->is_unackable) {
-      // Packets are marked unackable after they've been acked once.
+    } else {
+      // Unackable packets are skipped earlier.
       largest_newly_acked_ = packet_number;
     }
     MarkPacketHandled(packet_number, &(*it), ack_delay_time);

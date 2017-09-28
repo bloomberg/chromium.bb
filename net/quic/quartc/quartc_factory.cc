@@ -151,6 +151,10 @@ QuicAlarm* QuartcFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {
 QuicArenaScopedPtr<QuicAlarm> QuartcFactory::CreateAlarm(
     QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
     QuicConnectionArena* arena) {
+  if (arena != nullptr) {
+    return arena->New<QuartcAlarm>(GetClock(), task_runner_,
+                                   std::move(delegate));
+  }
   return QuicArenaScopedPtr<QuicAlarm>(
       new QuartcAlarm(GetClock(), task_runner_, std::move(delegate)));
 }

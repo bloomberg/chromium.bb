@@ -184,9 +184,9 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
 
-  QuicTag cver;
-  EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
+  QuicVersionLabel cver;
+  EXPECT_EQ(QUIC_NO_ERROR, msg.GetVersionLabel(kVER, &cver));
+  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicVersionMax()), cver);
   QuicStringPiece proof_nonce;
   EXPECT_TRUE(msg.GetStringPiece(kNONP, &proof_nonce));
   EXPECT_EQ(string(32, 'r'), proof_nonce);
@@ -294,10 +294,10 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
                          nullptr,  // channel_id_key
                          params, &chlo, &error_details);
 
-  // Verify that certain QuicTags have been set correctly in the CHLO.
-  QuicTag cver;
-  EXPECT_EQ(QUIC_NO_ERROR, chlo.GetUint32(kVER, &cver));
-  EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
+  // Verify that the version label has been set correctly in the CHLO.
+  QuicVersionLabel cver;
+  EXPECT_EQ(QUIC_NO_ERROR, chlo.GetVersionLabel(kVER, &cver));
+  EXPECT_EQ(QuicVersionToQuicVersionLabel(QuicVersionMax()), cver);
 }
 
 TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
@@ -306,14 +306,15 @@ TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
     // No downgrade attack is possible if the client only supports one version.
     return;
   }
-  QuicTagVector supported_version_tags;
+
+  QuicVersionVector supported_version_vector;
   for (size_t i = supported_versions.size(); i > 0; --i) {
-    supported_version_tags.push_back(
-        QuicVersionToQuicTag(supported_versions[i - 1]));
+    supported_version_vector.push_back(supported_versions[i - 1]);
   }
+
   CryptoHandshakeMessage msg;
   msg.set_tag(kSHLO);
-  msg.SetVector(kVER, supported_version_tags);
+  msg.SetVersionVector(kVER, supported_version_vector);
 
   QuicCryptoClientConfig::CachedState cached;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params(
@@ -571,9 +572,7 @@ TEST_F(QuicCryptoClientConfigTest, ServerNonceinSHLO) {
   QuicVersionVector supported_versions;
   QuicVersion version = AllSupportedVersions().front();
   supported_versions.push_back(version);
-  QuicTagVector versions;
-  versions.push_back(QuicVersionToQuicTag(version));
-  msg.SetVector(kVER, versions);
+  msg.SetVersionVector(kVER, supported_versions);
 
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting());
   QuicCryptoClientConfig::CachedState cached;

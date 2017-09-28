@@ -124,9 +124,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_frames_deque2, false)
 // If true, enable QUIC v42.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_42, false)
 
-// Small optimization for QuicSentPacketManager::HandleAckForSentPackets.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_handle_acks, true)
-
 // When true, respect configured limits on header list size.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_header_list_size, true)
 
@@ -145,12 +142,6 @@ QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
 
 // Max size of data slice in bytes for QUIC stream send buffer.
 QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
-
-// Enables the BBR1 and BBR2 QUIC connection options, which enable two forms of
-// ack aggregation that prevent persistent standing queues.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes4,
-          true)
 
 // Add 4 new ack decimation modes to QUIC that are entirely time based at 1/4
 // or 1/8 RTT.
@@ -178,3 +169,15 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_41, true)
 // If true, QUIC can take ownership of data provided in a reference counted
 // memory to avoid data copy.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_mem_slices, false)
+
+// Allow QUIC to accept initial packet numbers that are random, not 1.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, false)
+
+// Report the more analogous TLS 1.3 cipher suites rather than TLS 1.2 ECDHE_RSA
+// ciphers in QuicDecrypters.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites, false)
+
+// If true, read and write QUIC version labels in network byte order.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label,
+          false)

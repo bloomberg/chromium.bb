@@ -188,6 +188,10 @@ const QuicByteCount kMaxNumRandomPaddingBytes = 256;
 // contain data from multiple data slices.
 const QuicByteCount kQuicStreamSendBufferSliceSize = 4 * 1024;
 
+// For When using Random Initial Packet Numbers, they can start
+// anyplace in the range 1...((2^31)-1) or 0x7fffffff
+const QuicPacketNumber kMaxRandomInitialPacketNumber = 0x7fffffff;
+
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_CONSTANTS_H_

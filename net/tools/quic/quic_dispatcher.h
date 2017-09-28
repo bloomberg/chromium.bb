@@ -252,8 +252,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   virtual QuicPacketWriter* CreatePerConnectionWriter();
 
   // Returns true if a session should be created for a connection with an
-  // unknown version identified by |version_tag|.
-  virtual bool ShouldCreateSessionForUnknownVersion(QuicTag version_tag);
+  // unknown version identified by |version_label|.
+  virtual bool ShouldCreateSessionForUnknownVersion(
+      QuicVersionLabel version_label);
 
   void SetLastError(QuicErrorCode error);
 

@@ -1332,12 +1332,53 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     self_address_ = last_packet_destination_address_;
   }
 
-  if (!Near(header.packet_number, last_header_.packet_number)) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
-                    << " out of bounds.  Discarding";
-    CloseConnection(QUIC_INVALID_PACKET_HEADER, "Packet number out of bounds.",
-                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    return false;
+  if (FLAGS_quic_restart_flag_quic_enable_accept_random_ipn) {
+    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_enable_accept_random_ipn, 2, 2);
+    // Configured to accept any packet number in range 1...0x7fffffff
+    // as initial packet number.
+    if (last_header_.packet_number != 0) {
+      // The last packet's number is not 0. Ensure that this packet
+      // is reasonably close to where it should be.
+      if (!Near(header.packet_number, last_header_.packet_number)) {
+        QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
+                        << " out of bounds.  Discarding";
+        CloseConnection(QUIC_INVALID_PACKET_HEADER,
+                        "Packet number out of bounds.",
+                        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+        return false;
+      }
+    } else {
+      // The "last packet's number" is 0, meaning that this packet is the first
+      // one received. Ensure it is in range 1..kMaxRandomInitialPacketNumber,
+      // inclusive.
+      if ((header.packet_number == 0) ||
+          (header.packet_number > kMaxRandomInitialPacketNumber)) {
+        // packet number is bad.
+        QUIC_DLOG(INFO) << ENDPOINT << "Initial packet " << header.packet_number
+                        << " out of bounds.  Discarding";
+        CloseConnection(QUIC_INVALID_PACKET_HEADER,
+                        "Initial packet number out of bounds.",
+                        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+        return false;
+      }
+    }
+  } else {  //  if (FLAGS_quic_reloadable_flag_quic_accept_random_ipn) {
+    // Count those that would have been accepted if FLAGS..random_ipn
+    // were true -- to detect/diagnose potential issues prior to
+    // enabling the flag.
+    if ((header.packet_number > 1) &&
+        (header.packet_number <= kMaxRandomInitialPacketNumber)) {
+      QUIC_CODE_COUNT_N(had_possibly_random_ipn, 2, 2);
+    }
+
+    if (!Near(header.packet_number, last_header_.packet_number)) {
+      QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
+                      << " out of bounds.  Discarding";
+      CloseConnection(QUIC_INVALID_PACKET_HEADER,
+                      "Packet number out of bounds.",
+                      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      return false;
+    }
   }
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {

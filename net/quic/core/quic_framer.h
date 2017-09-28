@@ -347,7 +347,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   Perspective perspective() const { return perspective_; }
 
-  QuicTag last_version_tag() { return last_version_tag_; }
+  QuicVersionLabel last_version_label() { return last_version_label_; }
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
@@ -518,8 +518,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicPacketNumber largest_packet_number_;
   // Updated by WritePacketHeader.
   QuicConnectionId last_serialized_connection_id_;
-  // The last QUIC version tag received.
-  QuicTag last_version_tag_;
+  // The last QUIC version label received.
+  QuicVersionLabel last_version_label_;
   // Version of the protocol being used.
   QuicVersion quic_version_;
   // This vector contains QUIC versions which we currently support.

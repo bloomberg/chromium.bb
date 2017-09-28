@@ -49,8 +49,8 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   bool ReadUInt32(uint32_t* result);
   bool ReadUInt64(uint64_t* result);
 
-  // Reads |num_bytes| bytes in the correct byte order into least significant
-  // bytes of |result|.
+  // Set |result| to 0, then read |num_bytes| bytes in the correct byte order
+  // into least significant bytes of |result|.
   bool ReadBytesToUInt64(size_t num_bytes, uint64_t* result);
 
   // Reads a 16-bit unsigned float into the given output parameter.
