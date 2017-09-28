@@ -130,8 +130,9 @@ public class NewTabPageTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"NewTabPage", "RenderTest"})
+    // @MediumTest
+    // @Feature({"NewTabPage", "RenderTest"})
+    @DisabledTest
     @CommandLineFlags.Add("disable-features=NTPCondensedLayout")
     public void testRender() throws IOException {
         mActivityTestRule.getInstrumentation().waitForIdleSync();
