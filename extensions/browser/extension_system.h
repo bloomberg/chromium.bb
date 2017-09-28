@@ -57,7 +57,8 @@ class ExtensionSystem : public KeyedService {
   // controlled by |extensions_enabled|.
   virtual void InitForRegularProfile(bool extensions_enabled) = 0;
 
-  // The ExtensionService is created at startup.
+  // The ExtensionService is created at startup. ExtensionService is only
+  // defined in Chrome.
   virtual ExtensionService* extension_service() = 0;
 
   // Per-extension data that can change during the life of the process but

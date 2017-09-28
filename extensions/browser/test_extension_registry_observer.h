@@ -30,6 +30,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   const Extension* WaitForExtensionWillBeInstalled();
   const Extension* WaitForExtensionUninstalled();
   const Extension* WaitForExtensionLoaded();
+  const Extension* WaitForExtensionReady();
   const Extension* WaitForExtensionUnloaded();
 
  private:
@@ -45,6 +46,8 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
                               extensions::UninstallReason reason) override;
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
+  void OnExtensionReady(content::BrowserContext* browser_context,
+                        const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
@@ -54,6 +57,7 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   std::unique_ptr<Waiter> will_be_installed_waiter_;
   std::unique_ptr<Waiter> uninstalled_waiter_;
   std::unique_ptr<Waiter> loaded_waiter_;
+  std::unique_ptr<Waiter> ready_waiter_;
   std::unique_ptr<Waiter> unloaded_waiter_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

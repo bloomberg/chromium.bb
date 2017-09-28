@@ -58,12 +58,12 @@ class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
 class ExtensionErrorController;
+class ExtensionRegistrar;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
 class ExternalInstallManager;
 class OneShotEvent;
-class RendererStartupHelper;
 class SharedModuleService;
 class UpdateObserver;
 }  // namespace extensions
@@ -150,7 +150,9 @@ class ExtensionServiceInterface
   virtual void CheckForUpdatesSoon() = 0;
 
   // Adds |extension| to this ExtensionService and notifies observers that the
-  // extensions have been loaded.
+  // extension has been loaded.
+  // TODO(michaelpg): Refactor this function into single-purpose functions and
+  // migrate common code into ExtensionRegistrar.
   virtual void AddExtension(const extensions::Extension* extension) = 0;
 
   // Check if we have preferences for the component extension and, if not or if
@@ -515,16 +517,15 @@ class ExtensionService
                                 const std::string& install_parameter);
 
   // Handles sending notification that |extension| was loaded.
+  // TODO(michaelpg): Move to a delegate provided to ExtensionRegistrar, so
+  // ExtensionRegistrar is responsible for calling this at the right times.
   void NotifyExtensionLoaded(const extensions::Extension* extension);
 
-  // Completes extension loading after URLRequestContexts have been updated
-  // on the IO thread.
-  void OnExtensionRegisteredWithRequestContexts(
+  // Handles updating the profile when |extension| is disabled or removed.
+  // TODO(michaelpg): Move to a delegate provided to ExtensionRegistrar, so
+  // ExtensionRegistrar is responsible for calling this at the right times.
+  void PostDeactivateExtension(
       scoped_refptr<const extensions::Extension> extension);
-
-  // Handles sending notification that |extension| was unloaded.
-  void NotifyExtensionUnloaded(const extensions::Extension* extension,
-                               extensions::UnloadedExtensionReason reason);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const extensions::Extension* extension);
@@ -719,14 +720,13 @@ class ExtensionService
   // The SharedModuleService used to check for import dependencies.
   std::unique_ptr<extensions::SharedModuleService> shared_module_service_;
 
-  // The associated RendererStartupHelper. Guaranteed to outlive the
-  // ExtensionSystem, and thus us.
-  extensions::RendererStartupHelper* renderer_helper_;
-
   base::ObserverList<extensions::UpdateObserver, true> update_observers_;
 
   // Migrates app data when upgrading a legacy packaged app to a platform app
   std::unique_ptr<extensions::AppDataMigrator> app_data_migrator_;
+
+  // Helper to register and unregister extensions.
+  std::unique_ptr<extensions::ExtensionRegistrar> extension_registrar_;
 
   using InstallGateRegistry = std::map<extensions::ExtensionPrefs::DelayReason,
                                        extensions::InstallGate*>;
