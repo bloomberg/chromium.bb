@@ -71,10 +71,16 @@
         "isolate_name": "telemetry_perf_tests_new",
         "name": "benchmarks for bot 1",
         "override_compile_targets": [
-          "telemetry_perf_tests"
+          "telemetry_perf_tests_new"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "swarm823-c4",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
           "expiration": 36000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
