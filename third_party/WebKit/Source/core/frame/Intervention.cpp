@@ -7,9 +7,12 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/InterventionReport.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/Report.h"
 #include "core/frame/ReportingContext.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "public/platform/reporting.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -26,16 +29,24 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   if (!frame->Client())
     return;
 
-  // Send the intervention report to any ReportingObservers.
   Document* document = frame->GetDocument();
-  ReportingContext* reporting_context = ReportingContext::From(document);
-  if (!reporting_context->ObserverExists())
-    return;
 
-  ReportBody* body = new InterventionReport(message, SourceLocation::Capture());
+  // Construct the intervention report.
+  InterventionReport* body =
+      new InterventionReport(message, SourceLocation::Capture());
   Report* report =
       new Report("intervention", document->Url().GetString(), body);
-  reporting_context->QueueReport(report);
+
+  // Send the intervention report to any ReportingObservers.
+  ReportingContext* reporting_context = ReportingContext::From(document);
+  if (reporting_context->ObserverExists())
+    reporting_context->QueueReport(report);
+
+  // Send the intervention report to the Reporting API.
+  mojom::blink::ReportingServiceProxyPtr service;
+  frame->Client()->GetInterfaceProvider()->GetInterface(&service);
+  service->QueueInterventionReport(document->Url(), message, body->sourceFile(),
+                                   body->lineNumber());
 }
 
 }  // namespace blink
