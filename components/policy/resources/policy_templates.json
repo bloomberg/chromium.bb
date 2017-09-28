@@ -9959,7 +9959,7 @@
           'hash': { "type": "string" }
         },
       },
-      'supported_on': ['chrome_os:57-'],
+      'supported_on': ['chrome_os:61-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
