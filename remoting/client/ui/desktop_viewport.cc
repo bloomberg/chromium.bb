@@ -97,6 +97,11 @@ bool DesktopViewport::IsPointWithinDesktopBounds(
          point.y < desktop_size_.y;
 }
 
+bool DesktopViewport::IsViewportReady() const {
+  return desktop_size_.x != 0 && desktop_size_.y != 0 && surface_size_.x != 0 &&
+         surface_size_.y != 0;
+}
+
 ViewMatrix::Point DesktopViewport::ConstrainPointToDesktop(
     const ViewMatrix::Point& point) const {
   if (!IsViewportReady()) {
@@ -149,11 +154,6 @@ void DesktopViewport::ResizeToFit() {
   desktop_to_surface_transform_.SetScale(scale);
   desktop_to_surface_transform_.SetOffset({0.f, 0.f});
   UpdateViewport();
-}
-
-bool DesktopViewport::IsViewportReady() const {
-  return desktop_size_.x != 0 && desktop_size_.y != 0 && surface_size_.x != 0 &&
-         surface_size_.y != 0;
 }
 
 void DesktopViewport::UpdateViewport() {
@@ -222,6 +222,12 @@ void DesktopViewport::UpdateViewport() {
       ConstrainPointToBounds(GetViewportCenterBounds(), old_center);
   MoveViewportWithoutUpdate(new_center.x - old_center.x,
                             new_center.y - old_center.y);
+
+  DCHECK(desktop_to_surface_transform_.GetScale() >= 0)
+      << "Desktop scale should never be negative.";
+  DCHECK(std::isfinite(desktop_to_surface_transform_.GetOffset().x) &&
+         std::isfinite(desktop_to_surface_transform_.GetOffset().y))
+      << "Desktop offset should be finite number vector.";
 
   if (on_transformation_changed_) {
     on_transformation_changed_.Run(desktop_to_surface_transform_);
