@@ -823,8 +823,9 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 
 #else  // DCHECK_IS_ON()
 
-// This is a dummy value, since the DCHECK implementation is a no-op.
-const LogSeverity LOG_DCHECK = LOG_INFO;
+// There may be users of LOG_DCHECK that are enabled independently
+// of DCHECK_IS_ON(), so default to FATAL logging for those.
+const LogSeverity LOG_DCHECK = LOG_FATAL;
 
 #endif  // DCHECK_IS_ON()
 
