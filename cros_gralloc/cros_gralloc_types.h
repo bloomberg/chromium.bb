@@ -14,7 +14,7 @@ struct cros_gralloc_buffer_descriptor {
 	uint32_t producer_usage;
 	uint32_t droid_format;
 	uint32_t drm_format;
-	uint64_t drv_usage;
+	uint64_t use_flags;
 };
 
 #endif

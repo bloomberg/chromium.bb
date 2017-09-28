@@ -26,7 +26,7 @@ struct bo {
 	uint32_t sizes[DRV_MAX_PLANES];
 	uint32_t strides[DRV_MAX_PLANES];
 	uint64_t format_modifiers[DRV_MAX_PLANES];
-	uint64_t flags;
+	uint64_t use_flags;
 	size_t total_size;
 	void *priv;
 };
@@ -34,7 +34,7 @@ struct bo {
 struct kms_item {
 	uint32_t format;
 	uint64_t modifier;
-	uint64_t usage;
+	uint64_t use_flags;
 };
 
 struct format_metadata {
@@ -46,7 +46,7 @@ struct format_metadata {
 struct combination {
 	uint32_t format;
 	struct format_metadata metadata;
-	uint64_t usage;
+	uint64_t use_flags;
 };
 
 struct combinations {
@@ -70,7 +70,7 @@ struct backend {
 	int (*init)(struct driver *drv);
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			 uint64_t flags);
+			 uint64_t use_flags);
 	int (*bo_create_with_modifiers)(struct bo *bo, uint32_t width, uint32_t height,
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
 	int (*bo_destroy)(struct bo *bo);
@@ -78,7 +78,7 @@ struct backend {
 	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane, int prot);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	int (*bo_flush)(struct bo *bo, struct map_info *data);
-	uint32_t (*resolve_format)(uint32_t format, uint64_t usage);
+	uint32_t (*resolve_format)(uint32_t format, uint64_t use_flags);
 };
 
 // clang-format off

@@ -182,29 +182,29 @@ static int tegra_init(struct driver *drv)
 {
 	int ret;
 	struct format_metadata metadata;
-	uint64_t flags = BO_USE_RENDER_MASK;
+	uint64_t use_flags = BO_USE_RENDER_MASK;
 
 	metadata.tiling = NV_MEM_KIND_PITCH;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_NONE;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, flags);
+				   &metadata, use_flags);
 	if (ret)
 		return ret;
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
-	flags &= ~BO_USE_SW_WRITE_OFTEN;
-	flags &= ~BO_USE_SW_READ_OFTEN;
-	flags &= ~BO_USE_LINEAR;
+	use_flags &= ~BO_USE_SW_WRITE_OFTEN;
+	use_flags &= ~BO_USE_SW_READ_OFTEN;
+	use_flags &= ~BO_USE_LINEAR;
 
 	metadata.tiling = NV_MEM_KIND_C32_2CRA;
 	metadata.priority = 2;
 
 	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, flags);
+				   &metadata, use_flags);
 	if (ret)
 		return ret;
 
@@ -214,14 +214,15 @@ static int tegra_init(struct driver *drv)
 }
 
 static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			   uint64_t flags)
+			   uint64_t use_flags)
 {
 	uint32_t size, stride, block_height_log2 = 0;
 	enum nv_mem_kind kind = NV_MEM_KIND_PITCH;
 	struct drm_tegra_gem_create gem_create;
 	int ret;
 
-	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
+	if (use_flags &
+	    (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))
 		compute_layout_linear(width, height, format, &stride, &size);
 	else
 		compute_layout_blocklinear(width, height, format, &kind, &block_height_log2,

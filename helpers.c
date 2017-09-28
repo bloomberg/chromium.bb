@@ -182,7 +182,7 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 }
 
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-		       uint64_t flags)
+		       uint64_t use_flags)
 {
 	int ret;
 	size_t plane;
@@ -406,7 +406,7 @@ uint32_t drv_log_base2(uint32_t value)
 }
 
 int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
-			uint64_t usage)
+			uint64_t use_flags)
 {
 	struct combinations *combos = &drv->combos;
 	if (combos->size >= combos->allocations) {
@@ -423,18 +423,18 @@ int drv_add_combination(struct driver *drv, uint32_t format, struct format_metad
 	combos->data[combos->size].metadata.priority = metadata->priority;
 	combos->data[combos->size].metadata.tiling = metadata->tiling;
 	combos->data[combos->size].metadata.modifier = metadata->modifier;
-	combos->data[combos->size].usage = usage;
+	combos->data[combos->size].use_flags = use_flags;
 	combos->size++;
 	return 0;
 }
 
 int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
-			 struct format_metadata *metadata, uint64_t usage)
+			 struct format_metadata *metadata, uint64_t use_flags)
 {
 	int ret;
 	uint32_t i;
 	for (i = 0; i < num_formats; i++) {
-		ret = drv_add_combination(drv, formats[i], metadata, usage);
+		ret = drv_add_combination(drv, formats[i], metadata, use_flags);
 		if (ret)
 			return ret;
 	}
@@ -443,23 +443,23 @@ int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t n
 }
 
 void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
-			    uint64_t usage)
+			    uint64_t use_flags)
 {
 	uint32_t i;
 	struct combination *combo;
-	/* Attempts to add the specified usage to an existing combination. */
+	/* Attempts to add the specified flags to an existing combination. */
 	for (i = 0; i < drv->combos.size; i++) {
 		combo = &drv->combos.data[i];
 		if (combo->format == format && combo->metadata.tiling == metadata->tiling &&
 		    combo->metadata.modifier == metadata->modifier)
-			combo->usage |= usage;
+			combo->use_flags |= use_flags;
 	}
 }
 
 struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 {
-	uint64_t flag, usage;
 	struct kms_item *items;
+	uint64_t plane_type, use_flag;
 	uint32_t i, j, k, allocations, item_size;
 
 	drmModePlanePtr plane;
@@ -501,20 +501,20 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 			prop = drmModeGetProperty(drv->fd, props->props[j]);
 			if (prop) {
 				if (strcmp(prop->name, "type") == 0) {
-					flag = props->prop_values[j];
+					plane_type = props->prop_values[j];
 				}
 
 				drmModeFreeProperty(prop);
 			}
 		}
 
-		switch (flag) {
+		switch (plane_type) {
 		case DRM_PLANE_TYPE_OVERLAY:
 		case DRM_PLANE_TYPE_PRIMARY:
-			usage = BO_USE_SCANOUT;
+			use_flag = BO_USE_SCANOUT;
 			break;
 		case DRM_PLANE_TYPE_CURSOR:
-			usage = BO_USE_CURSOR;
+			use_flag = BO_USE_CURSOR;
 			break;
 		default:
 			assert(0);
@@ -525,7 +525,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 			for (k = 0; k < item_size; k++) {
 				if (items[k].format == plane->formats[j] &&
 				    items[k].modifier == DRM_FORMAT_MOD_NONE) {
-					items[k].usage |= usage;
+					items[k].use_flags |= use_flag;
 					found = true;
 					break;
 				}
@@ -546,7 +546,7 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 			if (!found) {
 				items[item_size].format = plane->formats[j];
 				items[item_size].modifier = DRM_FORMAT_MOD_NONE;
-				items[item_size].usage = usage;
+				items[item_size].use_flags = use_flag;
 				item_size++;
 			}
 		}
@@ -592,7 +592,7 @@ int drv_modify_linear_combinations(struct driver *drv)
 		for (j = 0; j < drv->combos.size; j++) {
 			combo = &drv->combos.data[j];
 			if (items[i].format == combo->format)
-				combo->usage |= BO_USE_SCANOUT;
+				combo->use_flags |= BO_USE_SCANOUT;
 		}
 	}
 

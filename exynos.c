@@ -40,7 +40,7 @@ static int exynos_init(struct driver *drv)
 }
 
 static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			    uint64_t flags)
+			    uint64_t use_flags)
 {
 	size_t plane;
 

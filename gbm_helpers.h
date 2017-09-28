@@ -7,6 +7,6 @@
 #ifndef GBM_HELPERS_H
 #define GBM_HELPERS_H
 
-uint64_t gbm_convert_flags(uint32_t flags);
+uint64_t gbm_convert_usage(uint32_t usage);
 
 #endif

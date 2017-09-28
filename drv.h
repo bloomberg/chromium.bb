@@ -75,7 +75,7 @@ struct drv_import_fd_data {
 	uint32_t width;
 	uint32_t height;
 	uint32_t format;
-	uint64_t flags;
+	uint64_t use_flags;
 };
 
 struct map_info {
@@ -94,13 +94,13 @@ int drv_get_fd(struct driver *drv);
 
 const char *drv_get_name(struct driver *drv);
 
-struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage);
+struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t use_flags);
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-		      uint64_t flags);
+		      uint64_t use_flags);
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-			 uint64_t flags);
+			 uint64_t use_flags);
 
 struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint32_t height,
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
@@ -140,7 +140,7 @@ uint32_t drv_bo_get_format(struct bo *bo);
 
 uint32_t drv_bo_get_stride_in_pixels(struct bo *bo);
 
-uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t usage);
+uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags);
 
 size_t drv_num_planes_from_format(uint32_t format);
 

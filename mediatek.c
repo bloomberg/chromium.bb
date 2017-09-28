@@ -47,7 +47,7 @@ static int mediatek_init(struct driver *drv)
 }
 
 static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			      uint64_t flags)
+			      uint64_t use_flags)
 {
 	int ret;
 	size_t plane;
@@ -97,7 +97,7 @@ static void *mediatek_bo_map(struct bo *bo, struct map_info *data, size_t plane,
 
 	data->length = bo->total_size;
 
-	if (bo->flags & BO_USE_RENDERSCRIPT) {
+	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
 		priv = calloc(1, sizeof(*priv));
 		priv->cached_addr = calloc(1, bo->total_size);
 		priv->gem_addr = addr;
@@ -131,7 +131,7 @@ static int mediatek_bo_flush(struct bo *bo, struct map_info *data)
 	return 0;
 }
 
-static uint32_t mediatek_resolve_format(uint32_t format, uint64_t usage)
+static uint32_t mediatek_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

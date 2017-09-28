@@ -78,8 +78,8 @@ bool cros_gralloc_driver::is_supported(const struct cros_gralloc_buffer_descript
 {
 	struct combination *combo;
 	uint32_t resolved_format;
-	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->drv_usage);
-	combo = drv_get_combination(drv_, resolved_format, descriptor->drv_usage);
+	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->use_flags);
+	combo = drv_get_combination(drv_, resolved_format, descriptor->use_flags);
 	return (combo != nullptr);
 }
 
@@ -94,9 +94,9 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	struct bo *bo;
 	struct cros_gralloc_handle *hnd;
 
-	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->drv_usage);
+	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->use_flags);
 	bo = drv_bo_create(drv_, descriptor->width, descriptor->height, resolved_format,
-			   descriptor->drv_usage);
+			   descriptor->use_flags);
 	if (!bo) {
 		cros_gralloc_error("Failed to create bo.");
 		return -ENOMEM;
@@ -133,8 +133,8 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	hnd->width = drv_bo_get_width(bo);
 	hnd->height = drv_bo_get_height(bo);
 	hnd->format = drv_bo_get_format(bo);
-	hnd->flags[0] = static_cast<uint32_t>(descriptor->drv_usage >> 32);
-	hnd->flags[1] = static_cast<uint32_t>(descriptor->drv_usage);
+	hnd->use_flags[0] = static_cast<uint32_t>(descriptor->use_flags >> 32);
+	hnd->use_flags[1] = static_cast<uint32_t>(descriptor->use_flags);
 	hnd->pixel_stride = drv_bo_get_stride_in_pixels(bo);
 	hnd->magic = cros_gralloc_magic;
 	hnd->droid_format = descriptor->droid_format;
@@ -182,8 +182,8 @@ int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
 		data.format = hnd->format;
 		data.width = hnd->width;
 		data.height = hnd->height;
-		data.flags = static_cast<uint64_t>(hnd->flags[0]) << 32;
-		data.flags |= hnd->flags[1];
+		data.use_flags = static_cast<uint64_t>(hnd->use_flags[0]) << 32;
+		data.use_flags |= hnd->use_flags[1];
 
 		memcpy(data.fds, hnd->fds, sizeof(data.fds));
 		memcpy(data.strides, hnd->strides, sizeof(data.strides));

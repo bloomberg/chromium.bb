@@ -194,18 +194,18 @@ const char *drv_get_name(struct driver *drv)
 	return drv->backend->name;
 }
 
-struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage)
+struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	struct combination *curr, *best;
 
-	if (format == DRM_FORMAT_NONE || usage == BO_USE_NONE)
+	if (format == DRM_FORMAT_NONE || use_flags == BO_USE_NONE)
 		return 0;
 
 	best = NULL;
 	uint32_t i;
 	for (i = 0; i < drv->combos.size; i++) {
 		curr = &drv->combos.data[i];
-		if ((format == curr->format) && usage == (curr->usage & usage))
+		if ((format == curr->format) && use_flags == (curr->use_flags & use_flags))
 			if (!best || best->metadata.priority < curr->metadata.priority)
 				best = curr;
 	}
@@ -214,7 +214,7 @@ struct combination *drv_get_combination(struct driver *drv, uint32_t format, uin
 }
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-		      uint64_t flags)
+		      uint64_t use_flags)
 {
 
 	struct bo *bo;
@@ -227,7 +227,7 @@ struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint3
 	bo->width = width;
 	bo->height = height;
 	bo->format = format;
-	bo->flags = flags;
+	bo->use_flags = use_flags;
 	bo->num_planes = drv_num_planes_from_format(format);
 
 	if (!bo->num_planes) {
@@ -239,18 +239,18 @@ struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint3
 }
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-			 uint64_t flags)
+			 uint64_t use_flags)
 {
 	int ret;
 	size_t plane;
 	struct bo *bo;
 
-	bo = drv_bo_new(drv, width, height, format, flags);
+	bo = drv_bo_new(drv, width, height, format, use_flags);
 
 	if (!bo)
 		return NULL;
 
-	ret = drv->backend->bo_create(bo, width, height, format, flags);
+	ret = drv->backend->bo_create(bo, width, height, format, use_flags);
 
 	if (ret) {
 		free(bo);
@@ -331,7 +331,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	size_t plane;
 	struct bo *bo;
 
-	bo = drv_bo_new(drv, data->width, data->height, data->format, data->flags);
+	bo = drv_bo_new(drv, data->width, data->height, data->format, data->use_flags);
 
 	if (!bo)
 		return NULL;
@@ -509,10 +509,10 @@ uint32_t drv_bo_get_format(struct bo *bo)
 	return bo->format;
 }
 
-uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t usage)
+uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	if (drv->backend->resolve_format)
-		return drv->backend->resolve_format(format, usage);
+		return drv->backend->resolve_format(format, use_flags);
 
 	return format;
 }

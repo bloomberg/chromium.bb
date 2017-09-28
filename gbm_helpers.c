@@ -10,26 +10,26 @@
 #include "drv.h"
 #include "gbm.h"
 
-uint64_t gbm_convert_flags(uint32_t flags)
+uint64_t gbm_convert_usage(uint32_t usage)
 {
-	uint64_t usage = BO_USE_NONE;
+	uint64_t use_flags = BO_USE_NONE;
 
-	if (flags & GBM_BO_USE_SCANOUT)
-		usage |= BO_USE_SCANOUT;
-	if (flags & GBM_BO_USE_CURSOR)
-		usage |= BO_USE_CURSOR;
-	if (flags & GBM_BO_USE_CURSOR_64X64)
-		usage |= BO_USE_CURSOR_64X64;
-	if (flags & GBM_BO_USE_RENDERING)
-		usage |= BO_USE_RENDERING;
-	if (flags & GBM_BO_USE_TEXTURING)
-		usage |= BO_USE_TEXTURE;
-	if (flags & GBM_BO_USE_LINEAR)
-		usage |= BO_USE_LINEAR;
-	if (flags & GBM_BO_USE_CAMERA_WRITE)
-		usage |= BO_USE_CAMERA_WRITE;
-	if (flags & GBM_BO_USE_CAMERA_READ)
-		usage |= BO_USE_CAMERA_READ;
+	if (usage & GBM_BO_USE_SCANOUT)
+		use_flags |= BO_USE_SCANOUT;
+	if (usage & GBM_BO_USE_CURSOR)
+		use_flags |= BO_USE_CURSOR;
+	if (usage & GBM_BO_USE_CURSOR_64X64)
+		use_flags |= BO_USE_CURSOR_64X64;
+	if (usage & GBM_BO_USE_RENDERING)
+		use_flags |= BO_USE_RENDERING;
+	if (usage & GBM_BO_USE_TEXTURING)
+		use_flags |= BO_USE_TEXTURE;
+	if (usage & GBM_BO_USE_LINEAR)
+		use_flags |= BO_USE_LINEAR;
+	if (usage & GBM_BO_USE_CAMERA_WRITE)
+		use_flags |= BO_USE_CAMERA_WRITE;
+	if (usage & GBM_BO_USE_CAMERA_READ)
+		use_flags |= BO_USE_CAMERA_READ;
 
-	return usage;
+	return use_flags;
 }

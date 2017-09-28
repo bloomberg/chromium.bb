@@ -30,14 +30,14 @@ PUBLIC const char *gbm_device_get_backend_name(struct gbm_device *gbm)
 
 PUBLIC int gbm_device_is_format_supported(struct gbm_device *gbm, uint32_t format, uint32_t usage)
 {
-	uint64_t drv_usage;
+	uint64_t use_flags;
 
 	if (usage & GBM_BO_USE_CURSOR && usage & GBM_BO_USE_RENDERING)
 		return 0;
 
-	drv_usage = gbm_convert_flags(usage);
+	use_flags = gbm_convert_usage(usage);
 
-	return (drv_get_combination(gbm->drv, format, drv_usage) != NULL);
+	return (drv_get_combination(gbm->drv, format, use_flags) != NULL);
 }
 
 PUBLIC struct gbm_device *gbm_create_device(int fd)
@@ -65,7 +65,7 @@ PUBLIC void gbm_device_destroy(struct gbm_device *gbm)
 }
 
 PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm, uint32_t width,
-					      uint32_t height, uint32_t format, uint32_t flags)
+					      uint32_t height, uint32_t format, uint32_t usage)
 {
 	struct gbm_surface *surface = (struct gbm_surface *)malloc(sizeof(*surface));
 
@@ -104,11 +104,11 @@ static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm, uint32_t format)
 }
 
 PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width, uint32_t height,
-				    uint32_t format, uint32_t flags)
+				    uint32_t format, uint32_t usage)
 {
 	struct gbm_bo *bo;
 
-	if (!gbm_device_is_format_supported(gbm, format, flags))
+	if (!gbm_device_is_format_supported(gbm, format, usage))
 		return NULL;
 
 	bo = gbm_bo_new(gbm, format);
@@ -116,7 +116,7 @@ PUBLIC struct gbm_bo *gbm_bo_create(struct gbm_device *gbm, uint32_t width, uint
 	if (!bo)
 		return NULL;
 
-	bo->bo = drv_bo_create(gbm->drv, width, height, format, gbm_convert_flags(flags));
+	bo->bo = drv_bo_create(gbm->drv, width, height, format, gbm_convert_usage(usage));
 
 	if (!bo->bo) {
 		free(bo);
@@ -170,7 +170,7 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 	size_t num_planes, i;
 
 	memset(&drv_data, 0, sizeof(drv_data));
-	drv_data.flags = gbm_convert_flags(usage);
+	drv_data.use_flags = gbm_convert_usage(usage);
 	switch (type) {
 	case GBM_BO_IMPORT_FD:
 		gbm_format = fd_data->format;

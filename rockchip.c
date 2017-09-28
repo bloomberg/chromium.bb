@@ -78,7 +78,7 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 {
 	int ret;
 	uint32_t i, j;
-	uint64_t flags;
+	uint64_t use_flags;
 	struct combination *combo;
 	struct format_metadata metadata;
 
@@ -86,21 +86,22 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 		combo = &drv->combos.data[i];
 		if (combo->format == item->format) {
 			if (item->modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
-				flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;
+				use_flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;
 				metadata.modifier = item->modifier;
 				metadata.tiling = 0;
 				metadata.priority = 2;
 
 				for (j = 0; j < ARRAY_SIZE(texture_source_formats); j++) {
 					if (item->format == texture_source_formats[j])
-						flags &= ~BO_USE_RENDERING;
+						use_flags &= ~BO_USE_RENDERING;
 				}
 
-				ret = drv_add_combination(drv, item[i].format, &metadata, flags);
+				ret =
+				    drv_add_combination(drv, item[i].format, &metadata, use_flags);
 				if (ret)
 					return ret;
 			} else {
-				combo->usage |= item->usage;
+				combo->use_flags |= item->use_flags;
 			}
 		}
 	}
@@ -231,7 +232,7 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 }
 
 static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			      uint64_t flags)
+			      uint64_t use_flags)
 {
 	uint64_t modifiers[] = { DRM_FORMAT_MOD_NONE };
 	return rockchip_bo_create_with_modifiers(bo, width, height, format, modifiers,
@@ -262,7 +263,7 @@ static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane,
 
 	data->length = bo->total_size;
 
-	if (bo->flags & BO_USE_RENDERSCRIPT) {
+	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
 		priv = calloc(1, sizeof(*priv));
 		priv->cached_addr = calloc(1, bo->total_size);
 		priv->gem_addr = addr;
@@ -296,12 +297,12 @@ static int rockchip_bo_flush(struct bo *bo, struct map_info *data)
 	return 0;
 }
 
-static uint32_t rockchip_resolve_format(uint32_t format, uint64_t usage)
+static uint32_t rockchip_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 		/* Camera subsystem requires NV12. */
-		if (usage & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
 			return DRM_FORMAT_NV12;
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;

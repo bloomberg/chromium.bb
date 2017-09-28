@@ -35,7 +35,7 @@ static int virtio_gpu_init(struct driver *drv)
 }
 
 static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-				uint64_t flags)
+				uint64_t use_flags)
 {
 	width = ALIGN(width, MESA_LLVMPIPE_TILE_SIZE);
 	height = ALIGN(height, MESA_LLVMPIPE_TILE_SIZE);
@@ -44,10 +44,10 @@ static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, 
 	if (bo->format == DRM_FORMAT_YVU420_ANDROID)
 		height = bo->height;
 
-	return drv_dumb_bo_create(bo, width, height, format, flags);
+	return drv_dumb_bo_create(bo, width, height, format, use_flags);
 }
 
-static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t usage)
+static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
