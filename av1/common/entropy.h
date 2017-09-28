@@ -201,7 +201,6 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
    distinct bands). */
 
 #define COEFF_CONTEXTS 6
-#define BLOCKZ_CONTEXTS 3
 #define COEFF_CONTEXTS0 3  // for band 0
 #define BAND_COEFF_CONTEXTS(band) \
   ((band) == 0 ? COEFF_CONTEXTS0 : COEFF_CONTEXTS)
@@ -254,8 +253,6 @@ extern const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
 
 typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [CDF_SIZE(ENTROPY_TOKENS)];
-typedef aom_prob av1_blockz_probs_model[REF_TYPES][BLOCKZ_CONTEXTS];
-typedef unsigned int av1_blockz_count_model[REF_TYPES][BLOCKZ_CONTEXTS][2];
 extern const aom_cdf_prob av1_pareto8_token_probs[COEFF_PROB_MODELS]
                                                  [ENTROPY_TOKENS - 2];
 extern const aom_cdf_prob av1_pareto8_tail_probs[COEFF_PROB_MODELS]

@@ -5265,8 +5265,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
 #endif
   assert(!memcmp(cm->counts.partition, zero_counts.partition,
                  sizeof(cm->counts.partition)));
-  assert(!memcmp(cm->counts.blockz_count, zero_counts.blockz_count,
-                 sizeof(cm->counts.blockz_count)));
   assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
                  sizeof(cm->counts.switchable_interp)));
 #if CONFIG_EXT_INTER

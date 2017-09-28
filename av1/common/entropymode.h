@@ -446,8 +446,6 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_CTX1D
 #endif  // CONFIG_LV_MAP
 
-  av1_blockz_count_model blockz_count[TX_SIZES][PLANE_TYPES];
-
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[ZEROMV_MODE_CONTEXTS][2];
   unsigned int refmv_mode[REFMV_MODE_CONTEXTS][2];
