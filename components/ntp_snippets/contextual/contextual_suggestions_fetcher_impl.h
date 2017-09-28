@@ -16,8 +16,8 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/contextual/contextual_json_request.h"
+#include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
-#include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/status.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -71,7 +71,7 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
                      const std::string& error_details);
 
   bool JsonToSuggestions(const base::Value& parsed,
-                         RemoteSuggestion::PtrVector* suggestions);
+                         ContextualSuggestion::PtrVector* suggestions);
 
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;

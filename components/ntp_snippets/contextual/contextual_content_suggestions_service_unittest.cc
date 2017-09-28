@@ -17,11 +17,10 @@
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
-#include "components/ntp_snippets/remote/remote_suggestion.h"
-#include "components/ntp_snippets/remote/remote_suggestion_builder.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -149,14 +148,12 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kValidFromUrl = "http://some.url";
   const std::string kToUrl = "http://another.url";
-  ContextualSuggestionsFetcher::OptionalSuggestions remote_suggestions =
-      RemoteSuggestion::PtrVector();
-  remote_suggestions->push_back(test::RemoteSuggestionBuilder()
-                                    .AddId(kToUrl)
-                                    .SetUrl(kToUrl)
-                                    .SetAmpUrl(kToUrl)
-                                    .Build());
-  fetcher()->SetFakeResponse(Status::Success(), std::move(remote_suggestions));
+  ContextualSuggestionsFetcher::OptionalSuggestions contextual_suggestions =
+      ContextualSuggestion::PtrVector();
+  contextual_suggestions->push_back(
+      ContextualSuggestion::CreateForTesting(kToUrl, ""));
+  fetcher()->SetFakeResponse(Status::Success(),
+                             std::move(contextual_suggestions));
   EXPECT_CALL(mock_suggestions_callback,
               Run(Property(&Status::IsSuccess, true), GURL(kValidFromUrl),
                   Pointee(ElementsAre(AllOf(
@@ -174,7 +171,8 @@ TEST_F(ContextualContentSuggestionsServiceTest,
        ShouldRunCallbackOnEmptyResults) {
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kEmpty;
-  fetcher()->SetFakeResponse(Status::Success(), RemoteSuggestion::PtrVector());
+  fetcher()->SetFakeResponse(Status::Success(),
+                             ContextualSuggestion::PtrVector());
   EXPECT_CALL(mock_suggestions_callback, Run(Property(&Status::IsSuccess, true),
                                              GURL(kEmpty), Pointee(IsEmpty())));
   source()->FetchContextualSuggestions(
@@ -186,7 +184,7 @@ TEST_F(ContextualContentSuggestionsServiceTest, ShouldRunCallbackOnError) {
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   const std::string kEmpty;
   fetcher()->SetFakeResponse(Status(StatusCode::TEMPORARY_ERROR, ""),
-                             RemoteSuggestion::PtrVector());
+                             ContextualSuggestion::PtrVector());
   EXPECT_CALL(mock_suggestions_callback,
               Run(Property(&Status::IsSuccess, false), GURL(kEmpty),
                   Pointee(IsEmpty())));
@@ -215,15 +213,12 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   const std::string kValidFromUrl = "http://some.url";
   const std::string kToUrl = "http://another.url";
   const std::string kValidImageUrl = "http://some.url/image.png";
-  ContextualSuggestionsFetcher::OptionalSuggestions remote_suggestions =
-      RemoteSuggestion::PtrVector();
-  remote_suggestions->push_back(test::RemoteSuggestionBuilder()
-                                    .AddId(kToUrl)
-                                    .SetUrl(kToUrl)
-                                    .SetAmpUrl(kToUrl)
-                                    .SetImageUrl(kValidImageUrl)
-                                    .Build());
-  fetcher()->SetFakeResponse(Status::Success(), std::move(remote_suggestions));
+  ContextualSuggestionsFetcher::OptionalSuggestions contextual_suggestions =
+      ContextualSuggestion::PtrVector();
+  contextual_suggestions->push_back(
+      ContextualSuggestion::CreateForTesting(kToUrl, kValidImageUrl));
+  fetcher()->SetFakeResponse(Status::Success(),
+                             std::move(contextual_suggestions));
   MockFetchContextualSuggestionsCallback mock_suggestions_callback;
   std::vector<ContentSuggestion> suggestions;
   EXPECT_CALL(mock_suggestions_callback, Run(_, _, _))
