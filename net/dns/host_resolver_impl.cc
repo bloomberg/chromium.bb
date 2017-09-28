@@ -693,7 +693,6 @@ class HostResolverImpl::ProcTask
         attempt_number_(0),
         completed_attempt_number_(0),
         completed_attempt_error_(ERR_UNEXPECTED),
-        had_non_speculative_request_(false),
         net_log_(job_net_log) {
     if (!params_.resolver_proc.get())
       params_.resolver_proc = HostResolverProc::GetDefault();
@@ -719,11 +718,6 @@ class HostResolverImpl::ProcTask
 
     callback_.Reset();
     net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_PROC_TASK);
-  }
-
-  void set_had_non_speculative_request() {
-    DCHECK(network_task_runner_->BelongsToCurrentThread());
-    had_non_speculative_request_ = true;
   }
 
   bool was_canceled() const {
@@ -816,11 +810,6 @@ class HostResolverImpl::ProcTask
     if (error != OK && NetworkChangeNotifier::IsOffline())
       error = ERR_INTERNET_DISCONNECTED;
 
-    // If this is the first attempt that is finishing later, then record data
-    // for the first attempt. Won't contaminate with retry attempt's data.
-    if (!was_retry_attempt)
-      RecordPerformanceHistograms(start_time, error, os_error);
-
     RecordAttemptHistograms(start_time, attempt_number, error, os_error);
 
     if (was_canceled())
@@ -840,6 +829,8 @@ class HostResolverImpl::ProcTask
 
     if (was_completed())
       return;
+
+    RecordTaskHistograms(start_time, error, os_error);
 
     // Copy the results from the first worker thread that resolves the host.
     results_ = results;
@@ -864,75 +855,19 @@ class HostResolverImpl::ProcTask
     callback_.Run(error, results_);
   }
 
-  void RecordPerformanceHistograms(const base::TimeTicks& start_time,
-                                   const int error,
-                                   const int os_error) const {
+  void RecordTaskHistograms(const base::TimeTicks& start_time,
+                            const int error,
+                            const int os_error) const {
     DCHECK(network_task_runner_->BelongsToCurrentThread());
-    enum Category {  // Used in UMA_HISTOGRAM_ENUMERATION.
-      RESOLVE_SUCCESS,
-      RESOLVE_FAIL,
-      RESOLVE_SPECULATIVE_SUCCESS,
-      RESOLVE_SPECULATIVE_FAIL,
-      RESOLVE_MAX,  // Bounding value.
-    };
-    Category category = RESOLVE_MAX;  // Illegal value for later DCHECK only.
-
     base::TimeDelta duration = base::TimeTicks::Now() - start_time;
-    if (error == OK) {
-      if (had_non_speculative_request_) {
-        category = RESOLVE_SUCCESS;
-        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess", duration);
-      } else {
-        category = RESOLVE_SPECULATIVE_SUCCESS;
-        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSpeculativeSuccess", duration);
-      }
+    if (error == OK)
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.SuccessTime", duration);
+    else
+      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ProcTask.FailureTime", duration);
 
-      // Log DNS lookups based on |address_family|. This will help us determine
-      // if IPv4 or IPv4/6 lookups are faster or slower.
-      switch (key_.address_family) {
-        case ADDRESS_FAMILY_IPV4:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_IPV4",
-                                       duration);
-          break;
-        case ADDRESS_FAMILY_IPV6:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_IPV6",
-                                       duration);
-          break;
-        case ADDRESS_FAMILY_UNSPECIFIED:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSuccess_FAMILY_UNSPEC",
-                                       duration);
-          break;
-      }
-    } else {
-      if (had_non_speculative_request_) {
-        category = RESOLVE_FAIL;
-        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail", duration);
-      } else {
-        category = RESOLVE_SPECULATIVE_FAIL;
-        UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveSpeculativeFail", duration);
-      }
-      // Log DNS lookups based on |address_family|. This will help us determine
-      // if IPv4 or IPv4/6 lookups are faster or slower.
-      switch (key_.address_family) {
-        case ADDRESS_FAMILY_IPV4:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_IPV4", duration);
-          break;
-        case ADDRESS_FAMILY_IPV6:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_IPV6", duration);
-          break;
-        case ADDRESS_FAMILY_UNSPECIFIED:
-          UMA_HISTOGRAM_LONG_TIMES_100("DNS.ResolveFail_FAMILY_UNSPEC",
-                                       duration);
-          break;
-      }
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION(kOSErrorsForGetAddrinfoHistogramName,
-                                       std::abs(os_error),
-                                       GetAllGetAddrinfoOSErrors());
-    }
-    DCHECK_LT(static_cast<int>(category),
-              static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
-
-    UMA_HISTOGRAM_ENUMERATION("DNS.ResolveCategory", category, RESOLVE_MAX);
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(kOSErrorsForGetAddrinfoHistogramName,
+                                     std::abs(os_error),
+                                     GetAllGetAddrinfoOSErrors());
   }
 
   void RecordAttemptHistograms(const base::TimeTicks& start_time,
@@ -1016,12 +951,6 @@ class HostResolverImpl::ProcTask
 
   // The time when retry attempt was finished.
   base::TimeTicks retry_attempt_finished_time_;
-
-  // True if a non-speculative request was ever attached to this job
-  // (regardless of whether or not it was later canceled.
-  // This boolean is used for histogramming the duration of jobs used to
-  // service non-speculative requests.
-  bool had_non_speculative_request_;
 
   AddressList results_;
 
@@ -1351,12 +1280,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         base::Bind(&NetLogJobAttachCallback, request->source_net_log().source(),
                    priority()));
 
-    // TODO(szym): Check if this is still needed.
-    if (!request->info().is_speculative()) {
+    if (!request->info().is_speculative())
       had_non_speculative_request_ = true;
-      if (proc_task_.get())
-        proc_task_->set_had_non_speculative_request();
-    }
 
     requests_.push_back(request);
 
@@ -1533,9 +1458,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     had_dns_config_ = resolver_->HaveDnsConfig();
 
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta queue_time = now - creation_time_;
-    base::TimeDelta queue_time_after_change = now - priority_change_time_;
+    start_time_ = base::TimeTicks::Now();
+    base::TimeDelta queue_time = start_time_ - creation_time_;
+    base::TimeDelta queue_time_after_change =
+        start_time_ - priority_change_time_;
 
     DNS_HISTOGRAM_BY_PRIORITY("Net.DNS.JobQueueTime", priority(), queue_time);
     DNS_HISTOGRAM_BY_PRIORITY("Net.DNS.JobQueueTimeAfterChange", priority(),
@@ -1565,8 +1491,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                 base::Unretained(this), base::TimeTicks::Now()),
                      net_log_);
 
-    if (had_non_speculative_request_)
-      proc_task_->set_had_non_speculative_request();
     // Start() could be called from within Resolve(), hence it must NOT directly
     // call OnProcTaskComplete, for example, on synchronous failure.
     proc_task_->Start();
@@ -1588,7 +1512,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         } else {
           UmaAsyncDnsResolveStatus(RESOLVE_STATUS_PROC_SUCCESS);
         }
-        UMA_HISTOGRAM_SPARSE_SLOWLY("AsyncDNS.ResolveError",
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.DNS.DnsTask.Errors",
                                     std::abs(dns_task_error_));
         resolver_->OnDnsTaskResolve(dns_task_error_);
       } else {
@@ -1631,7 +1555,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   void OnDnsTaskFailure(const base::WeakPtr<DnsTask>& dns_task,
                         base::TimeDelta duration,
                         int net_error) {
-    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveFail", duration);
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.FailureTime", duration);
 
     if (!dns_task)
       return;
@@ -1666,22 +1590,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       OnDnsTaskFailure(dns_task_->AsWeakPtr(), duration, net_error);
       return;
     }
-    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess", duration);
-    // Log DNS lookups based on |address_family|.
-    switch (key_.address_family) {
-      case ADDRESS_FAMILY_IPV4:
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_IPV4",
-                                     duration);
-        break;
-      case ADDRESS_FAMILY_IPV6:
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_IPV6",
-                                     duration);
-        break;
-      case ADDRESS_FAMILY_UNSPECIFIED:
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.ResolveSuccess_FAMILY_UNSPEC",
-                                     duration);
-        break;
-    }
+
+    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.SuccessTime", duration);
 
     UmaAsyncDnsResolveStatus(RESOLVE_STATUS_DNS_SUCCESS);
     RecordTTL(ttl);
@@ -1710,6 +1620,69 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     // for the second slot.
     if (dns_task_->needs_another_transaction())
       dns_task_->StartSecondTransaction();
+  }
+
+  void RecordJobHistograms(int error) {
+    enum Category {  // Used in UMA_HISTOGRAM_ENUMERATION.
+      RESOLVE_SUCCESS,
+      RESOLVE_FAIL,
+      RESOLVE_SPECULATIVE_SUCCESS,
+      RESOLVE_SPECULATIVE_FAIL,
+      RESOLVE_MAX,  // Bounding value.
+    };
+    Category category = RESOLVE_MAX;  // Illegal value for later DCHECK only.
+
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+    if (error == OK) {
+      if (had_non_speculative_request_) {
+        category = RESOLVE_SUCCESS;
+        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime", duration);
+        switch (key_.address_family) {
+          case ADDRESS_FAMILY_IPV4:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV4",
+                                         duration);
+            break;
+          case ADDRESS_FAMILY_IPV6:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV6",
+                                         duration);
+            break;
+          case ADDRESS_FAMILY_UNSPECIFIED:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.UNSPEC",
+                                         duration);
+            break;
+        }
+      } else {
+        category = RESOLVE_SPECULATIVE_SUCCESS;
+        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.Speculative",
+                                     duration);
+      }
+    } else {
+      if (had_non_speculative_request_) {
+        category = RESOLVE_FAIL;
+        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime", duration);
+        switch (key_.address_family) {
+          case ADDRESS_FAMILY_IPV4:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV4",
+                                         duration);
+            break;
+          case ADDRESS_FAMILY_IPV6:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV6",
+                                         duration);
+            break;
+          case ADDRESS_FAMILY_UNSPECIFIED:
+            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.UNSPEC",
+                                         duration);
+            break;
+        }
+      } else {
+        category = RESOLVE_SPECULATIVE_FAIL;
+        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.Speculative",
+                                     duration);
+      }
+    }
+    DCHECK_LT(static_cast<int>(category),
+              static_cast<int>(RESOLVE_MAX));  // Be sure it was set.
+    UMA_HISTOGRAM_ENUMERATION("Net.DNS.ResolveCategory", category, RESOLVE_MAX);
   }
 
   // Performs Job's last rites. Completes all Requests. Deletes this.
@@ -1763,8 +1736,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     bool did_complete = (entry.error() != ERR_NETWORK_CHANGED) &&
                         (entry.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
-    if (did_complete)
+    if (did_complete) {
       resolver_->CacheResult(key_, entry, ttl);
+      RecordJobHistograms(entry.error());
+    }
 
     // Complete all of the requests that were attached to the job and
     // detach them.
@@ -1827,6 +1802,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   const base::TimeTicks creation_time_;
   base::TimeTicks priority_change_time_;
+  base::TimeTicks start_time_;
 
   NetLogWithSource net_log_;
 
