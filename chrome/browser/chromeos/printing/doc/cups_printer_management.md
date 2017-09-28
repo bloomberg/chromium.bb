@@ -72,9 +72,9 @@ it should be destroyed when its immediate usefulness is complete.
 It provides this information both via an Observer interface, for consumers that
 require live updates to changes in availability, and also via a simpler "Give me
 all the printers of this type" interface for simpler consumers that just need to
-know the state of the world at a given point in time.  `CupsPrinterManager` is
+know the state of the world at a given point in time.  `CupsPrintersManager` is
 also where the logic to determine whether a given detected printer is
-automatically configurable (and this belongs in the *Automatic* category) or not
+automatically configurable (and thus belongs in the *Automatic* category) or not
 (and thus belongs in the *Discovered* category).
 
 There are 4 primary consumers of `CupsPrintersManager` information:
@@ -83,7 +83,7 @@ There are 4 primary consumers of `CupsPrintersManager` information:
   (`printing/backend/print_backend_chromeos.cc`).  This is the ChromeOS
   implementation of the backend print API used by Chrome.
 * The PrintPreview dialog proxy
-  (`chrome/browser/ui/webui/print_preview/printer_backend_proxy_chromeos.cc`).
+  (`chrome/browser/ui/webui/print_preview/local_printer_handler_chromeos.cc`).
   This is mostly a thread workaround to access the stuff in the print backend.
 * The ChromeOS printers settings
   page. (`chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.cc`
