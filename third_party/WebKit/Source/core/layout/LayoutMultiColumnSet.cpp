@@ -36,7 +36,8 @@ LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flow_thread)
     : LayoutBlockFlow(nullptr),
       fragmentainer_groups_(*this),
       flow_thread_(flow_thread),
-      initial_height_calculated_(false) {}
+      initial_height_calculated_(false),
+      last_actual_column_count_(0) {}
 
 LayoutMultiColumnSet* LayoutMultiColumnSet::CreateAnonymous(
     LayoutFlowThread& flow_thread,
@@ -441,6 +442,14 @@ void LayoutMultiColumnSet::UpdateLayout() {
   if (RecalculateColumnHeight())
     MultiColumnFlowThread()->SetColumnHeightsChanged();
   LayoutBlockFlow::UpdateLayout();
+
+  auto actual_column_count = ActualColumnCount();
+  if (actual_column_count != last_actual_column_count_) {
+    // At least we need to paint column rules differently when actual column
+    // count changes.
+    SetShouldDoFullPaintInvalidation();
+    last_actual_column_count_ = actual_column_count;
+  }
 }
 
 void LayoutMultiColumnSet::ComputeIntrinsicLogicalWidths(
@@ -548,7 +557,7 @@ void LayoutMultiColumnSet::AttachToFlowThread() {
 void LayoutMultiColumnSet::DetachFromFlowThread() {
   if (flow_thread_) {
     flow_thread_->RemoveColumnSetFromThread(this);
-    flow_thread_ = 0;
+    flow_thread_ = nullptr;
   }
 }
 

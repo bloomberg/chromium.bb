@@ -12,6 +12,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutMultiColumnSet (anonymous)",
+          "rect": [8, 8, 630, 20],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutText #text",
           "rect": [488, 8, 80, 20],
           "reason": "appeared"
@@ -51,6 +56,10 @@
     {
       "object": "InlineTextBox 'PASS'",
       "reason": "appeared"
+    },
+    {
+      "object": "LayoutMultiColumnSet (anonymous)",
+      "reason": "geometry"
     }
   ]
 }

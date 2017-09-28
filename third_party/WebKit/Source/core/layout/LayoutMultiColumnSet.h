@@ -273,6 +273,8 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   LayoutUnit old_logical_top_;
 
   bool initial_height_calculated_;
+
+  unsigned last_actual_column_count_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSet, IsLayoutMultiColumnSet());
