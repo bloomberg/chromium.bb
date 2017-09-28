@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -197,6 +198,16 @@ void LockScreenController::DoAuthenticateUser(
     hashed_password =
         CalculateHash(password, prefs->GetString(prefs::kQuickUnlockPinSalt),
                       chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234);
+  }
+
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY && !is_pin) {
+    // Try to get kerberos TGT while we have user's password typed on the lock
+    // screen. Using invalid/bad password is fine. Failure to get TGT here is OK
+    // - that could mean e.g. Active Directory server is not reachable.
+    // AuthPolicyCredentialsManager regularly checks TGT status inside the user
+    // session.
+    chromeos::AuthPolicyLoginHelper::TryAuthenticateUser(
+        account_id.GetUserEmail(), account_id.GetObjGuid(), password);
   }
 
   lock_screen_client_->AuthenticateUser(account_id, hashed_password, is_pin,
