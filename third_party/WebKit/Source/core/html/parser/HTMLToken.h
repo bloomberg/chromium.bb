@@ -115,6 +115,7 @@ class HTMLToken {
       return AttemptStaticStringCreation(name_, kLikely8Bit);
     }
     const Vector<UChar, 32>& NameAsVector() const { return name_; }
+    const Vector<UChar, 32>& ValueAsVector() const { return value_; }
 
     void AppendToName(UChar c) { name_.push_back(c); }
 
