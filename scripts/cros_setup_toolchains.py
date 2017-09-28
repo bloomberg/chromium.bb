@@ -939,7 +939,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   libdir = os.path.join(output_dir, 'lib')
   osutils.SafeMakedirs(libdir)
   donelibs = set()
-  glibc_re = re.compile(r'/libc-[0-9.]+\.so$')
+  glibc_re = re.compile(r'/lib(c|pthread)-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
     interp = e['interp']
