@@ -42,35 +42,26 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  ChromePasswordProtectionService* GetService(bool is_incognito) {
+  ChromePasswordProtectionService* GetService() {
     return ChromePasswordProtectionService::GetPasswordProtectionService(
-        is_incognito ? browser()->profile()->GetOffTheRecordProfile()
-                     : browser()->profile());
+        browser()->profile());
   }
 
-  void SimulateGaiaPasswordChange(bool is_incognito) {
-    if (is_incognito) {
-      browser()->profile()->GetOffTheRecordProfile()->GetPrefs()->SetString(
-          password_manager::prefs::kSyncPasswordHash, "new_password_hash");
-    } else {
-      browser()->profile()->GetPrefs()->SetString(
-          password_manager::prefs::kSyncPasswordHash, "new_password_hash");
-    }
+  void SimulateGaiaPasswordChange() {
+    browser()->profile()->GetPrefs()->SetString(
+        password_manager::prefs::kSyncPasswordHash, "new_password_hash");
   }
 
-  void SimulateAction(ChromePasswordProtectionService* service,
-                      ChromePasswordProtectionService::WarningUIType ui_type,
+  void SimulateAction(ChromePasswordProtectionService::WarningUIType ui_type,
                       ChromePasswordProtectionService::WarningAction action) {
-    for (auto& observer : service->observer_list_) {
+    for (auto& observer : GetService()->observer_list_) {
       if (ui_type == observer.GetObserverType()) {
         observer.InvokeActionForTesting(action);
       }
     }
   }
 
-  void SimulateGaiaPasswordChanged(ChromePasswordProtectionService* service) {
-    service->OnGaiaPasswordChanged();
-  }
+  void SimulateGaiaPasswordChanged() { GetService()->OnGaiaPasswordChanged(); }
 
   void GetSecurityInfo(content::WebContents* web_contents,
                        security_state::SecurityInfo* out_security_info) {
@@ -79,8 +70,8 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     helper->GetSecurityInfo(out_security_info);
   }
 
-  void SetDefaultProfileEmail(ChromePasswordProtectionService* service) {
-    service->account_info_->email = "foo@bar.com";
+  void SetDefaultProfileEmail() {
+    GetService()->account_info_->email = "foo@bar.com";
   }
 
  protected:
@@ -90,8 +81,8 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        SuccessfullyChangePassword) {
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  SetDefaultProfileEmail(service);
+  ChromePasswordProtectionService* service = GetService();
+  SetDefaultProfileEmail();
   Profile* profile = browser()->profile();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -121,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Change Password" button on the modal dialog.
   // There should be only 1 observer in the list.
-  SimulateAction(service, ChromePasswordProtectionService::MODAL_DIALOG,
+  SimulateAction(ChromePasswordProtectionService::MODAL_DIALOG,
                  ChromePasswordProtectionService::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -135,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             new_web_contents->GetVisibleURL());
 
   // Simulates clicking "Change password" button on the chrome://settings card.
-  SimulateAction(service, ChromePasswordProtectionService::CHROME_SETTINGS,
+  SimulateAction(ChromePasswordProtectionService::CHROME_SETTINGS,
                  ChromePasswordProtectionService::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   // Verify myaccount.google.com or Google signin page should be opened in a
@@ -148,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                   .DomainIs("google.com"));
 
   // Simulates user finished changing password.
-  SimulateGaiaPasswordChanged(service);
+  SimulateGaiaPasswordChanged();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -161,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        MarkSiteAsLegitimate) {
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  ChromePasswordProtectionService* service = GetService();
   Profile* profile = browser()->profile();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -191,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   // Simulates clicking "Ignore" button on the modal dialog.
   // There should be only 1 observer in the list.
-  SimulateAction(service, ChromePasswordProtectionService::MODAL_DIALOG,
+  SimulateAction(ChromePasswordProtectionService::MODAL_DIALOG,
                  ChromePasswordProtectionService::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   // No new tab opens. SecurityInfo doesn't change.
@@ -220,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        OpenChromeSettingsViaPageInfo) {
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  ChromePasswordProtectionService* service = GetService();
   Profile* profile = browser()->profile();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -231,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   service->ShowModalWarning(web_contents, "unused_token");
   base::RunLoop().RunUntilIdle();
   // Simulates clicking "Ignore" to close dialog.
-  SimulateAction(service, ChromePasswordProtectionService::MODAL_DIALOG,
+  SimulateAction(ChromePasswordProtectionService::MODAL_DIALOG,
                  ChromePasswordProtectionService::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
@@ -262,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        VeriryUnhandledPasswordReuse) {
   histograms_.ExpectTotalCount(kGaiaPasswordChangeHistogramName, 0);
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
+  ChromePasswordProtectionService* service = GetService();
   ASSERT_TRUE(service);
   Profile* profile = browser()->profile();
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
@@ -282,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Opens a new browser window.
-  Browser* browser2 = CreateBrowser(profile);
+  Browser* browser2 = CreateBrowser(browser()->profile());
   // Shows modal dialog on this new web_contents.
   content::WebContents* new_web_contents =
       browser2->tab_strip_model()->GetActiveWebContents();
@@ -295,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChange(/*is_incognito=*/false);
+  SimulateGaiaPasswordChange();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, service->unhandled_password_reuses().size());
   EXPECT_FALSE(
