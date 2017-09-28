@@ -40,8 +40,11 @@ class LayoutProviderTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
     // The expected case is to have DirectWrite enabled; the fallback gives
-    // different font heights. But the tests should pass either way.
-    gfx::win::MaybeInitializeDirectWrite();
+    // different font heights. However, only use DirectWrite on Windows 10 and
+    // later, since it's known to have flaky results on Windows 7. See
+    // http://crbug.com/759870.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+      gfx::win::MaybeInitializeDirectWrite();
   }
 #endif
 
@@ -328,11 +331,6 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
 TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
-#if defined(OS_WIN)
-  // Flaky on Windows 7. See http://crbug.com/759870.
-  if (base::win::GetVersion() == base::win::VERSION_WIN7)
-    return;
-#endif
   ui::test::MaterialDesignControllerTestAPI md_test_api(
       ui::MaterialDesignController::MATERIAL_NORMAL);
   md_test_api.SetSecondaryUiMaterial(true);

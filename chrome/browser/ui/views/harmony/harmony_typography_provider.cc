@@ -83,6 +83,7 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 }  // namespace
 
 #if defined(OS_WIN)
+// static
 int HarmonyTypographyProvider::GetPlatformFontHeight(int font_context) {
   const bool direct_write_enabled =
       gfx::PlatformFontWin::IsDirectWriteEnabled();
@@ -91,7 +92,7 @@ int HarmonyTypographyProvider::GetPlatformFontHeight(int font_context) {
     case CONTEXT_HEADLINE:
       return windows_10 && direct_write_enabled ? 27 : 28;
     case views::style::CONTEXT_DIALOG_TITLE:
-      return windows_10 ? 20 : 21;
+      return windows_10 || !direct_write_enabled ? 20 : 21;
     case CONTEXT_BODY_TEXT_LARGE:
       return direct_write_enabled ? 18 : 17;
     case CONTEXT_BODY_TEXT_SMALL:
