@@ -394,44 +394,54 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   }
   // Limit the address space to 4GB.
   // This is in the hope of making some kernel exploits more complex and less
-  // reliable. It also limits sprays a little on 64-bit.
+  // reliable. It also limits sprays a little on 64 bits.
   rlim_t address_space_limit = std::numeric_limits<uint32_t>::max();
   rlim_t address_space_limit_max = std::numeric_limits<uint32_t>::max();
-#if defined(__LP64__)
-  // On 64 bits, V8 and possibly others will reserve massive memory ranges and
-  // rely on on-demand paging for allocation.  Unfortunately, even
-  // MADV_DONTNEED ranges  count towards RLIMIT_AS so this is not an option.
-  // See crbug.com/169327 for a discussion.
-  // On the GPU process, irrespective of V8, we can exhaust a 4GB address space
-  // under normal usage, see crbug.com/271119
-  // For now, increase limit to 16GB for renderer and worker and GPU processes
-  // to accomodate.
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kGpuProcess) {
-    address_space_limit = 1L << 34;
-    // WebAssembly memory objects use a large amount of address space when
-    // trap-based bounds checks are enabled. To accomodate this, we allow the
-    // address space limit to adjust dynamically up to a certain limit. The
-    // limit is currently 4TiB, which should allow enough address space for any
-    // reasonable page. See https://crbug.com/750378
-    if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
-      address_space_limit_max = 1L << 42;
-    } else {
-      // If we are not using trap-based bounds checks, there's no reason to
-      // allow the address space limit to grow.
-      address_space_limit_max = address_space_limit;
+
+  if (sizeof(rlim_t) == 8) {
+    // On 64 bits, V8 and possibly others will reserve massive memory ranges and
+    // rely on on-demand paging for allocation.  Unfortunately, even
+    // MADV_DONTNEED ranges count towards RLIMIT_AS so this is not an option.
+    // See crbug.com/169327 for a discussion.
+    // On the GPU process, irrespective of V8, we can exhaust a 4GB address
+    // space under normal usage, see crbug.com/271119.
+    // For now, increase limit to 16GB for renderer, worker, and GPU processes
+    // to accomodate.
+    if (process_type == switches::kRendererProcess ||
+        process_type == switches::kGpuProcess) {
+      address_space_limit = 1ULL << 34;
+      // WebAssembly memory objects use a large amount of address space when
+      // trap-based bounds checks are enabled. To accomodate this, we allow the
+      // address space limit to adjust dynamically up to a certain limit. The
+      // limit is currently 4TiB, which should allow enough address space for
+      // any reasonable page. See https://crbug.com/750378.
+      if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+        address_space_limit_max = 1ULL << 42;
+      } else {
+        // If we are not using trap-based bounds checks, there's no reason to
+        // allow the address space limit to grow.
+        address_space_limit_max = address_space_limit;
+      }
     }
   }
-#endif  // defined(__LP64__)
 
-  // On all platforms, add a limit to the brk() heap that would prevent
+  // By default, add a limit to the VmData memory area that would prevent
   // allocations that can't be index by an int.
-  const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
+  rlim_t new_data_segment_max_size = std::numeric_limits<int>::max();
+
+  if (sizeof(rlim_t) == 8) {
+    // On 64 bits, increase the RLIMIT_DATA limit to 8GB.
+    // RLIMIT_DATA did not account for mmap()-ed memory until
+    // https://github.com/torvalds/linux/commit/84638335900f1995495838fe1bd4870c43ec1f6.
+    // When Chrome runs on devices with this patch, it will OOM very easily.
+    // See https://crbug.com/752185.
+    new_data_segment_max_size = 1ULL << 33;
+  }
 
   bool limited_as = sandbox::ResourceLimits::LowerSoftAndHardLimits(
       RLIMIT_AS, address_space_limit, address_space_limit_max);
   bool limited_data =
-      sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize);
+      sandbox::ResourceLimits::Lower(RLIMIT_DATA, new_data_segment_max_size);
 
   // Cache the resource limit before turning on the sandbox.
   base::SysInfo::AmountOfVirtualMemory();
