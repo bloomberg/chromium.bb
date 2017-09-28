@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.website.Website;
 import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -198,6 +199,41 @@ public class WebApkUma {
                     RecordHistogram.recordSparseSlowlyHistogram(
                             "WebApk.Install.AvailableSpace.Fail", availableSpaceMb);
                 }
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public static void logCacheSizeInUMA() {
+        new AsyncTask<Void, Void, Integer>() {
+            private long getDirectorySizeInByte(File dir) {
+                if (dir == null) return 0;
+                if (!dir.isDirectory()) return dir.length();
+
+                long sizeInByte = 0;
+                try {
+                    File[] files = dir.listFiles();
+                    if (files == null) return 0;
+
+                    for (File file : files) {
+                        sizeInByte += getDirectorySizeInByte(file);
+                    }
+                } catch (SecurityException e) {
+                    return 0;
+                }
+                return sizeInByte;
+            }
+
+            @Override
+            protected Integer doInBackground(Void... params) {
+                long cacheSizeInByte =
+                        getDirectorySizeInByte(ContextUtils.getApplicationContext().getCacheDir());
+                return Math.min(2000, (int) (cacheSizeInByte / 1024L / 1024L / 10L * 10L));
+            }
+
+            @Override
+            protected void onPostExecute(Integer cacheSizeInMb) {
+                RecordHistogram.recordSparseSlowlyHistogram(
+                        "WebApk.Install.ChromeCacheSize.Fail", cacheSizeInMb);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
