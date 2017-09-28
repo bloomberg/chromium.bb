@@ -204,7 +204,7 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
 
   uint64_t device_id = 0;
   if (input_device_id == AudioDeviceDescription::kDefaultDeviceId) {
-    device_id = GetPrimaryActiveInputNode();
+    return AudioDeviceDescription::kDefaultDeviceId;
   } else {
     // At this point, we know we have an ordinary input device id, so we parse
     // the string for its device_id.
