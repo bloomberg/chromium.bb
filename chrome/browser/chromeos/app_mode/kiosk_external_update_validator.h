@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATE_VALIDATOR_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_EXTERNAL_UPDATE_VALIDATOR_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -23,7 +24,7 @@ namespace chromeos {
 // WeakPtr.
 class KioskExternalUpdateValidatorDelegate {
  public:
-  virtual void OnExtenalUpdateUnpackSuccess(
+  virtual void OnExternalUpdateUnpackSuccess(
       const std::string& app_id,
       const std::string& version,
       const std::string& min_browser_version,
