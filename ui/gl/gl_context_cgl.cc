@@ -242,6 +242,16 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   if (IsCurrent(surface))
     return true;
 
+  // It's likely we're going to switch OpenGL contexts at this point.
+  // Before doing so, if there is a current context, flush it. There
+  // are many implicit assumptions of flush ordering between contexts
+  // at higher levels, and if a flush isn't performed, OpenGL commands
+  // may be issued in unexpected orders, causing flickering and other
+  // artifacts.
+  if (CGLGetCurrentContext() != nullptr) {
+    glFlush();
+  }
+
   ScopedReleaseCurrent release_current;
   TRACE_EVENT0("gpu", "GLContextCGL::MakeCurrent");
 
@@ -269,6 +279,12 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
 void GLContextCGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
+
+  // Before releasing the current context, flush it. This ensures that
+  // all commands issued by higher levels will be seen by the OpenGL
+  // implementation, which is assumed throughout the code. See comment
+  // in MakeCurrent, above.
+  glFlush();
 
   SetCurrent(nullptr);
   CGLSetCurrentContext(nullptr);
