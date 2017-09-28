@@ -12,6 +12,8 @@
 Polymer({
   is: 'cr-picture-list',
 
+  behaviors: [CrPngBehavior],
+
   properties: {
     cameraPresent: Boolean,
 
@@ -29,6 +31,7 @@ Polymer({
     oldImageLabel: String,
     profileImageLabel: String,
     takePhotoLabel: String,
+    switchModeLabel: String,
 
     /**
      * The currently selected item. This property is bound to the iron-selector
@@ -263,6 +266,13 @@ Polymer({
     // Use first frame of animated user images.
     if (url.startsWith('chrome://theme'))
       return url + '[0]';
+
+    /**
+     * Extract first frame from image by creating a single frame PNG using
+     * url as input if base64 encoded and potentially animated.
+     */
+    if (url.split(',')[0] == 'data:image/png;base64')
+      return CrPngBehavior.convertImageSequenceToPng([url]);
 
     return url;
   },

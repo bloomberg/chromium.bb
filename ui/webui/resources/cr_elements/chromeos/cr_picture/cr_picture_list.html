@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="cr_picture_types.html">
+<link rel="import" href="cr_png_behavior.html">
 
 <dom-module id="cr-picture-list">
   <template>
@@ -86,7 +87,7 @@
             data-type$="[[selectionTypesEnum_.OLD]]"
             data-image-index$="[[oldImageIndex_]]"
             data-url$="[[oldImageUrl_]]"
-            src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
+            src="[[getImgSrc_(oldImageUrl_)]]" hidden="[[!oldImageUrl_]]"
             title="[[oldImageLabel]]">
         <!-- Shows the list of available images to select from. -->
         <template is="dom-repeat" items="[[defaultImages]]">

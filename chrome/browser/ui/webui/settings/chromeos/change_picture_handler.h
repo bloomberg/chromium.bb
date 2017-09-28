@@ -104,7 +104,8 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
                                  const gfx::ImageSkia& profile_image) override;
 
   // Sets user image to photo taken from camera.
-  void SetImageFromCamera(const gfx::ImageSkia& photo);
+  void SetImageFromCamera(const gfx::ImageSkia& photo,
+                          base::RefCountedBytes* image_bytes);
 
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;
@@ -121,6 +122,9 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
 
   // Previous user image from camera/file and its data URL.
   gfx::ImageSkia previous_image_;
+  scoped_refptr<base::RefCountedBytes> previous_image_bytes_;
+  user_manager::UserImage::ImageFormat previous_image_format_ =
+      user_manager::UserImage::FORMAT_UNKNOWN;
 
   // Index of the previous user image.
   int previous_image_index_;
@@ -128,8 +132,8 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
   // Last user photo, if taken.
   gfx::ImageSkia user_photo_;
 
-  // Data URL for |user_photo_|.
-  std::string user_photo_data_url_;
+  // Data for |user_photo_|.
+  scoped_refptr<base::RefCountedBytes> user_photo_data_;
 
   ScopedObserver<user_manager::UserManager, ChangePictureHandler>
       user_manager_observer_;

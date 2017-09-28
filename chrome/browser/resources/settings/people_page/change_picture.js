@@ -59,6 +59,7 @@ Polymer({
     'discard-image': 'onDiscardImage_',
     'image-activate': 'onImageActivate_',
     'photo-taken': 'onPhotoTaken_',
+    'switch-mode': 'onSwitchMode_',
   },
 
   /** @private {?settings.ChangePictureBrowserProxy} */
@@ -202,6 +203,16 @@ Polymer({
     this.pictureList_.setFocus();
     announceAccessibleMessage(
         loadTimeData.getString('photoCaptureAccessibleText'));
+  },
+
+  /**
+   * @param {!{detail: boolean}} event
+   * @private
+   */
+  onSwitchMode_: function(event) {
+    var videomode = event.detail;
+    announceAccessibleMessage(this.i18n(
+        videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
   },
 
   /** @private */

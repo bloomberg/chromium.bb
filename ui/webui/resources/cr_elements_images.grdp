@@ -43,6 +43,15 @@
     <include name="IDR_CR_ELEMENTS_CAMERA_ALT_ICON_SVG"
              file="cr_elements/chromeos/cr_picture/camera_alt_icon.svg"
              type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CAMERA_SHUTTER_ICON_SVG"
+             file="cr_elements/chromeos/cr_picture/camera_shutter_icon.svg"
+             type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_VIDEOCAM_ICON_SVG"
+             file="cr_elements/chromeos/cr_picture/videocam_icon.svg"
+             type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_VIDEOCAM_SHUTTER_ICON_SVG"
+             file="cr_elements/chromeos/cr_picture/videocam_shutter_icon.svg"
+             type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
              file="cr_elements/chromeos/network/cellular_0.svg"
              type="BINDATA" />

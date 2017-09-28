@@ -78,6 +78,12 @@
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_PICTURE_TYPES_JS"
                file="../../webui/resources/cr_elements/chromeos/cr_picture/cr_picture_types.js"
                type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_PNG_BEHAVIOR_HTML"
+               file="../../webui/resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_CR_PNG_BEHAVIOR_JS"
+               file="../../webui/resources/cr_elements/chromeos/cr_picture/cr_png_behavior.js"
+               type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_ICON_HTML"
                file="../../webui/resources/cr_elements/chromeos/network/cr_network_icon.html"
                type="chrome_html" />
