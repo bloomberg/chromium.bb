@@ -91,6 +91,7 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
          entry.response_headers->response_code() == net::HTTP_PARTIAL_CONTENT);
     entry.can_resume &= entry.response_headers->HasStrongValidators();
   }
+  entry.url_chain = item->GetUrlChain();
   return entry;
 }
 

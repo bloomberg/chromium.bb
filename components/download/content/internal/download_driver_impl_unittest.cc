@@ -15,6 +15,7 @@
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -187,6 +188,28 @@ TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
 
   EXPECT_EQ(1U, guids.size());
   EXPECT_NE(guids.end(), guids.find(item1.GetGuid()));
+}
+
+TEST_F(DownloadDriverImplTest, TestCreateDriverEntry) {
+  using DownloadState = content::DownloadItem::DownloadState;
+  content::FakeDownloadItem item;
+  const std::string kGuid("dummy guid");
+  const std::vector<GURL> kUrls = {GURL("http://www.example.com/foo.html"),
+                                   GURL("http://www.example.com/bar.html")};
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders("HTTP/1.1 201\n");
+
+  item.SetGuid(kGuid);
+  item.SetUrlChain(kUrls);
+  item.SetState(DownloadState::IN_PROGRESS);
+  item.SetResponseHeaders(headers);
+
+  DriverEntry entry = driver_->CreateDriverEntry(&item);
+
+  EXPECT_EQ(kGuid, entry.guid);
+  EXPECT_EQ(kUrls, entry.url_chain);
+  EXPECT_EQ(DriverEntry::State::IN_PROGRESS, entry.state);
+  EXPECT_EQ(headers, entry.response_headers);
 }
 
 }  // namespace download
