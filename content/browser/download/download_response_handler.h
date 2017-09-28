@@ -38,7 +38,8 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
                           Delegate* delegate,
                           std::unique_ptr<DownloadSaveInfo> save_info,
                           bool is_parallel_request,
-                          bool is_transient);
+                          bool is_transient,
+                          bool fetch_error_body);
   ~DownloadResponseHandler() override;
 
   // mojom::URLLoaderClient
@@ -77,6 +78,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   std::string method_;
   GURL referrer_;
   bool is_transient_;
+  bool fetch_error_body_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
   GURL origin_;

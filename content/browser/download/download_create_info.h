@@ -144,6 +144,10 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The HTTP request method.
   std::string method;
 
+  // Whether the download should fetch the response body for non successful HTTP
+  // response.
+  bool fetch_error_body = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };

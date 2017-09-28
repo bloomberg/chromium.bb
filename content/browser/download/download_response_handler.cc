@@ -50,7 +50,8 @@ DownloadResponseHandler::DownloadResponseHandler(
     Delegate* delegate,
     std::unique_ptr<DownloadSaveInfo> save_info,
     bool is_parallel_request,
-    bool is_transient)
+    bool is_transient,
+    bool fetch_error_body)
     : delegate_(delegate),
       started_(false),
       save_info_(std::move(save_info)),
@@ -58,6 +59,7 @@ DownloadResponseHandler::DownloadResponseHandler(
       method_(resource_request->method),
       referrer_(resource_request->referrer),
       is_transient_(is_transient),
+      fetch_error_body_(fetch_error_body),
       has_strong_validators_(false) {
   if (!is_parallel_request)
     RecordDownloadCount(UNTHROTTLED_COUNT);
@@ -109,9 +111,10 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
       base::Time::Now(), net::NetLogWithSource(), std::move(save_info_));
 
   DownloadInterruptReason result =
-      head.headers ? HandleSuccessfulServerResponse(
-                         *head.headers, create_info->save_info.get())
-                   : DOWNLOAD_INTERRUPT_REASON_NONE;
+      head.headers
+          ? HandleSuccessfulServerResponse(
+                *head.headers, create_info->save_info.get(), fetch_error_body_)
+          : DOWNLOAD_INTERRUPT_REASON_NONE;
 
   create_info->result = result;
   if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
