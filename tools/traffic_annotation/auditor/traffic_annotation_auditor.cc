@@ -53,18 +53,6 @@ struct AnnotationID {
   AnnotationInstance* instance;
 };
 
-// Removes all occurances of a charcter from a string and returns the modified
-// string.
-std::string RemoveChar(const std::string& source, char removee) {
-  std::string output;
-  output.reserve(source.length());
-  for (const char* current = source.data(); *current; current++) {
-    if (*current != removee)
-      output += *current;
-  }
-  return output;
-}
-
 const std::string kBlockTypes[] = {"ASSIGNMENT", "ANNOTATION", "CALL"};
 
 const base::FilePath kSafeListPath =
@@ -218,11 +206,10 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
   // Remove possible carriage return characters before splitting lines.
-  // Not using base::RemoveChars as the input is ~47M and the implementation is
-  // too slow for it.
-  std::vector<std::string> lines =
-      base::SplitString(RemoveChar(clang_tool_raw_output_, '\r'), "\n",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string temp_string;
+  base::RemoveChars(clang_tool_raw_output_, "\r", &temp_string);
+  std::vector<std::string> lines = base::SplitString(
+      temp_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (unsigned int current = 0; current < lines.size(); current++) {
     // All blocks reported by clang tool start with '====', so we can ignore
     // all lines that do not start with a '='.
