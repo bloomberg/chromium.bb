@@ -30,6 +30,7 @@
 
 #include "platform/fonts/GenericFontFamilySettings.h"
 
+#include <memory>
 #include "platform/fonts/FontCache.h"
 
 namespace blink {
@@ -53,7 +54,7 @@ void GenericFontFamilySettings::IsolatedCopyTo(
       vector.emplace_back(kv.key, kv.value.GetString().IsolatedCopy());
   };
 
-  dest.isolated_copy_ = WTF::MakeUnique<IsolatedCopyVector[]>(7);
+  dest.isolated_copy_ = std::make_unique<IsolatedCopyVector[]>(7);
   copy_to_vector(standard_font_family_map_, dest.isolated_copy_[0]);
   copy_to_vector(serif_font_family_map_, dest.isolated_copy_[1]);
   copy_to_vector(fixed_font_family_map_, dest.isolated_copy_[2]);

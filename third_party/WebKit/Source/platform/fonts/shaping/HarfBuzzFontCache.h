@@ -5,6 +5,7 @@
 #ifndef HarfBuzzFontCache_h
 #define HarfBuzzFontCache_h
 
+#include <memory>
 #include "platform/fonts/UnicodeRangeSet.h"
 
 struct hb_font_t;
@@ -75,7 +76,7 @@ class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  private:
   explicit HbFontCacheEntry(hb_font_t* font)
       : hb_font_(HbFontUniquePtr(font)),
-        hb_font_data_(WTF::MakeUnique<HarfBuzzFontData>()){};
+        hb_font_data_(std::make_unique<HarfBuzzFontData>()){};
 
   HbFontUniquePtr hb_font_;
   std::unique_ptr<HarfBuzzFontData> hb_font_data_;

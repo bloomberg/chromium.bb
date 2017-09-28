@@ -31,7 +31,6 @@
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 
 #include <memory>
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
@@ -74,7 +73,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateAes(
       key_length_bits != 256)
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
-      id, WTF::MakeUnique<WebCryptoAesKeyAlgorithmParams>(key_length_bits));
+      id, std::make_unique<WebCryptoAesKeyAlgorithmParams>(key_length_bits));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateHmac(
@@ -107,7 +106,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateEc(
     WebCryptoAlgorithmId id,
     WebCryptoNamedCurve named_curve) {
   return WebCryptoKeyAlgorithm(
-      id, WTF::MakeUnique<WebCryptoEcKeyAlgorithmParams>(named_curve));
+      id, std::make_unique<WebCryptoEcKeyAlgorithmParams>(named_curve));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::CreateWithoutParams(

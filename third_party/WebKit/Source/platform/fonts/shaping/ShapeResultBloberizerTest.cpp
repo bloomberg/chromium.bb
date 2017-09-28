@@ -4,6 +4,7 @@
 
 #include "platform/fonts/shaping/ShapeResultBloberizer.h"
 
+#include <memory>
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -50,7 +51,7 @@ class ShapeResultBloberizerTest : public ::testing::Test {
     font.Update(nullptr);
     ASSERT_TRUE(font.CanShapeWordByWord());
     fallback_fonts = nullptr;
-    cache = WTF::MakeUnique<ShapeCache>();
+    cache = std::make_unique<ShapeCache>();
   }
 
   FontCachePurgePreventer font_cache_purge_preventer;

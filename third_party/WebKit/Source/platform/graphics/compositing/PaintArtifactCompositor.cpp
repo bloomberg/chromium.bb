@@ -4,6 +4,7 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
+#include <memory>
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
@@ -207,7 +208,7 @@ PaintArtifactCompositor::ClientForPaintChunk(const PaintChunk& paint_chunk) {
       return std::move(client);
   }
 
-  auto client = WTF::MakeUnique<ContentLayerClientImpl>();
+  auto client = std::make_unique<ContentLayerClientImpl>();
   client->SetTracksRasterInvalidations(tracks_raster_invalidations_);
   return client;
 }
