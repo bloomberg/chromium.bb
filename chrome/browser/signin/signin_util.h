@@ -14,6 +14,9 @@ bool IsForceSigninEnabled();
 // Enable or disable force sign in for testing.
 void SetForceSigninForTesting(bool enable);
 
+// Reset force sign in to uninitialized state for testing.
+void ResetForceSigninForTesting();
+
 }  // namespace signin_util
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_UTIL_H_

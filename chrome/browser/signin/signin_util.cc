@@ -38,4 +38,8 @@ void SetForceSigninForTesting(bool enable) {
   SetForceSigninPolicy(enable);
 }
 
+void ResetForceSigninForTesting() {
+  g_is_force_signin_enabled_cache = NOT_CACHED;
+}
+
 }  // namespace signin_util
