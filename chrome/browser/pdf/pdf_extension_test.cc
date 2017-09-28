@@ -48,6 +48,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -523,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   GURL invalid_link_url("chrome://settings");
 
   GURL unfiltered_valid_link_url(valid_link_url);
-  content::RenderProcessHost* rph = guest_contents->GetRenderProcessHost();
+  content::RenderProcessHost* rph =
+      guest_contents->GetMainFrame()->GetProcess();
   rph->FilterURL(true, &valid_link_url);
   rph->FilterURL(true, &invalid_link_url);
 
