@@ -17,6 +17,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace viz {
 
@@ -62,6 +63,22 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   }
   bool has_result_task_runner() const { return !!result_task_runner_; }
 
+  // Optionally specify that the result should be scaled. |scale_from| and
+  // |scale_to| describe the scale ratio in terms of relative sizes: Downscale
+  // if |scale_from| > |scale_to|, upscale if |scale_from| < |scale_to|, and
+  // no scaling if |scale_from| == |scale_to|. Neither argument may be zero.
+  //
+  // There are two setters: SetScaleRatio() allows for requesting an arbitrary
+  // scale in each dimension, which is sometimes useful for minor "tweaks" that
+  // optimize visual quality. SetUniformScaleRatio() scales both dimensions by
+  // the same amount.
+  void SetScaleRatio(const gfx::Vector2d& scale_from,
+                     const gfx::Vector2d& scale_to);
+  void SetUniformScaleRatio(int scale_from, int scale_to);
+  const gfx::Vector2d& scale_from() const { return scale_from_; }
+  const gfx::Vector2d& scale_to() const { return scale_to_; }
+  bool is_scaled() const { return scale_from_ != scale_to_; }
+
   // Optionally specify the source of this copy request. If set when this copy
   // request is submitted to a layer, a prior uncommitted copy request from the
   // same source will be aborted.
@@ -101,6 +118,8 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   const ResultFormat result_format_;
   CopyOutputRequestCallback result_callback_;
   scoped_refptr<base::TaskRunner> result_task_runner_;
+  gfx::Vector2d scale_from_;
+  gfx::Vector2d scale_to_;
   base::Optional<base::UnguessableToken> source_;
   base::Optional<gfx::Rect> area_;
   base::Optional<TextureMailbox> texture_mailbox_;

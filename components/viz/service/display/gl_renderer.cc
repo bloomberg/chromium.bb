@@ -2667,6 +2667,10 @@ void GLRenderer::CopyDrawnRenderPass(
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   gfx::ColorSpace render_pass_color_space =
       current_frame()->current_render_pass->color_space;
+  if (request->is_scaled()) {
+    // TODO(crbug/760348): Coming soon!
+    return;
+  }
   if (request->has_area())
     copy_rect.Intersect(request->area());
   GetFramebufferPixelsAsync(copy_rect, render_pass_color_space,

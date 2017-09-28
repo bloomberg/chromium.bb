@@ -21,6 +21,16 @@ struct StructTraits<viz::mojom::CopyOutputRequestDataView,
     return request->result_format();
   }
 
+  static const gfx::Vector2d& scale_from(
+      const std::unique_ptr<viz::CopyOutputRequest>& request) {
+    return request->scale_from();
+  }
+
+  static const gfx::Vector2d& scale_to(
+      const std::unique_ptr<viz::CopyOutputRequest>& request) {
+    return request->scale_to();
+  }
+
   static const base::Optional<base::UnguessableToken>& source(
       const std::unique_ptr<viz::CopyOutputRequest>& request) {
     return request->source_;

@@ -11,6 +11,7 @@
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -20,6 +21,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "skia/ext/image_operations.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -583,21 +585,79 @@ void SoftwareRenderer::CopyDrawnRenderPass(
       break;
   }
 
-  gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
-  if (request->has_area())
-    copy_rect.Intersect(request->area());
-  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
+  // Finalize the source rect, either as the entire RenderPass's output rect, or
+  // the client-provided area clamped to the output rect.
+  if (request->has_area()) {
+    gfx::Rect clamped_area = request->area();
+    clamped_area.Intersect(current_frame()->current_render_pass->output_rect);
+    request->set_area(clamped_area);
+  } else {
+    request->set_area(current_frame()->current_render_pass->output_rect);
+  }
 
+  gfx::Rect result_rect;
   SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeN32Premul(
-      window_copy_rect.width(), window_copy_rect.height(),
-      current_canvas_->imageInfo().refColorSpace()));
-  if (!current_canvas_->readPixels(bitmap, window_copy_rect.x(),
-                                   window_copy_rect.y()))
-    return;  // |request| auto-sends empty result on out-of-scope.
+  if (request->is_scaled()) {
+    // Compute the rect of the pixels in the copy output result's coordinate
+    // space that are affected by the requested copy area. If there will be zero
+    // pixels of output or the scaling ratio was not reasonable, do not proceed.
+    result_rect = copy_output::ComputeResultRect(
+        request->area(), request->scale_from(), request->scale_to());
+    if (result_rect.IsEmpty())
+      return;
+
+    // Resolve the source for the scaling input: Initialize a SkPixmap that
+    // selects the current RenderPass's output rect within the current canvas
+    // and provides access to its pixels.
+    SkPixmap render_pass_output;
+    if (!current_canvas_->peekPixels(&render_pass_output))
+      return;
+    {
+      const gfx::Rect subrect = MoveFromDrawToWindowSpace(
+          current_frame()->current_render_pass->output_rect);
+      render_pass_output = SkPixmap(
+          render_pass_output.info().makeWH(subrect.width(), subrect.height()),
+          render_pass_output.addr(subrect.x(), subrect.y()),
+          render_pass_output.rowBytes());
+    }
+    const gfx::Size scaled_output_size =
+        copy_output::ComputeResultRect(
+            gfx::Rect(render_pass_output.width(), render_pass_output.height()),
+            request->scale_from(), request->scale_to())
+            .size();
+    DCHECK(gfx::Rect(scaled_output_size).Contains(result_rect));
+
+    // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
+    // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
+    // strategy. Note that processing is only done on the subset of the
+    // RenderPass output that contributes to the result.
+    using skia::ImageOperations;
+    const bool is_downscale_in_both_dimensions =
+        request->scale_to().x() < request->scale_from().x() &&
+        request->scale_to().y() < request->scale_from().y();
+    const ImageOperations::ResizeMethod method =
+        is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
+                                        : ImageOperations::RESIZE_BEST;
+    bitmap = ImageOperations::Resize(
+        render_pass_output, method, scaled_output_size.width(),
+        scaled_output_size.height(),
+        SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
+                result_rect.bottom()});
+  } else /* if (!request->is_scaled()) */ {
+    result_rect = request->area();
+    if (result_rect.IsEmpty())
+      return;
+    const gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(result_rect);
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+        window_copy_rect.width(), window_copy_rect.height(),
+        current_canvas_->imageInfo().refColorSpace()));
+    if (!current_canvas_->readPixels(bitmap, window_copy_rect.x(),
+                                     window_copy_rect.y()))
+      return;
+  }
 
   request->SendResult(
-      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+      std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap));
 }
 
 void SoftwareRenderer::SetEnableDCLayers(bool enable) {

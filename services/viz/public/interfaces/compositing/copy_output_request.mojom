@@ -13,6 +13,10 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 struct CopyOutputRequest {
   CopyOutputResultFormat result_format;
 
+  // Set both to (1,1) for no scaling. Both must have positive X and Y values.
+  gfx.mojom.Vector2d scale_from;
+  gfx.mojom.Vector2d scale_to;
+
   mojo.common.mojom.UnguessableToken? source;
   gfx.mojom.Rect? area;
 

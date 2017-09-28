@@ -42,6 +42,8 @@ viz_component("common") {
     "frame_sinks/copy_output_request.h",
     "frame_sinks/copy_output_result.cc",
     "frame_sinks/copy_output_result.h",
+    "frame_sinks/copy_output_util.cc",
+    "frame_sinks/copy_output_util.h",
     "frame_sinks/delay_based_time_source.cc",
     "frame_sinks/delay_based_time_source.h",
     "gl_helper.cc",
@@ -170,6 +172,7 @@ viz_source_set("unit_tests") {
   testonly = true
   sources = [
     "frame_sinks/begin_frame_args_unittest.cc",
+    "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
     "gpu/context_cache_controller_unittest.cc",

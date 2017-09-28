@@ -45,7 +45,9 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   Format format() const { return format_; }
 
   // Returns the result Rect, which is the position and size of the image data
-  // within the surface/layer (see CopyOutputRequest::set_area()).
+  // within the surface/layer (see CopyOutputRequest::set_area()). If a scale
+  // ratio was set in the request, this will be in the scaled, NOT the original,
+  // coordinate space.
   const gfx::Rect& rect() const { return rect_; }
   const gfx::Size& size() const { return rect_.size(); }
 
