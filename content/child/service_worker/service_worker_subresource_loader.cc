@@ -217,9 +217,9 @@ void ServiceWorkerSubresourceLoader::SetPriority(net::RequestPriority priority,
   // Not supported (do nothing).
 }
 
-void ServiceWorkerSubresourceLoader::PauseCachingResponseBody() {}
+void ServiceWorkerSubresourceLoader::PauseReadingBodyFromNet() {}
 
-void ServiceWorkerSubresourceLoader::ResumeCachingResponseBody() {}
+void ServiceWorkerSubresourceLoader::ResumeReadingBodyFromNet() {}
 
 // ServiceWorkerSubresourceLoader: URLLoaderClient for Blob reading ---------
 

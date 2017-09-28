@@ -60,11 +60,11 @@ class DelegatingURLLoader final : public mojom::URLLoader {
     loader_->SetPriority(priority, intra_priority_value);
   }
 
-  void PauseCachingResponseBody() override {
-    loader_->PauseCachingResponseBody();
+  void PauseReadingBodyFromNet() override {
+    loader_->PauseReadingBodyFromNet();
   }
-  void ResumeCachingResponseBody() override {
-    loader_->ResumeCachingResponseBody();
+  void ResumeReadingBodyFromNet() override {
+    loader_->ResumeReadingBodyFromNet();
   }
 
   mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
