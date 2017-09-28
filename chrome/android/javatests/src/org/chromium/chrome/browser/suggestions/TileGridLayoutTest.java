@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -186,8 +187,9 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"NewTabPage", "RenderTest"})
+    // @MediumTest
+    // @Feature({"NewTabPage", "RenderTest"})
+    @DisabledTest
     @ChromeHome
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
