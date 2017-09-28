@@ -51,7 +51,7 @@ class StyleRuleImport : public StyleRuleBase {
   StyleSheetContents* GetStyleSheet() const { return style_sheet_.Get(); }
 
   bool IsLoading() const;
-  MediaQuerySet* MediaQueries() { return media_queries_.Get(); }
+  MediaQuerySet* MediaQueries() { return media_queries_.get(); }
 
   void RequestStyleSheet();
 

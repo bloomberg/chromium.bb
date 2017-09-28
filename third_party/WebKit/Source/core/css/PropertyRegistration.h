@@ -33,7 +33,7 @@ class CORE_EXPORT PropertyRegistration
   bool Inherits() const { return inherits_; }
   const CSSValue* Initial() const { return initial_; }
   CSSVariableData* InitialVariableData() const {
-    return initial_variable_data_.Get();
+    return initial_variable_data_.get();
   }
   const InterpolationTypes& GetInterpolationTypes() const {
     return interpolation_types_;

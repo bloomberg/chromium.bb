@@ -246,7 +246,7 @@ class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
     return new StyleRuleMedia(media, adopt_rules);
   }
 
-  MediaQuerySet* MediaQueries() const { return media_queries_.Get(); }
+  MediaQuerySet* MediaQueries() const { return media_queries_.get(); }
 
   StyleRuleMedia* Copy() const { return new StyleRuleMedia(*this); }
 

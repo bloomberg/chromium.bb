@@ -396,7 +396,7 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
 WebTaskRunner* FontFace::GetTaskRunner() {
   return TaskRunnerHelper::Get(TaskType::kDOMManipulation,
                                GetExecutionContext())
-      .Get();
+      .get();
 }
 
 void FontFace::RunCallbacks() {
@@ -724,7 +724,7 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
 
   RefPtr<SharedBuffer> buffer = SharedBuffer::Create(data, size);
   BinaryDataFontFaceSource* source =
-      new BinaryDataFontFaceSource(buffer.Get(), ots_parse_message_);
+      new BinaryDataFontFaceSource(buffer.get(), ots_parse_message_);
   if (source->IsValid())
     SetLoadStatus(kLoaded);
   else

@@ -24,7 +24,7 @@ class CSSPathValue : public CSSValue {
 
   static CSSPathValue& EmptyPathValue();
 
-  StylePath* GetStylePath() const { return style_path_.Get(); }
+  StylePath* GetStylePath() const { return style_path_.get(); }
   String CustomCSSText() const;
 
   bool Equals(const CSSPathValue&) const;

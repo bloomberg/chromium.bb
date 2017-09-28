@@ -100,7 +100,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   void ClearOwnerRule() { owner_rule_ = nullptr; }
   Document* OwnerDocument() const;
-  const MediaQuerySet* MediaQueries() const { return media_queries_.Get(); }
+  const MediaQuerySet* MediaQueries() const { return media_queries_.get(); }
   void SetMediaQueries(RefPtr<MediaQuerySet>);
   bool MatchesMediaQueries(const MediaQueryEvaluator&);
   bool HasMediaQueryResults() const {

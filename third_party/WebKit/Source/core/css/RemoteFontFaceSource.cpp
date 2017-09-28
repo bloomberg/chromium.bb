@@ -96,7 +96,7 @@ void RemoteFontFaceSource::PruneTable() {
     return;
 
   for (const auto& item : font_data_table_) {
-    SimpleFontData* font_data = item.value.Get();
+    SimpleFontData* font_data = item.value.get();
     if (font_data && font_data->GetCustomFontData())
       font_data->GetCustomFontData()->ClearFontFaceSource();
   }

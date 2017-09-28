@@ -43,7 +43,7 @@ bool AddCSSPaintArgument(const Vector<CSSParserToken>& tokens,
   if (!token_range.AtEnd()) {
     RefPtr<CSSVariableData> unparsed_css_variable_data =
         CSSVariableData::Create(token_range, false, false);
-    if (unparsed_css_variable_data.Get()) {
+    if (unparsed_css_variable_data.get()) {
       variable_data->push_back(std::move(unparsed_css_variable_data));
       return true;
     }

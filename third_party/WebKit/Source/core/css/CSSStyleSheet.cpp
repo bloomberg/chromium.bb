@@ -208,7 +208,7 @@ void CSSStyleSheet::setDisabled(bool disabled) {
 void CSSStyleSheet::SetMediaQueries(RefPtr<MediaQuerySet> media_queries) {
   media_queries_ = std::move(media_queries);
   if (media_cssom_wrapper_ && media_queries_)
-    media_cssom_wrapper_->Reattach(media_queries_.Get());
+    media_cssom_wrapper_->Reattach(media_queries_.get());
 }
 
 bool CSSStyleSheet::MatchesMediaQueries(const MediaQueryEvaluator& evaluator) {
@@ -261,7 +261,7 @@ bool CSSStyleSheet::CanAccessRules() const {
     return true;
   if (allow_rule_access_from_origin_ &&
       document->GetSecurityOrigin()->CanAccess(
-          allow_rule_access_from_origin_.Get())) {
+          allow_rule_access_from_origin_.get())) {
     return true;
   }
   return false;
@@ -388,7 +388,7 @@ MediaList* CSSStyleSheet::media() const {
     return nullptr;
 
   if (!media_cssom_wrapper_)
-    media_cssom_wrapper_ = MediaList::Create(media_queries_.Get(),
+    media_cssom_wrapper_ = MediaList::Create(media_queries_.get(),
                                              const_cast<CSSStyleSheet*>(this));
   return media_cssom_wrapper_.Get();
 }

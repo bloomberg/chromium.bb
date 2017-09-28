@@ -19,7 +19,7 @@ BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data,
 BinaryDataFontFaceSource::~BinaryDataFontFaceSource() {}
 
 bool BinaryDataFontFaceSource::IsValid() const {
-  return custom_platform_data_.Get();
+  return custom_platform_data_.get();
 }
 
 RefPtr<SimpleFontData> BinaryDataFontFaceSource::CreateFontData(

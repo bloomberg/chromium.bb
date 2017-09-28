@@ -828,7 +828,7 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
   DCHECK(style);
   parent_style->AddCachedPseudoStyle(style);
 
-  if (!PseudoElementLayoutObjectIsNeeded(style.Get()))
+  if (!PseudoElementLayoutObjectIsNeeded(style.get()))
     return nullptr;
 
   PseudoElement* pseudo = CreatePseudoElement(&parent, pseudo_id);
@@ -949,7 +949,7 @@ RefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
 RefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   RefPtr<ComputedStyle> initial_style = InitialStyleForElement(GetDocument());
   StyleResolverState state(GetDocument(), GetDocument().documentElement(),
-                           initial_style.Get(), initial_style.Get());
+                           initial_style.get(), initial_style.get());
 
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =

@@ -225,7 +225,7 @@ FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
     } else {
       RefPtr<SharedFontFamily> new_family = SharedFontFamily::Create();
       curr_family->AppendFamily(new_family);
-      curr_family = new_family.Get();
+      curr_family = new_family.get();
     }
 
     curr_family->SetFamily(family_name);

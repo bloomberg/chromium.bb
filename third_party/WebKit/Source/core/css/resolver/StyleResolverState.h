@@ -81,8 +81,8 @@ class CORE_EXPORT StyleResolverState {
   }
 
   void SetStyle(RefPtr<ComputedStyle>);
-  const ComputedStyle* Style() const { return style_.Get(); }
-  ComputedStyle* Style() { return style_.Get(); }
+  const ComputedStyle* Style() const { return style_.get(); }
+  ComputedStyle* Style() { return style_.get(); }
   RefPtr<ComputedStyle> TakeStyle();
 
   ComputedStyle& MutableStyleRef() const { return *style_; }
@@ -129,11 +129,11 @@ class CORE_EXPORT StyleResolverState {
   }
 
   void SetParentStyle(RefPtr<const ComputedStyle>);
-  const ComputedStyle* ParentStyle() const { return parent_style_.Get(); }
+  const ComputedStyle* ParentStyle() const { return parent_style_.get(); }
 
   void SetLayoutParentStyle(RefPtr<const ComputedStyle>);
   const ComputedStyle* LayoutParentStyle() const {
-    return layout_parent_style_.Get();
+    return layout_parent_style_.get();
   }
 
   // FIXME: These are effectively side-channel "out parameters" for the various

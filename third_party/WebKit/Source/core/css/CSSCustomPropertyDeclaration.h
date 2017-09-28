@@ -25,7 +25,7 @@ class CSSCustomPropertyDeclaration : public CSSValue {
   }
 
   const AtomicString& GetName() const { return name_; }
-  CSSVariableData* Value() const { return value_.Get(); }
+  CSSVariableData* Value() const { return value_.get(); }
 
   bool IsInherit(bool is_inherited_property) const {
     return value_id_ == CSSValueInherit ||
