@@ -9,7 +9,6 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -20,12 +19,32 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
 namespace {
+
+class MockServiceWorkerRegistrationObjectHost
+    : public blink::mojom::ServiceWorkerRegistrationObjectHost {
+ public:
+  MockServiceWorkerRegistrationObjectHost() = default;
+  ~MockServiceWorkerRegistrationObjectHost() override = default;
+
+  void AddBinding(
+      blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
+          request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  int GetBindingCount() const { return bindings_.size(); }
+
+ private:
+  mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
+      bindings_;
+};
 
 class ServiceWorkerTestSender : public ThreadSafeSender {
  public:
@@ -59,6 +78,8 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     *info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
     (*info)->handle_id = 10;
     (*info)->registration_id = 20;
+    remote_registration_object_host_.AddBinding(
+        mojo::MakeRequest(&(*info)->host_ptr_info));
 
     attrs->active.handle_id = 100;
     attrs->active.version_id = 200;
@@ -71,12 +92,17 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
   IPC::TestSink* ipc_sink() { return &ipc_sink_; }
   ServiceWorkerDispatcher* dispatcher() { return dispatcher_.get(); }
+  const MockServiceWorkerRegistrationObjectHost&
+  remote_registration_object_host() const {
+    return remote_registration_object_host_;
+  }
 
  private:
   base::MessageLoop message_loop_;
   IPC::TestSink ipc_sink_;
   std::unique_ptr<ServiceWorkerDispatcher> dispatcher_;
   scoped_refptr<ServiceWorkerTestSender> sender_;
+  MockServiceWorkerRegistrationObjectHost remote_registration_object_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };
@@ -87,9 +113,8 @@ TEST_F(ServiceWorkerProviderContextTest, CreateForController) {
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
   ServiceWorkerVersionAttributes version_attrs;
   CreateObjectInfoAndVersionAttributes(&registration_info, &version_attrs);
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
-      ServiceWorkerRegistrationHandleReference::Adopt(
-          std::move(registration_info), thread_safe_sender());
+  // ServiceWorkerRegistrationObjectHost Mojo connection has been added.
+  ASSERT_EQ(1, remote_registration_object_host().GetBindingCount());
   std::unique_ptr<ServiceWorkerHandleReference> installing =
       ServiceWorkerHandleReference::Adopt(version_attrs.installing,
                                           thread_safe_sender());
@@ -107,23 +132,24 @@ TEST_F(ServiceWorkerProviderContextTest, CreateForController) {
       dispatcher(), nullptr /* loader_factory_getter */);
 
   // The passed references should be adopted and owned by the provider context.
-  provider_context->SetRegistration(std::move(registration),
-                                    std::move(installing), std::move(waiting),
-                                    std::move(active));
+  provider_context->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(registration_info), std::move(installing), std::move(waiting),
+      std::move(active));
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Destruction of the provider context should release references to the
   // associated registration and its versions.
   provider_context = nullptr;
-  ASSERT_EQ(4UL, ipc_sink()->message_count());
+  ASSERT_EQ(3UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(1)->type());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(2)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementRegistrationRefCount::ID,
-            ipc_sink()->GetMessageAt(3)->type());
+  // ServiceWorkerRegistrationObjectHost Mojo connection got broken.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, remote_registration_object_host().GetBindingCount());
 }
 
 }  // namespace content

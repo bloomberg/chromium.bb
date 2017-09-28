@@ -10,7 +10,6 @@
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -311,17 +310,15 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       info->provider_id, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
       std::move(info->client_request), std::move(info->host_ptr_info),
       dispatcher, nullptr /* loader_factory_getter */);
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration =
-      ServiceWorkerRegistrationHandleReference::Adopt(
-          std::move(info->registration), sender);
   std::unique_ptr<ServiceWorkerHandleReference> installing =
       ServiceWorkerHandleReference::Adopt(info->attributes.installing, sender);
   std::unique_ptr<ServiceWorkerHandleReference> waiting =
       ServiceWorkerHandleReference::Adopt(info->attributes.waiting, sender);
   std::unique_ptr<ServiceWorkerHandleReference> active =
       ServiceWorkerHandleReference::Adopt(info->attributes.active, sender);
-  context_->SetRegistration(std::move(registration), std::move(installing),
-                            std::move(waiting), std::move(active));
+  context_->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(info->registration), std::move(installing), std::move(waiting),
+      std::move(active));
 
   if (info->script_loader_factory_ptr_info.is_valid()) {
     script_loader_factory_.Bind(

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace blink {
 class WebServiceWorkerRegistrationProxy;
@@ -22,14 +23,14 @@ class WebServiceWorkerRegistrationProxy;
 
 namespace content {
 
-class ServiceWorkerRegistrationHandleReference;
 class WebServiceWorkerImpl;
 
 // Each instance corresponds to one ServiceWorkerRegistration object in JS
 // context, and is held by ServiceWorkerRegistration object in Blink's C++ layer
 // via WebServiceWorkerRegistration::Handle.
 //
-// Each instance holds one ServiceWorkerRegistrationHandleReference so that
+// Each instance holds one mojo connection of interface
+// blink::mojom::ServiceWorkerRegistrationObjectHost inside |info_|, so that
 // corresponding ServiceWorkerRegistrationHandle doesn't go away in the browser
 // process while the ServiceWorkerRegistration object is alive.
 class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
@@ -37,7 +38,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       public base::RefCounted<WebServiceWorkerRegistrationImpl> {
  public:
   explicit WebServiceWorkerRegistrationImpl(
-      std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
 
   void SetInstalling(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
   void SetWaiting(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
@@ -100,7 +101,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   void RunQueuedTasks();
 
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;
 
   std::vector<QueuedTask> queued_tasks_;

@@ -15,7 +15,6 @@
 #include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/service_worker_subresource_loader.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_registry.h"
@@ -75,7 +74,14 @@ struct ServiceWorkerProviderContext::ControlleeState {
 struct ServiceWorkerProviderContext::ControllerState {
   ControllerState() = default;
   ~ControllerState() = default;
-  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration;
+  // |registration->host_ptr_info| will be taken by
+  // ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope()
+  // means after that |registration| will be in a half-way taken state.
+  // TODO(leonhsl): To avoid the half-way taken state mentioned above, make
+  // ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope()
+  // take/reset all information of |registration|, |installing|, |waiting| and
+  // |active| all at once.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration;
   std::unique_ptr<ServiceWorkerHandleReference> installing;
   std::unique_ptr<ServiceWorkerHandleReference> waiting;
   std::unique_ptr<ServiceWorkerHandleReference> active;
@@ -114,8 +120,8 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
   }
 }
 
-void ServiceWorkerProviderContext::SetRegistration(
-    std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+void ServiceWorkerProviderContext::SetRegistrationForServiceWorkerGlobalScope(
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration,
     std::unique_ptr<ServiceWorkerHandleReference> installing,
     std::unique_ptr<ServiceWorkerHandleReference> waiting,
     std::unique_ptr<ServiceWorkerHandleReference> active) {
@@ -130,14 +136,19 @@ void ServiceWorkerProviderContext::SetRegistration(
   state->active = std::move(active);
 }
 
-void ServiceWorkerProviderContext::GetRegistration(
+void ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* info,
     ServiceWorkerVersionAttributes* attrs) {
   DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
   ControllerState* state = controller_state_.get();
   DCHECK(state);
   DCHECK(state->registration);
-  *info = state->registration->info().Clone();
+  DCHECK(state->registration->host_ptr_info.is_valid());
+  *info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New(
+      state->registration->registration_id, state->registration->handle_id,
+      state->registration->options->Clone(),
+      std::move(state->registration->host_ptr_info));
+
   if (state->installing)
     attrs->installing = state->installing->info();
   if (state->waiting)

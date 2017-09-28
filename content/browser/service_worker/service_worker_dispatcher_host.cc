@@ -170,10 +170,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnIncrementServiceWorkerRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
                         OnDecrementServiceWorkerRefCount)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_IncrementRegistrationRefCount,
-                        OnIncrementRegistrationRefCount)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
-                        OnDecrementRegistrationRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_TerminateWorker, OnTerminateWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_EnableNavigationPreload,
                         OnEnableNavigationPreload)
@@ -212,9 +208,14 @@ void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
 }
 
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
-    std::unique_ptr<ServiceWorkerRegistrationHandle> handle) {
+    ServiceWorkerRegistrationHandle* handle) {
   int handle_id = handle->handle_id();
-  registration_handles_.AddWithID(std::move(handle), handle_id);
+  registration_handles_.AddWithID(base::WrapUnique(handle), handle_id);
+}
+
+void ServiceWorkerDispatcherHost::UnregisterServiceWorkerRegistrationHandle(
+    int handle_id) {
+  registration_handles_.Remove(handle_id);
 }
 
 ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
@@ -234,23 +235,21 @@ ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
   return nullptr;
 }
 
-ServiceWorkerRegistrationHandle*
-ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
+blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+ServiceWorkerDispatcherHost::CreateRegistrationObjectInfo(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     ServiceWorkerRegistration* registration) {
   DCHECK(provider_host);
   ServiceWorkerRegistrationHandle* existing_handle =
       FindRegistrationHandle(provider_host->provider_id(), registration->id());
   if (existing_handle) {
-    existing_handle->IncrementRefCount();
-    return existing_handle;
+    return existing_handle->CreateObjectInfo();
   }
-  std::unique_ptr<ServiceWorkerRegistrationHandle> new_handle(
-      new ServiceWorkerRegistrationHandle(GetContext()->AsWeakPtr(),
-                                          provider_host, registration));
-  ServiceWorkerRegistrationHandle* new_handle_ptr = new_handle.get();
-  RegisterServiceWorkerRegistrationHandle(std::move(new_handle));
-  return new_handle_ptr;
+  // ServiceWorkerRegistrationHandle ctor will register itself into
+  // |registration_handles_|.
+  auto* new_handle = new ServiceWorkerRegistrationHandle(
+      GetContext()->AsWeakPtr(), this, provider_host, registration);
+  return new_handle->CreateObjectInfo();
 }
 
 base::WeakPtr<ServiceWorkerDispatcherHost>
@@ -878,9 +877,7 @@ void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     ServiceWorkerRegistration* registration,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info,
     ServiceWorkerVersionAttributes* out_attrs) {
-  ServiceWorkerRegistrationHandle* handle =
-      GetOrCreateRegistrationHandle(provider_host, registration);
-  *out_info = handle->GetObjectInfo();
+  *out_info = CreateRegistrationObjectInfo(provider_host, registration);
 
   out_attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(
       registration->installing_version());
@@ -958,36 +955,6 @@ void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
   handle->DecrementRefCount();
   if (handle->HasNoRefCount())
     handles_.Remove(handle_id);
-}
-
-void ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount(
-    int registration_handle_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount");
-  ServiceWorkerRegistrationHandle* handle =
-      registration_handles_.Lookup(registration_handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_INCREMENT_REGISTRATION_BAD_HANDLE);
-    return;
-  }
-  handle->IncrementRefCount();
-}
-
-void ServiceWorkerDispatcherHost::OnDecrementRegistrationRefCount(
-    int registration_handle_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnDecrementRegistrationRefCount");
-  ServiceWorkerRegistrationHandle* handle =
-      registration_handles_.Lookup(registration_handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_DECREMENT_REGISTRATION_BAD_HANDLE);
-    return;
-  }
-  handle->DecrementRefCount();
-  if (handle->HasNoRefCount())
-    registration_handles_.Remove(registration_handle_id);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

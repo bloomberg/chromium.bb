@@ -88,12 +88,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // be destroyed.
   bool Send(IPC::Message* message) override;
 
-  // Virtual for testing.
+  // Following methods are virtual only for testing.
   virtual void RegisterServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerHandle> handle);
-  // Virtual for testing.
   virtual void RegisterServiceWorkerRegistrationHandle(
-      std::unique_ptr<ServiceWorkerRegistrationHandle> handle);
+      ServiceWorkerRegistrationHandle* handle);
+  virtual void UnregisterServiceWorkerRegistrationHandle(int handle_id);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
@@ -107,9 +107,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr* out_info,
       ServiceWorkerVersionAttributes* out_attrs);
 
-  // Returns the existing registration handle whose reference count is
-  // incremented or a newly created one if it doesn't exist.
-  ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(
+  // Returns an object info representing |registration|. The object info holds a
+  // Mojo connection to the ServiceWorkerRegistrationHandle for the
+  // |registration| to ensure the handle stays alive while the object info is
+  // alive. A new handle is created if one does not already exist.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  CreateRegistrationObjectInfo(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
 
@@ -166,8 +169,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnCountFeature(int64_t version_id, uint32_t feature);
   void OnIncrementServiceWorkerRefCount(int handle_id);
   void OnDecrementServiceWorkerRefCount(int handle_id);
-  void OnIncrementRegistrationRefCount(int registration_handle_id);
-  void OnDecrementRegistrationRefCount(int registration_handle_id);
   void OnPostMessageToWorker(
       int handle_id,
       int provider_id,
@@ -212,7 +213,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
-      int64_t registration_handle_id);
+      int64_t registration_id);
 
   // Callbacks from ServiceWorkerContextCore
   void UpdateComplete(int thread_id,

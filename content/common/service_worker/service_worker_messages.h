@@ -210,14 +210,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
                      int /* handle_id */)
 
-// Increments and decrements the ServiceWorkerRegistration object's reference
-// counting in the browser side. The registration object is created with
-// ref-count==1 initially.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_IncrementRegistrationRefCount,
-                     int /* registration_handle_id */)
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
-                     int /* registration_handle_id */)
-
 // Tells the browser to terminate a service worker. Used in layout tests to
 // verify behavior when a service worker isn't running.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,

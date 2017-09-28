@@ -25,7 +25,6 @@
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
@@ -774,7 +773,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info;
   ServiceWorkerVersionAttributes version_attrs;
-  provider_context_->GetRegistration(&registration_info, &version_attrs);
+  provider_context_->TakeRegistrationForServiceWorkerGlobalScope(
+      &registration_info, &version_attrs);
   DCHECK_NE(registration_info->registration_id,
             blink::mojom::kInvalidServiceWorkerRegistrationId);
 
