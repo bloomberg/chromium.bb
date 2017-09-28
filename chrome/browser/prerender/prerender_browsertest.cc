@@ -1055,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 
   ChannelDestructionWatcher channel_close_watcher;
   channel_close_watcher.WatchChannel(
-      GetActiveWebContents()->GetRenderProcessHost());
+      GetActiveWebContents()->GetMainFrame()->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
   fcp_waiter->Wait();
@@ -1173,7 +1173,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
 
   ChannelDestructionWatcher channel_close_watcher;
   channel_close_watcher.WatchChannel(
-      GetActiveWebContents()->GetRenderProcessHost());
+      GetActiveWebContents()->GetMainFrame()->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -1290,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ChannelDestructionWatcher channel_close_watcher;
   channel_close_watcher.WatchChannel(
-      GetActiveWebContents()->GetRenderProcessHost());
+      GetActiveWebContents()->GetMainFrame()->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2046,8 +2046,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame()
+                                         ->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2061,8 +2064,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       FINAL_STATUS_USED, 2);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame()
+                                         ->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2758,8 +2764,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame()
+                                         ->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
@@ -2779,8 +2788,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
   ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderProcessHost());
+  channel_close_watcher.WatchChannel(browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame()
+                                         ->GetProcess());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
 
