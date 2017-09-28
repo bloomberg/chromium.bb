@@ -68,8 +68,6 @@ class CORE_EXPORT ScrollManager
                       Node* starting_node,
                       Node* mouse_press_node);
 
-  void SetFrameWasScrolledByUser();
-
   // TODO(crbug.com/616491): Consider moving all gesture related functions to
   // another class.
 

@@ -4175,7 +4175,7 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
   GetFrame().Loader().SaveScrollState();
   DidChangeScrollOffset();
 
-  if (scroll_type == kCompositorScroll && frame_->IsMainFrame()) {
+  if (scroll_type == kCompositorScroll || scroll_type == kUserScroll) {
     if (DocumentLoader* document_loader = frame_->Loader().GetDocumentLoader())
       document_loader->GetInitialScrollState().was_scrolled_by_user = true;
   }

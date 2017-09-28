@@ -16,7 +16,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutViewItem.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
@@ -205,10 +204,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     ScrollResult result =
         cur_box->Scroll(granularity, ToScrollDelta(physical_direction, 1));
 
-    if (result.DidScroll()) {
-      SetFrameWasScrolledByUser();
+    if (result.DidScroll())
       return true;
-    }
 
     cur_box = cur_box->ContainingBlock();
   }
@@ -237,11 +234,6 @@ bool ScrollManager::BubblingScroll(ScrollDirection direction,
   return ToLocalFrame(parent_frame)
       ->GetEventHandler()
       .BubblingScroll(direction, granularity, frame_->DeprecatedLocalOwner());
-}
-
-void ScrollManager::SetFrameWasScrolledByUser() {
-  if (DocumentLoader* document_loader = frame_->Loader().GetDocumentLoader())
-    document_loader->GetInitialScrollState().was_scrolled_by_user = true;
 }
 
 void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
@@ -477,10 +469,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     GetPage()->GetOverscrollController().ResetAccumulated(did_scroll_x,
                                                           did_scroll_y);
 
-  if (did_scroll_x || did_scroll_y) {
-    SetFrameWasScrolledByUser();
+  if (did_scroll_x || did_scroll_y)
     return WebInputEventResult::kHandledSystem;
-  }
 
   return WebInputEventResult::kNotHandled;
 }
