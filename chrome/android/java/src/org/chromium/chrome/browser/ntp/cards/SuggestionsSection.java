@@ -418,9 +418,10 @@ public class SuggestionsSection extends InnerNode {
         return suggestionIds;
     }
 
-    private void updatePlaceholderVisibility() {
-        if (!FeatureUtilities.isChromeHomeEnabled()) return;
+    private boolean updatePlaceholderVisibility() {
+        if (!FeatureUtilities.isChromeHomeEnabled()) return false;
         mPlaceholder.setVisible(isLoading() && !hasSuggestions());
+        return mPlaceholder.isVisible();
     }
 
     /**
@@ -575,7 +576,9 @@ public class SuggestionsSection extends InnerNode {
 
         boolean isLoading = SnippetsBridge.isCategoryLoading(status);
         mMoreButton.updateState(isLoading ? ActionItem.State.LOADING : ActionItem.State.BUTTON);
-        updatePlaceholderVisibility();
+        if (updatePlaceholderVisibility()) {
+            mPlaceholder.trackVisibilityDuration();
+        }
     }
 
     /** Clears the suggestions and related data, resetting the state of the section. */
