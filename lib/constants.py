@@ -969,6 +969,7 @@ CHROOT_ENVIRONMENT_WHITELIST = (
     'RSYNC_PROXY',
     'SSH_AGENT_PID',
     'SSH_AUTH_SOCK',
+    'TMUX',
     'USE',
     'all_proxy',
     'ftp_proxy',
