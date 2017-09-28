@@ -407,18 +407,42 @@ public class SafeBrowsingTest {
 
     private void assertTargetPageHasLoaded(int pageColor) throws Exception {
         mActivityTestRule.waitForVisualStateCallback(mAwContents);
-        Assert.assertEquals("Target page should be visible", pageColor,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        Assert.assertEquals("Target page should be visible", colorToString(pageColor),
+                colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
+                        mAwContents, mContainerView)));
+    }
+
+    private void assertGreenPageShowing() throws Exception {
+        Assert.assertEquals("Original page should be showing",
+                colorToString(GREEN_PAGE_BACKGROUND_COLOR),
+                colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
+                        mAwContents, mContainerView)));
     }
 
     private void assertGreenPageNotShowing() throws Exception {
-        assertNotEquals("Original page should not be showing", GREEN_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertNotEquals("Original page should not be showing",
+                colorToString(GREEN_PAGE_BACKGROUND_COLOR),
+                colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
+                        mAwContents, mContainerView)));
     }
 
     private void assertTargetPageNotShowing(int pageColor) throws Exception {
-        assertNotEquals("Target page should not be showing", pageColor,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertNotEquals("Target page should not be showing", colorToString(pageColor),
+                colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
+                        mAwContents, mContainerView)));
+    }
+
+    /**
+     * Converts a color from the confusing integer representation to a more readable string
+     * respresentation. There is a 1:1 mapping between integer and string representations, so it's
+     * valid to compare strings directly. The string representation is better for assert output.
+     *
+     * @param color integer representation of the color
+     * @return a String representation of the color in RGBA format
+     */
+    private String colorToString(int color) {
+        return "(" + Color.red(color) + "," + Color.green(color) + "," + Color.blue(color) + ","
+                + Color.alpha(color) + ")";
     }
 
     @Test
@@ -784,8 +808,7 @@ public class SafeBrowsingTest {
         Assert.assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
 
-        Assert.assertEquals("Original page should be showing", GREEN_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertGreenPageShowing();
 
         // Check onSafeBrowsingHit arguments
         Assert.assertEquals(responseUrl, mContentsClient.getLastRequest().url);
@@ -835,9 +858,11 @@ public class SafeBrowsingTest {
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
 
         // Wait for the onSafeBrowsingHit to call BACK_TO_SAFETY and navigate back
-        mActivityTestRule.pollUiThread(() -> GREEN_PAGE_BACKGROUND_COLOR
-                == GraphicsTestUtils.getPixelColorAtCenterOfView(
-                mAwContents, mContainerView));
+        // clang-format off
+        mActivityTestRule.pollUiThread(() -> colorToString(GREEN_PAGE_BACKGROUND_COLOR).equals(
+                colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents,
+                        mContainerView))));
+        // clang-format on
 
         // Check onSafeBrowsingHit arguments
         Assert.assertFalse(mContentsClient.getLastRequest().isMainFrame);
