@@ -36,6 +36,9 @@ class WeeklyTime {
   // (i.e. [Friday 17:00, Monday 9:00) )
   base::TimeDelta GetDurationTo(const WeeklyTime& other) const;
 
+  // Add milliseconds to WeeklyTime.
+  WeeklyTime AddMilliseconds(int milliseconds) const;
+
   // Return current time in WeeklyTime structure.
   static WeeklyTime GetCurrentWeeklyTime();
 
