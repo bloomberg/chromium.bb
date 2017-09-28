@@ -65,6 +65,14 @@ Window* WindowTargeter::GetPriorityTargetInRootWindow(
   if (capture_window)
     return capture_window;
 
+  if (event.IsPinchEvent()) {
+    DCHECK_EQ(event.AsGestureEvent()->details().device_type(),
+              ui::GestureDeviceType::DEVICE_TOUCHPAD);
+    WindowEventDispatcher* dispatcher = root_window->GetHost()->dispatcher();
+    if (dispatcher->touchpad_pinch_handler())
+      return dispatcher->touchpad_pinch_handler();
+  }
+
   if (event.IsTouchEvent()) {
     // Query the gesture-recognizer to find targets for touch events.
     const ui::TouchEvent& touch = *event.AsTouchEvent();

@@ -213,6 +213,11 @@ class EVENTS_EXPORT Event {
            !(flags() & EF_FROM_TOUCH));
   }
 
+  bool IsPinchEvent() const {
+    return type_ == ET_GESTURE_PINCH_BEGIN ||
+           type_ == ET_GESTURE_PINCH_UPDATE || type_ == ET_GESTURE_PINCH_END;
+  }
+
   bool IsScrollGestureEvent() const {
     return type_ == ET_GESTURE_SCROLL_BEGIN ||
            type_ == ET_GESTURE_SCROLL_UPDATE ||
