@@ -1602,12 +1602,13 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("searchNoResultsHelp", help_text);
 }
 
-void AddSearchStrings(content::WebUIDataSource* html_source) {
+void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
   LocalizedString localized_strings[] = {
 #if defined(OS_CHROMEOS)
-    {"searchPageTitle", chromeos::switches::IsVoiceInteractionEnabled()
-                            ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-                            : IDS_SETTINGS_SEARCH},
+    {"searchPageTitle",
+     !profile->IsSupervised() && chromeos::switches::IsVoiceInteractionEnabled()
+         ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+         : IDS_SETTINGS_SEARCH},
 #else
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
@@ -2093,7 +2094,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddGoogleAssistantStrings(html_source);
 #endif
   AddSearchInSettingsStrings(html_source);
-  AddSearchStrings(html_source);
+  AddSearchStrings(html_source, profile);
   AddSiteSettingsStrings(html_source, profile);
   AddWebContentStrings(html_source);
 
