@@ -1853,22 +1853,6 @@
             ]
         }
     ],
-    "NTPUseDdljsonApi": [
-        {
-            "platforms": [
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseDdljsonApi"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetAdaptiveProxyConnectionTimeout": [
         {
             "platforms": [
