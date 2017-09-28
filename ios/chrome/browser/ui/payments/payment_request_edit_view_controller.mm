@@ -422,10 +422,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
       [model itemAtIndexPath:indexPath]);
 
-  // Find the respective editor field and update its value to the proposed text.
+  // Find the respective editor field and update its value to the proposed text
+  // only if the editor field does not have an associated UIPickerView. This
+  // prevents users from altering the text unless it is via the UIPickerView.
   NSNumber* key = [NSNumber numberWithInt:sectionIdentifier];
   EditorField* field = self.fieldsMap[key];
   DCHECK(field);
+  key = [NSNumber numberWithInt:field.autofillUIType];
+  if ([self.pickerViews objectForKey:key])
+    return NO;
+
   field.value = [textField.text stringByReplacingCharactersInRange:range
                                                         withString:newText];
 
