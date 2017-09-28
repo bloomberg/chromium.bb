@@ -6,6 +6,7 @@
 
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/frame/WebFeature.h"
 
 namespace blink {
 

@@ -31,6 +31,7 @@
 #include "core/html/forms/TextInputType.h"
 
 #include "core/InputTypeNames.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
 
 namespace blink {

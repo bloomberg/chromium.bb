@@ -29,12 +29,12 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/frame/WebFeature.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/BitVector.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "public/platform/web_feature.mojom-blink.h"
 
 namespace blink {
 
@@ -47,7 +47,6 @@ class LocalFrame;
 class StyleSheetContents;
 // Definition for UseCounter features can be found in:
 // third_party/WebKit/public/platform/web_feature.mojom
-using WebFeature = mojom::WebFeature;
 
 // UseCounter is used for counting the number of times features of
 // Blink are used on real web pages and help us know commonly

@@ -7,8 +7,9 @@
 
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeatureForward.h"
 #include "core/workers/WorkerClients.h"
+#include "platform/wtf/BitVector.h"
 
 namespace blink {
 

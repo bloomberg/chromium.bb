@@ -48,6 +48,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGURIReference.h"
 

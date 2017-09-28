@@ -39,6 +39,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"
