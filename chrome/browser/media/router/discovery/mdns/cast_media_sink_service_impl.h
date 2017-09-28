@@ -46,6 +46,7 @@ class CastMediaSinkServiceImpl
 
   void SetTaskRunnerForTest(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+  void SetClockForTest(std::unique_ptr<base::Clock> clock);
 
   // MediaSinkService implementation
   void Start() override;
@@ -134,11 +135,13 @@ class CastMediaSinkServiceImpl
   // |cast_sink|: Cast sink created from mDNS service description or DIAL sink.
   // |backoff_entry|: backoff entry passed to |OnChannelErrorMayRetry| callback
   // if open channel fails.
+  // |start_time|: time at which corresponding |OpenChannel| was called.
   // |socket|: raw pointer of newly created cast channel. Does not take
   // ownership of |socket|.
   void OnChannelOpened(const MediaSinkInternal& cast_sink,
                        std::unique_ptr<net::BackoffEntry> backoff_entry,
                        SinkSource sink_source,
+                       base::Time start_time,
                        cast_channel::CastSocket* socket);
 
   // Invoked by |OnChannelOpened| if opening cast channel failed. It will retry
@@ -222,6 +225,8 @@ class CastMediaSinkServiceImpl
 
   // Owned by |g_browser_process|.
   net::NetLog* const net_log_;
+
+  std::unique_ptr<base::Clock> clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

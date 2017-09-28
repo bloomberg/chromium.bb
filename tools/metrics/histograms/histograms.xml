@@ -33657,6 +33657,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Cast.Channel.ConnectResult" enum="BooleanSuccess">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    Whether opening Cast channel succeeds or not. Recorded when all opening
+    channel attempts (including retry attempts) finish.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.Channel.Error"
+    enum="MediaRouterCastChannelError">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    Errors encountered on a Cast channel. Recorded when a Cast channel fails to
+    open, or when an opened channel fails to respond to keepalive ping request
+    and times out.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Cast.Discovery.CachedSinksAvailableCount"
     units="devices">
   <owner>btolsch@chromium.org</owner>
@@ -33687,6 +33705,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="MediaRouterCastSinkSource">
   <owner>btolsch@chromium.org</owner>
   <summary>The source of discovery for a newly-created Cast sink.</summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.Mdns.Channel.Open_Failure" units="ms">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken to fail to open a cast channel. Recorded when
+    one opening channel attempt fails.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.Mdns.Channel.Open_Success" units="ms">
+  <owner>zhaobin@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken to successfully open a cast channel. Recorded
+    when one opening channel attempt succeeds.
+  </summary>
 </histogram>
 
 <histogram name="MediaRouter.Dial.AvailableDevicesCount" units="devices">

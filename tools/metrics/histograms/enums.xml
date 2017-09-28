@@ -25869,11 +25869,24 @@ from previous Chrome versions.
   <int value="2" label="ErrorTooManyRetries"/>
 </enum>
 
+<enum name="MediaRouterCastChannelError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Authentication"/>
+  <int value="2" label="Connect"/>
+  <int value="3" label="General Certificate"/>
+  <int value="4" label="Certificate timing"/>
+  <int value="5" label="Network"/>
+  <int value="6" label="Connect Timeout"/>
+  <int value="7" label="Ping Timeout"/>
+</enum>
+
 <enum name="MediaRouterCastSinkSource">
   <int value="0" label="NetworkCache"/>
   <int value="1" label="mDNS"/>
   <int value="2" label="DIAL"/>
   <int value="3" label="Connection retry"/>
+  <int value="4" label="First by mDNS, then by DIAL"/>
+  <int value="5" label="First by DIAL, then by mDNS"/>
 </enum>
 
 <enum name="MediaRouterCreateRouteOutcome">

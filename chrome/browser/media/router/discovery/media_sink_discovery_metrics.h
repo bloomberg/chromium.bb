@@ -12,6 +12,21 @@
 
 namespace media_router {
 
+// Possible values for channel open errors.
+enum class MediaRouterChannelError {
+  UNKNOWN = 0,
+  AUTHENTICATION = 1,
+  CONNECT = 2,
+  GENERAL_CERTIFICATE = 3,
+  CERTIFICATE_TIMING = 4,
+  NETWORK = 5,
+  CONNECT_TIMEOUT = 6,
+  PING_TIMEOUT = 7,
+
+  // Note = Add entries only immediately above this line.
+  TOTAL_COUNT = 8
+};
+
 class DeviceCountMetrics {
  public:
   DeviceCountMetrics();
@@ -56,8 +71,10 @@ class CastDeviceCountMetrics : public DeviceCountMetrics {
     kMdns = 1,
     kDial = 2,
     kConnectionRetry = 3,
+    kMdnsDial = 4,  // Device was first discovered via mDNS, then by DIAL.
+    kDialMdns = 5,  // Device was first discovered via DIAL, then by mDNS.
 
-    kTotalCount = 3,
+    kTotalCount = 6,
   };
 
   static const char kHistogramCastKnownDeviceCount[];
@@ -69,6 +86,19 @@ class CastDeviceCountMetrics : public DeviceCountMetrics {
                           size_t known_device_count) override;
   void RecordCachedSinksAvailableCount(size_t cached_sink_count);
   void RecordResolvedFromSource(SinkSource sink_source);
+};
+
+class CastAnalytics {
+ public:
+  static const char kHistogramCastChannelConnectResult[];
+  static const char kHistogramCastChannelError[];
+  static const char kHistogramCastMdnsChannelOpenSuccess[];
+  static const char kHistogramCastMdnsChannelOpenFailure[];
+
+  static void RecordCastChannelConnectResult(bool channel_opened_successfully);
+  static void RecordDeviceChannelError(MediaRouterChannelError channel_error);
+  static void RecordDeviceChannelOpenDuration(bool success,
+                                              const base::TimeDelta& duration);
 };
 
 }  // namespace media_router
