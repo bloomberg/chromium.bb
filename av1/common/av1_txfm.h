@@ -207,6 +207,8 @@ static INLINE int av1_rotate_tx_size(int tx_size) {
     case TX_32X32: return TX_32X32;
 #if CONFIG_TX64X64
     case TX_64X64: return TX_64X64;
+    case TX_32X64: return TX_64X32;
+    case TX_64X32: return TX_32X64;
 #endif
     case TX_4X8: return TX_8X4;
     case TX_8X4: return TX_4X8;
@@ -352,7 +354,11 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              int bd);
 
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(int tx_type, int tx_size);
+#if CONFIG_TX64X64
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(int tx_type);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x32_cfg(int tx_type);
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(int tx_type);
+#endif  // CONFIG_TX64X64
 TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(int tx_type, int tx_size);
 #ifdef __cplusplus
 }

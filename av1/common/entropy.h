@@ -326,6 +326,16 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8) |
                    *(const uint64_t *)(l + 16) | *(const uint64_t *)(l + 24));
       break;
+    case TX_32X64:
+      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
+      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8) |
+                   *(const uint64_t *)(l + 16) | *(const uint64_t *)(l + 24));
+      break;
+    case TX_64X32:
+      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8) |
+                    *(const uint64_t *)(a + 16) | *(const uint64_t *)(a + 24));
+      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
+      break;
 #endif  // CONFIG_TX64X64
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X16:
@@ -395,6 +405,14 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
     case TX_64X64:
       above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
       left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
+      break;
+    case TX_32X64:
+      above_ec = !!*(const uint64_t *)a;
+      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
+      break;
+    case TX_64X32:
+      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
+      left_ec = !!*(const uint64_t *)l;
       break;
 #endif  // CONFIG_TX64X64
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)

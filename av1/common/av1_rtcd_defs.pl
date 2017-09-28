@@ -160,6 +160,8 @@ add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *out
 
 if (aom_config("CONFIG_TX64X64") eq "yes") {
   add_proto qw/void av1_iht64x64_4096_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
+  add_proto qw/void av1_iht32x64_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
+  add_proto qw/void av1_iht64x32_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
 }
 
 if (aom_config("CONFIG_NEW_QUANT") eq "yes") {
@@ -285,7 +287,11 @@ add_proto qw/void av1_inv_txfm2d_add_32x32/, "const int32_t *input, uint16_t *ou
 if (aom_config("CONFIG_DAALA_DCT32") ne "yes") {
   specialize qw/av1_inv_txfm2d_add_32x32 avx2/;
 }
-add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+if (aom_config("CONFIG_TX64X64") eq "yes") {
+  add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_64x32/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_32x64/, "const int32_t *input, uint16_t *output, int stride, int tx_type, int bd";
+}
 
 #
 # Encoder functions below this point.
@@ -354,6 +360,8 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   if (aom_config("CONFIG_TX64X64") eq "yes") {
     add_proto qw/void av1_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+    add_proto qw/void av1_fht64x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+    add_proto qw/void av1_fht32x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
   }
 
   add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
@@ -396,7 +404,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     }
   }
 
-  add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bs, int tx_type";
+  add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bsx, int bsy, int tx_type";
 
   #fwd txfm
   add_proto qw/void av1_fwd_txfm2d_4x8/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
@@ -421,9 +429,14 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   if (aom_config("CONFIG_DAALA_DCT32") ne "yes") {
     specialize qw/av1_fwd_txfm2d_32x32 sse4_1/;
   }
-  add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
-  if (aom_config("CONFIG_DAALA_DCT64") ne "yes") {
-    specialize qw/av1_fwd_txfm2d_64x64 sse4_1/;
+
+  if (aom_config("CONFIG_TX64X64") eq "yes") {
+    add_proto qw/void av1_fwd_txfm2d_32x64/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+    add_proto qw/void av1_fwd_txfm2d_64x32/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+    add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, int tx_type, int bd";
+    if (aom_config("CONFIG_DAALA_DCT64") ne "yes") {
+      specialize qw/av1_fwd_txfm2d_64x64 sse4_1/;
+    }
   }
   #
   # Motion search

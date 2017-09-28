@@ -257,12 +257,28 @@ void av1_fwd_txfm2d_32x32_c(const int16_t *input, int32_t *output, int stride,
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
 }
 
+#if CONFIG_TX64X64
 void av1_fwd_txfm2d_64x64_c(const int16_t *input, int32_t *output, int stride,
                             int tx_type, int bd) {
   int32_t txfm_buf[64 * 64];
   TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_64x64_cfg(tx_type);
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
 }
+
+void av1_fwd_txfm2d_32x64_c(const int16_t *input, int32_t *output, int stride,
+                            int tx_type, int bd) {
+  int32_t txfm_buf[32 * 64];
+  TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_32x64_cfg(tx_type);
+  fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
+}
+
+void av1_fwd_txfm2d_64x32_c(const int16_t *input, int32_t *output, int stride,
+                            int tx_type, int bd) {
+  int32_t txfm_buf[64 * 32];
+  TXFM_2D_FLIP_CFG cfg = av1_get_fwd_txfm_64x32_cfg(tx_type);
+  fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
+}
+#endif  // CONFIG_TX64X64
 
 static const TXFM_1D_CFG *fwd_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
   // DCT
@@ -342,6 +358,39 @@ TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(int tx_type, int tx_size) {
   return cfg;
 }
 
+#if CONFIG_TX64X64
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_32x64_cfg(int tx_type) {
+  TXFM_2D_FLIP_CFG cfg;
+  const int tx_type_row = htx_tab[tx_type];
+  const int tx_size_row = txsize_horz_map[TX_32X64];
+  switch (tx_type) {
+    case DCT_DCT:
+      cfg.col_cfg = &fwd_txfm_1d_col_cfg_dct_64;
+      cfg.row_cfg = fwd_txfm_row_cfg_ls[tx_type_row][tx_size_row];
+      cfg.ud_flip = 0;
+      cfg.lr_flip = 0;
+      break;
+    default: assert(0);
+  }
+  return cfg;
+}
+
+TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x32_cfg(int tx_type) {
+  TXFM_2D_FLIP_CFG cfg;
+  const int tx_type_col = vtx_tab[tx_type];
+  const int tx_size_col = txsize_vert_map[TX_64X32];
+  switch (tx_type) {
+    case DCT_DCT:
+      cfg.col_cfg = fwd_txfm_col_cfg_ls[tx_type_col][tx_size_col];
+      cfg.row_cfg = &fwd_txfm_1d_row_cfg_dct_64;
+      cfg.ud_flip = 0;
+      cfg.lr_flip = 0;
+      break;
+    default: assert(0);
+  }
+  return cfg;
+}
+
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(int tx_type) {
   TXFM_2D_FLIP_CFG cfg;
   switch (tx_type) {
@@ -358,3 +407,4 @@ TXFM_2D_FLIP_CFG av1_get_fwd_txfm_64x64_cfg(int tx_type) {
   }
   return cfg;
 }
+#endif  // CONFIG_TX64X64

@@ -349,12 +349,24 @@ void av1_inv_txfm2d_add_32x32_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X32, bd);
 }
 
+#if CONFIG_TX64X64
 void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output,
                                 int stride, int tx_type, int bd) {
   int txfm_buf[64 * 64 + 64 + 64];
   TXFM_2D_FLIP_CFG cfg = av1_get_inv_txfm_64x64_cfg(tx_type);
   inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf, -4, bd);
-#if CONFIG_TX64X64
   assert(fwd_shift_sum[TX_64X64] == -4);
-#endif
 }
+
+void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
+                                int stride, int tx_type, int bd) {
+  int txfm_buf[64 * 32 + 64 + 64];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X64, bd);
+}
+
+void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
+                                int stride, int tx_type, int bd) {
+  int txfm_buf[64 * 32 + 64 + 64];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X64, bd);
+}
+#endif  // CONFIG_TX64X64
