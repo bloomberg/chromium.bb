@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
@@ -98,8 +99,7 @@ public class ArticleSnippetsTest {
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
@@ -325,8 +325,6 @@ public class ArticleSnippetsTest {
     @Feature({"ArticleSnippets", "RenderTest"})
     public void testPersonalizedSigninPromosNoAccounts() throws IOException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mRecyclerView.init(mUiConfig, null);
-            mRecyclerView.setAdapter(null);
             createPersonalizedSigninPromo(null);
             mContentView.addView(mSigninPromo.itemView);
         });
@@ -338,12 +336,27 @@ public class ArticleSnippetsTest {
     @Feature({"ArticleSnippets", "RenderTest"})
     public void testPersonalizedSigninPromosWithAccount() throws IOException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mRecyclerView.init(mUiConfig, null);
-            mRecyclerView.setAdapter(null);
             createPersonalizedSigninPromo(getTestProfileData());
             mContentView.addView(mSigninPromo.itemView);
         });
         mRenderTestRule.render(mSigninPromo.itemView, "hot_state_personalized_signin_promo");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ArticleSnippets", "RenderTest"})
+    public void testContentSuggestionPlaceholder() throws IOException {
+        // TODO(dgn): Try to use assume or notify the test runner in some way that we skipped it
+        // instead of making it always PASS here.
+        if (!mChromeHomeEnabled) return; // Placeholder is only valid on modern.
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ContentSuggestionPlaceholder.ViewHolder viewHolder =
+                    new ContentSuggestionPlaceholder.ViewHolder(mRecyclerView, mUiConfig, null);
+            viewHolder.onBindViewHolder();
+            mContentView.addView(viewHolder.itemView);
+        });
+        mRenderTestRule.render(mContentView.getChildAt(0), "content_suggestion_placeholder");
     }
 
     private void createPersonalizedSigninPromo(@Nullable DisplayableProfileData profileData) {
