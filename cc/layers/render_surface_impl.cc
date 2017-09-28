@@ -129,6 +129,10 @@ bool RenderSurfaceImpl::HasMask() const {
   return OwningEffectNode()->mask_layer_id != Layer::INVALID_ID;
 }
 
+bool RenderSurfaceImpl::HasMaskingContributingSurface() const {
+  return OwningEffectNode()->has_masking_child;
+}
+
 const FilterOperations& RenderSurfaceImpl::Filters() const {
   return OwningEffectNode()->filters;
 }

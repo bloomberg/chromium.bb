@@ -68,6 +68,8 @@ struct CC_EXPORT EffectNode {
   bool is_currently_animating_filter : 1;
   // Whether this node has a currently running opacity animation.
   bool is_currently_animating_opacity : 1;
+  // Whether this node has a child node with kDstIn blend mode.
+  bool has_masking_child : 1;
   // Whether this node's effect has been changed since the last
   // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;

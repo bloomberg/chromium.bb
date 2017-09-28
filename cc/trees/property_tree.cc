@@ -812,6 +812,15 @@ void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
           .is_showing_backface;
 }
 
+void EffectTree::UpdateHasMaskingChild(EffectNode* node,
+                                       EffectNode* parent_node) {
+  // Reset to false when a node is first met. We'll set the bit later
+  // when we actually encounter a masking child.
+  node->has_masking_child = false;
+  if (node->blend_mode == SkBlendMode::kDstIn)
+    parent_node->has_masking_child = true;
+}
+
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   if (!effect_node->has_render_surface) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
@@ -886,6 +895,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
+  UpdateHasMaskingChild(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 
