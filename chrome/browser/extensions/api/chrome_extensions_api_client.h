@@ -52,8 +52,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       RulesCacheDelegate* cache_delegate) const override;
   std::unique_ptr<DevicePermissionsPrompt> CreateDevicePermissionsPrompt(
       content::WebContents* web_contents) const override;
-  std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate()
-      const override;
+  std::unique_ptr<VirtualKeyboardDelegate> CreateVirtualKeyboardDelegate(
+      content::BrowserContext* browser_context) const override;
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
   MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;
   NetworkingCastPrivateDelegate* GetNetworkingCastPrivateDelegate() override;

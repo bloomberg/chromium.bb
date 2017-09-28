@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/virtual_keyboard.h"
 
 namespace extensions {
 

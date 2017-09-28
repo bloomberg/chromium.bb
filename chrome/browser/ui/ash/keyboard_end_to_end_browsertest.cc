@@ -16,12 +16,9 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_test_util.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace {
-
-bool IsKeyboardVisible() {
-  return keyboard::KeyboardController::GetInstance()->keyboard_visible();
-}
 
 // Simulates a click on the middle of the DOM element with the given |id|.
 void ClickElementWithId(content::WebContents* web_contents,

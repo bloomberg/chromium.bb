@@ -136,7 +136,7 @@ class ExtensionsAPIClient {
 
   // Returns a delegate for some of VirtualKeyboardAPI's behavior.
   virtual std::unique_ptr<VirtualKeyboardDelegate>
-  CreateVirtualKeyboardDelegate() const;
+  CreateVirtualKeyboardDelegate(content::BrowserContext* browser_context) const;
 
   // Creates a delegate for handling the management extension api.
   virtual ManagementAPIDelegate* CreateManagementAPIDelegate() const;

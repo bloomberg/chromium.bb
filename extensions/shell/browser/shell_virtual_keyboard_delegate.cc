@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/values.h"
 
 namespace extensions {
@@ -17,8 +18,11 @@ void ShellVirtualKeyboardDelegate::GetKeyboardConfig(
     OnKeyboardSettingsCallback on_settings_callback) {
   std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   settings->SetBoolean("hotrodmode", is_hotrod_keyboard_);
-  settings->SetBoolean("restricted", is_keyboard_restricted_);
   on_settings_callback.Run(std::move(settings));
+}
+
+void ShellVirtualKeyboardDelegate::OnKeyboardConfigChanged() {
+  NOTIMPLEMENTED();
 }
 
 bool ShellVirtualKeyboardDelegate::HideKeyboard() {
@@ -35,10 +39,6 @@ bool ShellVirtualKeyboardDelegate::OnKeyboardLoaded() {
 
 void ShellVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   is_hotrod_keyboard_ = enable;
-}
-
-void ShellVirtualKeyboardDelegate::SetKeyboardRestricted(bool restricted) {
-  is_keyboard_restricted_ = restricted;
 }
 
 bool ShellVirtualKeyboardDelegate::LockKeyboard(bool state) {
@@ -67,6 +67,34 @@ bool ShellVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
 
 bool ShellVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   return false;
+}
+
+api::virtual_keyboard::FeatureRestrictions
+ShellVirtualKeyboardDelegate::RestrictFeatures(
+    const api::virtual_keyboard::RestrictFeatures::Params& params) {
+  // Return the given parameter as is, since there's no stored values.
+  api::virtual_keyboard::FeatureRestrictions update;
+  if (params.restrictions.spell_check_enabled) {
+    update.spell_check_enabled =
+        std::make_unique<bool>(*params.restrictions.spell_check_enabled);
+  }
+  if (params.restrictions.auto_complete_enabled) {
+    update.auto_complete_enabled =
+        std::make_unique<bool>(*params.restrictions.auto_complete_enabled);
+  }
+  if (params.restrictions.auto_correct_enabled) {
+    update.auto_correct_enabled =
+        std::make_unique<bool>(*params.restrictions.auto_correct_enabled);
+  }
+  if (params.restrictions.voice_input_enabled) {
+    update.voice_input_enabled =
+        std::make_unique<bool>(*params.restrictions.voice_input_enabled);
+  }
+  if (params.restrictions.handwriting_enabled) {
+    update.handwriting_enabled =
+        std::make_unique<bool>(*params.restrictions.handwriting_enabled);
+  }
+  return update;
 }
 
 }  // namespace extensions

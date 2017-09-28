@@ -660,6 +660,11 @@ void KeyboardController::
   ui_->EnsureCaretInWorkArea();
 }
 
+void KeyboardController::NotifyKeyboardConfigChanged() {
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardConfigChanged();
+}
+
 void KeyboardController::AdjustKeyboardBounds() {
   int keyboard_height = GetContainerWindow()->bounds().height();
   const gfx::Rect& root_bounds = container_->GetRootWindow()->bounds();

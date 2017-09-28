@@ -96,7 +96,8 @@ ExtensionsAPIClient::CreateDevicePermissionsPrompt(
 }
 
 std::unique_ptr<VirtualKeyboardDelegate>
-ExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
+ExtensionsAPIClient::CreateVirtualKeyboardDelegate(
+    content::BrowserContext* context) const {
   return nullptr;
 }
 

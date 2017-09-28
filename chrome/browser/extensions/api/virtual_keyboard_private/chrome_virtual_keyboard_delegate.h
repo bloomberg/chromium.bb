@@ -10,7 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
+#include "extensions/common/api/virtual_keyboard.h"
 
 namespace media {
 class AudioSystem;
@@ -20,16 +22,20 @@ namespace extensions {
 
 class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
  public:
-  ChromeVirtualKeyboardDelegate();
+  explicit ChromeVirtualKeyboardDelegate(
+      content::BrowserContext* browser_context);
   ~ChromeVirtualKeyboardDelegate() override;
 
+  // TODO(oka): Create ChromeVirtualKeyboardPrivateDelegate class and move all
+  // the methods except for RestrictFeatures into the class for clear separation
+  // of virtualKeyboard and virtualKeyboardPrivate API.
   void GetKeyboardConfig(
       OnKeyboardSettingsCallback on_settings_callback) override;
+  void OnKeyboardConfigChanged() override;
   bool HideKeyboard() override;
   bool InsertText(const base::string16& text) override;
   bool OnKeyboardLoaded() override;
   void SetHotrodKeyboard(bool enable) override;
-  void SetKeyboardRestricted(bool restricted) override;
   bool LockKeyboard(bool state) override;
   bool SendKeyEvent(const std::string& type,
                     int char_value,
@@ -41,10 +47,16 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool SetVirtualKeyboardMode(int mode_enum) override;
   bool SetRequestedKeyboardState(int state_enum) override;
 
+  api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
+      const api::virtual_keyboard::RestrictFeatures::Params& params) override;
+
  private:
   void OnHasInputDevices(OnKeyboardSettingsCallback on_settings_callback,
-                         bool has_input_devices);
+                         bool has_audio_input_devices);
+  void DispatchConfigChangeEvent(
+      std::unique_ptr<base::DictionaryValue> settings);
 
+  content::BrowserContext* browser_context_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   base::WeakPtr<ChromeVirtualKeyboardDelegate> weak_this_;
   base::WeakPtrFactory<ChromeVirtualKeyboardDelegate> weak_factory_;

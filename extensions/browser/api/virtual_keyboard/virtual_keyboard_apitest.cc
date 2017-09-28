@@ -19,57 +19,6 @@
 
 namespace extensions {
 
-namespace {
-
-void ExtractIsRestrictedKeyboard(
-    bool* is_restricted,
-    std::unique_ptr<base::DictionaryValue> settings) {
-  ASSERT_TRUE(settings->GetBoolean("restricted", is_restricted));
-}
-
-// Handles "restrictedChanged" message from the test extension - the handler
-// responds to the the "restrictedChanged" message with a message indicating
-// whether advanced features are enabeled,
-class RestrictedChangedHandler : public content::NotificationObserver {
- public:
-  explicit RestrictedChangedHandler(VirtualKeyboardDelegate* delegate)
-      : delegate_(delegate) {
-    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
-                   content::NotificationService::AllSources());
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE, type);
-
-    std::pair<std::string, bool*>* message_details =
-        content::Details<std::pair<std::string, bool*>>(details).ptr();
-    if (message_details->first != "restrictedChanged")
-      return;
-
-    *message_details->second = true /* listener_will_respond */;
-
-    bool is_restricted = false;
-    delegate_->GetKeyboardConfig(
-        base::Bind(&ExtractIsRestrictedKeyboard, &is_restricted));
-
-    extensions::TestSendMessageFunction* function =
-        content::Source<extensions::TestSendMessageFunction>(source).ptr();
-    // The response should contain boolean indicating whether virtual keyboard
-    // advanced features are enabled.
-    function->Reply(is_restricted ? "false" : "true");
-  }
-
- private:
-  VirtualKeyboardDelegate* delegate_;
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(RestrictedChangedHandler);
-};
-
-}  // namespace
-
 class VirtualKeyboardApiTest : public ShellApiTest {
  public:
   VirtualKeyboardApiTest() {}
@@ -98,8 +47,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardApiTest, Test) {
       BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>::Get(browser_context());
   ASSERT_TRUE(api);
   ASSERT_TRUE(api->delegate());
-
-  RestrictedChangedHandler restricted_changed_handler(api->delegate());
 
   EXPECT_TRUE(RunAppTest("api_test/virtual_keyboard"));
 }

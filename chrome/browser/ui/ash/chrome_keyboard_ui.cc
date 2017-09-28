@@ -27,6 +27,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/bindings_policy.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
@@ -228,6 +230,13 @@ class AshKeyboardControllerObserver
         virtual_keyboard_private::OnKeyboardClosed::kEventName,
         base::MakeUnique<base::ListValue>(), context_);
     router->BroadcastEvent(std::move(event));
+  }
+
+  void OnKeyboardConfigChanged() override {
+    extensions::VirtualKeyboardAPI* api =
+        extensions::BrowserContextKeyedAPIFactory<
+            extensions::VirtualKeyboardAPI>::Get(context_);
+    api->delegate()->OnKeyboardConfigChanged();
   }
 
  private:

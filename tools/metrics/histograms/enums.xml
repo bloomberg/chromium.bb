@@ -11868,7 +11868,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="ExtensionEvents">
-<!-- Generated from extensions/browser/extension_event_histogram_value.h -->
+<!-- Generated from extensions/browser/extension_event_histogram_value.h.-->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="FOR_TEST"/>
@@ -12292,7 +12292,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="411" label="WEB_VIEW_INTERNAL_ON_AUDIO_STATE_CHANGED"/>
   <int value="412" label="AUTOMATION_INTERNAL_ON_ACTION_RESULT"/>
   <int value="413" label="OMNIBOX_ON_DELETE_SUGGESTION"/>
-  <int value="414" label="PASSWORDS_PRIVATE_ON_SHOW_IMPORT_EXPORT_BUTTONS"/>
+  <int value="414" label="VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CONFIG_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -12311,7 +12311,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="ExtensionFunctions">
-<!-- Generated from extensions/browser/extension_function_histogram_value.h -->
+<!-- Generated from extensions/browser/extension_function_histogram_value.h.-->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="WEBNAVIGATION_GETALLFRAMES"/>
@@ -12818,9 +12818,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="500" label="DELETED_WEBVIEW_STOP"/>
   <int value="501" label="DELETED_WEBVIEW_RELOAD"/>
   <int value="502" label="DELETED_WEBVIEW_TERMINATE"/>
-  <int value="503" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_GET"/>
-  <int value="504" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_SET"/>
-  <int value="505" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_CLEAR"/>
+  <int value="503" label="DELETED_TYPES_PRIVATE_CHROMEDIRECTSETTING_GET"/>
+  <int value="504" label="DELETED_TYPES_PRIVATE_CHROMEDIRECTSETTING_SET"/>
+  <int value="505" label="DELETED_TYPES_PRIVATE_CHROMEDIRECTSETTING_CLEAR"/>
   <int value="506" label="DELETED_EXPERIMENTAL_SYSTEMINFO_STORAGE_EJECTDEVICE"/>
   <int value="507" label="SYSTEM_CPU_GETINFO"/>
   <int value="508" label="BOOKMARKMANAGERPRIVATE_REMOVETREES"/>
