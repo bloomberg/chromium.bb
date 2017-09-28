@@ -27,6 +27,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/vector_icons.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -255,10 +256,6 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   DCHECK(provider_);
   DCHECK(notifier_);
 
-  // Since there may never be an icon (but that could change at a later time),
-  // we own the icon view here.
-  icon_view_->set_owned_by_client();
-
   checkbox_->SetChecked(notifier_->enabled);
   checkbox_->set_listener(this);
   checkbox_->SetFocusBehavior(FocusBehavior::NEVER);
@@ -300,15 +297,15 @@ NotifierSettingsView::NotifierButton::~NotifierButton() {}
 
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::Image& icon) {
-  bool has_icon_view = false;
-
   notifier_->icon = icon;
-  if (!icon.IsEmpty()) {
+  if (icon.IsEmpty()) {
+    icon_view_->SetImage(gfx::CreateVectorIcon(
+        message_center::kProductIcon, kEntryIconSize, gfx::kChromeIconGrey));
+  } else {
     icon_view_->SetImage(icon.ToImageSkia());
     icon_view_->SetImageSize(gfx::Size(kEntryIconSize, kEntryIconSize));
-    has_icon_view = true;
   }
-  GridChanged(ShouldHaveLearnMoreButton(), has_icon_view);
+  GridChanged(ShouldHaveLearnMoreButton());
 }
 
 void NotifierSettingsView::NotifierButton::SetChecked(bool checked) {
@@ -366,8 +363,7 @@ bool NotifierSettingsView::NotifierButton::ShouldHaveLearnMoreButton() const {
   return provider_->NotifierHasAdvancedSettings(notifier_->notifier_id);
 }
 
-void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
-                                                       bool has_icon_view) {
+void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more) {
   using views::ColumnSet;
   using views::GridLayout;
 
@@ -379,12 +375,10 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
                 kComputedCheckboxSize, 0);
   cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
 
-  if (has_icon_view) {
-    // Add a column for the icon.
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                  kEntryIconSize, 0);
-    cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
-  }
+  // Add a column for the icon.
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
+                kEntryIconSize, 0);
+  cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
 
   // Add a column for the name.
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
@@ -402,8 +396,7 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
 
   layout->StartRow(0, 0);
   layout->AddView(checkbox_);
-  if (has_icon_view)
-    layout->AddView(icon_view_.get());
+  layout->AddView(icon_view_);
   layout->AddView(name_view_);
   if (has_learn_more)
     layout->AddView(learn_more_);
