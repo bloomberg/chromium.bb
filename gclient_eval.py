@@ -120,7 +120,9 @@ _GCLIENT_SCHEMA = schema.Schema({
     schema.Optional('use_relative_paths'): bool,
 
     # Variables that can be referenced using Var() - see 'deps'.
-    schema.Optional('vars'): {schema.Optional(basestring): basestring},
+    schema.Optional('vars'): {
+        schema.Optional(basestring): schema.Or(basestring, bool),
+    },
 })
 
 
@@ -237,27 +239,58 @@ def EvaluateCondition(condition, variables, referenced_variables=None):
       elif node.id in _allowed_names:
         return _allowed_names[node.id]
       elif node.id in variables:
+        value = variables[node.id]
+
+        # Allow using "native" types, without wrapping everything in strings.
+        # Note that schema constraints still apply to variables.
+        if not isinstance(value, basestring):
+          return value
+
+        # Recursively evaluate the variable reference.
         return EvaluateCondition(
             variables[node.id],
             variables,
             referenced_variables.union([node.id]))
       else:
-        raise ValueError(
-            'invalid name %r (inside %r)' % (node.id, condition))
+        # Implicitly convert unrecognized names to strings.
+        # If we want to change this, we'll need to explicitly distinguish
+        # between arguments for GN to be passed verbatim, and ones to
+        # be evaluated.
+        return node.id
     elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or):
       if len(node.values) != 2:
         raise ValueError(
             'invalid "or": exactly 2 operands required (inside %r)' % (
                 condition))
-      return _convert(node.values[0]) or _convert(node.values[1])
+      left = _convert(node.values[0])
+      right = _convert(node.values[1])
+      if not isinstance(left, bool):
+        raise ValueError(
+            'invalid "or" operand %r (inside %r)' % (left, condition))
+      if not isinstance(right, bool):
+        raise ValueError(
+            'invalid "or" operand %r (inside %r)' % (right, condition))
+      return left or right
     elif isinstance(node, ast.BoolOp) and isinstance(node.op, ast.And):
       if len(node.values) != 2:
         raise ValueError(
             'invalid "and": exactly 2 operands required (inside %r)' % (
                 condition))
-      return _convert(node.values[0]) and _convert(node.values[1])
+      left = _convert(node.values[0])
+      right = _convert(node.values[1])
+      if not isinstance(left, bool):
+        raise ValueError(
+            'invalid "and" operand %r (inside %r)' % (left, condition))
+      if not isinstance(right, bool):
+        raise ValueError(
+            'invalid "and" operand %r (inside %r)' % (right, condition))
+      return left and right
     elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
-      return not _convert(node.operand)
+      value = _convert(node.operand)
+      if not isinstance(value, bool):
+        raise ValueError(
+            'invalid "not" operand %r (inside %r)' % (value, condition))
+      return not value
     elif isinstance(node, ast.Compare):
       if len(node.ops) != 1:
         raise ValueError(

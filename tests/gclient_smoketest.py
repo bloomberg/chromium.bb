@@ -327,8 +327,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
+        'false_str_var = false',
         'true_var = true',
+        'true_str_var = true',
         'str_var = "abc"',
+        'cond_var = false',
     ])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
@@ -345,8 +348,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
+        'false_str_var = false',
         'true_var = true',
+        'true_str_var = true',
         'str_var = "abc"',
+        'cond_var = false',
     ])
     self.assertTree(tree)
 
@@ -384,8 +390,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
+        'false_str_var = false',
         'true_var = true',
+        'true_str_var = true',
         'str_var = "abc"',
+        'cond_var = false',
     ])
     self.assertTree(tree)
 
@@ -426,8 +435,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
+        'false_str_var = false',
         'true_var = true',
+        'true_str_var = true',
         'str_var = "abc"',
+        'cond_var = false',
     ])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
@@ -445,8 +457,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
+        'false_str_var = false',
         'true_var = true',
+        'true_str_var = true',
         'str_var = "abc"',
+        'cond_var = false',
     ])
     self.assertTree(tree)
 
@@ -626,7 +641,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.maxDiff = None
     self.assertEqual([
         'gclient_gn_args_file = "src/gclient.args"',
-        'gclient_gn_args = [\'false_var\', \'true_var\', \'str_var\']',
+        'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
+            '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',
         '  "git://127.0.0.1:20000/git/",',
         ']',
@@ -749,7 +765,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "DummyVariable": \'repo\',',
         '',
         '  # src',
-        '  "false_var": \'False\',',
+        '  "cond_var": \'false_str_var and true_var\',',
+        '',
+        '  # src',
+        '  "false_str_var": \'False\',',
+        '',
+        '  # src',
+        '  "false_var": False,',
         '',
         '  # src',
         '  "git_base": \'git://127.0.0.1:20000/git/\',',
@@ -761,10 +783,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "repo5_var": \'/repo_5\',',
         '',
         '  # src',
-        '  "str_var": \'"abc"\',',
+        '  "str_var": \'abc\',',
         '',
         '  # src',
-        '  "true_var": \'True\',',
+        '  "true_str_var": \'True\',',
+        '',
+        '  # src',
+        '  "true_var": True,',
         '',
         '}',
         '',
@@ -790,7 +815,8 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     self.assertEqual([
         'gclient_gn_args_file = "src/gclient.args"',
-        'gclient_gn_args = [\'false_var\', \'true_var\', \'str_var\']',
+        'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
+            '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',
         '  "git://127.0.0.1:20000/git/",',
         ']',
@@ -914,7 +940,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "DummyVariable": \'repo\',',
         '',
         '  # src',
-        '  "false_var": \'False\',',
+        '  "cond_var": \'false_str_var and true_var\',',
+        '',
+        '  # src',
+        '  "false_str_var": \'False\',',
+        '',
+        '  # src',
+        '  "false_var": False,',
         '',
         '  # src',
         '  "git_base": \'git://127.0.0.1:20000/git/\',',
@@ -926,10 +958,13 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "repo5_var": \'/repo_5\',',
         '',
         '  # src',
-        '  "str_var": \'"abc"\',',
+        '  "str_var": \'abc\',',
         '',
         '  # src',
-        '  "true_var": \'True\',',
+        '  "true_str_var": \'True\',',
+        '',
+        '  # src',
+        '  "true_var": True,',
         '',
         '}',
         '',

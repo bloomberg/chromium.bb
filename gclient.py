@@ -965,7 +965,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     lines = ['# Generated from %r' % self.deps_file]
     variables = self.get_vars()
     for arg in self._gn_args:
-      value = gclient_eval.EvaluateCondition(variables[arg], variables)
+      value = variables[arg]
+      if isinstance(value, basestring):
+        value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
       f.write('\n'.join(lines))

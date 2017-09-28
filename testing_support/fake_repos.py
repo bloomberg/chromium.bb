@@ -329,15 +329,21 @@ class FakeRepos(FakeReposBase):
       'DEPS': """
 vars = {
   'DummyVariable': 'repo',
-  'false_var': 'False',
-  'true_var': 'True',
-  'str_var': '"abc"',
+  'false_var': False,
+  'false_str_var': 'False',
+  'true_var': True,
+  'true_str_var': 'True',
+  'str_var': 'abc',
+  'cond_var': 'false_str_var and true_var',
 }
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = [
   'false_var',
+  'false_str_var',
   'true_var',
+  'true_str_var',
   'str_var',
+  'cond_var',
 ]
 deps = {
   'src/repo2': {
@@ -475,16 +481,22 @@ vars = {
   'hook1_contents': 'git_hooked1',
   'repo5_var': '/repo_5',
 
-  'false_var': 'False',
-  'true_var': 'True',
-  'str_var': '"abc"',
+  'false_var': False,
+  'false_str_var': 'False',
+  'true_var': True,
+  'true_str_var': 'True',
+  'str_var': 'abc',
+  'cond_var': 'false_str_var and true_var',
 }
 
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = [
   'false_var',
+  'false_str_var',
   'true_var',
+  'true_str_var',
   'str_var',
+  'cond_var',
 ]
 
 allowed_hosts = [

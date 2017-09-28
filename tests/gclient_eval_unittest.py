@@ -145,6 +145,21 @@ class EvaluateConditionTest(unittest.TestCase):
     self.assertFalse(gclient_eval.EvaluateCondition(
         'foo == "bar"', {'foo': '"baz"'}))
 
+  def test_string_bool(self):
+    self.assertFalse(gclient_eval.EvaluateCondition(
+        'false_str_var and true_var',
+        {'false_str_var': 'False', 'true_var': True}))
+
+  def test_string_bool_typo(self):
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval.EvaluateCondition(
+          'false_var_str and true_var',
+          {'false_str_var': 'False', 'true_var': True})
+    self.assertIn(
+        'invalid "and" operand \'false_var_str\' '
+            '(inside \'false_var_str and true_var\')',
+        str(cm.exception))
+
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL
