@@ -46,6 +46,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -602,6 +603,13 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   // exit early.
   if (ash_util::IsRunningInMash())
     return true;
+
+  // The focus should not move to the system tray if voice interaction OOOBE is
+  // active.
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->IsVoiceInteractionOobe()) {
+    return false;
+  }
 
   // If shift+tab is used (|reverse| is true) and views-based shelf is shown,
   // focus goes to the shelf widget. If views-based shelf is disabled, focus
