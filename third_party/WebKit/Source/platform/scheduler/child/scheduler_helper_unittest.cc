@@ -26,6 +26,7 @@ using ::testing::Return;
 
 namespace blink {
 namespace scheduler {
+namespace scheduler_helper_unittest {
 
 namespace {
 void AppendToVectorTestTask(std::vector<std::string>* vector,
@@ -215,6 +216,6 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
 
   scheduler_helper_->SetObserver(nullptr);
 }
-
+}  // namespace scheduler_helper_unittest
 }  // namespace scheduler
 }  // namespace blink

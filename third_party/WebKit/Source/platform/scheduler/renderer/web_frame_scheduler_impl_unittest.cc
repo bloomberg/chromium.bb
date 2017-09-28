@@ -20,8 +20,8 @@
 
 namespace blink {
 namespace scheduler {
-namespace web_frame_scheduler_impl_unittest {  // To avoid symbol collisions in
-                                               // jumbo builds.
+// To avoid symbol collisions in jumbo builds.
+namespace web_frame_scheduler_impl_unittest {
 
 class WebFrameSchedulerImplTest : public ::testing::Test {
  public:

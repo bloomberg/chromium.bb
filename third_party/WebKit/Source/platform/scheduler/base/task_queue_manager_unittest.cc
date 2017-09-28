@@ -44,8 +44,8 @@ using blink::scheduler::internal::EnqueueOrder;
 
 namespace blink {
 namespace scheduler {
-namespace task_queue_manager_unittest {  // To avoid symbol collisions in jumbo
-                                         // builds.
+// To avoid symbol collisions in jumbo builds.
+namespace task_queue_manager_unittest {
 
 class TaskQueueManagerForTest : public TaskQueueManager {
  public:
