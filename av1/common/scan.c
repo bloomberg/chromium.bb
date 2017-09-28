@@ -6629,9 +6629,7 @@ void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
         const int r = r_ds << 1;
         const int c = c_ds << 1;
         const int ci = r * tx_w + c;
-        non_zero_count_ds[ci_ds] = non_zero_count[ci] + non_zero_count[ci + 1] +
-                                   non_zero_count[ci + tx_w] +
-                                   non_zero_count[ci + 1 + tx_w];
+        non_zero_count_ds[ci_ds] = non_zero_count[ci];
       }
     }
   } else if (tx_w > 8 && tx_h <= 8) {
@@ -6643,7 +6641,7 @@ void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
         const int r = r_ds;
         const int c = c_ds << 1;
         const int ci = r * tx_w + c;
-        non_zero_count_ds[ci_ds] = non_zero_count[ci] + non_zero_count[ci + 1];
+        non_zero_count_ds[ci_ds] = non_zero_count[ci];
       }
     }
   } else if (tx_w <= 8 && tx_h > 8) {
@@ -6655,8 +6653,7 @@ void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
         const int r = r_ds << 1;
         const int c = c_ds;
         const int ci = r * tx_w + c;
-        non_zero_count_ds[ci_ds] =
-            non_zero_count[ci] + non_zero_count[ci + tx_w];
+        non_zero_count_ds[ci_ds] = non_zero_count[ci];
       }
     }
   } else {
@@ -6678,12 +6675,30 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
         const int r = r_ds << 1;
         const int c = c_ds << 1;
         const int ci = r * tx_w + c;
-        uint32_t count = ROUND_POWER_OF_TWO(non_zero_count_ds[ci_ds], 2);
-        count = clamp64(count, 0, block_num);
-        non_zero_count[ci] = count;
-        non_zero_count[ci + 1] = count;
-        non_zero_count[ci + tx_w] = count;
-        non_zero_count[ci + tx_w + 1] = count;
+        non_zero_count[ci] = non_zero_count_ds[ci_ds];
+        if (c_ds + 1 < tx_w_ds) {
+          uint32_t count =
+              non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + 1];
+          count = ROUND_POWER_OF_TWO(count, 1);
+          count = clamp64(count, 0, block_num);
+          non_zero_count[ci + 1] = count;
+        } else {
+          non_zero_count[ci + 1] = non_zero_count_ds[ci_ds];
+        }
+      }
+    }
+    for (int r_ds = 0; r_ds < tx_h_ds; ++r_ds) {
+      for (int c = 0; c < tx_w; ++c) {
+        const int r = r_ds << 1;
+        const int ci = r * tx_w + c;
+        if (r + 2 < tx_h) {
+          uint32_t count = non_zero_count[ci] + non_zero_count[ci + 2 * tx_w];
+          count = ROUND_POWER_OF_TWO(count, 1);
+          count = clamp64(count, 0, block_num);
+          non_zero_count[ci + tx_w] = count;
+        } else {
+          non_zero_count[ci + tx_w] = non_zero_count[ci];
+        }
       }
     }
   } else if (tx_w > 8 && tx_h <= 8) {
@@ -6695,10 +6710,16 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
         const int r = r_ds;
         const int c = c_ds << 1;
         const int ci = r * tx_w + c;
-        uint32_t count = ROUND_POWER_OF_TWO(non_zero_count_ds[ci_ds], 1);
-        count = clamp64(count, 0, block_num);
-        non_zero_count[ci] = count;
-        non_zero_count[ci + 1] = count;
+        non_zero_count[ci] = non_zero_count_ds[ci_ds];
+        if (c_ds + 1 < tx_w_ds) {
+          uint32_t count =
+              non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + 1];
+          count = ROUND_POWER_OF_TWO(count, 1);
+          count = clamp64(count, 0, block_num);
+          non_zero_count[ci + 1] = count;
+        } else {
+          non_zero_count[ci + 1] = non_zero_count_ds[ci_ds];
+        }
       }
     }
   } else if (tx_w <= 8 && tx_h > 8) {
@@ -6710,10 +6731,16 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
         const int r = r_ds << 1;
         const int c = c_ds;
         const int ci = r * tx_w + c;
-        uint32_t count = ROUND_POWER_OF_TWO(non_zero_count_ds[ci_ds], 1);
-        count = clamp64(count, 0, block_num);
-        non_zero_count[ci] = count;
-        non_zero_count[ci + tx_w] = count;
+        non_zero_count[ci] = non_zero_count_ds[ci_ds];
+        if (r_ds + 1 < tx_h_ds) {
+          uint32_t count =
+              non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + tx_w_ds];
+          count = ROUND_POWER_OF_TWO(count, 1);
+          count = clamp64(count, 0, block_num);
+          non_zero_count[ci + tx_w] = count;
+        } else {
+          non_zero_count[ci + tx_w] = non_zero_count_ds[ci_ds];
+        }
       }
     }
   } else {
