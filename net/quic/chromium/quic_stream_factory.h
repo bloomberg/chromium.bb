@@ -101,6 +101,15 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_MAX
 };
 
+enum QuicPlatformNotification {
+  NETWORK_CONNECTED,
+  NETWORK_MADE_DEFAULT,
+  NETWORK_DISCONNECTED,
+  NETWORK_SOON_TO_DISCONNECT,
+  NETWORK_IP_ADDRESS_CHANGED,
+  NETWORK_NOTIFICATION_MAX
+};
+
 // Encapsulates a pending request for a QuicHttpStream.
 // If the request is still pending when it is destroyed, it will
 // cancel the request with the factory.

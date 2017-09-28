@@ -181,6 +181,12 @@ void HistogramMigrationStatus(enum QuicConnectionMigrationStatus status) {
                             MIGRATION_STATUS_MAX);
 }
 
+void LogPlatformNotificationInHistogram(
+    enum QuicPlatformNotification notification) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PlatformNotification",
+                            notification, NETWORK_NOTIFICATION_MAX);
+}
+
 void SetInitialRttEstimate(base::TimeDelta estimate,
                            enum InitialRttEstimateSource source,
                            QuicConfig* config) {
@@ -1170,6 +1176,7 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
+  LogPlatformNotificationInHistogram(NETWORK_IP_ADDRESS_CHANGED);
   // Do nothing if connection migration is in use.
   if (migrate_sessions_on_network_change_)
     return;
@@ -1178,6 +1185,7 @@ void QuicStreamFactory::OnIPAddressChanged() {
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
+  LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
   if (!migrate_sessions_on_network_change_)
     return;
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
@@ -1192,6 +1200,7 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 }
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
+  LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
   if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
     if (most_recent_network_disconnected_timestamp_ != base::TimeTicks()) {
       // NetworkDiscconected happens before NetworkMadeDefault, the platform
@@ -1225,6 +1234,7 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 }
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
+  LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
   if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
     most_recent_network_disconnected_timestamp_ = base::TimeTicks::Now();
     base::TimeDelta degrading_duration =
@@ -1247,7 +1257,9 @@ void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
 
 // This method is expected to only be called when migrating from Cellular to
 // WiFi on Android, and should always be preceded by OnNetworkMadeDefault().
-void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {}
+void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {
+  LogPlatformNotificationInHistogram(NETWORK_SOON_TO_DISCONNECT);
+}
 
 NetworkHandle QuicStreamFactory::FindAlternateNetwork(
     NetworkHandle old_network) {
