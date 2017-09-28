@@ -67,16 +67,6 @@
 
 #include "ftglue.h"
 
-#if HAVE_WARNING_CPP_DIRECTIVE
-#if !HAVE_FT_GET_BDF_PROPERTY
-#warning "No FT_Get_BDF_Property: Please install freetype 2.1.4 or later"
-#endif
-
-#if !HAVE_FT_GET_PS_FONT_INFO
-#warning "No FT_Get_PS_Font_Info: Please install freetype 2.1.1 or later"
-#endif
-#endif
-
 /*
  * Keep Han languages separated by eliminating languages
  * that the codePageRange bits says aren't supported
@@ -386,12 +376,7 @@ static const FcFtLanguage   fcFtLanguage[] = {
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LATVIAN_LATVIA,		"lv" },
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_LITHUANIAN_LITHUANIA,	"lt" },
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_CLASSIC_LITHUANIAN_LITHUANIA,"lt" },
-
-#ifdef TT_MS_LANGID_MAORI_NEW_ZELAND
-    /* this seems to be an error that have been dropped */
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_MAORI_NEW_ZEALAND,		"mi" },
-#endif
-
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_FARSI_IRAN,		"fa" },
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_VIETNAMESE_VIET_NAM,	"vi" },
  {  TT_PLATFORM_MICROSOFT,	TT_MS_LANGID_ARMENIAN_ARMENIA,		"hy" },
@@ -1112,11 +1097,7 @@ FcGetPixelSize (FT_Face face, int i)
 	    return (double) prop.u.integer;
     }
 #endif
-#if HAVE_FT_BITMAP_SIZE_Y_PPEM
     return (double) face->available_sizes[i].y_ppem / 64.0;
-#else
-    return (double) face->available_sizes[i].height;
-#endif
 }
 
 static FcBool
@@ -1141,16 +1122,12 @@ static const FT_UShort platform_order[] = {
 #define NUM_PLATFORM_ORDER (sizeof (platform_order) / sizeof (platform_order[0]))
 
 static const FT_UShort nameid_order[] = {
-#ifdef TT_NAME_ID_WWS_FAMILY
     TT_NAME_ID_WWS_FAMILY,
-#endif
     TT_NAME_ID_PREFERRED_FAMILY,
     TT_NAME_ID_FONT_FAMILY,
     TT_NAME_ID_MAC_FULL_NAME,
     TT_NAME_ID_FULL_NAME,
-#ifdef TT_NAME_ID_WWS_SUBFAMILY
     TT_NAME_ID_WWS_SUBFAMILY,
-#endif
     TT_NAME_ID_PREFERRED_SUBFAMILY,
     TT_NAME_ID_FONT_SUBFAMILY,
     TT_NAME_ID_TRADEMARK,
@@ -1252,11 +1229,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	if (!FcPatternAddBool (pat, FC_OUTLINE, has_outline))
 	    goto bail1;
 
-#ifdef FT_FACE_FLAG_COLOR
 	has_color = !!(face->face_flags & FT_FACE_FLAG_COLOR);
 	if (!FcPatternAddBool (pat, FC_COLOR, has_color))
 	    goto bail1;
-#endif
 
 	/* All color fonts are designed to be scaled, even if they only have
 	 * bitmap strikes.  Client is responsible to scale the bitmaps.  This
@@ -1430,9 +1405,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		continue;
 
 	    switch (nameid) {
-#ifdef TT_NAME_ID_WWS_FAMILY
 	    case TT_NAME_ID_WWS_FAMILY:
-#endif
 	    case TT_NAME_ID_PREFERRED_FAMILY:
 	    case TT_NAME_ID_FONT_FAMILY:
 #if 0	
@@ -1460,9 +1433,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		np = &nfullname;
 		nlangp = &nfullname_lang;
 		break;
-#ifdef TT_NAME_ID_WWS_SUBFAMILY
 	    case TT_NAME_ID_WWS_SUBFAMILY:
-#endif
 	    case TT_NAME_ID_PREFERRED_SUBFAMILY:
 	    case TT_NAME_ID_FONT_SUBFAMILY:
 		if (variable)
@@ -1758,7 +1729,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	free (complex_);
     }
 
-#if defined (HAVE_TT_OS2_USUPPEROPTICALPOINTSIZE) && defined (HAVE_TT_OS2_USLOWEROPTICALPOINTSIZE)
     if (!variable_size && os2 && os2->version >= 0x0005 && os2->version != 0xffff)
     {
 	double lower_size, upper_size;
@@ -1784,7 +1754,6 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	    FcRangeDestroy (r);
 	}
     }
-#endif
 
     /*
      * Type 1: Check for FontInfo dictionary information
@@ -2218,16 +2187,6 @@ bail:
 }
 
 
-/*
- * For our purposes, this approximation is sufficient
- */
-#if !HAVE_FT_GET_NEXT_CHAR
-#define FT_Get_Next_Char(face, ucs4, gi) ((ucs4) >= 0xffffff ? \
-					  (*(gi) = 0), 0 : \
-					  (*(gi) = 1), (ucs4) + 1)
-#warning "No FT_Get_Next_Char: Please install freetype version 2.1.0 or newer"
-#endif
-
 static const FT_Encoding fcFontEncodings[] = {
     FT_ENCODING_UNICODE,
     FT_ENCODING_MS_SYMBOL
@@ -2317,7 +2276,6 @@ FcFreeTypeSpacing (FT_Face face)
     if (face->face_flags & FT_FACE_FLAG_SCALABLE)
 	load_flags |= FT_LOAD_NO_BITMAP;
 
-#if HAVE_FT_SELECT_SIZE
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE) &&
 	face->num_fixed_sizes > 0 &&
 	FT_Get_Sfnt_Table (face, ft_sfnt_head))
@@ -2333,7 +2291,6 @@ FcFreeTypeSpacing (FT_Face face)
 
 	FT_Select_Size (face, strike_index);
     }
-#endif
 
     for (o = 0; o < NUM_DECODE; o++)
     {
