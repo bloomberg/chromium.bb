@@ -202,6 +202,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
   FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest,
+                           LocationInBackingAndSelectionVisualRect);
   friend class VisualRectMappingTest;
   WTF_MAKE_NONCOPYABLE(LayoutObject);
 
@@ -1753,7 +1755,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
         layout_object_.EnsureRarePaintData().SetLocationInBacking(p);
     }
     void SetSelectionVisualRect(const LayoutRect& r) {
-      layout_object_.EnsureRarePaintData().SetSelectionVisualRect(r);
+      if (layout_object_.GetRarePaintData() || !r.IsEmpty())
+        layout_object_.EnsureRarePaintData().SetSelectionVisualRect(r);
     }
 
     void SetPreviousBackgroundObscured(bool b) {

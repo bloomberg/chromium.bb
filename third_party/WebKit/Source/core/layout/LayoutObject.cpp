@@ -1182,8 +1182,10 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 
 void LayoutObject::ClearPreviousVisualRects() {
   SetVisualRect(LayoutRect());
-  if (rare_paint_data_)
+  if (rare_paint_data_) {
     rare_paint_data_->SetLocationInBacking(LayoutPoint());
+    rare_paint_data_->SetSelectionVisualRect(LayoutRect());
+  }
   // Ensure check paint invalidation of subtree that would be triggered by
   // location change if we had valid previous location.
   SetMayNeedPaintInvalidationSubtree();
