@@ -11,6 +11,11 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
+#include "net/base/host_port_pair.h"
+
+namespace net {
+class IPEndPoint;
+}  // namespace net
 
 namespace chromeos {
 
@@ -125,6 +130,18 @@ class CHROMEOS_EXPORT Printer {
   // IPP Everywhere.  Computed using information from |ppd_reference_| and
   // |uri_|.
   bool IsIppEverywhere() const;
+
+  // Returns true if |effective_uri_| needs to be computed before the pritner
+  // can be installed.
+  bool RequiresIpResolution() const;
+
+  // Returns the hostname and port for |uri_|.  Assumes that the uri is
+  // well formed.  Returns an empty string if |uri_| is not set.
+  net::HostPortPair GetHostAndPort() const;
+
+  // Returns the |uri_| with the host and port replaced with |ip|.  Returns an
+  // empty string if |uri_| is empty.
+  std::string ReplaceHostAndPort(const net::IPEndPoint& ip) const;
 
   // Returns the printer protocol the printer is configured with.
   Printer::PrinterProtocol GetProtocol() const;

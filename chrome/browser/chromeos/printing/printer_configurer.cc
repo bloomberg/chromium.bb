@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
+#include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -26,6 +27,8 @@
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 
 const std::map<const std::string, const std::string>&
@@ -58,7 +61,9 @@ std::string URIForCups(const Printer& printer) {
 class PrinterConfigurerImpl : public PrinterConfigurer {
  public:
   explicit PrinterConfigurerImpl(Profile* profile)
-      : ppd_provider_(CreatePpdProvider(profile)), weak_factory_(this) {}
+      : endpoint_resolver_(new local_discovery::EndpointResolver()),
+        ppd_provider_(CreatePpdProvider(profile)),
+        weak_factory_(this) {}
 
   PrinterConfigurerImpl(const PrinterConfigurerImpl&) = delete;
   PrinterConfigurerImpl& operator=(const PrinterConfigurerImpl&) = delete;
@@ -71,6 +76,25 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     DCHECK(!printer.id().empty());
     DCHECK(!printer.uri().empty());
 
+    if (!printer.RequiresIpResolution()) {
+      StartConfiguration(printer, callback);
+      return;
+    }
+
+    auto printer_copy = base::MakeUnique<Printer>(printer);
+    // Resolve the uri to an ip with a mutable copy of the printer.
+    endpoint_resolver_->Start(
+        printer.GetHostAndPort(),
+        base::Bind(&PrinterConfigurerImpl::OnIpResolved,
+                   weak_factory_.GetWeakPtr(), base::Passed(&printer_copy),
+                   callback));
+  }
+
+ private:
+  // Run installation for a printer with a resolved uri.  |callback| is called
+  // with the result of the setup when it is complete.
+  void StartConfiguration(const Printer& printer,
+                          const PrinterSetupCallback& callback) {
     if (!printer.IsIppEverywhere()) {
       ppd_provider_->ResolvePpd(
           printer.ppd_reference(),
@@ -88,7 +112,25 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                    weak_factory_.GetWeakPtr(), callback));
   }
 
- private:
+  // Callback for when the IP for a zeroconf printer has been resolved.  If the
+  // request was successful, sets the |effective_uri| on |printer| with
+  // |endpoint| then continues setup. |cb| is called with a result reporting the
+  // success or failure of the setup operation, eventually.
+  void OnIpResolved(std::unique_ptr<Printer> printer,
+                    const PrinterSetupCallback& cb,
+                    const net::IPEndPoint& endpoint) {
+    if (!endpoint.address().IsValid()) {
+      // |endpoint| does not have a valid address. Address was not resolved.
+      cb.Run(kPrinterUnreachable);
+      return;
+    }
+
+    std::string effective_uri = printer->ReplaceHostAndPort(endpoint);
+    printer->set_effective_uri(effective_uri);
+
+    StartConfiguration(*printer, cb);
+  }
+
   void OnAddedPrinter(const Printer& printer,
                       const PrinterSetupCallback& cb,
                       int32_t result_code) {
@@ -219,6 +261,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     }
   }
 
+  std::unique_ptr<local_discovery::EndpointResolver> endpoint_resolver_;
   scoped_refptr<PpdProvider> ppd_provider_;
   base::WeakPtrFactory<PrinterConfigurerImpl> weak_factory_;
 };
