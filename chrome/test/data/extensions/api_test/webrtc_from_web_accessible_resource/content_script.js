@@ -5,4 +5,5 @@
 var iframe = document.createElement('iframe');
 iframe.src = chrome.runtime.getURL(
     'iframe_content.html' + document.location.search);
+iframe.allow = 'microphone';
 document.body.appendChild(iframe);

@@ -161,7 +161,8 @@ TEST_F(PermissionServiceImplTest, HasPermissionWithFeaturePolicy) {
   // Ensure that the policy is ignored if kUseFeaturePolicyForPermissions is
   // disabled.
   base::test::ScopedFeatureList empty_feature_list;
-  empty_feature_list.Init();
+  empty_feature_list.InitAndDisableFeature(
+      features::kUseFeaturePolicyForPermissions);
   EXPECT_EQ(PermissionStatus::GRANTED, HasPermission(PermissionName::MIDI));
 }
 

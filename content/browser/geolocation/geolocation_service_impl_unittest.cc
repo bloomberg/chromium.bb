@@ -18,6 +18,7 @@
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
 
 using base::test::ScopedFeatureList;
 using blink::mojom::PermissionStatus;
@@ -90,7 +91,13 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     permission_manager_.reset(new TestPermissionManager);
   }
 
-  void CreateEmbeddedFrameAndGeolocationService() {
+  void CreateEmbeddedFrameAndGeolocationService(bool allow_via_feature_policy) {
+    if (allow_via_feature_policy) {
+      RenderFrameHostTester::For(main_rfh())
+          ->SimulateFeaturePolicyHeader(
+              blink::WebFeaturePolicyFeature::kGeolocation,
+              std::vector<url::Origin>{url::Origin(kEmbeddedUrl)});
+    }
     RenderFrameHost* embedded_rfh =
         RenderFrameHostTester::For(main_rfh())->AppendChild("");
     RenderFrameHostTester::For(embedded_rfh)->InitializeRenderFrameIfNeeded();
@@ -130,7 +137,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
   ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(
       features::kUseFeaturePolicyForPermissions.name, std::string());
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/false);
 
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& callback) {
@@ -157,10 +164,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
   ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(
       features::kUseFeaturePolicyForPermissions.name, std::string());
-  main_test_rfh()->SimulateFeaturePolicyHeader(
-      blink::WebFeaturePolicyFeature::kGeolocation,
-      {url::Origin(kEmbeddedUrl)});
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
 
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& callback) {
@@ -188,7 +192,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& callback) {
         callback.Run(PermissionStatus::GRANTED);
@@ -215,7 +219,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionDeniedSync) {
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& callback) {
         callback.Run(PermissionStatus::DENIED);
@@ -237,7 +241,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedSync) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestId(42);
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& permission_callback) {
@@ -270,7 +274,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
 }
 
 TEST_F(GeolocationServiceTest, PermissionDeniedAsync) {
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestId(42);
   permission_manager()->SetRequestCallback(
       base::Bind([](const PermissionCallback& permission_callback) {
@@ -298,7 +302,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedAsync) {
 }
 
 TEST_F(GeolocationServiceTest, ServiceClosedBeforePermissionResponse) {
-  CreateEmbeddedFrameAndGeolocationService();
+  CreateEmbeddedFrameAndGeolocationService(/*allow_via_feature_policy=*/true);
   permission_manager()->SetRequestId(42);
   GeolocationPtr geolocation;
   service()->CreateGeolocation(mojo::MakeRequest(&geolocation), true);

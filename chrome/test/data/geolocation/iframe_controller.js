@@ -12,6 +12,7 @@ function getIFrameSrc(iframe_id) {
 function addIFrame(iframe_id, iframe_src) {
   var id = 'iframe_' + iframe_id;
   var iframe = document.getElementById(id);
+  iframe.allow = 'geolocation';
   if (iframe_src) {
     iframe.src = iframe_src;
   } else {

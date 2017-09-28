@@ -94,7 +94,7 @@ class PermissionContextBaseFeaturePolicyTest
 TEST_F(PermissionContextBaseFeaturePolicyTest, FeatureDisabled) {
   // Disable the feature.
   base::test::ScopedFeatureList feature_list;
-  feature_list.Init();
+  feature_list.InitAndDisableFeature(features::kUseFeaturePolicyForPermissions);
 
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
 
