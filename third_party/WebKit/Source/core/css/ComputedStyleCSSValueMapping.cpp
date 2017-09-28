@@ -1455,12 +1455,13 @@ static CSSValue* ValueForAnimationTimingFunction(
     const CSSTimingData* timing_data) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   if (timing_data) {
-    for (size_t i = 0; i < timing_data->TimingFunctionList().size(); ++i)
+    for (size_t i = 0; i < timing_data->TimingFunctionList().size(); ++i) {
       list->Append(*CreateTimingFunctionValue(
-          timing_data->TimingFunctionList()[i].Get()));
+          timing_data->TimingFunctionList()[i].get()));
+    }
   } else {
     list->Append(*CreateTimingFunctionValue(
-        CSSTimingData::InitialTimingFunction().Get()));
+        CSSTimingData::InitialTimingFunction().get()));
   }
   return list;
 }
@@ -3233,7 +3234,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           list->Append(*CreateTimingFunctionValue(
               CSSTimingData::GetRepeated(animation_data->TimingFunctionList(),
                                          i)
-                  .Get()));
+                  .get()));
           list->Append(*CSSPrimitiveValue::Create(
               CSSTimingData::GetRepeated(animation_data->DelayList(), i),
               CSSPrimitiveValue::UnitType::kSeconds));
@@ -3258,7 +3259,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           *CSSPrimitiveValue::Create(CSSAnimationData::InitialDuration(),
                                      CSSPrimitiveValue::UnitType::kSeconds));
       list->Append(*CreateTimingFunctionValue(
-          CSSAnimationData::InitialTimingFunction().Get()));
+          CSSAnimationData::InitialTimingFunction().get()));
       list->Append(
           *CSSPrimitiveValue::Create(CSSAnimationData::InitialDelay(),
                                      CSSPrimitiveValue::UnitType::kSeconds));
@@ -3432,7 +3433,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           list->Append(*CreateTimingFunctionValue(
               CSSTimingData::GetRepeated(transition_data->TimingFunctionList(),
                                          i)
-                  .Get()));
+                  .get()));
           list->Append(*CSSPrimitiveValue::Create(
               CSSTimingData::GetRepeated(transition_data->DelayList(), i),
               CSSPrimitiveValue::UnitType::kSeconds));
@@ -3448,7 +3449,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           *CSSPrimitiveValue::Create(CSSTransitionData::InitialDuration(),
                                      CSSPrimitiveValue::UnitType::kSeconds));
       list->Append(*CreateTimingFunctionValue(
-          CSSTransitionData::InitialTimingFunction().Get()));
+          CSSTransitionData::InitialTimingFunction().get()));
       list->Append(
           *CSSPrimitiveValue::Create(CSSTransitionData::InitialDelay(),
                                      CSSPrimitiveValue::UnitType::kSeconds));

@@ -240,12 +240,12 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
   }
 
   DescendantInvalidationSet* SiblingDescendants() const {
-    return sibling_descendant_invalidation_set_.Get();
+    return sibling_descendant_invalidation_set_.get();
   }
   DescendantInvalidationSet& EnsureSiblingDescendants();
 
   DescendantInvalidationSet* Descendants() const {
-    return descendant_invalidation_set_.Get();
+    return descendant_invalidation_set_.get();
   }
   DescendantInvalidationSet& EnsureDescendants();
 

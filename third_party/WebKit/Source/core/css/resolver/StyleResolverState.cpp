@@ -83,7 +83,7 @@ void StyleResolverState::SetStyle(RefPtr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(
-      style_.Get(), RootElementStyle(), GetDocument().GetLayoutViewItem(),
+      style_.get(), RootElementStyle(), GetDocument().GetLayoutViewItem(),
       style_->EffectiveZoom());
 }
 

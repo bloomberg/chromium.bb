@@ -226,7 +226,7 @@ InvalidationSet& StoredInvalidationSet(
 
   RefPtr<InvalidationSet> descendants = invalidation_set;
   invalidation_set = SiblingInvalidationSet::Create(
-      ToDescendantInvalidationSet(descendants.Get()));
+      ToDescendantInvalidationSet(descendants.get()));
   return *invalidation_set;
 }
 
@@ -955,7 +955,7 @@ void RuleFeatureSet::CollectInvalidationSetsForClass(
 
   DescendantInvalidationSet* descendants;
   SiblingInvalidationSet* siblings;
-  ExtractInvalidationSets(it->value.Get(), descendants, siblings);
+  ExtractInvalidationSets(it->value.get(), descendants, siblings);
 
   if (descendants) {
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *descendants, ClassChange,
@@ -980,7 +980,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForClass(
   if (it == class_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.Get();
+  InvalidationSet* invalidation_set = it->value.get();
   if (invalidation_set->GetType() == kInvalidateDescendants)
     return;
 
@@ -1004,7 +1004,7 @@ void RuleFeatureSet::CollectInvalidationSetsForId(
 
   DescendantInvalidationSet* descendants;
   SiblingInvalidationSet* siblings;
-  ExtractInvalidationSets(it->value.Get(), descendants, siblings);
+  ExtractInvalidationSets(it->value.get(), descendants, siblings);
 
   if (descendants) {
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *descendants, IdChange, id);
@@ -1026,7 +1026,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForId(
   if (it == id_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.Get();
+  InvalidationSet* invalidation_set = it->value.get();
   if (invalidation_set->GetType() == kInvalidateDescendants)
     return;
 
@@ -1050,7 +1050,7 @@ void RuleFeatureSet::CollectInvalidationSetsForAttribute(
 
   DescendantInvalidationSet* descendants;
   SiblingInvalidationSet* siblings;
-  ExtractInvalidationSets(it->value.Get(), descendants, siblings);
+  ExtractInvalidationSets(it->value.get(), descendants, siblings);
 
   if (descendants) {
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *descendants, AttributeChange,
@@ -1075,7 +1075,7 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForAttribute(
   if (it == attribute_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.Get();
+  InvalidationSet* invalidation_set = it->value.get();
   if (invalidation_set->GetType() == kInvalidateDescendants)
     return;
 
@@ -1100,7 +1100,7 @@ void RuleFeatureSet::CollectInvalidationSetsForPseudoClass(
 
   DescendantInvalidationSet* descendants;
   SiblingInvalidationSet* siblings;
-  ExtractInvalidationSets(it->value.Get(), descendants, siblings);
+  ExtractInvalidationSets(it->value.get(), descendants, siblings);
 
   if (descendants) {
     TRACE_SCHEDULE_STYLE_INVALIDATION(element, *descendants, PseudoChange,

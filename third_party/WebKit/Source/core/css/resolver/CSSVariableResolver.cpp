@@ -72,7 +72,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
       ResolveCustomProperty(name, *variable_data, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
-    return new_variable_data.Get();
+    return new_variable_data.get();
   }
 
   const CSSValue* parsed_value = nullptr;
@@ -90,7 +90,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   }
   if (!new_variable_data)
     return registration->InitialVariableData();
-  return new_variable_data.Get();
+  return new_variable_data.get();
 }
 
 RefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(

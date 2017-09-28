@@ -32,7 +32,7 @@ RefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
   RefPtr<SimpleFontData> font_data = FontCache::GetFontCache()->GetFontData(
       description_without_styling, font_name_,
       AlternateFontName::kLocalUniqueFace);
-  histograms_.Record(font_data.Get());
+  histograms_.Record(font_data.get());
   return font_data;
 }
 

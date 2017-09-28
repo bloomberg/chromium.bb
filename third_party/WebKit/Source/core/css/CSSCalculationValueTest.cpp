@@ -79,7 +79,7 @@ bool LengthArraysEqual(CSSLengthArray& a, CSSLengthArray& b) {
 TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   style->SetEffectiveZoom(5);
-  CSSToLengthConversionData conversion_data(style.Get(), style.Get(),
+  CSSToLengthConversionData conversion_data(style.get(), style.get(),
                                             LayoutViewItem(nullptr),
                                             style->EffectiveZoom());
 

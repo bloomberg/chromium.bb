@@ -479,7 +479,7 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   style->GetFont().Update(style->GetFont().GetFontSelector());
 
   GetDocument()->UpdateActiveStyle();
-  GetDocument()->EnsureStyleResolver().ComputeFont(style.Get(), *parsed_style);
+  GetDocument()->EnsureStyleResolver().ComputeFont(style.get(), *parsed_style);
 
   font = style->GetFont();
   font.Update(GetDocument()->GetStyleEngine().GetFontSelector());

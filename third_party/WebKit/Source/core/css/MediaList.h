@@ -96,7 +96,7 @@ class MediaList final : public GarbageCollectedFinalized<MediaList>,
   CSSRule* ParentRule() const { return parent_rule_; }
   CSSStyleSheet* ParentStyleSheet() const { return parent_style_sheet_; }
 
-  const MediaQuerySet* Queries() const { return media_queries_.Get(); }
+  const MediaQuerySet* Queries() const { return media_queries_.get(); }
 
   void Reattach(RefPtr<MediaQuerySet>);
 

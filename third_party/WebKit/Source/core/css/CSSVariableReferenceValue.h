@@ -19,7 +19,7 @@ class CSSVariableReferenceValue : public CSSValue {
     return new CSSVariableReferenceValue(std::move(data), context);
   }
 
-  CSSVariableData* VariableDataValue() const { return data_.Get(); }
+  CSSVariableData* VariableDataValue() const { return data_.get(); }
   const CSSParserContext* ParserContext() const {
     return parser_context_.Get();
   }
