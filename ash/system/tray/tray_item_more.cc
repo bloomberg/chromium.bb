@@ -47,10 +47,6 @@ void TrayItemMore::SetImage(const gfx::ImageSkia& image_skia) {
   SchedulePaint();
 }
 
-void TrayItemMore::SetAccessibleName(const base::string16& name) {
-  accessible_name_ = name;
-}
-
 std::unique_ptr<TrayPopupItemStyle> TrayItemMore::CreateStyle() const {
   std::unique_ptr<TrayPopupItemStyle> style = HandleCreateStyle();
   if (!enabled())
@@ -75,8 +71,8 @@ bool TrayItemMore::PerformAction(const ui::Event& event) {
 
 void TrayItemMore::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
-  if (!accessible_name_.empty())
-    node_data->SetName(accessible_name_);
+  if (!accessible_name().empty())
+    node_data->SetName(accessible_name());
 }
 
 void TrayItemMore::OnEnabledChanged() {

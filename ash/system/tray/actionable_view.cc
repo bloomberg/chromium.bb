@@ -62,13 +62,9 @@ bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
   return Button::OnKeyPressed(event);
 }
 
-void ActionableView::SetAccessibleName(const base::string16& name) {
-  accessible_name_ = name;
-}
-
 void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
-  node_data->SetName(accessible_name_);
+  node_data->SetName(accessible_name());
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {

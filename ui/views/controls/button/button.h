@@ -86,6 +86,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_tag(int tag) { tag_ = tag; }
 
   void SetAccessibleName(const base::string16& name);
+  const base::string16& accessible_name() const { return accessible_name_; }
 
   // Get/sets the current display state of the button.
   ButtonState state() const { return state_; }
