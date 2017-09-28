@@ -93,9 +93,9 @@ std::string EncodePageHeader(const BitmapImage& image,
   base::WriteBigEndian<uint32_t>(header + kHeaderCupsDuplex,
                                  pwg_header_info.duplex ? 1 : 0);
   base::WriteBigEndian<uint32_t>(header + kHeaderCupsHwResolutionHorizontal,
-                                 pwg_header_info.dpi);
+                                 pwg_header_info.dpi.width());
   base::WriteBigEndian<uint32_t>(header + kHeaderCupsHwResolutionVertical,
-                                 pwg_header_info.dpi);
+                                 pwg_header_info.dpi.height());
   base::WriteBigEndian<uint32_t>(header + kHeaderCupsTumble,
                                  pwg_header_info.tumble ? 1 : 0);
   base::WriteBigEndian<uint32_t>(header + kHeaderCupsWidth,

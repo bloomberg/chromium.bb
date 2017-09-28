@@ -58,7 +58,7 @@ TEST(PwgRasterTest, Encode) {
   // Encode in color by default.
   std::unique_ptr<BitmapImage> image = MakeSampleBitmap();
   PwgHeaderInfo header_info;
-  header_info.dpi = kRasterDPI;
+  header_info.dpi = gfx::Size(kRasterDPI, kRasterDPI);
 
   std::string output = PwgEncoder::GetDocumentHeader();
   output += PwgEncoder::EncodePage(*image, header_info);
