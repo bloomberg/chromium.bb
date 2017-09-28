@@ -67,6 +67,11 @@ public final class CompositorAnimatorTest {
 
         @Override
         public void releaseTabLayout(int id) {}
+
+        @Override
+        public CompositorAnimationHandler getAnimationHandler() {
+            return null;
+        }
     }
 
     /** An animation update listener that counts calls to its methods. */
