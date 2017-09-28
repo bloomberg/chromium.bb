@@ -2268,7 +2268,7 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
   if (!root.NeedsLayout() || root.IsOutOfFlowPositioned() ||
       root.IsColumnSpanAll() ||
       !root.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
-      ToLayoutBox(root).IsGridItem())
+      ToLayoutBox(root).IsGridItem() || root.IsTablePart())
     return false;
 
   RemoveFloatingObjectsForSubtreeRoot(root);
