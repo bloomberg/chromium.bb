@@ -37,7 +37,7 @@ void TestPaymentRequest::ResetParsedPaymentMethodData() {
   PaymentRequest::ParsePaymentMethodData();
 }
 
-AddressNormalizer* TestPaymentRequest::GetAddressNormalizer() {
+autofill::AddressNormalizer* TestPaymentRequest::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 

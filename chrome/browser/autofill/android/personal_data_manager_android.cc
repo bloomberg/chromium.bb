@@ -282,7 +282,7 @@ class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
 };
 
 class AndroidAddressNormalizerDelegate
-    : public ::payments::AddressNormalizer::Delegate,
+    : public AddressNormalizer::Delegate,
       public base::SupportsWeakPtr<AndroidAddressNormalizerDelegate> {
  public:
   AndroidAddressNormalizerDelegate(

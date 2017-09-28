@@ -5,6 +5,7 @@
 #include "components/payments/content/payment_response_helper.h"
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
@@ -12,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
@@ -190,8 +192,8 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
 
     const std::string default_region_code =
         autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
-    payment_response->payer_phone =
-        data_util::FormatPhoneForResponse(original_number, default_region_code);
+    payment_response->payer_phone = autofill::i18n::FormatPhoneForResponse(
+        original_number, default_region_code);
   }
 
   delegate_->OnPaymentResponseReady(std::move(payment_response));

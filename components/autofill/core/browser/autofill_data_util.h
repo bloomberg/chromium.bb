@@ -9,9 +9,11 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
-#include "components/autofill/core/browser/autofill_profile.h"
 
 namespace autofill {
+
+class AutofillProfile;
+
 namespace data_util {
 
 struct NameParts {
@@ -65,6 +67,12 @@ const char* GetIssuerNetworkForBasicCardIssuerNetwork(
 // Returns whether the specified |country_code| is a valid country code.
 bool IsValidCountryCode(const std::string& country_code);
 bool IsValidCountryCode(const base::string16& country_code);
+
+// Returns a country code to be used when validating this profile. If the
+// profile has a valid country code set, it is returned. If not, a country code
+// associated with |app_locale| is used as a fallback.
+std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,
+                                       const std::string& app_locale);
 
 }  // namespace data_util
 }  // namespace autofill

@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
@@ -46,7 +47,7 @@ const size_t kInvalidCountryIndex = static_cast<size_t>(-1);
 // Used to normalize a profile in place and synchronously from an
 // AddressNormalizer that already loaded the normalization rules.
 class SynchronousAddressNormalizerDelegate
-    : public AddressNormalizer::Delegate {
+    : public autofill::AddressNormalizer::Delegate {
  public:
   // Doesn't take ownership of |profile_to_normalize| but does modify it.
   SynchronousAddressNormalizerDelegate(
@@ -106,7 +107,7 @@ ShippingAddressEditorViewController::GetFieldDefinitions() {
 base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
   if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
-    return data_util::GetFormattedPhoneNumberForDisplay(
+    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
         temporary_profile_, state()->GetApplicationLocale());
   }
 
@@ -294,7 +295,7 @@ base::string16
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
     const base::string16& text) {
   if (controller_->chosen_country_index_ < controller_->countries_.size()) {
-    return base::UTF8ToUTF16(data_util::FormatPhoneForDisplay(
+    return base::UTF8ToUTF16(autofill::i18n::FormatPhoneForDisplay(
         base::UTF16ToUTF8(text),
         controller_->countries_[controller_->chosen_country_index_].first));
   } else {

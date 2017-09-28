@@ -171,7 +171,7 @@ void PaymentRequest::DoFullCardRequest(
                                 resultDelegate:result_delegate];
 }
 
-AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
+autofill::AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
   return &address_normalizer_;
 }
 

@@ -12,9 +12,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/payments/core/address_normalizer_impl.h"
 #include "components/payments/core/subkey_requester.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
@@ -384,7 +384,7 @@ class PersonalDataManagerAndroid
   PersonalDataManager* personal_data_manager_;
 
   // The address validator used to normalize addresses.
-  payments::AddressNormalizerImpl address_normalizer_;
+  AddressNormalizerImpl address_normalizer_;
 
   // Used for subkey request.
   payments::SubKeyRequester subkey_requester_;

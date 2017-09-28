@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_IMPL_H_
-#define COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_IMPL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_IMPL_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -11,20 +11,18 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/payments/core/address_normalizer.h"
-
-namespace autofill {
-class AutofillProfile;
-}
+#include "components/autofill/core/browser/address_normalizer.h"
 
 namespace i18n {
 namespace addressinput {
 class Source;
 class Storage;
-}
-}
+}  // namespace addressinput
+}  // namespace i18n
 
-namespace payments {
+namespace autofill {
+
+class AutofillProfile;
 
 // A class used to normalize addresses.
 class AddressNormalizerImpl : public AddressNormalizer {
@@ -36,7 +34,7 @@ class AddressNormalizerImpl : public AddressNormalizer {
   // AddressNormalizer implementation.
   void LoadRulesForRegion(const std::string& region_code) override;
   bool AreRulesLoadedForRegion(const std::string& region_code) override;
-  void StartAddressNormalization(const autofill::AutofillProfile& profile,
+  void StartAddressNormalization(const AutofillProfile& profile,
                                  const std::string& region_code,
                                  int timeout_seconds,
                                  Delegate* requester) override;
@@ -52,11 +50,11 @@ class AddressNormalizerImpl : public AddressNormalizer {
       pending_normalization_;
 
   // The address validator used to normalize addresses.
-  autofill::AddressValidator address_validator_;
+  AddressValidator address_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressNormalizerImpl);
 };
 
-}  // namespace payments
+}  // namespace autofill
 
-#endif  // COMPONENTS_PAYMENTS_CORE_ADDRESS_NORMALIZER_IMPL_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_NORMALIZER_IMPL_H_

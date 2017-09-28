@@ -6,8 +6,8 @@
 #define IOS_CHROME_BROWSER_PAYMENTS_TEST_PAYMENT_REQUEST_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/payments/core/address_normalization_manager.h"
-#include "components/payments/core/test_address_normalizer.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 
 namespace autofill {
@@ -101,14 +101,14 @@ class TestPaymentRequest : public PaymentRequest {
   }
 
   // PaymentRequest
-  AddressNormalizer* GetAddressNormalizer() override;
+  autofill::AddressNormalizer* GetAddressNormalizer() override;
   AddressNormalizationManager* GetAddressNormalizationManager() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   PrefService* GetPrefService() override;
   PaymentsProfileComparator* profile_comparator() override;
 
  private:
-  TestAddressNormalizer address_normalizer_;
+  autofill::TestAddressNormalizer address_normalizer_;
   AddressNormalizationManager address_normalization_manager_;
 
   // Not owned and must outlive this object.

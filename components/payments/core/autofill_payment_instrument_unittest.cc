@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -15,7 +16,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/test_payment_request_delegate.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/url_request/url_request_test_util.h"
@@ -53,7 +53,7 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
   bool on_instrument_details_error_called_ = false;
 };
 
-class FakeAddressNormalizer : public AddressNormalizer {
+class FakeAddressNormalizer : public autofill::AddressNormalizer {
  public:
   FakeAddressNormalizer() {}
 
@@ -67,7 +67,7 @@ class FakeAddressNormalizer : public AddressNormalizer {
       const autofill::AutofillProfile& profile,
       const std::string& region_code,
       int timeout_seconds,
-      AddressNormalizer::Delegate* requester) override {
+      autofill::AddressNormalizer::Delegate* requester) override {
     profile_ = profile;
     requester_ = requester;
   }
@@ -81,7 +81,7 @@ class FakeAddressNormalizer : public AddressNormalizer {
 
  private:
   autofill::AutofillProfile profile_;
-  AddressNormalizer::Delegate* requester_;
+  autofill::AddressNormalizer::Delegate* requester_;
 };
 
 class FakePaymentRequestDelegate
@@ -126,7 +126,7 @@ class FakePaymentRequestDelegate
     full_card_result_delegate_ = result_delegate;
   }
 
-  AddressNormalizer* GetAddressNormalizer() override {
+  autofill::AddressNormalizer* GetAddressNormalizer() override {
     return &address_normalizer_;
   }
 

@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -136,10 +137,9 @@
 
 - (void)formatValueForEditorField:(EditorField*)field {
   if (field.autofillUIType == AutofillUITypeProfileHomePhoneWholeNumber) {
-    field.value =
-        base::SysUTF8ToNSString(payments::data_util::FormatPhoneForDisplay(
-            base::SysNSStringToUTF8(field.value),
-            base::SysNSStringToUTF8(self.selectedCountryCode)));
+    field.value = base::SysUTF8ToNSString(autofill::i18n::FormatPhoneForDisplay(
+        base::SysNSStringToUTF8(field.value),
+        base::SysNSStringToUTF8(self.selectedCountryCode)));
   }
 }
 
@@ -342,7 +342,7 @@
     NSString* value =
         self.address
             ? base::SysUTF16ToNSString(
-                  payments::data_util::GetFormattedPhoneNumberForDisplay(
+                  autofill::i18n::GetFormattedPhoneNumberForDisplay(
                       *self.address, _paymentRequest->GetApplicationLocale()))
             : nil;
     field = [[EditorField alloc]

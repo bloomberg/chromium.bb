@@ -298,7 +298,7 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // Start the normalization of the shipping address.
   // Use the country code from the profile if it is set, otherwise infer it
   // from the |app_locale_|.
-  std::string country_code = data_util::GetCountryCodeWithFallback(
+  std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
       selected_shipping_profile_, app_locale_);
   payment_request_delegate_->GetAddressNormalizer()->StartAddressNormalization(
       *selected_shipping_profile_, country_code, /*timeout_seconds=*/2, this);
@@ -331,7 +331,7 @@ bool PaymentRequestState::IsPaymentAppInvoked() const {
   return !!response_helper_;
 }
 
-AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
+autofill::AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
   return payment_request_delegate_->GetAddressNormalizer();
 }
 

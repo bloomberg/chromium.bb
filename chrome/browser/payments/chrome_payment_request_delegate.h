@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/payments/core/address_normalizer_impl.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/payments/core/payment_request_delegate.h"
 
 namespace content {
@@ -38,7 +38,7 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
-  AddressNormalizer* GetAddressNormalizer() override;
+  autofill::AddressNormalizer* GetAddressNormalizer() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
@@ -56,7 +56,7 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
   content::WebContents* web_contents_;
 
   // The address normalizer to use for the duration of the Payment Request.
-  AddressNormalizerImpl address_normalizer_;
+  autofill::AddressNormalizerImpl address_normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePaymentRequestDelegate);
 };

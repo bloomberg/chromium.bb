@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payment_instrument.h"
 
 namespace payments {
@@ -27,7 +27,7 @@ class PaymentRequestBaseDelegate;
 class AutofillPaymentInstrument
     : public PaymentInstrument,
       public autofill::payments::FullCardRequest::ResultDelegate,
-      public AddressNormalizer::Delegate {
+      public autofill::AddressNormalizer::Delegate {
  public:
   // |billing_profiles| is owned by the caller and should outlive this object.
   // |payment_request_delegate| must outlive this object.

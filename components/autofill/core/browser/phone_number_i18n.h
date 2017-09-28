@@ -20,6 +20,8 @@ class PhoneNumber;
 
 namespace autofill {
 
+class AutofillProfile;
+
 // Utilities to process, normalize and compare international phone numbers.
 namespace i18n {
 
@@ -67,6 +69,24 @@ bool PhoneNumbersMatch(const base::string16& number_a,
                        const base::string16& number_b,
                        const std::string& region,
                        const std::string& app_locale);
+
+// Returns the phone number from the given |profile| formatted for display.
+base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
+                                                 const std::string& locale);
+
+// Formats the given number |phone_number| to
+// i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL format
+// by using i18n::phonenumbers::PhoneNumberUtil::Format.
+std::string FormatPhoneForDisplay(const std::string& phone_number,
+                                  const std::string& country_code);
+
+// Formats the given number |phone_number| to
+// i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164 format by using
+// i18n::phonenumbers::PhoneNumberUtil::Format, as defined in the Payment
+// Request spec
+// (https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm)
+std::string FormatPhoneForResponse(const std::string& phone_number,
+                                   const std::string& country_code);
 
 // The cached phone number, does parsing only once, improves performance.
 class PhoneObject {

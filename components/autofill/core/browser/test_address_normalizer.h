@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_TEST_ADDRESS_NORMALIZER_H_
-#define COMPONENTS_PAYMENTS_CORE_TEST_ADDRESS_NORMALIZER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_ADDRESS_NORMALIZER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_ADDRESS_NORMALIZER_H_
 
-#include "components/payments/core/address_normalizer.h"
+#include <string>
 
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 
-namespace payments {
+namespace autofill {
 
 // A simpler version of the address normalizer to be used in tests. Can be set
 // to normalize instantaneously or to wait for a call.
@@ -22,7 +23,7 @@ class TestAddressNormalizer : public AddressNormalizer {
   bool AreRulesLoadedForRegion(const std::string& region_code) override;
 
   void StartAddressNormalization(
-      const autofill::AutofillProfile& profile,
+      const AutofillProfile& profile,
       const std::string& region_code,
       int timeout_seconds,
       AddressNormalizer::Delegate* requester) override;
@@ -35,12 +36,12 @@ class TestAddressNormalizer : public AddressNormalizer {
   void CompleteAddressNormalization();
 
  private:
-  autofill::AutofillProfile profile_;
+  AutofillProfile profile_;
   AddressNormalizer::Delegate* requester_;
 
   bool instantaneous_normalization_ = true;
 };
 
-}  // namespace payments
+}  // namespace autofill
 
-#endif  // COMPONENTS_PAYMENTS_CORE_TEST_ADDRESS_NORMALIZER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_ADDRESS_NORMALIZER_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/test_address_normalizer.h"
+#include "components/autofill/core/browser/test_address_normalizer.h"
 
-namespace payments {
+namespace autofill {
 
 bool TestAddressNormalizer::AreRulesLoadedForRegion(
     const std::string& region_code) {
@@ -12,7 +12,7 @@ bool TestAddressNormalizer::AreRulesLoadedForRegion(
 }
 
 void TestAddressNormalizer::StartAddressNormalization(
-    const autofill::AutofillProfile& profile,
+    const AutofillProfile& profile,
     const std::string& region_code,
     int timeout_seconds,
     AddressNormalizer::Delegate* requester) {
@@ -35,4 +35,4 @@ void TestAddressNormalizer::CompleteAddressNormalization() {
   requester_->OnAddressNormalized(profile_);
 }
 
-}  // namespace payments
+}  // namespace autofill
