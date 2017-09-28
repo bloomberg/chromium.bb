@@ -31,7 +31,10 @@ def main():
   parser.add_argument('--isolate-server', required=True, type=str)
   parser.add_argument('--batches', type=int, default=25,
                       help="Run xcode install in batches of size |batches|.")
+  parser.add_argument('--dimension', nargs=2, action='append')
   args = parser.parse_args()
+
+  args.dimension = args.dimension or []
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   tmp_dir = tempfile.mkdtemp(prefix='swarming_xcode')
@@ -54,12 +57,16 @@ def main():
     # swarming for iOS is fleshed out, likely removing xcode_version 9 and
     # adding different dimensions.
     luci_tools = os.path.join(luci_client, 'tools')
+    dimensions = [['pool', 'Chrome'], ['xcode_version', '9.0']] + args.dimension
+    dim_args = []
+    for d in dimensions:
+      dim_args += ['--dimension'] + d
     cmd = [
       sys.executable, os.path.join(luci_tools, 'run_on_bots.py'),
       '--swarming', args.swarming_server, '--isolate-server',
-      args.isolate_server, '--priority', '20', '--dimension', 'pool',
-      'Chrome', '--dimension', 'xcode_version', '9.0', '--batches',
-      args.batches, '--name', 'run_swarming_xcode_install', '--', isolate_hash,
+      args.isolate_server, '--priority', '20', '--batches', str(args.batches),
+      '--tags', 'name:run_swarming_xcode_install',
+    ] + dim_args + ['--name', 'run_swarming_xcode_install', '--', isolate_hash,
       'python', 'swarming_xcode_install.py',
     ]
     subprocess.check_call(cmd)
