@@ -99,7 +99,7 @@ def batched_subprocess(cmd, sem):
 
 
 def run_batches(
-    swarming_server, isolate_server, dimensions, env, priority, deadline,
+    swarming_server, isolate_server, dimensions, tags, env, priority, deadline,
     batches, repeat, isolated_hash, name, bots, args):
   """Runs the task |batches| at a time.
 
@@ -125,6 +125,8 @@ def run_batches(
       ]
       for k, v in sorted(dimensions.iteritems()):
         cmd.extend(('-d', k, v))
+      for t in sorted(tags):
+        cmd.extend(('--tags', t))
       for k, v in env:
         cmd.extend(('--env', k, v))
       if args:
@@ -136,7 +138,7 @@ def run_batches(
 
 
 def run_serial(
-    swarming_server, isolate_server, dimensions, env, priority, deadline,
+    swarming_server, isolate_server, dimensions, tags, env, priority, deadline,
     repeat, isolated_hash, name, bots, args):
   """Runs the task one at a time.
 
@@ -161,6 +163,8 @@ def run_serial(
       ]
       for k, v in sorted(dimensions.iteritems()):
         cmd.extend(('-d', k, v))
+      for t in sorted(tags):
+        cmd.extend(('--tags', t))
       for k, v in env:
         cmd.extend(('--env', k, v))
       if args:
@@ -204,6 +208,9 @@ def main():
   parser.add_option(
       '--batches', type='int', default=0,
       help='Runs a task in parallel |batches| at a time.')
+  parser.add_option(
+      '--tags', action='append', default=[], metavar='FOO:BAR',
+      help='Tags to assign to the task.')
   parser.add_option(
       '--repeat', type='int', default=1,
       help='Runs the task multiple time on each bot, meant to be used as a '
@@ -264,6 +271,7 @@ def main():
         options.swarming,
         options.isolate_server,
         options.dimensions,
+        options.tags,
         options.env,
         str(options.priority),
         str(options.deadline),
@@ -279,6 +287,7 @@ def main():
         options.swarming,
         options.isolate_server,
         options.dimensions,
+        options.tags,
         options.env,
         str(options.priority),
         str(options.deadline),
