@@ -2687,8 +2687,6 @@ if (use_v8_in_net) {
       "proxy/proxy_resolver_v8_tracing.h",
       "proxy/proxy_resolver_v8_tracing_wrapper.cc",
       "proxy/proxy_resolver_v8_tracing_wrapper.h",
-      "proxy/proxy_service_v8.cc",
-      "proxy/proxy_service_v8.h",
     ]
 
     defines = [ "NET_IMPLEMENTATION" ]
