@@ -309,8 +309,10 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
     guest_observer.Wait();
     content::Source<content::NavigationController> source =
         guest_observer.source();
-    EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->
-        IsForGuestsOnly());
+    EXPECT_TRUE(source->GetWebContents()
+                    ->GetMainFrame()
+                    ->GetProcess()
+                    ->IsForGuestsOnly());
 
     guest_web_contents_ = source->GetWebContents();
     embedder_web_contents_ =
@@ -1545,7 +1547,7 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, TextSelection) {
       guest_web_contents()->GetRenderWidgetHostView();
   ASSERT_TRUE(guest_rwhv);
   std::string selected_text = base::UTF16ToUTF8(guest_rwhv->GetSelectedText());
-  ASSERT_TRUE(selected_text.size() >= 10u);
+  ASSERT_GE(selected_text.size(), 10u);
   ASSERT_EQ("AAAAAAAAAA", selected_text.substr(0, 10));
 }
 
@@ -1564,7 +1566,7 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, WordLookup) {
 
   auto guest_message_filter =
       browser_client.GetTextInputClientMessageFilterForProcess(
-          guest_web_contents()->GetRenderProcessHost());
+          guest_web_contents()->GetMainFrame()->GetProcess());
   ASSERT_TRUE(guest_message_filter);
 
   // Lookup some string through context menu.
