@@ -59,15 +59,16 @@ bool IsCacheableNTP(const content::WebContents* contents) {
 }
 
 // Returns true if |contents| are rendered inside an Instant process.
-bool InInstantProcess(Profile* profile, content::WebContents* contents) {
+bool InInstantProcess(Profile* profile,
+                      const content::WebContents* contents) {
   if (!profile || !contents)
     return false;
 
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
   return instant_service &&
-         instant_service->IsInstantProcess(
-             contents->GetMainFrame()->GetProcess()->GetID());
+      instant_service->IsInstantProcess(
+          contents->GetRenderProcessHost()->GetID());
 }
 
 // Called when an NTP finishes loading. If the load start time was noted,

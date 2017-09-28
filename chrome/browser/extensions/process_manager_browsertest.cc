@@ -1001,9 +1001,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   EXPECT_FALSE(policy->HasSpecificPermissionForOrigin(
-      web_tab->GetMainFrame()->GetProcess()->GetID(), app_origin));
+      web_tab->GetRenderProcessHost()->GetID(), app_origin));
   EXPECT_TRUE(policy->HasSpecificPermissionForOrigin(
-      guest->GetMainFrame()->GetProcess()->GetID(), app_origin));
+      guest->GetRenderProcessHost()->GetID(), app_origin));
 
   // Try navigating the web tab to each nested URL with the app's origin.  This
   // should be blocked.
@@ -1126,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::WebContents* popup = OpenPopup(main_frame, popup_url);
   EXPECT_NE(popup, tab);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_NE(popup->GetMainFrame()->GetProcess(), main_frame->GetProcess());
+  EXPECT_NE(popup->GetRenderProcessHost(), main_frame->GetProcess());
 
   // Ensure the popup's window.opener is defined.
   bool is_opener_defined = false;
@@ -1174,8 +1174,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::WebContents* popup = OpenPopup(extension_frame, popup_url);
   EXPECT_NE(popup, tab);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_NE(popup->GetMainFrame()->GetProcess(), extension_frame->GetProcess());
-  EXPECT_EQ(popup->GetMainFrame()->GetProcess(), main_frame->GetProcess());
+  EXPECT_NE(popup->GetRenderProcessHost(), extension_frame->GetProcess());
+  EXPECT_EQ(popup->GetRenderProcessHost(), main_frame->GetProcess());
 
   // Ensure the popup's window.opener is defined.
   bool is_opener_defined = false;

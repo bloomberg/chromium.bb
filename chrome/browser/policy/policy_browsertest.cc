@@ -1202,8 +1202,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
                           safe_search == 0  // ForceGoogleSafeSearch
                               ? nullptr
                               : base::MakeUnique<base::Value>(safe_search == 1),
-                          nullptr,   // ForceYouTubeSafetyMode
-                          nullptr);  // ForceYouTubeRestrict
+                          nullptr,  // ForceYouTubeSafetyMode
+                          nullptr   // ForceYouTubeRestrict
+                          );
     // Verify that the safe search pref behaves the way we expect.
     PrefService* prefs = browser()->profile()->GetPrefs();
     EXPECT_EQ(safe_search != 0,
@@ -3203,7 +3204,7 @@ class MediaStreamDevicesControllerBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(request_url_,
               web_contents->GetMainFrame()->GetLastCommittedURL());
-    int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+    int render_process_id = web_contents->GetRenderProcessHost()->GetID();
     int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, request_url_.GetOrigin(), false,

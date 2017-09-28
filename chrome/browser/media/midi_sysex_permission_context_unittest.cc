@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/midi_sysex_permission_context.h"
-
-#include <string>
-
 #include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -16,7 +13,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -90,9 +86,9 @@ TEST_F(MidiSysexPermissionContextTests, TestInsecureRequestingUrl) {
   GURL url("http://www.example.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
 
-  const PermissionRequestID id(
-      web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(), -1);
+  const PermissionRequestID id(web_contents()->GetRenderProcessHost()->GetID(),
+                               web_contents()->GetMainFrame()->GetRoutingID(),
+                               -1);
   permission_context.RequestPermission(
       web_contents(), id, url, true,
       base::Bind(&TestPermissionContext::TrackPermissionDecision,

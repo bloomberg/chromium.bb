@@ -165,53 +165,26 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
 
   // Get tab processes.
   ASSERT_EQ(9, browser()->tab_strip_model()->count());
-  content::RenderProcessHost* isolated1_host = browser()
-                                                   ->tab_strip_model()
-                                                   ->GetWebContentsAt(0)
-                                                   ->GetMainFrame()
-                                                   ->GetProcess();
-  content::RenderProcessHost* ntp1_host = browser()
-                                              ->tab_strip_model()
-                                              ->GetWebContentsAt(1)
-                                              ->GetMainFrame()
-                                              ->GetProcess();
-  content::RenderProcessHost* hosted1_host = browser()
-                                                 ->tab_strip_model()
-                                                 ->GetWebContentsAt(2)
-                                                 ->GetMainFrame()
-                                                 ->GetProcess();
-  content::RenderProcessHost* web1_host = browser()
-                                              ->tab_strip_model()
-                                              ->GetWebContentsAt(3)
-                                              ->GetMainFrame()
-                                              ->GetProcess();
+  content::RenderProcessHost* isolated1_host =
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderProcessHost();
+  content::RenderProcessHost* ntp1_host =
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderProcessHost();
+  content::RenderProcessHost* hosted1_host =
+      browser()->tab_strip_model()->GetWebContentsAt(2)->GetRenderProcessHost();
+  content::RenderProcessHost* web1_host =
+      browser()->tab_strip_model()->GetWebContentsAt(3)->GetRenderProcessHost();
 
-  content::RenderProcessHost* isolated2_host = browser()
-                                                   ->tab_strip_model()
-                                                   ->GetWebContentsAt(4)
-                                                   ->GetMainFrame()
-                                                   ->GetProcess();
-  content::RenderProcessHost* ntp2_host = browser()
-                                              ->tab_strip_model()
-                                              ->GetWebContentsAt(5)
-                                              ->GetMainFrame()
-                                              ->GetProcess();
-  content::RenderProcessHost* hosted2_host = browser()
-                                                 ->tab_strip_model()
-                                                 ->GetWebContentsAt(6)
-                                                 ->GetMainFrame()
-                                                 ->GetProcess();
-  content::RenderProcessHost* web2_host = browser()
-                                              ->tab_strip_model()
-                                              ->GetWebContentsAt(7)
-                                              ->GetMainFrame()
-                                              ->GetProcess();
+  content::RenderProcessHost* isolated2_host =
+      browser()->tab_strip_model()->GetWebContentsAt(4)->GetRenderProcessHost();
+  content::RenderProcessHost* ntp2_host =
+      browser()->tab_strip_model()->GetWebContentsAt(5)->GetRenderProcessHost();
+  content::RenderProcessHost* hosted2_host =
+      browser()->tab_strip_model()->GetWebContentsAt(6)->GetRenderProcessHost();
+  content::RenderProcessHost* web2_host =
+      browser()->tab_strip_model()->GetWebContentsAt(7)->GetRenderProcessHost();
 
-  content::RenderProcessHost* second_isolated1_host = browser()
-                                                          ->tab_strip_model()
-                                                          ->GetWebContentsAt(8)
-                                                          ->GetMainFrame()
-                                                          ->GetProcess();
+  content::RenderProcessHost* second_isolated1_host =
+      browser()->tab_strip_model()->GetWebContentsAt(8)->GetRenderProcessHost();
 
   // Get extension processes.
   extensions::ProcessManager* process_manager =

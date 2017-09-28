@@ -27,7 +27,6 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -371,7 +370,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     resource.web_contents_getter =
         SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-            web_contents()->GetMainFrame()->GetProcess()->GetID(),
+            web_contents()->GetRenderProcessHost()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();

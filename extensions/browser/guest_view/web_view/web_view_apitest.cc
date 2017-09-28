@@ -4,8 +4,6 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_apitest.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/command_line.h"
@@ -19,7 +17,6 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -692,8 +689,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestRemoveWebviewOnExit) {
                                      "runTest('testRemoveWebviewOnExit')"));
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
-  EXPECT_TRUE(
-      guest_web_contents->GetMainFrame()->GetProcess()->IsForGuestsOnly());
+  EXPECT_TRUE(guest_web_contents->GetRenderProcessHost()->IsForGuestsOnly());
   ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
 
   content::WebContentsDestroyedWatcher destroyed_watcher(guest_web_contents);

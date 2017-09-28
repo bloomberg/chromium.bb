@@ -463,7 +463,7 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
 void DownloadController::StartContextMenuDownload(
     const ContextMenuParams& params, WebContents* web_contents, bool is_link,
     const std::string& extra_headers) {
-  int process_id = web_contents->GetRenderViewHost()->GetProcess()->GetID();
+  int process_id = web_contents->GetRenderProcessHost()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
   const content::ResourceRequestInfo::WebContentsGetter& wc_getter(

@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
   content::WebPluginInfo dummy_pdf_plugin_info = pdf_plugin_info;
   EXPECT_FALSE(filter->IsPluginAvailable(
-      initiator()->GetMainFrame()->GetProcess()->GetID(),
+      initiator()->GetRenderProcessHost()->GetID(),
       initiator()->GetMainFrame()->GetRoutingID(),
       browser()->profile()->GetResourceContext(), GURL(),
       url::Origin(GURL("http://google.com")), &dummy_pdf_plugin_info));

@@ -4,7 +4,6 @@
 
 #include "content/browser/host_zoom_map_impl.h"
 
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -34,21 +33,22 @@ void RunTestForURL(const GURL& url,
       HostZoomMap::GetForWebContents(web_contents));
 
   int view_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  int process_id = web_contents->GetRenderViewHost()->GetProcess()->GetID();
+  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
 
   // Assume caller has set the zoom level to |host_zoom_level| using
   // either a host or host+scheme entry in the HostZoomMap prior to
   // calling this function.
   EXPECT_DOUBLE_EQ(host_zoom_level, host_zoom_map->GetZoomLevelForView(
-                                        url, process_id, view_id));
+                                        url, render_process_id, view_id));
 
   // Make sure that GetZoomLevelForView() works for temporary zoom levels.
-  host_zoom_map->SetTemporaryZoomLevel(process_id, view_id, temp_zoom_level);
+  host_zoom_map->SetTemporaryZoomLevel(render_process_id, view_id,
+                                       temp_zoom_level);
   EXPECT_DOUBLE_EQ(temp_zoom_level, host_zoom_map->GetZoomLevelForView(
-                                        url, process_id, view_id));
+                                        url, render_process_id, view_id));
   // Clear the temporary zoom level in case subsequent test calls use the same
   // web_contents.
-  host_zoom_map->ClearTemporaryZoomLevel(process_id, view_id);
+  host_zoom_map->ClearTemporaryZoomLevel(render_process_id, view_id);
 }
 
 // Test to make sure that GetZoomForView() works properly for zoom levels

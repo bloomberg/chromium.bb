@@ -626,7 +626,7 @@ bool IsLastCommittedEntryOfPageType(WebContents* web_contents,
 }
 
 void CrashTab(WebContents* web_contents) {
-  RenderProcessHost* rph = web_contents->GetMainFrame()->GetProcess();
+  RenderProcessHost* rph = web_contents->GetRenderProcessHost();
   RenderProcessHostWatcher watcher(
       rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   rph->Shutdown(0, false);
@@ -1574,9 +1574,9 @@ RenderProcessHostWatcher::RenderProcessHostWatcher(
   render_process_host_->AddObserver(this);
 }
 
-RenderProcessHostWatcher::RenderProcessHostWatcher(WebContents* web_contents,
-                                                   WatchType type)
-    : render_process_host_(web_contents->GetMainFrame()->GetProcess()),
+RenderProcessHostWatcher::RenderProcessHostWatcher(
+    WebContents* web_contents, WatchType type)
+    : render_process_host_(web_contents->GetRenderProcessHost()),
       type_(type),
       did_exit_normally_(true),
       message_loop_runner_(new MessageLoopRunner) {

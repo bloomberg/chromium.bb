@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(metrics::RendererUptimeWebContentsObserver);
@@ -33,7 +32,7 @@ RendererUptimeWebContentsObserver::CreateForWebContents(
 
 void RendererUptimeWebContentsObserver::DocumentAvailableInMainFrame() {
   RendererUptimeTracker::Get()->OnLoadInMainFrame(
-      web_contents()->GetMainFrame()->GetProcess()->GetID());
+      web_contents()->GetRenderProcessHost()->GetID());
 }
 
 }  // namespace metrics

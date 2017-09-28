@@ -28,7 +28,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
@@ -457,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, CanSuspendBackgroundedRenderer) {
   video_stream_ui->OnStarted(base::Closure());
 
   // Should not be able to suspend a tab which plays a video.
-  int render_process_id = tab->GetMainFrame()->GetProcess()->GetID();
+  int render_process_id = tab->GetRenderProcessHost()->GetID();
   ASSERT_FALSE(tab_manager->CanSuspendBackgroundedRenderer(render_process_id));
 
   // Remove the video stream.

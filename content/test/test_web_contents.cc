@@ -4,7 +4,6 @@
 
 #include "content/test/test_web_contents.h"
 
-#include <memory>
 #include <utility>
 
 #include "content/browser/browser_url_handler_impl.h"
@@ -52,7 +51,7 @@ TestWebContents::~TestWebContents() {
   EXPECT_FALSE(expect_set_history_offset_and_length_);
 }
 
-TestRenderFrameHost* TestWebContents::GetMainFrame() const {
+TestRenderFrameHost* TestWebContents::GetMainFrame() {
   return static_cast<TestRenderFrameHost*>(WebContentsImpl::GetMainFrame());
 }
 

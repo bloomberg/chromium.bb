@@ -932,7 +932,12 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
   }
 }
 
-RenderFrameHostImpl* WebContentsImpl::GetMainFrame() const {
+RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
+  RenderViewHostImpl* host = GetRenderManager()->current_host();
+  return host ? host->GetProcess() : NULL;
+}
+
+RenderFrameHostImpl* WebContentsImpl::GetMainFrame() {
   return frame_tree_.root()->current_frame_host();
 }
 
@@ -5816,7 +5821,7 @@ void WebContentsImpl::NotifyFindReply(int request_id,
                                       int active_match_ordinal,
                                       bool final_update) {
   if (delegate_ && !is_being_destroyed_ &&
-      !GetMainFrame()->GetProcess()->FastShutdownStarted()) {
+      !GetRenderProcessHost()->FastShutdownStarted()) {
     delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
   }
@@ -5842,7 +5847,7 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
     return;
   }
   // Notify for UI updates if the state changes.
-  DCHECK_NE(bluetooth_connected_device_count_, 0u);
+  DCHECK(bluetooth_connected_device_count_ != 0);
   bluetooth_connected_device_count_--;
   if (bluetooth_connected_device_count_ == 0) {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);

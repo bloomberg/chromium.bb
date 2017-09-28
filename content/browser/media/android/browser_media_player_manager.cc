@@ -259,7 +259,7 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
 media::MediaResourceGetter*
 BrowserMediaPlayerManager::GetMediaResourceGetter() {
   if (!media_resource_getter_.get()) {
-    RenderProcessHost* host = web_contents()->GetMainFrame()->GetProcess();
+    RenderProcessHost* host = web_contents()->GetRenderProcessHost();
     BrowserContext* context = host->GetBrowserContext();
     StoragePartition* partition = host->GetStoragePartition();
     storage::FileSystemContext* file_system_context =
@@ -358,9 +358,11 @@ void BrowserMediaPlayerManager::OnInitialize(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params) {
   DestroyPlayer(media_player_params.player_id);
 
-  bool is_off_the_record =
-      web_contents()->GetBrowserContext()->IsOffTheRecord();
-  auto player = CreateMediaPlayer(media_player_params, is_off_the_record);
+  RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
+      web_contents()->GetRenderProcessHost());
+  auto player = CreateMediaPlayer(media_player_params,
+                                  host->GetBrowserContext()->IsOffTheRecord());
+
   if (!player)
     return;
 

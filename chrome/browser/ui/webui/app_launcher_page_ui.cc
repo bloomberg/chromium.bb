@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 
-#include <memory>
 #include <string>
 
 #include "base/memory/ptr_util.h"
@@ -23,7 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -111,7 +109,7 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
 
   content::WebContents* web_contents = wc_getter.Run();
   content::RenderProcessHost* render_host =
-      web_contents ? web_contents->GetMainFrame()->GetProcess() : nullptr;
+      web_contents ? web_contents->GetRenderProcessHost() : nullptr;
   NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
       profile_, render_host);
   scoped_refptr<base::RefCountedMemory> html_bytes(

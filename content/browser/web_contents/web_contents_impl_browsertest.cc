@@ -82,11 +82,12 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
 // they are correct, after the LoadNotificationDetails object is deleted.
 class LoadStopNotificationObserver : public WindowedNotificationObserver {
  public:
-  explicit LoadStopNotificationObserver(NavigationController* controller)
+  LoadStopNotificationObserver(NavigationController* controller)
       : WindowedNotificationObserver(NOTIFICATION_LOAD_STOP,
                                      Source<NavigationController>(controller)),
         session_index_(-1),
-        controller_(NULL) {}
+        controller_(NULL) {
+  }
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override {
@@ -417,8 +418,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 // in subsequent tests.
 class RenderFrameCreatedObserver : public WebContentsObserver {
  public:
-  explicit RenderFrameCreatedObserver(Shell* shell)
-      : WebContentsObserver(shell->web_contents()), last_rfh_(NULL) {}
+  RenderFrameCreatedObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()),
+        last_rfh_(NULL) {
+  }
 
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     last_rfh_ = render_frame_host;
@@ -517,7 +520,7 @@ namespace {
 
 class DidGetResourceResponseStartObserver : public WebContentsObserver {
  public:
-  explicit DidGetResourceResponseStartObserver(Shell* shell)
+  DidGetResourceResponseStartObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()), shell_(shell) {
     shell->web_contents()->SetDelegate(&delegate_);
     EXPECT_FALSE(shell->web_contents()->IsWaitingForResponse());
@@ -564,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
                                          public WebContentsObserver {
-  explicit LoadProgressDelegateAndObserver(Shell* shell)
+  LoadProgressDelegateAndObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()),
         did_start_loading(false),
         did_stop_loading(false) {
@@ -685,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
-  explicit FirstVisuallyNonEmptyPaintObserver(Shell* shell)
+  FirstVisuallyNonEmptyPaintObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()),
         did_fist_visually_non_empty_paint_(false) {}
 
@@ -741,7 +744,7 @@ class WebDisplayModeDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(WebDisplayModeDelegate);
 };
 
-}  // namespace
+}
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -772,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangeDisplayMode) {
 // See WebContentsImplBrowserTest.ChangePageScale.
 class MockPageScaleObserver : public WebContentsObserver {
  public:
-  explicit MockPageScaleObserver(Shell* shell)
+  MockPageScaleObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()),
         got_page_scale_update_(false) {
     // Once OnPageScaleFactorChanged is called, quit the run loop.
@@ -1259,7 +1262,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(web_contents->GetMainFrame());
   EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
-  int renderer_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
 
   TestNavigationObserver same_tab_observer(web_contents.get(), 1);
   NavigationController::LoadURLParams params(url);
@@ -1269,7 +1272,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   same_tab_observer.Wait();
 
   // Check that pre-warmed process is used.
-  EXPECT_EQ(renderer_id, web_contents->GetMainFrame()->GetProcess()->GetID());
+  EXPECT_EQ(renderer_id, web_contents->GetRenderProcessHost()->GetID());
   EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
   NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
@@ -1299,7 +1302,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(web_contents->GetMainFrame());
   EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
   EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
-  int renderer_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
 
   TestNavigationObserver same_tab_observer(web_contents.get(), 1);
   NavigationController::LoadURLParams params(web_ui_url);
@@ -1309,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   same_tab_observer.Wait();
 
   // Check that pre-warmed process isn't used.
-  EXPECT_NE(renderer_id, web_contents->GetMainFrame()->GetProcess()->GetID());
+  EXPECT_NE(renderer_id, web_contents->GetRenderProcessHost()->GetID());
   EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
   NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();

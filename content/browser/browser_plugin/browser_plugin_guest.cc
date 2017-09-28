@@ -7,8 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <string>
-#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1109,7 +1107,7 @@ void BrowserPluginGuest::OnShowPopup(
 
 void BrowserPluginGuest::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_rect) {
-  int process_id = GetWebContents()->GetMainFrame()->GetProcess()->GetID();
+  int process_id = GetWebContents()->GetRenderProcessHost()->GetID();
   GetWebContents()->ShowCreatedWidget(process_id, route_id, initial_rect);
 }
 

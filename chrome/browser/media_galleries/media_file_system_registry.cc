@@ -31,7 +31,6 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -164,7 +163,7 @@ RPHReferenceManager::~RPHReferenceManager() {
 
 void RPHReferenceManager::ReferenceFromWebContents(
     content::WebContents* contents) {
-  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+  RenderProcessHost* rph = contents->GetRenderProcessHost();
   if (!base::ContainsKey(observer_map_, rph)) {
     observer_map_[rph] = base::MakeUnique<RPHObserver>(this, rph);
   }
@@ -242,7 +241,7 @@ void RPHReferenceManager::OnRenderProcessHostDestroyed(
 
 void RPHReferenceManager::OnWebContentsDestroyedOrNavigated(
     WebContents* contents) {
-  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+  RenderProcessHost* rph = contents->GetRenderProcessHost();
   auto rph_info = observer_map_.find(rph);
   DCHECK(rph_info != observer_map_.end());
 

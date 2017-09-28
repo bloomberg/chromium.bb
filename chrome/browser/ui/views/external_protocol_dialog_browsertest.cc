@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -80,8 +79,7 @@ class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
   void ShowDialog(const std::string& name = "") override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    int render_process_host_id =
-        web_contents->GetRenderViewHost()->GetProcess()->GetID();
+    int render_process_host_id = web_contents->GetRenderProcessHost()->GetID();
     int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
     dialog_ = new ExternalProtocolDialog(
         base::MakeUnique<TestExternalProtocolDialogDelegate>(

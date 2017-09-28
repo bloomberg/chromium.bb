@@ -33,7 +33,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -609,10 +608,9 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
 
   tab_manager.GetWebContentsData(tab2)->SetLastInactiveTime(
       test_clock.NowTicks());
-  static_cast<content::MockRenderProcessHost*>(
-      tab2->GetMainFrame()->GetProcess())
+  static_cast<content::MockRenderProcessHost*>(tab2->GetRenderProcessHost())
       ->set_is_process_backgrounded(true);
-  EXPECT_TRUE(tab2->GetMainFrame()->GetProcess()->IsProcessBackgrounded());
+  EXPECT_TRUE(tab2->GetRenderProcessHost()->IsProcessBackgrounded());
 
   // Initially PurgeAndSuspend state should be NOT_PURGED.
   EXPECT_FALSE(tab_manager.GetWebContentsData(tab2)->is_purged());

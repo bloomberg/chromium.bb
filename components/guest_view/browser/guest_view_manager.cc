@@ -482,10 +482,8 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
 
   // Other than MimeHandlerViewGuest, all other guest types are only permitted
   // to run in the main frame.
-  return embedder_render_process_id == guest_view->owner_web_contents()
-                                           ->GetMainFrame()
-                                           ->GetProcess()
-                                           ->GetID();
+  return embedder_render_process_id ==
+         guest_view->owner_web_contents()->GetRenderProcessHost()->GetID();
 }
 
 GuestViewManager::ElementInstanceKey::ElementInstanceKey()

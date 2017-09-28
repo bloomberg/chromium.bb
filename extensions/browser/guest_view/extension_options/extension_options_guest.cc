@@ -4,8 +4,6 @@
 
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -14,7 +12,6 @@
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -229,9 +226,8 @@ void ExtensionOptionsGuest::DidFinishNavigation(
   SetGuestZoomLevelToMatchEmbedder();
 
   if (!url::IsSameOriginWith(navigation_handle->GetURL(), options_page_)) {
-    bad_message::ReceivedBadMessage(
-        web_contents()->GetMainFrame()->GetProcess(),
-        bad_message::EOG_BAD_ORIGIN);
+    bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
+                                    bad_message::EOG_BAD_ORIGIN);
   }
 }
 

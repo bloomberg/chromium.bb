@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -99,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   EXPECT_TRUE(browser()
                   ->tab_strip_model()
                   ->GetActiveWebContents()
-                  ->GetMainFrame()
-                  ->GetProcess()
+                  ->GetRenderProcessHost()
                   ->FastShutdownIfPossible());
   StartGatherCycleAndWait();
   EXPECT_EQ(3u, probe.current_gather_cycle_for_testing());

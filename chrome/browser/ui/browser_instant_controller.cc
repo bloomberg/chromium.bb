@@ -17,7 +17,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -105,7 +104,7 @@ void BrowserInstantController::OnSearchEngineBaseURLChanged(
       continue;
 
     // Send new search URLs to the renderer.
-    content::RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+    content::RenderProcessHost* rph = contents->GetRenderProcessHost();
     instant_service->SendSearchURLsToRenderer(rph);
 
     if (!instant_service->IsInstantProcess(rph->GetID()))

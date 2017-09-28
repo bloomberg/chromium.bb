@@ -11,7 +11,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
@@ -107,10 +106,9 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
 
   if (controller.GetLastCommittedEntry()) {
     // Set up the file access rights for the selected navigation entry.
-    // TODO(joth): https://crbug.com/767519: This is duplicated from
-    // chrome/.../session_restore.cc and should be shared e.g. in
-    // NavigationController.
-    const int id = web_contents->GetMainFrame()->GetProcess()->GetID();
+    // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
+    // should be shared e.g. in  NavigationController. http://crbug.com/68222
+    const int id = web_contents->GetRenderProcessHost()->GetID();
     const content::PageState& page_state =
         controller.GetLastCommittedEntry()->GetPageState();
     const std::vector<base::FilePath>& file_paths =

@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -171,7 +170,7 @@ WebrtcAudioPrivateFunction::GetRenderProcessHostFromRequest(
         expected_origin.spec().c_str(), security_origin.c_str());
     return nullptr;
   }
-  return contents->GetMainFrame()->GetProcess();
+  return contents->GetRenderProcessHost();
 }
 
 bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {

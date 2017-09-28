@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 
-#include <utility>
-#include <vector>
-
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,7 +25,6 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -73,9 +69,8 @@ HungPagesTableModel::~HungPagesTableModel() {
 }
 
 content::RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
-  return tab_observers_.empty()
-             ? NULL
-             : tab_observers_[0]->web_contents()->GetMainFrame()->GetProcess();
+  return tab_observers_.empty() ? NULL :
+      tab_observers_[0]->web_contents()->GetRenderProcessHost();
 }
 
 content::RenderViewHost* HungPagesTableModel::GetRenderViewHost() {
@@ -93,8 +88,7 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
     }
     for (TabContentsIterator it; !it.done(); it.Next()) {
       if (*it != hung_contents &&
-          it->GetMainFrame()->GetProcess() ==
-              hung_contents->GetMainFrame()->GetProcess())
+          it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
         tab_observers_.push_back(
             base::MakeUnique<WebContentsObserverImpl>(this, *it));
     }
@@ -301,7 +295,7 @@ void HungRendererDialogView::EndForWebContents(WebContents* contents) {
   DCHECK(contents);
   if (hung_pages_table_model_->RowCount() == 0 ||
       hung_pages_table_model_->GetRenderProcessHost() ==
-          contents->GetMainFrame()->GetProcess()) {
+      contents->GetRenderProcessHost()) {
     GetWidget()->Close();
     // Close is async, make sure we drop our references to the tab immediately
     // (it may be going away).

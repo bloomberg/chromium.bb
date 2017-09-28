@@ -73,7 +73,7 @@ void AssociateURLFetcherWithWebContents(content::WebContents* web_contents,
                                         net::URLFetcher* url_fetcher) {
   content::AssociateURLFetcherWithRenderFrame(
       url_fetcher, url::Origin(web_contents->GetURL()),
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
 }
 

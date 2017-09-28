@@ -12,8 +12,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -306,7 +304,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const GURL& GetURL() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
-  RenderFrameHostImpl* GetMainFrame() const override;
+  RenderProcessHost* GetRenderProcessHost() const override;
+  RenderFrameHostImpl* GetMainFrame() override;
   RenderFrameHostImpl* GetFocusedFrame() override;
   RenderFrameHostImpl* FindFrameByFrameTreeNodeId(int frame_tree_node_id,
                                                   int process_id) override;
@@ -1017,7 +1016,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   };
 
   // See WebContents::Create for a description of these parameters.
-  explicit WebContentsImpl(BrowserContext* browser_context);
+  WebContentsImpl(BrowserContext* browser_context);
 
   // Add and remove observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be

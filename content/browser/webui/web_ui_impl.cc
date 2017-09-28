@@ -6,9 +6,6 @@
 
 #include <stddef.h>
 
-#include <string>
-#include <utility>
-
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -107,8 +104,8 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const base::ListValue& args) {
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          web_contents_->GetMainFrame()->GetProcess()->GetID()) ||
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
+          HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID()) ||
       !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
           web_contents_->GetBrowserContext(), source_url)) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
