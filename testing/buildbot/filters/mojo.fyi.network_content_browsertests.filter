@@ -65,6 +65,9 @@
 -DownloadContentTest.StrongValidators
 -DragDownloadFileTest.DragDownloadFileTest_Complete
 
+# http://crbug.com/769993
+-DownloadContentTest.FetchErrorResponseBodyResumption
+
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
 -ClearSiteDataThrottleBrowserTest.Credentials
