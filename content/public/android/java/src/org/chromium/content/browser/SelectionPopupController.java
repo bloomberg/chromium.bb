@@ -138,10 +138,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // SelectionClient was able to classify it, otherwise null.
     private SelectionClient.Result mClassificationResult;
 
-    // This variable is set to true when showActionMode() is postponed till classification result
-    // arrives or till the selection is adjusted based on the classification result.
-    private boolean mPendingShowActionMode;
-
     // Whether a scroll is in progress.
     private boolean mScrollInProgress;
 
@@ -231,6 +227,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return mResultCallback;
     }
 
+    public SelectionClient.Result getClassificationResult() {
+        return mClassificationResult;
+    }
+
     public SelectionClient getSelectionClient() {
         return mSelectionClient;
     }
@@ -250,10 +250,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mAllowedMenuItems = allowedMenuItems;
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
+    public void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
             boolean isPasswordType, String selectionText, boolean canSelectAll,
-            boolean canRichlyEdit, boolean shouldSuggest) {
+            boolean canRichlyEdit, boolean shouldSuggest, boolean fromSelectionAdjustment) {
         mSelectionRect.set(left, top, right, bottom);
         mEditable = isEditable;
         mLastSelectedText = selectionText;
@@ -263,15 +264,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mCanEditRichly = canRichlyEdit;
         mUnselectAllOnDismiss = true;
         if (hasSelection()) {
-            if (mSelectionClient != null
-                    && mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
-                // Rely on |mSelectionClient| sending a classification request and the request
-                // always calling onClassified() callback.
-                mPendingShowActionMode = true;
-            } else {
+            // From selection adjustment, show menu directly.
+            if (fromSelectionAdjustment) {
                 showActionModeOrClearOnFailure();
+                return;
             }
 
+            // Show menu if there is no updates from SelectionClient.
+            if (mSelectionClient == null
+                    || !mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
+                showActionModeOrClearOnFailure();
+            }
         } else {
             createAndShowPastePopup();
         }
@@ -285,8 +288,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * <p> If the action mode cannot be created the selection is cleared.
      */
     public void showActionModeOrClearOnFailure() {
-        mPendingShowActionMode = false;
-
         if (!isActionModeSupported() || !hasSelection()) return;
 
         // Just refresh the view if action mode already exists.
@@ -404,7 +405,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @Override
     public void finishActionMode() {
-        mPendingShowActionMode = false;
         mHidden = false;
         if (mView != null) mView.removeCallbacks(mRepeatingHideRunnable);
 
@@ -996,11 +996,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
-                if (mPendingShowActionMode) {
-                    showActionModeOrClearOnFailure();
-                } else {
-                    invalidateContentRect();
-                }
+                invalidateContentRect();
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
@@ -1107,7 +1103,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         mClassificationResult = null;
 
-        assert !mPendingShowActionMode;
         assert !mHidden;
     }
 
@@ -1170,9 +1165,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         public void onClassified(SelectionClient.Result result) {
             // If the selection does not exist any more, discard |result|.
             if (!hasSelection()) {
-                assert !mHidden;
-                assert mClassificationResult == null;
-                mPendingShowActionMode = false;
+                mClassificationResult = null;
                 return;
             }
 
@@ -1183,7 +1176,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             // remove this check.
             if (result.startAdjust > 0 || result.endAdjust < 0) {
                 mClassificationResult = null;
-                mPendingShowActionMode = false;
                 showActionModeOrClearOnFailure();
                 return;
             }
@@ -1192,20 +1184,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             // mode has been dismissed.
             mClassificationResult = result;
 
-            // Do not recreate the action mode if it has been cancelled (by ActionMode.finish())
-            // and not recreated after that.
-            if (!mPendingShowActionMode && !isActionModeValid()) {
-                assert !mHidden;
-                return;
-            }
-
             // Update the selection range if needed.
             if (!(result.startAdjust == 0 && result.endAdjust == 0)) {
-                // This call causes SELECTION_HANDLES_MOVED event.
-                mWebContents.adjustSelectionByCharacterOffset(result.startAdjust, result.endAdjust);
-
-                // Remain pending until SELECTION_HANDLES_MOVED arrives.
-                if (mPendingShowActionMode) return;
+                // This call will cause showSelectionMenu again.
+                mWebContents.adjustSelectionByCharacterOffset(
+                        result.startAdjust, result.endAdjust, /* show_selection_menu = */ true);
+                return;
             }
 
             // Rely on this method to clear |mHidden| and unhide the action mode.

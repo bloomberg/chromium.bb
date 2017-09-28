@@ -516,7 +516,8 @@ class WebContents : public PageNavigator,
   // beginning of the document, a positive amount moves the selection towards
   // the end of the document.
   virtual void AdjustSelectionByCharacterOffset(int start_adjust,
-                                                int end_adjust) = 0;
+                                                int end_adjust,
+                                                bool show_selection_menu) = 0;
 
   // Replaces the currently selected word or a word around the cursor.
   virtual void Replace(const base::string16& word) = 0;

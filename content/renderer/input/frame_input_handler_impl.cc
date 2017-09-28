@@ -271,7 +271,9 @@ void FrameInputHandlerImpl::CollapseSelection() {
   HandlingState handling_state(render_frame_.get(),
                                UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SelectRange(
-      blink::WebRange(range.EndOffset(), 0));
+      blink::WebRange(range.EndOffset(), 0),
+      blink::WebLocalFrame::kHideSelectionHandle,
+      blink::mojom::SelectionMenuBehavior::kHide);
 }
 
 void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
@@ -295,12 +297,14 @@ void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
       render_view->ConvertWindowPointToViewport(extent));
 }
 
-void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(int32_t start,
-                                                             int32_t end) {
+void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(
+    int32_t start,
+    int32_t end,
+    blink::mojom::SelectionMenuBehavior selection_menu_behavior) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     RunOnMainThread(
         base::Bind(&FrameInputHandlerImpl::AdjustSelectionByCharacterOffset,
-                   weak_this_, start, end));
+                   weak_this_, start, end, selection_menu_behavior));
     return;
   }
 
@@ -324,7 +328,7 @@ void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(int32_t start,
   render_frame_->GetWebFrame()->SelectRange(
       blink::WebRange(range.StartOffset() + start,
                       range.length() + end - start),
-      blink::WebLocalFrame::kPreserveHandleVisibility);
+      blink::WebLocalFrame::kPreserveHandleVisibility, selection_menu_behavior);
 }
 
 void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {

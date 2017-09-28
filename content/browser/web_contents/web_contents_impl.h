@@ -704,8 +704,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
   void MoveCaret(const gfx::Point& extent) override;
-  void AdjustSelectionByCharacterOffset(int start_adjust, int end_adjust)
-      override;
+  void AdjustSelectionByCharacterOffset(int start_adjust,
+                                        int end_adjust,
+                                        bool show_selection_menu) override;
   RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   void ReplicatePageFocus(bool is_focused) override;
   RenderWidgetHostImpl* GetFocusedRenderWidgetHost(

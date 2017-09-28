@@ -53,8 +53,11 @@ bool WebInputMethodControllerImpl::SetComposition(
     return false;
 
   // Select the range to be replaced with the composition later.
-  if (!replacement_range.IsNull())
-    web_frame_->SelectRange(replacement_range);
+  if (!replacement_range.IsNull()) {
+    web_frame_->SelectRange(replacement_range,
+                            WebLocalFrame::kHideSelectionHandle,
+                            blink::mojom::SelectionMenuBehavior::kHide);
+  }
 
   // We should verify the parent node of this IME composition node are
   // editable because JavaScript may delete a parent node of the composition
@@ -115,8 +118,11 @@ bool WebInputMethodControllerImpl::CommitText(
   }
 
   // Select the range to be replaced with the composition later.
-  if (!replacement_range.IsNull())
-    web_frame_->SelectRange(replacement_range);
+  if (!replacement_range.IsNull()) {
+    web_frame_->SelectRange(replacement_range,
+                            WebLocalFrame::kHideSelectionHandle,
+                            blink::mojom::SelectionMenuBehavior::kHide);
+  }
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

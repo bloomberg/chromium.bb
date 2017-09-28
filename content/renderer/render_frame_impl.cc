@@ -294,6 +294,7 @@ using blink::WebURLResponse;
 using blink::WebUserGestureIndicator;
 using blink::WebVector;
 using blink::WebView;
+using blink::mojom::SelectionMenuBehavior;
 
 #if defined(OS_ANDROID)
 using blink::WebFloatPoint;
@@ -2004,8 +2005,10 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
                       render_view_->ConvertWindowPointToViewport(extent));
 }
 
-void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
-                                                         int end_adjust) {
+void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(
+    int start_adjust,
+    int end_adjust,
+    bool show_selection_menu) {
   WebRange range = frame_->GetInputMethodController()->GetSelectionOffsets();
   if (range.IsNull())
     return;
@@ -2023,7 +2026,9 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
   // the document.
   frame_->SelectRange(WebRange(range.StartOffset() + start_adjust,
                                range.length() + end_adjust - start_adjust),
-                      WebLocalFrame::kPreserveHandleVisibility);
+                      WebLocalFrame::kPreserveHandleVisibility,
+                      show_selection_menu ? SelectionMenuBehavior::kShow
+                                          : SelectionMenuBehavior::kHide);
 }
 
 void RenderFrameImpl::OnCollapseSelection() {
@@ -2034,7 +2039,9 @@ void RenderFrameImpl::OnCollapseSelection() {
 
   AutoResetMember<bool> handling_select_range(
       this, &RenderFrameImpl::handling_select_range_, true);
-  frame_->SelectRange(WebRange(range.EndOffset(), 0));
+  frame_->SelectRange(WebRange(range.EndOffset(), 0),
+                      WebLocalFrame::kHideSelectionHandle,
+                      SelectionMenuBehavior::kHide);
 }
 
 void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {

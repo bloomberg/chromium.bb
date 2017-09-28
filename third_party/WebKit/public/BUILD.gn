@@ -808,6 +808,7 @@ mojom("mojo_bindings") {
     "platform/reporting.mojom",
     "platform/site_engagement.mojom",
     "web/console_message.mojom",
+    "web/selection_menu_behavior.mojom",
     "web/shared_worker_creation_context_type.mojom",
     "web/window_features.mojom",
     "web/worker_content_settings_proxy.mojom",

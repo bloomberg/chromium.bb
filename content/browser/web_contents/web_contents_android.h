@@ -123,7 +123,8 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint start_adjust,
-      jint end_adjust);
+      jint end_adjust,
+      jboolean show_selection_menu);
   void EvaluateJavaScript(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jstring>& script,

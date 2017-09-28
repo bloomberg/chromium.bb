@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
@@ -48,6 +49,7 @@ public class ContentViewCoreSelectionTest {
             + "<br/><input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
             + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">SampleTextArea</textarea>"
             + "<br/><input id=\"password\" type=\"password\" value=\"SamplePassword\" size=\"10\"/>"
+            + "<br/><p><span id=\"smart_selection\">1600 Amphitheatre Parkway</span></p>"
             + "<br/><p><span id=\"plain_text_1\">SamplePlainTextOne</span></p>"
             + "<br/><p><span id=\"plain_text_2\">SamplePlainTextTwo</span></p>"
             + "<br/><input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
@@ -55,6 +57,40 @@ public class ContentViewCoreSelectionTest {
             + "</form></body></html>");
     private ContentViewCore mContentViewCore;
     private SelectionPopupController mSelectionPopupController;
+
+    private static class TestSelectionClient implements SelectionClient {
+        private SelectionClient.Result mResult;
+        private SelectionClient.ResultCallback mResultCallback;
+
+        @Override
+        public void onSelectionChanged(String selection) {}
+
+        @Override
+        public void onSelectionEvent(int eventType, float posXPix, float poxYPix) {}
+
+        @Override
+        public void showUnhandledTapUIIfNeeded(int x, int y) {}
+
+        @Override
+        public void selectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {}
+
+        @Override
+        public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
+            ThreadUtils.postOnUiThread(() -> mResultCallback.onClassified(mResult));
+            return true;
+        }
+
+        @Override
+        public void cancelAllRequests() {}
+
+        public void setResult(SelectionClient.Result result) {
+            mResult = result;
+        }
+
+        public void setResultCallback(SelectionClient.ResultCallback callback) {
+            mResultCallback = callback;
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -290,6 +326,30 @@ public class ContentViewCoreSelectionTest {
         waitForPastePopupStatus(true);
         waitForInsertion(true);
         Assert.assertFalse(mSelectionPopupController.canPasteAsPlainText());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"TextInput", "SmartSelection"})
+    public void testSmartSelectionNormalFlow() throws Throwable {
+        SelectionClient.Result result = new SelectionClient.Result();
+        result.startAdjust = -5;
+        result.endAdjust = 8;
+        result.label = "Maps";
+
+        TestSelectionClient client = new TestSelectionClient();
+        client.setResult(result);
+        client.setResultCallback(mSelectionPopupController.getResultCallback());
+
+        mSelectionPopupController.setSelectionClient(client);
+
+        DOMUtils.longPressNode(mContentViewCore, "smart_selection");
+        waitForSelectActionBarVisible(true);
+
+        SelectionClient.Result returnResult = mSelectionPopupController.getClassificationResult();
+        Assert.assertEquals(-5, returnResult.startAdjust);
+        Assert.assertEquals(8, returnResult.endAdjust);
+        Assert.assertEquals("Maps", returnResult.label);
     }
 
     /*

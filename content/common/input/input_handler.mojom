@@ -7,11 +7,12 @@ module content.mojom;
 import "content/common/native_types.mojom";
 import "mojo/common/string16.mojom";
 import "services/ui/public/interfaces/ime/ime.mojom";
+import "third_party/WebKit/public/web/selection_menu_behavior.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
-import "ui/latency/mojo/latency_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
+import "ui/latency/mojo/latency_info.mojom";
 
 
 // These structs are purposely duplicated from ui/events/mojom/event.mojom.
@@ -309,8 +310,10 @@ interface FrameInputHandler {
   // Sent by the browser to ask the renderer to adjust the selection start and
   // end points by the given amounts. A negative amount moves the selection
   // towards the beginning of the document, a positive amount moves the
-  // selection towards the end of the document.
-  AdjustSelectionByCharacterOffset(int32 start, int32 end);
+  // selection towards the end of the document. Will send show selection menu
+  // event when needed.
+  AdjustSelectionByCharacterOffset(
+      int32 start, int32 end, blink.mojom.SelectionMenuBehavior behavior);
 
   // Requests the renderer to move the selection extent point to a new position.
   // Expects a MoveRangeSelectionExtent_ACK message when finished.

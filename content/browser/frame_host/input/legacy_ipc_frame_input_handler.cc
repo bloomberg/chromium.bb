@@ -127,10 +127,13 @@ void LegacyIPCFrameInputHandler::SelectRange(const gfx::Point& point,
   SendInput(base::MakeUnique<InputMsg_SelectRange>(routing_id_, point, extent));
 }
 
-void LegacyIPCFrameInputHandler::AdjustSelectionByCharacterOffset(int32_t start,
-                                                                  int32_t end) {
+void LegacyIPCFrameInputHandler::AdjustSelectionByCharacterOffset(
+    int32_t start,
+    int32_t end,
+    blink::mojom::SelectionMenuBehavior selection_menu_behavior) {
   SendInput(base::MakeUnique<InputMsg_AdjustSelectionByCharacterOffset>(
-      routing_id_, start, end));
+      routing_id_, start, end,
+      selection_menu_behavior == blink::mojom::SelectionMenuBehavior::kShow));
 }
 
 void LegacyIPCFrameInputHandler::MoveRangeSelectionExtent(

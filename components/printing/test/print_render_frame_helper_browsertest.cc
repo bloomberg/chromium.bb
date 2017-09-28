@@ -1041,7 +1041,9 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
 // Test to verify that preview generated only for one page.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
-  GetMainFrame()->SelectRange(blink::WebRange(1, 3));
+  GetMainFrame()->SelectRange(blink::WebRange(1, 3),
+                              blink::WebLocalFrame::kHideSelectionHandle,
+                              blink::mojom::SelectionMenuBehavior::kHide);
 
   // Fill in some dummy values.
   base::DictionaryValue dict;
