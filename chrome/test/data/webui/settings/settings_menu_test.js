@@ -11,6 +11,7 @@ cr.define('settings_menu', function() {
     setup(function() {
       PolymerTest.clearBody();
       settingsMenu = document.createElement('settings-menu');
+      settingsMenu.pageVisibility = settings.pageVisibility;
       document.body.appendChild(settingsMenu);
     });
 
@@ -109,6 +110,18 @@ cr.define('settings_menu', function() {
 
       // BASIC has no sub page selected.
       assertFalse(!!selector.selected);
+    });
+
+    test('pageVisibility', function() {
+      assertFalse(settingsMenu.$$('#people').hidden);
+      assertFalse(settingsMenu.$$('#appearance').hidden);
+      assertFalse(settingsMenu.$$('#onStartup').hidden);
+      assertFalse(settingsMenu.$$('#advancedButton').hidden);
+      assertFalse(settingsMenu.$$('#advancedSubmenu').hidden);
+      assertFalse(settingsMenu.$$('#passwordsAndForms').hidden);
+      assertFalse(settingsMenu.$$('#reset').hidden);
+      if (!cr.isChromeOS)
+        assertFalse(settingsMenu.$$('#defaultBrowser').hidden);
     });
   });
 });

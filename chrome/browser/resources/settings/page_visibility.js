@@ -56,8 +56,6 @@ var PrivacyPageVisibility;
 cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
-   * This is only set when in guest mode. All pages are visible when not set
-   * because polymer only notifies after a property is set.
    * @type {!GuestModePageVisibility}
    */
   var pageVisibility;
@@ -98,6 +96,33 @@ cr.define('settings', function() {
         googleDrive: false,
       },
       multidevice: false,
+    };
+    // </if>
+  } else {
+    // All pages are visible when not in chromeos. Since polymer only notifies
+    // after a property is set.
+    // <if expr="chromeos">
+    pageVisibility = {
+      passwordsAndForms: true,
+      people: true,
+      onStartup: true,
+      reset: true,
+      appearance: {
+        setWallpaper: true,
+        setTheme: true,
+        homeButton: true,
+        bookmarksBar: true,
+        pageZoom: true,
+      },
+      advancedSettings: true,
+      privacy: {
+        searchPrediction: true,
+        networkPrediction: true,
+      },
+      downloads: {
+        googleDrive: true,
+      },
+      multidevice: true,
     };
     // </if>
   }

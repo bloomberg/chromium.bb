@@ -96,7 +96,8 @@
         <iron-icon icon="cr:person"></iron-icon>
         $i18n{peoplePageTitle}
       </a>
-      <a href="/appearance" hidden="[[!pageVisibility.appearance]]">
+      <a id="appearance" href="/appearance"
+        hidden="[[!pageVisibility.appearance]]">
         <iron-icon icon="settings:palette"></iron-icon>
         $i18n{appearancePageTitle}
       </a>
@@ -117,12 +118,14 @@
       </a>
 </if>
 <if expr="not chromeos">
-      <a href="/defaultBrowser" hidden="[[!pageVisibility.defaultBrowser]]">
+      <a id="defaultBrowser" href="/defaultBrowser"
+        hidden="[[!pageVisibility.defaultBrowser]]">
         <iron-icon icon="settings:web"></iron-icon>
         $i18n{defaultBrowser}
       </a>
 </if>
-      <a href="/onStartup" hidden="[[!pageVisibility.onStartup]]">
+      <a id="onStartup" href="/onStartup"
+        hidden="[[!pageVisibility.onStartup]]">
         <iron-icon icon="settings:power-settings-new"></iron-icon>
         $i18n{onStartup}
       </a>
@@ -146,7 +149,7 @@
             <iron-icon icon="settings:security"></iron-icon>
             $i18n{privacyPageTitle}
           </a>
-          <a href="/passwordsAndForms"
+          <a id= "passwordsAndForms" href="/passwordsAndForms"
               hidden="[[!pageVisibility.passwordsAndForms]]">
             <iron-icon icon="settings:assignment"></iron-icon>
             $i18n{passwordsAndAutofillPageTitle}
@@ -179,7 +182,7 @@
             $i18n{systemPageTitle}
           </a>
 </if>
-          <a href="/reset" hidden="[[!pageVisibility.reset]]">
+          <a id="reset" href="/reset" hidden="[[!pageVisibility.reset]]">
             <iron-icon icon="settings:restore"></iron-icon>
             $i18n{resetPageTitle}
           </a>
