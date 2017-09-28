@@ -34,6 +34,7 @@ stage_install_rpm() {
   # TODO(phajdan.jr): Deduplicate this and debian/build.sh .
   # For now duplication is going to help us avoid merge conflicts
   # as changes are frequently merged to older branches related to SxS effort.
+  local PACKAGE_ORIG="${PACKAGE}"
   if [ "$CHANNEL" != "stable" ]; then
     # Avoid file collisions between channels.
     local PACKAGE="${PACKAGE}-${CHANNEL}"

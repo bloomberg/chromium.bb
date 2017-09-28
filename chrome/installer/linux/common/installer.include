@@ -252,9 +252,9 @@ stage_install_common() {
   process_template "${BUILDDIR}/installer/common/wrapper" \
     "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
   chmod 755 "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
-  if [ ! -f "${STAGEDIR}/${INSTALLDIR}/google-chrome" ]; then
+  if [ ! -f "${STAGEDIR}/${INSTALLDIR}/${PACKAGE_ORIG}" ]; then
     ln -sn "${INSTALLDIR}/${PACKAGE}" \
-      "${STAGEDIR}/${INSTALLDIR}/google-chrome"
+      "${STAGEDIR}/${INSTALLDIR}/${PACKAGE_ORIG}"
   fi
   ln -snf "${INSTALLDIR}/${PACKAGE}" \
     "${STAGEDIR}/usr/bin/${USR_BIN_SYMLINK_NAME}"
@@ -319,6 +319,10 @@ stage_install_common() {
     if [[ "${file_type}" = "directory"* ]]; then
       local expected_perms=755
     elif [[ "${file_type}" = *"symbolic link"* ]]; then
+      if [ ! -f "${STAGEDIR}/$(readlink "${file}")" ]; then
+        echo "Broken symlink: ${file}" 1>&2
+        exit 1
+      fi
       local expected_perms=777
     elif [ "${base_name}" = "chrome-sandbox" ]; then
       local expected_perms=4755
