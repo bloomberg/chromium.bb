@@ -483,8 +483,7 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ExpectRowTextColorIs(0, [NSColor whiteColor]);
   ExpectRowTextColorIs(1, [NSColor blackColor]);
   ExpectRowTextColorIs(2, [NSColor blackColor]);
-  ExpectPairedTextColorIs(
-      0, skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen300));
+  ExpectPairedTextColorIs(0, [NSColor whiteColor]);
 
   // Deselect option 0.
   [table_view_ deselectRow:0];
@@ -590,8 +589,7 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ExpectRowTextColorIs(0, [NSColor blackColor]);
   ExpectRowTextColorIs(1, [NSColor blackColor]);
   ExpectRowTextColorIs(2, [NSColor whiteColor]);
-  ExpectPairedTextColorIs(
-      2, skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen300));
+  ExpectPairedTextColorIs(2, [NSColor whiteColor]);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, SelectAndDeselectAnOption) {
@@ -1151,8 +1149,7 @@ TEST_F(ChooserDialogCocoaControllerTest, MultipleSelection) {
   ExpectRowTextColorIs(3, [NSColor whiteColor]);
   ExpectRowTextColorIs(4, [NSColor blackColor]);
   ExpectRowTextColorIs(5, [NSColor blackColor]);
-  ExpectPairedTextColorIs(
-      0, skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen300));
+  ExpectPairedTextColorIs(0, [NSColor whiteColor]);
   EXPECT_TRUE(connect_button_.enabled);
 
   // Remove option "b".

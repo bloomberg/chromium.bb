@@ -876,9 +876,10 @@ void ChooserContentViewController::UpdateTableView() {
     // Update the color of paired status.
     NSTextField* pairedStatusText = [self tableRowViewPairedStatus:rowIndex];
     if (pairedStatusText) {
-      [pairedStatusText setTextColor:(skia::SkColorToCalibratedNSColor(
-                                         isSelected ? gfx::kGoogleGreen300
-                                                    : gfx::kGoogleGreen700))];
+      [pairedStatusText
+          setTextColor:(isSelected ? [NSColor whiteColor]
+                                   : skia::SkColorToCalibratedNSColor(
+                                         gfx::kGoogleGreen700))];
     }
   }
 }
