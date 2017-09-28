@@ -134,6 +134,8 @@ blink_core_sources("frame") {
     "UseCounter.h",
     "VisualViewport.cpp",
     "VisualViewport.h",
+    "WebFeature.h",
+    "WebFeatureForward.h",
     "WebFrameSerializerImpl.cpp",
     "WebFrameSerializerImpl.h",
     "WebFrameWidgetBase.cpp",

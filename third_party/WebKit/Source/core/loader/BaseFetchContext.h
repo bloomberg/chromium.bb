@@ -6,7 +6,7 @@
 #define BaseFetchContext_h
 
 #include "core/CoreExport.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeatureForward.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchContext.h"

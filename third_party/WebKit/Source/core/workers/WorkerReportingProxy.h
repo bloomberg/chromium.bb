@@ -34,7 +34,7 @@
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeatureForward.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"

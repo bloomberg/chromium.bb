@@ -10,6 +10,7 @@
 #include "core/css/CSSRayValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/frame/WebFeature.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/runtime_enabled_features.h"

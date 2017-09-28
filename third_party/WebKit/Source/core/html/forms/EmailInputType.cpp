@@ -28,6 +28,7 @@
 #include <unicode/uvernum.h>
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/InputTypeNames.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ChromeClient.h"

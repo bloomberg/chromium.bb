@@ -7,6 +7,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebFeature.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/SubresourceFilter.h"
 #include "core/loader/private/FrameClientHintsPreferencesContext.h"

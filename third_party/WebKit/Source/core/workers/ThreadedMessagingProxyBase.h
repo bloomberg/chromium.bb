@@ -6,7 +6,7 @@
 #define ThreadedMessagingProxyBase_h
 
 #include "core/CoreExport.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeatureForward.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"

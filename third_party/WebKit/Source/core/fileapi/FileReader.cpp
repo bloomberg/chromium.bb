@@ -38,6 +38,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
+#include "core/frame/UseCounter.h"
 #include "core/probe/CoreProbes.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/Supplementable.h"

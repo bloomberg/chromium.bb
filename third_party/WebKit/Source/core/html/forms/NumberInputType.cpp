@@ -38,6 +38,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"

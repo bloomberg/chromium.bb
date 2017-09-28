@@ -23,6 +23,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"

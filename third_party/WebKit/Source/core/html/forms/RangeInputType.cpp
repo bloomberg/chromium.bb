@@ -41,6 +41,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"

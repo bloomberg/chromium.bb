@@ -31,6 +31,7 @@
 #include "core/html/forms/URLInputType.h"
 
 #include "core/InputTypeNames.h"
+#include "core/frame/WebFeature.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/PlatformLocale.h"

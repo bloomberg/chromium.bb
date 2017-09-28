@@ -35,6 +35,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/bindings/ScriptState.h"
