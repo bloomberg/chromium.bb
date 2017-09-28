@@ -1357,7 +1357,7 @@ void PrintPreviewHandler::UnregisterForGaiaCookieChanges() {
 
 void PrintPreviewHandler::BadMessageReceived() {
   bad_message::ReceivedBadMessage(
-      GetInitiator()->GetRenderProcessHost(),
+      GetInitiator()->GetMainFrame()->GetProcess(),
       bad_message::BadMessageReason::PPH_EXTRA_PREVIEW_MESSAGE);
 }
 
