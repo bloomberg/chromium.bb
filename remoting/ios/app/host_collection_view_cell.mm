@@ -68,14 +68,14 @@ static const CGFloat kHostCardIconSize = 45.f;
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _titleLabel.font = [MDCTypography boldFontFromFont:MDCTypography.subheadFont];
   _titleLabel.alpha = MDCTypography.subheadFontOpacity;
-  _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:0.87f];
+  _titleLabel.textColor = RemotingTheme.hostCellTitleColor;
   [_labelView addSubview:_titleLabel];
 
   _statusLabel = [[UILabel alloc] init];
   _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
   _statusLabel.font = MDCTypography.captionFont;
   _statusLabel.alpha = MDCTypography.captionFontOpacity;
-  _statusLabel.textColor = [UIColor colorWithWhite:0 alpha:0.60f];
+  _statusLabel.textColor = RemotingTheme.hostCellStatusTextColor;
   [_labelView addSubview:_statusLabel];
 
   UILayoutGuide* safeAreaLayoutGuide =

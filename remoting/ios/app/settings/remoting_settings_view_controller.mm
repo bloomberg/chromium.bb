@@ -43,9 +43,9 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     self.view.backgroundColor = RemotingTheme.menuBlueColor;
     _appBar.headerViewController.headerView.backgroundColor =
         RemotingTheme.menuBlueColor;
-    _appBar.navigationBar.tintColor = [UIColor whiteColor];
-    _appBar.navigationBar.titleTextAttributes =
-        @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+    MDCNavigationBarTextColorAccessibilityMutator* mutator =
+        [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
+    [mutator mutate:_appBar.navigationBar];
   }
   return self;
 }
@@ -120,10 +120,10 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                                 forIndexPath:indexPath];
   cell.contentView.backgroundColor = RemotingTheme.menuBlueColor;
   cell.textLabel.text = setting.title;
-  cell.textLabel.textColor = [UIColor whiteColor];
+  cell.textLabel.textColor = RemotingTheme.menuTextColor;
   cell.textLabel.numberOfLines = 1;
   cell.detailTextLabel.text = setting.subtext;
-  cell.detailTextLabel.textColor = [UIColor whiteColor];
+  cell.detailTextLabel.textColor = RemotingTheme.menuTextColor;
   cell.detailTextLabel.numberOfLines = 1;
   cell.tintColor = RemotingTheme.menuBlueColor;
 
@@ -208,7 +208,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
     supplementaryView.contentView.backgroundColor = RemotingTheme.menuBlueColor;
     supplementaryView.textLabel.text = _sections[(NSUInteger)indexPath.section];
-    supplementaryView.textLabel.textColor = [UIColor whiteColor];
+    supplementaryView.textLabel.textColor = RemotingTheme.menuTextColor;
   }
   return supplementaryView;
 }

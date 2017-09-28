@@ -129,14 +129,15 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.radius = kActivityIndicatorRadius;
   _activityIndicator.trackEnabled = YES;
   _activityIndicator.strokeWidth = kActivityIndicatorStrokeWidth;
-  _activityIndicator.cycleColors = @[ UIColor.whiteColor ];
+  _activityIndicator.cycleColors =
+      @[ RemotingTheme.connectionViewForegroundColor ];
   _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_activityIndicator];
 
   _statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   _statusLabel.numberOfLines = 1;
   _statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-  _statusLabel.textColor = [UIColor whiteColor];
+  _statusLabel.textColor = RemotingTheme.connectionViewForegroundColor;
   _statusLabel.textAlignment = NSTextAlignmentCenter;
   _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_statusLabel];
@@ -418,7 +419,8 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _iconView.backgroundColor = RemotingTheme.hostOnlineColor;
 
   [_activityIndicator stopAnimating];
-  _activityIndicator.cycleColors = @[ [UIColor whiteColor] ];
+  _activityIndicator.cycleColors =
+      @[ RemotingTheme.connectionViewForegroundColor ];
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeIndeterminate;
   _activityIndicator.hidden = NO;
   [_activityIndicator startAnimating];
@@ -456,7 +458,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _activityIndicator.progress = 0.0;
   _activityIndicator.hidden = NO;
   _activityIndicator.indicatorMode = MDCActivityIndicatorModeDeterminate;
-  _activityIndicator.cycleColors = @[ [UIColor greenColor] ];
+  _activityIndicator.cycleColors = @[ RemotingTheme.hostOnlineColor ];
   [_activityIndicator startAnimating];
   _activityIndicator.progress = 1.0;
 

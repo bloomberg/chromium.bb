@@ -25,6 +25,10 @@
   return color;
 }
 
++ (UIColor*)connectionViewForegroundColor {
+  return UIColor.whiteColor;
+}
+
 + (UIColor*)hostListBackgroundColor {
   static UIColor* color;
   static dispatch_once_t onceToken;
@@ -32,6 +36,14 @@
     color = [UIColor colorWithRed:0.11f green:0.23f blue:0.66f alpha:1.f];
   });
   return color;
+}
+
++ (UIColor*)hostListForegroundColor {
+  return UIColor.whiteColor;
+}
+
++ (UIColor*)hostListHeaderTitleColor {
+  return UIColor.whiteColor;
 }
 
 + (UIColor*)menuBlueColor {
@@ -44,6 +56,32 @@
                             alpha:1.f];
   });
   return color;
+}
+
++ (UIColor*)menuTextColor {
+  return UIColor.whiteColor;
+}
+
++ (UIColor*)pinEntryPairingColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:1.f alpha:0.5f];
+  });
+  return color;
+}
+
++ (UIColor*)pinEntryPlaceholderColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:1.f alpha:0.26f];
+  });
+  return color;
+}
+
++ (UIColor*)pinEntryTextColor {
+  return UIColor.whiteColor;
 }
 
 + (UIColor*)hostOfflineColor {
@@ -103,6 +141,24 @@
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     color = UIColor.whiteColor;
+  });
+  return color;
+}
+
++ (UIColor*)hostCellTitleColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:0 alpha:0.87f];
+  });
+  return color;
+}
+
++ (UIColor*)hostCellStatusTextColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:0 alpha:0.60f];
   });
   return color;
 }
