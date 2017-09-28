@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -54,7 +55,7 @@ bool BackgroundPageWatcher::IsBackgroundPageOpen() {
   if (!host)
     return false;
   content::RenderProcessHost* rph =
-      host->host_contents()->GetRenderProcessHost();
+      host->host_contents()->GetMainFrame()->GetProcess();
   return rph && rph->HasConnection();
 }
 
