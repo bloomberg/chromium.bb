@@ -185,8 +185,7 @@ GpuChildThread::GpuChildThread(
   gpu_service_->set_in_host_process(in_browser_process_);
 }
 
-GpuChildThread::~GpuChildThread() {
-}
+GpuChildThread::~GpuChildThread() {}
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
   gpu_service_->set_start_time(process_start_time);
@@ -272,14 +271,18 @@ void GpuChildThread::CreateGpuService(
       sync_point_manager, ChildProcess::current()->GetShutDownEvent());
   CHECK(gpu_service_->media_gpu_channel_manager());
 
+  media::AndroidOverlayMojoFactoryCB overlay_factory_cb;
+#if defined(OS_ANDROID)
+  overlay_factory_cb = base::Bind(&GpuChildThread::CreateAndroidOverlay,
+                                  base::ThreadTaskRunnerHandle::Get());
+  gpu_service_->media_gpu_channel_manager()->SetOverlayFactory(
+      overlay_factory_cb);
+#endif
+
   // Only set once per process instance.
   service_factory_.reset(new GpuServiceFactory(
-      gpu_service_->media_gpu_channel_manager()->AsWeakPtr()));
-
-#if defined(OS_ANDROID)
-  gpu_service_->media_gpu_channel_manager()->SetOverlayFactory(
-      base::Bind(&GpuChildThread::CreateAndroidOverlay));
-#endif
+      gpu_service_->media_gpu_channel_manager()->AsWeakPtr(),
+      overlay_factory_cb));
 
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->GpuServiceInitialized(gpu_preferences);
@@ -304,13 +307,32 @@ void GpuChildThread::BindServiceFactoryRequest(
 #if defined(OS_ANDROID)
 // static
 std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    std::unique_ptr<service_manager::ServiceContextRef> context_ref,
     const base::UnguessableToken& routing_token,
     media::AndroidOverlayConfig config) {
-  media::mojom::AndroidOverlayProviderPtr provider_ptr;
-  ChildThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &provider_ptr);
+  media::mojom::AndroidOverlayProviderPtr overlay_provider;
+  if (main_task_runner->RunsTasksInCurrentSequence()) {
+    ChildThread::Get()->GetConnector()->BindInterface(
+        content::mojom::kBrowserServiceName, &overlay_provider);
+  } else {
+    // Create a connector on this sequence and bind it on the main thread.
+    service_manager::mojom::ConnectorRequest request;
+    auto connector = service_manager::Connector::Create(&request);
+    connector->BindInterface(content::mojom::kBrowserServiceName,
+                             &overlay_provider);
+    auto bind_connector_request =
+        [](service_manager::mojom::ConnectorRequest request) {
+          ChildThread::Get()->GetConnector()->BindConnectorRequest(
+              std::move(request));
+        };
+    main_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(bind_connector_request, std::move(request)));
+  }
+
   return base::MakeUnique<media::MojoAndroidOverlay>(
-      std::move(provider_ptr), std::move(config), routing_token);
+      std::move(overlay_provider), std::move(config), routing_token,
+      std::move(context_ref));
 }
 #endif
 

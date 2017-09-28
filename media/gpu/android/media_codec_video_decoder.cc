@@ -637,10 +637,22 @@ void MediaCodecVideoDecoder::ReleaseCodec() {
 
 AndroidOverlayFactoryCB MediaCodecVideoDecoder::CreateOverlayFactoryCb() {
   DCHECK(!overlay_info_.HasValidSurfaceId());
-  if (overlay_info_.HasValidRoutingToken() && overlay_factory_cb_) {
-    return base::Bind(overlay_factory_cb_, *overlay_info_.routing_token);
-  }
-  return AndroidOverlayFactoryCB();
+  if (!overlay_factory_cb_ || !overlay_info_.HasValidRoutingToken())
+    return AndroidOverlayFactoryCB();
+
+  // This wrapper forwards its arguments and clones a context ref on each call.
+  auto wrapper = [](AndroidOverlayMojoFactoryCB overlay_factory_cb,
+                    service_manager::ServiceContextRef* context_ref,
+                    base::UnguessableToken routing_token,
+                    AndroidOverlayConfig config) {
+    return overlay_factory_cb.Run(context_ref->Clone(),
+                                  std::move(routing_token), std::move(config));
+  };
+
+  // Pass ownership of a new context ref into the callback.
+  return base::Bind(wrapper, overlay_factory_cb_,
+                    base::Owned(context_ref_->Clone().release()),
+                    *overlay_info_.routing_token);
 }
 
 std::string MediaCodecVideoDecoder::GetDisplayName() const {

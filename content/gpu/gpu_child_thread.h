@@ -32,6 +32,7 @@
 #include "media/base/android_overlay_mojo_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -106,6 +107,8 @@ class GpuChildThread : public ChildThreadImpl, public ui::mojom::GpuMain {
 
 #if defined(OS_ANDROID)
   static std::unique_ptr<media::AndroidOverlay> CreateAndroidOverlay(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      std::unique_ptr<service_manager::ServiceContextRef> context_ref,
       const base::UnguessableToken& routing_token,
       media::AndroidOverlayConfig);
 #endif
