@@ -33,7 +33,7 @@ enum ReferrerPolicy {
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute USVString url;
-    [ImplementedAs=getHeaders] readonly attribute Headers headers;
+    [ImplementedAs=getHeaders, SameObject] readonly attribute Headers headers;
     readonly attribute DOMString referrer;
     [ImplementedAs=getReferrerPolicy] readonly attribute ReferrerPolicy referrerPolicy;
     readonly attribute RequestMode mode;

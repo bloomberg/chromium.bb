@@ -24,7 +24,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     readonly attribute unsigned short status;
     readonly attribute boolean ok;
     readonly attribute ByteString statusText;
-    readonly attribute Headers headers;
+    [SameObject] readonly attribute Headers headers;
 
     [RaisesException, CallWith=ScriptState, DoNotTestNewObject, NewObject] Response clone();
 
