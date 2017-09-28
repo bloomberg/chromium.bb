@@ -240,6 +240,7 @@ TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
 
   // Load the invalid meta tag
   LoadHtml(kInvalidReferrerTag);
+  ExecuteJavaScript(@"document.getElementsByTagName('img')");  // Force layout
   id result = ExecuteGetElementFromPointJavaScript(20, 20);
   ASSERT_TRUE([result isKindOfClass:[NSDictionary class]]);
   EXPECT_NSEQ(@"never", result[kContextMenuElementReferrerPolicy]);
