@@ -21,6 +21,7 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api_test_utils.h"
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest, TestStartStopWebRtcEventLogging) {
 
   // Check that the file exists and is non-empty.
   content::RenderProcessHost* render_process_host =
-      left_tab->GetRenderProcessHost();
+      left_tab->GetMainFrame()->GetProcess();
   ASSERT_NE(render_process_host, nullptr);
   int render_process_id = render_process_host->GetID();
   base::FilePath full_file_name =
@@ -299,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcEventLogApiTest,
   // The log has stopped automatically. Check that the file exists and is
   // non-empty.
   content::RenderProcessHost* render_process_host =
-      left_tab->GetRenderProcessHost();
+      left_tab->GetMainFrame()->GetProcess();
   ASSERT_NE(render_process_host, nullptr);
   int render_process_id = render_process_host->GetID();
   base::FilePath full_file_name =
