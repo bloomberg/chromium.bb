@@ -13,7 +13,9 @@
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -161,8 +163,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   }
 
   base::string16 accessible_name = title()->text();
-  if (rating_ && rating_->visible())
-    accessible_name += base::UTF8ToUTF16(", ") + rating_->text();
+  if (rating_ && rating_->visible()) {
+    accessible_name +=
+        base::UTF8ToUTF16(", ") +
+        l10n_util::GetStringFUTF16(IDS_APP_ACCESSIBILITY_STAR_RATING_ARC,
+                                   rating_->text());
+  }
   if (price_ && price_->visible())
     accessible_name += base::UTF8ToUTF16(", ") + price_->text();
   SetAccessibleName(accessible_name);
