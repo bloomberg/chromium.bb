@@ -20,15 +20,5 @@ SUCCESS: Worker context initialized
 SUCCESS: Worker context initialized
 SUCCESS: Worker context initialized
 SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
-SUCCESS: Worker context initialized
 DONE
 

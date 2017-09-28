@@ -22,16 +22,16 @@ function test() {
     }
 
     // Create sufficiently large number of workers in hopes that one of the exceptions they throw will be processed in short time interval in
-    // which it could case the crash from the bug.
+    // which it could cause the crash from the bug.
     var workers = [];
     console.log("Creating the workers.")
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < 20; i++) {
         setTimeout(function() {
             try {
                 var worker = new Worker('resources/worker-exception.js');
                 worker.onerror = function(evt) {
-                    // The number of worker exceptions that will be catched is not deterministic,
-                    // so let's make sire the excption is not written to console to have deterministic text output.
+                    // The number of worker exceptions that will be caught is not deterministic,
+                    // so let's make sure the exception is not written to console to have deterministic text output.
                     evt.preventDefault();
                 };
                 workers.push(worker);
