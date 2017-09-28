@@ -28,15 +28,13 @@
         </paper-button>
         <template is="dom-if" if="[[guid_]]">
           <paper-button class="primary-button" on-tap="onSaveTap_"
-              disabled="[[!saveIsEnabled_(propertiesReceived_, propertiesSent_,
-                  configProperties_.*, security_, eapProperties_.*)]]">
+              disabled="[[!saveIsEnabled_(isConfigured_, propertiesReceived_]]">
             $i18n{save}
           </paper-button>
         </template>
         <template is="dom-if" if="[[!guid_]]">
           <paper-button class="primary-button" on-tap="onConnectTap_"
-              disabled="[[!connectIsEnabled_(propertiesSent_,
-                  configProperties_.*, security_, eapProperties_.*)]]">
+              disabled="[[!connectIsEnabled_(isConfigured_, propertiesSent_)]]">
             $i18n{networkButtonConnect}
           </paper-button>
         </template>
@@ -44,7 +42,7 @@
     </div>
 
     <!-- Share (WiFi and WiMAX) -->
-    <template is="dom-if" if="[[shareIsVisible_(configProperties_.Type)]]">
+    <template is="dom-if" if="[[shareIsVisible_(type_)]]">
       <div class="settings-box">
         <div id="shareLabel" class="start">$i18n{networkConfigShare}</div>
         <paper-toggle-button id="share" checked="{{shareNetwork_}}"
@@ -56,26 +54,24 @@
     </template>
 
     <!-- SSID (WiFi) -->
-    <template is="dom-if"
-        if="[[isType_(NetworkType_.WI_FI, configProperties_.Type)]]">
+    <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type_)]]">
       <network-config-input id="ssid" label="$i18n{OncWiFi-SSID}"
           value="{{configProperties_.WiFi.SSID}}" disabled="[[guid_]]">
       </network-config-input>
     </template>
 
     <!-- Security (WiFi and Ethernet) -->
-    <template is="dom-if" if="[[securityIsVisible_(configProperties_.Type)]]">
+    <template is="dom-if" if="[[securityIsVisible_(type_)]]">
       <network-config-select id="security" label="$i18n{OncWiFi-Security}"
           value="{{security_}}"
-          disabled="[[!securityIsEnabled_(guid_, configProperties_.Type)]]"
-          items="[[getSecurityItems_(configProperties_.Type)]]"
+          disabled="[[!securityIsEnabled_(guid_, type_)]]"
+          items="[[getSecurityItems_(type_)]]"
           onc-prefix="WiFi.Security">
       </network-config-select>
     </template>
 
     <!-- Passphrase (WiFi) -->
-    <template is="dom-if"
-        if="[[configRequiresPassphrase_(configProperties_.Type, security_)]]">
+    <template is="dom-if" if="[[configRequiresPassphrase_(type_, security_)]]">
       <network-config-input label="$i18n{OncWiFi-Passphrase}"
           value="{{configProperties_.WiFi.Passphrase}}">
       </network-config-input>
@@ -93,7 +89,7 @@
           onc-prefix="EAP.Inner" hidden="[[!showEap_.Inner]]">
       </network-config-select>
       <network-config-select id="serverCa" label="$i18n{OncEAP-ServerCA}"
-          value="{{selectedServerCa_}}" items="[[serverCaCerts_]]"
+          value="{{selectedServerCaHash_}}" items="[[serverCaCerts_]]"
           hidden="[[!showEap_.ServerCA]]" cert-list>
       </network-config-select>
       <network-config-input label="$i18n{OncEAP-SubjectMatch}"
@@ -101,7 +97,7 @@
           hidden="[[!showEap_.SubjectMatch]]">
       </network-config-input>
       <network-config-select id="userCert" label="$i18n{OncEAP-UserCert}"
-          value="{{selectedUserCert_}}" items="[[userCerts_]]"
+          value="{{selectedUserCertHash_}}" items="[[userCerts_]]"
           hidden="[[!showEap_.UserCert]]" cert-list>
       </network-config-select>
       <network-config-input label="$i18n{OncEAP-Identity}"

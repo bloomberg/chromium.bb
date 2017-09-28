@@ -11,7 +11,8 @@
       <select class="md-select" disabled="[[disabled]]"
           value="{{value::change}}" aria-labelledby="label">
         <template is="dom-repeat" items="[[items]]">
-          <option value="[[item]]" disabled="[[!getItemEnabled_(item)]]">
+          <option value="[[getItemValue_(item)]]"
+              disabled="[[!getItemEnabled_(item)]]">
             [[getItemLabel_(item, oncPrefix)]]
           </option>
         </template>
