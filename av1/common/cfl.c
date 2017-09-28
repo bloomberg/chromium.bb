@@ -88,14 +88,14 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   int sum_u = 0;
   int sum_v = 0;
 
-// Match behavior of build_intra_predictors (reconintra.c) at superblock
-// boundaries:
-//
-// 127 127 127 .. 127 127 127 127 127 127
-// 129  A   B  ..  Y   Z
-// 129  C   D  ..  W   X
-// 129  E   F  ..  U   V
-// 129  G   H  ..  S   T   T   T   T   T
+  // Match behavior of build_intra_predictors_high (reconintra.c) at superblock
+  // boundaries:
+  const int base = 128 << (xd->bd - 8);
+// base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
+// base+1   A      B  ..     Y      Z
+// base+1   C      D  ..     W      X
+// base+1   E      F  ..     U      V
+// base+1   G      H  ..     S      T      T      T      T      T
 // ..
 
 #if CONFIG_CHROMA_SUB8X8
@@ -109,8 +109,8 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
       sum_v += dst_v[-dst_v_stride + i];
     }
   } else {
-    sum_u = width * 127;
-    sum_v = width * 127;
+    sum_u = width * (base - 1);
+    sum_v = width * (base - 1);
   }
 
 #if CONFIG_CHROMA_SUB8X8
@@ -123,8 +123,8 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
       sum_v += dst_v[i * dst_v_stride - 1];
     }
   } else {
-    sum_u += height * 129;
-    sum_v += height * 129;
+    sum_u += height * (base + 1);
+    sum_v += height * (base + 1);
   }
 
   // TODO(ltrudeau) Because of max_block_wide and max_block_high, num_pel will
