@@ -201,6 +201,10 @@ mojom("arc_bindings") {
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
+
+  # ARC is built outside of the Chromium source tree, so we need to have stable
+  # message IDs for the generated bindings.
+  scramble_message_ids = false
 }
 
 static_library("arc_test_support") {

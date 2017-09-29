@@ -74,4 +74,28 @@ action("precompile_templates") {
     "-o",
     rebase_path(target_gen_dir, root_build_dir),
   ]
+  deps = [
+    ":generate_message_id_salt($default_toolchain)",
+  ]
+}
+
+# NOTE: We need to ensure that there is only ONE message salt generation step
+# run for the whole build, regardless of toolchain. Otherwise each toolchain
+# will end up using its own isolated salt and message IDs will not match across
+# runtime boundaries (e.g. NaCl code talking to non-NaCl code over mojom).
+if (current_toolchain == default_toolchain) {
+  action("generate_message_id_salt") {
+    script = "//mojo/public/tools/bindings/generate_message_id_salt.py"
+
+    # Force update on any release version change.
+    inputs = [
+      "//chrome/VERSION",
+    ]
+    outputs = [
+      "$target_gen_dir/mojom-message-id-salt",
+    ]
+
+    args =
+        [ rebase_path("$target_gen_dir/mojom-message-id-salt", root_build_dir) ]
+  }
 }
