@@ -645,7 +645,7 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "gru",
-          "arch": "X86_INTERNAL"
+          "arch": "ARM_INTERNAL"
         }
       ]
     },

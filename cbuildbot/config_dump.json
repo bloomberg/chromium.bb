@@ -12433,11 +12433,11 @@
         "boards": [
             "kevin-bertha"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "kevin-bertha-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -12450,11 +12450,11 @@
         "boards": [
             "kevin-bertha"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "kevin-bertha-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -12468,13 +12468,15 @@
             "kevin-bertha"
         ],
         "important": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-bertha-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "kevin-bertha"
-        ]
+        ],
+        "vm_tests": []
     },
     "kevin-bertha-release": {
         "_template": "release",
@@ -12483,17 +12485,18 @@
             "kevin-bertha"
         ],
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-bertha-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "kevin-bertha"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "kevin-bertha-unittest-stress": {
         "_template": "unittest_stress",
