@@ -686,10 +686,9 @@ void InspectorAccessibilityAgent::PopulateRelatives(
   std::unique_ptr<protocol::Array<AXNodeId>> child_ids =
       protocol::Array<AXNodeId>::create();
 
-  if (&ax_object != inspected_ax_object ||
-      (inspected_ax_object && !inspected_ax_object->AccessibilityIsIgnored())) {
+  if (!ax_object.AccessibilityIsIgnored())
     AddChildren(ax_object, inspected_ax_object, child_ids, nodes, cache);
-  }
+
   node_object.setChildIds(std::move(child_ids));
 }
 
@@ -714,7 +713,8 @@ void InspectorAccessibilityAgent::AddChildren(
     if (&ax_object != inspected_ax_object) {
       if (!inspected_ax_object)
         continue;
-      if (&ax_object != inspected_ax_object->ParentObjectUnignored())
+      if (&ax_object != inspected_ax_object->ParentObjectUnignored() &&
+          ax_object.GetNode())
         continue;
     }
 
