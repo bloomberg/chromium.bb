@@ -211,6 +211,8 @@ const char kSMSReceivedSignal[] = "SmsReceived";
 //   /usr/include/ModemManager/ModemManager-names.h
 const char kModemManager1ServiceName[] = "org.freedesktop.ModemManager1";
 const char kModemManager1ServicePath[] = "/org/freedesktop/ModemManager1";
+const char kModemManager1ModemInterface[] =
+    "org.freedesktop.ModemManager1.Modem";
 const char kModemManager1MessagingInterface[] =
     "org.freedesktop.ModemManager1.Modem.Messaging";
 const char kModemManager1SmsInterface[] =
