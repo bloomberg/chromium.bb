@@ -125,8 +125,7 @@ void AccountChooserDialogView::AddedToWidget() {
       controller_->GetAccoutChooserTitle();
   std::unique_ptr<views::StyledLabel> title_label =
       base::MakeUnique<views::StyledLabel>(title_content.first, this);
-  title_label->SetBaseFontList(views::style::GetFont(
-      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
+  title_label->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   if (!title_content.second.is_empty())
     title_label->AddStyleRange(title_content.second, GetLinkStyle());
   GetBubbleFrameView()->SetTitleView(std::move(title_label));

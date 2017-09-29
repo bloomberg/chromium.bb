@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_private_key.h"
@@ -85,7 +86,7 @@ void PlatformKeysCertificateSelector::Init() {
       new views::StyledLabel(text, nullptr /* no listener */));
 
   views::StyledLabel::RangeStyleInfo bold_style;
-  bold_style.weight = gfx::Font::Weight::BOLD;
+  bold_style.text_style = STYLE_EMPHASIZED;
   label->AddStyleRange(gfx::Range(offset, offset + name.size()), bold_style);
   CertificateSelector::InitWithText(std::move(label));
 }

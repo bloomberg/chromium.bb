@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
-#include "ui/gfx/font_list.h"
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
@@ -57,9 +56,6 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   // Sub views. Used to change bounds when updating. Weak references.
   PasswordBox* password_view_;
   views::StyledLabel* help_label_;
-
-  // Fonts to use.
-  gfx::FontList font_list_;
 
   // Size of the divider between the password and the help text.
   gfx::Rect divider_bounds_;

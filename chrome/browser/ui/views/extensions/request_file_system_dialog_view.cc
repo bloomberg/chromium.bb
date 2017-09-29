@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
@@ -108,7 +109,7 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
 
   views::StyledLabel* const label = new views::StyledLabel(message, nullptr);
   views::StyledLabel::RangeStyleInfo bold_style;
-  bold_style.weight = gfx::Font::Weight::BOLD;
+  bold_style.text_style = STYLE_EMPHASIZED;
 
   DCHECK_EQ(2u, placeholder_offsets.size());
   label->AddStyleRange(gfx::Range(placeholder_offsets[0],

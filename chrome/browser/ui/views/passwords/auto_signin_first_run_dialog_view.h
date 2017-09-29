@@ -32,7 +32,6 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

@@ -712,8 +712,7 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
 
   views::StyledLabel* confirmation =
       new views::StyledLabel(parent_->model()->save_confirmation_text(), this);
-  confirmation->SetBaseFontList(views::style::GetFont(
-      CONTEXT_DEPRECATED_SMALL, views::style::STYLE_PRIMARY));
+  confirmation->SetTextContext(CONTEXT_DEPRECATED_SMALL);
   confirmation->AddStyleRange(parent_->model()->save_confirmation_link_range(),
                               GetLinkStyle());
 
@@ -1019,8 +1018,7 @@ void ManagePasswordsBubbleView::CloseBubble() {
 void ManagePasswordsBubbleView::AddedToWidget() {
   auto title_view =
       base::MakeUnique<views::StyledLabel>(base::string16(), this);
-  title_view->SetBaseFontList(views::style::GetFont(
-      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
+  title_view->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   UpdateTitleText(title_view.get());
   GetBubbleFrameView()->SetTitleView(std::move(title_view));
 }

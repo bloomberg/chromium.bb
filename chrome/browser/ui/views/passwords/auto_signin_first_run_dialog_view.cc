@@ -53,14 +53,6 @@ void AutoSigninFirstRunDialogView::WindowClosing() {
     controller_->OnCloseDialog();
 }
 
-void AutoSigninFirstRunDialogView::OnNativeThemeChanged(
-    const ui::NativeTheme* theme) {
-  views::StyledLabel::RangeStyleInfo default_style;
-  default_style.color =
-      views::style::GetColor(CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY, theme);
-  text_->SetDefaultStyle(default_style);
-}
-
 bool AutoSigninFirstRunDialogView::Cancel() {
   controller_->OnAutoSigninTurnOff();
   return true;
@@ -99,9 +91,8 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   std::pair<base::string16, gfx::Range> text_content =
       controller_->GetAutoSigninText();
   text_ = new views::StyledLabel(text_content.first, this);
-  text_->SetBaseFontList(
-      views::style::GetFont(CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY));
-  OnNativeThemeChanged(GetNativeTheme());
+  text_->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
+  text_->SetDefaultTextStyle(STYLE_SECONDARY);
   if (!text_content.second.is_empty()) {
     text_->AddStyleRange(text_content.second,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());
