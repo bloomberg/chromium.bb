@@ -6,6 +6,7 @@
 #define FontVariantNumeric_h
 
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -14,18 +15,23 @@ class FontVariantNumeric {
 
  public:
   enum NumericFigure { kNormalFigure = 0, kLiningNums, kOldstyleNums };
+  static String ToString(NumericFigure);
 
   enum NumericSpacing { kNormalSpacing = 0, kProportionalNums, kTabularNums };
+  static String ToString(NumericSpacing);
 
   enum NumericFraction {
     kNormalFraction = 0,
     kDiagonalFractions,
     kStackedFractions
   };
+  static String ToString(NumericFraction);
 
   enum Ordinal { kOrdinalOff = 0, kOrdinalOn };
+  static String ToString(Ordinal);
 
   enum SlashedZero { kSlashedZeroOff = 0, kSlashedZeroOn };
+  static String ToString(SlashedZero);
 
   FontVariantNumeric() : fields_as_unsigned_(0) {}
 
@@ -69,6 +75,8 @@ class FontVariantNumeric {
     return fields_as_unsigned_ == other.fields_as_unsigned_;
   }
 
+  String ToString() const;
+
  private:
   FontVariantNumeric(unsigned init_value) : fields_as_unsigned_(init_value) {}
 
@@ -87,7 +95,7 @@ class FontVariantNumeric {
   static_assert(sizeof(BitFields) == sizeof(unsigned),
                 "Mapped union types must match in size.");
 
-  // Used in setVariant to store the value in m_fields.m_variantNumeric;
+  // Used in SetVariant to store the value in m_fields.m_variantNumeric;
   friend class FontDescription;
 };
 }

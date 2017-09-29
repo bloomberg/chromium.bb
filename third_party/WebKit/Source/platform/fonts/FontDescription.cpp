@@ -448,7 +448,6 @@ static const char* ToBooleanString(bool value) {
 }
 
 String FontDescription::ToString() const {
-  // TODO(wkorman): Incorporate |variant_numeric| and |variant_east_asian|.
   return String::Format(
       "family_list=[%s], feature_settings=[%s], variation_settings=[%s], "
       "locale=%s, "
@@ -461,7 +460,8 @@ String FontDescription::ToString() const {
       "variant_ligatures=[%s], "
       "keyword_size=%u, font_smoothing=%s, text_rendering=%s, "
       "synthetic_bold=%s, synthetic_italic=%s, subpixel_positioning=%s, "
-      "subpixel_ascent_descent=%s",
+      "subpixel_ascent_descent=%s, variant_numeric=[%s], "
+      "variant_east_asian=[%s]",
       family_list_.ToString().Ascii().data(),
       (feature_settings_ ? feature_settings_->ToString().Ascii().data() : ""),
       (variation_settings_ ? variation_settings_->ToString().Ascii().data()
@@ -487,7 +487,9 @@ String FontDescription::ToString() const {
       blink::ToString(TextRendering()).Ascii().data(),
       ToBooleanString(IsSyntheticBold()), ToBooleanString(IsSyntheticItalic()),
       ToBooleanString(UseSubpixelPositioning()),
-      ToBooleanString(SubpixelAscentDescent()));
+      ToBooleanString(SubpixelAscentDescent()),
+      VariantNumeric().ToString().Ascii().data(),
+      VariantEastAsian().ToString().Ascii().data());
 }
 
 }  // namespace blink

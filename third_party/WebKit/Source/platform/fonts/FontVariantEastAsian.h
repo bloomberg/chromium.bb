@@ -6,6 +6,7 @@
 #define FontVariantEastAsian_h
 
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
@@ -23,6 +24,7 @@ class FontVariantEastAsian {
     kTraditional
     // Ensure |BitFields| has enough bits when adding values.
   };
+  static String ToString(EastAsianForm);
 
   enum EastAsianWidth {
     kNormalWidth,
@@ -30,6 +32,7 @@ class FontVariantEastAsian {
     kProportionalWidth
     // Ensure |BitFields| has enough bits when adding values.
   };
+  static String ToString(EastAsianWidth);
 
   FontVariantEastAsian() : fields_as_unsigned_(0) {}
 
@@ -54,6 +57,8 @@ class FontVariantEastAsian {
   bool operator==(const FontVariantEastAsian& other) const {
     return fields_as_unsigned_ == other.fields_as_unsigned_;
   }
+
+  String ToString() const;
 
  private:
   FontVariantEastAsian(unsigned init_value) : fields_as_unsigned_(init_value) {}
