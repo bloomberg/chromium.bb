@@ -490,3 +490,15 @@ def GetResultMap(content):
       build_result_map[build_id] = r
 
   return build_result_map
+
+def GetBuildTags(content, tag):
+  """Return a list of tag values given the tag name."""
+  tags = GetNestedAttr(content, ['build', 'tags'])
+
+  result = []
+  for t in tags:
+    tag_pair = t.split(':')
+    if tag_pair[0] == tag:
+      result.append(tag_pair[1])
+
+  return result

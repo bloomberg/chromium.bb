@@ -358,6 +358,30 @@ class GetAttributeTest(cros_test_lib.MockTestCase):
       reason = buildbucket_lib.GetErrorReason(r)
       self.assertEqual(reason, 'error_reason')
 
+  def testGetBuildTag(self):
+    """Test GetbuildTag."""
+    content = {
+        'build': {
+            'bucket': 'master.chromeos',
+            'status': 'COMPLETED',
+            'id': 'bb_id',
+            'tags': [
+                'build_type:paladin',
+                'buildset:buildset_1',
+                'buildset:buildset_2',
+                'master_config:']
+        }
+    }
+    tags = buildbucket_lib.GetBuildTags(content, 'build_type')
+    self.assertItemsEqual(tags, ['paladin'])
+
+    tags = buildbucket_lib.GetBuildTags(content, 'buildset')
+    self.assertItemsEqual(tags, ['buildset_1', 'buildset_2'])
+
+    tags = buildbucket_lib.GetBuildTags(content, 'master_config')
+    self.assertItemsEqual(tags, [''])
+
+
 class BuildbucketLibTest(cros_test_lib.MockTestCase):
   """Test methods in buildbucket_lib."""
 

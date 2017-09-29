@@ -1179,6 +1179,52 @@ class BuildRequestTableTest(CIDBIntegrationTest):
     self.assertItemsEqual([r.request_buildbucket_id for r in requests],
                           ['test_bb_id_1', 'test_bb_id_2', 'test_bb_id_3'])
 
+  def testGetBuildRequestsForRequesterBuild(self):
+    """Test GetBuildRequestsForRequesterBuild."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    b_id_1 = bot_db.InsertBuild(
+        'master-paladin', constants.WATERFALL_INTERNAL, _random(),
+        'master-paladin', 'bot_hostname')
+
+    build_req_1 = build_requests.BuildRequest(
+        id=None, build_id=b_id_1,
+        request_build_config='test1-paladin',
+        request_build_args='test_build_args_1',
+        request_buildbucket_id='test_bb_id_1',
+        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
+        timestamp=None)
+    build_req_2 = build_requests.BuildRequest(
+        id=None, build_id=b_id_1,
+        request_build_config='test2-paladin',
+        request_build_args='test_build_args_2',
+        request_buildbucket_id='test_bb_id_2',
+        request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE,
+        timestamp=None)
+    build_req_3 = build_requests.BuildRequest(
+        id=None, build_id=b_id_1,
+        request_build_config='test3-paladin',
+        request_build_args='test_build_args_3',
+        request_buildbucket_id='test_bb_id_3',
+        request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE,
+        timestamp=None)
+    bot_db.InsertBuildRequests([build_req_1, build_req_2, build_req_3])
+
+    requests = bot_db.GetBuildRequestsForRequesterBuild(b_id_1)
+    self.assertItemsEqual([r.request_build_config for r in requests],
+                          ['test1-paladin', 'test2-paladin', 'test3-paladin'])
+
+    requests = bot_db.GetBuildRequestsForRequesterBuild(
+        b_id_1, request_reason=build_requests.REASON_IMPORTANT_CQ_SLAVE)
+    self.assertItemsEqual([r.request_build_config for r in requests],
+                          ['test1-paladin', 'test2-paladin'])
+
+    requests = bot_db.GetBuildRequestsForRequesterBuild(
+        b_id_1, request_reason=build_requests.REASON_EXPERIMENTAL_CQ_SLAVE)
+    self.assertItemsEqual([r.request_build_config for r in requests],
+                          ['test3-paladin'])
+
 
 class CLActionTableTest(CIDBIntegrationTest):
   """Tests for CLActionTable."""

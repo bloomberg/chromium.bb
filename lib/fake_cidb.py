@@ -59,7 +59,7 @@ class FakeCIDBConnection(object):
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
                   important=None, buildbucket_id=None, milestone_version=None,
-                  platform_version=None, start_time=None):
+                  platform_version=None, start_time=None, build_type=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
@@ -90,7 +90,8 @@ class FakeCIDBConnection(object):
            'buildbucket_id': buildbucket_id,
            'final': False,
            'milestone_version': milestone_version,
-           'platform_version': platform_version}
+           'platform_version': platform_version,
+           'build_type': build_type}
     self.buildTable.append(row)
     return build_id
 
@@ -632,6 +633,29 @@ class FakeCIDBConnection(object):
       return requests[:num_results]
     else:
       return requests
+
+  def GetBuildRequestsForRequesterBuild(self, requester_build_id,
+                                        request_reason=None):
+    """Get the build_requests associated to the requester build.
+
+    Args:
+      requester_build_id: The build id of the requester build.
+      request_reason: If provided, only return the build_request of the given
+        request reason. Default to None.
+
+    Returns:
+      A list of build_request.BuildRequest instances.
+    """
+    results = []
+    for value in self.buildRequestTable.values():
+      if (value['build_id'] == requester_build_id and
+          request_reason is None or request_reason == value['request_reason']):
+        results.append(build_requests.BuildRequest(
+            value['id'], value['build_id'], value['request_build_config'],
+            value['request_build_args'], value['request_buildbucket_id'],
+            value['request_reason'], value['timestamp']))
+
+    return results
 
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.

@@ -648,7 +648,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
       'build_number', 'builder_name', 'platform_version', 'full_version',
       'milestone_version', 'important', 'buildbucket_id', 'summary',
-      'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline')
+      'buildbot_generation', 'master_build_id', 'bot_hostname', 'deadline',
+      'build_type')
 
   _SQL_FETCH_ANNOTATIONS = (
       'SELECT aT.build_id, aT.last_updated, last_annotator, '
@@ -2002,6 +2003,27 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
 
+    return [build_requests.BuildRequest(*values) for values in results]
+
+  def GetBuildRequestsForRequesterBuild(self, requester_build_id,
+                                        request_reason=None):
+    """Get the build_requests associated to the requester build.
+
+    Args:
+      requester_build_id: The build id of the requester build.
+      request_reason: If provided, only return the build_request of the given
+        request reason. Default to None.
+
+    Returns:
+      A list of build_request.BuildRequest instances.
+    """
+    query = ('SELECT * from buildRequestTable WHERE build_id = %d' %
+             requester_build_id)
+
+    if request_reason is not None:
+      query += ' AND request_reason = "%s"' % request_reason
+
+    results = self._Execute(query).fetchall()
     return [build_requests.BuildRequest(*values) for values in results]
 
 

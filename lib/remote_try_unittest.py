@@ -328,3 +328,27 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
            'buildbucketId=%s' %
            buildbucket_id)
       )
+
+  # pylint: disable=protected-access
+  def testPostConfigsToBuildBucket(self):
+    """Check syntax for PostConfigsToBuildBucket."""
+    self.PatchObject(auth, 'Login')
+    self.PatchObject(auth, 'Token')
+    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
+    remote_try_job = remote_try.RemoteTryJob(
+        ['build_config'],
+        'display_label',
+        remote_description='description')
+    remote_try_job._PostConfigsToBuildBucket(testjob=True, dryrun=True)
+
+  def testGetRequestBody(self):
+    """Test GetRequestBody."""
+    remote_try_job = remote_try.RemoteTryJob(
+        ['lumpy-pre-cq', 'lumpy-paladin'],
+        'display_label',
+        remote_description='description')
+    body = remote_try_job._GetRequestBody('lumpy-pre-cq')
+    self.assertTrue('build_type:pre_cq' in body['tags'])
+
+    body = remote_try_job._GetRequestBody('lumpy-paladin')
+    self.assertFalse('build_type:pre_cq' in body['tags'])

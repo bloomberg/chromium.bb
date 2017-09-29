@@ -216,6 +216,16 @@ class RemoteTryJob(object):
     else:
       bucket = constants.TRYSERVER_BUILDBUCKET_BUCKET
 
+    tags = ['cbb_display_label:%s' % self.display_label,
+            'cbb_branch:%s' % self.branch,
+            'cbb_config:%s' % bot,
+            'cbb_master_build_id:%s' % self.master_buildbucket_id,
+            'cbb_email:%s' % self.user_email,]
+
+    # Add build_type tag for Pre-CQ builds.
+    if site_config[bot]['build_type'] == constants.PRE_CQ_TYPE:
+      tags.append('build_type:%s' % constants.PRE_CQ_TYPE)
+
     return {
         'bucket': bucket,
         'parameters_json': json.dumps({
@@ -232,13 +242,7 @@ class RemoteTryJob(object):
             },
         }),
         # These tags are indexed and searchable in buildbucket.
-        'tags': [
-            'cbb_display_label:%s' % self.display_label,
-            'cbb_branch:%s' % self.branch,
-            'cbb_config:%s' % bot,
-            'cbb_master_build_id:%s' % self.master_buildbucket_id,
-            'cbb_email:%s' % self.user_email,
-        ],
+        'tags': tags,
     }
 
   def _PutConfigToBuildBucket(self, buildbucket_client, bot, dryrun):
