@@ -454,6 +454,7 @@ CMDLINE_SELECT="
     lowbitdepth
     highbitdepth
     experimental
+    adopted_experiments
     colorspace_headers
 "
 
@@ -500,36 +501,40 @@ post_process_cmdline() {
         enabled ${c} && enable_feature ${c##*_}s
     done
 
+    enable_feature cb4x4
+
     # Enable adopted experiments by default
-    soft_enable cb4x4
-    soft_enable chroma_sub8x8
-    soft_enable filter_7bit
-    soft_enable reference_buffer
-    soft_enable rect_tx
-    soft_enable global_motion
-    soft_enable ext_tx
-    soft_enable cdef
-    soft_enable ext_intra
-    soft_enable intra_edge
-    soft_enable mv_compress
-    soft_enable ext_refs
-    soft_enable dual_filter
-    soft_enable motion_var
-    soft_enable warped_motion
-    soft_enable ext_delta_q
-    soft_enable loopfiltering_across_tiles
-    soft_enable var_tx
-    soft_enable txmg
-    soft_enable wedge
-    soft_enable compound_segment
-    soft_enable interintra
-    soft_enable one_sided_compound
-    soft_enable ext_comp_refs
-    soft_enable smooth_hv
-    soft_enable parallel_deblocking
-    soft_enable convolve_round
-    soft_enable aom_qm
-    soft_enable dist_8x8
+    soft_enable adopted_experiments
+    if enabled adopted_experiments; then
+      soft_enable chroma_sub8x8
+      soft_enable filter_7bit
+      soft_enable reference_buffer
+      soft_enable rect_tx
+      soft_enable global_motion
+      soft_enable ext_tx
+      soft_enable cdef
+      soft_enable ext_intra
+      soft_enable intra_edge
+      soft_enable mv_compress
+      soft_enable ext_refs
+      soft_enable dual_filter
+      soft_enable motion_var
+      soft_enable warped_motion
+      soft_enable ext_delta_q
+      soft_enable loopfiltering_across_tiles
+      soft_enable var_tx
+      soft_enable txmg
+      soft_enable wedge
+      soft_enable compound_segment
+      soft_enable interintra
+      soft_enable one_sided_compound
+      soft_enable ext_comp_refs
+      soft_enable smooth_hv
+      soft_enable parallel_deblocking
+      soft_enable convolve_round
+      soft_enable aom_qm
+      soft_enable dist_8x8
+    fi
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
