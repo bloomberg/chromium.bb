@@ -22,7 +22,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.util.SparseArray;
-
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -32,14 +31,12 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
@@ -50,7 +47,6 @@ import org.chromium.base.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -475,6 +471,11 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         settings.setGeolocationEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setDomStorageEnabled(true);
+
+        // Default layout behavior for chrome on android.
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
     }
 
     private void about() {
