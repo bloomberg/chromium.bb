@@ -65,11 +65,11 @@ TEST_F(ShelfControllerTest, IntializesAppListItemDelegate) {
   EXPECT_TRUE(model->GetShelfItemDelegate(ShelfID(kAppListId)));
 }
 
-TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
-  if (Shell::GetAshConfig() == Config::MASH)
+TEST_F(ShelfControllerTest, ShelfModelChangesWithoutSync) {
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  if (controller->should_synchronize_shelf_models())
     return;
 
-  ShelfController* controller = Shell::Get()->shelf_controller();
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::ShelfObserver> binding(
@@ -77,12 +77,12 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
   controller->AddObserver(observer_ptr.PassInterface());
 
   // The ShelfModel should be initialized with a single item for the AppList.
-  // In classic ash, the observer should not be notified of ShelfModel changes.
+  // Without syncing, the observer should not be notified of ShelfModel changes.
   EXPECT_EQ(1, controller->model()->item_count());
   EXPECT_EQ(0u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Add a ShelfModel item; |observer| should not be notified in classic ash.
+  // Add a ShelfModel item; |observer| should not be notified without sync.
   ShelfItem item;
   item.type = TYPE_PINNED_APP;
   item.id = ShelfID("foo");
@@ -92,7 +92,7 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
   EXPECT_EQ(0u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Remove a ShelfModel item; |observer| should not be notified in classic ash.
+  // Remove a ShelfModel item; |observer| should not be notified without sync.
   controller->model()->RemoveItemAt(index);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, controller->model()->item_count());
@@ -100,11 +100,11 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInClassicAsh) {
   EXPECT_EQ(0u, observer.removed_count());
 }
 
-TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
-  if (Shell::GetAshConfig() != Config::MASH)
+TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  if (!controller->should_synchronize_shelf_models())
     return;
 
-  ShelfController* controller = Shell::Get()->shelf_controller();
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::ShelfObserver> binding(
@@ -113,12 +113,12 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
   base::RunLoop().RunUntilIdle();
 
   // The ShelfModel should be initialized with a single item for the AppList.
-  // In mash, the observer is immediately notified of existing shelf items.
+  // When syncing, the observer is immediately notified of existing shelf items.
   EXPECT_EQ(1, controller->model()->item_count());
   EXPECT_EQ(1u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Add a ShelfModel item; |observer| should be notified in mash.
+  // Add a ShelfModel item; |observer| should be notified when syncing.
   ShelfItem item;
   item.type = TYPE_PINNED_APP;
   item.id = ShelfID("foo");
@@ -128,7 +128,7 @@ TEST_F(ShelfControllerTest, ShelfModelChangesInMash) {
   EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(0u, observer.removed_count());
 
-  // Remove a ShelfModel item; |observer| should be notified in mash.
+  // Remove a ShelfModel item; |observer| should be notified when syncing.
   controller->model()->RemoveItemAt(index);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, controller->model()->item_count());

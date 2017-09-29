@@ -69,6 +69,8 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
   center.Offset(- origin.x(), - origin.y());
   generator.MoveMouseTo(center);
   generator.ClickLeftButton();
+  // Spin a run loop so Ash can notify Chrome of item selection for handling.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace
