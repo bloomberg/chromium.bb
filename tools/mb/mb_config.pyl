@@ -1533,7 +1533,7 @@
     ],
 
     'release_libfuzzer_ubsan': [
-      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'shared',
+      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_trybot': [
