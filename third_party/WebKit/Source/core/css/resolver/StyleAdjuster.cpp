@@ -481,10 +481,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
+  if (style.Display() != EDisplay::kNone && element &&
+      element->IsHTMLElement()) {
+    AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
+  }
   if (style.Display() != EDisplay::kNone) {
-    if (element && element->IsHTMLElement())
-      AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
-
     // Per the spec, position 'static' and 'relative' in the top layer compute
     // to 'absolute'.
     if (IsInTopLayer(element, style) &&
