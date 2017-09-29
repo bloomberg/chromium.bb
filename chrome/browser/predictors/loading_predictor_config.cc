@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,7 +103,7 @@ LoadingPredictorConfig::LoadingPredictorConfig()
     : mode(0),
       max_navigation_lifetime_seconds(60),
       max_urls_to_track(500),
-      max_hosts_to_track(200),
+      max_hosts_to_track(chrome_browser_net::Predictor::kMaxReferrers),
       min_url_visit_count(2),
       max_resources_per_entry(50),
       max_origins_per_entry(50),
