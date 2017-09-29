@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
+#include "media/base/encryption_scheme.h"
 #include "media/formats/mp2t/mp2t_common.h"
 
 namespace media {
@@ -24,6 +25,7 @@ enum DescriptorTag {
 };
 
 const int kCASystemIdCenc = 0x6365;  // 'ce'
+const uint32_t kFourccCbcs = 0x63626373;  // 'cbcs'
 
 class StringBitReader : public BitReader {
  public:
@@ -110,7 +112,9 @@ bool Descriptors::HasCADescriptor(int* system_id,
   return true;
 }
 
-bool Descriptors::HasCADescriptorCenc(int* ca_pid, int* pssh_pid) const {
+bool Descriptors::HasCADescriptorCenc(int* ca_pid,
+                                      int* pssh_pid,
+                                      EncryptionScheme* scheme) const {
   DCHECK(ca_pid);
   DCHECK(pssh_pid);
   int system_id;
@@ -125,10 +129,12 @@ bool Descriptors::HasCADescriptorCenc(int* ca_pid, int* pssh_pid) const {
   int num_systems;
   int encryption_algorithm;
   char pssh_system_id[16];
-  // TODO(dougsteed). Currently we don't check many of the following values.
+  // TODO(dougsteed). Currently we don't check many of the following values,
+  // and we only support the 'cbcs' scheme (which involves AES-CBC encryption).
   // When we flesh out this implementation to cover all of ISO/IEC 23001-9 we
-  // will need to use and check these values.
+  // will need to use and check these values more comprehensively.
   RCHECK(reader.ReadBits(32, &scheme_type));
+  RCHECK(scheme_type == kFourccCbcs);
   RCHECK(reader.ReadBits(32, &scheme_version));
   RCHECK(reader.ReadBits(8, &num_systems));
   RCHECK(num_systems == 1);
@@ -137,6 +143,10 @@ bool Descriptors::HasCADescriptorCenc(int* ca_pid, int* pssh_pid) const {
     RCHECK(reader.ReadBits(8, &pssh_system_id[i]));
   }
   RCHECK(reader.ReadBits(13, pssh_pid));
+  // The pattern is actually set differently for audio and video, so OK not to
+  // set it here. Important thing is to set the cipher mode.
+  *scheme = EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
+                             EncryptionScheme::Pattern());
   return true;
 }
 

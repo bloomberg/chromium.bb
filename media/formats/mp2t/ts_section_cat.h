@@ -10,13 +10,20 @@
 #include "media/formats/mp2t/ts_section_psi.h"
 
 namespace media {
+
+class EncryptionScheme;
+
 namespace mp2t {
 
 class TsSectionCat : public TsSectionPsi {
  public:
   // RegisterCencPidsCb::Run(int ca_pid, int pssh_pid);
   using RegisterCencPidsCb = base::Callback<void(int, int)>;
-  explicit TsSectionCat(const RegisterCencPidsCb& register_cenc_ids_cb);
+  // RegisterEncryptionScheme::Run(const EncryptionScheme& scheme);
+  using RegisterEncryptionSchemeCb =
+      base::Callback<void(const EncryptionScheme&)>;
+  TsSectionCat(const RegisterCencPidsCb& register_cenc_ids_cb,
+               const RegisterEncryptionSchemeCb& register_encryption_scheme_cb);
   ~TsSectionCat() override;
 
   // TsSectionPsi implementation.
@@ -25,6 +32,7 @@ class TsSectionCat : public TsSectionPsi {
 
  private:
   RegisterCencPidsCb register_cenc_ids_cb_;
+  RegisterEncryptionSchemeCb register_encryption_scheme_cb_;
 
   // Parameters from the CAT.
   int version_number_;

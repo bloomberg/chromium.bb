@@ -210,13 +210,14 @@ bool EsParserAdts::ParseFromEsQueue() {
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
     if (use_hls_sample_aes_) {
       const DecryptConfig* base_decrypt_config = get_decrypt_config_cb_.Run();
-      RCHECK(base_decrypt_config);
-      std::vector<SubsampleEntry> subsamples;
-      CalculateSubsamplesForAdtsFrame(adts_frame, &subsamples);
-      std::unique_ptr<DecryptConfig> decrypt_config(
-          new DecryptConfig(base_decrypt_config->key_id(),
-                            base_decrypt_config->iv(), subsamples));
-      stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
+      if (base_decrypt_config) {
+        std::vector<SubsampleEntry> subsamples;
+        CalculateSubsamplesForAdtsFrame(adts_frame, &subsamples);
+        std::unique_ptr<DecryptConfig> decrypt_config(
+            new DecryptConfig(base_decrypt_config->key_id(),
+                              base_decrypt_config->iv(), subsamples));
+        stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
+      }
     }
 #endif
     emit_buffer_cb_.Run(stream_parser_buffer);
