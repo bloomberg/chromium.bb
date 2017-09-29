@@ -92,7 +92,7 @@ void ArrayBuffer::AddView(ArrayBufferView* view) {
 }
 
 void ArrayBuffer::RemoveView(ArrayBufferView* view) {
-  DCHECK_EQ(this, view->buffer_.Get());
+  DCHECK_EQ(this, view->buffer_.get());
   if (view->next_view_)
     view->next_view_->prev_view_ = view->prev_view_;
   if (view->prev_view_)

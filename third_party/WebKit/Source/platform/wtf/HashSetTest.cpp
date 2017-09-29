@@ -187,7 +187,7 @@ TEST(HashSetTest, HashSetRefPtr) {
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  DummyRefCounted* raw_ptr = ptr.Get();
+  DummyRefCounted* raw_ptr = ptr.get();
 
   EXPECT_TRUE(set.Contains(raw_ptr));
   EXPECT_NE(set.end(), set.find(raw_ptr));

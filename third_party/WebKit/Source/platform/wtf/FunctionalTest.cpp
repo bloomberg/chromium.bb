@@ -369,7 +369,7 @@ TEST(FunctionalTest, UnretainedWithRefCounted) {
   RefPtr<Number> five = Number::Create(5);
   EXPECT_EQ(1, five->RefCount());
   Function<int()> multiply_five_by_two_function =
-      WTF::Bind(MultiplyNumberByTwo, WTF::Unretained(five.Get()));
+      WTF::Bind(MultiplyNumberByTwo, WTF::Unretained(five.get()));
   EXPECT_EQ(1, five->RefCount());
   EXPECT_EQ(10, multiply_five_by_two_function());
   EXPECT_EQ(1, five->RefCount());

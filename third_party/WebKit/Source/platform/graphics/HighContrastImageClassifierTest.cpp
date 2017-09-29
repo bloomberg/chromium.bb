@@ -18,7 +18,7 @@ class HighContrastImageClassifierTest : public ::testing::Test {
     String file_path = testing::BlinkRootDir();
     file_path.append(file_name);
     RefPtr<SharedBuffer> image_data = testing::ReadFromFile(file_path);
-    EXPECT_TRUE(image_data.Get());
+    EXPECT_TRUE(image_data.get());
 
     RefPtr<BitmapImage> image = BitmapImage::Create();
     image->SetData(image_data, true);
@@ -34,10 +34,10 @@ class HighContrastImageClassifierTest : public ::testing::Test {
 TEST_F(HighContrastImageClassifierTest, ShouldApplyHighContrastFilterToImage) {
   RefPtr<BitmapImage> image = LoadImage(
       "/LayoutTests/images/resources/blue-wheel-srgb-color-profile.png");
-  EXPECT_FALSE(classifier_.ShouldApplyHighContrastFilterToImage(*image.Get()));
+  EXPECT_FALSE(classifier_.ShouldApplyHighContrastFilterToImage(*image.get()));
 
   image = LoadImage("/LayoutTests/images/resources/grid.png");
-  EXPECT_TRUE(classifier_.ShouldApplyHighContrastFilterToImage(*image.Get()));
+  EXPECT_TRUE(classifier_.ShouldApplyHighContrastFilterToImage(*image.get()));
 }
 
 }  // namespace blink

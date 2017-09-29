@@ -41,17 +41,17 @@ TEST(TreeNodeTest, AppendChild) {
   RefPtr<TestTree> first_child = TestTree::Create();
   RefPtr<TestTree> last_child = TestTree::Create();
 
-  root->AppendChild(first_child.Get());
-  EXPECT_EQ(root->FirstChild(), first_child.Get());
-  EXPECT_EQ(root->LastChild(), first_child.Get());
-  EXPECT_EQ(first_child->Parent(), root.Get());
+  root->AppendChild(first_child.get());
+  EXPECT_EQ(root->FirstChild(), first_child.get());
+  EXPECT_EQ(root->LastChild(), first_child.get());
+  EXPECT_EQ(first_child->Parent(), root.get());
 
-  root->AppendChild(last_child.Get());
-  EXPECT_EQ(root->FirstChild(), first_child.Get());
-  EXPECT_EQ(root->LastChild(), last_child.Get());
-  EXPECT_EQ(last_child->Previous(), first_child.Get());
-  EXPECT_EQ(first_child->Next(), last_child.Get());
-  EXPECT_EQ(last_child->Parent(), root.Get());
+  root->AppendChild(last_child.get());
+  EXPECT_EQ(root->FirstChild(), first_child.get());
+  EXPECT_EQ(root->LastChild(), last_child.get());
+  EXPECT_EQ(last_child->Previous(), first_child.get());
+  EXPECT_EQ(first_child->Next(), last_child.get());
+  EXPECT_EQ(last_child->Parent(), root.get());
 }
 
 TEST(TreeNodeTest, InsertBefore) {
@@ -61,28 +61,28 @@ TEST(TreeNodeTest, InsertBefore) {
   RefPtr<TestTree> last_child = TestTree::Create();
 
   // Inserting single node
-  root->InsertBefore(last_child.Get(), 0);
-  EXPECT_EQ(last_child->Parent(), root.Get());
-  EXPECT_EQ(root->FirstChild(), last_child.Get());
-  EXPECT_EQ(root->LastChild(), last_child.Get());
+  root->InsertBefore(last_child.get(), 0);
+  EXPECT_EQ(last_child->Parent(), root.get());
+  EXPECT_EQ(root->FirstChild(), last_child.get());
+  EXPECT_EQ(root->LastChild(), last_child.get());
 
   // Then prepend
-  root->InsertBefore(first_child.Get(), last_child.Get());
-  EXPECT_EQ(first_child->Parent(), root.Get());
-  EXPECT_EQ(root->FirstChild(), first_child.Get());
-  EXPECT_EQ(root->LastChild(), last_child.Get());
-  EXPECT_EQ(first_child->Next(), last_child.Get());
-  EXPECT_EQ(first_child.Get(), last_child->Previous());
+  root->InsertBefore(first_child.get(), last_child.get());
+  EXPECT_EQ(first_child->Parent(), root.get());
+  EXPECT_EQ(root->FirstChild(), first_child.get());
+  EXPECT_EQ(root->LastChild(), last_child.get());
+  EXPECT_EQ(first_child->Next(), last_child.get());
+  EXPECT_EQ(first_child.get(), last_child->Previous());
 
   // Inserting in the middle
-  root->InsertBefore(middle_child.Get(), last_child.Get());
-  EXPECT_EQ(middle_child->Parent(), root.Get());
-  EXPECT_EQ(root->FirstChild(), first_child.Get());
-  EXPECT_EQ(root->LastChild(), last_child.Get());
-  EXPECT_EQ(middle_child->Previous(), first_child.Get());
-  EXPECT_EQ(middle_child->Next(), last_child.Get());
-  EXPECT_EQ(first_child->Next(), middle_child.Get());
-  EXPECT_EQ(last_child->Previous(), middle_child.Get());
+  root->InsertBefore(middle_child.get(), last_child.get());
+  EXPECT_EQ(middle_child->Parent(), root.get());
+  EXPECT_EQ(root->FirstChild(), first_child.get());
+  EXPECT_EQ(root->LastChild(), last_child.get());
+  EXPECT_EQ(middle_child->Previous(), first_child.get());
+  EXPECT_EQ(middle_child->Next(), last_child.get());
+  EXPECT_EQ(first_child->Next(), middle_child.get());
+  EXPECT_EQ(last_child->Previous(), middle_child.get());
 }
 
 TEST(TreeNodeTest, RemoveSingle) {
@@ -90,13 +90,13 @@ TEST(TreeNodeTest, RemoveSingle) {
   RefPtr<TestTree> child = TestTree::Create();
   RefPtr<TestTree> null_node;
 
-  root->AppendChild(child.Get());
-  root->RemoveChild(child.Get());
-  EXPECT_EQ(child->Next(), null_node.Get());
-  EXPECT_EQ(child->Previous(), null_node.Get());
-  EXPECT_EQ(child->Parent(), null_node.Get());
-  EXPECT_EQ(root->FirstChild(), null_node.Get());
-  EXPECT_EQ(root->LastChild(), null_node.Get());
+  root->AppendChild(child.get());
+  root->RemoveChild(child.get());
+  EXPECT_EQ(child->Next(), null_node.get());
+  EXPECT_EQ(child->Previous(), null_node.get());
+  EXPECT_EQ(child->Parent(), null_node.get());
+  EXPECT_EQ(root->FirstChild(), null_node.get());
+  EXPECT_EQ(root->LastChild(), null_node.get());
 }
 
 class Trio {
@@ -108,9 +108,9 @@ class Trio {
         last_child(TestTree::Create()) {}
 
   void AppendChildren() {
-    root->AppendChild(first_child.Get());
-    root->AppendChild(middle_child.Get());
-    root->AppendChild(last_child.Get());
+    root->AppendChild(first_child.get());
+    root->AppendChild(middle_child.get());
+    root->AppendChild(last_child.get());
   }
 
   RefPtr<TestTree> root;
@@ -123,12 +123,12 @@ TEST(TreeNodeTest, RemoveMiddle) {
   Trio trio;
   trio.AppendChildren();
 
-  trio.root->RemoveChild(trio.middle_child.Get());
+  trio.root->RemoveChild(trio.middle_child.get());
   EXPECT_TRUE(trio.middle_child->Orphan());
-  EXPECT_EQ(trio.first_child->Next(), trio.last_child.Get());
-  EXPECT_EQ(trio.last_child->Previous(), trio.first_child.Get());
-  EXPECT_EQ(trio.root->FirstChild(), trio.first_child.Get());
-  EXPECT_EQ(trio.root->LastChild(), trio.last_child.Get());
+  EXPECT_EQ(trio.first_child->Next(), trio.last_child.get());
+  EXPECT_EQ(trio.last_child->Previous(), trio.first_child.get());
+  EXPECT_EQ(trio.root->FirstChild(), trio.first_child.get());
+  EXPECT_EQ(trio.root->LastChild(), trio.last_child.get());
 }
 
 TEST(TreeNodeTest, RemoveLast) {
@@ -136,11 +136,11 @@ TEST(TreeNodeTest, RemoveLast) {
   Trio trio;
   trio.AppendChildren();
 
-  trio.root->RemoveChild(trio.last_child.Get());
+  trio.root->RemoveChild(trio.last_child.get());
   EXPECT_TRUE(trio.last_child->Orphan());
-  EXPECT_EQ(trio.middle_child->Next(), null_node.Get());
-  EXPECT_EQ(trio.root->FirstChild(), trio.first_child.Get());
-  EXPECT_EQ(trio.root->LastChild(), trio.middle_child.Get());
+  EXPECT_EQ(trio.middle_child->Next(), null_node.get());
+  EXPECT_EQ(trio.root->FirstChild(), trio.first_child.get());
+  EXPECT_EQ(trio.root->LastChild(), trio.middle_child.get());
 }
 
 TEST(TreeNodeTest, RemoveFirst) {
@@ -148,11 +148,11 @@ TEST(TreeNodeTest, RemoveFirst) {
   Trio trio;
   trio.AppendChildren();
 
-  trio.root->RemoveChild(trio.first_child.Get());
+  trio.root->RemoveChild(trio.first_child.get());
   EXPECT_TRUE(trio.first_child->Orphan());
-  EXPECT_EQ(trio.middle_child->Previous(), null_node.Get());
-  EXPECT_EQ(trio.root->FirstChild(), trio.middle_child.Get());
-  EXPECT_EQ(trio.root->LastChild(), trio.last_child.Get());
+  EXPECT_EQ(trio.middle_child->Previous(), null_node.get());
+  EXPECT_EQ(trio.root->FirstChild(), trio.middle_child.get());
+  EXPECT_EQ(trio.root->LastChild(), trio.last_child.get());
 }
 
 TEST(TreeNodeTest, TakeChildrenFrom) {
@@ -160,13 +160,13 @@ TEST(TreeNodeTest, TakeChildrenFrom) {
   Trio trio;
   trio.AppendChildren();
 
-  new_parent->TakeChildrenFrom(trio.root.Get());
+  new_parent->TakeChildrenFrom(trio.root.get());
 
   EXPECT_FALSE(trio.root->HasChildren());
   EXPECT_TRUE(new_parent->HasChildren());
-  EXPECT_EQ(trio.first_child.Get(), new_parent->FirstChild());
-  EXPECT_EQ(trio.middle_child.Get(), new_parent->FirstChild()->Next());
-  EXPECT_EQ(trio.last_child.Get(), new_parent->LastChild());
+  EXPECT_EQ(trio.first_child.get(), new_parent->FirstChild());
+  EXPECT_EQ(trio.middle_child.get(), new_parent->FirstChild()->Next());
+  EXPECT_EQ(trio.last_child.get(), new_parent->LastChild());
 }
 
 class TrioWithGrandChild : public Trio {
@@ -175,7 +175,7 @@ class TrioWithGrandChild : public Trio {
 
   void AppendChildren() {
     Trio::AppendChildren();
-    middle_child->AppendChild(grand_child.Get());
+    middle_child->AppendChild(grand_child.get());
   }
 
   RefPtr<TestTree> grand_child;
@@ -185,12 +185,12 @@ TEST(TreeNodeTest, TraverseNext) {
   TrioWithGrandChild trio;
   trio.AppendChildren();
 
-  TestTree* order[] = {trio.root.Get(), trio.first_child.Get(),
-                       trio.middle_child.Get(), trio.grand_child.Get(),
-                       trio.last_child.Get()};
+  TestTree* order[] = {trio.root.get(), trio.first_child.get(),
+                       trio.middle_child.get(), trio.grand_child.get(),
+                       trio.last_child.get()};
 
   unsigned order_index = 0;
-  for (TestTree *node = trio.root.Get(); node;
+  for (TestTree *node = trio.root.get(); node;
        node = TraverseNext(node), order_index++)
     EXPECT_EQ(node, order[order_index]);
   EXPECT_EQ(order_index, sizeof(order) / sizeof(TestTree*));
@@ -200,12 +200,12 @@ TEST(TreeNodeTest, TraverseNextPostORder) {
   TrioWithGrandChild trio;
   trio.AppendChildren();
 
-  TestTree* order[] = {trio.first_child.Get(), trio.grand_child.Get(),
-                       trio.middle_child.Get(), trio.last_child.Get(),
-                       trio.root.Get()};
+  TestTree* order[] = {trio.first_child.get(), trio.grand_child.get(),
+                       trio.middle_child.get(), trio.last_child.get(),
+                       trio.root.get()};
 
   unsigned order_index = 0;
-  for (TestTree *node = TraverseFirstPostOrder(trio.root.Get()); node;
+  for (TestTree *node = TraverseFirstPostOrder(trio.root.get()); node;
        node = TraverseNextPostOrder(node), order_index++)
     EXPECT_EQ(node, order[order_index]);
   EXPECT_EQ(order_index, sizeof(order) / sizeof(TestTree*));

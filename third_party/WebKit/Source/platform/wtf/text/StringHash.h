@@ -62,7 +62,7 @@ struct StringHash {
     return key->GetHash();
   }
   static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
-    return Equal(a.Get(), b.Get());
+    return Equal(a.get(), b.get());
   }
 
   static unsigned GetHash(const String& key) { return key.Impl()->GetHash(); }
@@ -113,11 +113,11 @@ class CaseFoldingHash {
   }
 
   static unsigned GetHash(const RefPtr<StringImpl>& key) {
-    return GetHash(key.Get());
+    return GetHash(key.get());
   }
 
   static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
-    return Equal(a.Get(), b.Get());
+    return Equal(a.get(), b.get());
   }
 
   static unsigned GetHash(const String& key) { return GetHash(key.Impl()); }

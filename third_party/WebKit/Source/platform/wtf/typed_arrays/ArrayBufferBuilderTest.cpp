@@ -145,7 +145,7 @@ TEST(ArrayBufferBuilderTest, ToArrayBufferSameAddressIfExactCapacity) {
 
   RefPtr<ArrayBuffer> result1 = builder.ToArrayBuffer();
   RefPtr<ArrayBuffer> result2 = builder.ToArrayBuffer();
-  EXPECT_EQ(result1.Get(), result2.Get());
+  EXPECT_EQ(result1.get(), result2.get());
 }
 
 TEST(ArrayBufferBuilderTest, ToString) {

@@ -412,7 +412,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, WithRefPtr) {
   EXPECT_EQ(ptr, set.front());
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
 
-  DummyRefCounted* raw_ptr = ptr.Get();
+  DummyRefCounted* raw_ptr = ptr.get();
 
   EXPECT_TRUE(set.Contains(ptr));
   EXPECT_TRUE(set.Contains(raw_ptr));

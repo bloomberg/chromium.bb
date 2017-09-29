@@ -56,7 +56,7 @@ class WTF_EXPORT ArrayBufferBuilder final {
     buffer_ = ArrayBuffer::Create(capacity, 1);
   }
 
-  bool IsValid() const { return buffer_.Get(); }
+  bool IsValid() const { return buffer_.get(); }
 
   // Appending empty data is not allowed.
   unsigned Append(const char* data, unsigned length);

@@ -149,7 +149,7 @@ struct PtrHash {
 template <typename T>
 struct RefPtrHash : PtrHash<T> {
   using PtrHash<T>::GetHash;
-  static unsigned GetHash(const RefPtr<T>& key) { return GetHash(key.Get()); }
+  static unsigned GetHash(const RefPtr<T>& key) { return GetHash(key.get()); }
   using PtrHash<T>::Equal;
   static bool Equal(const RefPtr<T>& a, const RefPtr<T>& b) { return a == b; }
   static bool Equal(T* a, const RefPtr<T>& b) { return a == b; }

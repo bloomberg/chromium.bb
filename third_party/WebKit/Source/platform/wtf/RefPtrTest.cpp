@@ -25,7 +25,7 @@ TEST(RefPtrTest, LeakRef) {
   RefPtr<StringImpl> string = StringImpl::Create("test");
   EXPECT_TRUE(string);
   EXPECT_TRUE(string->HasOneRef());
-  StringImpl* raw = string.Get();
+  StringImpl* raw = string.get();
   StringImpl* leaked = string.LeakRef();
   EXPECT_TRUE(!string);
   EXPECT_TRUE(leaked);

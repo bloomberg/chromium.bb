@@ -73,7 +73,7 @@ class RefPtr {
   ALWAYS_INLINE RefPtr(const RefPtr& o) : ptr_(o.ptr_) { RefIfNotNull(ptr_); }
   template <typename U>
   RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T))
-      : ptr_(o.Get()) {
+      : ptr_(o.get()) {
     RefIfNotNull(ptr_);
   }
   RefPtr(RefPtr&& o) : ptr_(o.ptr_) { o.ptr_ = nullptr; }
@@ -82,10 +82,6 @@ class RefPtr {
       : ptr_(o.LeakRef()) {}
 
   ALWAYS_INLINE ~RefPtr() { DerefIfNotNull(ptr_); }
-
-  // TODO(tzik): Get() is being renamed to get(). Once the rename finished,
-  // remove Get().
-  ALWAYS_INLINE T* Get() const { return get(); }
 
   ALWAYS_INLINE T* get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
@@ -148,57 +144,57 @@ inline void swap(RefPtr<T>& a, RefPtr<T>& b) {
 
 template <typename T, typename U>
 inline bool operator==(const RefPtr<T>& a, const RefPtr<U>& b) {
-  return a.Get() == b.Get();
+  return a.get() == b.get();
 }
 
 template <typename T, typename U>
 inline bool operator==(const RefPtr<T>& a, U* b) {
-  return a.Get() == b;
+  return a.get() == b;
 }
 
 template <typename T, typename U>
 inline bool operator==(T* a, const RefPtr<U>& b) {
-  return a == b.Get();
+  return a == b.get();
 }
 
 template <typename T>
 inline bool operator==(const RefPtr<T>& a, std::nullptr_t) {
-  return !a.Get();
+  return !a.get();
 }
 
 template <typename T>
 inline bool operator==(std::nullptr_t, const RefPtr<T>& b) {
-  return !b.Get();
+  return !b.get();
 }
 
 template <typename T, typename U>
 inline bool operator!=(const RefPtr<T>& a, const RefPtr<U>& b) {
-  return a.Get() != b.Get();
+  return a.get() != b.get();
 }
 
 template <typename T, typename U>
 inline bool operator!=(const RefPtr<T>& a, U* b) {
-  return a.Get() != b;
+  return a.get() != b;
 }
 
 template <typename T, typename U>
 inline bool operator!=(T* a, const RefPtr<U>& b) {
-  return a != b.Get();
+  return a != b.get();
 }
 
 template <typename T>
 inline bool operator!=(const RefPtr<T>& a, std::nullptr_t) {
-  return a.Get();
+  return a.get();
 }
 
 template <typename T>
 inline bool operator!=(std::nullptr_t, const RefPtr<T>& b) {
-  return b.Get();
+  return b.get();
 }
 
 template <typename T>
 inline T* GetPtr(const RefPtr<T>& p) {
-  return p.Get();
+  return p.get();
 }
 
 template <typename T>
@@ -209,7 +205,7 @@ class RefPtrValuePeeker {
   ALWAYS_INLINE RefPtrValuePeeker(T* p) : ptr_(p) {}
   ALWAYS_INLINE RefPtrValuePeeker(std::nullptr_t) : ptr_(nullptr) {}
   template <typename U>
-  RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.Get()) {}
+  RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.get()) {}
 
   ALWAYS_INLINE operator T*() const { return ptr_; }
 
