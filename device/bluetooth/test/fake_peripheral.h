@@ -46,6 +46,10 @@ class FakePeripheral : public device::BluetoothDevice {
   // after IsGattDiscoveryComplete is called.
   void SetNextGATTDiscoveryResponse(uint16_t code);
 
+  // Returns true if there are no pending responses for this peripheral or any
+  // of its GATT services.
+  bool AllResponsesConsumed();
+
   // Simulates a GATT disconnection from the peripheral.
   void SimulateGATTDisconnection();
 

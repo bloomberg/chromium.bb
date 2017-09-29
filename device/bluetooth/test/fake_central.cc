@@ -72,6 +72,16 @@ void FakeCentral::SetNextGATTDiscoveryResponse(
   std::move(callback).Run(true);
 }
 
+bool FakeCentral::AllResponsesConsumed() {
+  return std::all_of(devices_.begin(), devices_.end(), [](const auto& e) {
+    // static_cast is safe because the parent class's devices_ is only
+    // populated via this FakeCentral, and only with FakePeripherals.
+    FakePeripheral* fake_peripheral =
+        static_cast<FakePeripheral*>(e.second.get());
+    return fake_peripheral->AllResponsesConsumed();
+  });
+}
+
 void FakeCentral::SimulateGATTDisconnection(
     const std::string& address,
     SimulateGATTDisconnectionCallback callback) {
@@ -398,6 +408,8 @@ FakePeripheral* FakeCentral::GetFakePeripheral(
     return nullptr;
   }
 
+  // static_cast is safe because the parent class's devices_ is only
+  // populated via this FakeCentral, and only with FakePeripherals.
   return static_cast<FakePeripheral*>(device_iter->second.get());
 }
 
@@ -409,6 +421,8 @@ FakeRemoteGattService* FakeCentral::GetFakeRemoteGattService(
     return nullptr;
   }
 
+  // static_cast is safe because FakePeripheral is only populated with
+  // FakeRemoteGattServices.
   return static_cast<FakeRemoteGattService*>(
       fake_peripheral->GetGattService(service_id));
 }
@@ -423,6 +437,8 @@ FakeRemoteGattCharacteristic* FakeCentral::GetFakeRemoteGattCharacteristic(
     return nullptr;
   }
 
+  // static_cast is safe because FakeRemoteGattService is only populated with
+  // FakeRemoteGattCharacteristics.
   return static_cast<FakeRemoteGattCharacteristic*>(
       fake_remote_gatt_service->GetCharacteristic(characteristic_id));
 }
@@ -439,6 +455,8 @@ FakeRemoteGattDescriptor* FakeCentral::GetFakeRemoteGattDescriptor(
     return nullptr;
   }
 
+  // static_cast is safe because FakeRemoteGattCharacteristic is only populated
+  // with FakeRemoteGattDescriptors.
   return static_cast<FakeRemoteGattDescriptor*>(
       fake_remote_gatt_characteristic->GetDescriptor(descriptor_id));
 }
