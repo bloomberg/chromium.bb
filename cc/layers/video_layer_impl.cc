@@ -169,13 +169,14 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, gfx::Rect(rotated_size),
-                            visible_layer_rect(), clip_rect(), is_clipped(),
-                            contents_opaque(), draw_opacity(),
-                            SkBlendMode::kSrcOver, GetSortingContextId());
+  gfx::Rect rotated_size_rect(rotated_size);
+  shared_quad_state->SetAll(transform, rotated_size_rect, visible_layer_rect(),
+                            clip_rect(), is_clipped(), contents_opaque(),
+                            draw_opacity(), SkBlendMode::kSrcOver,
+                            GetSortingContextId());
 
-  AppendDebugBorderQuad(
-      render_pass, rotated_size, shared_quad_state, append_quads_data);
+  AppendDebugBorderQuad(render_pass, rotated_size_rect, shared_quad_state,
+                        append_quads_data);
 
   gfx::Rect quad_rect(rotated_size);
   gfx::Rect visible_rect = frame_->visible_rect();

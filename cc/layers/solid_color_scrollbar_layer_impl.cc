@@ -98,7 +98,7 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+  AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
                         append_quads_data);
 
   gfx::Rect thumb_quad_rect(ComputeThumbQuadRect());

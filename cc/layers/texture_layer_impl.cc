@@ -155,7 +155,7 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
 
-  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+  AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
                         append_quads_data);
 
   gfx::Rect quad_rect(bounds());

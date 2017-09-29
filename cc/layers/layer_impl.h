@@ -448,11 +448,11 @@ class CC_EXPORT LayerImpl {
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const;
 
   void AppendDebugBorderQuad(viz::RenderPass* render_pass,
-                             const gfx::Size& bounds,
+                             const gfx::Rect& quad_rect,
                              const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
   void AppendDebugBorderQuad(viz::RenderPass* render_pass,
-                             const gfx::Size& bounds,
+                             const gfx::Rect& quad_rect,
                              const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data,
                              SkColor color,

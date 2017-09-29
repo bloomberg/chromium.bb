@@ -213,8 +213,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   if (raster_source_->IsSolidColor()) {
     PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-    AppendDebugBorderQuad(
-        render_pass, bounds(), shared_quad_state, append_quads_data);
+    AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
+                          append_quads_data);
 
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, draw_properties().occlusion_in_content_space,
@@ -237,10 +237,10 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   }
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
+    DCHECK(shared_quad_state->quad_layer_rect.origin() == gfx::Point(0, 0));
     AppendDebugBorderQuad(
-        render_pass, shared_quad_state->quad_layer_rect.size(),
-        shared_quad_state, append_quads_data,
-        DebugColors::DirectPictureBorderColor(),
+        render_pass, shared_quad_state->quad_layer_rect, shared_quad_state,
+        append_quads_data, DebugColors::DirectPictureBorderColor(),
         DebugColors::DirectPictureBorderWidth(device_scale_factor));
 
     gfx::Rect geometry_rect = shared_quad_state->visible_quad_layer_rect;
@@ -272,8 +272,23 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
   }
 
-  AppendDebugBorderQuad(render_pass, shared_quad_state->quad_layer_rect.size(),
-                        shared_quad_state, append_quads_data);
+  // If we're doing a regular AppendQuads (ie, not solid color or resourceless
+  // software draw, and if the visible rect is scrolled far enough away, then we
+  // may run into a floating point precision in AA calculations in the renderer.
+  // See crbug.com/765297. In order to avoid this, we shift the quads up from
+  // where they logically reside and adjust the shared_quad_state's transform
+  // instead. We only do this in a scale/translate matrices to ensure the math
+  // is correct.
+  gfx::Vector2d quad_offset;
+  if (shared_quad_state->quad_to_target_transform.IsScaleOrTranslation()) {
+    const auto& visible_rect = shared_quad_state->visible_quad_layer_rect;
+    quad_offset = gfx::Vector2d(-visible_rect.x(), -visible_rect.y());
+  }
+
+  gfx::Rect debug_border_rect(shared_quad_state->quad_layer_rect);
+  debug_border_rect.Offset(quad_offset);
+  AppendDebugBorderQuad(render_pass, debug_border_rect, shared_quad_state,
+                        append_quads_data);
 
   if (ShowDebugBorders(DebugBorderType::LAYER)) {
     for (PictureLayerTilingSet::CoverageIterator iter(
@@ -314,6 +329,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       auto* debug_border_quad =
           render_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
       gfx::Rect geometry_rect = iter.geometry_rect();
+      geometry_rect.Offset(quad_offset);
       gfx::Rect visible_geometry_rect = geometry_rect;
       debug_border_quad->SetNew(shared_quad_state,
                                 geometry_rect,
@@ -345,6 +361,12 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     gfx::Rect geometry_rect = iter.geometry_rect();
     gfx::Rect visible_geometry_rect =
         scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
+
+    gfx::Rect offset_geometry_rect = geometry_rect;
+    offset_geometry_rect.Offset(quad_offset);
+    gfx::Rect offset_visible_geometry_rect = visible_geometry_rect;
+    offset_visible_geometry_rect.Offset(quad_offset);
+
     bool needs_blending = !contents_opaque();
     if (visible_geometry_rect.IsEmpty())
       continue;
@@ -357,6 +379,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     bool has_draw_quad = false;
     if (*iter && iter->draw_info().IsReadyToDraw()) {
       const TileDrawInfo& draw_info = iter->draw_info();
+
       switch (draw_info.mode()) {
         case TileDrawInfo::RESOURCE_MODE: {
           gfx::RectF texture_rect = iter.texture_rect();
@@ -375,8 +398,9 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
           auto* quad =
               render_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
-          quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
-                       needs_blending, draw_info.resource_id(), texture_rect,
+          quad->SetNew(shared_quad_state, offset_geometry_rect,
+                       offset_visible_geometry_rect, needs_blending,
+                       draw_info.resource_id(), texture_rect,
                        draw_info.resource_size(), draw_info.contents_swizzled(),
                        nearest_neighbor_);
           ValidateQuadResources(quad);
@@ -391,8 +415,9 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
               alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-            quad->SetNew(shared_quad_state, geometry_rect,
-                         visible_geometry_rect, draw_info.solid_color(), false);
+            quad->SetNew(shared_quad_state, offset_geometry_rect,
+                         offset_visible_geometry_rect, draw_info.solid_color(),
+                         false);
             ValidateQuadResources(quad);
           }
           has_draw_quad = true;
@@ -412,8 +437,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       }
       auto* quad =
           render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-      quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
-                   color, false);
+      quad->SetNew(shared_quad_state, offset_geometry_rect,
+                   offset_visible_geometry_rect, color, false);
       ValidateQuadResources(quad);
 
       if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
@@ -453,6 +478,12 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       last_append_quads_tilings_.push_back(iter.CurrentTiling());
     }
   }
+
+  // Adjust shared_quad_state with the quad_offset, since we've adjusted each
+  // quad we've appended by it.
+  shared_quad_state->quad_to_target_transform.Translate(-quad_offset);
+  shared_quad_state->quad_layer_rect.Offset(quad_offset);
+  shared_quad_state->visible_quad_layer_rect.Offset(quad_offset);
 
   if (missing_tile_count) {
     TRACE_EVENT_INSTANT2("cc",
