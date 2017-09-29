@@ -96,13 +96,6 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
   return delegate->AccessibilityGetAcceleratedWidget();
 }
 
-IAccessible* BrowserAccessibilityManagerWin::GetParentIAccessible() {
-  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
-  if (!delegate)
-    return NULL;
-  return delegate->AccessibilityGetNativeViewAccessible();
-}
-
 void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
   // When IAccessible2 APIs have been used elsewhere in the codebase,
   // enable basic web accessibility support. (Full screen reader support is
