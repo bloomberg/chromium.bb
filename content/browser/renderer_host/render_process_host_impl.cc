@@ -261,16 +261,6 @@
 #define IntToStringType base::IntToString
 #endif
 
-// This is temporary to try to locate a core trampler.
-// TODO(bcwhite):  Remove when crbug/736675 is resolved.
-#if defined(OS_ANDROID)
-#include "base/metrics/statistics_recorder.h"
-#define VALIDATE_ALL_HISTOGRAMS(x) \
-  base::StatisticsRecorder::ValidateAllHistograms(x)
-#else
-#define VALIDATE_ALL_HISTOGRAMS(x)
-#endif
-
 namespace content {
 namespace {
 
@@ -3000,8 +2990,6 @@ void RenderProcessHostImpl::Cleanup() {
   }
   delayed_cleanup_needed_ = false;
 
-  VALIDATE_ALL_HISTOGRAMS(61);
-
   // Records the time when the process starts kept alive by the ref count for
   // UMA.
   if (listeners_.IsEmpty() && keep_alive_ref_count_ > 0 &&
@@ -3029,8 +3017,6 @@ void RenderProcessHostImpl::Cleanup() {
 
   DCHECK_EQ(0, pending_views_);
 
-  VALIDATE_ALL_HISTOGRAMS(62);
-
   // If the process associated with this RenderProcessHost is still alive,
   // notify all observers that the process has exited cleanly, even though it
   // will be destroyed a bit later. Observers shouldn't rely on this process
@@ -3041,16 +3027,11 @@ void RenderProcessHostImpl::Cleanup() {
           this, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0);
     }
   }
-
-  VALIDATE_ALL_HISTOGRAMS(63);
-
   for (auto& observer : observers_)
     observer.RenderProcessHostDestroyed(this);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_TERMINATED,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
-
-  VALIDATE_ALL_HISTOGRAMS(64);
 
   if (connection_filter_id_ !=
         ServiceManagerConnection::kInvalidConnectionFilterId) {
@@ -3060,8 +3041,6 @@ void RenderProcessHostImpl::Cleanup() {
     service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
     connection_filter_id_ =
         ServiceManagerConnection::kInvalidConnectionFilterId;
-
-    VALIDATE_ALL_HISTOGRAMS(65);
   }
 
 #ifndef NDEBUG
@@ -3070,8 +3049,6 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
-  VALIDATE_ALL_HISTOGRAMS(66);
-
   // It's important not to wait for the DeleteTask to delete the channel
   // proxy. Kill it off now. That way, in case the profile is going away, the
   // rest of the objects attached to this RenderProcessHost start going
@@ -3079,21 +3056,15 @@ void RenderProcessHostImpl::Cleanup() {
   // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
   ResetChannelProxy();
 
-  VALIDATE_ALL_HISTOGRAMS(67);
-
   // Its important to remove the kSessionStorageHolder after the channel
   // has been reset to avoid deleting the underlying namespaces prior
   // to processing ipcs referring to them.
   DCHECK(!channel_);
   RemoveUserData(kSessionStorageHolderKey);
 
-  VALIDATE_ALL_HISTOGRAMS(68);
-
   // Remove ourself from the list of renderer processes so that we can't be
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
-
-  VALIDATE_ALL_HISTOGRAMS(69);
 
   instance_weak_factory_.reset(
       new base::WeakPtrFactory<RenderProcessHostImpl>(this));
@@ -3658,7 +3629,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // It should not be possible for a process death notification to come in while
   // we are dying.
   DCHECK(!deleting_soon_);
-  VALIDATE_ALL_HISTOGRAMS(10);
 
   // child_process_launcher_ can be NULL in single process mode or if fast
   // termination happened.
@@ -3683,8 +3653,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   RendererClosedDetails details(status, exit_code);
 
-  VALIDATE_ALL_HISTOGRAMS(20);
-
   child_process_launcher_.reset();
   is_dead_ = true;
   if (route_provider_binding_.is_bound())
@@ -3694,8 +3662,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   ResetChannelProxy();
 
   UpdateProcessPriority();
-
-  VALIDATE_ALL_HISTOGRAMS(30);
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
@@ -3707,8 +3673,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   RemoveUserData(kSessionStorageHolderKey);
 
-  VALIDATE_ALL_HISTOGRAMS(40);
-
   base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
@@ -3716,16 +3680,12 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
     iter.Advance();
   }
 
-  VALIDATE_ALL_HISTOGRAMS(50);
-
   // Initialize a new ChannelProxy in case this host is re-used for a new
   // process. This ensures that new messages can be sent on the host ASAP (even
   // before Init()) and they'll eventually reach the new process.
   //
   // Note that this may have already been called by one of the above observers
   EnableSendQueue();
-
-  VALIDATE_ALL_HISTOGRAMS(60);
 
   // It's possible that one of the calls out to the observers might have caused
   // this object to be no longer needed.
@@ -3743,7 +3703,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up
-  VALIDATE_ALL_HISTOGRAMS(99);
 }
 
 size_t RenderProcessHost::GetActiveViewCount() {
