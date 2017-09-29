@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_client.h"
@@ -94,16 +95,157 @@ void GetUsageAndQuotaOnIOThread(
 }
 }  // namespace
 
+// Observer that listens on the IO thread for cache storage notifications and
+// informs the StorageHandler on the UI thread for origins of interest.
+// Created on the UI thread but predominantly used and deleted on the IO thread.
+// Registered on creation as an observer in CacheStorageContextImpl,
+// unregistered on destruction.
+class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
+ public:
+  CacheStorageObserver(base::WeakPtr<StorageHandler> owner_storage_handler,
+                       CacheStorageContextImpl* cache_storage_context)
+      : owner_(owner_storage_handler), context_(cache_storage_context) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&CacheStorageObserver::AddObserverOnIOThread,
+                       base::Unretained(this)));
+  }
+
+  ~CacheStorageObserver() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    context_->RemoveObserver(this);
+  }
+
+  void TrackOriginOnIOThread(const url::Origin& origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (origins_.find(origin) != origins_.end())
+      return;
+    origins_.insert(origin);
+  }
+
+  void UntrackOriginOnIOThread(const url::Origin& origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    origins_.erase(origin);
+  }
+
+  void OnCacheListChanged(const url::Origin& origin) override {
+    auto found = origins_.find(origin);
+    if (found == origins_.end())
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StorageHandler::NotifyCacheStorageListChanged, owner_,
+                       origin.Serialize()));
+  }
+
+  void OnCacheContentChanged(const url::Origin& origin,
+                             const std::string& cache_name) override {
+    if (origins_.find(origin) == origins_.end())
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StorageHandler::NotifyCacheStorageContentChanged,
+                       owner_, origin.Serialize(), cache_name));
+  }
+
+ private:
+  void AddObserverOnIOThread() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    context_->AddObserver(this);
+  }
+
+  // Maintained on the IO thread to avoid thread contention.
+  base::flat_set<url::Origin> origins_;
+
+  base::WeakPtr<StorageHandler> owner_;
+  scoped_refptr<CacheStorageContextImpl> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageObserver);
+};
+
+// Observer that listens on the IDB thread for IndexedDB notifications and
+// informs the StorageHandler on the UI thread for origins of interest.
+// Created on the UI thread but predominantly used and deleted on the IDB
+// thread.
+// Registered on creation as an observer in IndexedDBContextImpl, unregistered
+// on destruction.
+class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
+ public:
+  IndexedDBObserver(base::WeakPtr<StorageHandler> owner_storage_handler,
+                    IndexedDBContextImpl* indexed_db_context)
+      : owner_(owner_storage_handler), context_(indexed_db_context) {
+    context_->TaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&IndexedDBObserver::AddObserverOnIDBThread,
+                                  base::Unretained(this)));
+  }
+
+  ~IndexedDBObserver() override {
+    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    context_->RemoveObserver(this);
+  }
+
+  void TrackOriginOnIDBThread(const url::Origin& origin) {
+    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    if (origins_.find(origin) != origins_.end())
+      return;
+    origins_.insert(origin);
+  }
+
+  void UntrackOriginOnIDBThread(const url::Origin& origin) {
+    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    origins_.erase(origin);
+  }
+
+  void OnIndexedDBListChanged(const url::Origin& origin) override {
+    auto found = origins_.find(origin);
+    if (found == origins_.end())
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StorageHandler::NotifyIndexedDBListChanged, owner_,
+                       origin.Serialize()));
+  }
+
+  void OnIndexedDBContentChanged(
+      const url::Origin& origin,
+      const base::string16& database_name,
+      const base::string16& object_store_name) override {
+    auto found = origins_.find(origin);
+    if (found == origins_.end())
+      return;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StorageHandler::NotifyIndexedDBContentChanged, owner_,
+                       origin.Serialize(), database_name, object_store_name));
+  }
+
+  base::SequencedTaskRunner* TaskRunner() const {
+    return context_->TaskRunner();
+  }
+
+ private:
+  void AddObserverOnIDBThread() {
+    DCHECK(context_->TaskRunner()->RunsTasksInCurrentSequence());
+    context_->AddObserver(this);
+  }
+
+  // Maintained on the IDB thread to avoid thread contention.
+  base::flat_set<url::Origin> origins_;
+
+  base::WeakPtr<StorageHandler> owner_;
+  scoped_refptr<IndexedDBContextImpl> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBObserver);
+};
+
 StorageHandler::StorageHandler()
     : DevToolsDomainHandler(Storage::Metainfo::domainName),
       host_(nullptr),
       weak_ptr_factory_(this) {}
 
 StorageHandler::~StorageHandler() {
-  if (cache_storage_observer_) {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                              cache_storage_observer_.release());
-  }
+  DCHECK(!cache_storage_observer_);
+  DCHECK(!indexed_db_observer_);
 }
 
 void StorageHandler::Wire(UberDispatcher* dispatcher) {
@@ -113,6 +255,19 @@ void StorageHandler::Wire(UberDispatcher* dispatcher) {
 
 void StorageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
+}
+
+Response StorageHandler::Disable() {
+  if (cache_storage_observer_) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                              cache_storage_observer_.release());
+  }
+  if (indexed_db_observer_) {
+    indexed_db_observer_->TaskRunner()->DeleteSoon(
+        FROM_HERE, std::move(indexed_db_observer_));
+  }
+
+  return Response::OK();
 }
 
 Response StorageHandler::ClearDataForOrigin(
@@ -179,75 +334,6 @@ void StorageHandler::GetUsageAndQuota(
                      origin_url, base::Passed(std::move(callback))));
 }
 
-// Observer that listens on the IO thread for cache storage notifications and
-// informs the StorageHandler on the UI for origins of interest.
-// Created on the UI thread but predominantly used and deleted on the IO thread.
-// Registered on creation as an observer in CacheStorageContext, unregistered on
-// destruction
-class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
- public:
-  CacheStorageObserver(base::WeakPtr<StorageHandler> owner_storage_handler,
-                       CacheStorageContextImpl* cache_storage_context)
-      : owner_(owner_storage_handler), context_(cache_storage_context) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&CacheStorageObserver::AddObserverOnIOThread,
-                       base::Unretained(this)));
-  }
-
-  ~CacheStorageObserver() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    context_->RemoveObserver(this);
-  }
-
-  void TrackOriginOnIOThread(const url::Origin& origin) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (origins_.find(origin) != origins_.end())
-      return;
-    origins_.insert(origin);
-  }
-
-  void UntrackOriginOnIOThread(const url::Origin& origin) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    origins_.erase(origin);
-  }
-
- private:
-  void AddObserverOnIOThread() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    context_->AddObserver(this);
-  }
-
-  void OnCacheListChanged(const url::Origin& origin) override {
-    auto found = origins_.find(origin);
-    if (found == origins_.end())
-      return;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&StorageHandler::NotifyCacheStorageListChanged, owner_,
-                       origin.Serialize()));
-  }
-
-  void OnCacheContentChanged(const url::Origin& origin,
-                             const std::string& cache_name) override {
-    auto found = origins_.find(origin);
-    if (found == origins_.end())
-      return;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&StorageHandler::NotifyCacheStorageContentChanged,
-                       owner_, origin.Serialize(), cache_name));
-  }
-
-  // Maintained on the IO thread to avoid mutex contention.
-  base::flat_set<url::Origin> origins_;
-
-  base::WeakPtr<StorageHandler> owner_;
-  scoped_refptr<CacheStorageContextImpl> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageObserver);
-};
-
 Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
   if (!host_)
     return Response::InternalError();
@@ -281,16 +367,58 @@ Response StorageHandler::UntrackCacheStorageForOrigin(
   return Response::OK();
 }
 
+Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
+  if (!host_)
+    return Response::InternalError();
+
+  GURL origin_url(origin);
+  if (!origin_url.is_valid())
+    return Response::InvalidParams(origin + " is not a valid URL");
+
+  GetIndexedDBObserver()->TaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&IndexedDBObserver::TrackOriginOnIDBThread,
+                                base::Unretained(GetIndexedDBObserver()),
+                                url::Origin(origin_url)));
+  return Response::OK();
+}
+
+Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
+  if (!host_)
+    return Response::InternalError();
+
+  GURL origin_url(origin);
+  if (!origin_url.is_valid())
+    return Response::InvalidParams(origin + " is not a valid URL");
+
+  GetIndexedDBObserver()->TaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&IndexedDBObserver::UntrackOriginOnIDBThread,
+                                base::Unretained(GetIndexedDBObserver()),
+                                url::Origin(origin_url)));
+  return Response::OK();
+}
+
 StorageHandler::CacheStorageObserver*
 StorageHandler::GetCacheStorageObserver() {
-  if (cache_storage_observer_ == nullptr) {
-    cache_storage_observer_ = base::MakeUnique<CacheStorageObserver>(
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!cache_storage_observer_) {
+    cache_storage_observer_ = std::make_unique<CacheStorageObserver>(
         weak_ptr_factory_.GetWeakPtr(),
         static_cast<CacheStorageContextImpl*>(host_->GetProcess()
                                                   ->GetStoragePartition()
                                                   ->GetCacheStorageContext()));
   }
   return cache_storage_observer_.get();
+}
+
+StorageHandler::IndexedDBObserver* StorageHandler::GetIndexedDBObserver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!indexed_db_observer_) {
+    indexed_db_observer_ = std::make_unique<IndexedDBObserver>(
+        weak_ptr_factory_.GetWeakPtr(),
+        static_cast<IndexedDBContextImpl*>(
+            host_->GetProcess()->GetStoragePartition()->GetIndexedDBContext()));
+  }
+  return indexed_db_observer_.get();
 }
 
 void StorageHandler::NotifyCacheStorageListChanged(const std::string& origin) {
@@ -302,6 +430,20 @@ void StorageHandler::NotifyCacheStorageContentChanged(const std::string& origin,
                                                       const std::string& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   frontend_->CacheStorageContentUpdated(origin, name);
+}
+
+void StorageHandler::NotifyIndexedDBListChanged(const std::string& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  frontend_->IndexedDBListUpdated(origin);
+}
+
+void StorageHandler::NotifyIndexedDBContentChanged(
+    const std::string& origin,
+    const base::string16& database_name,
+    const base::string16& object_store_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  frontend_->IndexedDBContentUpdated(origin, base::UTF16ToUTF8(database_name),
+                                     base::UTF16ToUTF8(object_store_name));
 }
 
 }  // namespace protocol

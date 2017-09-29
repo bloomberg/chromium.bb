@@ -132,6 +132,23 @@ void StatusCallback(const base::Closure& callback,
   callback.Run();
 }
 
+class TestIndexedDBObserver : public IndexedDBContextImpl::Observer {
+ public:
+  void OnIndexedDBListChanged(const url::Origin& origin) override {
+    ++notify_list_changed_count;
+  }
+
+  void OnIndexedDBContentChanged(
+      const url::Origin& origin,
+      const base::string16& database_name,
+      const base::string16& object_store_name) override {
+    ++notify_content_changed_count;
+  }
+
+  int notify_list_changed_count = 0;
+  int notify_content_changed_count = 0;
+};
+
 }  // namespace
 
 class IndexedDBDispatcherHostTest : public testing::Test {
@@ -805,6 +822,316 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
     loop.Run();
   }
   EXPECT_EQ(::indexed_db::mojom::Status::OK, callback_result);
+}
+
+TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBListChanged) {
+  const int64_t kDBVersion1 = 1;
+  const int64_t kDBVersion2 = 2;
+  const int64_t kDBVersion3 = 3;
+  const int64_t kTransactionId1 = 1;
+  const int64_t kTransactionId2 = 2;
+  const int64_t kTransactionId3 = 3;
+  const int64_t kObjectStoreId = 10;
+  const int64_t kIndexId = 100;
+  const char kObjectStoreName[] = "os";
+  const char kIndexName[] = "index";
+
+  TestIndexedDBObserver observer;
+  context_impl_->AddObserver(&observer);
+
+  // Open connection 1.
+  TestDatabaseConnection connection1(url::Origin(GURL(kOrigin)),
+                                     base::UTF8ToUTF16(kDatabaseName),
+                                     kDBVersion1, kTransactionId1);
+  IndexedDBDatabaseMetadata metadata1;
+  DatabaseAssociatedPtrInfo database_info1;
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(
+        *connection1.open_callbacks,
+        MockedUpgradeNeeded(IsAssociatedInterfacePtrInfoValid(true),
+                            IndexedDBDatabaseMetadata::NO_VERSION,
+                            blink::kWebIDBDataLossNone, std::string(), _))
+        .WillOnce(testing::DoAll(MoveArg<0>(&database_info1),
+                                 testing::SaveArg<4>(&metadata1),
+                                 RunClosure(loop.QuitClosure())));
+
+    // Queue open request message.
+    connection1.Open(idb_mojo_factory_.get());
+    loop.Run();
+  }
+  EXPECT_TRUE(database_info1.is_valid());
+  EXPECT_EQ(connection1.version, metadata1.version);
+  EXPECT_EQ(connection1.db_name, metadata1.name);
+
+  // Create object store and index.
+  connection1.database.Bind(std::move(database_info1));
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+
+    EXPECT_CALL(*connection1.connection_callbacks, Complete(kTransactionId1))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(
+        *connection1.open_callbacks,
+        MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    ASSERT_TRUE(connection1.database.is_bound());
+    connection1.database->CreateObjectStore(kTransactionId1, kObjectStoreId,
+                                            base::UTF8ToUTF16(kObjectStoreName),
+                                            content::IndexedDBKeyPath(), false);
+    connection1.database->CreateIndex(kTransactionId1, kObjectStoreId, kIndexId,
+                                      base::UTF8ToUTF16(kIndexName),
+                                      content::IndexedDBKeyPath(), false,
+                                      false);
+    connection1.database->Commit(kTransactionId1);
+    loop.Run();
+  }
+  EXPECT_EQ(2, observer.notify_list_changed_count);
+  connection1.database->Close();
+
+  // Open connection 2.
+  TestDatabaseConnection connection2(url::Origin(GURL(kOrigin)),
+                                     base::UTF8ToUTF16(kDatabaseName),
+                                     kDBVersion2, kTransactionId2);
+  IndexedDBDatabaseMetadata metadata2;
+  DatabaseAssociatedPtrInfo database_info2;
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    EXPECT_CALL(*connection2.open_callbacks,
+                MockedUpgradeNeeded(IsAssociatedInterfacePtrInfoValid(true),
+                                    kDBVersion1, blink::kWebIDBDataLossNone,
+                                    std::string(), _))
+        .WillOnce(testing::DoAll(MoveArg<0>(&database_info2),
+                                 testing::SaveArg<4>(&metadata2),
+                                 RunClosure(loop.QuitClosure())));
+
+    // Queue open request message.
+    connection2.Open(idb_mojo_factory_.get());
+    loop.Run();
+  }
+  EXPECT_TRUE(database_info2.is_valid());
+  EXPECT_EQ(connection2.version, metadata2.version);
+  EXPECT_EQ(connection2.db_name, metadata2.name);
+
+  // Delete index.
+  connection2.database.Bind(std::move(database_info2));
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+
+    EXPECT_CALL(*connection2.connection_callbacks, Complete(kTransactionId2))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(
+        *connection2.open_callbacks,
+        MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    ASSERT_TRUE(connection2.database.is_bound());
+    connection2.database->DeleteIndex(kTransactionId2, kObjectStoreId,
+                                      kIndexId);
+    connection2.database->Commit(kTransactionId2);
+    loop.Run();
+  }
+  EXPECT_EQ(3, observer.notify_list_changed_count);
+  connection2.database->Close();
+
+  // Open connection 3.
+  TestDatabaseConnection connection3(url::Origin(GURL(kOrigin)),
+                                     base::UTF8ToUTF16(kDatabaseName),
+                                     kDBVersion3, kTransactionId3);
+  IndexedDBDatabaseMetadata metadata3;
+  DatabaseAssociatedPtrInfo database_info3;
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    EXPECT_CALL(*connection3.open_callbacks,
+                MockedUpgradeNeeded(IsAssociatedInterfacePtrInfoValid(true),
+                                    kDBVersion2, blink::kWebIDBDataLossNone,
+                                    std::string(), _))
+        .WillOnce(testing::DoAll(MoveArg<0>(&database_info3),
+                                 testing::SaveArg<4>(&metadata3),
+                                 RunClosure(loop.QuitClosure())));
+
+    // Queue open request message.
+    connection3.Open(idb_mojo_factory_.get());
+    loop.Run();
+  }
+  EXPECT_TRUE(database_info3.is_valid());
+  EXPECT_EQ(connection3.version, metadata3.version);
+  EXPECT_EQ(connection3.db_name, metadata3.name);
+
+  // Delete object store.
+  connection3.database.Bind(std::move(database_info3));
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    base::Closure quit_closure = base::BarrierClosure(2, loop.QuitClosure());
+
+    EXPECT_CALL(*connection3.connection_callbacks, Complete(kTransactionId3))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(
+        *connection3.open_callbacks,
+        MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    ASSERT_TRUE(connection3.database.is_bound());
+    connection3.database->DeleteObjectStore(kTransactionId3, kObjectStoreId);
+    connection3.database->Commit(kTransactionId3);
+    loop.Run();
+  }
+  EXPECT_EQ(4, observer.notify_list_changed_count);
+
+  context_impl_->RemoveObserver(&observer);
+}
+
+TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
+  const int64_t kDBVersion1 = 1;
+  const int64_t kDBVersion2 = 2;
+  const int64_t kTransactionId1 = 1;
+  const int64_t kTransactionId2 = 2;
+  const int64_t kObjectStoreId = 10;
+  const char kObjectStoreName[] = "os";
+
+  TestIndexedDBObserver observer;
+  context_impl_->AddObserver(&observer);
+
+  // Open connection 1.
+  TestDatabaseConnection connection1(url::Origin(GURL(kOrigin)),
+                                     base::UTF8ToUTF16(kDatabaseName),
+                                     kDBVersion1, kTransactionId1);
+  IndexedDBDatabaseMetadata metadata1;
+  DatabaseAssociatedPtrInfo database_info1;
+  EXPECT_EQ(0, observer.notify_list_changed_count);
+  EXPECT_EQ(0, observer.notify_content_changed_count);
+  {
+    base::RunLoop loop;
+    EXPECT_CALL(
+        *connection1.open_callbacks,
+        MockedUpgradeNeeded(IsAssociatedInterfacePtrInfoValid(true),
+                            IndexedDBDatabaseMetadata::NO_VERSION,
+                            blink::kWebIDBDataLossNone, std::string(), _))
+        .WillOnce(testing::DoAll(MoveArg<0>(&database_info1),
+                                 testing::SaveArg<4>(&metadata1),
+                                 RunClosure(loop.QuitClosure())));
+
+    // Queue open request message.
+    connection1.Open(idb_mojo_factory_.get());
+    loop.Run();
+  }
+  EXPECT_TRUE(database_info1.is_valid());
+  EXPECT_EQ(connection1.version, metadata1.version);
+  EXPECT_EQ(connection1.db_name, metadata1.name);
+
+  // Add object store entry.
+  connection1.database.Bind(std::move(database_info1));
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+
+    auto put_callbacks =
+        base::MakeUnique<StrictMock<MockMojoIndexedDBCallbacks>>();
+
+    EXPECT_CALL(*put_callbacks, SuccessKey(_))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection1.connection_callbacks, Complete(kTransactionId1))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(
+        *connection1.open_callbacks,
+        MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    ASSERT_TRUE(connection1.database.is_bound());
+    connection1.database->CreateObjectStore(kTransactionId1, kObjectStoreId,
+                                            base::UTF8ToUTF16(kObjectStoreName),
+                                            content::IndexedDBKeyPath(), false);
+    connection1.database->Put(
+        kTransactionId1, kObjectStoreId,
+        ::indexed_db::mojom::Value::New(
+            "value", std::vector<::indexed_db::mojom::BlobInfoPtr>()),
+        content::IndexedDBKey(base::UTF8ToUTF16("key")),
+        blink::kWebIDBPutModeAddOnly,
+        std::vector<content::IndexedDBIndexKeys>(),
+        put_callbacks->CreateInterfacePtrAndBind());
+    connection1.database->Commit(kTransactionId1);
+    loop.Run();
+  }
+  EXPECT_EQ(2, observer.notify_list_changed_count);
+  EXPECT_EQ(1, observer.notify_content_changed_count);
+  connection1.database->Close();
+
+  // Open connection 2.
+  TestDatabaseConnection connection2(url::Origin(GURL(kOrigin)),
+                                     base::UTF8ToUTF16(kDatabaseName),
+                                     kDBVersion2, kTransactionId2);
+  IndexedDBDatabaseMetadata metadata2;
+  DatabaseAssociatedPtrInfo database_info2;
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    EXPECT_CALL(*connection2.open_callbacks,
+                MockedUpgradeNeeded(IsAssociatedInterfacePtrInfoValid(true),
+                                    kDBVersion1, blink::kWebIDBDataLossNone,
+                                    std::string(), _))
+        .WillOnce(testing::DoAll(MoveArg<0>(&database_info2),
+                                 testing::SaveArg<4>(&metadata2),
+                                 RunClosure(loop.QuitClosure())));
+
+    // Queue open request message.
+    connection2.Open(idb_mojo_factory_.get());
+    loop.Run();
+  }
+  EXPECT_TRUE(database_info2.is_valid());
+  EXPECT_EQ(connection2.version, metadata2.version);
+  EXPECT_EQ(connection2.db_name, metadata2.name);
+
+  // Clear object store.
+  connection2.database.Bind(std::move(database_info2));
+  {
+    ::testing::InSequence dummy;
+    base::RunLoop loop;
+    base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
+
+    auto clear_callbacks =
+        base::MakeUnique<StrictMock<MockMojoIndexedDBCallbacks>>();
+
+    EXPECT_CALL(*clear_callbacks, Success())
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(*connection2.connection_callbacks, Complete(kTransactionId2))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+    EXPECT_CALL(
+        *connection2.open_callbacks,
+        MockedSuccessDatabase(IsAssociatedInterfacePtrInfoValid(false), _))
+        .Times(1)
+        .WillOnce(RunClosure(quit_closure));
+
+    ASSERT_TRUE(connection2.database.is_bound());
+    connection2.database->Clear(kTransactionId2, kObjectStoreId,
+                                clear_callbacks->CreateInterfacePtrAndBind());
+    connection2.database->Commit(kTransactionId2);
+    loop.Run();
+  }
+  EXPECT_EQ(3, observer.notify_list_changed_count);
+  EXPECT_EQ(2, observer.notify_content_changed_count);
+
+  context_impl_->RemoveObserver(&observer);
 }
 
 }  // namespace content

@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -79,6 +78,11 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const IndexedDBDatabase::Identifier& identifier) override;
 
   size_t GetConnectionCount(const url::Origin& origin) const override;
+
+  void NotifyIndexedDBContentChanged(
+      const url::Origin& origin,
+      const base::string16& database_name,
+      const base::string16& object_store_name) override;
 
  protected:
   ~IndexedDBFactoryImpl() override;
