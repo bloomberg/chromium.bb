@@ -582,7 +582,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     if (is_qttx) assert(blk_row == 0 && blk_col == 0 && block == 0);
 #else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    assert(sub_txs < tx_size);
+    assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
+    assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
 #endif
     const int bsl = tx_size_wide_unit[sub_txs];
     int sub_step = tx_size_wide_unit[sub_txs] * tx_size_high_unit[sub_txs];

@@ -799,7 +799,8 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     if (is_qttx) assert(blk_row == 0 && blk_col == 0 && block == 0);
 #else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-    assert(sub_txs < tx_size);
+    assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
+    assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
 #endif
     // This is the square transform block partition entry point.
     int bsl = tx_size_wide_unit[sub_txs];
