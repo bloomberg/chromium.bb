@@ -24,8 +24,8 @@ namespace url {
 // resize function that is called when the existing buffer is not big enough.
 // The derived class is then in charge of setting up our buffer which we will
 // manage.
-template <typename T>
-class URL_TEMPLATE_CLASS_EXPORT CanonOutputT {
+template<typename T>
+class CanonOutputT {
  public:
   CanonOutputT() : buffer_(NULL), buffer_len_(0), cur_len_(0) {
   }
@@ -926,11 +926,6 @@ URL_EXPORT bool ResolveRelativeURL(const char* base_url,
                                    CharsetConverter* query_converter,
                                    CanonOutput* output,
                                    Parsed* out_parsed);
-
-URL_EXTERN_TEMPLATE_EXTERN template class URL_EXTERN_TEMPLATE_EXPORT
-    CanonOutputT<char>;
-URL_EXTERN_TEMPLATE_EXTERN template class URL_EXTERN_TEMPLATE_EXPORT
-    CanonOutputT<base::char16>;
 
 }  // namespace url
 

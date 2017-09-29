@@ -284,9 +284,6 @@ class MergeFilesMatchingContents(MergeFiles):
                 nonmatching.append(filename)
 
         if nonmatching:
-            # FIXME: This happens when logs includ date time, that can vary for
-            # each test (crbug/764662)
-            return
             raise MergeFailure(
                 '\n'.join(
                     ['File contents don\'t match:'] + nonmatching),

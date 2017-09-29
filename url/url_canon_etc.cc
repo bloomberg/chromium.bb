@@ -385,7 +385,4 @@ void CanonicalizeRef(const base::char16* spec,
   DoCanonicalizeRef<base::char16, base::char16>(spec, ref, output, out_ref);
 }
 
-template class CanonOutputT<char>;
-template class CanonOutputT<base::char16>;
-
 }  // namespace url
