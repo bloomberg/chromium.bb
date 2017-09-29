@@ -2187,7 +2187,7 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   } else {
 #endif
     for (j = 0; j < bh; j++)
-      for (i = 0; i < bw; i++) pred8[j * bw + i] = pred[j * bw + i];
+      for (i = 0; i < bw; i++) pred8[j * bw + i] = (uint8_t)pred[j * bw + i];
 #if CONFIG_HIGHBITDEPTH
   }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -4975,7 +4975,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
               for (j = 0; j < 4; j++)
                 for (i = 0; i < 4; i++)
                   pred8[(row * 4 + j) * 8 + 4 * col + i] =
-                      pred[(row * 4 + j) * pred_stride + 4 * col + i];
+                      (uint8_t)pred[(row * 4 + j) * pred_stride + 4 * col + i];
             } else {
               for (j = 0; j < 4; j++)
                 for (i = 0; i < 4; i++)
