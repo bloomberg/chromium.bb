@@ -321,6 +321,92 @@ deps = {
 
   'src/third_party/visualmetrics/src':
     Var('chromium_git') + '/external/github.com/WPO-Foundation/visualmetrics.git' + '@' +  '1edde9d2fe203229c895b648fdec355917200ad6',
+
+  # ANDROID DEPS
+  'src/third_party/android_protobuf/src': {
+      'url': Var('chromium_git') + '/external/android_protobuf.git' + '@' + '7fca48d8ce97f7ba3ab8eea5c472f1ad3711762f',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/android_tools': {
+      'url': Var('chromium_git') + '/android_tools.git' + '@' + 'ca9dc7245b888c75307f0619e4a39fb46a82de66',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/apache-portable-runtime/src': {
+      'url': Var('chromium_git') + '/external/apache-portable-runtime.git' + '@' + 'c76a8c4277e09a82eaa229e35246edea1ee0a6a1',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/errorprone/lib': {
+      'url': Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '0eea83b66343133b9c76b7d3288c30321818ebcf',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/findbugs': {
+      'url': Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '57f05238d3ac77ea0a194813d3065dd780c6e566',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/elfutils/src': {
+      'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/jsr-305/src': {
+      'url': Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/junit/src': {
+      'url': Var('chromium_git') + '/external/junit.git' + '@' + '64155f8a9babcfcf4263cf4d08253a1556e75481',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/mockito/src': {
+      'url': Var('chromium_git') + '/external/mockito/mockito.git' + '@' + 'de83ad4598ad4cf5ea53c69a8a8053780b04b850',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/netty-tcnative/src': {
+      'url': Var('chromium_git') + '/external/netty-tcnative.git' + '@' + '5b46a8ef4a39c39c576fcdaaf718b585d75df463',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/netty4/src': {
+      'url': Var('chromium_git') + '/external/netty4.git' + '@' + 'cc4420b13bb4eeea5b1cf4f93b2755644cd3b120',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/robolectric/robolectric': {
+      'url': Var('chromium_git') + '/external/robolectric.git' + '@' + 'b02c65cc6d7465f58f0de48a39914aa905692afa',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/ub-uiautomator/lib': {
+      'url': Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/leakcanary/src': {
+      'url': Var('chromium_git') + '/external/github.com/square/leakcanary.git' + '@' + '608ded739e036a3aa69db47ac43777dcee506f8e',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/requests/src': {
+      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'f172b30356d821d180fa4ecfa3e71c7274a32de4',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/custom_tabs_client/src': {
+      'url': Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'cff061038b852d647f7044d828a9df78aa135f38',
+      'condition': 'checkout_android',
+  },
+
+  'src/third_party/gvr-android-sdk/src': {
+      'url': Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560',
+      'condition': 'checkout_android',
+  },
 }
 
 
@@ -466,93 +552,9 @@ deps_os = {
       Var('chromium_git') + '/aosp/platform/system/core/libsync.git' + '@' + 'aa6cda6f638bd57d3a024f0d201f723a5c3bb875',
   },
   'android': {
-    'src/third_party/android_protobuf/src': {
-        'url': Var('chromium_git') + '/external/android_protobuf.git' + '@' + '7fca48d8ce97f7ba3ab8eea5c472f1ad3711762f',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/android_tools': {
-        'url': Var('chromium_git') + '/android_tools.git' + '@' + 'ca9dc7245b888c75307f0619e4a39fb46a82de66',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/apache-portable-runtime/src': {
-        'url': Var('chromium_git') + '/external/apache-portable-runtime.git' + '@' + 'c76a8c4277e09a82eaa229e35246edea1ee0a6a1',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/errorprone/lib': {
-        'url': Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '0eea83b66343133b9c76b7d3288c30321818ebcf',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/findbugs': {
-        'url': Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '57f05238d3ac77ea0a194813d3065dd780c6e566',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/elfutils/src': {
-        'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/jsr-305/src': {
-        'url': Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/junit/src': {
-        'url': Var('chromium_git') + '/external/junit.git' + '@' + '64155f8a9babcfcf4263cf4d08253a1556e75481',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/mockito/src': {
-        'url': Var('chromium_git') + '/external/mockito/mockito.git' + '@' + 'de83ad4598ad4cf5ea53c69a8a8053780b04b850',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/netty-tcnative/src': {
-        'url': Var('chromium_git') + '/external/netty-tcnative.git' + '@' + '5b46a8ef4a39c39c576fcdaaf718b585d75df463',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/netty4/src': {
-        'url': Var('chromium_git') + '/external/netty4.git' + '@' + 'cc4420b13bb4eeea5b1cf4f93b2755644cd3b120',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/robolectric/robolectric': {
-        'url': Var('chromium_git') + '/external/robolectric.git' + '@' + 'b02c65cc6d7465f58f0de48a39914aa905692afa',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/ub-uiautomator/lib': {
-        'url': Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/leakcanary/src': {
-        'url': Var('chromium_git') + '/external/github.com/square/leakcanary.git' + '@' + '608ded739e036a3aa69db47ac43777dcee506f8e',
-        'condition': 'checkout_android',
-    },
-
+    # TODO(phajdan.jr): move all lss entries together to deps behind proper condition.
     'src/third_party/lss':
       Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
-
-    'src/third_party/requests/src': {
-        'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'f172b30356d821d180fa4ecfa3e71c7274a32de4',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/custom_tabs_client/src': {
-        'url': Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'cff061038b852d647f7044d828a9df78aa135f38',
-        'condition': 'checkout_android',
-    },
-
-    'src/third_party/gvr-android-sdk/src': {
-        'url': Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560',
-        'condition': 'checkout_android',
-    },
   },
 }
 
