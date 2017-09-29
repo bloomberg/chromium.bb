@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_SOURCE_CHROMEOS_H_
-#define CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_SOURCE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_CONTROLLER_CHROMEOS_H_
+#define CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_CONTROLLER_CHROMEOS_H_
 
 #include <map>
 #include <memory>
@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/notifier_source.h"
+#include "chrome/browser/notifications/notifier_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
@@ -24,14 +24,15 @@ struct Notifier;
 namespace arc {
 
 // TODO(hirono): Observe enabled flag change and notify it to message center.
-class ArcApplicationNotifierSourceChromeOS : public NotifierSource,
-                                             public ArcAppIcon::Observer,
-                                             public ArcAppListPrefs::Observer {
+class ArcApplicationNotifierControllerChromeOS
+    : public NotifierController,
+      public ArcAppIcon::Observer,
+      public ArcAppListPrefs::Observer {
  public:
-  explicit ArcApplicationNotifierSourceChromeOS(
-      NotifierSource::Observer* observer);
+  explicit ArcApplicationNotifierControllerChromeOS(
+      NotifierController::Observer* observer);
 
-  ~ArcApplicationNotifierSourceChromeOS() override;
+  ~ArcApplicationNotifierControllerChromeOS() override;
 
   // TODO(hirono): Rewrite the function with new API to fetch package list.
   std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
@@ -40,7 +41,6 @@ class ArcApplicationNotifierSourceChromeOS : public NotifierSource,
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void OnNotifierSettingsClosing() override;
-  message_center::NotifierId::NotifierType GetNotifierType() override;
 
  private:
   // Overriden from ArcAppIcon::Observer.
@@ -51,7 +51,7 @@ class ArcApplicationNotifierSourceChromeOS : public NotifierSource,
   void OnNotificationsEnabledChanged(const std::string& package_name,
                                      bool enabled) override;
 
-  NotifierSource::Observer* observer_;
+  NotifierController::Observer* observer_;
   std::vector<std::unique_ptr<ArcAppIcon>> icons_;
   std::map<std::string, std::string> package_to_app_ids_;
   Profile* last_profile_;
@@ -59,4 +59,4 @@ class ArcApplicationNotifierSourceChromeOS : public NotifierSource,
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_SOURCE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_ARC_APPLICATION_NOTIFIER_CONTROLLER_CHROMEOS_H_

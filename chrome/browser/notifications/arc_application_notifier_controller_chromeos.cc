@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/arc_application_notifier_source_chromeos.h"
+#include "chrome/browser/notifications/arc_application_notifier_controller_chromeos.h"
 
 #include <set>
 
@@ -19,16 +19,18 @@ namespace {
 constexpr int kArcAppIconSizeInDp = 48;
 }  // namespace
 
-ArcApplicationNotifierSourceChromeOS::ArcApplicationNotifierSourceChromeOS(
-    NotifierSource::Observer* observer)
+ArcApplicationNotifierControllerChromeOS::
+    ArcApplicationNotifierControllerChromeOS(
+        NotifierController::Observer* observer)
     : observer_(observer), last_profile_(nullptr) {}
 
-ArcApplicationNotifierSourceChromeOS::~ArcApplicationNotifierSourceChromeOS() {
+ArcApplicationNotifierControllerChromeOS::
+    ~ArcApplicationNotifierControllerChromeOS() {
   StopObserving();
 }
 
 std::vector<std::unique_ptr<message_center::Notifier>>
-ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
+ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   package_to_app_ids_.clear();
   icons_.clear();
   StopObserving();
@@ -79,7 +81,7 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
   return results;
 }
 
-void ArcApplicationNotifierSourceChromeOS::SetNotifierEnabled(
+void ArcApplicationNotifierControllerChromeOS::SetNotifierEnabled(
     Profile* profile,
     const message_center::NotifierId& notifier_id,
     bool enabled) {
@@ -88,7 +90,7 @@ void ArcApplicationNotifierSourceChromeOS::SetNotifierEnabled(
   // OnNotifierEnabledChanged will be invoked via ArcAppListPrefs::Observer.
 }
 
-void ArcApplicationNotifierSourceChromeOS::OnNotificationsEnabledChanged(
+void ArcApplicationNotifierControllerChromeOS::OnNotificationsEnabledChanged(
     const std::string& package_name,
     bool enabled) {
   auto it = package_to_app_ids_.find(package_name);
@@ -100,25 +102,20 @@ void ArcApplicationNotifierSourceChromeOS::OnNotificationsEnabledChanged(
       enabled);
 }
 
-void ArcApplicationNotifierSourceChromeOS::OnNotifierSettingsClosing() {
+void ArcApplicationNotifierControllerChromeOS::OnNotifierSettingsClosing() {
   icons_.clear();
   package_to_app_ids_.clear();
   StopObserving();
 }
 
-message_center::NotifierId::NotifierType
-ArcApplicationNotifierSourceChromeOS::GetNotifierType() {
-  return message_center::NotifierId::ARC_APPLICATION;
-}
-
-void ArcApplicationNotifierSourceChromeOS::OnIconUpdated(ArcAppIcon* icon) {
+void ArcApplicationNotifierControllerChromeOS::OnIconUpdated(ArcAppIcon* icon) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                  icon->app_id()),
       gfx::Image(icon->image_skia()));
 }
 
-void ArcApplicationNotifierSourceChromeOS::StopObserving() {
+void ArcApplicationNotifierControllerChromeOS::StopObserving() {
   if (!last_profile_)
     return;
   ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(last_profile_);

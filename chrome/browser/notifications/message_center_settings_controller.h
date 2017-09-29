@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/notifier_source.h"
+#include "chrome/browser/notifications/notifier_controller.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -26,7 +26,7 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-class NotifierSource;
+class NotifierController;
 
 namespace message_center {
 class ProfileNotifierGroup;
@@ -40,7 +40,7 @@ class MessageCenterSettingsController
 #if defined(OS_CHROMEOS)
       public user_manager::UserManager::UserSessionStateObserver,
 #endif
-      public NotifierSource::Observer {
+      public NotifierController::Observer {
  public:
   explicit MessageCenterSettingsController(
       ProfileAttributesStorage& profile_attributes_storage);
@@ -81,7 +81,7 @@ class MessageCenterSettingsController
       const base::string16& old_profile_name) override;
   void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
-  // Overridden from NotifierSource::Observer.
+  // Overridden from NotifierController::Observer.
   void OnIconImageUpdated(const message_center::NotifierId&,
                           const gfx::Image&) override;
   void OnNotifierEnabledChanged(const message_center::NotifierId&,
@@ -112,7 +112,7 @@ class MessageCenterSettingsController
 
   // Notifier source for each notifier type.
   std::map<message_center::NotifierId::NotifierType,
-           std::unique_ptr<NotifierSource>>
+           std::unique_ptr<NotifierController>>
       sources_;
 
   size_t current_notifier_group_;

@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_APPLICATION_NOTIFIER_SOURCE_H_
-#define CHROME_BROWSER_NOTIFICATIONS_APPLICATION_NOTIFIER_SOURCE_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_EXTENSION_NOTIFIER_CONTROLLER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_EXTENSION_NOTIFIER_CONTROLLER_H_
 
-#include "chrome/browser/notifications/notifier_source.h"
+#include "chrome/browser/notifications/notifier_controller.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 
 class AppIconLoader;
 
-class ApplicationNotifierSource : public NotifierSource,
-                                  public AppIconLoaderDelegate {
+// Controls extensions and apps. Each extension gets its own row in the settings
+// ui.
+class ExtensionNotifierController : public NotifierController,
+                                    public AppIconLoaderDelegate {
  public:
-  explicit ApplicationNotifierSource(Observer* observer);
-  ~ApplicationNotifierSource() override;
+  explicit ExtensionNotifierController(Observer* observer);
+  ~ExtensionNotifierController() override;
 
   std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
       Profile* profile) override;
@@ -22,8 +24,6 @@ class ApplicationNotifierSource : public NotifierSource,
   void SetNotifierEnabled(Profile* profile,
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
-
-  message_center::NotifierId::NotifierType GetNotifierType() override;
 
  private:
   // Overridden from AppIconLoaderDelegate.
@@ -36,4 +36,4 @@ class ApplicationNotifierSource : public NotifierSource,
   Observer* observer_;
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_APPLICATION_NOTIFIER_SOURCE_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_EXTENSION_NOTIFIER_CONTROLLER_H_

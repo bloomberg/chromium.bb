@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/system_component_notifier_source_chromeos.h"
+#include "chrome/browser/notifications/system_component_notifier_controller_chromeos.h"
 
 #include "ash/system/system_notifier.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -13,12 +13,12 @@
 #include "ui/message_center/notifier_settings.h"
 #include "ui/strings/grit/ui_strings.h"
 
-SystemComponentNotifierSourceChromeOS::SystemComponentNotifierSourceChromeOS(
-    Observer* observer)
+SystemComponentNotifierControllerChromeOS::
+    SystemComponentNotifierControllerChromeOS(Observer* observer)
     : observer_(observer) {}
 
 std::vector<std::unique_ptr<message_center::Notifier>>
-SystemComponentNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
+SystemComponentNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
   NotifierStateTracker* const notifier_state_tracker =
       NotifierStateTrackerFactory::GetForProfile(profile);
@@ -41,16 +41,11 @@ SystemComponentNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
   return notifiers;
 }
 
-void SystemComponentNotifierSourceChromeOS::SetNotifierEnabled(
+void SystemComponentNotifierControllerChromeOS::SetNotifierEnabled(
     Profile* profile,
     const message_center::NotifierId& notifier_id,
     bool enabled) {
   NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
       notifier_id, enabled);
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
-}
-
-message_center::NotifierId::NotifierType
-SystemComponentNotifierSourceChromeOS::GetNotifierType() {
-  return message_center::NotifierId::SYSTEM_COMPONENT;
 }
