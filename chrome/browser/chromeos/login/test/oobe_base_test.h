@@ -97,6 +97,15 @@ class OobeBaseTest : public ExtensionApiTest {
   void SetSignFormField(const std::string& field_id,
                         const std::string& field_value);
 
+  // Sets up fake gaia for the login code:
+  // - Maps |user_email| to |gaia_id|. If |gaia_id| is empty, |user_email| will
+  //   be mapped to kDefaultGaiaId in FakeGaia;
+  // - Issues a special all-scope access token associated with the test refresh
+  //   token;
+  void SetupFakeGaiaForLogin(const std::string& user_email,
+                             const std::string& gaia_id,
+                             const std::string& refresh_token);
+
   std::unique_ptr<FakeGaia> fake_gaia_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 

@@ -113,34 +113,34 @@ namespace chromeos {
 
 namespace {
 
-const char kGAIASIDCookieName[] = "SID";
-const char kGAIALSIDCookieName[] = "LSID";
+constexpr char kGAIASIDCookieName[] = "SID";
+constexpr char kGAIALSIDCookieName[] = "LSID";
 
-const char kTestAuthSIDCookie1[] = "fake-auth-SID-cookie-1";
-const char kTestAuthSIDCookie2[] = "fake-auth-SID-cookie-2";
-const char kTestAuthLSIDCookie1[] = "fake-auth-LSID-cookie-1";
-const char kTestAuthLSIDCookie2[] = "fake-auth-LSID-cookie-2";
+constexpr char kTestAuthSIDCookie1[] = "fake-auth-SID-cookie-1";
+constexpr char kTestAuthSIDCookie2[] = "fake-auth-SID-cookie-2";
+constexpr char kTestAuthLSIDCookie1[] = "fake-auth-LSID-cookie-1";
+constexpr char kTestAuthLSIDCookie2[] = "fake-auth-LSID-cookie-2";
 
-const char kFirstSAMLUserEmail[] = "bob@example.com";
-const char kSecondSAMLUserEmail[] = "alice@example.com";
-const char kHTTPSAMLUserEmail[] = "carol@example.com";
-const char kNonSAMLUserEmail[] = "dan@example.com";
-const char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
+constexpr char kFirstSAMLUserEmail[] = "bob@example.com";
+constexpr char kSecondSAMLUserEmail[] = "alice@example.com";
+constexpr char kHTTPSAMLUserEmail[] = "carol@example.com";
+constexpr char kNonSAMLUserEmail[] = "dan@example.com";
+constexpr char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
 
-const char kIdPHost[] = "login.example.com";
-const char kAdditionalIdPHost[] = "login2.example.com";
+constexpr char kIdPHost[] = "login.example.com";
+constexpr char kAdditionalIdPHost[] = "login2.example.com";
 
-const char kSAMLIdPCookieName[] = "saml";
-const char kSAMLIdPCookieValue1[] = "value-1";
-const char kSAMLIdPCookieValue2[] = "value-2";
+constexpr char kSAMLIdPCookieName[] = "saml";
+constexpr char kSAMLIdPCookieValue1[] = "value-1";
+constexpr char kSAMLIdPCookieValue2[] = "value-2";
 
-const char kRelayState[] = "RelayState";
+constexpr char kRelayState[] = "RelayState";
 
-const char kTestUserinfoToken[] = "fake-userinfo-token";
-const char kTestRefreshToken[] = "fake-refresh-token";
-const char kPolicy[] = "{\"managed_users\": [\"*\"]}";
+constexpr char kTestUserinfoToken[] = "fake-userinfo-token";
+constexpr char kTestRefreshToken[] = "fake-refresh-token";
+constexpr char kPolicy[] = "{\"managed_users\": [\"*\"]}";
 
-const char kAffiliationID[] = "some-affiliation-id";
+constexpr char kAffiliationID[] = "some-affiliation-id";
 
 // FakeSamlIdp serves IdP auth form and the form submission. The form is
 // served with the template's RelayState placeholder expanded to the real
@@ -1197,6 +1197,8 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
 
   fake_gaia_->SetFakeMergeSessionParams(user_id, auth_sid_cookie,
                                         auth_lsid_cookie);
+  SetupFakeGaiaForLogin(user_id, "", kTestRefreshToken);
+
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
 
@@ -1254,6 +1256,10 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
   SetSAMLOfflineSigninTimeLimitPolicy(0);
 
   WaitForSigninScreen();
+
+  fake_gaia_->SetFakeMergeSessionParams(kNonSAMLUserEmail, kFakeSIDCookie,
+                                        kFakeLSIDCookie);
+  SetupFakeGaiaForLogin(kNonSAMLUserEmail, "", kTestRefreshToken);
 
   // Log in without SAML.
   GetLoginDisplay()->ShowSigninScreenForCreds(kNonSAMLUserEmail, "password");
