@@ -334,7 +334,11 @@ are exported to translation interchange files (e.g. XMB files), etc.
     outfile.writelines(formatted)
     if output_node.GetType() == 'data_package':
       with open(output_node.GetOutputFilename() + '.info', 'w') as infofile:
-        infofile.writelines('\n'.join(node.info))
+        if node.info:
+          # We terminate with a newline so that when these files are
+          # concatenated later we consistently terminate with a newline so
+          # consumers can account for terminating newlines.
+          infofile.writelines(['\n'.join(node.info), '\n'])
 
 
   def Process(self):
