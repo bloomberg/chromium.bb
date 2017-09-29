@@ -423,6 +423,13 @@ bool IsInternalURL(const GURL& url) {
       [[FlippedView alloc] initWithFrame:[superview frame]]);
   [superview addSubview:siteSettingsSectionView];
 
+  permissionsView_ =
+      [[[FlippedView alloc] initWithFrame:[superview frame]] autorelease];
+  [siteSettingsSectionView addSubview:permissionsView_];
+
+  // The certificate section is created on demand.
+  certificateView_ = nil;
+
   // Initialize the two containers that hold the controls. The initial frames
   // are arbitrary, and will be adjusted after the controls are laid out.
   PageInfoUI::PermissionInfo info;
@@ -436,13 +443,6 @@ bool IsInternalURL(const GURL& url) {
                                IDS_PAGE_INFO_NUM_COOKIES, 0)];
   [cookiesView_ setLinkTarget:self
                    withAction:@selector(showCookiesAndSiteData:)];
-
-  permissionsView_ =
-      [[[FlippedView alloc] initWithFrame:[superview frame]] autorelease];
-  [siteSettingsSectionView addSubview:permissionsView_];
-
-  // The certificate section is created on demand.
-  certificateView_ = nil;
 
   // Create the link button to view site settings. Its position will be set in
   // performLayout.
@@ -645,7 +645,7 @@ bool IsInternalURL(const GURL& url) {
 }
 
 - (void)layoutSecuritySection {
-  // Start the layout with the first element. Margins are handled by the caller.
+  // Margins are handled by the caller.
   CGFloat yPos = 0;
 
   [self sizeTextFieldHeightToFit:securitySummaryField_];
@@ -721,27 +721,27 @@ bool IsInternalURL(const GURL& url) {
 }
 
 - (void)layoutSiteSettingsSection {
-  // Start the layout with the first element. Margins are handled by the caller.
-  CGFloat yPos = kSectionVerticalPadding;
+  // Margins are handled by the caller.
+  CGFloat yPos = 0;
+
+  if (permissionsPresent_) {
+    yPos = [self setYPositionOfView:permissionsView_ to:yPos] +
+           kPermissionsVerticalSpacing;
+  }
 
   if (certificateView_) {
     yPos = [self setYPositionOfView:certificateView_ to:yPos] +
            kPermissionsVerticalSpacing;
   }
 
-  yPos = [self setYPositionOfView:cookiesView_ to:yPos];
+  yPos =
+      [self setYPositionOfView:cookiesView_ to:yPos] + kSectionVerticalPadding;
 
-  if (permissionsPresent_) {
-    // Put the permission info just below the link button.
-    yPos = [self setYPositionOfView:permissionsView_ to:yPos];
-  }
-
-  yPos = [self layoutViewAtRTLStart:siteSettingsButton_
-                      withYPosition:yPos + kSectionVerticalPadding];
+  yPos = [self layoutViewAtRTLStart:siteSettingsButton_ withYPosition:yPos] +
+         kSectionVerticalPadding;
 
   // Resize the height based on contents.
-  [self setHeightOfView:siteSettingsSectionView_
-                     to:yPos + kSectionVerticalPadding];
+  [self setHeightOfView:siteSettingsSectionView_ to:yPos];
 }
 
 // Adjust the size of the window to match the size of the content, and position
