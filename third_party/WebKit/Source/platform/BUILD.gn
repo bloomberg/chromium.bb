@@ -580,7 +580,6 @@ jumbo_component("platform") {
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
     "exported/WebBlobData.cpp",
-    "exported/WebBlobInfo.cpp",
     "exported/WebCORS.cpp",
     "exported/WebCORSPreflightResultCache.cpp",
     "exported/WebCache.cpp",
