@@ -515,10 +515,11 @@ void Write(TextStream& ts,
       LayoutViewItem root_item = frame_view->GetLayoutViewItem();
       if (!root_item.IsNull()) {
         root_item.UpdateStyleAndLayout();
-        PaintLayer* layer = root_item.Layer();
-        if (layer)
-          LayoutTreeAsText::WriteLayers(ts, layer, layer, layer->Rect(),
-                                        indent + 1, behavior);
+        if (auto* layer = root_item.Layer()) {
+          LayoutTreeAsText::WriteLayers(
+              ts, layer, layer, layer->RectIgnoringNeedsPositionUpdate(),
+              indent + 1, behavior);
+        }
       }
     }
   }
@@ -678,6 +679,13 @@ void LayoutTreeAsText::WriteLayers(TextStream& ts,
       ToLayoutEmbeddedContent(layer->GetLayoutObject()).IsThrottledFrameView())
     should_paint = false;
 
+#if DCHECK_IS_ON()
+  if (layer->NeedsPositionUpdate()) {
+    WriteIndent(ts, indent);
+    ts << " NEEDS POSITION UPDATE\n";
+  }
+#endif
+
   Vector<PaintLayerStackingNode*>* neg_list =
       layer->StackingNode()->NegZOrderList();
   bool paints_background_separately = neg_list && neg_list->size() > 0;
@@ -802,8 +810,9 @@ static String ExternalRepresentation(LayoutBox* layout_object,
     return ts.Release();
 
   PaintLayer* layer = layout_object->Layer();
-  LayoutTreeAsText::WriteLayers(ts, layer, layer, layer->Rect(), 0, behavior,
-                                marked_layer);
+  LayoutTreeAsText::WriteLayers(ts, layer, layer,
+                                layer->RectIgnoringNeedsPositionUpdate(), 0,
+                                behavior, marked_layer);
   WriteSelection(ts, layout_object);
   return ts.Release();
 }

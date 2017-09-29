@@ -3316,7 +3316,7 @@ void PaintLayer::AddLayerHitTestRects(
 void PaintLayer::ComputeSelfHitTestRects(
     LayerHitTestRects& rects,
     TouchAction supported_fast_actions) const {
-  if (!size().IsEmpty()) {
+  if (!Size().IsEmpty()) {
     Vector<TouchActionRect> rect;
     TouchAction whitelisted_touch_action =
         GetLayoutObject().Style()->GetEffectiveTouchAction() &
