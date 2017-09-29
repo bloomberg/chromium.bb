@@ -66,6 +66,7 @@ class PathParser {
       case V_LINE_TO:
       case R_V_LINE_TO:
       case CANVAS_DIMENSIONS:
+      case PATH_COLOR_ALPHA:
         return 1;
 
       case MOVE_TO:
@@ -123,6 +124,7 @@ CommandType CommandFromString(const std::string& source) {
     return command;
 
   RETURN_IF_IS(NEW_PATH);
+  RETURN_IF_IS(PATH_COLOR_ALPHA);
   RETURN_IF_IS(PATH_COLOR_ARGB);
   RETURN_IF_IS(PATH_MODE_CLEAR);
   RETURN_IF_IS(STROKE);
@@ -211,6 +213,10 @@ void PaintPath(Canvas* canvas,
     switch (command_type) {
       // Handled above.
       case NEW_PATH:
+        break;
+
+      case PATH_COLOR_ALPHA:
+        flags.setAlpha(SkScalarFloorToInt(arg(0)));
         break;
 
       case PATH_COLOR_ARGB:
