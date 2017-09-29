@@ -75,6 +75,9 @@ class ASH_EXPORT WorkspaceLayoutManager
                              const gfx::Rect& new_bounds) override;
 
   // wm::ActivationChangeObserver overrides:
+  void OnWindowActivating(ActivationReason reason,
+                          aura::Window* gaining_active,
+                          aura::Window* losing_active) override;
   void OnWindowActivated(
       ::wm::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
