@@ -40,6 +40,11 @@ class ConvertableToTraceFormat;
 
 namespace blink {
 namespace scheduler {
+namespace renderer_scheduler_impl_unittest {
+class RendererSchedulerImplForTest;
+class RendererSchedulerImplTest;
+FORWARD_DECLARE_TEST(RendererSchedulerImplTest, Tracing);
+}  // namespace renderer_scheduler_impl_unittest
 class AutoAdvancingVirtualTimeDomain;
 class RenderWidgetSchedulingState;
 class WebViewSchedulerImpl;
@@ -257,9 +262,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   friend class RendererMetricsHelper;
 
   friend class RendererMetricsHelperTest;
-  friend class RendererSchedulerImplForTest;
-  friend class RendererSchedulerImplTest;
-  FRIEND_TEST_ALL_PREFIXES(RendererSchedulerImplTest, Tracing);
+  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplForTest;
+  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      renderer_scheduler_impl_unittest::RendererSchedulerImplTest,
+      Tracing);
 
   enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
 

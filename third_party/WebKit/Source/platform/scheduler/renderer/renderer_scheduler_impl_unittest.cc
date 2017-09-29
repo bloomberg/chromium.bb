@@ -30,8 +30,8 @@
 
 namespace blink {
 namespace scheduler {
-
-namespace {
+// To avoid symbol collisions in jumbo builds.
+namespace renderer_scheduler_impl_unittest {
 
 using ScopedStopLoadingInBackgroundAndroidForTest =
     ScopedRuntimeEnabledFeatureForTest<
@@ -207,8 +207,6 @@ class ScopedAutoAdvanceNowEnabler {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAutoAdvanceNowEnabler);
 };
-
-};  // namespace
 
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
  public:
@@ -3943,14 +3941,10 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   EXPECT_TRUE(value);
 }
 
-namespace {
-
 void RecordingTimeTestTask(std::vector<base::TimeTicks>* run_times,
                            base::SimpleTestTickClock* clock) {
   run_times->push_back(clock->NowTicks());
 }
-
-}  // namespace
 
 // TODO(altimin@): Re-enable after splitting the timer policy into separate
 // policies.
@@ -4174,5 +4168,6 @@ TEST_F(RendererSchedulerImplTest, LoadingControlTasks) {
                                    std::string("L5"), std::string("L6")));
 }
 
+}  // namespace renderer_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink
