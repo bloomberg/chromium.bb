@@ -4681,7 +4681,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     }
   }
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(
         (MAX_GF_INTERVAL - 1),

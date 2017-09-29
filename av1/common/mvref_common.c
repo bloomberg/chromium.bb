@@ -1296,7 +1296,7 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
 void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
   cm->cur_frame->cur_frame_offset = cm->frame_offset;
   int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
@@ -1340,7 +1340,9 @@ void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
         cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
 #endif
 }
+#endif  // CONFIG_FRAME_MARKER
 
+#if CONFIG_MFMV
 // Although we assign 32 bit integers, all the values are strictly under 14
 // bits.
 static int div_mult[32] = {

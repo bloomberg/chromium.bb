@@ -5441,7 +5441,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(x->blk_skip_drl);
 #endif
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(
         (MAX_GF_INTERVAL - 1),
@@ -5456,8 +5456,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->frame_offset = cm->current_video_frame;
   }
   av1_setup_frame_buf_refs(cm);
+#if CONFIG_MFMV
   av1_setup_motion_field(cm);
-#endif
+#endif  // CONFIG_MFMV
+#endif  // CONFIG_FRAME_MARKER
 
   {
     struct aom_usec_timer emr_timer;

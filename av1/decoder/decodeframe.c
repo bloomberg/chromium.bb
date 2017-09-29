@@ -4903,7 +4903,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
   if (cm->show_frame == 0) {
     cm->frame_offset = cm->current_video_frame + aom_rb_read_literal(rb, 4);
   } else {
@@ -5514,10 +5514,12 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
   av1_setup_frame_buf_refs(cm);
+#if CONFIG_MFMV
   av1_setup_motion_field(cm);
-#endif
+#endif  // CONFIG_MFMV
+#endif  // CONFIG_FRAME_MARKER
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING

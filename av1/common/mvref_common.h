@@ -390,10 +390,12 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
   return 0;
 }
 
-#if CONFIG_MFMV
+#if CONFIG_FRAME_MARKER
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
+#if CONFIG_MFMV
 void av1_setup_motion_field(AV1_COMMON *cm);
-#endif
+#endif  // CONFIG_MFMV
+#endif  // CONFIG_FRAME_MARKER
 
 typedef void (*find_mv_refs_sync)(void *const data, int mi_row);
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
