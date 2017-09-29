@@ -1209,7 +1209,6 @@ void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
   for (const auto& request : requests) {
     switch (request.algorithm_type) {
       case NGBaselineAlgorithmType::kAtomicInline:
-      case NGBaselineAlgorithmType::kAtomicInlineForFirstLine:
         for (unsigned i = container_builder_.Children().size(); i--;) {
           if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))

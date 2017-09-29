@@ -312,10 +312,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       ConstraintSpace().WritingMode(),
       ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
-      {line_info.UseFirstLineStyle()
-           ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
-           : NGBaselineAlgorithmType::kAtomicInline,
-       baseline_type_});
+      {NGBaselineAlgorithmType::kAtomicInline, baseline_type_});
   box->metrics.Unite(metrics);
 
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
@@ -499,7 +496,7 @@ void NGInlineLayoutAlgorithm::PropagateBaselinesFromChildren() {
   for (const auto& request : requests) {
     switch (request.algorithm_type) {
       case NGBaselineAlgorithmType::kAtomicInline:
-      case NGBaselineAlgorithmType::kAtomicInlineForFirstLine:
+        // Propagate from the last line box.
         for (unsigned i = container_builder_.Children().size(); i--;) {
           if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))
@@ -507,6 +504,7 @@ void NGInlineLayoutAlgorithm::PropagateBaselinesFromChildren() {
         }
         break;
       case NGBaselineAlgorithmType::kFirstLine:
+        // Propagate from the first line box.
         for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
           if (AddBaseline(request, container_builder_.Children()[i].get(),
                           container_builder_.Offsets()[i].block_offset))

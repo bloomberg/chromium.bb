@@ -482,10 +482,9 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.
   if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
+    space_builder.SetUseFirstLineStyle(line_info.UseFirstLineStyle());
     space_builder.AddBaselineRequest(
-        {line_info.UseFirstLineStyle()
-             ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
-             : NGBaselineAlgorithmType::kAtomicInline,
+        {NGBaselineAlgorithmType::kAtomicInline,
          IsHorizontalWritingMode(constraint_space_.WritingMode())
              ? FontBaseline::kAlphabeticBaseline
              : FontBaseline::kIdeographicBaseline});

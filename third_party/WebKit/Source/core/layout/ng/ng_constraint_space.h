@@ -95,6 +95,13 @@ class CORE_EXPORT NGConstraintSpace final
   // any borders or padding.
   bool IsAnonymous() const { return is_anonymous_; }
 
+  // Whether to use the ':first-line' style or not.
+  // Note, this is not about the first line of the content to layout, but
+  // whether the constraint space itself is on the first line, such as when it's
+  // an inline block.
+  // Also note this is true only when the document has ':first-line' rules.
+  bool UseFirstLineStyle() const { return use_first_line_style_; }
+
   // Whether exceeding the AvailableSize() triggers the presence of a scrollbar
   // for the indicated direction.
   // If exceeded the current layout should be aborted and invoked again with a
@@ -201,6 +208,7 @@ class CORE_EXPORT NGConstraintSpace final
       NGFragmentationType block_direction_fragmentation_type,
       bool is_new_fc,
       bool is_anonymous,
+      bool use_first_line_style,
       const NGMarginStrut& margin_strut,
       const NGBfcOffset& bfc_offset,
       const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
@@ -232,6 +240,7 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned is_new_fc_ : 1;
 
   unsigned is_anonymous_ : 1;
+  unsigned use_first_line_style_ : 1;
 
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
