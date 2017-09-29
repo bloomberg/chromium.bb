@@ -84,6 +84,7 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -1910,6 +1911,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"translate-lang-by-ulp", flag_descriptions::kTranslateLanguageByUlpName,
      flag_descriptions::kTranslateLanguageByUlpDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateLanguageByULP)},
+    {"translate-ranker-enforcement",
+     flag_descriptions::kTranslateRankerEnforcementName,
+     flag_descriptions::kTranslateRankerEnforcementDescription, kOsAll,
+     FEATURE_VALUE_TYPE(translate::kTranslateRankerEnforcement)},
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
     {"enable-native-notifications",
      flag_descriptions::kNotificationsNativeFlagName,

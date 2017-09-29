@@ -1378,6 +1378,12 @@ const char kTranslateLanguageByUlpDescription[] =
     "Improved translate target language and triggering logic by considering "
     "information from User Language Profile (ULP).";
 
+const char kTranslateRankerEnforcementName[] =
+    "Enforce TranslateRanker decisions";
+const char kTranslateRankerEnforcementDescription[] =
+    "Improved Translate UI triggering logic. TranslateRanker decides whether "
+    "or not Translate UI should be triggered in a given context.";
+
 const char kTrySupportedChannelLayoutsName[] =
     "Causes audio output streams to check if channel layouts other than the "
     "default hardware layout are available.";

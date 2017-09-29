@@ -850,6 +850,9 @@ extern const char kTranslate2016q2UiDescription[];
 extern const char kTranslateLanguageByUlpName[];
 extern const char kTranslateLanguageByUlpDescription[];
 
+extern const char kTranslateRankerEnforcementName[];
+extern const char kTranslateRankerEnforcementDescription[];
+
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
