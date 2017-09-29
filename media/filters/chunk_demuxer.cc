@@ -468,6 +468,9 @@ ChunkDemuxer::ChunkDemuxer(
       buffering_by_pts_(base::FeatureList::IsEnabled(kMseBufferByPts)) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!encrypted_media_init_data_cb_.is_null());
+  MEDIA_LOG(INFO, media_log_)
+      << GetDisplayName()
+      << (buffering_by_pts_ ? ": buffering by PTS" : ": buffering by DTS");
 }
 
 std::string ChunkDemuxer::GetDisplayName() const {
