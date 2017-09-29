@@ -67,6 +67,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
+#include "core/inspector/ResolveNode.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
@@ -1343,7 +1344,7 @@ Response InspectorDOMAgent::resolveNode(
 
   if (!node)
     return Response::Error("No node with given id found");
-  *result = ResolveNode(node, object_group_name);
+  *result = ResolveNode(v8_session_, node, object_group_name);
   if (!*result) {
     return Response::Error(
         "Node with given id does not belong to the document");
@@ -1730,18 +1731,6 @@ bool InspectorDOMAgent::IsWhitespace(Node* node) {
   // TODO: pull ignoreWhitespace setting from the frontend and use here.
   return node && node->getNodeType() == Node::kTextNode &&
          node->nodeValue().StripWhiteSpace().length() == 0;
-}
-
-// static
-v8::Local<v8::Value> InspectorDOMAgent::NodeV8Value(
-    v8::Local<v8::Context> context,
-    Node* node) {
-  v8::Isolate* isolate = context->GetIsolate();
-  if (!node || !BindingSecurity::ShouldAllowAccessTo(
-                   CurrentDOMWindow(isolate), node,
-                   BindingSecurity::ErrorReportOption::kDoNotReport))
-    return v8::Null(isolate);
-  return ToV8(node, context->Global(), isolate);
 }
 
 // static
@@ -2146,8 +2135,7 @@ class InspectableNode final
       : node_id_(DOMNodeIds::IdForNode(node)) {}
 
   v8::Local<v8::Value> get(v8::Local<v8::Context> context) override {
-    return InspectorDOMAgent::NodeV8Value(context,
-                                          DOMNodeIds::NodeForId(node_id_));
+    return NodeV8Value(context, DOMNodeIds::NodeForId(node_id_));
   }
 
  private:
@@ -2200,24 +2188,6 @@ protocol::Response InspectorDOMAgent::describeNode(
   *result = BuildObjectForNode(node, depth.fromMaybe(0),
                                pierce.fromMaybe(false), nullptr, nullptr);
   return Response::OK();
-}
-
-std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
-InspectorDOMAgent::ResolveNode(Node* node, const String& object_group) {
-  Document* document =
-      node->IsDocumentNode() ? &node->GetDocument() : node->ownerDocument();
-  LocalFrame* frame = document ? document->GetFrame() : nullptr;
-  if (!frame)
-    return nullptr;
-
-  ScriptState* script_state = ToScriptStateForMainWorld(frame);
-  if (!script_state)
-    return nullptr;
-
-  ScriptState::Scope scope(script_state);
-  return v8_session_->wrapObject(script_state->GetContext(),
-                                 NodeV8Value(script_state->GetContext(), node),
-                                 ToV8InspectorStringView(object_group));
 }
 
 Response InspectorDOMAgent::PushDocumentUponHandlelessOperation() {

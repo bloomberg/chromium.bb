@@ -6319,18 +6319,23 @@ ResizeObserverController& Document::EnsureResizeObserverController() {
 static void RunAddConsoleMessageTask(MessageSource source,
                                      MessageLevel level,
                                      const String& message,
+                                     Vector<DOMNodeId> nodes,
                                      ExecutionContext* context) {
-  context->AddConsoleMessage(ConsoleMessage::Create(source, level, message));
+  ConsoleMessage* console_message =
+      ConsoleMessage::Create(source, level, message);
+  console_message->SetNodes(std::move(nodes));
+  context->AddConsoleMessage(console_message);
 }
 
 void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   if (!IsContextThread()) {
     TaskRunnerHelper::Get(TaskType::kUnthrottled, this)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(
-                       &RunAddConsoleMessageTask, console_message->Source(),
-                       console_message->Level(), console_message->Message(),
-                       WrapCrossThreadPersistent(this)));
+        ->PostTask(
+            BLINK_FROM_HERE,
+            CrossThreadBind(
+                &RunAddConsoleMessageTask, console_message->Source(),
+                console_message->Level(), console_message->Message(),
+                console_message->Nodes(), WrapCrossThreadPersistent(this)));
     return;
   }
 
@@ -6345,10 +6350,12 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
       if (parser->IsParsingAtLineNumber())
         line_number = parser->LineNumber().OneBasedInt();
     }
+    Vector<DOMNodeId> nodes(console_message->Nodes());
     console_message = ConsoleMessage::Create(
         console_message->Source(), console_message->Level(),
         console_message->Message(),
         SourceLocation::Create(Url().GetString(), line_number, 0, nullptr));
+    console_message->SetNodes(std::move(nodes));
   }
   frame_->Console().AddMessage(console_message);
 }

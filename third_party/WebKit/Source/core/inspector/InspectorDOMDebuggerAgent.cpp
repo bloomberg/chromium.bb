@@ -40,6 +40,7 @@
 #include "core/dom/events/EventTarget.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/ResolveNode.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/probe/CoreProbes.h"
 
@@ -120,7 +121,7 @@ static void CollectEventListeners(v8::Isolate* isolate,
       int backend_node_id = 0;
       if (target_node) {
         backend_node_id = DOMNodeIds::IdForNode(target_node);
-        target_wrapper = InspectorDOMAgent::NodeV8Value(
+        target_wrapper = NodeV8Value(
             report_for_all_contexts ? context : isolate->GetCurrentContext(),
             target_node);
       }

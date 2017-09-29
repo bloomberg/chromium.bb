@@ -20,7 +20,8 @@ enum MessageSource {
   kDeprecationMessageSource,
   kWorkerMessageSource,
   kViolationMessageSource,
-  kInterventionMessageSource
+  kInterventionMessageSource,
+  kRecommendationMessageSource
 };
 
 enum MessageLevel {

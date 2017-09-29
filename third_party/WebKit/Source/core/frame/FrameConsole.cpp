@@ -55,9 +55,11 @@ void FrameConsole::AddMessage(ConsoleMessage* console_message) {
     std::unique_ptr<SourceLocation> source_location =
         provisional_loader->CopySourceLocation();
     if (source_location) {
+      Vector<DOMNodeId> nodes(console_message->Nodes());
       console_message = ConsoleMessage::Create(
           console_message->Source(), console_message->Level(),
           console_message->Message(), std::move(source_location));
+      console_message->SetNodes(std::move(nodes));
     }
   }
 

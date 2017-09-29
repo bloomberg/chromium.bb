@@ -24,9 +24,16 @@ class WebInputElement;
 class WebLocalFrame;
 }
 
+namespace re2 {
+class RE2;
+}
+
 namespace autofill {
 
 struct PasswordForm;
+
+// The caller of this function is responsible for deleting the returned object.
+re2::RE2* CreateMatcher(void* instance, const char* pattern);
 
 // Tests whether the given form is a GAIA reauthentication form.
 bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);

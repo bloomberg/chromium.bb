@@ -5,6 +5,7 @@
 #include "core/inspector/ConsoleMessage.h"
 
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/dom/Node.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/web/WebConsoleMessage.h"
@@ -92,6 +93,14 @@ const String& ConsoleMessage::Message() const {
 
 const String& ConsoleMessage::WorkerId() const {
   return worker_id_;
+}
+
+Vector<DOMNodeId>& ConsoleMessage::Nodes() {
+  return nodes_;
+}
+
+void ConsoleMessage::SetNodes(Vector<DOMNodeId> nodes) {
+  nodes_ = std::move(nodes);
 }
 
 DEFINE_TRACE(ConsoleMessage) {}
