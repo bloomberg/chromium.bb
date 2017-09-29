@@ -163,7 +163,7 @@ class CORE_EXPORT SVGElement : public Element {
 
   virtual bool HaveLoadedRequiredResources();
 
-  void InvalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
+  void InvalidateRelativeLengthClients(SubtreeLayoutScope* = nullptr);
 
   void AddToPropertyMap(SVGAnimatedPropertyBase*);
 

@@ -27,7 +27,7 @@
 
 namespace blink {
 
-Document* XMLDocumentParserScope::current_document_ = 0;
+Document* XMLDocumentParserScope::current_document_ = nullptr;
 
 XMLDocumentParserScope::XMLDocumentParserScope(Document* document)
     : old_document_(current_document_),

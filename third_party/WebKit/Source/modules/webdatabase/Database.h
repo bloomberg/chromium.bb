@@ -153,7 +153,7 @@ class Database final : public GarbageCollectedFinalized<Database>,
                       SQLTransactionErrorCallback*,
                       VoidCallback* success_callback,
                       bool read_only,
-                      const ChangeVersionData* = 0);
+                      const ChangeVersionData* = nullptr);
   Vector<String> PerformGetTableNames();
 
   void ReportOpenDatabaseResult(int error_site,

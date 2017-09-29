@@ -64,7 +64,7 @@ class CORE_EXPORT FlatTreeTraversal {
   static Node* LastChild(const Node&);
   static bool HasChildren(const Node&);
 
-  static ContainerNode* Parent(const Node&, ParentTraversalDetails* = 0);
+  static ContainerNode* Parent(const Node&, ParentTraversalDetails* = nullptr);
   static Element* ParentElement(const Node&);
 
   static Node* NextSibling(const Node&);
@@ -150,10 +150,10 @@ class CORE_EXPORT FlatTreeTraversal {
   static Node* TraverseChild(const Node&, TraversalDirection);
 
   static ContainerNode* TraverseParent(const Node&,
-                                       ParentTraversalDetails* = 0);
+                                       ParentTraversalDetails* = nullptr);
   // TODO(hayato): Make ParentTraversalDetails be aware of slot elements too.
   static ContainerNode* TraverseParentForV0(const Node&,
-                                            ParentTraversalDetails* = 0);
+                                            ParentTraversalDetails* = nullptr);
   static ContainerNode* TraverseParentOrHost(const Node&);
 
   static Node* TraverseNextSibling(const Node&);

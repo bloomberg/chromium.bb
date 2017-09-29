@@ -68,7 +68,7 @@ class CORE_EXPORT StyleRuleBase
   StyleRuleBase* Copy() const;
 
   // FIXME: There shouldn't be any need for the null parent version.
-  CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet = 0) const;
+  CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet = nullptr) const;
   CSSRule* CreateCSSOMWrapper(CSSRule* parent_rule) const;
 
   DECLARE_TRACE();
