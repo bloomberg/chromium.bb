@@ -610,9 +610,11 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   if (0 != nap->dynamic_text_start) {
     auxv_entries++;
   }
-  ptr_tbl_size = (((NACL_STACK_GETS_ARG ? 1 : 0) +
-                   (3 + argc + 1 + envc + 1 + auxv_entries * 2)) *
-                  sizeof(uint32_t));
+  ptr_tbl_size = 3 + argc + 1 + envc + 1 + auxv_entries * 2;
+#if NACL_STACK_GETS_ARG
+  ptr_tbl_size++;
+#endif
+  ptr_tbl_size *= sizeof(uint32_t);
 
   if (SIZE_T_MAX - size < ptr_tbl_size) {
     NaClLog(LOG_WARNING,
@@ -653,10 +655,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
    * the main argument block.  For other machines, this is passed
    * in a register and that's set in NaClStartThreadInApp.
    */
-  if (NACL_STACK_GETS_ARG) {
-    uint32_t *argloc = p++;
+#if NACL_STACK_GETS_ARG
+  {
+    uint32_t *argloc = p++;  /* Prevent unsequenced access to p in next line. */
     *argloc = (uint32_t) NaClSysToUser(nap, (uintptr_t) p);
   }
+#endif
 
   *p++ = 0;  /* Cleanup function pointer, always NULL.  */
   *p++ = envc;

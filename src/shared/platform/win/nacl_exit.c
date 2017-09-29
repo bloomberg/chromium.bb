@@ -75,8 +75,5 @@ void NaClExit(int err_code) {
    *    and because there will be no other threads at this point.
    */
   ExitProcess(err_code);
-
-  /* Just in case. */
-  NaClAbort();
 #endif
 }
