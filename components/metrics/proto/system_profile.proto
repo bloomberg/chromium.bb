@@ -13,7 +13,9 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 24
+import "extension_install.proto";
+
+// Next tag: 26
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -944,4 +946,9 @@ message SystemProfileProto {
     optional fixed32 omaha_fingerprint = 3;
   }
   repeated ChromeComponent chrome_component = 24;
+
+  // Information about the user's installed extensions. This will include
+  // extensions from all fully-initialized profiles. If a single extension is
+  // installed in multiple profiles, it will be recorded multiple times.
+  repeated ExtensionInstallProto extension_install = 25;
 }

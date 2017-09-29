@@ -10,6 +10,7 @@ proto_library("proto") {
     "cast_logs.proto",
     "chrome_user_metrics_extension.proto",
     "execution_context.proto",
+    "extension_install.proto",
     "histogram_event.proto",
     "memory_leak_report.proto",
     "omnibox_event.proto",
