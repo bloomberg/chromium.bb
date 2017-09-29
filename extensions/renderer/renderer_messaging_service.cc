@@ -20,6 +20,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extension_port.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -40,7 +41,12 @@ void RendererMessagingService::ValidateMessagePort(
     const ScriptContextSet& context_set,
     const PortId& port_id,
     content::RenderFrame* render_frame) {
-  int routing_id = render_frame->GetRoutingID();
+  // TODO(devlin): In practice, |render_frame| should never be null here (unlike
+  // in other methods, where it legitimately can), but it can be in testing. It
+  // would be better to fake it somehow, but unfortunately, there's no good way
+  // to have a RenderFrame in a unittest. :(
+  int routing_id =
+      render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
 
   bool has_port = false;
   // The base::Unretained() below is safe since ScriptContextSet::ForEach is
@@ -53,8 +59,8 @@ void RendererMessagingService::ValidateMessagePort(
   // A reply is only sent if the port is missing, because the port is assumed to
   // exist unless stated otherwise.
   if (!has_port) {
-    content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_CloseMessagePort(routing_id, port_id, false));
+    bindings_system_->GetIPCMessageSender()->SendCloseMessagePort(
+        routing_id, port_id, false);
   }
 }
 
@@ -78,12 +84,11 @@ void RendererMessagingService::DispatchOnConnect(
                  info, tls_channel_id, &port_created));
   // Note: |restrict_to_render_frame| may have been deleted at this point!
 
+  IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
   if (port_created) {
-    content::RenderThread::Get()->Send(
-        new ExtensionHostMsg_OpenMessagePort(routing_id, target_port_id));
+    ipc_sender->SendOpenMessagePort(routing_id, target_port_id);
   } else {
-    content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseMessagePort(
-        routing_id, target_port_id, false));
+    ipc_sender->SendCloseMessagePort(routing_id, target_port_id, false);
   }
 }
 

@@ -111,9 +111,6 @@ void ScriptContextSet::ForEach(
     }
 
     content::RenderFrame* context_render_frame = context->GetRenderFrame();
-    if (!context_render_frame)
-      continue;
-
     if (render_frame && render_frame != context_render_frame)
       continue;
 

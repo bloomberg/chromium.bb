@@ -206,21 +206,11 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
                                          v8::Local<v8::Context> context,
                                          const base::ListValue& args,
                                          const EventFilteringInfo* filter) {
-  APIEventPerContextData* data = GetContextData(context, false);
-  if (!data)
-    return;
-
-  auto emitter_iter = data->emitters.find(event_name);
-  if (emitter_iter == data->emitters.end())
-    return;
-
-  EventEmitter* emitter = nullptr;
-  gin::Converter<EventEmitter*>::FromV8(
-      context->GetIsolate(), emitter_iter->second.Get(context->GetIsolate()),
-      &emitter);
-  CHECK(emitter);
-
-  if (emitter->GetNumListeners() == 0u)
+  // Don't bother converting arguments if there are no listeners.
+  // NOTE(devlin): This causes a double data and EventEmitter lookup, since
+  // the v8 version below also checks for listeners. This should be very cheap,
+  // but if we were really worried we could refactor.
+  if (!HasListenerForEvent(event_name, context))
     return;
 
   // Note: since we only convert the arguments once, if a listener modifies an
@@ -229,20 +219,51 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
   std::unique_ptr<content::V8ValueConverter> converter =
       content::V8ValueConverter::Create();
 
+  std::vector<v8::Local<v8::Value>> v8_args;
+  v8_args.reserve(args.GetSize());
+  for (const auto& arg : args)
+    v8_args.push_back(converter->ToV8Value(&arg, context));
+
+  FireEventInContext(event_name, context, &v8_args, filter);
+}
+
+void APIEventHandler::FireEventInContext(
+    const std::string& event_name,
+    v8::Local<v8::Context> context,
+    std::vector<v8::Local<v8::Value>>* arguments,
+    const EventFilteringInfo* filter) {
+  APIEventPerContextData* data = GetContextData(context, false);
+  if (!data)
+    return;
+
+  auto iter = data->emitters.find(event_name);
+  if (iter == data->emitters.end())
+    return;
+  EventEmitter* emitter = nullptr;
+  gin::Converter<EventEmitter*>::FromV8(
+      context->GetIsolate(), iter->second.Get(context->GetIsolate()), &emitter);
+  CHECK(emitter);
+
   auto massager_iter = data->massagers.find(event_name);
   if (massager_iter == data->massagers.end()) {
-    std::vector<v8::Local<v8::Value>> v8_args;
-    v8_args.reserve(args.GetSize());
-    for (const auto& arg : args)
-      v8_args.push_back(converter->ToV8Value(&arg, context));
-    emitter->Fire(context, &v8_args, filter);
+    emitter->Fire(context, arguments, filter);
   } else {
     v8::Isolate* isolate = context->GetIsolate();
     v8::HandleScope handle_scope(isolate);
     v8::Local<v8::Function> massager = massager_iter->second.Get(isolate);
-    v8::Local<v8::Value> v8_args = converter->ToV8Value(&args, context);
-    DCHECK(!v8_args.IsEmpty());
-    DCHECK(v8_args->IsArray());
+
+    v8::Local<v8::Array> args_array =
+        v8::Array::New(isolate, arguments->size());
+    {
+      // Massagers expect an array of v8 values. Since this is a newly-
+      // constructed array and we're assigning data properties, this shouldn't
+      // be able to fail or be visible by other script.
+      for (size_t i = 0; i < arguments->size(); ++i) {
+        v8::Maybe<bool> success = args_array->CreateDataProperty(
+            context, static_cast<uint32_t>(i), arguments->at(i));
+        CHECK(success.ToChecked());
+      }
+    }
 
     // Curry in the native dispatch function. Some argument massagers take
     // extra liberties and call this asynchronously, so we can't just have the
@@ -253,7 +274,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
     v8::Local<v8::Function> dispatch_event = v8::Function::New(
         isolate, &DispatchEvent, gin::StringToSymbol(isolate, event_name));
 
-    v8::Local<v8::Value> massager_args[] = {v8_args, dispatch_event};
+    v8::Local<v8::Value> massager_args[] = {args_array, dispatch_event};
     call_js_.Run(massager, context, arraysize(massager_args), massager_args);
   }
 }

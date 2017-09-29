@@ -21,6 +21,8 @@ class DictionaryValue;
 namespace extensions {
 class ScriptContext;
 class WorkerThreadDispatcher;
+struct Message;
+struct PortId;
 
 // A class to handle sending bindings-related messages to the browser. Different
 // versions handle main thread vs. service worker threads.
@@ -38,7 +40,7 @@ class IPCMessageSender {
   // to a request.
   virtual void SendOnRequestResponseReceivedIPC(int request_id) = 0;
 
-  // Send a message to add/remove an unfiltered listener.
+  // Sends a message to add/remove an unfiltered listener.
   virtual void SendAddUnfilteredEventListenerIPC(
       ScriptContext* context,
       const std::string& event_name) = 0;
@@ -46,7 +48,7 @@ class IPCMessageSender {
       ScriptContext* context,
       const std::string& event_name) = 0;
 
-  // Send a message to add/remove a lazy unfiltered listener.
+  // Sends a message to add/remove a lazy unfiltered listener.
   virtual void SendAddUnfilteredLazyEventListenerIPC(
       ScriptContext* context,
       const std::string& event_name) = 0;
@@ -54,7 +56,7 @@ class IPCMessageSender {
       ScriptContext* context,
       const std::string& event_name) = 0;
 
-  // Send a message to add/remove a filtered listener.
+  // Sends a message to add/remove a filtered listener.
   virtual void SendAddFilteredEventListenerIPC(
       ScriptContext* context,
       const std::string& event_name,
@@ -65,6 +67,23 @@ class IPCMessageSender {
       const std::string& event_name,
       const base::DictionaryValue& filter,
       bool remove_lazy_listener) = 0;
+
+  // Opens a channel to the specified extension.
+  virtual void SendOpenChannelToExtension(ScriptContext* script_context,
+                                          const PortId& port_id,
+                                          const std::string& target_id,
+                                          const std::string& channel_name,
+                                          bool include_tls_channel_id) = 0;
+
+  // Sends a message to open/close a mesage port or send a message to an
+  // existing port.
+  virtual void SendOpenMessagePort(int routing_id, const PortId& port_id) = 0;
+  virtual void SendCloseMessagePort(int routing_id,
+                                    const PortId& port_id,
+                                    bool close_channel) = 0;
+  virtual void SendPostMessageToPort(int routing_id,
+                                     const PortId& port_id,
+                                     const Message& message) = 0;
 
   // Creates an IPCMessageSender for use on the main thread.
   static std::unique_ptr<IPCMessageSender> CreateMainThreadIPCMessageSender();

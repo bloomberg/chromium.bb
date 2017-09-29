@@ -15,6 +15,10 @@ struct Message {
   Message() : data(), user_gesture(false) {}
   Message(const std::string& data, bool user_gesture)
       : data(data), user_gesture(user_gesture) {}
+
+  bool operator==(const Message& other) const {
+    return data == other.data && user_gesture == other.user_gesture;
+  }
 };
 
 }  // namespace extensions

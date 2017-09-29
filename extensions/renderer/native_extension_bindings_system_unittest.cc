@@ -115,6 +115,10 @@ void NativeExtensionBindingsSystemUnittest::RegisterExtension(
   RendererExtensionRegistry::Get()->Insert(extension);
 }
 
+bool NativeExtensionBindingsSystemUnittest::UseStrictIPCMessageSender() {
+  return false;
+}
+
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder("foo")
