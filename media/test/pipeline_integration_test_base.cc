@@ -233,7 +233,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   // that it's called at least once. Such streams may repeatedly update their
   // duration as new packets are demuxed.
   if (test_type & kUnreliableDuration) {
-    EXPECT_CALL(*this, OnDurationChange()).Times(AtLeast(1));
+    EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
   } else {
     EXPECT_CALL(*this, OnDurationChange())
         .Times(AtMost(2))
