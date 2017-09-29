@@ -21,6 +21,9 @@ namespace extensions {
 
 namespace {
 
+const int kDefaultRoutingId = 42;
+const char kDefaultPortName[] = "port name";
+
 void DoNothingOnEventListenersChanged(const std::string& event_name,
                                       binding::EventListenersChanged change,
                                       const base::DictionaryValue* value,
@@ -33,12 +36,17 @@ class TestPortDelegate : public GinPort::Delegate {
   TestPortDelegate() {}
   ~TestPortDelegate() override {}
 
-  void PostMessageToPort(const PortId& port_id,
+  void PostMessageToPort(v8::Local<v8::Context> context,
+                         const PortId& port_id,
+                         int routing_id,
                          std::unique_ptr<Message> message) override {
     last_port_id_ = port_id;
     last_message_ = std::move(message);
   }
-  MOCK_METHOD1(ClosePort, void(const PortId&));
+  MOCK_METHOD3(ClosePort,
+               void(v8::Local<v8::Context> context,
+                    const PortId&,
+                    int routing_id));
 
   void ResetLastMessage() {
     last_port_id_.reset();
@@ -66,7 +74,7 @@ class GinPortTest : public APIBindingTest {
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&DoNothingOnEventListenersChanged), nullptr);
-    delegate_ = std::make_unique<TestPortDelegate>();
+    delegate_ = std::make_unique<testing::StrictMock<TestPortDelegate>>();
   }
 
   void TearDown() override {
@@ -78,12 +86,19 @@ class GinPortTest : public APIBindingTest {
     event_handler_->InvalidateContext(context);
   }
 
+  gin::Handle<GinPort> CreatePort(const PortId& port_id,
+                                  const char* name = kDefaultPortName) {
+    return gin::CreateHandle(isolate(),
+                             new GinPort(port_id, kDefaultRoutingId, name,
+                                         event_handler(), delegate()));
+  }
+
   APIEventHandler* event_handler() { return event_handler_.get(); }
   TestPortDelegate* delegate() { return delegate_.get(); }
 
  private:
   std::unique_ptr<APIEventHandler> event_handler_;
-  std::unique_ptr<TestPortDelegate> delegate_;
+  std::unique_ptr<testing::StrictMock<TestPortDelegate>> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GinPortTest);
 };
@@ -96,9 +111,7 @@ TEST_F(GinPortTest, TestGetName) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -112,9 +125,7 @@ TEST_F(GinPortTest, TestDispatchMessage) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -148,9 +159,7 @@ TEST_F(GinPortTest, TestPostMessage) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -232,9 +241,7 @@ TEST_F(GinPortTest, TestPostMessage) {
 
   {
     // Disconnect the port and send a message. Should fail.
-    EXPECT_CALL(*delegate(), ClosePort(port_id)).Times(1);
-    port->Disconnect(context);
-    ::testing::Mock::VerifyAndClearExpectations(delegate());
+    port->DispatchOnDisconnect(context);
     EXPECT_TRUE(port->is_closed());
     const char kFunction[] =
         "(function(port) { port.postMessage({data: [42]}); })";
@@ -257,9 +264,7 @@ TEST_F(GinPortTest, TestNativeDisconnect) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
@@ -275,9 +280,7 @@ TEST_F(GinPortTest, TestNativeDisconnect) {
   v8::Local<v8::Value> args[] = {port_obj};
   RunFunctionOnGlobal(test_function, context, arraysize(args), args);
 
-  EXPECT_CALL(*delegate(), ClosePort(port_id)).Times(1);
-  port->Disconnect(context);
-  ::testing::Mock::VerifyAndClearExpectations(delegate());
+  port->DispatchOnDisconnect(context);
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
                                                 "onDisconnectPortValid"));
   EXPECT_TRUE(port->is_closed());
@@ -289,13 +292,12 @@ TEST_F(GinPortTest, TestJSDisconnect) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 
-  EXPECT_CALL(*delegate(), ClosePort(port_id)).Times(1);
+  EXPECT_CALL(*delegate(), ClosePort(context, port_id, kDefaultRoutingId))
+      .Times(1);
   const char kFunction[] = "(function(port) { port.disconnect(); })";
   v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
   v8::Local<v8::Value> args[] = {port_obj};
@@ -310,9 +312,7 @@ TEST_F(GinPortTest, TestSenderProperty) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  std::string name = "port name";
-  gin::Handle<GinPort> port = gin::CreateHandle(
-      isolate(), new GinPort(port_id, name, event_handler(), delegate()));
+  gin::Handle<GinPort> port = CreatePort(port_id);
 
   v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
 

@@ -26,10 +26,12 @@ constexpr char kOnDisconnectEvent[] = "onDisconnect";
 }  // namespace
 
 GinPort::GinPort(const PortId& port_id,
+                 int routing_id,
                  const std::string& name,
                  APIEventHandler* event_handler,
                  Delegate* delegate)
     : port_id_(port_id),
+      routing_id_(routing_id),
       name_(name),
       event_handler_(event_handler),
       delegate_(delegate) {}
@@ -70,7 +72,7 @@ void GinPort::DispatchOnMessage(v8::Local<v8::Context> context,
   DispatchEvent(context, &args, kOnMessageEvent);
 }
 
-void GinPort::Disconnect(v8::Local<v8::Context> context) {
+void GinPort::DispatchOnDisconnect(v8::Local<v8::Context> context) {
   DCHECK(!is_closed_);
 
   v8::Isolate* isolate = context->GetIsolate();
@@ -102,11 +104,14 @@ void GinPort::DisconnectHandler(gin::Arguments* arguments) {
 
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
   Invalidate(context);
+
+  delegate_->ClosePort(context, port_id_, routing_id_);
 }
 
 void GinPort::PostMessageHandler(gin::Arguments* arguments,
                                  v8::Local<v8::Value> v8_message) {
   v8::Isolate* isolate = arguments->isolate();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
   if (is_closed_) {
     ThrowError(isolate, "Attempting to use a disconnected port object");
     return;
@@ -128,9 +133,7 @@ void GinPort::PostMessageHandler(gin::Arguments* arguments,
   v8::Local<v8::String> stringified;
   {
     v8::TryCatch try_catch(isolate);
-    success =
-        v8::JSON::Stringify(arguments->GetHolderCreationContext(), v8_message)
-            .ToLocal(&stringified);
+    success = v8::JSON::Stringify(context, v8_message).ToLocal(&stringified);
   }
 
   std::string message;
@@ -149,7 +152,7 @@ void GinPort::PostMessageHandler(gin::Arguments* arguments,
   }
 
   delegate_->PostMessageToPort(
-      port_id_,
+      context, port_id_, routing_id_,
       std::make_unique<Message>(
           message, blink::WebUserGestureIndicator::IsProcessingUserGesture()));
 }
@@ -228,7 +231,6 @@ void GinPort::Invalidate(v8::Local<v8::Context> context) {
                                         GetEvent(context, kOnMessageEvent));
   event_handler_->InvalidateCustomEvent(context,
                                         GetEvent(context, kOnDisconnectEvent));
-  delegate_->ClosePort(port_id_);
 }
 
 void GinPort::ThrowError(v8::Isolate* isolate, base::StringPiece error) {

@@ -75,6 +75,13 @@ class TestIPCMessageSender : public IPCMessageSender {
                     const std::string& event_name,
                     const base::DictionaryValue& filter,
                     bool remove_lazy_listener));
+
+  MOCK_METHOD5(SendOpenChannelToExtension,
+               void(ScriptContext* script_context,
+                    const PortId& port_id,
+                    const std::string& target_id,
+                    const std::string& channel_name,
+                    bool include_tls_channel_id));
   MOCK_METHOD2(SendOpenMessagePort,
                void(int routing_id, const PortId& port_id));
   MOCK_METHOD3(SendCloseMessagePort,
@@ -114,6 +121,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
                                      Feature::Context context_type);
 
   void RegisterExtension(scoped_refptr<const Extension> extension);
+
+  // Returns whether or not a StrictMock should be used for the
+  // IPCMessageSender. The default is to return false.
+  virtual bool UseStrictIPCMessageSender();
 
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();

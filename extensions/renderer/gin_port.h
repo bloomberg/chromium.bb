@@ -24,9 +24,8 @@ struct Message;
 // A gin::Wrappable implementation of runtime.Port exposed to extensions. This
 // provides a means for extensions to communicate with themselves and each
 // other. This message-passing usually involves IPCs to the browser; we delegate
-// out this responsibility. This class only handles the JS interface.
-// TODO(devlin): Expose this class through a native implementation for the
-// messaging custom bindings.
+// out this responsibility. This class only handles the JS interface (both calls
+// from JS and forward events to JS).
 class GinPort final : public gin::Wrappable<GinPort> {
  public:
   class Delegate {
@@ -34,14 +33,19 @@ class GinPort final : public gin::Wrappable<GinPort> {
     virtual ~Delegate() {}
 
     // Posts a message to the port.
-    virtual void PostMessageToPort(const PortId& port_id,
+    virtual void PostMessageToPort(v8::Local<v8::Context> context,
+                                   const PortId& port_id,
+                                   int routing_id,
                                    std::unique_ptr<Message> message) = 0;
 
     // Closes the port.
-    virtual void ClosePort(const PortId& port_id) = 0;
+    virtual void ClosePort(v8::Local<v8::Context> context,
+                           const PortId& port_id,
+                           int routing_id) = 0;
   };
 
   GinPort(const PortId& port_id,
+          int routing_id,
           const std::string& name,
           APIEventHandler* event_handler,
           Delegate* delegate);
@@ -59,12 +63,15 @@ class GinPort final : public gin::Wrappable<GinPort> {
 
   // Dispatches an event to any listeners of the onDisconnect event and closes
   // the port.
-  void Disconnect(v8::Local<v8::Context> context);
+  void DispatchOnDisconnect(v8::Local<v8::Context> context);
 
   // Sets the |sender| property on the port.
   void SetSender(v8::Local<v8::Context> context, v8::Local<v8::Value> sender);
 
   bool is_closed() const { return is_closed_; }
+  const PortId& port_id() const { return port_id_; }
+  int routing_id() const { return routing_id_; }
+  const std::string& name() const { return name_; }
 
  private:
   // Handlers for the gin::Wrappable.
@@ -104,6 +111,10 @@ class GinPort final : public gin::Wrappable<GinPort> {
 
   // The associated port id.
   PortId port_id_;
+
+  // The routing id associated with the port's context's render frame.
+  // TODO(devlin/lazyboy): This won't work with service workers.
+  int routing_id_;
 
   // The port's name.
   std::string name_;
