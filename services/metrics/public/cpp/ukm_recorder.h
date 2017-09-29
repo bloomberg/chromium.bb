@@ -32,6 +32,10 @@ namespace autofill {
 class AutofillMetrics;
 }
 
+namespace blink {
+class Document;
+}
+
 namespace content {
 class RenderFrameImpl;
 class RenderWidgetHostLatencyTracker;
@@ -101,6 +105,7 @@ class METRICS_EXPORT UkmRecorder {
 
  private:
   friend autofill::AutofillMetrics;
+  friend blink::Document;
   friend payments::JourneyLogger;
   friend ContextualSearchRankerLoggerImpl;
   friend ProcessMemoryMetricsEmitter;
