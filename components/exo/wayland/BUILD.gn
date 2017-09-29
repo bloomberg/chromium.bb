@@ -112,7 +112,13 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("client_lib") {
+config("client_support_config") {
+  if (ozone_platform_gbm) {
+    defines = [ "USE_GBM" ]
+  }
+}
+
+source_set("client_support") {
   sources = [
     "clients/client_base.cc",
     "clients/client_base.h",
@@ -139,12 +145,11 @@ source_set("client_lib") {
       ":libdrm",
       "//ui/gl:gl_config",
     ]
-    defines = [ "OZONE_PLATFORM_GBM" ]
-    deps += [
-      "//third_party/minigbm",
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
+    public_deps += [ "//third_party/minigbm" ]
   }
+
+  public_configs = [ ":client_support_config" ]
 }
 
 executable("wayland_rects_client") {
@@ -153,7 +158,7 @@ executable("wayland_rects_client") {
   ]
 
   deps = [
-    ":client_lib",
+    ":client_support",
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//skia",
@@ -169,7 +174,7 @@ executable("wayland_rects_client") {
       ":libdrm",
       "//ui/gl:gl_config",
     ]
-    defines = [ "OZONE_PLATFORM_GBM" ]
+    defines = [ "USE_GBM" ]
     deps += [ "//third_party/minigbm" ]
   }
 }
@@ -181,7 +186,7 @@ source_set("simple") {
   ]
 
   deps = [
-    ":client_lib",
+    ":client_support",
     "//base",
     "//skia",
     "//third_party/wayland:wayland_client",
@@ -196,8 +201,6 @@ source_set("simple") {
       ":libdrm",
       "//ui/gl:gl_config",
     ]
-    defines = [ "OZONE_PLATFORM_GBM" ]
-    deps += [ "//third_party/minigbm" ]
   }
 }
 
@@ -206,7 +209,7 @@ executable("wayland_simple_client") {
     "clients/simple_main.cc",
   ]
   deps = [
-    ":client_lib",
+    ":client_support",
     ":simple",
     "//base",
     "//build/config:exe_and_shlib_deps",
@@ -219,7 +222,7 @@ executable("wayland_subsurface_client") {
   ]
 
   deps = [
-    ":client_lib",
+    ":client_support",
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//skia",
@@ -251,7 +254,7 @@ test("wayland_client_perftests") {
   ]
 
   deps = [
-    ":client_lib",
+    ":client_support",
     ":simple",
     ":wayland",
     "//ash:test_support_without_content",
@@ -276,18 +279,6 @@ test("wayland_client_perftests") {
     "//ash/resources:ash_test_resources_100_percent",
     "//ash/resources:ash_test_resources_200_percent",
   ]
-
-  if (ozone_platform_gbm) {
-    configs += [
-      "//components/exo/wayland:libdrm",
-      "//ui/gl:gl_config",
-    ]
-    defines = [ "OZONE_PLATFORM_GBM" ]
-    deps += [
-      "//third_party/minigbm",
-      "//ui/ozone",
-    ]
-  }
 }
 
 if (ozone_platform_gbm) {
@@ -297,7 +288,7 @@ if (ozone_platform_gbm) {
     ]
 
     deps = [
-      ":client_lib",
+      ":client_support",
       "//base",
       "//skia",
       "//third_party/wayland:wayland_client",
@@ -310,7 +301,6 @@ if (ozone_platform_gbm) {
       ":libdrm",
       "//ui/gl:gl_config",
     ]
-    defines = [ "OZONE_PLATFORM_GBM" ]
     deps += [ "//third_party/minigbm" ]
   }
 }

@@ -34,7 +34,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drm.h>
@@ -72,12 +72,12 @@ namespace {
 // Buffer format.
 const int32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
 const SkColorType kColorType = kBGRA_8888_SkColorType;
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
 const GrPixelConfig kGrPixelConfig = kBGRA_8888_GrPixelConfig;
 #endif
 const size_t kBytesPerPixel = 4;
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
 // DRI render node path template.
 const char kDriRenderNodeTemplate[] = "/dev/dri/renderD%u";
 #endif
@@ -125,7 +125,7 @@ void BufferRelease(void* data, wl_buffer* /* buffer */) {
   buffer->busy = false;
 }
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
 const GrGLInterface* GrGLCreateNativeInterface() {
   return GrGLAssembleInterface(nullptr, [](void* ctx, const char name[]) {
     return eglGetProcAddress(name);
@@ -143,7 +143,7 @@ wl_buffer_listener g_buffer_listener = {BufferRelease};
 // ClientBase::InitParams, public:
 
 ClientBase::InitParams::InitParams() {
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
   drm_format = DRM_FORMAT_ABGR8888;
   bo_usage = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_TEXTURING;
 #endif
@@ -273,7 +273,7 @@ bool ClientBase::Init(const InitParams& params) {
     return false;
   }
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
   sk_sp<const GrGLInterface> native_interface;
   if (params.use_drm) {
     // Number of files to look for when discovering DRM devices.
@@ -462,7 +462,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     int32_t drm_format,
     int32_t bo_usage) {
   std::unique_ptr<Buffer> buffer;
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
   if (device_) {
     buffer = std::make_unique<Buffer>();
     buffer->bo.reset(gbm_bo_create(device_.get(), size.width(), size.height(),
