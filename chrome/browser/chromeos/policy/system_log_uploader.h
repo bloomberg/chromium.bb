@@ -37,7 +37,12 @@ class SystemLogUploader : public UploadJob::Delegate {
  public:
   // Structure that stores the system log files as pairs: (file name, loaded
   // from the disk binary file data).
-  typedef std::vector<std::pair<std::string, std::string>> SystemLogs;
+  using SystemLogs = std::vector<std::pair<std::string, std::string>>;
+
+  // Remove lines from |data| that contain common PII (IP addresses, BSSIDs,
+  // SSIDs, URLs, e-mail addresses).
+  static std::string RemoveSensitiveData(feedback::AnonymizerTool* anonymizer,
+                                         const std::string& data);
 
   // Refresh constants.
   static const int64_t kDefaultUploadDelayMs;
@@ -53,8 +58,8 @@ class SystemLogUploader : public UploadJob::Delegate {
   // from the disk and create an upload job.
   class Delegate {
    public:
-    typedef base::Callback<void(std::unique_ptr<SystemLogs> system_logs)>
-        LogUploadCallback;
+    using LogUploadCallback =
+        base::Callback<void(std::unique_ptr<SystemLogs> system_logs)>;
 
     virtual ~Delegate() {}
 
@@ -70,7 +75,7 @@ class SystemLogUploader : public UploadJob::Delegate {
 
   // Constructor. Callers can inject their own Delegate. A nullptr can be passed
   // for |syslog_delegate| to use the default implementation.
-  explicit SystemLogUploader(
+  SystemLogUploader(
       std::unique_ptr<Delegate> syslog_delegate,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
@@ -80,19 +85,13 @@ class SystemLogUploader : public UploadJob::Delegate {
   // ever happened.
   base::Time last_upload_attempt() const { return last_upload_attempt_; }
 
+  void ScheduleNextSystemLogUploadImmediately();
+
   // UploadJob::Delegate:
   // Callbacks handle success and failure results of upload, destroy the
   // upload job.
   void OnSuccess() override;
   void OnFailure(UploadJob::ErrorCode error_code) override;
-
-  // Remove lines from |data| that contain common PII (IP addresses, BSSIDs,
-  // SSIDs, URLs, e-mail addresses).
-  static std::string RemoveSensitiveData(
-      feedback::AnonymizerTool* const anonymizer,
-      const std::string& data);
-
-  void ScheduleNextSystemLogUploadImmediately();
 
  private:
   // Updates the system log upload enabled field from settings.

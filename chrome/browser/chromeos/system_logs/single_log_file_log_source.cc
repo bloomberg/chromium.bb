@@ -35,28 +35,28 @@ const base::Time* g_chrome_start_time_for_test = nullptr;
 // Converts a logs source type to the corresponding file path, relative to the
 // base system log directory path. In the future, if non-file source types are
 // added, this function should return an empty file path.
-base::FilePath GetLogFileSourceRelativeFilePath(
+base::FilePath::StringType GetLogFileSourceRelativeFilePathValue(
     SingleLogFileLogSource::SupportedSource source) {
   switch (source) {
     case SupportedSource::kMessages:
-      return base::FilePath("messages");
+      return "messages";
     case SupportedSource::kUiLatest:
-      return base::FilePath("ui/ui.LATEST");
+      return "ui/ui.LATEST";
     case SupportedSource::kAtrusLog:
-      return base::FilePath("atrus.log");
+      return "atrus.log";
     case SupportedSource::kNetLog:
-      return base::FilePath("net.log");
+      return "net.log";
     case SupportedSource::kEventLog:
-      return base::FilePath("eventlog.txt");
+      return "eventlog.txt";
     case SupportedSource::kUpdateEngineLog:
-      return base::FilePath("update_engine.log");
+      return "update_engine.log";
     case SupportedSource::kPowerdLatest:
-      return base::FilePath("power_manager/powerd.LATEST");
+      return "power_manager/powerd.LATEST";
     case SupportedSource::kPowerdPrevious:
-      return base::FilePath("power_manager/powerd.PREVIOUS");
+      return "power_manager/powerd.PREVIOUS";
   }
   NOTREACHED();
-  return base::FilePath();
+  return base::FilePath::StringType();
 }
 
 // Returns the inode value of file at |path|, or 0 if it doesn't exist or is
@@ -168,7 +168,7 @@ size_t GetFirstFileOffsetWithTime(const base::FilePath& path,
 }  // namespace
 
 SingleLogFileLogSource::SingleLogFileLogSource(SupportedSource source_type)
-    : SystemLogsSource(GetLogFileSourceRelativeFilePath(source_type).value()),
+    : SystemLogsSource(GetLogFileSourceRelativeFilePathValue(source_type)),
       source_type_(source_type),
       log_file_dir_path_(kDefaultSystemLogDirPath),
       num_bytes_read_(0),
@@ -187,18 +187,19 @@ void SingleLogFileLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  SystemLogsResponse* response = new SystemLogsResponse;
+  auto response = std::make_unique<SystemLogsResponse>();
+  auto* response_ptr = response.get();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
       base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND),
       base::Bind(&SingleLogFileLogSource::ReadFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 kMaxNumAllowedLogRotationsDuringFileRead, response),
-      base::Bind(callback, base::Owned(response)));
+                 kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),
+      base::Bind(callback, base::Owned(response.release())));
 }
 
 base::FilePath SingleLogFileLogSource::GetLogFilePath() const {
-  return base::FilePath(log_file_dir_path_).Append(source_name());
+  return log_file_dir_path_.Append(source_name());
 }
 
 void SingleLogFileLogSource::ReadFile(size_t num_rotations_allowed,
