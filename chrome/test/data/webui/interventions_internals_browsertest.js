@@ -7,7 +7,7 @@
  */
 
 /** @const {string} Path to source root. */
-var ROOT_PATH = '../../../../';
+let ROOT_PATH = '../../../../';
 
 /**
  * Test fixture for InterventionsInternals WebUI testing.
@@ -46,23 +46,23 @@ InterventionsInternalsUITest.prototype = {
       constructor() {
         super(['getPreviewsEnabled']);
 
-        /** @private {boolean} */
-        this.previewsEnabled_ = false;
+        /** @private {!Map} */
+        this.statuses_ = new Map();
       }
 
       /**
-       * Change the behavior of the PageHandler for testing purposes.
-       * @param {boolean} The new status for previews.
+       * Setup testing map.
+       * @param {!Map} map The testing status map.
        */
-      setPreviewsEnabled(enabled) {
-        this.previewsEnabled_ = enabled;
+      setTestingMap(map) {
+        this.statuses_ = map;
       }
 
-      /** @override */
+      /** @override **/
       getPreviewsEnabled() {
         this.methodCalled('getPreviewsEnabled');
         return Promise.resolve({
-          enabled: this.previewsEnabled_,
+          statuses: this.statuses_,
         });
       }
     }
@@ -75,42 +75,39 @@ InterventionsInternalsUITest.prototype = {
   },
 };
 
-TEST_F('InterventionsInternalsUITest', 'PreviewStatusEnabledTest', function() {
+TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
   let setupFnResolver = this.setupFnResolver;
 
-  test('EnabledStatusTest', function() {
+  test('DisplayCorrectStatuses', () => {
     // Setup testPageHandler behavior.
-    window.testPageHandler.setPreviewsEnabled(true);
-    setupFnResolver.resolve();
+    let testMap = new Map();
+    testMap.set('params1', {
+      description: 'Params 1',
+      enabled: true,
+    });
+    testMap.set('params2', {
+      description: 'Params 2',
+      enabled: false,
+    });
+    testMap.set('params3', {
+      description: 'Param 3',
+      enabled: false,
+    });
+
+    window.testPageHandler.setTestingMap(testMap);
+    this.setupFnResolver.resolve();
 
     return setupFnResolver.promise
-        .then(function() {
+        .then(() => {
           return window.testPageHandler.whenCalled('getPreviewsEnabled');
         })
-        .then(function() {
-          let message = document.querySelector('#offlinePreviews');
-          expectEquals('OfflinePreviews: Enabled', message.textContent);
-        });
-  });
-
-  mocha.run();
-});
-
-TEST_F('InterventionsInternalsUITest', 'PreviewStatusDisabledTest', function() {
-  let setupFnResolver = this.setupFnResolver;
-
-  test('DisabledStatusTest', function() {
-    // Setup testPageHandler behavior.
-    window.testPageHandler.setPreviewsEnabled(false);
-    setupFnResolver.resolve();
-
-    return setupFnResolver.promise
-        .then(function() {
-          return window.testPageHandler.whenCalled('getPreviewsEnabled');
-        })
-        .then(function() {
-          let message = document.querySelector('#offlinePreviews');
-          expectEquals('OfflinePreviews: Disabled', message.textContent);
+        .then(() => {
+          testMap.forEach((value, key) => {
+            let expected = value.description + ': ' +
+                (value.enabled ? 'Enabled' : 'Disabled');
+            let actual = document.querySelector('#' + key).textContent;
+            expectEquals(expected, actual);
+          });
         });
   });
 
