@@ -84,8 +84,8 @@ LayoutUnit LayoutListBox::ItemHeight() const {
 
   LayoutUnit max_height;
   for (Element* element : items) {
-    if (isHTMLOptGroupElement(element))
-      element = &toHTMLOptGroupElement(element)->OptGroupLabelElement();
+    if (auto* optgroup = ToHTMLOptGroupElementOrNull(element))
+      element = &optgroup->OptGroupLabelElement();
     LayoutObject* layout_object = element->GetLayoutObject();
     LayoutUnit item_height;
     if (layout_object && layout_object->IsBox())

@@ -197,13 +197,12 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
   if (new_element) {
     DCHECK(Fullscreen::IsFullscreenElement(*new_element));
 
-    if (isHTMLVideoElement(*new_element)) {
-      HTMLVideoElement& video_element = toHTMLVideoElement(*new_element);
-      video_element.DidEnterFullscreen();
+    if (auto* video_element = ToHTMLVideoElementOrNull(*new_element)) {
+      video_element->DidEnterFullscreen();
 
       // If the video uses overlay fullscreen mode, make the background
       // transparent.
-      if (video_element.UsesOverlayFullscreenVideo())
+      if (video_element->UsesOverlayFullscreenVideo())
         web_view_base_->SetBackgroundColorOverride(Color::kTransparent);
     }
   }
@@ -211,10 +210,8 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
   if (old_element) {
     DCHECK(!Fullscreen::IsFullscreenElement(*old_element));
 
-    if (isHTMLVideoElement(*old_element)) {
-      HTMLVideoElement& video_element = toHTMLVideoElement(*old_element);
-      video_element.DidExitFullscreen();
-    }
+    if (auto* video_element = ToHTMLVideoElementOrNull(*old_element))
+      video_element->DidExitFullscreen();
   }
 }
 

@@ -597,8 +597,8 @@ void HTMLFormElement::CollectListedElements(
     ListedElement* listed_element = 0;
     if (element.IsFormControlElement())
       listed_element = ToHTMLFormControlElement(&element);
-    else if (isHTMLObjectElement(element))
-      listed_element = toHTMLObjectElement(&element);
+    else if (auto* object = ToHTMLObjectElementOrNull(element))
+      listed_element = object;
     else
       continue;
     if (listed_element->Form() == this)

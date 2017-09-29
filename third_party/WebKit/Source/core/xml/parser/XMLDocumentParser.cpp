@@ -1022,8 +1022,8 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
     return;
   }
 
-  if (isHTMLTemplateElement(*new_element))
-    PushCurrentNode(toHTMLTemplateElement(*new_element).content());
+  if (auto* template_element = ToHTMLTemplateElementOrNull(*new_element))
+    PushCurrentNode(template_element->content());
   else
     PushCurrentNode(new_element);
 

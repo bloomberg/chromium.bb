@@ -152,11 +152,11 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   for (Node* node = root_element; node; node = FlatTreeTraversal::Next(*node)) {
     if (isSVGForeignObjectElement(*node))
       return false;
-    if (isSVGImageElement(*node)) {
-      if (!toSVGImageElement(*node).CurrentFrameHasSingleSecurityOrigin())
+    if (auto* image = ToSVGImageElementOrNull(*node)) {
+      if (!image->CurrentFrameHasSingleSecurityOrigin())
         return false;
-    } else if (isSVGFEImageElement(*node)) {
-      if (!toSVGFEImageElement(*node).CurrentFrameHasSingleSecurityOrigin())
+    } else if (auto* fe_image = ToSVGFEImageElementOrNull(*node)) {
+      if (!fe_image->CurrentFrameHasSingleSecurityOrigin())
         return false;
     }
   }

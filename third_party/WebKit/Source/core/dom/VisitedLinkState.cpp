@@ -52,8 +52,8 @@ static inline LinkHash LinkHashForElement(
     const Element& element,
     const AtomicString& attribute = AtomicString()) {
   DCHECK(attribute.IsNull() || LinkAttribute(element) == attribute);
-  if (isHTMLAnchorElement(element))
-    return toHTMLAnchorElement(element).VisitedLinkHash();
+  if (auto* anchor = ToHTMLAnchorElementOrNull(element))
+    return anchor->VisitedLinkHash();
   return VisitedLinkHash(
       element.GetDocument().BaseURL(),
       attribute.IsNull() ? LinkAttribute(element) : attribute);

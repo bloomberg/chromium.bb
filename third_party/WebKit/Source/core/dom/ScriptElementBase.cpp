@@ -10,10 +10,10 @@
 namespace blink {
 
 ScriptElementBase* ScriptElementBase::FromElementIfPossible(Element* element) {
-  if (isHTMLScriptElement(*element))
-    return toHTMLScriptElement(element);
-  if (isSVGScriptElement(*element))
-    return toSVGScriptElement(element);
+  if (auto* html_script = ToHTMLScriptElementOrNull(*element))
+    return html_script;
+  if (auto* svg_script = ToSVGScriptElementOrNull(*element))
+    return svg_script;
   return nullptr;
 }
 

@@ -432,11 +432,10 @@ static v8::Local<v8::Value> GetNamedProperty(
   if (items->HasExactlyOneItem()) {
     HTMLElement* element = items->Item(0);
     DCHECK(element);
-    Frame* frame = isHTMLIFrameElement(*element)
-                       ? toHTMLIFrameElement(*element).ContentFrame()
-                       : 0;
-    if (frame)
-      return ToV8(frame->DomWindow(), creation_context, isolate);
+    if (auto* iframe = ToHTMLIFrameElementOrNull(*element)) {
+      if (Frame* frame = iframe->ContentFrame())
+        return ToV8(frame->DomWindow(), creation_context, isolate);
+    }
     return ToV8(element, creation_context, isolate);
   }
   return ToV8(items, creation_context, isolate);

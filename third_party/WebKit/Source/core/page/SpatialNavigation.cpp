@@ -61,14 +61,13 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
   DCHECK(node);
   DCHECK(node->IsElementNode());
 
-  if (isHTMLAreaElement(*node)) {
-    HTMLAreaElement& area = toHTMLAreaElement(*node);
-    HTMLImageElement* image = area.ImageElement();
+  if (auto* area = ToHTMLAreaElementOrNull(*node)) {
+    HTMLImageElement* image = area->ImageElement();
     if (!image || !image->GetLayoutObject())
       return;
 
     visible_node = image;
-    rect = VirtualRectForAreaElementAndDirection(area, type);
+    rect = VirtualRectForAreaElementAndDirection(*area, type);
   } else {
     if (!node->GetLayoutObject())
       return;

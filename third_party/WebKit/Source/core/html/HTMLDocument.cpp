@@ -76,8 +76,7 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 HTMLDocument::~HTMLDocument() {}
 
 HTMLBodyElement* HTMLDocument::HtmlBodyElement() const {
-  HTMLElement* body = this->body();
-  return isHTMLBodyElement(body) ? toHTMLBodyElement(body) : 0;
+  return ToHTMLBodyElementOrNull(body());
 }
 
 const AtomicString& HTMLDocument::BodyAttributeValue(

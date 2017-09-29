@@ -91,10 +91,10 @@ bool ContributesToClip(const SVGElement& element) {
 }
 
 void PathFromElement(const SVGElement& element, Path& clip_path) {
-  if (IsSVGGeometryElement(element))
-    ToSVGGeometryElement(element).ToClipPath(clip_path);
-  else if (isSVGUseElement(element))
-    toSVGUseElement(element).ToClipPath(clip_path);
+  if (auto* geometry = ToSVGGeometryElementOrNull(element))
+    geometry->ToClipPath(clip_path);
+  else if (auto* use = ToSVGUseElementOrNull(element))
+    use->ToClipPath(clip_path);
 }
 
 }  // namespace

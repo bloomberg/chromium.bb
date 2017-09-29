@@ -392,9 +392,9 @@ PointerEventManager::ComputePointerEventTarget(
     Node* node = hit_test_tesult.InnerNode();
     if (node) {
       pointer_event_target.target_frame = node->GetDocument().GetFrame();
-      if (isHTMLCanvasElement(node)) {
+      if (auto* canvas = ToHTMLCanvasElementOrNull(node)) {
         HitTestCanvasResult* hit_test_canvas_result =
-            toHTMLCanvasElement(node)->GetControlAndIdIfHitRegionExists(
+            canvas->GetControlAndIdIfHitRegionExists(
                 hit_test_tesult.PointInInnerNodeFrame());
         if (hit_test_canvas_result->GetControl())
           node = hit_test_canvas_result->GetControl();

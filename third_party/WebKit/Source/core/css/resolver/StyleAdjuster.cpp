@@ -199,8 +199,8 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (isHTMLImageElement(element)) {
-    if (toHTMLImageElement(element).IsCollapsed())
+  if (auto* image = ToHTMLImageElementOrNull(element)) {
+    if (image->IsCollapsed())
       style.SetDisplay(EDisplay::kNone);
     return;
   }

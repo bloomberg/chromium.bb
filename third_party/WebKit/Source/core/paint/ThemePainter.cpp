@@ -179,8 +179,7 @@ bool ThemePainter::PaintBorderOnly(const LayoutObject& o,
     case kTextFieldPart:
       UseCounter::Count(o.GetDocument(),
                         WebFeature::kCSSValueAppearanceTextFieldRendered);
-      if (isHTMLInputElement(o.GetNode())) {
-        HTMLInputElement* input = toHTMLInputElement(o.GetNode());
+      if (auto* input = ToHTMLInputElementOrNull(o.GetNode())) {
         if (input->type() == InputTypeNames::search) {
           UseCounter::Count(o.GetDocument(),
                             WebFeature::kCSSValueAppearanceTextFieldForSearch);

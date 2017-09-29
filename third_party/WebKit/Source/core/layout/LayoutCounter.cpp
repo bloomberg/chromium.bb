@@ -190,8 +190,8 @@ static bool PlanCounter(LayoutObject& object,
         is_reset = false;
         return true;
       }
-      if (isHTMLOListElement(*e)) {
-        value = toHTMLOListElement(e)->StartConsideringItemCount();
+      if (auto* olist = ToHTMLOListElementOrNull(*e)) {
+        value = olist->StartConsideringItemCount();
         is_reset = true;
         return true;
       }

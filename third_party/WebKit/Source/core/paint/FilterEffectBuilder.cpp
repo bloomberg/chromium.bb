@@ -417,10 +417,9 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
   DCHECK(target_context_);
   Element* filter_element = reference_operation.ElementProxy().FindElement(
       target_context_->GetTreeScope());
-  if (!isSVGFilterElement(filter_element))
-    return nullptr;
-  return BuildReferenceFilter(toSVGFilterElement(*filter_element),
-                              previous_effect);
+  if (auto* filter = ToSVGFilterElementOrNull(filter_element))
+    return BuildReferenceFilter(*filter, previous_effect);
+  return nullptr;
 }
 
 Filter* FilterEffectBuilder::BuildReferenceFilter(

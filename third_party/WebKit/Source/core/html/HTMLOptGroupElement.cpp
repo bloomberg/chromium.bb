@@ -94,9 +94,9 @@ Node::InsertionNotificationRequest HTMLOptGroupElement::InsertedInto(
 }
 
 void HTMLOptGroupElement::RemovedFrom(ContainerNode* insertion_point) {
-  if (isHTMLSelectElement(*insertion_point)) {
+  if (auto* select = ToHTMLSelectElementOrNull(*insertion_point)) {
     if (!parentNode())
-      toHTMLSelectElement(insertion_point)->OptGroupInsertedOrRemoved(*this);
+      select->OptGroupInsertedOrRemoved(*this);
   }
   HTMLElement::RemovedFrom(insertion_point);
 }

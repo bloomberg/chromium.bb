@@ -184,8 +184,8 @@ AtomicString GetInputModeAttribute(Element* element) {
     return AtomicString();
 
   bool query_attribute = false;
-  if (isHTMLInputElement(*element)) {
-    query_attribute = toHTMLInputElement(*element).SupportsInputModeAttribute();
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+    query_attribute = input->SupportsInputModeAttribute();
   } else if (isHTMLTextAreaElement(*element)) {
     query_attribute = true;
   } else {
@@ -372,10 +372,10 @@ bool IsTextTooLongAt(const Position& position) {
   const Element* element = EnclosingTextControl(position);
   if (!element)
     return false;
-  if (isHTMLInputElement(element))
-    return toHTMLInputElement(element)->TooLong();
-  if (isHTMLTextAreaElement(element))
-    return toHTMLTextAreaElement(element)->TooLong();
+  if (auto* input = ToHTMLInputElementOrNull(element))
+    return input->TooLong();
+  if (auto* textarea = ToHTMLTextAreaElementOrNull(element))
+    return textarea->TooLong();
   return false;
 }
 
@@ -1298,11 +1298,10 @@ WebTextInputType InputMethodController::TextInputType() const {
   if (!element)
     return kWebTextInputTypeNone;
 
-  if (isHTMLInputElement(*element)) {
-    HTMLInputElement& input = toHTMLInputElement(*element);
-    const AtomicString& type = input.type();
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+    const AtomicString& type = input->type();
 
-    if (input.IsDisabledOrReadOnly())
+    if (input->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
 
     if (type == InputTypeNames::password)
@@ -1323,8 +1322,8 @@ WebTextInputType InputMethodController::TextInputType() const {
     return kWebTextInputTypeNone;
   }
 
-  if (isHTMLTextAreaElement(*element)) {
-    if (toHTMLTextAreaElement(*element).IsDisabledOrReadOnly())
+  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+    if (textarea->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
     return kWebTextInputTypeTextArea;
   }

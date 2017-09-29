@@ -167,8 +167,8 @@ void HTMLElementStack::PopAll() {
     Node& node = *TopNode();
     if (node.IsElementNode()) {
       ToElement(node).FinishParsingChildren();
-      if (isHTMLSelectElement(node))
-        ToHTMLFormControlElement(node).SetBlocksFormSubmission(true);
+      if (auto* select = ToHTMLSelectElementOrNull(node))
+        select->SetBlocksFormSubmission(true);
     }
     top_ = top_->ReleaseNext();
   }

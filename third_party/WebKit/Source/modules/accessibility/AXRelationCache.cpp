@@ -295,9 +295,7 @@ void AXRelationCache::TextChanged(AXObject* object) {
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
-  DCHECK(isHTMLLabelElement(node));
-  LabelableElement* control = toHTMLLabelElement(node)->control();
-  if (control)
+  if (LabelableElement* control = toHTMLLabelElement(node)->control())
     TextChanged(Get(control));
 }
 

@@ -985,15 +985,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.MatchesValidityPseudoClasses() &&
              !element.IsValidElement();
     case CSSSelector::kPseudoChecked: {
-      if (isHTMLInputElement(element)) {
-        HTMLInputElement& input_element = toHTMLInputElement(element);
+      if (auto* input_element = ToHTMLInputElementOrNull(element)) {
         // Even though WinIE allows checked and indeterminate to
         // co-exist, the CSS selector spec says that you can't be
         // both checked and indeterminate. We will behave like WinIE
         // behind the scenes and just obey the CSS spec here in the
         // test for matching the pseudo.
-        if (input_element.ShouldAppearChecked() &&
-            !input_element.ShouldAppearIndeterminate())
+        if (input_element->ShouldAppearChecked() &&
+            !input_element->ShouldAppearIndeterminate())
           return true;
       } else if (isHTMLOptionElement(element) &&
                  toHTMLOptionElement(element).Selected()) {

@@ -147,8 +147,8 @@ bool ContextMenuClient::ShouldShowContextMenuFromTouch(
 }
 
 static HTMLFormElement* AssociatedFormElement(HTMLElement& element) {
-  if (isHTMLFormElement(element))
-    return &toHTMLFormElement(element);
+  if (auto* form = ToHTMLFormElementOrNull(element))
+    return form;
   return element.formOwner();
 }
 
@@ -422,9 +422,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
   // Filter out custom menu elements and add them into the data.
   PopulateCustomMenuItems(default_menu, &data);
 
-  if (isHTMLAnchorElement(r.URLElement())) {
-    HTMLAnchorElement* anchor = toHTMLAnchorElement(r.URLElement());
-
+  if (auto* anchor = ToHTMLAnchorElementOrNull(r.URLElement())) {
     // Extract suggested filename for saving file.
     data.suggested_filename = anchor->FastGetAttribute(HTMLNames::downloadAttr);
 
@@ -437,11 +435,10 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
   }
 
   // Find the input field type.
-  if (isHTMLInputElement(r.InnerNode())) {
-    HTMLInputElement* element = toHTMLInputElement(r.InnerNode());
-    if (element->type() == InputTypeNames::password)
+  if (auto* input = ToHTMLInputElementOrNull(r.InnerNode())) {
+    if (input->type() == InputTypeNames::password)
       data.input_field_type = WebContextMenuData::kInputFieldTypePassword;
-    else if (element->IsTextField())
+    else if (input->IsTextField())
       data.input_field_type = WebContextMenuData::kInputFieldTypePlainText;
     else
       data.input_field_type = WebContextMenuData::kInputFieldTypeOther;

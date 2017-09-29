@@ -82,10 +82,10 @@ int HTMLTableRowElement::sectionRowIndex() const {
   if (!maybe_table)
     return -1;
   HTMLCollection* rows = nullptr;
-  if (IsHTMLTableSectionElement(maybe_table))
-    rows = ToHTMLTableSectionElement(maybe_table)->rows();
-  else if (isHTMLTableElement(maybe_table))
-    rows = toHTMLTableElement(maybe_table)->rows();
+  if (auto* section = ToHTMLTableSectionElementOrNull(maybe_table))
+    rows = section->rows();
+  else if (auto* table = ToHTMLTableElementOrNull(maybe_table))
+    rows = table->rows();
   if (!rows)
     return -1;
   return FindIndexInRowCollection(*rows, *this);

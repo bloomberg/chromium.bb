@@ -197,10 +197,10 @@ bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   // * The element has an ancestor object element that is not showing its
   //   fallback content.
   ContainerNode* p = parentNode();
-  if (isHTMLObjectElement(p)) {
+  if (auto* object = ToHTMLObjectElementOrNull(p)) {
     DCHECK(p->GetLayoutObject());
-    if (!toHTMLObjectElement(p)->WillUseFallbackContentAtLayout() &&
-        !toHTMLObjectElement(p)->UseFallbackContent()) {
+    if (!object->WillUseFallbackContentAtLayout() &&
+        !object->UseFallbackContent()) {
       DCHECK(!p->GetLayoutObject()->IsEmbeddedObject());
       return false;
     }
