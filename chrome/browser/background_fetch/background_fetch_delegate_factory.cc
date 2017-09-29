@@ -5,6 +5,7 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/background_fetch_delegate.h"
@@ -24,7 +25,9 @@ BackgroundFetchDelegateFactory* BackgroundFetchDelegateFactory::GetInstance() {
 BackgroundFetchDelegateFactory::BackgroundFetchDelegateFactory()
     : BrowserContextKeyedServiceFactory(
           "BackgroundFetchService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(DownloadServiceFactory::GetInstance());
+}
 
 BackgroundFetchDelegateFactory::~BackgroundFetchDelegateFactory() {}
 

@@ -7,19 +7,19 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/download_params.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/background_fetch_delegate.h"
-#include "content/public/browser/download_interrupt_reasons.h"
-
-namespace content {
-class DownloadItem;
-}  // namespace content
-
 class Profile;
 
-// Implementation of BackgroundFetchDelegate using the legacy DownloadManager.
+namespace download {
+class DownloadService;
+}  // namespace download
+
+// Implementation of BackgroundFetchDelegate using the DownloadService.
 class BackgroundFetchDelegateImpl : public content::BackgroundFetchDelegate,
                                     public KeyedService {
  public:
@@ -37,13 +37,29 @@ class BackgroundFetchDelegateImpl : public content::BackgroundFetchDelegate,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
 
-  base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr();
+  void OnDownloadStarted(const std::string& guid,
+                         std::unique_ptr<content::BackgroundFetchResponse>);
+
+  void OnDownloadUpdated(const std::string& guid, uint64_t bytes_downloaded);
+
+  void OnDownloadFailed(const std::string& guid,
+                        download::Client::FailureReason reason);
+
+  void OnDownloadSucceeded(const std::string& guid,
+                           const base::FilePath& path,
+                           uint64_t size);
+
+  base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
-  void DidStartRequest(content::DownloadItem* download_item,
-                       content::DownloadInterruptReason interrupt_reason);
+  void OnDownloadReceived(const std::string& guid,
+                          download::DownloadParams::StartResult result);
 
-  Profile* profile_;
+  // The BackgroundFetchDelegateImplFactory depends on the
+  // DownloadServiceFactory, so |download_service_| should outlive |this|.
+  download::DownloadService* download_service_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateImpl> weak_ptr_factory_;
 

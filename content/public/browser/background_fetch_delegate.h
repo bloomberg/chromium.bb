@@ -32,6 +32,21 @@ struct BackgroundFetchResult;
 // TODO(delphick): Move this content/public/browser.
 class CONTENT_EXPORT BackgroundFetchDelegate {
  public:
+  // Failures that happen after the download has already started.
+  enum FailureReason {
+    // Used when the download has been aborted after reaching a threshold where
+    // it was decided it is not worth attempting to start again. This could be
+    // either due to a specific number of failed retry attempts or a specific
+    // number of wasted bytes due to the download restarting.
+    NETWORK,
+
+    // Used when the download was not completed before the timeout.
+    TIMEDOUT,
+
+    // Used when the failure reason is unknown.
+    UNKNOWN,
+  };
+
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.
   class Client {
@@ -54,6 +69,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     virtual void OnDownloadComplete(
         const std::string& guid,
         std::unique_ptr<BackgroundFetchResult> result) = 0;
+
+    virtual void OnDownloadFailed(const std::string& guid,
+                                  FailureReason reason) = 0;
 
     // Called by the delegate when it's shutting down to signal that the
     // delegate is no longer valid.
