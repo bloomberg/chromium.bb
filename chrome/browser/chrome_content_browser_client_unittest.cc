@@ -346,9 +346,20 @@ TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
 class ChromeContentBrowserClientGetLoggingFileTest : public testing::Test {};
 
 TEST_F(ChromeContentBrowserClientGetLoggingFileTest, GetLoggingFile) {
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
   ChromeContentBrowserClient client;
   base::FilePath log_file_name;
-  EXPECT_FALSE(client.GetLoggingFileName().empty());
+  EXPECT_FALSE(client.GetLoggingFileName(cmd_line).empty());
+}
+
+TEST_F(ChromeContentBrowserClientGetLoggingFileTest,
+       GetLoggingFileFromCommandLine) {
+  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
+  cmd_line.AppendSwitchASCII(switches::kLogFile, "test_log.txt");
+  ChromeContentBrowserClient client;
+  base::FilePath log_file_name;
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("test_log.txt")).value(),
+            client.GetLoggingFileName(cmd_line).value());
 }
 
 class TestChromeContentBrowserClient : public ChromeContentBrowserClient {

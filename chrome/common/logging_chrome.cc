@@ -252,7 +252,8 @@ base::FilePath GetSessionLogDir(const base::CommandLine& command_line) {
 }
 
 base::FilePath GetSessionLogFile(const base::CommandLine& command_line) {
-  return GetSessionLogDir(command_line).Append(GetLogFileName().BaseName());
+  return GetSessionLogDir(command_line)
+      .Append(GetLogFileName(command_line).BaseName());
 }
 
 #endif  // OS_CHROMEOS
@@ -271,7 +272,7 @@ void InitChromeLogging(const base::CommandLine& command_line,
   // Don't resolve the log path unless we need to. Otherwise we leave an open
   // ALPC handle after sandbox lockdown on Windows.
   if ((logging_dest & LOG_TO_FILE) != 0) {
-    log_path = GetLogFileName();
+    log_path = GetLogFileName(command_line);
 
 #if defined(OS_CHROMEOS)
     // For BWSI (Incognito) logins, we want to put the logs in the user
@@ -387,10 +388,11 @@ void CleanupChromeLogging() {
   chrome_logging_redirected_ = false;
 }
 
-base::FilePath GetLogFileName() {
-  std::string filename;
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty())
+base::FilePath GetLogFileName(const base::CommandLine& command_line) {
+  std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
+  if (filename.empty())
+    base::Environment::Create()->GetVar(env_vars::kLogFileName, &filename);
+  if (!filename.empty())
     return base::FilePath::FromUTF8Unsafe(filename);
 
   const base::FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));

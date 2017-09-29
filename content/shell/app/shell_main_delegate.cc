@@ -103,10 +103,16 @@ const GUID kContentShellProviderName = {
         { 0x84, 0x13, 0xec, 0x94, 0xd8, 0xc2, 0xa4, 0xb6 } };
 #endif
 
-void InitLogging() {
+void InitLogging(const base::CommandLine& command_line) {
   base::FilePath log_filename;
-  PathService::Get(base::DIR_EXE, &log_filename);
-  log_filename = log_filename.AppendASCII("content_shell.log");
+  std::string filename = command_line.GetSwitchValueASCII(switches::kLogFile);
+  if (filename.empty()) {
+    PathService::Get(base::DIR_EXE, &log_filename);
+    log_filename = log_filename.AppendASCII("content_shell.log");
+  } else {
+    log_filename = base::FilePath::FromUTF8Unsafe(filename);
+  }
+
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
   settings.log_file = log_filename.value().c_str();
@@ -149,7 +155,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   EnsureCorrectResolutionSettings();
 #endif  // OS_MACOSX
 
-  InitLogging();
+  InitLogging(command_line);
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
     // continue and try to load the fonts in BlinkTestPlatformInitialize
