@@ -104,7 +104,6 @@ source_set("web") {
     "net/crw_ssl_status_updater.mm",
     "net/request_group_util.h",
     "net/request_group_util.mm",
-    "net/request_tracker_data_memoizing_store.h",
     "net/request_tracker_factory_impl.h",
     "net/request_tracker_factory_impl.mm",
     "net/request_tracker_impl.h",
