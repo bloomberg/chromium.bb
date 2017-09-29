@@ -80,8 +80,8 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
   else if (IsInSection(*previous, tbodyTag))
     child = Traversal<HTMLElement>::NextSibling(*previous->parentNode());
   for (; child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (isHTMLTableRowElement(child))
-      return toHTMLTableRowElement(child);
+    if (auto* row = ToHTMLTableRowElementOrNull(child))
+      return row;
     if (child->HasTagName(tbodyTag)) {
       if (HTMLTableRowElement* row =
               Traversal<HTMLTableRowElement>::FirstChild(*child))
@@ -117,8 +117,8 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
 
   for (HTMLElement* child = Traversal<HTMLElement>::LastChild(table); child;
        child = Traversal<HTMLElement>::PreviousSibling(*child)) {
-    if (isHTMLTableRowElement(child))
-      return toHTMLTableRowElement(child);
+    if (auto* row = ToHTMLTableRowElementOrNull(child))
+      return row;
     if (child->HasTagName(tbodyTag)) {
       if (HTMLTableRowElement* last_row =
               Traversal<HTMLTableRowElement>::LastChild(*child))

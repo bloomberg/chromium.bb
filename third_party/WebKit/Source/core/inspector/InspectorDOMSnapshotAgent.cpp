@@ -196,39 +196,30 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
         value->setFrameId(IdentifiersFactory::FrameId(frame));
     }
 
-    if (isHTMLLinkElement(*element)) {
-      const HTMLLinkElement& link_element = toHTMLLinkElement(*element);
-      if (link_element.IsImport() && link_element.import() &&
-          InspectorDOMAgent::InnerParentNode(link_element.import()) ==
+    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+      if (link_element->IsImport() && link_element->import() &&
+          InspectorDOMAgent::InnerParentNode(link_element->import()) ==
               link_element) {
-        value->setImportedDocumentIndex(VisitNode(link_element.import()));
+        value->setImportedDocumentIndex(VisitNode(link_element->import()));
       }
     }
 
-    if (isHTMLTemplateElement(*element)) {
-      value->setTemplateContentIndex(
-          VisitNode(toHTMLTemplateElement(*element).content()));
-    }
+    if (auto* template_element = ToHTMLTemplateElementOrNull(*element))
+      value->setTemplateContentIndex(VisitNode(template_element->content()));
 
-    if (isHTMLTextAreaElement(*element)) {
-      const HTMLTextAreaElement& text_area_element =
-          toHTMLTextAreaElement(*element);
-      value->setTextValue(text_area_element.value());
-    }
+    if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element))
+      value->setTextValue(textarea_element->value());
 
-    if (isHTMLInputElement(*element)) {
-      const HTMLInputElement& input_element = toHTMLInputElement(*element);
-      value->setInputValue(input_element.value());
-      if ((input_element.type() == InputTypeNames::radio) ||
-          (input_element.type() == InputTypeNames::checkbox)) {
-        value->setInputChecked(input_element.checked());
+    if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
+      value->setInputValue(input_element->value());
+      if ((input_element->type() == InputTypeNames::radio) ||
+          (input_element->type() == InputTypeNames::checkbox)) {
+        value->setInputChecked(input_element->checked());
       }
     }
 
-    if (isHTMLOptionElement(*element)) {
-      const HTMLOptionElement& option_element = toHTMLOptionElement(*element);
-      value->setOptionSelected(option_element.Selected());
-    }
+    if (auto* option_element = ToHTMLOptionElementOrNull(*element))
+      value->setOptionSelected(option_element->Selected());
 
     if (element->GetPseudoId()) {
       protocol::DOM::PseudoType pseudo_type;

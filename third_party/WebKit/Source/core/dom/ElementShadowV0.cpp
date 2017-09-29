@@ -168,9 +168,9 @@ void ElementShadowV0::Distribute() {
     for (const auto& point : root->DescendantInsertionPoints()) {
       if (!point->IsActive())
         continue;
-      if (isHTMLShadowElement(*point)) {
+      if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
         DCHECK(!shadow_insertion_point);
-        shadow_insertion_point = toHTMLShadowElement(point);
+        shadow_insertion_point = shadow;
         shadow_insertion_points.push_back(shadow_insertion_point);
       } else {
         pool.DistributeTo(point, this);
@@ -232,10 +232,8 @@ void ElementShadowV0::CollectSelectFeatureSetFrom(const ShadowRoot& root) {
       if (!shadow->IsV1())
         select_features_.Add(shadow->V0().EnsureSelectFeatureSet());
     }
-    if (!isHTMLContentElement(element))
-      continue;
-    const CSSSelectorList& list = toHTMLContentElement(element).SelectorList();
-    select_features_.CollectFeaturesFromSelectorList(list);
+    if (auto* content = ToHTMLContentElementOrNull(element))
+      select_features_.CollectFeaturesFromSelectorList(content->SelectorList());
   }
 }
 

@@ -119,12 +119,10 @@ void SVGFELightElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       return;
 
     SVGElement::InvalidationGuard invalidation_guard(this);
-    if (isSVGFEDiffuseLightingElement(*parent))
-      toSVGFEDiffuseLightingElement(*parent).LightElementAttributeChanged(
-          this, attr_name);
-    else if (isSVGFESpecularLightingElement(*parent))
-      toSVGFESpecularLightingElement(*parent).LightElementAttributeChanged(
-          this, attr_name);
+    if (auto* diffuse = ToSVGFEDiffuseLightingElementOrNull(*parent))
+      diffuse->LightElementAttributeChanged(this, attr_name);
+    else if (auto* specular = ToSVGFESpecularLightingElementOrNull(*parent))
+      specular->LightElementAttributeChanged(this, attr_name);
 
     return;
   }

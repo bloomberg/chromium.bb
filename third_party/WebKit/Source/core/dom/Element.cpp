@@ -3080,8 +3080,8 @@ void Element::SetInnerHTMLFromString(const String& html,
   if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
           html, this, kAllowScriptingContent, "innerHTML", exception_state)) {
     ContainerNode* container = this;
-    if (isHTMLTemplateElement(*this))
-      container = toHTMLTemplateElement(this)->content();
+    if (auto* template_element = ToHTMLTemplateElementOrNull(*this))
+      container = template_element->content();
     ReplaceChildrenWithFragment(container, fragment, exception_state);
   }
 }
@@ -3784,8 +3784,8 @@ KURL Element::HrefURL() const {
   if (isHTMLAnchorElement(*this) || isHTMLAreaElement(*this) ||
       isHTMLLinkElement(*this))
     return GetURLAttribute(hrefAttr);
-  if (isSVGAElement(*this))
-    return toSVGAElement(*this).LegacyHrefURL(GetDocument());
+  if (auto* svg_a = ToSVGAElementOrNull(*this))
+    return svg_a->LegacyHrefURL(GetDocument());
   return KURL();
 }
 

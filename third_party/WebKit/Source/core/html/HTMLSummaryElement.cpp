@@ -62,12 +62,10 @@ void HTMLSummaryElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
 }
 
 HTMLDetailsElement* HTMLSummaryElement::DetailsElement() const {
-  Node* parent = parentNode();
-  if (isHTMLDetailsElement(parent))
-    return toHTMLDetailsElement(parent);
-  Element* host = OwnerShadowHost();
-  if (isHTMLDetailsElement(host))
-    return toHTMLDetailsElement(host);
+  if (auto* details = ToHTMLDetailsElementOrNull(parentNode()))
+    return details;
+  if (auto* details = ToHTMLDetailsElementOrNull(OwnerShadowHost()))
+    return details;
   return nullptr;
 }
 

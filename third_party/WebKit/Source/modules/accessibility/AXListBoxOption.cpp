@@ -156,8 +156,8 @@ HTMLSelectElement* AXListBoxOption::ListBoxOptionParentNode() const {
   if (!GetNode())
     return 0;
 
-  if (isHTMLOptionElement(GetNode()))
-    return toHTMLOptionElement(GetNode())->OwnerSelectElement();
+  if (auto* option = ToHTMLOptionElementOrNull(GetNode()))
+    return option->OwnerSelectElement();
 
   return 0;
 }

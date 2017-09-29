@@ -81,15 +81,10 @@ SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
   // element inside the shadow tree, that was created during the use/symbol/svg
   // expansion in SVGUseElement. These containers need to respect the
   // translations induced by their corresponding use elements x/y attributes.
-  SVGUseElement* use_element = nullptr;
-  if (isSVGUseElement(*element)) {
-    use_element = toSVGUseElement(element);
-  } else if (isSVGGElement(*element) &&
-             toSVGGElement(element)->InUseShadowTree()) {
-    SVGElement* corresponding_element = element->CorrespondingElement();
-    if (isSVGUseElement(corresponding_element))
-      use_element = toSVGUseElement(corresponding_element);
-  }
+  SVGUseElement* use_element = ToSVGUseElementOrNull(*element);
+  if (!use_element && isSVGGElement(*element) &&
+      toSVGGElement(element)->InUseShadowTree())
+    use_element = ToSVGUseElementOrNull(element->CorrespondingElement());
 
   if (use_element) {
     SVGLengthContext length_context(element);

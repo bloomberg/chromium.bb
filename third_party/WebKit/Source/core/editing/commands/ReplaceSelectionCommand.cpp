@@ -1210,11 +1210,8 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // position as p (since in the case where a br is at the end of a block and
   // collapsed away, there are positions after the br which map to the same
   // visible position as [br, 0]).
-  HTMLBRElement* end_br =
-      isHTMLBRElement(*MostForwardCaretPosition(insertion_pos).AnchorNode())
-          ? toHTMLBRElement(
-                MostForwardCaretPosition(insertion_pos).AnchorNode())
-          : 0;
+  HTMLBRElement* end_br = ToHTMLBRElementOrNull(
+      *MostForwardCaretPosition(insertion_pos).AnchorNode());
   VisiblePosition original_vis_pos_before_end_br;
   if (end_br) {
     original_vis_pos_before_end_br =

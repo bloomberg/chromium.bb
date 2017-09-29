@@ -99,8 +99,8 @@ static inline bool IsAllWhitespace(const String& string) {
 }
 
 static inline void Insert(HTMLConstructionSiteTask& task) {
-  if (isHTMLTemplateElement(*task.parent))
-    task.parent = toHTMLTemplateElement(task.parent.Get())->content();
+  if (auto* template_element = ToHTMLTemplateElementOrNull(*task.parent))
+    task.parent = template_element->content();
 
   // https://html.spec.whatwg.org/#insert-a-foreign-element
   // 3.1, (3) Push (pop) an element queue
@@ -752,9 +752,8 @@ void HTMLConstructionSite::InsertTextNode(const StringView& string,
     FindFosterSite(dummy_task);
 
   // FIXME: This probably doesn't need to be done both here and in insert(Task).
-  if (isHTMLTemplateElement(*dummy_task.parent))
-    dummy_task.parent =
-        toHTMLTemplateElement(dummy_task.parent.Get())->content();
+  if (auto* template_element = ToHTMLTemplateElementOrNull(*dummy_task.parent))
+    dummy_task.parent = template_element->content();
 
   // Unclear when parent != case occurs. Somehow we insert text into two
   // separate nodes while processing the same Token. The nextChild !=
@@ -814,8 +813,8 @@ CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
 }
 
 inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
-  if (isHTMLTemplateElement(*CurrentNode()))
-    return toHTMLTemplateElement(CurrentElement())->content()->GetDocument();
+  if (auto* template_element = ToHTMLTemplateElementOrNull(*CurrentNode()))
+    return template_element->content()->GetDocument();
   return CurrentNode()->GetDocument();
 }
 

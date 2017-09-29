@@ -90,10 +90,10 @@ Node::InsertionNotificationRequest HTMLSourceElement::InsertedInto(
     ContainerNode* insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   Element* parent = parentElement();
-  if (IsHTMLMediaElement(parent))
-    ToHTMLMediaElement(parent)->SourceWasAdded(this);
-  if (isHTMLPictureElement(parent))
-    toHTMLPictureElement(parent)->SourceOrMediaChanged();
+  if (auto* media = ToHTMLMediaElementOrNull(parent))
+    media->SourceWasAdded(this);
+  if (auto* picture = ToHTMLPictureElementOrNull(parent))
+    picture->SourceOrMediaChanged();
   return kInsertionDone;
 }
 
@@ -101,11 +101,11 @@ void HTMLSourceElement::RemovedFrom(ContainerNode* removal_root) {
   Element* parent = parentElement();
   if (!parent && removal_root->IsElementNode())
     parent = ToElement(removal_root);
-  if (IsHTMLMediaElement(parent))
-    ToHTMLMediaElement(parent)->SourceWasRemoved(this);
-  if (isHTMLPictureElement(parent)) {
+  if (auto* media = ToHTMLMediaElementOrNull(parent))
+    media->SourceWasRemoved(this);
+  if (auto* picture = ToHTMLPictureElementOrNull(parent)) {
     RemoveMediaQueryListListener();
-    toHTMLPictureElement(parent)->SourceOrMediaChanged();
+    picture->SourceOrMediaChanged();
   }
   HTMLElement::RemovedFrom(removal_root);
 }
@@ -173,16 +173,14 @@ void HTMLSourceElement::ParseAttribute(
     CreateMediaQueryList(params.new_value);
   if (name == srcsetAttr || name == sizesAttr || name == mediaAttr ||
       name == typeAttr) {
-    Element* parent = parentElement();
-    if (isHTMLPictureElement(parent))
-      toHTMLPictureElement(parent)->SourceOrMediaChanged();
+    if (auto* picture = ToHTMLPictureElementOrNull(parentElement()))
+      picture->SourceOrMediaChanged();
   }
 }
 
 void HTMLSourceElement::NotifyMediaQueryChanged() {
-  Element* parent = parentElement();
-  if (isHTMLPictureElement(parent))
-    toHTMLPictureElement(parent)->SourceOrMediaChanged();
+  if (auto* picture = ToHTMLPictureElementOrNull(parentElement()))
+    picture->SourceOrMediaChanged();
 }
 
 DEFINE_TRACE(HTMLSourceElement) {

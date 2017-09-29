@@ -319,10 +319,9 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
     if (element->GetPseudoElement(kPseudoIdAfter))
       Unbind(element->GetPseudoElement(kPseudoIdAfter), nodes_map);
 
-    if (isHTMLLinkElement(*element)) {
-      HTMLLinkElement& link_element = toHTMLLinkElement(*element);
-      if (link_element.IsImport() && link_element.import())
-        Unbind(link_element.import(), nodes_map);
+    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+      if (link_element->IsImport() && link_element->import())
+        Unbind(link_element->import(), nodes_map);
     }
   }
 
@@ -1479,20 +1478,18 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (isHTMLLinkElement(*element)) {
-      HTMLLinkElement& link_element = toHTMLLinkElement(*element);
-      if (link_element.IsImport() && link_element.import() &&
-          InnerParentNode(link_element.import()) == link_element) {
+    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+      if (link_element->IsImport() && link_element->import() &&
+          InnerParentNode(link_element->import()) == link_element) {
         value->setImportedDocument(BuildObjectForNode(
-            link_element.import(), 0, pierce, nodes_map, flatten_result));
+            link_element->import(), 0, pierce, nodes_map, flatten_result));
       }
       force_push_children = true;
     }
 
-    if (isHTMLTemplateElement(*element)) {
-      value->setTemplateContent(
-          BuildObjectForNode(toHTMLTemplateElement(*element).content(), 0,
-                             pierce, nodes_map, flatten_result));
+    if (auto* template_element = ToHTMLTemplateElementOrNull(*element)) {
+      value->setTemplateContent(BuildObjectForNode(
+          template_element->content(), 0, pierce, nodes_map, flatten_result));
       force_push_children = true;
     }
 
@@ -1517,9 +1514,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
           BuildArrayForDistributedNodes(ToV0InsertionPoint(element)));
       force_push_children = true;
     }
-    if (isHTMLSlotElement(*element)) {
-      value->setDistributedNodes(
-          BuildDistributedNodesForSlot(toHTMLSlotElement(element)));
+    if (auto* slot = ToHTMLSlotElementOrNull(*element)) {
+      value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
       force_push_children = true;
     }
   } else if (node->IsDocumentNode()) {
@@ -1778,11 +1774,10 @@ void InspectorDOMAgent::CollectNodes(Node* node,
       }
     }
 
-    if (isHTMLLinkElement(*element)) {
-      HTMLLinkElement& link_element = toHTMLLinkElement(*element);
-      if (link_element.IsImport() && link_element.import() &&
-          InnerParentNode(link_element.import()) == link_element) {
-        CollectNodes(link_element.import(), depth, pierce, filter, result);
+    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+      if (link_element->IsImport() && link_element->import() &&
+          InnerParentNode(link_element->import()) == link_element) {
+        CollectNodes(link_element->import(), depth, pierce, filter, result);
       }
     }
   }

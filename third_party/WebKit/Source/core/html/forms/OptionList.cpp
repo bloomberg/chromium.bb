@@ -23,8 +23,8 @@ void OptionListIterator::Advance(HTMLOptionElement* previous) {
     current = ElementTraversal::FirstChild(*select_);
   }
   while (current) {
-    if (isHTMLOptionElement(current)) {
-      current_ = toHTMLOptionElement(current);
+    if (auto* option = ToHTMLOptionElementOrNull(current)) {
+      current_ = option;
       return;
     }
     if (isHTMLOptGroupElement(current) &&

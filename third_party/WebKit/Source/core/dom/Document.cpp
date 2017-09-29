@@ -1667,10 +1667,10 @@ void Document::setTitle(const String& title) {
       title_element_ = nullptr;
   }
 
-  if (isHTMLTitleElement(title_element_))
-    toHTMLTitleElement(title_element_)->setText(title);
-  else if (isSVGTitleElement(title_element_))
-    toSVGTitleElement(title_element_)->SetText(title);
+  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
+    html_title->setText(title);
+  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
+    svg_title->SetText(title);
   else
     UpdateTitle(title);
 }
@@ -1695,10 +1695,10 @@ void Document::SetTitleElement(Element* title_element) {
     }
   }
 
-  if (isHTMLTitleElement(title_element_))
-    UpdateTitle(toHTMLTitleElement(title_element_)->text());
-  else if (isSVGTitleElement(title_element_))
-    UpdateTitle(toSVGTitleElement(title_element_)->textContent());
+  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
+    UpdateTitle(html_title->text());
+  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
+    UpdateTitle(svg_title->textContent());
 }
 
 void Document::RemoveTitle(Element* title_element) {
@@ -1723,15 +1723,15 @@ void Document::RemoveTitle(Element* title_element) {
 
 const AtomicString& Document::dir() {
   Element* root_element = documentElement();
-  if (isHTMLHtmlElement(root_element))
-    return toHTMLHtmlElement(root_element)->dir();
+  if (auto* html = ToHTMLHtmlElementOrNull(root_element))
+    return html->dir();
   return g_null_atom;
 }
 
 void Document::setDir(const AtomicString& value) {
   Element* root_element = documentElement();
-  if (isHTMLHtmlElement(root_element))
-    toHTMLHtmlElement(root_element)->setDir(value);
+  if (auto* html = ToHTMLHtmlElementOrNull(root_element))
+    html->setDir(value);
 }
 
 PageVisibilityState Document::GetPageVisibilityState() const {
@@ -3043,8 +3043,8 @@ HTMLBodyElement* Document::FirstBodyElement() const {
   for (HTMLElement* child =
            Traversal<HTMLElement>::FirstChild(*documentElement());
        child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (isHTMLBodyElement(*child))
-      return toHTMLBodyElement(child);
+    if (auto* body = ToHTMLBodyElementOrNull(*child))
+      return body;
   }
 
   return 0;
@@ -3390,8 +3390,8 @@ void Document::DispatchUnloadEvents() {
 
   if (load_event_progress_ <= kUnloadEventInProgress) {
     Element* current_focused_element = FocusedElement();
-    if (isHTMLInputElement(current_focused_element))
-      toHTMLInputElement(*current_focused_element).EndEditing();
+    if (auto* input = ToHTMLInputElementOrNull(current_focused_element))
+      input->EndEditing();
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
       if (LocalDOMWindow* window = domWindow()) {
@@ -4074,10 +4074,10 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   if (!request.ReadOnly())
     UpdateHoverActiveState(request, result.InnerElement());
 
-  if (isHTMLCanvasElement(result.InnerNode())) {
+  if (auto* canvas = ToHTMLCanvasElementOrNull(result.InnerNode())) {
     HitTestCanvasResult* hit_test_canvas_result =
-        toHTMLCanvasElement(result.InnerNode())
-            ->GetControlAndIdIfHitRegionExists(result.PointInInnerNodeFrame());
+        canvas->GetControlAndIdIfHitRegionExists(
+            result.PointInInnerNodeFrame());
     if (hit_test_canvas_result->GetControl()) {
       result.SetInnerNode(hit_test_canvas_result->GetControl());
     }
@@ -6429,8 +6429,8 @@ void Document::RemoveFromTopLayer(Element* element) {
 HTMLDialogElement* Document::ActiveModalDialog() const {
   for (auto it = top_layer_elements_.rbegin(); it != top_layer_elements_.rend();
        ++it) {
-    if (isHTMLDialogElement(*it))
-      return toHTMLDialogElement((*it).Get());
+    if (auto* dialog = ToHTMLDialogElementOrNull(*it))
+      return dialog;
   }
 
   return nullptr;

@@ -161,8 +161,7 @@ int ListItemOrdinal::CalcValue(const Node& item_node) const {
     return value_;
 
   Node* list = EnclosingList(&item_node);
-  HTMLOListElement* o_list_element =
-      isHTMLOListElement(list) ? toHTMLOListElement(list) : nullptr;
+  HTMLOListElement* o_list_element = ToHTMLOListElementOrNull(list);
   int value_step = 1;
   if (o_list_element && o_list_element->IsReversed())
     value_step = -1;
@@ -280,9 +279,7 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   CHECK(list_node);
 
   bool is_list_reversed = false;
-  HTMLOListElement* o_list_element =
-      isHTMLOListElement(list_node) ? toHTMLOListElement(list_node) : 0;
-  if (o_list_element) {
+  if (auto* o_list_element = ToHTMLOListElementOrNull(list_node)) {
     o_list_element->ItemCountChanged();
     is_list_reversed = o_list_element->IsReversed();
   }

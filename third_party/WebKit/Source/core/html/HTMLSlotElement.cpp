@@ -278,8 +278,8 @@ void HTMLSlotElement::UpdateDistributedNodesWithFallback() {
   for (auto& child : NodeTraversal::ChildrenOf(*this)) {
     if (!child.IsSlotable())
       continue;
-    if (isHTMLSlotElement(child))
-      AppendDistributedNodesFrom(toHTMLSlotElement(child));
+    if (auto* slot = ToHTMLSlotElementOrNull(child))
+      AppendDistributedNodesFrom(*slot);
     else
       AppendDistributedNode(child);
   }

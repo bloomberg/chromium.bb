@@ -923,15 +923,16 @@ TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
 
 TextDirection HTMLElement::Directionality(
     Node** strong_directionality_text_node) const {
-  if (isHTMLInputElement(*this)) {
-    HTMLInputElement* input_element =
-        toHTMLInputElement(const_cast<HTMLElement*>(this));
+  if (auto* input_element = ToHTMLInputElementOrNull(*this)) {
     bool has_strong_directionality;
     TextDirection text_direction = DetermineDirectionality(
         input_element->value(), &has_strong_directionality);
-    if (strong_directionality_text_node)
+    if (strong_directionality_text_node) {
       *strong_directionality_text_node =
-          has_strong_directionality ? input_element : 0;
+          has_strong_directionality
+              ? const_cast<HTMLInputElement*>(input_element)
+              : 0;
+    }
     return text_direction;
   }
 

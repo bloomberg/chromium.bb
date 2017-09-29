@@ -483,15 +483,15 @@ bool LayoutTheme::IsActive(const LayoutObject& o) {
 }
 
 bool LayoutTheme::IsChecked(const LayoutObject& o) {
-  if (!isHTMLInputElement(o.GetNode()))
-    return false;
-  return toHTMLInputElement(o.GetNode())->ShouldAppearChecked();
+  if (auto* input = ToHTMLInputElementOrNull(o.GetNode()))
+    return input->ShouldAppearChecked();
+  return false;
 }
 
 bool LayoutTheme::IsIndeterminate(const LayoutObject& o) {
-  if (!isHTMLInputElement(o.GetNode()))
-    return false;
-  return toHTMLInputElement(o.GetNode())->ShouldAppearIndeterminate();
+  if (auto* input = ToHTMLInputElementOrNull(o.GetNode()))
+    return input->ShouldAppearIndeterminate();
+  return false;
 }
 
 bool LayoutTheme::IsEnabled(const LayoutObject& o) {

@@ -177,14 +177,13 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
     focused_node = document_;
 
   // If it's an image map, get the focused link within the image map.
-  if (isHTMLAreaElement(focused_node))
-    return FocusedImageMapUIElement(toHTMLAreaElement(focused_node));
+  if (auto* area = ToHTMLAreaElementOrNull(focused_node))
+    return FocusedImageMapUIElement(area);
 
   // See if there's a page popup, for example a calendar picker.
   Element* adjusted_focused_element = document_->AdjustedFocusedElement();
-  if (isHTMLInputElement(adjusted_focused_element)) {
-    if (AXObject* ax_popup =
-            toHTMLInputElement(adjusted_focused_element)->PopupRootAXObject()) {
+  if (auto* input = ToHTMLInputElementOrNull(adjusted_focused_element)) {
+    if (AXObject* ax_popup = input->PopupRootAXObject()) {
       if (Element* focused_element_in_popup =
               ax_popup->GetDocument()->FocusedElement())
         focused_node = focused_element_in_popup;
@@ -378,8 +377,8 @@ AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
   if (IsMenuListOption(node))
     return AXMenuListOption::Create(toHTMLOptionElement(node), *this);
 
-  if (isHTMLAreaElement(node))
-    return AXImageMapLink::Create(toHTMLAreaElement(node), *this);
+  if (auto* area = ToHTMLAreaElementOrNull(node))
+    return AXImageMapLink::Create(area, *this);
 
   return AXNodeObject::Create(node, *this);
 }
@@ -912,7 +911,6 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
 }
 
 void AXObjectCacheImpl::LabelChanged(Element* element) {
-  DCHECK(isHTMLLabelElement(element));
   TextChanged(toHTMLLabelElement(element)->control());
 }
 

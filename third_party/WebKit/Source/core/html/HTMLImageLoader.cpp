@@ -62,10 +62,10 @@ void HTMLImageLoader::NoImageResourceToLoad() {
   if (ToHTMLElement(GetElement())->AltText().IsEmpty())
     return;
 
-  if (isHTMLImageElement(GetElement()))
-    toHTMLImageElement(GetElement())->EnsureCollapsedOrFallbackContent();
-  else if (isHTMLInputElement(GetElement()))
-    toHTMLInputElement(GetElement())->EnsureFallbackContent();
+  if (auto* image = ToHTMLImageElementOrNull(GetElement()))
+    image->EnsureCollapsedOrFallbackContent();
+  else if (auto* input = ToHTMLInputElementOrNull(GetElement()))
+    input->EnsureFallbackContent();
 }
 
 void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
@@ -74,18 +74,18 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
   ImageLoader::ImageNotifyFinished(cached_image);
 
   bool load_error = cached_image->ErrorOccurred();
-  if (isHTMLImageElement(*element)) {
+  if (auto* image = ToHTMLImageElementOrNull(*element)) {
     if (load_error)
-      toHTMLImageElement(element)->EnsureCollapsedOrFallbackContent();
+      image->EnsureCollapsedOrFallbackContent();
     else
-      toHTMLImageElement(element)->EnsurePrimaryContent();
+      image->EnsurePrimaryContent();
   }
 
-  if (isHTMLInputElement(*element)) {
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
     if (load_error)
-      toHTMLInputElement(element)->EnsureFallbackContent();
+      input->EnsureFallbackContent();
     else
-      toHTMLInputElement(element)->EnsurePrimaryContent();
+      input->EnsurePrimaryContent();
   }
 
   if ((load_error || cached_image->GetResponse().HttpStatusCode() >= 400) &&

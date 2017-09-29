@@ -144,12 +144,11 @@ InputEvent::EventIsComposing IsComposingFromCommand(
 }
 
 bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
-  TextControlElement* text_control = EnclosingTextControl(position);
-  if (!isHTMLInputElement(text_control))
-    return false;
-  HTMLInputElement* input = toHTMLInputElement(text_control);
-  return (input->type() == InputTypeNames::password) &&
-         !input->ShouldRevealPassword();
+  if (auto* input = ToHTMLInputElementOrNull(EnclosingTextControl(position))) {
+    return (input->type() == InputTypeNames::password) &&
+           !input->ShouldRevealPassword();
+  }
+  return false;
 }
 
 EphemeralRange ComputeRangeForTranspose(LocalFrame& frame) {
@@ -348,10 +347,7 @@ static HTMLImageElement* ImageElementFromImageDocument(Document* document) {
   if (!body)
     return 0;
 
-  Node* node = body->firstChild();
-  if (!isHTMLImageElement(node))
-    return 0;
-  return toHTMLImageElement(node);
+  return ToHTMLImageElementOrNull(body->firstChild());
 }
 
 bool Editor::CanCopy() const {

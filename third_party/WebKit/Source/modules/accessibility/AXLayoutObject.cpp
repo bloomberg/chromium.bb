@@ -380,11 +380,9 @@ bool AXLayoutObject::IsLinked() const {
   if (!IsLinkable(*this))
     return false;
 
-  Element* anchor = AnchorElement();
-  if (!isHTMLAnchorElement(anchor))
-    return false;
-
-  return !toHTMLAnchorElement(*anchor).Href().IsEmpty();
+  if (auto* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
+    return !anchor->Href().IsEmpty();
+  return false;
 }
 
 bool AXLayoutObject::IsLoaded() const {
@@ -944,15 +942,14 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   ImageBitmapOptions options;
   ImageBitmap* image_bitmap = nullptr;
   Document* document = &node->GetDocument();
-  if (isHTMLImageElement(node)) {
-    image_bitmap = ImageBitmap::Create(toHTMLImageElement(node),
-                                       Optional<IntRect>(), document, options);
-  } else if (isHTMLCanvasElement(node)) {
-    image_bitmap = ImageBitmap::Create(toHTMLCanvasElement(node),
-                                       Optional<IntRect>(), options);
-  } else if (isHTMLVideoElement(node)) {
-    image_bitmap = ImageBitmap::Create(toHTMLVideoElement(node),
-                                       Optional<IntRect>(), document, options);
+  if (auto* image = ToHTMLImageElementOrNull(node)) {
+    image_bitmap =
+        ImageBitmap::Create(image, Optional<IntRect>(), document, options);
+  } else if (auto* canvas = ToHTMLCanvasElementOrNull(node)) {
+    image_bitmap = ImageBitmap::Create(canvas, Optional<IntRect>(), options);
+  } else if (auto* video = ToHTMLVideoElementOrNull(node)) {
+    image_bitmap =
+        ImageBitmap::Create(video, Optional<IntRect>(), document, options);
   }
   if (!image_bitmap)
     return String();
@@ -1432,11 +1429,11 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (!node)
     return nullptr;
 
-  if (isHTMLAreaElement(node))
-    return AccessibilityImageMapHitTest(toHTMLAreaElement(node), point);
+  if (auto* area = ToHTMLAreaElementOrNull(node))
+    return AccessibilityImageMapHitTest(area, point);
 
-  if (isHTMLOptionElement(node)) {
-    node = toHTMLOptionElement(*node).OwnerSelectElement();
+  if (auto* option = ToHTMLOptionElementOrNull(node)) {
+    node = option->OwnerSelectElement();
     if (!node)
       return nullptr;
   }

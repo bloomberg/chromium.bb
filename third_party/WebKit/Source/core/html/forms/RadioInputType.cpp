@@ -162,12 +162,10 @@ bool RadioInputType::IsKeyboardFocusable() const {
   // skip any other elements in the group.
   Element* current_focused_element =
       GetElement().GetDocument().FocusedElement();
-  if (isHTMLInputElement(current_focused_element)) {
-    HTMLInputElement& focused_input =
-        toHTMLInputElement(*current_focused_element);
-    if (focused_input.type() == InputTypeNames::radio &&
-        focused_input.Form() == GetElement().Form() &&
-        focused_input.GetName() == GetElement().GetName())
+  if (auto* focused_input = ToHTMLInputElementOrNull(current_focused_element)) {
+    if (focused_input->type() == InputTypeNames::radio &&
+        focused_input->Form() == GetElement().Form() &&
+        focused_input->GetName() == GetElement().GetName())
       return false;
   }
 

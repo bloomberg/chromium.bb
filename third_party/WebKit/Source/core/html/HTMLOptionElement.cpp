@@ -303,13 +303,11 @@ HTMLDataListElement* HTMLOptionElement::OwnerDataListElement() const {
 HTMLSelectElement* HTMLOptionElement::OwnerSelectElement() const {
   if (!parentNode())
     return nullptr;
-  if (isHTMLSelectElement(*parentNode()))
-    return toHTMLSelectElement(parentNode());
-  if (!isHTMLOptGroupElement(*parentNode()))
-    return nullptr;
-  Node* grand_parent = parentNode()->parentNode();
-  return isHTMLSelectElement(grand_parent) ? toHTMLSelectElement(grand_parent)
-                                           : nullptr;
+  if (auto* select = ToHTMLSelectElementOrNull(*parentNode()))
+    return select;
+  if (isHTMLOptGroupElement(*parentNode()))
+    return ToHTMLSelectElementOrNull(parentNode()->parentNode());
+  return nullptr;
 }
 
 String HTMLOptionElement::label() const {
@@ -362,13 +360,12 @@ Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
 }
 
 void HTMLOptionElement::RemovedFrom(ContainerNode* insertion_point) {
-  if (isHTMLSelectElement(*insertion_point)) {
+  if (auto* select = ToHTMLSelectElementOrNull(*insertion_point)) {
     if (!parentNode() || isHTMLOptGroupElement(*parentNode()))
-      toHTMLSelectElement(insertion_point)->OptionRemoved(*this);
+      select->OptionRemoved(*this);
   } else if (isHTMLOptGroupElement(*insertion_point)) {
-    Node* parent = insertion_point->parentNode();
-    if (isHTMLSelectElement(parent))
-      toHTMLSelectElement(parent)->OptionRemoved(*this);
+    if (auto* select = ToHTMLSelectElementOrNull(insertion_point->parentNode()))
+      select->OptionRemoved(*this);
   }
   HTMLElement::RemovedFrom(insertion_point);
 }

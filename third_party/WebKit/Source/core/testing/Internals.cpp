@@ -562,10 +562,10 @@ void Internals::advanceTimeForImage(Element* image,
   }
 
   ImageResourceContent* resource = nullptr;
-  if (isHTMLImageElement(*image)) {
-    resource = toHTMLImageElement(*image).CachedImage();
-  } else if (isSVGImageElement(*image)) {
-    resource = toSVGImageElement(*image).CachedImage();
+  if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
+    resource = html_image->CachedImage();
+  } else if (auto* svg_image = ToSVGImageElementOrNull(*image)) {
+    resource = svg_image->CachedImage();
   } else {
     exception_state.ThrowDOMException(
         kInvalidAccessError, "The element provided is not a image element.");
@@ -593,10 +593,10 @@ void Internals::advanceImageAnimation(Element* image,
   DCHECK(image);
 
   ImageResourceContent* resource = nullptr;
-  if (isHTMLImageElement(*image)) {
-    resource = toHTMLImageElement(*image).CachedImage();
-  } else if (isSVGImageElement(*image)) {
-    resource = toSVGImageElement(*image).CachedImage();
+  if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
+    resource = html_image->CachedImage();
+  } else if (auto* svg_image = ToSVGImageElementOrNull(*image)) {
+    resource = svg_image->CachedImage();
   } else {
     exception_state.ThrowDOMException(
         kInvalidAccessError, "The element provided is not a image element.");
@@ -829,19 +829,17 @@ bool Internals::isValidationMessageVisible(Element* element) {
 void Internals::selectColorInColorChooser(Element* element,
                                           const String& color_value) {
   DCHECK(element);
-  if (!isHTMLInputElement(*element))
-    return;
   Color color;
   if (!color.SetFromString(color_value))
     return;
-  toHTMLInputElement(*element).SelectColorInColorChooser(color);
+  if (auto* input = ToHTMLInputElementOrNull(*element))
+    input->SelectColorInColorChooser(color);
 }
 
 void Internals::endColorChooser(Element* element) {
   DCHECK(element);
-  if (!isHTMLInputElement(*element))
-    return;
-  toHTMLInputElement(*element).EndColorChooser();
+  if (auto* input = ToHTMLInputElementOrNull(*element))
+    input->EndColorChooser();
 }
 
 bool Internals::hasAutofocusRequest(Document* document) {
@@ -1296,8 +1294,8 @@ String Internals::viewportAsText(Document* document,
 bool Internals::elementShouldAutoComplete(Element* element,
                                           ExceptionState& exception_state) {
   DCHECK(element);
-  if (isHTMLInputElement(*element))
-    return toHTMLInputElement(*element).ShouldAutocomplete();
+  if (auto* input = ToHTMLInputElementOrNull(*element))
+    return input->ShouldAutocomplete();
 
   exception_state.ThrowDOMException(kInvalidNodeTypeError,
                                     "The element provided is not an INPUT.");
@@ -1315,14 +1313,14 @@ String Internals::suggestedValue(Element* element,
   }
 
   String suggested_value;
-  if (isHTMLInputElement(*element))
-    suggested_value = toHTMLInputElement(*element).SuggestedValue();
+  if (auto* input = ToHTMLInputElementOrNull(*element))
+    return input->SuggestedValue();
 
-  if (isHTMLTextAreaElement(*element))
-    suggested_value = toHTMLTextAreaElement(*element).SuggestedValue();
+  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+    return textarea->SuggestedValue();
 
-  if (isHTMLSelectElement(*element))
-    suggested_value = toHTMLSelectElement(*element).SuggestedValue();
+  if (auto* select = ToHTMLSelectElementOrNull(*element))
+    return select->SuggestedValue();
 
   return suggested_value;
 }
@@ -1338,14 +1336,14 @@ void Internals::setSuggestedValue(Element* element,
     return;
   }
 
-  if (isHTMLInputElement(*element))
-    toHTMLInputElement(*element).SetSuggestedValue(value);
+  if (auto* input = ToHTMLInputElementOrNull(*element))
+    input->SetSuggestedValue(value);
 
-  if (isHTMLTextAreaElement(*element))
-    toHTMLTextAreaElement(*element).SetSuggestedValue(value);
+  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+    textarea->SetSuggestedValue(value);
 
-  if (isHTMLSelectElement(*element))
-    toHTMLSelectElement(*element).SetSuggestedValue(value);
+  if (auto* select = ToHTMLSelectElementOrNull(*element))
+    select->SetSuggestedValue(value);
 }
 
 void Internals::setEditingValue(Element* element,
@@ -2610,8 +2608,8 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
     document = document_;
   } else if (node->IsDocumentNode()) {
     document = ToDocument(node);
-  } else if (isHTMLIFrameElement(*node)) {
-    document = toHTMLIFrameElement(*node).contentDocument();
+  } else if (auto* iframe = ToHTMLIFrameElementOrNull(*node)) {
+    document = iframe->contentDocument();
   }
 
   if (!document) {
@@ -2946,9 +2944,9 @@ String Internals::selectMenuListText(HTMLSelectElement* select) {
 
 bool Internals::isSelectPopupVisible(Node* node) {
   DCHECK(node);
-  if (!isHTMLSelectElement(*node))
-    return false;
-  return toHTMLSelectElement(*node).PopupIsVisible();
+  if (auto* select = ToHTMLSelectElementOrNull(*node))
+    return select->PopupIsVisible();
+  return false;
 }
 
 bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {

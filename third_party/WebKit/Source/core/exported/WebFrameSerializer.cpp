@@ -302,9 +302,8 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
     const Element& element) {
   Vector<Attribute> attributes;
 
-  if (isHTMLImageElement(element)) {
-    GetCustomAttributesForImageElement(toHTMLImageElement(element),
-                                       &attributes);
+  if (auto* image = ToHTMLImageElementOrNull(element)) {
+    GetCustomAttributesForImageElement(*image, &attributes);
   } else if (element.IsFormControlElement()) {
     GetCustomAttributesForFormControlElement(element, &attributes);
   }

@@ -78,28 +78,30 @@ static bool HasNoAttributeOrOnlyStyleAttribute(
 }
 
 bool IsStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element) {
-  if (!isHTMLSpanElement(element))
-    return false;
-  return HasNoAttributeOrOnlyStyleAttribute(toHTMLSpanElement(element),
-                                            kAllowNonEmptyStyleAttribute);
+  if (auto* span = ToHTMLSpanElementOrNull(element)) {
+    return HasNoAttributeOrOnlyStyleAttribute(span,
+                                              kAllowNonEmptyStyleAttribute);
+  }
+  return false;
 }
 
 static inline bool IsSpanWithoutAttributesOrUnstyledStyleSpan(
     const Node* node) {
-  if (!isHTMLSpanElement(node))
-    return false;
-  return HasNoAttributeOrOnlyStyleAttribute(toHTMLSpanElement(node),
-                                            kStyleAttributeShouldBeEmpty);
+  if (auto* span = ToHTMLSpanElementOrNull(node)) {
+    return HasNoAttributeOrOnlyStyleAttribute(span,
+                                              kStyleAttributeShouldBeEmpty);
+  }
+  return false;
 }
 
 bool IsEmptyFontTag(
     const Element* element,
     ShouldStyleAttributeBeEmpty should_style_attribute_be_empty) {
-  if (!isHTMLFontElement(element))
-    return false;
-
-  return HasNoAttributeOrOnlyStyleAttribute(toHTMLFontElement(element),
-                                            should_style_attribute_be_empty);
+  if (auto* font = ToHTMLFontElementOrNull(element)) {
+    return HasNoAttributeOrOnlyStyleAttribute(font,
+                                              should_style_attribute_be_empty);
+  }
+  return false;
 }
 
 static bool OffsetIsBeforeLastNodeOffset(int offset, Node* anchor_node) {
@@ -1868,8 +1870,8 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   HTMLElement* style_container = nullptr;
   for (Node* container = start_node; container && start_node == end_node;
        container = container->firstChild()) {
-    if (isHTMLFontElement(*container))
-      font_container = toHTMLFontElement(container);
+    if (auto* font = ToHTMLFontElementOrNull(container))
+      font_container = font;
     bool style_container_is_not_span = !isHTMLSpanElement(style_container);
     if (container->IsHTMLElement()) {
       HTMLElement* container_element = ToHTMLElement(container);
