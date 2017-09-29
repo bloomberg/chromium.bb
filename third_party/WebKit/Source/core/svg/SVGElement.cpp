@@ -466,7 +466,7 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
   if (!attr_name.NamespaceURI().IsNull())
     return CSSPropertyInvalid;
 
-  static HashMap<StringImpl*, CSSPropertyID>* property_name_to_id_map = 0;
+  static HashMap<StringImpl*, CSSPropertyID>* property_name_to_id_map = nullptr;
   if (!property_name_to_id_map) {
     property_name_to_id_map = new HashMap<StringImpl*, CSSPropertyID>;
     // This is a list of all base CSS and SVG CSS properties which are exposed

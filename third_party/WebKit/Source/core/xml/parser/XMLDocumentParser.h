@@ -97,7 +97,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   static bool ParseDocumentFragment(
       const String&,
       DocumentFragment*,
-      Element* parent = 0,
+      Element* parent = nullptr,
       ParserContentPolicy = kAllowScriptingContent);
 
   // Used by the XMLHttpRequest to check if the responseXML was well formed.
@@ -118,7 +118,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   void SetScriptStartPosition(TextPosition);
 
  private:
-  explicit XMLDocumentParser(Document&, LocalFrameView* = 0);
+  explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
   // From DocumentParser

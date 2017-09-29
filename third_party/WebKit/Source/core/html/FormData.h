@@ -55,7 +55,7 @@ class CORE_EXPORT FormData final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FormData* Create(HTMLFormElement* form = 0) {
+  static FormData* Create(HTMLFormElement* form = nullptr) {
     return new FormData(form);
   }
 
