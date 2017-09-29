@@ -78,8 +78,12 @@ class NET_EXPORT CookieStore {
   typedef base::CallbackList<void(const CanonicalCookie& cookie,
                                   ChangeCause cause)>
       CookieChangedCallbackList;
-  typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
   typedef base::Callback<bool(const CanonicalCookie& cookie)> CookiePredicate;
+
+  class CookieChangedSubscription {
+   public:
+    virtual ~CookieChangedSubscription(){};
+  };
 
   virtual ~CookieStore();
 
@@ -235,6 +239,8 @@ class NET_EXPORT CookieStore {
   // |callback| will be called when a cookie is added or removed. |callback| is
   // passed the respective |cookie| which was added to or removed from the
   // cookies and a boolean indicating if the cookies was removed or not.
+  // |callback| is guaranteed not to be called after the return handled is
+  // destroyed.
   //
   // Note that |callback| is called twice when a cookie is updated: once for
   // the removal of the existing cookie and once for the adding the new cookie.
@@ -253,7 +259,8 @@ class NET_EXPORT CookieStore {
 
   // Add a callback to be notified on all cookie changes (with a few
   // bookkeeping exceptions; see kChangeCauseMapping in
-  // cookie_monster.cc).
+  // cookie_monster.cc).  See the comment on AddCallbackForCookie for details
+  // on callback behavior.
   virtual std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
       const CookieChangedCallback& callback) = 0;
 

@@ -1835,6 +1835,60 @@ TYPED_TEST_P(CookieStoreTest, GlobalChangeTracking_Deregister) {
   ASSERT_EQ(0u, cookie_changes_2.size());
 }
 
+// Confirm that deregistering a subscription blocks the notification
+// if the deregistration happened after the change but before the
+// notification was received.
+TYPED_TEST_P(CookieStoreTest, GlobalChangeTracking_DeregisterRace) {
+  if (!TypeParam::supports_global_cookie_tracking)
+    return;
+
+  CookieStore* cs = this->GetCookieStore();
+
+  // Register two notifiers.
+  std::vector<CookieNotification> cookie_changes_1;
+  std::unique_ptr<CookieStore::CookieChangedSubscription> subscription1(
+      cs->AddCallbackForAllChanges(
+          base::Bind(&OnCookieChanged, base::Unretained(&cookie_changes_1))));
+
+  std::vector<CookieNotification> cookie_changes_2;
+  std::unique_ptr<CookieStore::CookieChangedSubscription> subscription2(
+      cs->AddCallbackForAllChanges(
+          base::Bind(&OnCookieChanged, base::Unretained(&cookie_changes_2))));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(0u, cookie_changes_1.size());
+  ASSERT_EQ(0u, cookie_changes_2.size());
+
+  // De-register the second registration.
+
+  // Insert a cookie, confirm not seen, dergister, run until idle,
+  // and confirm still not seen.
+  ASSERT_EQ(0u, cookie_changes_2.size());
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_foo_.url(), "C=D"));
+
+  // Note that by the API contract it's perfectly valid to have
+  // received the notification immediately, i.e. synchrnously with the cookie
+  // change.  In that case, there's nothing to test.
+  if (1u == cookie_changes_2.size()) {
+    LOG(ERROR) << "Nothing to test.";
+    return;
+  }
+
+  // A task was posted by the SetCookie() above, but has not yet
+  // arrived.  If it arrived before the subscription is destroyed,
+  // callback execution would be valid.  Destroy one of the
+  // subscriptions so as to lose the race and make sure the task
+  // posted arrives after the subscription was destroyed.
+  subscription2.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, cookie_changes_1.size());
+  EXPECT_EQ("C", cookie_changes_1[0].first.Name());
+  EXPECT_EQ("D", cookie_changes_1[0].first.Value());
+  cookie_changes_1.clear();
+
+  // No late notification was received.
+  ASSERT_EQ(0u, cookie_changes_2.size());
+}
+
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            SetCookieWithDetailsAsync,
                            SetCanonicalCookieTest,
@@ -1879,7 +1933,8 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            GlobalChangeTracking_Insert,
                            GlobalChangeTracking_Delete,
                            GlobalChangeTracking_Overwrite,
-                           GlobalChangeTracking_Deregister);
+                           GlobalChangeTracking_Deregister,
+                           GlobalChangeTracking_DeregisterRace);
 
 }  // namespace net
 
