@@ -1276,7 +1276,12 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 }
 
 static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
+#if CONFIG_REFERENCE_BUFFER
   cm->use_reference_buffer = use;
+#else
+  (void)cm;
+  (void)use;
+#endif
 }
 
 static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
