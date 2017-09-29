@@ -565,6 +565,7 @@ _x86_internal_release_boards = frozenset([
     'kunimitsu',
     'lakitu',
     'lakitu-gpu',
+    'lakitu-nc',
     'lakitu-st',
     'lakitu_next',
     'lars',
@@ -692,6 +693,7 @@ _beaglebone_boards = frozenset([
 _lakitu_boards = frozenset([
     'lakitu',
     'lakitu-gpu',
+    'lakitu-nc',
     'lakitu-st',
     'lakitu_next',
 ])
@@ -1176,6 +1178,13 @@ def GeneralTemplates(site_config, ge_build_config):
       gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE),
                  config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)],
       buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE
+  )
+
+  # No GCE tests for lakitu-nc.
+  site_config.AddTemplate(
+      'lakitu_nc_test_customizations',
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests_override=None,
   )
 
   # Test customizations for lakitu boards' paladin builders.
@@ -3367,6 +3376,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-gpu-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
+      'lakitu-nc-pre-cq':
+          site_config.templates.lakitu_nc_test_customizations,
+
       'lakitu-st-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
@@ -3402,6 +3414,12 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
+      ),
+
+      'lakitu-nc-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_nc_test_customizations,
+          site_config.templates.lakitu_notification_emails,
+          signer_tests=False,
       ),
 
       'lakitu-st-release': config_lib.BuildConfig().apply(
