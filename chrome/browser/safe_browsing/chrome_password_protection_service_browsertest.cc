@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
@@ -303,6 +304,29 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
   EXPECT_THAT(histograms_.GetAllSamples(kGaiaPasswordChangeHistogramName),
               testing::ElementsAre(base::Bucket(2, 1)));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
+                       VerifyShouldShowChangePasswordSettingUI) {
+  Profile* profile = browser()->profile();
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile));
+  // Simulates previous session has unhandled password reuses.
+  profile->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingChangePasswordInSettingsEnabled, true);
+
+  EXPECT_TRUE(
+      ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile));
+
+  // Simulates a Gaia password change.
+  SimulateGaiaPasswordChanged(GetService(/*is_incognito=*/false));
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile));
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingChangePasswordInSettingsEnabled));
 }
 
 // TODO(jialiul): Add more tests where multiple browser windows are involved.

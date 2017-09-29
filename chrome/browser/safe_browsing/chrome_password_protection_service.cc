@@ -140,6 +140,14 @@ ChromePasswordProtectionService::~ChromePasswordProtectionService() {
             LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   }
 
+  // Before shutdown, if there is still unhandled password reuses, we set the
+  // kSafeBrowsingChangePasswordInSettingsEnabled to true. So next time when
+  // user starts a new session, change password card will show on Chrome
+  // settings page.
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingChangePasswordInSettingsEnabled,
+      !unhandled_password_reuses_.empty());
+
   if (pref_change_registrar_)
     pref_change_registrar_->RemoveAll();
 }
@@ -161,7 +169,9 @@ bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
     Profile* profile) {
   ChromePasswordProtectionService* service =
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
-  return service && !service->unhandled_password_reuses().empty();
+  return service && (!service->unhandled_password_reuses().empty() ||
+                     profile->GetPrefs()->GetBoolean(
+                         prefs::kSafeBrowsingChangePasswordInSettingsEnabled));
 }
 
 void ChromePasswordProtectionService::FillReferrerChain(
