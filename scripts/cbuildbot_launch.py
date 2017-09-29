@@ -44,6 +44,7 @@ METRIC_INITIAL = 'chromeos/chromite/cbuildbot_launch/initial_checkout_durations'
 METRIC_CBUILDBOT = 'chromeos/chromite/cbuildbot_launch/cbuildbot_durations'
 METRIC_CLOBBER = 'chromeos/chromite/cbuildbot_launch/clobber'
 METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
+METRIC_DEPOT_TOOLS = 'chromeos/chromite/cbuildbot_launch/depot_tools_prep'
 
 
 def StageDecorator(functor):
@@ -233,6 +234,29 @@ def InitialCheckout(repo):
 
 
 @StageDecorator
+def DepotToolsEnsureBootstrap(depot_tools_path):
+  """Start cbuildbot in specified directory with all arguments.
+
+  Args:
+    buildroot: Directory to be passed to cbuildbot with --buildroot.
+    depot_tools_path: Directory for depot_tools to be used by cbuildbot.
+    argv: Command line options passed to cbuildbot_launch.
+
+  Returns:
+    Return code of cbuildbot as an integer.
+  """
+  ensure_bootstrap_script = os.path.join(depot_tools_path, 'ensure_bootstrap')
+  if os.path.exists(ensure_bootstrap_script):
+    extra_env = {'PATH': PrependPath(depot_tools_path)}
+    cros_build_lib.RunCommand(
+        [ensure_bootstrap_script], extra_env=extra_env, cwd=depot_tools_path)
+  else:
+    # This is normal when checking out branches older than this script.
+    logging.warn('ensure_bootstrap not found, skipping: %s',
+                 ensure_bootstrap_script)
+
+
+@StageDecorator
 def RunCbuildbot(buildroot, depot_tools_path, argv):
   """Start cbuildbot in specified directory with all arguments.
 
@@ -372,6 +396,10 @@ def _main(argv):
       # Get a checkout close enough to the branch that cbuildbot can handle it.
       with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
         InitialCheckout(repo)
+
+      # Get a checkout close enough to the branch that cbuildbot can handle it.
+      with metrics.SecondsTimer(METRIC_DEPOT_TOOLS, fields=metrics_fields):
+        DepotToolsEnsureBootstrap(depot_tools_path)
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
