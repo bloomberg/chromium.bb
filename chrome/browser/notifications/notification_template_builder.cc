@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_template_builder.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/elide_url.h"
@@ -15,17 +16,24 @@
 namespace {
 
 // Constants used for the XML element names and their attributes.
+const char kActionElement[] = "action";
+const char kActionsElement[] = "actions";
+const char kActivationType[] = "activationType";
+const char kArguments[] = "arguments";
+const char kBindingElement[] = "binding";
+const char kBindingElementTemplateAttribute[] = "template";
+const char kButtonIndex[] = "buttonIndex=";
+const char kContent[] = "content";
+const char kForeground[] = "foreground";
+const char kTextElement[] = "text";
+const char kTextElementIdAttribute[] = "id";
 const char kToastElement[] = "toast";
 const char kToastElementLaunchAttribute[] = "launch";
 const char kVisualElement[] = "visual";
-const char kBindingElement[] = "binding";
-const char kBindingElementTemplateAttribute[] = "template";
-const char kTextElement[] = "text";
-const char kTextElementIdAttribute[] = "id";
 
 // Name of the template used for default Chrome notifications.
 // https://msdn.microsoft.com/library/1a437614-4259-426b-8e3f-ca57368b2e7a
-const char kDefaultTemplate[] = "ToastText04";
+const char kDefaultTemplate[] = "ToastGeneric";
 
 // The XML version header that has to be stripped from the output.
 const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
@@ -55,8 +63,10 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
                             builder->FormatOrigin(notification.origin_url()));
 
   builder->EndBindingElement();
-
   builder->EndVisualElement();
+
+  builder->AddActions(notification.buttons());
+
   builder->EndToastElement();
 
   return builder;
@@ -122,5 +132,41 @@ void NotificationTemplateBuilder::WriteTextElement(const std::string& id,
   xml_writer_->StartElement(kTextElement);
   xml_writer_->AddAttribute(kTextElementIdAttribute, id);
   xml_writer_->AppendElementContent(content);
+  xml_writer_->EndElement();
+}
+
+void NotificationTemplateBuilder::AddActions(
+    const std::vector<message_center::ButtonInfo>& buttons) {
+  if (!buttons.size())
+    return;
+
+  StartActionsElement();
+
+  // TODO(finnur): Add inline replies.
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    const auto& button = buttons[i];
+    WriteActionElement(button, i);
+  }
+
+  EndActionsElement();
+}
+
+void NotificationTemplateBuilder::StartActionsElement() {
+  xml_writer_->StartElement(kActionsElement);
+}
+
+void NotificationTemplateBuilder::EndActionsElement() {
+  xml_writer_->EndElement();
+}
+
+void NotificationTemplateBuilder::WriteActionElement(
+    const message_center::ButtonInfo& button,
+    int index) {
+  // TODO(finnur): Implement button images (imageUri).
+  xml_writer_->StartElement(kActionElement);
+  xml_writer_->AddAttribute(kActivationType, kForeground);
+  xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title).c_str());
+  std::string param = std::string(kButtonIndex) + base::IntToString(index);
+  xml_writer_->AddAttribute(kArguments, param.c_str());
   xml_writer_->EndElement();
 }

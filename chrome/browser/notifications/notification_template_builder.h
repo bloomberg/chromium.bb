@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -15,6 +16,7 @@ class GURL;
 class XmlWriter;
 
 namespace message_center {
+struct ButtonInfo;
 class Notification;
 }
 
@@ -67,6 +69,15 @@ class NotificationTemplateBuilder {
   // Writes the <text> element with the given |id| and |content|.
   // https://docs.microsoft.com/en-us/uwp/schemas/tiles/toastschema/element-text
   void WriteTextElement(const std::string& id, const std::string& content);
+
+  // Writes the <actions> element.
+  // TODO(finnur): Add link to doc, once it becomes available.
+  void StartActionsElement();
+  void EndActionsElement();
+
+  // Fills in the details for the actions.
+  void AddActions(const std::vector<message_center::ButtonInfo>& buttons);
+  void WriteActionElement(const message_center::ButtonInfo& button, int index);
 
   // The XML writer to which the template will be written.
   std::unique_ptr<XmlWriter> xml_writer_;
