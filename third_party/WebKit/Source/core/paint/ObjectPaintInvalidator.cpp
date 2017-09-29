@@ -552,15 +552,17 @@ void ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
     object_.InvalidateDisplayItemClients(PaintInvalidationReason::kRectangle);
   }
 
-  // TODO(crbug.com/732612): Implement rectangle raster invalidation for SPv2.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   context_.MapLocalRectToVisualRectInBacking(object_, rect);
   if (rect.IsEmpty())
     return;
-  InvalidatePaintRectangleWithContext(rect,
-                                      PaintInvalidationReason::kRectangle);
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // PaintController will handle raster invalidation of the partial rect.
+    object_.GetMutableForPainting().SetPartialInvalidationRect(rect);
+  } else {
+    InvalidatePaintRectangleWithContext(rect,
+                                        PaintInvalidationReason::kRectangle);
+  }
 }
 
 DISABLE_CFI_PERF

@@ -19,8 +19,18 @@ class FakeDisplayItemClient : public DisplayItemClient {
 
   String DebugName() const final { return name_; }
   LayoutRect VisualRect() const override { return visual_rect_; }
+  LayoutRect PartialInvalidationRect() const override {
+    return partial_invalidation_rect_;
+  }
+  void ClearPartialInvalidationRect() const override {
+    partial_invalidation_rect_ = LayoutRect();
+  }
 
   void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
+  void SetPartialInvalidationRect(const LayoutRect& r) {
+    SetDisplayItemsUncached(PaintInvalidationReason::kRectangle);
+    partial_invalidation_rect_ = r;
+  }
 
   // This simulates a paint without needing a PaintController.
   void UpdateCacheGeneration() {
@@ -30,6 +40,7 @@ class FakeDisplayItemClient : public DisplayItemClient {
  private:
   String name_;
   LayoutRect visual_rect_;
+  mutable LayoutRect partial_invalidation_rect_;
 };
 
 }  // namespace blink

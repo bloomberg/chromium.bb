@@ -47,6 +47,14 @@ class PLATFORM_EXPORT DisplayItemClient {
     return LayoutUnit();
   }
 
+  // The rect that needs to be invalidated partially in this client. It's in the
+  // same coordinate space as VisualRect().
+  virtual LayoutRect PartialInvalidationRect() const { return LayoutRect(); }
+
+  // Called by PaintController::CommitNewDisplayItems() for all clients after
+  // painting.
+  virtual void ClearPartialInvalidationRect() const {}
+
   // This is declared here instead of in LayoutObject for verifying the
   // condition in DrawingRecorder.
   // Returns true if the object itself will not generate any effective painted

@@ -223,6 +223,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // DisplayItemClient methods.
   LayoutRect VisualRect() const final { return visual_rect_; }
+  LayoutRect PartialInvalidationRect() const final {
+    return rare_paint_data_ ? rare_paint_data_->PartialInvalidationRect()
+                            : LayoutRect();
+  }
+  void ClearPartialInvalidationRect() const final {
+    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+    return GetMutableForPainting().SetPartialInvalidationRect(LayoutRect());
+  }
   String DebugName() const final;
 
   LayoutObject* Parent() const { return parent_; }
@@ -1780,6 +1788,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.SetNeedsPaintPropertyUpdate();
     }
 
+    void SetPartialInvalidationRect(const LayoutRect& r) {
+      layout_object_.SetPartialInvalidationRect(r);
+    }
+
 #if DCHECK_IS_ON()
     // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
     // having a descendant needing a paint property update.
@@ -1895,10 +1907,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   LayoutRect SelectionVisualRect() const {
     return rare_paint_data_ ? rare_paint_data_->SelectionVisualRect()
-                            : LayoutRect();
-  }
-  LayoutRect PartialInvalidationRect() const {
-    return rare_paint_data_ ? rare_paint_data_->PartialInvalidationRect()
                             : LayoutRect();
   }
 
@@ -2035,12 +2043,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                        const LayoutPoint& layer_offset) const {}
 
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+  void SetPartialInvalidationRect(const LayoutRect& rect) {
+    if (GetRarePaintData() || !rect.IsEmpty())
+      EnsureRarePaintData().SetPartialInvalidationRect(rect);
+  }
 
 #if DCHECK_IS_ON()
   virtual bool PaintInvalidationStateIsDirty() const {
     return BackgroundChangedSinceLastPaintInvalidation() ||
            ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
-           NeedsPaintOffsetAndVisualRectUpdate();
+           NeedsPaintOffsetAndVisualRectUpdate() ||
+           (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+            rare_paint_data_ &&
+            !rare_paint_data_->PartialInvalidationRect().IsEmpty());
   }
 #endif
 
