@@ -124,10 +124,11 @@ void MessageBoxView::SetLink(const base::string16& text,
   } else {
     DCHECK(listener);
     if (!link_) {
-      link_ = new Link();
+      link_ = new Link(text);
       link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    } else {
+      link_->SetText(text);
     }
-    link_->SetText(text);
     link_->set_listener(listener);
   }
   ResetLayoutManager();

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/style/typography.h"
 
 namespace views {
 
@@ -37,8 +38,9 @@ class VIEWS_EXPORT Link : public Label {
     RING,       // A focus ring is drawn around the View.
   };
 
-  Link();
-  explicit Link(const base::string16& title);
+  explicit Link(const base::string16& title,
+                int text_context = style::CONTEXT_LABEL,
+                int text_style = style::STYLE_LINK);
   ~Link() override;
 
   // Returns the default FocusStyle for a views::Link. Calling SetUnderline()

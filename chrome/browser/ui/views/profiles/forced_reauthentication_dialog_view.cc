@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -174,7 +175,7 @@ void ForcedReauthenticationDialogView::AddedToWidget() {
   prompt_label->SetDisplayedOnBackgroundColor(prompt_bar_background_color);
 
   views::StyledLabel::RangeStyleInfo bold_style;
-  bold_style.weight = gfx::Font::Weight::BOLD;
+  bold_style.text_style = STYLE_EMPHASIZED;
   prompt_label->AddStyleRange(gfx::Range(offset, offset + domain.size()),
                               bold_style);
 

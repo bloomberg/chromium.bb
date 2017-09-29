@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/chromium_strings.h"
@@ -50,9 +51,6 @@ const int kWidthOfDescriptionText = 320;
 
 // Distance between checkbox and the text to the right of it.
 const int kCheckboxTextDistance = 4;
-
-// The color of the text of the sub panel to offer UMA opt-in.
-const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
 enum SessionCrashedBubbleHistogramValue {
   SESSION_CRASHED_BUBBLE_SHOWN,
@@ -229,13 +227,10 @@ views::View* SessionCrashedBubbleView::CreateFootnoteView() {
       link_text,
       &offset);
   views::StyledLabel* uma_label = new views::StyledLabel(uma_text, this);
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.font_style = gfx::Font::NORMAL;
   uma_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
-                           link_style);
+                           views::StyledLabel::RangeStyleInfo::CreateForLink());
   views::StyledLabel::RangeStyleInfo uma_style;
-  uma_style.color = kTextColor;
+  uma_style.text_style = STYLE_SECONDARY;
   gfx::Range before_link_range(0, offset);
   if (!before_link_range.is_empty())
     uma_label->AddStyleRange(before_link_range, uma_style);

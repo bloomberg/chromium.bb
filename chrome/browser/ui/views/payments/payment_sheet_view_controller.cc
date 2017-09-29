@@ -39,6 +39,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -959,15 +960,15 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
       base::MakeUnique<views::StyledLabel>(data_source, this);
   data_source_label->SetBorder(views::CreateEmptyBorder(22, 0, 0, 0));
   data_source_label->set_id(static_cast<int>(DialogViewID::DATA_SOURCE_LABEL));
-
-  views::StyledLabel::RangeStyleInfo default_style;
-  default_style.color = data_source_label->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-  data_source_label->SetDefaultStyle(default_style);
+  data_source_label->SetDefaultTextStyle(views::style::STYLE_DISABLED);
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.color = gfx::kGoogleBlue700;
+
+  // This is the harmony color, so not needed when MD is default.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    link_style.override_color = gfx::kGoogleBlue700;
+
   data_source_label->AddStyleRange(
       gfx::Range(link_begin, link_begin + link_length), link_style);
   data_source_label->SizeToFit(0);

@@ -9,12 +9,14 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -35,30 +37,31 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
+    RangeStyleInfo(const RangeStyleInfo& copy);
     ~RangeStyleInfo();
 
     // Creates a range style info with default values for link.
     static RangeStyleInfo CreateForLink();
 
-    // The font style that will be applied to the range. Should be a bitmask of
-    // values defined in gfx::Font::FontStyle (ITALIC, UNDERLINE).
-    int font_style;
+    bool IsLink() const;
 
-    // The font weight to be applied to the range. Default is Weight::NORMAL.
-    gfx::Font::Weight weight;
+    // Allows full customization of the font used in the range. Ignores the
+    // StyledLabel's default text context and |text_style|.
+    base::Optional<gfx::FontList> custom_font;
 
-    // The text color for the range. Default is SK_ColorTRANSPARENT, indicating
-    // the theme's default color should be used.
-    SkColor color;
+    // The style::TextStyle for this range.
+    base::Optional<int> text_style;
+
+    // Overrides the text color given by |text_style| for this range. Default is
+    // SK_ColorTRANSPARENT, indicating not to override.
+    // DEPRECATED: Use TextStyle.
+    SkColor override_color = SK_ColorTRANSPARENT;
 
     // Tooltip for the range.
     base::string16 tooltip;
 
     // If set, the whole range will be put on a single line.
-    bool disable_line_wrapping;
-
-    // If set, the range will be created as a link.
-    bool is_link;
+    bool disable_line_wrapping = false;
   };
 
   // Note that any trailing whitespace in |text| will be trimmed.
@@ -70,17 +73,21 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   const base::string16& text() const { return text_; }
 
-  // Sets the fonts used by all labels. Can be augemented by styling set by
-  // AddStyleRange and SetDefaultStyle.
-  void SetBaseFontList(const gfx::FontList& font_list);
+  // Returns the font list that results from the default text context and style
+  // for ranges. This can be used as the basis for a range |custom_font|.
+  gfx::FontList GetDefaultFontList() const;
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
   void AddStyleRange(const gfx::Range& range, const RangeStyleInfo& style_info);
 
-  // Sets the default style to use for any part of the text that isn't within
-  // a range set by AddStyleRange.
-  void SetDefaultStyle(const RangeStyleInfo& style_info);
+  // Set the context of this text. All ranges have the same context.
+  // |text_context| must be a value from views::style::TextContext.
+  void SetTextContext(int text_context);
+
+  // Set the default text style.
+  // |text_style| must be a value from views::style::TextStyle.
+  void SetDefaultTextStyle(int text_style);
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
@@ -134,6 +141,13 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   };
   typedef std::list<StyleRange> StyleRanges;
 
+  // Returns the default line height, based on the default style.
+  int GetDefaultLineHeight() const;
+
+  // Returns the FontList that should be used for |range|.
+  gfx::FontList GetFontListForRange(
+      const StyleRanges::const_iterator& range) const;
+
   // Calculates how to layout child views, creates them and sets their size and
   // position. |width| is the horizontal space, in pixels, that the view has to
   // work with. If |dry_run| is true, the view hierarchy is not touched. Caches
@@ -144,15 +158,11 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // The text to display.
   base::string16 text_;
 
-  // Fonts used to display text. Can be augmented by RangeStyleInfo.
-  gfx::FontList font_list_;
+  int text_context_ = style::CONTEXT_LABEL;
+  int default_text_style_ = style::STYLE_PRIMARY;
 
-  // Line height.
+  // Line height. If zero, style::GetLineHeight() is used.
   int specified_line_height_;
-
-  // The default style to use for any part of the text that isn't within
-  // a range in |style_ranges_|.
-  RangeStyleInfo default_style_info_;
 
   // The listener that will be informed of link clicks.
   StyledLabelListener* listener_;

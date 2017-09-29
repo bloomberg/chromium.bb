@@ -152,11 +152,9 @@ SubtleNotificationView::SubtleNotificationView(
   instruction_view_ =
       new InstructionView(base::string16(), kForegroundColor, kBackgroundColor);
 
-  link_ = new views::Link();
+  link_ = new views::Link(base::string16(), kInstructionTextContext);
   link_->SetFocusBehavior(FocusBehavior::NEVER);
   link_->set_listener(link_listener);
-  link_->SetFontList(
-      views::style::GetFont(kInstructionTextContext, views::style::STYLE_LINK));
   link_->SetEnabledColor(kForegroundColor);  // Override STYLE_LINK.
   link_->SetBackgroundColor(kBackgroundColor);
   link_->SetVisible(false);

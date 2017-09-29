@@ -306,9 +306,6 @@ void BubbleHeaderView::SetDetails(const base::string16& details_text) {
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
-  }
   link_style.disable_line_wrapping = false;
 
   security_details_label_->AddStyleRange(details_range, link_style);
@@ -333,9 +330,6 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
-  }
   link_style.disable_line_wrapping = false;
 
   reset_cert_decisions_label_->AddStyleRange(link_range, link_style);
@@ -745,6 +739,7 @@ void PageInfoBubbleView::SetPermissionInfo(
   site_settings_link->set_id(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS);
   site_settings_link->set_listener(this);
+  site_settings_link->SetUnderline(false);
   views::View* link_section = new views::View();
   const int kLinkMarginTop = 4;
   link_section->SetLayoutManager(new views::BoxLayout(
@@ -784,6 +779,7 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       certificate_viewer_link->set_id(
           PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_CERTIFICATE_VIEWER);
       certificate_viewer_link->set_listener(this);
+      certificate_viewer_link->SetUnderline(false);
       if (valid_identity) {
         certificate_viewer_link->SetTooltipText(l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
@@ -823,6 +819,7 @@ views::View* PageInfoBubbleView::CreateSiteSettingsView(int side_margin) {
   cookie_dialog_link_->set_id(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_COOKIE_DIALOG);
   cookie_dialog_link_->set_listener(this);
+  cookie_dialog_link_->SetUnderline(false);
 
   PageInfoUI::PermissionInfo info;
   info.type = CONTENT_SETTINGS_TYPE_COOKIES;

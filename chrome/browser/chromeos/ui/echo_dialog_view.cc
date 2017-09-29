@@ -57,17 +57,15 @@ void EchoDialogView::InitForEnabledEcho(const base::string16& service_name,
   label_ = new views::StyledLabel(text, this);
 
   views::StyledLabel::RangeStyleInfo service_name_style;
-  service_name_style.font_style = gfx::Font::UNDERLINE;
+  service_name_style.custom_font =
+      label_->GetDefaultFontList().DeriveWithStyle(gfx::Font::UNDERLINE);
   service_name_style.tooltip = origin;
   label_->AddStyleRange(
       gfx::Range(offsets[0], offsets[0] + service_name.length()),
       service_name_style);
 
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.font_style = gfx::Font::NORMAL;
   label_->AddStyleRange(gfx::Range(offsets[1], offsets[1] + link.length()),
-                        link_style);
+                        views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   SetLabelBorderAndBounds();
 
@@ -86,11 +84,8 @@ void EchoDialogView::InitForDisabledEcho() {
       IDS_ECHO_DISABLED_CONSENT_DIALOG_TEXT, link, &offset);
 
   label_ = new views::StyledLabel(text, this);
-
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.font_style = gfx::Font::NORMAL;
-  label_->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
+  label_->AddStyleRange(gfx::Range(offset, offset + link.length()),
+                        views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   SetLabelBorderAndBounds();
 

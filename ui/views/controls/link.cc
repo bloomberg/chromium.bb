@@ -27,10 +27,8 @@ namespace views {
 const char Link::kViewClassName[] = "Link";
 constexpr int Link::kFocusBorderPadding;
 
-Link::Link() : Link(base::string16()) {}
-
-Link::Link(const base::string16& title)
-    : Label(title),
+Link::Link(const base::string16& title, int text_context, int text_style)
+    : Label(title, text_context, text_style),
       requested_enabled_color_(gfx::kPlaceholderColor),
       requested_enabled_color_set_(false) {
   Init();
@@ -268,6 +266,7 @@ void Link::ConfigureFocus() {
 }
 
 SkColor Link::GetColor() {
+  // TODO(tapted): Use style::GetColor().
   const ui::NativeTheme* theme = GetNativeTheme();
   DCHECK(theme);
   if (!enabled())
