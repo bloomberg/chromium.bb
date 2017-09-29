@@ -96,8 +96,10 @@ void ScriptWrappableVisitor::PerformCleanup() {
 }
 
 void ScriptWrappableVisitor::ScheduleIdleLazyCleanup() {
-  // Some threads (e.g. PPAPI thread) don't have a scheduler.
-  if (!Platform::Current()->CurrentThread()->Scheduler())
+  WebThread* const thread = Platform::Current()->CurrentThread();
+  // Thread might already be gone, or some threads (e.g. PPAPI) don't have a
+  // scheduler.
+  if (!thread || !thread->Scheduler())
     return;
 
   if (idle_cleanup_task_scheduled_)
