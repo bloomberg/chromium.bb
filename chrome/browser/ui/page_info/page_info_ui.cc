@@ -465,12 +465,6 @@ const gfx::ImageSkia PageInfoUI::GetCertificateIcon() {
 #endif
 
 // static
-bool PageInfoUI::ShouldShowCertificateLink() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowCertLink);
-}
-
-// static
 bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {
   for (const PermissionsUIInfo& info : kPermissionsUIInfo) {
     if (info.type == type)

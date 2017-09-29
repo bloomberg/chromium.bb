@@ -3178,12 +3178,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfProcessHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableOutOfProcessHeapProfilingChoices)},
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-    {"show-cert-link", flag_descriptions::kShowCertLinkOnPageInfoName,
-     flag_descriptions::kShowCertLinkOnPageInfoDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kShowCertLink)},
-#endif
-
     {"omnibox-ui-elide-suggestion-url-after-host",
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,

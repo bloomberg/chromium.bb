@@ -765,34 +765,33 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       header_->AddResetDecisionsLabel();
     }
 
-    if (PageInfoUI::ShouldShowCertificateLink()) {
-      // The text of link to the Certificate Viewer varies depending on the
-      // validity of the Certificate.
-      const bool valid_identity = (identity_info.identity_status !=
-                                   PageInfo::SITE_IDENTITY_STATUS_ERROR);
-      const base::string16 link_title = l10n_util::GetStringUTF16(
-          valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
-                         : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
+    // Show information about the page's certificate.
+    // The text of link to the Certificate Viewer varies depending on the
+    // validity of the Certificate.
+    const bool valid_identity =
+        (identity_info.identity_status != PageInfo::SITE_IDENTITY_STATUS_ERROR);
+    const base::string16 link_title = l10n_util::GetStringUTF16(
+        valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
+                       : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
 
-      // Create the link to add to the Certificate Section.
-      views::Link* certificate_viewer_link = new views::Link(link_title);
-      certificate_viewer_link->set_id(
-          PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_CERTIFICATE_VIEWER);
-      certificate_viewer_link->set_listener(this);
-      certificate_viewer_link->SetUnderline(false);
-      if (valid_identity) {
-        certificate_viewer_link->SetTooltipText(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
-            base::UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
-      }
-
-      // Add the Certificate Section.
-      site_settings_view_->AddChildViewAt(
-          CreateInspectLinkSection(PageInfoUI::GetCertificateIcon(),
-                                   IDS_PAGE_INFO_CERTIFICATE,
-                                   certificate_viewer_link),
-          0);
+    // Create the link to add to the Certificate Section.
+    views::Link* certificate_viewer_link = new views::Link(link_title);
+    certificate_viewer_link->set_id(
+        PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_CERTIFICATE_VIEWER);
+    certificate_viewer_link->set_listener(this);
+    certificate_viewer_link->SetUnderline(false);
+    if (valid_identity) {
+      certificate_viewer_link->SetTooltipText(l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
+          base::UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
     }
+
+    // Add the Certificate Section.
+    site_settings_view_->AddChildViewAt(
+        CreateInspectLinkSection(PageInfoUI::GetCertificateIcon(),
+                                 IDS_PAGE_INFO_CERTIFICATE,
+                                 certificate_viewer_link),
+        0);
   }
 
   if (identity_info.show_change_password_buttons) {
