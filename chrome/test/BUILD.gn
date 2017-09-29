@@ -1074,20 +1074,12 @@ static_library("browser_tests_runner") {
       "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",
       "base/mash_browser_tests_main.h",
-      "base/mojo_test_connector.cc",
-      "base/mojo_test_connector.h",
     ]
 
     deps += [
       "//chrome/app/mash:embedded_services",
       "//mash/session/public/interfaces:constants",
       "//services/service_manager/background:lib",
-    ]
-
-    data_deps = [
-      ":mash_browser_tests_catalog_copy",
-      ":mus_browser_tests_catalog_copy",
-      "//mash/session",
     ]
   } else {
     sources += [ "base/browser_tests_main.cc" ]
@@ -5233,73 +5225,6 @@ if (is_android) {
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
       "//content/public/android:content_java",
-    ]
-  }
-}
-
-if (is_chromeos && enable_package_mash_services) {
-  group("mash_browser_tests") {
-    testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
-  }
-
-  service_manifest("mash_browser_tests_manifest") {
-    name = "mash_browser_tests"
-    source = "base/mash_browser_tests_manifest.json"
-  }
-
-  catalog("mash_browser_tests_catalog") {
-    testonly = true
-    embedded_services = [ ":mash_browser_tests_manifest" ]
-    catalog_deps = [ "//chrome/app/mash:catalog" ]
-  }
-
-  copy("mash_browser_tests_catalog_copy") {
-    testonly = true
-    sources = get_target_outputs(":mash_browser_tests_catalog")
-    outputs = [
-      "${root_out_dir}/mash_browser_tests_catalog.json",
-    ]
-    deps = [
-      ":mash_browser_tests_catalog",
-    ]
-  }
-
-  group("mus_browser_tests_run") {
-    testonly = true
-    deps = [
-      ":mus_browser_tests",
-    ]
-  }
-
-  group("mus_browser_tests") {
-    testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
-  }
-
-  service_manifest("mus_browser_tests_manifest") {
-    name = "mus_browser_tests"
-    source = "base/mus_browser_tests_manifest.json"
-  }
-
-  catalog("mus_browser_tests_catalog") {
-    testonly = true
-    embedded_services = [ ":mus_browser_tests_manifest" ]
-    catalog_deps = [ "//chrome/app/mash:catalog_mus" ]
-  }
-
-  copy("mus_browser_tests_catalog_copy") {
-    testonly = true
-    sources = get_target_outputs(":mus_browser_tests_catalog")
-    outputs = [
-      "${root_out_dir}/mus_browser_tests_catalog.json",
-    ]
-    deps = [
-      ":mus_browser_tests_catalog",
     ]
   }
 }

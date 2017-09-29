@@ -56,18 +56,9 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
   bool ShouldEnableProfilerRecording() override;
   service_manager::ProcessType OverrideProcessType() override;
-  std::unique_ptr<base::Value> CreateServiceCatalog() override;
-  void AdjustServiceProcessCommandLine(
-      const service_manager::Identity& identity,
-      base::CommandLine* command_line) override;
   bool ShouldTerminateServiceManagerOnInstanceQuit(
       const service_manager::Identity& identity,
       int* exit_code) override;
-  void OnServiceManagerInitialized(
-      const base::Closure& quit_closure,
-      service_manager::BackgroundServiceManager* service_manager) override;
-  std::unique_ptr<service_manager::Service> CreateEmbeddedService(
-      const std::string& service_name) override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;

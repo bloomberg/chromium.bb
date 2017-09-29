@@ -425,9 +425,15 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
   packaged_services = chrome_packaged_services
+  if (enable_package_mash_services) {
+    packaged_services += [ "//mash/quick_launch:manifest" ]
+  }
   if (is_chromeos) {
     packaged_services += [
+      "//ash/autoclick/mus:manifest",
       "//ash/mus:manifest",
+      "//ash/touch_hud/mus:manifest",
+      "//components/font_service:manifest",
       "//services/ui:manifest",
     ]
   }

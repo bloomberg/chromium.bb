@@ -1,9 +1,0 @@
-{
-  "name": "mus_browser_tests",
-  "display_name": "Mus Browser Tests",
-  "interface_provider_specs": {
-    "service_manager:connector": {
-      "requires": { "*": [ "app" ] }
-    }
-  }
-}

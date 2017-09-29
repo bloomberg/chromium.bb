@@ -3,6 +3,8 @@ include_rules = [
  "+ash",
  "+chrome/browser/ui/views",
  "+components/constrained_window",
+ "+mash/common",
+ "+mash/quick_launch/public",
  "+services/ui/public/cpp",
  "+components/user_manager",
  "+third_party/libaddressinput",

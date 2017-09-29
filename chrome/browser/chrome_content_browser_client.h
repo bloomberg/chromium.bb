@@ -141,6 +141,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  void AdjustUtilityServiceProcessCommandLine(
+      const service_manager::Identity& identity,
+      base::CommandLine* command_line) override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   const gfx::ImageSkia* GetDefaultFavicon() override;

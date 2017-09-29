@@ -12707,26 +12707,22 @@
         "test": "ash_unittests"
       },
       {
-        "name": "keyboard_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "keyboard_unittests"
-      },
-      {
         "args": [
+          "--mash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
         ],
+        "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1800,
           "shards": 5
         },
-        "test": "mash_browser_tests"
+        "test": "browser_tests"
       },
       {
         "args": [
+          "--mash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.single.mash.browser_tests.filter"
         ],
@@ -12735,19 +12731,28 @@
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1800
         },
-        "test": "mash_browser_tests"
+        "test": "browser_tests"
       },
       {
         "args": [
+          "--mus",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mus.browser_tests.filter"
         ],
+        "name": "mus_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1500,
           "shards": 5
         },
-        "test": "mus_browser_tests"
+        "test": "browser_tests"
+      },
+      {
+        "name": "keyboard_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "keyboard_unittests"
       },
       {
         "swarming": {

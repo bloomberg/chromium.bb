@@ -1,5 +1,6 @@
 {
   "name": "ui",
+  "sandbox_type": "none",
   "display_name": "UI Service",
   "interface_provider_specs": {
     "service_manager:connector": {
