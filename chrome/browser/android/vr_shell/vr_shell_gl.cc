@@ -93,6 +93,8 @@ static constexpr base::TimeDelta kWebVRFenceCheckTimeout =
 
 static constexpr int kWebVrInitialFrameTimeoutSeconds = 5;
 
+static constexpr gfx::PointF kOutOfBoundsPoint = {-0.5f, -0.5f};
+
 // Provides the direction the head is looking towards as a 3x1 unit vector.
 gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose) {
   // Same as multiplying the inverse of the rotation component of the matrix by
@@ -620,8 +622,13 @@ void VrShellGl::OnContentEnter(const gfx::PointF& normalized_hit_point) {
 }
 
 void VrShellGl::OnContentLeave() {
+  // Note that we send an out of bounds mouse leave event. With blink feature
+  // UpdateHoverPostLayout turned on, a MouseMove event will dispatched post a
+  // Layout. Sending a mouse leave event at 0,0 will result continuous
+  // MouseMove events sent to the content if the content keeps relayout itself.
+  // See crbug.com/762573 for details.
   SendGestureToContent(
-      MakeMouseEvent(blink::WebInputEvent::kMouseLeave, gfx::PointF()));
+      MakeMouseEvent(blink::WebInputEvent::kMouseLeave, kOutOfBoundsPoint));
 }
 
 void VrShellGl::OnContentMove(const gfx::PointF& normalized_hit_point) {
