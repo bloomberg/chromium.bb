@@ -28,6 +28,7 @@ source_set("browser") {
     "//components/data_use_measurement/core:core",
     "//components/history/core/browser:browser",
     "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing:features",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/db:database_manager",

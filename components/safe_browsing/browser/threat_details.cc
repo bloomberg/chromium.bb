@@ -21,6 +21,7 @@
 #include "components/safe_browsing/browser/threat_details_history.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "components/safe_browsing/db/hit_report.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -740,6 +741,12 @@ void ThreatDetails::OnCacheCollectionReady() {
     DLOG(ERROR) << "Unable to serialize the threat report.";
     return;
   }
+
+  // For measuring performance impact of ad sampling reports, we may want to
+  // do all the heavy lifting of creating the report but not actually send it.
+  if (report_->type() == ClientSafeBrowsingReportRequest::AD_SAMPLE &&
+      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature))
+    return;
 
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
