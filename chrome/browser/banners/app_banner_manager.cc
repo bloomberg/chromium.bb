@@ -87,8 +87,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   }
 
   if (code != NO_ERROR_DETECTED) {
-    ReportStatus(contents, code);
-    Stop();
+    StopWithCode(code);
     return;
   }
 
@@ -183,8 +182,7 @@ bool AppBannerManager::IsWebAppInstalled(
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   UpdateState(State::ACTIVE);
   if (data.error_code != NO_ERROR_DETECTED) {
-    ReportStatus(web_contents(), data.error_code);
-    Stop();
+    StopWithCode(data.error_code);
     return;
   }
 
@@ -229,8 +227,7 @@ void AppBannerManager::OnDidPerformInstallableCheck(
     if (data.error_code == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
 
-    ReportStatus(web_contents(), data.error_code);
-    Stop();
+    StopWithCode(data.error_code);
     return;
   }
 
@@ -287,7 +284,6 @@ void AppBannerManager::ResetCurrentPageData() {
 }
 
 void AppBannerManager::Stop() {
-  // Record the status if we are currently waiting for data.
   InstallableStatusCode code = NO_ERROR_DETECTED;
   switch (state_) {
     case State::PENDING_PROMPT:
@@ -314,7 +310,10 @@ void AppBannerManager::Stop() {
     case State::COMPLETE:
       break;
   }
+  StopWithCode(code);
+}
 
+void AppBannerManager::StopWithCode(InstallableStatusCode code) {
   if (code != NO_ERROR_DETECTED)
     ReportStatus(web_contents(), code);
 
@@ -516,8 +515,7 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
       default:
         NOTREACHED();
     }
-    ReportStatus(contents, code);
-    Stop();
+    StopWithCode(code);
     return false;
   }
   return true;
@@ -585,12 +583,7 @@ void AppBannerManager::ShowBanner() {
 
 void AppBannerManager::DisplayAppBanner(bool user_gesture) {
   if (IsExperimentalAppBannersEnabled() && !user_gesture) {
-    ReportStatus(web_contents(), NO_GESTURE);
-
-    // The state is manually set to COMPLETE before calling Stop, because
-    // otherwise Stop will complain that the status has already been reported.
-    UpdateState(State::COMPLETE);
-    Stop();
+    StopWithCode(NO_GESTURE);
     return;
   }
 
