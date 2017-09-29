@@ -176,7 +176,7 @@ const base::Feature kModuleScripts{"ModuleScripts",
 
 // ES6 Modules dynamic imports.
 const base::Feature kModuleScriptsDynamicImport{
-    "ModuleScriptsDynamicImport", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ModuleScriptsDynamicImport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Resource fetch optimizations for workers. See crbug.com/443374
 const base::Feature kOffMainThreadFetch{"OffMainThreadFetch",
