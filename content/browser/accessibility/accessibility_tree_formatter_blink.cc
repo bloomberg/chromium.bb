@@ -21,8 +21,7 @@
 namespace content {
 
 AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
-    : AccessibilityTreeFormatter() {
-}
+    : AccessibilityTreeFormatterBrowser() {}
 
 AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {
 }

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
 namespace content {
 
-class AccessibilityTreeFormatterStub : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterStub
+    : public AccessibilityTreeFormatterBrowser {
  public:
   explicit AccessibilityTreeFormatterStub();
   ~AccessibilityTreeFormatterStub() override;
@@ -30,8 +31,7 @@ AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create() {
 #endif
 
 AccessibilityTreeFormatterStub::AccessibilityTreeFormatterStub()
-    : AccessibilityTreeFormatter() {
-}
+    : AccessibilityTreeFormatterBrowser() {}
 
 AccessibilityTreeFormatterStub::~AccessibilityTreeFormatterStub() {
 }

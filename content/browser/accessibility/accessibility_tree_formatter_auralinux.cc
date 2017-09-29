@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
 #include <atk/atk.h>
 
@@ -19,7 +19,8 @@
 
 namespace content {
 
-class AccessibilityTreeFormatterAuraLinux : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterAuraLinux
+    : public AccessibilityTreeFormatterBrowser {
  public:
   explicit AccessibilityTreeFormatterAuraLinux();
   ~AccessibilityTreeFormatterAuraLinux() override;

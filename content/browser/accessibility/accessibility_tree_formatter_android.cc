@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
 #include <string>
 
@@ -71,7 +71,8 @@ const char* const INT_ATTRIBUTES[] = {
 
 }  // namespace
 
-class AccessibilityTreeFormatterAndroid : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterAndroid
+    : public AccessibilityTreeFormatterBrowser {
  public:
   AccessibilityTreeFormatterAndroid();
   ~AccessibilityTreeFormatterAndroid() override;
