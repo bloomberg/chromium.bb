@@ -87,7 +87,6 @@ class SimpleFeature : public Feature {
   // supported in feature files. These should only be used in this class and in
   // generated files.
   enum Location {
-    UNSPECIFIED_LOCATION,
     COMPONENT_LOCATION,
     EXTERNAL_COMPONENT_LOCATION,
     POLICY_LOCATION,
@@ -99,9 +98,7 @@ class SimpleFeature : public Feature {
   // directly in the header means that code that doesn't already have that exact
   // type ends up triggering many implicit conversions which are all inlined.
   void set_blacklist(std::initializer_list<const char* const> blacklist);
-  void set_channel(version_info::Channel channel) {
-    channel_.reset(new version_info::Channel(channel));
-  }
+  void set_channel(version_info::Channel channel) { channel_ = channel; }
   void set_command_line_switch(base::StringPiece command_line_switch);
   void set_component_extensions_auto_granted(bool granted) {
     component_extensions_auto_granted_ = granted;
@@ -136,12 +133,17 @@ class SimpleFeature : public Feature {
   const std::vector<Platform>& platforms() const { return platforms_; }
   const std::vector<Context>& contexts() const { return contexts_; }
   const std::vector<std::string>& dependencies() const { return dependencies_; }
-  bool has_channel() const { return channel_.get() != nullptr; }
-  version_info::Channel channel() const { return *channel_; }
-  Location location() const { return location_; }
-  int min_manifest_version() const { return min_manifest_version_; }
-  int max_manifest_version() const { return max_manifest_version_; }
-  const std::string& command_line_switch() const {
+  const base::Optional<version_info::Channel> channel() const {
+    return channel_;
+  }
+  const base::Optional<Location> location() const { return location_; }
+  const base::Optional<int> min_manifest_version() const {
+    return min_manifest_version_;
+  }
+  const base::Optional<int> max_manifest_version() const {
+    return max_manifest_version_;
+  }
+  const base::Optional<std::string>& command_line_switch() const {
     return command_line_switch_;
   }
   bool component_extensions_auto_granted() const {
@@ -223,17 +225,19 @@ class SimpleFeature : public Feature {
   std::vector<Context> contexts_;
   std::vector<Platform> platforms_;
   URLPatternSet matches_;
-  Location location_;
-  int min_manifest_version_;
-  int max_manifest_version_;
-  bool component_extensions_auto_granted_;
-  bool is_internal_;
-  std::string command_line_switch_;
-  std::unique_ptr<version_info::Channel> channel_;
+
+  base::Optional<Location> location_;
+  base::Optional<int> min_manifest_version_;
+  base::Optional<int> max_manifest_version_;
+  base::Optional<std::string> command_line_switch_;
+  base::Optional<version_info::Channel> channel_;
   // Whether to ignore channel-based restrictions (such as because the user has
   // enabled experimental extension APIs). Note: this is lazily calculated, and
   // then cached.
   mutable base::Optional<bool> ignore_channel_;
+
+  bool component_extensions_auto_granted_;
+  bool is_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };

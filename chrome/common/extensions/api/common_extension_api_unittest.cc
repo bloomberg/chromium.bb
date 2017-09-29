@@ -769,10 +769,10 @@ TEST(ExtensionAPITest, DefaultConfigurationFeatures) {
     EXPECT_TRUE(feature->whitelist().empty());
     EXPECT_TRUE(feature->extension_types().empty());
 
-    EXPECT_EQ(SimpleFeature::UNSPECIFIED_LOCATION, feature->location());
+    EXPECT_FALSE(feature->location());
     EXPECT_TRUE(feature->platforms().empty());
-    EXPECT_EQ(0, feature->min_manifest_version());
-    EXPECT_EQ(0, feature->max_manifest_version());
+    EXPECT_FALSE(feature->min_manifest_version());
+    EXPECT_FALSE(feature->max_manifest_version());
   }
 }
 
