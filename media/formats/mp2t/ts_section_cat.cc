@@ -8,14 +8,19 @@
 
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
+#include "media/base/encryption_scheme.h"
 #include "media/formats/mp2t/descriptors.h"
 #include "media/formats/mp2t/mp2t_common.h"
 
 namespace media {
 namespace mp2t {
 
-TsSectionCat::TsSectionCat(const RegisterCencPidsCb& register_cenc_ids_cb)
-    : register_cenc_ids_cb_(register_cenc_ids_cb), version_number_(-1) {}
+TsSectionCat::TsSectionCat(
+    const RegisterCencPidsCb& register_cenc_ids_cb,
+    const RegisterEncryptionSchemeCb& register_encryption_scheme_cb)
+    : register_cenc_ids_cb_(register_cenc_ids_cb),
+      register_encryption_scheme_cb_(register_encryption_scheme_cb),
+      version_number_(-1) {}
 
 TsSectionCat::~TsSectionCat() {}
 
@@ -54,8 +59,9 @@ bool TsSectionCat::ParsePsiSection(BitReader* bit_reader) {
 
   Descriptors descriptors;
   int ca_pid, pssh_pid;
+  EncryptionScheme scheme;
   RCHECK(descriptors.Read(bit_reader, section_length - 4));
-  RCHECK(descriptors.HasCADescriptorCenc(&ca_pid, &pssh_pid));
+  RCHECK(descriptors.HasCADescriptorCenc(&ca_pid, &pssh_pid, &scheme));
   int crc32;
   RCHECK(bit_reader->ReadBits(32, &crc32));
 
@@ -69,8 +75,9 @@ bool TsSectionCat::ParsePsiSection(BitReader* bit_reader) {
   if (version_number == version_number_)
     return true;
 
-  // Can now register the PIDs.
+  // Can now register the PIDs and scheme.
   register_cenc_ids_cb_.Run(ca_pid, pssh_pid);
+  register_encryption_scheme_cb_.Run(scheme);
 
   version_number_ = version_number;
 

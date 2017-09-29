@@ -16,6 +16,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/byte_queue.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
@@ -30,6 +31,7 @@ class StreamParserBuffer;
 namespace mp2t {
 
 class Descriptors;
+class EsParser;
 class PidState;
 
 class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
@@ -71,10 +73,9 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   // Callback invoked to register a PES pid.
   // Possible values for |stream_type| are defined in:
   // ISO-13818.1 / ITU H.222 Table 2.34 "Stream type assignments".
-  // |pes_pid| is part of the Program Map Table refered by |pmt_pid|.
+  // |pes_pid| is part of the Program Map Table.
   // Some stream types are qualified by additional |descriptors|.
-  void RegisterPes(int pmt_pid,
-                   int pes_pid,
+  void RegisterPes(int pes_pid,
                    int stream_type,
                    const Descriptors& descriptors);
 
@@ -103,13 +104,26 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
       scoped_refptr<StreamParserBuffer> stream_parser_buffer);
   bool EmitRemainingBuffers();
 
+  std::unique_ptr<EsParser> CreateH264Parser(int pes_pid);
+  std::unique_ptr<EsParser> CreateAacParser(int pes_pid);
+  std::unique_ptr<EsParser> CreateMpeg1AudioParser(int pes_pid);
+
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  bool ShouldForceEncryptedParser();
+  std::unique_ptr<EsParser> CreateEncryptedH264Parser(int pes_pid);
+  std::unique_ptr<EsParser> CreateEncryptedAacParser(int pes_pid);
+
   std::unique_ptr<PidState> MakeCatPidState();
   void UnregisterCat();
 
   // Register the PIDs for the Cenc packets (CENC-ECM and CENC-PSSH).
   void RegisterCencPids(int ca_pid, int pssh_pid);
   void UnregisterCencPids();
+
+  // Register a default encryption scheme to be used for decoder configs. This
+  // value is only used in the absence of explicit encryption metadata, as might
+  // be the case during an unencrypted portion of a live stream.
+  void RegisterEncryptionScheme(const EncryptionScheme& scheme);
 
   // Register the DecryptConfig (parsed from CENC-ECM).
   void RegisterDecryptConfig(const DecryptConfig& config);
@@ -158,6 +172,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   TimestampUnroller timestamp_unroller_;
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  EncryptionScheme initial_scheme_;
   std::unique_ptr<DecryptConfig> decrypt_config_;
 #endif
 

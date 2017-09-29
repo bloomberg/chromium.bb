@@ -125,6 +125,11 @@ bear-1280x720-hls-sample-aes.ts: produced using Apple's mediafilesegmenter tool 
   (Additional TS packets were constructed manually and prepended to convey the encryption metadata, notably key id and IV).
   mediafilesegmenter -S -P -k 'key_iv.bin' -t 10 -start-segments-with-iframe -f 'output/' bear-1280x720.ts
 
+bear-1280x720-hls-with-CAT.ts: same as bear-1280x720-hls.ts but with an extra TS packet prepended. This is the same as the first of the metadata packets in
+  bear-1280x720-hls-sample-aes.ts. Its presence indicates that SAMPLE_AES encryption may occur later in the stream, and causes the initial audio and video configs
+  to have an encryption_scheme (of AES-CBC). The actual data is unencrypted, which is indicated by the lack of key ID and IV. This ends up very similar to how
+  clear leader of an otherwise encrypted stream can occur in MP4.
+
 [1] 30313233343536373839303132333435
 [2] ebdd62f16814d27b68ef122afce4ae3c
 [3] KeyIds and Keys are created by left rotating key ID [1] and key [2] using

@@ -436,9 +436,15 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   CHECK_GE(es_size, access_unit_size);
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  const DecryptConfig* base_decrypt_config = nullptr;
+  if (use_hls_sample_aes_) {
+    DCHECK(!get_decrypt_config_cb_.is_null());
+    base_decrypt_config = get_decrypt_config_cb_.Run();
+  }
+
   std::unique_ptr<uint8_t[]> adjusted_au;
   std::vector<SubsampleEntry> subsamples;
-  if (use_hls_sample_aes_) {
+  if (use_hls_sample_aes_ && base_decrypt_config) {
     adjusted_au = AdjustAUForSampleAES(es, &access_unit_size, protected_blocks_,
                                        &subsamples);
     protected_blocks_.clear();
@@ -455,10 +461,7 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  if (use_hls_sample_aes_) {
-    DCHECK(!get_decrypt_config_cb_.is_null());
-    const DecryptConfig* base_decrypt_config = get_decrypt_config_cb_.Run();
-    RCHECK(base_decrypt_config);
+  if (use_hls_sample_aes_ && base_decrypt_config) {
     std::unique_ptr<DecryptConfig> decrypt_config(new DecryptConfig(
         base_decrypt_config->key_id(), base_decrypt_config->iv(), subsamples));
     stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
