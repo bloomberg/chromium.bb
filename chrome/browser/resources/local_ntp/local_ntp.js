@@ -622,7 +622,7 @@ function init() {
       }
 
       // Got a (possibly empty) ddl object. Show logo or doodle.
-      showLogoOrDoodle(ddl.image, ddl.metadata);
+      showLogoOrDoodle(ddl.image || null, ddl.metadata || null);
       // If we got a valid ddl object (from cache), load a fresh one.
       if (ddl.v !== null) {
         loadDoodle(ddl.v, function(ddl) {

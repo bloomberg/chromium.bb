@@ -11,6 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_provider_logos/logo_service.h"
+#include "components/search_provider_logos/logo_service_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
@@ -18,6 +19,7 @@
 #endif
 
 using search_provider_logos::LogoService;
+using search_provider_logos::LogoServiceImpl;
 
 #if defined(OS_ANDROID)
 using chrome::android::GetIsChromeHomeEnabled;
@@ -59,8 +61,8 @@ KeyedService* LogoServiceFactory::BuildServiceInstanceFor(
 #else
   bool use_gray_background = false;
 #endif
-  return new LogoService(profile->GetPath().Append(kCachedLogoDirectory),
-                         TemplateURLServiceFactory::GetForProfile(profile),
-                         base::MakeUnique<suggestions::ImageDecoderImpl>(),
-                         profile->GetRequestContext(), use_gray_background);
+  return new LogoServiceImpl(profile->GetPath().Append(kCachedLogoDirectory),
+                             TemplateURLServiceFactory::GetForProfile(profile),
+                             base::MakeUnique<suggestions::ImageDecoderImpl>(),
+                             profile->GetRequestContext(), use_gray_background);
 }

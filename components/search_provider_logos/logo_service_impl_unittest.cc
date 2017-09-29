@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/search_provider_logos/logo_service.h"
+#include "components/search_provider_logos/logo_service_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -269,9 +269,9 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
   }
 };
 
-class LogoServiceTest : public ::testing::Test {
+class LogoServiceImplTest : public ::testing::Test {
  protected:
-  LogoServiceTest()
+  LogoServiceImplTest()
       : template_url_service_(nullptr, 0),
         test_clock_(new base::SimpleTestClock()),
         logo_cache_(new NiceMock<MockLogoCache>()),
@@ -285,12 +285,12 @@ class LogoServiceTest : public ::testing::Test {
                     /*make_default=*/true);
 
     test_clock_->SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
-    logo_service_ =
-        std::make_unique<LogoService>(base::FilePath(), &template_url_service_,
-                                      std::make_unique<FakeImageDecoder>(),
-                                      new net::TestURLRequestContextGetter(
-                                          base::ThreadTaskRunnerHandle::Get()),
-                                      /*use_gray_background=*/false);
+    logo_service_ = std::make_unique<LogoServiceImpl>(
+        base::FilePath(), &template_url_service_,
+        std::make_unique<FakeImageDecoder>(),
+        new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get()),
+        /*use_gray_background=*/false);
     logo_service_->SetClockForTests(base::WrapUnique(test_clock_));
     logo_service_->SetLogoCacheForTests(base::WrapUnique(logo_cache_));
   }
@@ -341,17 +341,17 @@ class LogoServiceTest : public ::testing::Test {
   base::SimpleTestClock* test_clock_;
   NiceMock<MockLogoCache>* logo_cache_;
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
-  std::unique_ptr<LogoService> logo_service_;
+  std::unique_ptr<LogoServiceImpl> logo_service_;
 };
 
-std::string LogoServiceTest::ServerResponse(const Logo& logo) const {
+std::string LogoServiceImplTest::ServerResponse(const Logo& logo) const {
   base::TimeDelta time_to_live;
   if (!logo.metadata.expiration_time.is_null())
     time_to_live = logo.metadata.expiration_time - test_clock_->Now();
   return MakeServerResponse(logo, time_to_live);
 }
 
-void LogoServiceTest::SetServerResponse(
+void LogoServiceImplTest::SetServerResponse(
     const std::string& response,
     net::URLRequestStatus::Status request_status,
     net::HttpStatusCode response_code) {
@@ -359,7 +359,7 @@ void LogoServiceTest::SetServerResponse(
                                    response_code);
 }
 
-void LogoServiceTest::SetServerResponseWhenFingerprint(
+void LogoServiceImplTest::SetServerResponseWhenFingerprint(
     const std::string& fingerprint,
     const std::string& response_when_fingerprint,
     net::URLRequestStatus::Status request_status,
@@ -370,35 +370,36 @@ void LogoServiceTest::SetServerResponseWhenFingerprint(
       url_with_fp, response_when_fingerprint, response_code, request_status);
 }
 
-const GURL& LogoServiceTest::DoodleURL() const {
+const GURL& LogoServiceImplTest::DoodleURL() const {
   return template_url_service_.GetDefaultSearchProvider()->doodle_url();
 }
 
-void LogoServiceTest::GetLogo(LogoCallbacks callbacks) {
+void LogoServiceImplTest::GetLogo(LogoCallbacks callbacks) {
   logo_service_->GetLogo(std::move(callbacks));
   task_environment_.RunUntilIdle();
 }
 
-void LogoServiceTest::GetDecodedLogo(LogoCallback cached, LogoCallback fresh) {
+void LogoServiceImplTest::GetDecodedLogo(LogoCallback cached,
+                                         LogoCallback fresh) {
   LogoCallbacks callbacks;
   callbacks.on_cached_decoded_logo_available = std::move(cached);
   callbacks.on_fresh_decoded_logo_available = std::move(fresh);
   GetLogo(std::move(callbacks));
 }
 
-void LogoServiceTest::GetEncodedLogo(EncodedLogoCallback cached,
-                                     EncodedLogoCallback fresh) {
+void LogoServiceImplTest::GetEncodedLogo(EncodedLogoCallback cached,
+                                         EncodedLogoCallback fresh) {
   LogoCallbacks callbacks;
   callbacks.on_cached_encoded_logo_available = std::move(cached);
   callbacks.on_fresh_encoded_logo_available = std::move(fresh);
   GetLogo(std::move(callbacks));
 }
 
-void LogoServiceTest::AddSearchEngine(base::StringPiece keyword,
-                                      base::StringPiece short_name,
-                                      const std::string& url,
-                                      GURL doodle_url,
-                                      bool make_default) {
+void LogoServiceImplTest::AddSearchEngine(base::StringPiece keyword,
+                                          base::StringPiece short_name,
+                                          const std::string& url,
+                                          GURL doodle_url,
+                                          bool make_default) {
   TemplateURLData search_url;
   search_url.SetKeyword(base::ASCIIToUTF16(keyword));
   search_url.SetShortName(base::ASCIIToUTF16(short_name));
@@ -414,7 +415,7 @@ void LogoServiceTest::AddSearchEngine(base::StringPiece keyword,
 
 // Tests -----------------------------------------------------------------------
 
-TEST_F(LogoServiceTest, CTAURLHasComma) {
+TEST_F(LogoServiceImplTest, CTAURLHasComma) {
   GURL url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
       false, GURL("http://logourl.com/path"), "abc123");
   EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123,cta:1",
@@ -425,7 +426,7 @@ TEST_F(LogoServiceTest, CTAURLHasComma) {
   EXPECT_EQ("http://logourl.com/?a=b&async=cta:1", url_with_fp.spec());
 }
 
-TEST_F(LogoServiceTest, CTAGrayBackgroundHasCommas) {
+TEST_F(LogoServiceImplTest, CTAGrayBackgroundHasCommas) {
   GURL url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
       true, GURL("http://logourl.com/path"), "abc123");
   EXPECT_EQ(
@@ -438,7 +439,7 @@ TEST_F(LogoServiceTest, CTAGrayBackgroundHasCommas) {
             url_with_fp.spec());
 }
 
-TEST_F(LogoServiceTest, DownloadAndCacheLogo) {
+TEST_F(LogoServiceImplTest, DownloadAndCacheLogo) {
   StrictMock<MockLogoCallback> cached;
   StrictMock<MockLogoCallback> fresh;
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
@@ -449,7 +450,7 @@ TEST_F(LogoServiceTest, DownloadAndCacheLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, DownloadAndCacheEncodedLogo) {
+TEST_F(LogoServiceImplTest, DownloadAndCacheEncodedLogo) {
   StrictMock<MockEncodedLogoCallback> cached;
   StrictMock<MockEncodedLogoCallback> fresh;
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
@@ -461,7 +462,7 @@ TEST_F(LogoServiceTest, DownloadAndCacheEncodedLogo) {
   GetEncodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, ShouldReturnDisabledWhenDSEHasNoLogo) {
+TEST_F(LogoServiceImplTest, ShouldReturnDisabledWhenDSEHasNoLogo) {
   AddSearchEngine("cr", "Chromium", "https://www.chromium.org/?q={searchTerms}",
                   GURL(/* logo disabled */), /*make_default=*/true);
 
@@ -482,7 +483,7 @@ TEST_F(LogoServiceTest, ShouldReturnDisabledWhenDSEHasNoLogo) {
   }
 }
 
-TEST_F(LogoServiceTest, EmptyCacheAndFailedDownload) {
+TEST_F(LogoServiceImplTest, EmptyCacheAndFailedDownload) {
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(nullptr)).Times(AnyNumber());
@@ -516,7 +517,7 @@ TEST_F(LogoServiceTest, EmptyCacheAndFailedDownload) {
   }
 }
 
-TEST_F(LogoServiceTest, AcceptMinimalLogoResponse) {
+TEST_F(LogoServiceImplTest, AcceptMinimalLogoResponse) {
   Logo logo;
   logo.image = MakeBitmap(1, 2);
   logo.metadata.source_url = DoodleURL();
@@ -537,7 +538,7 @@ TEST_F(LogoServiceTest, AcceptMinimalLogoResponse) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, ReturnCachedLogo) {
+TEST_F(LogoServiceImplTest, ReturnCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
   SetServerResponseWhenFingerprint(cached_logo.metadata.fingerprint, "",
@@ -555,7 +556,7 @@ TEST_F(LogoServiceTest, ReturnCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, ValidateCachedLogo) {
+TEST_F(LogoServiceImplTest, ValidateCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -600,7 +601,7 @@ TEST_F(LogoServiceTest, ValidateCachedLogo) {
   }
 }
 
-TEST_F(LogoServiceTest, UpdateCachedLogoMetadata) {
+TEST_F(LogoServiceImplTest, UpdateCachedLogoMetadata) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -638,7 +639,7 @@ TEST_F(LogoServiceTest, UpdateCachedLogoMetadata) {
   }
 }
 
-TEST_F(LogoServiceTest, UpdateCachedLogo) {
+TEST_F(LogoServiceImplTest, UpdateCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -657,7 +658,7 @@ TEST_F(LogoServiceTest, UpdateCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, InvalidateCachedLogo) {
+TEST_F(LogoServiceImplTest, InvalidateCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
@@ -677,7 +678,7 @@ TEST_F(LogoServiceTest, InvalidateCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, DeleteCachedLogoFromOldUrl) {
+TEST_F(LogoServiceImplTest, DeleteCachedLogoFromOldUrl) {
   SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
   Logo cached_logo =
       GetSampleLogo(GURL("http://oldsearchprovider.com"), test_clock_->Now());
@@ -696,7 +697,7 @@ TEST_F(LogoServiceTest, DeleteCachedLogoFromOldUrl) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, LogoWithTTLCannotBeShownAfterExpiration) {
+TEST_F(LogoServiceImplTest, LogoWithTTLCannotBeShownAfterExpiration) {
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   base::TimeDelta time_to_live = base::TimeDelta::FromDays(3);
   logo.metadata.expiration_time = test_clock_->Now() + time_to_live;
@@ -713,7 +714,7 @@ TEST_F(LogoServiceTest, LogoWithTTLCannotBeShownAfterExpiration) {
             cached_metadata->expiration_time);
 }
 
-TEST_F(LogoServiceTest, LogoWithoutTTLCanBeShownAfterExpiration) {
+TEST_F(LogoServiceImplTest, LogoWithoutTTLCanBeShownAfterExpiration) {
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   base::TimeDelta time_to_live = base::TimeDelta();
   SetServerResponse(MakeServerResponse(logo, time_to_live));
@@ -729,7 +730,7 @@ TEST_F(LogoServiceTest, LogoWithoutTTLCanBeShownAfterExpiration) {
             cached_metadata->expiration_time);
 }
 
-TEST_F(LogoServiceTest, UseSoftExpiredCachedLogo) {
+TEST_F(LogoServiceImplTest, UseSoftExpiredCachedLogo) {
   SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   cached_logo.metadata.expiration_time =
@@ -749,7 +750,7 @@ TEST_F(LogoServiceTest, UseSoftExpiredCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, RerequestSoftExpiredCachedLogo) {
+TEST_F(LogoServiceImplTest, RerequestSoftExpiredCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   cached_logo.metadata.expiration_time =
       test_clock_->Now() - base::TimeDelta::FromDays(5);
@@ -771,7 +772,7 @@ TEST_F(LogoServiceTest, RerequestSoftExpiredCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, DeleteAncientCachedLogo) {
+TEST_F(LogoServiceImplTest, DeleteAncientCachedLogo) {
   SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   cached_logo.metadata.expiration_time =
@@ -792,7 +793,7 @@ TEST_F(LogoServiceTest, DeleteAncientCachedLogo) {
   GetDecodedLogo(cached.Get(), fresh.Get());
 }
 
-TEST_F(LogoServiceTest, DeleteExpiredCachedLogo) {
+TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
   SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   cached_logo.metadata.expiration_time =
@@ -815,7 +816,7 @@ TEST_F(LogoServiceTest, DeleteExpiredCachedLogo) {
 
 // Tests that deal with multiple listeners.
 
-void EnqueueCallbacks(LogoService* logo_service,
+void EnqueueCallbacks(LogoServiceImpl* logo_service,
                       std::vector<LogoCallback>* cached_callbacks,
                       std::vector<LogoCallback>* fresh_callbacks,
                       size_t start_index) {
@@ -841,7 +842,7 @@ void EnqueueCallbacks(LogoService* logo_service,
 #else
 #define MAYBE_SupportOverlappingLogoRequests SupportOverlappingLogoRequests
 #endif
-TEST_F(LogoServiceTest, MAYBE_SupportOverlappingLogoRequests) {
+TEST_F(LogoServiceImplTest, MAYBE_SupportOverlappingLogoRequests) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
   ON_CALL(*logo_cache_, SetCachedLogo(_)).WillByDefault(Return());
@@ -874,7 +875,7 @@ TEST_F(LogoServiceTest, MAYBE_SupportOverlappingLogoRequests) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(LogoServiceTest, DeleteCallbacksWhenLogoURLChanged) {
+TEST_F(LogoServiceImplTest, DeleteCallbacksWhenLogoURLChanged) {
   StrictMock<MockLogoCallback> first_cached;
   StrictMock<MockLogoCallback> first_fresh;
   EXPECT_CALL(first_cached,

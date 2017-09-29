@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "components/search_provider_logos/logo_common.h"
-#include "components/search_provider_logos/logo_service.h"
+#include "components/search_provider_logos/logo_service_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // Provides the logo if a BrowserState's default search provider is Google.
@@ -20,14 +20,14 @@
 //       GoogleLogoServiceFactory::GetForBrowserState(browser_state);
 //   logo_service->GetLogo(...);
 //
-class GoogleLogoService : public search_provider_logos::LogoService {
+class GoogleLogoService : public search_provider_logos::LogoServiceImpl {
  public:
   explicit GoogleLogoService(
       TemplateURLService* template_url_service,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~GoogleLogoService() override;
 
-  using LogoService::GetLogo;
+  using LogoServiceImpl::GetLogo;
 
   // |LogoService::GetLogo| does everything on callbacks, and iOS needs to load
   // the logo immediately on page load. This caches the SkBitmap so we can

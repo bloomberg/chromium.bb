@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/base_i18n_switches.h"
+#include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -44,6 +46,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_provider_logos/logo_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -51,7 +54,16 @@
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using search_provider_logos::EncodedLogo;
+using search_provider_logos::LogoCallbacks;
+using search_provider_logos::LogoCallbackReason;
+using search_provider_logos::LogoObserver;
+using search_provider_logos::LogoService;
+using testing::Eq;
+using testing::IsEmpty;
 
 namespace {
 
@@ -694,4 +706,149 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
           GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin(),
           GURL(chrome::kChromeUINewTabURL).GetOrigin());
   EXPECT_EQ(CONTENT_SETTING_ALLOW, mic_permission_after.content_setting);
+}
+
+// Returns configured logos.
+class FakeLogoService : public LogoService {
+ public:
+  void GetLogo(search_provider_logos::LogoCallbacks callbacks) override {
+    DCHECK(!callbacks.on_cached_decoded_logo_available);
+    DCHECK(!callbacks.on_fresh_decoded_logo_available);
+
+    if (callbacks.on_cached_encoded_logo_available) {
+      std::move(callbacks.on_cached_encoded_logo_available)
+          .Run(cached_reason, cached_logo);
+    }
+    if (callbacks.on_fresh_encoded_logo_available) {
+      std::move(callbacks.on_fresh_encoded_logo_available)
+          .Run(fresh_reason, fresh_logo);
+    }
+  }
+
+  void GetLogo(LogoObserver* observer) override { NOTREACHED(); }
+
+  LogoCallbackReason cached_reason = LogoCallbackReason::CANCELED;
+  base::Optional<EncodedLogo> cached_logo;
+  LogoCallbackReason fresh_reason = LogoCallbackReason::CANCELED;
+  base::Optional<EncodedLogo> fresh_logo;
+};
+
+class LocalNTPDoodleTest : public InProcessBrowserTest {
+ protected:
+  LocalNTPDoodleTest() {}
+
+  FakeLogoService* logo_service() {
+    return static_cast<FakeLogoService*>(
+        LogoServiceFactory::GetForProfile(browser()->profile()));
+  }
+
+  base::Optional<std::string> GetComputedStyle(content::WebContents* tab,
+                                               std::string id,
+                                               std::string css_name) {
+    std::string css_value;
+    if (instant_test_utils::GetStringFromJS(
+            tab,
+            base::StringPrintf(
+                "getComputedStyle(document.getElementById(%s))[%s]",
+                base::GetQuotedJSONString(id).c_str(),
+                base::GetQuotedJSONString(css_name).c_str()),
+            &css_value)) {
+      return css_value;
+    }
+    return base::nullopt;
+  }
+
+ private:
+  void SetUp() override {
+    feature_list_.InitWithFeatures(
+        {features::kUseGoogleLocalNtp, features::kDoodlesOnLocalNtp}, {});
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::Bind(
+                    &LocalNTPDoodleTest::OnWillCreateBrowserContextServices,
+                    base::Unretained(this)));
+  }
+
+  static std::unique_ptr<KeyedService> CreateLogoService(
+      content::BrowserContext* context) {
+    return base::MakeUnique<FakeLogoService>();
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    LogoServiceFactory::GetInstance()->SetTestingFactory(
+        context, &LocalNTPDoodleTest::CreateLogoService);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldBeUnchangedOnLogoFetchCancelled) {
+  logo_service()->cached_reason = LogoCallbackReason::CANCELED;
+  logo_service()->fresh_reason = LogoCallbackReason::CANCELED;
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-default", "opacity"),
+              Eq<std::string>("1"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-doodle", "opacity"),
+              Eq<std::string>("0"));
+  EXPECT_THAT(console_observer.message(), IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldBeUnchangedWhenDoodleUnavailable) {
+  logo_service()->cached_reason = LogoCallbackReason::DETERMINED;
+  logo_service()->fresh_reason = LogoCallbackReason::REVALIDATED;
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-default", "opacity"),
+              Eq<std::string>("1"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-doodle", "opacity"),
+              Eq<std::string>("0"));
+  EXPECT_THAT(console_observer.message(), IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenAvailable) {
+  logo_service()->cached_reason = LogoCallbackReason::DETERMINED;
+
+  logo_service()->cached_logo = EncodedLogo();
+  std::string encoded_image = "data:image/svg+xml,<svg/>";
+  logo_service()->cached_logo->encoded_image =
+      base::RefCountedString::TakeString(&encoded_image);
+  logo_service()->cached_logo->metadata.on_click_url =
+      GURL("https://www.chromium.org");
+  logo_service()->cached_logo->metadata.alt_text = "Chromium";
+
+  logo_service()->fresh_reason = LogoCallbackReason::REVALIDATED;
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab = OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-default", "opacity"),
+              Eq<std::string>("0"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "logo-doodle", "opacity"),
+              Eq<std::string>("1"));
+  EXPECT_THAT(console_observer.message(), IsEmpty());
 }
