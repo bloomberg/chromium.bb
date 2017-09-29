@@ -36,7 +36,62 @@ AvPair MakeServerAvPair() {
                 Buffer(test::kServerRaw, arraysize(test::kServerRaw)));
 }
 
+// Clear the least significant bit in each byte.
+void ClearLsb(uint8_t* data, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    data[i] &= ~1;
+  }
+}
+
 }  // namespace
+
+TEST(NtlmTest, MapHashToDesKeysAllOnes) {
+  // Test mapping an NTLM hash with all 1 bits.
+  const uint8_t hash[16] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  const uint8_t expected[24] = {0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe,
+                                0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe,
+                                0xfe, 0xfe, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  uint8_t result[24];
+  Create3DesKeysFromNtlmHash(hash, result);
+  // The least significant bit in result from |Create3DesKeysFromNtlmHash|
+  // is undefined, so clear it to do memcmp.
+  ClearLsb(result, arraysize(result));
+
+  ASSERT_EQ(0, memcmp(expected, result, arraysize(expected)));
+}
+
+TEST(NtlmTest, MapHashToDesKeysAllZeros) {
+  // Test mapping an NTLM hash with all 0 bits.
+  const uint8_t hash[16] = {0x00};
+  const uint8_t expected[24] = {0x00};
+
+  uint8_t result[24];
+  Create3DesKeysFromNtlmHash(hash, result);
+  // The least significant bit in result from |Create3DesKeysFromNtlmHash|
+  // is undefined, so clear it to do memcmp.
+  ClearLsb(result, arraysize(result));
+
+  ASSERT_EQ(0, memcmp(expected, result, arraysize(expected)));
+}
+
+TEST(NtlmTest, MapHashToDesKeysAlternatingBits) {
+  // Test mapping an NTLM hash with alternating 0 and 1 bits.
+  const uint8_t hash[16] = {0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+                            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+  const uint8_t expected[24] = {0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54,
+                                0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54, 0xaa, 0x54,
+                                0xaa, 0x54, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  uint8_t result[24];
+  Create3DesKeysFromNtlmHash(hash, result);
+  // The least significant bit in result from |Create3DesKeysFromNtlmHash|
+  // is undefined, so clear it to do memcmp.
+  ClearLsb(result, arraysize(result));
+
+  ASSERT_EQ(0, memcmp(expected, result, arraysize(expected)));
+}
 
 TEST(NtlmTest, GenerateNtlmHashV1PasswordSpecTests) {
   uint8_t hash[kNtlmHashLen];
@@ -195,12 +250,11 @@ TEST(NtlmTest, GenerateSessionBaseKeyWithClientTimestampV2SpecTests) {
 }
 
 TEST(NtlmTest, GenerateChannelBindingHashV2SpecTests) {
-  base::MD5Digest v2_channel_binding_hash;
-  GenerateChannelBindingHashV2(test::kChannelBindings,
-                               &v2_channel_binding_hash);
+  uint8_t v2_channel_binding_hash[kChannelBindingsHashLen];
+  GenerateChannelBindingHashV2(test::kChannelBindings, v2_channel_binding_hash);
 
   ASSERT_EQ(0, memcmp(test::kExpectedChannelBindingHashV2,
-                      v2_channel_binding_hash.a, kChannelBindingsHashLen));
+                      v2_channel_binding_hash, kChannelBindingsHashLen));
 }
 
 TEST(NtlmTest, GenerateMicV2Simple) {
