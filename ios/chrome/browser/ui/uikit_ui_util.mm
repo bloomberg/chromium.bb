@@ -588,3 +588,11 @@ void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type) {
     [generator notificationOccurred:type];
   }
 }
+
+UIEdgeInsets SafeAreaInsetsForView(UIView* view) {
+  if (@available(iOS 11, *)) {
+    return view.safeAreaInsets;
+  } else {
+    return UIEdgeInsetsZero;
+  }
+}

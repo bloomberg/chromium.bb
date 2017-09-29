@@ -207,4 +207,7 @@ void TriggerHapticFeedbackForAction();
 void TriggerHapticFeedbackForSelectionChange();
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 
+// Returns the safeAreaInsets for a given view.
+UIEdgeInsets SafeAreaInsetsForView(UIView* view);
+
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
