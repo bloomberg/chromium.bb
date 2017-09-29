@@ -74,7 +74,6 @@ group("gn_all") {
     "//base:base_perftests",
     "//base:base_unittests",
     "//chrome/installer",
-    "//mojo/public/tools/bindings:copy_message_id_salt($default_toolchain)",
     "//net:net_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
