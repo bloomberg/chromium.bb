@@ -20,6 +20,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * The heading text for the blocked exception list.
+     */
+    blockHeader: String,
   },
 
   /** @override */

@@ -2435,6 +2435,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK" desc="Label for add block sites in site settings.">
     Block
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLOCK_SOUND" desc="Label for add muted sites in site settings.">
+    Muted
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SESSION_ONLY" desc="Label for sites in site settings allowing cookies for the current session only.">
     Clear on exit
   </message>

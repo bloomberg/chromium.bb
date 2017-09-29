@@ -219,7 +219,8 @@
               category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
+              category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -232,7 +233,8 @@
               category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
+              category="{{ContentSettingsTypes.BACKGROUND_SYNC}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -246,7 +248,8 @@
                   "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.CAMERA}}" read-only-list>
+              category="{{ContentSettingsTypes.CAMERA}}" read-only-list
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -271,7 +274,8 @@
              </button>
           </div>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.COOKIES}}">
+              category="{{ContentSettingsTypes.COOKIES}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -291,7 +295,8 @@
               toggle-on-label="$i18n{siteSettingsShowAllRecommended}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.IMAGES}}">
+              category="{{ContentSettingsTypes.IMAGES}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -303,7 +308,8 @@
               category="{{ContentSettingsTypes.GEOLOCATION}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.GEOLOCATION}}" read-only-list>
+              category="{{ContentSettingsTypes.GEOLOCATION}}" read-only-list
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -333,7 +339,8 @@
               category="{{ContentSettingsTypes.JAVASCRIPT}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.JAVASCRIPT}}">
+              category="{{ContentSettingsTypes.JAVASCRIPT}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -347,7 +354,8 @@
                 category="{{ContentSettingsTypes.SOUND}}">
             </category-default-setting>
             <category-setting-exceptions
-                category="{{ContentSettingsTypes.SOUND}}">
+                category="{{ContentSettingsTypes.SOUND}}"
+                block-header="$i18n{siteSettingsBlockSound}">
             </category-setting-exceptions>
           </settings-subpage>
        </template>
@@ -362,7 +370,8 @@
                   "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.MIC}}" read-only-list>
+              category="{{ContentSettingsTypes.MIC}}" read-only-list
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -374,7 +383,8 @@
               category="{{ContentSettingsTypes.NOTIFICATIONS}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.NOTIFICATIONS}}">
+              category="{{ContentSettingsTypes.NOTIFICATIONS}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -394,7 +404,8 @@
           </a>
 </if>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.PLUGINS}}">
+              category="{{ContentSettingsTypes.PLUGINS}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -405,7 +416,8 @@
               toggle-on-label="$i18n{siteSettingsAllowed}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.POPUPS}}">
+              category="{{ContentSettingsTypes.POPUPS}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -420,7 +432,8 @@
             </category-default-setting>
             <category-setting-exceptions
                 category="{{ContentSettingsTypes.ADS}}"
-                read-only-list>
+                read-only-list
+                block-header="$i18n{siteSettingsBlock}">
             </category-setting-exceptions>
           </settings-subpage>
        </template>
@@ -434,7 +447,8 @@
               category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
+              category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -447,7 +461,8 @@
               category="{{ContentSettingsTypes.MIDI_DEVICES}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.MIDI_DEVICES}}" read-only-list>
+              category="{{ContentSettingsTypes.MIDI_DEVICES}}" read-only-list
+              block-header="$i18n{siteSettingsBlock}">
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -494,7 +509,8 @@
           <template is="dom-if"
               if="[[prefs.settings.privacy.drm_enabled.value]]">
             <category-setting-exceptions
-                category="{{ContentSettingsTypes.PROTECTED_CONTENT}}">
+                category="{{ContentSettingsTypes.PROTECTED_CONTENT}}"
+                block-header="$i18n{siteSettingsBlock}">
             </category-setting-exceptions>
           </template>
 </if>
