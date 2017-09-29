@@ -201,6 +201,13 @@ bool ShouldQuicEstimateInitialRtt(
       GetVariationParam(quic_trial_params, "estimate_initial_rtt"), "true");
 }
 
+bool ShouldQuicConnectUsingDefaultNetwork(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "connect_using_default_network"),
+      "true");
+}
+
 bool ShouldQuicMigrateSessionsOnNetworkChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -282,6 +289,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicRaceCertVerification(quic_trial_params);
     params->quic_estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
+    params->quic_connect_using_default_network =
+        ShouldQuicConnectUsingDefaultNetwork(quic_trial_params);
     params->quic_migrate_sessions_on_network_change =
         ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params);
     params->quic_migrate_sessions_early =
