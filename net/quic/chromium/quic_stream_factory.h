@@ -219,6 +219,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
+      bool connect_using_default_network,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
       bool allow_server_migration,
@@ -541,6 +542,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // QuicChromiumPacketReader::StartReading() yields by doing a PostTask().
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
+
+  // Set if sockets should explicitly use default network to connect and
+  // NetworkHandle is supported.
+  const bool connect_using_default_network_;
 
   // Set if migration should be attempted on active sessions when primary
   // interface changes.
