@@ -4,6 +4,9 @@
 
 #include "chrome/browser/plugins/pdf_plugin_placeholder_observer.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -93,7 +96,7 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
         })");
   std::unique_ptr<content::DownloadUrlParameters> params =
       base::MakeUnique<content::DownloadUrlParameters>(
-          url, web_contents()->GetRenderProcessHost()->GetID(),
+          url, web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host->GetRoutingID(),
           storage_partition->GetURLRequestContext(), traffic_annotation);
