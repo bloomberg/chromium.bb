@@ -234,15 +234,13 @@ base::StringPiece ExtensionAPI::GetSchemaStringPiece(
 
   ExtensionsClient* client = ExtensionsClient::Get();
   DCHECK(client);
-  if (default_configuration_initialized_ &&
-      client->IsAPISchemaGenerated(api_name)) {
-    base::StringPiece schema = client->GetAPISchema(api_name);
-    CHECK(!schema.empty());
-    schema_strings_[api_name] = schema;
-    return schema;
-  }
+  if (!default_configuration_initialized_)
+    return base::StringPiece();
 
-  return base::StringPiece();
+  base::StringPiece schema = client->GetAPISchema(api_name);
+  if (!schema.empty())
+    schema_strings_[api_name] = schema;
+  return schema;
 }
 
 const base::DictionaryValue* ExtensionAPI::GetSchema(
