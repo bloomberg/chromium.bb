@@ -153,7 +153,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     RefPtr<Keyframe> second = frame->CloneWithOffset(1);
 
     frames.push_back(frame);
-    frames.push_back(ToAnimatableValueKeyframe(second.Get()));
+    frames.push_back(ToAnimatableValueKeyframe(second.get()));
     return CanStartEffectOnCompositor(
         timing_, *AnimatableValueKeyframeEffectModel::Create(frames));
   }
@@ -197,7 +197,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
       value = AnimatableDouble::Create(10.0);
 
     RefPtr<AnimatableValueKeyframe> keyframe =
-        CreateReplaceOpKeyframe(id, value.Get(), offset);
+        CreateReplaceOpKeyframe(id, value.get(), offset);
     keyframe->SetComposite(op);
     return keyframe;
   }
@@ -219,8 +219,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
       double offset = 1.0 / (values.size() - 1) * i;
       RefPtr<AnimatableDouble> value = AnimatableDouble::Create(values[i]);
       frames->push_back(
-          CreateReplaceOpKeyframe(CSSPropertyOpacity, value.Get(), offset)
-              .Get());
+          CreateReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset)
+              .get());
     }
     return frames;
   }
@@ -235,8 +235,8 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
       RefPtr<AnimatableTransform> value =
           AnimatableTransform::Create(values[i], 1);
       frames->push_back(
-          CreateReplaceOpKeyframe(CSSPropertyTransform, value.Get(), offset)
-              .Get());
+          CreateReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset)
+              .get());
     }
     return frames;
   }
@@ -326,16 +326,16 @@ TEST_F(AnimationCompositorAnimationsTest,
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace);
   keyframe_good_multiple->SetPropertyValue(
       CSSPropertyTransform,
-      AnimatableTransform::Create(TransformOperations(), 1).Get());
+      AnimatableTransform::Create(TransformOperations(), 1).get());
   EXPECT_TRUE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(
-      keyframe_good_multiple.Get()));
+      keyframe_good_multiple.get()));
 
   RefPtr<AnimatableValueKeyframe> keyframe_bad_multiple_id =
       CreateDefaultKeyframe(CSSPropertyColor, EffectModel::kCompositeReplace);
   keyframe_bad_multiple_id->SetPropertyValue(
-      CSSPropertyOpacity, AnimatableDouble::Create(10.0).Get());
+      CSSPropertyOpacity, AnimatableDouble::Create(10.0).get());
   EXPECT_FALSE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(
-      keyframe_bad_multiple_id.Get()));
+      keyframe_bad_multiple_id.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
@@ -344,17 +344,17 @@ TEST_F(AnimationCompositorAnimationsTest,
   ops.Operations().push_back(TranslateTransformOperation::Create(
       Length(2, kFixed), Length(2, kFixed), TransformOperation::kTranslateX));
   RefPtr<AnimatableValueKeyframe> good_keyframe = CreateReplaceOpKeyframe(
-      CSSPropertyTransform, AnimatableTransform::Create(ops, 1).Get());
+      CSSPropertyTransform, AnimatableTransform::Create(ops, 1).get());
   EXPECT_TRUE(
-      DuplicateSingleKeyframeAndTestIsCandidateOnResult(good_keyframe.Get()));
+      DuplicateSingleKeyframeAndTestIsCandidateOnResult(good_keyframe.get()));
 
   ops.Operations().push_back(TranslateTransformOperation::Create(
       Length(50, kPercent), Length(2, kFixed),
       TransformOperation::kTranslateX));
   RefPtr<AnimatableValueKeyframe> bad_keyframe = CreateReplaceOpKeyframe(
-      CSSPropertyTransform, AnimatableTransform::Create(ops, 1).Get());
+      CSSPropertyTransform, AnimatableTransform::Create(ops, 1).get());
   EXPECT_FALSE(
-      DuplicateSingleKeyframeAndTestIsCandidateOnResult(bad_keyframe.Get()));
+      DuplicateSingleKeyframeAndTestIsCandidateOnResult(bad_keyframe.get()));
 
   TransformOperations ops2;
   Length calc_length =
@@ -362,9 +362,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   ops2.Operations().push_back(TranslateTransformOperation::Create(
       calc_length, Length(0, kFixed), TransformOperation::kTranslateX));
   RefPtr<AnimatableValueKeyframe> bad_keyframe2 = CreateReplaceOpKeyframe(
-      CSSPropertyTransform, AnimatableTransform::Create(ops2, 1).Get());
+      CSSPropertyTransform, AnimatableTransform::Create(ops2, 1).get());
   EXPECT_FALSE(
-      DuplicateSingleKeyframeAndTestIsCandidateOnResult(bad_keyframe2.Get()));
+      DuplicateSingleKeyframeAndTestIsCandidateOnResult(bad_keyframe2.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
@@ -373,11 +373,11 @@ TEST_F(AnimationCompositorAnimationsTest,
   frames_same.push_back(CreateDefaultKeyframe(CSSPropertyColor,
                                               EffectModel::kCompositeReplace,
                                               0.0)
-                            .Get());
+                            .get());
   frames_same.push_back(CreateDefaultKeyframe(CSSPropertyColor,
                                               EffectModel::kCompositeReplace,
                                               1.0)
-                            .Get());
+                            .get());
   EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_, *AnimatableValueKeyframeEffectModel::Create(frames_same)));
 
@@ -625,11 +625,11 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorNonLinearTimingFunctionOnFirstOrLastFrame) {
-  (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.Get());
+  (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
 
-  (*keyframe_vector5_)[3]->SetEasing(cubic_ease_timing_function_.Get());
+  (*keyframe_vector5_)[3]->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
 
@@ -648,22 +648,22 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionChainedCubicMatchingOffsets) {
-  (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.Get());
+  (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  (*keyframe_vector2_)[0]->SetEasing(cubic_custom_timing_function_.Get());
+  (*keyframe_vector2_)[0]->SetEasing(cubic_custom_timing_function_.get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  (*keyframe_vector5_)[0]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(cubic_custom_timing_function_.Get());
-  (*keyframe_vector5_)[2]->SetEasing(cubic_custom_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(cubic_custom_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[1]->SetEasing(cubic_custom_timing_function_.get());
+  (*keyframe_vector5_)[2]->SetEasing(cubic_custom_timing_function_.get());
+  (*keyframe_vector5_)[3]->SetEasing(cubic_custom_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
@@ -672,10 +672,10 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionMixedGood) {
-  (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.get());
+  (*keyframe_vector5_)[1]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
@@ -684,40 +684,40 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorTimingFunctionWithStepOrFrameOkay) {
-  (*keyframe_vector2_)[0]->SetEasing(step_timing_function_.Get());
+  (*keyframe_vector2_)[0]->SetEasing(step_timing_function_.get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  (*keyframe_vector2_)[0]->SetEasing(frames_timing_function_.Get());
+  (*keyframe_vector2_)[0]->SetEasing(frames_timing_function_.get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
-  (*keyframe_vector5_)[0]->SetEasing(step_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(linear_timing_function_.Get());
-  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(frames_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(step_timing_function_.get());
+  (*keyframe_vector5_)[1]->SetEasing(linear_timing_function_.get());
+  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[3]->SetEasing(frames_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
-  (*keyframe_vector5_)[0]->SetEasing(frames_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(step_timing_function_.Get());
-  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(frames_timing_function_.get());
+  (*keyframe_vector5_)[1]->SetEasing(step_timing_function_.get());
+  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
       CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
-  (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
-  (*keyframe_vector5_)[1]->SetEasing(frames_timing_function_.Get());
-  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
-  (*keyframe_vector5_)[3]->SetEasing(step_timing_function_.Get());
+  (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.get());
+  (*keyframe_vector5_)[1]->SetEasing(frames_timing_function_.get());
+  (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.get());
+  (*keyframe_vector5_)[3]->SetEasing(step_timing_function_.get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
   EXPECT_TRUE(
@@ -729,27 +729,27 @@ TEST_F(AnimationCompositorAnimationsTest, CanStartEffectOnCompositor) {
   basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
                             0.0)
-          .Get());
+          .get());
   basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
                             1.0)
-          .Get());
+          .get());
 
   AnimatableValueKeyframeVector non_basic_frames_vector;
   non_basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
                             0.0)
-          .Get());
+          .get());
   non_basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
                             0.5)
-          .Get());
+          .get());
   non_basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
                             1.0)
-          .Get());
+          .get());
 
-  basic_frames_vector[0]->SetEasing(linear_timing_function_.Get());
+  basic_frames_vector[0]->SetEasing(linear_timing_function_.get());
   AnimatableValueKeyframeEffectModel* basic_frames =
       AnimatableValueKeyframeEffectModel::Create(basic_frames_vector);
   EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *basic_frames));
@@ -760,7 +760,7 @@ TEST_F(AnimationCompositorAnimationsTest, CanStartEffectOnCompositor) {
       AnimatableValueKeyframeEffectModel::Create(basic_frames_vector);
   EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *basic_frames));
 
-  non_basic_frames_vector[0]->SetEasing(linear_timing_function_.Get());
+  non_basic_frames_vector[0]->SetEasing(linear_timing_function_.get());
   non_basic_frames_vector[1]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
   AnimatableValueKeyframeEffectModel* non_basic_frames =
@@ -775,9 +775,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation) {
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   std::unique_ptr<CompositorAnimation> animation =
       ConvertToCompositorAnimation(*effect);
@@ -810,9 +810,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   const double kDuration = 10.0;
   timing_.iteration_duration = kDuration;
@@ -834,13 +834,13 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(-1.0).Get(), 0.25),
+                              AnimatableDouble::Create(-1.0).get(), 0.25),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(20.0).Get(), 0.5),
+                              AnimatableDouble::Create(20.0).get(), 0.5),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   timing_.iteration_count = 5;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
@@ -888,9 +888,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   const double kStartDelay = 3.25;
 
@@ -921,20 +921,20 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeVector frames;
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(2.0).Get(), 0));
+      CSSPropertyOpacity, AnimatableDouble::Create(2.0).get(), 0));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(-1.0).Get(), 0.25));
+      CSSPropertyOpacity, AnimatableDouble::Create(-1.0).get(), 0.25));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(20.0).Get(), 0.5));
+      CSSPropertyOpacity, AnimatableDouble::Create(20.0).get(), 0.5));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(5.0).Get(), 1.0));
-  frames[0]->SetEasing(cubic_ease_timing_function_.Get());
-  frames[1]->SetEasing(linear_timing_function_.Get());
-  frames[2]->SetEasing(cubic_custom_timing_function_.Get());
+      CSSPropertyOpacity, AnimatableDouble::Create(5.0).get(), 1.0));
+  frames[0]->SetEasing(cubic_ease_timing_function_.get());
+  frames[1]->SetEasing(linear_timing_function_.get());
+  frames[2]->SetEasing(cubic_custom_timing_function_.get());
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(frames);
 
-  timing_.timing_function = linear_timing_function_.Get();
+  timing_.timing_function = linear_timing_function_.get();
   timing_.iteration_duration = 2.0;
   timing_.iteration_count = 10;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
@@ -983,21 +983,21 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation) {
   // KeyframeEffect to convert
   AnimatableValueKeyframeVector frames;
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(2.0).Get(), 0));
+      CSSPropertyOpacity, AnimatableDouble::Create(2.0).get(), 0));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(-1.0).Get(), 0.25));
+      CSSPropertyOpacity, AnimatableDouble::Create(-1.0).get(), 0.25));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(20.0).Get(), 0.5));
+      CSSPropertyOpacity, AnimatableDouble::Create(20.0).get(), 0.5));
   frames.push_back(CreateReplaceOpKeyframe(
-      CSSPropertyOpacity, AnimatableDouble::Create(5.0).Get(), 1.0));
+      CSSPropertyOpacity, AnimatableDouble::Create(5.0).get(), 1.0));
   frames[0]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
-  frames[1]->SetEasing(linear_timing_function_.Get());
-  frames[2]->SetEasing(cubic_easy_flip_timing_function.Get());
+  frames[1]->SetEasing(linear_timing_function_.get());
+  frames[2]->SetEasing(cubic_easy_flip_timing_function.get());
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(frames);
 
-  timing_.timing_function = linear_timing_function_.Get();
+  timing_.timing_function = linear_timing_function_.get();
   timing_.iteration_count = 10;
   timing_.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
 
@@ -1046,9 +1046,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   const double kNegativeStartDelay = -3;
 
@@ -1079,9 +1079,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   const double kPlaybackRate = 2;
   const double kPlayerPlaybackRate = -1.5;
@@ -1109,9 +1109,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   timing_.fill_mode = Timing::FillMode::NONE;
 
@@ -1125,9 +1125,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   timing_.fill_mode = Timing::FillMode::AUTO;
 
@@ -1146,9 +1146,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   // KeyframeEffect to convert
   AnimatableValueKeyframeEffectModel* effect = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(2.0).Get(), 0),
+                              AnimatableDouble::Create(2.0).get(), 0),
       CreateReplaceOpKeyframe(CSSPropertyOpacity,
-                              AnimatableDouble::Create(5.0).Get(), 1.0));
+                              AnimatableDouble::Create(5.0).get(), 1.0));
 
   timing_.timing_function = cubic_custom_timing_function_;
 
@@ -1197,11 +1197,11 @@ TEST_F(AnimationCompositorAnimationsTest,
   key_frames.push_back(CreateDefaultKeyframe(CSSPropertyOpacity,
                                              EffectModel::kCompositeReplace,
                                              0.0)
-                           .Get());
+                           .get());
   key_frames.push_back(CreateDefaultKeyframe(CSSPropertyOpacity,
                                              EffectModel::kCompositeReplace,
                                              1.0)
-                           .Get());
+                           .get());
   EffectModel* animation_effect1 =
       AnimatableValueKeyframeEffectModel::Create(key_frames);
   EffectModel* animation_effect2 =

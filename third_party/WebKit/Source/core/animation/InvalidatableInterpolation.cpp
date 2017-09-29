@@ -282,7 +282,7 @@ void InvalidatableInterpolation::ApplyStack(
   if (should_apply && underlying_value_owner)
     underlying_value_owner.GetType().Apply(
         *underlying_value_owner.Value().interpolable_value,
-        underlying_value_owner.Value().non_interpolable_value.Get(),
+        underlying_value_owner.Value().non_interpolable_value.get(),
         environment);
 }
 

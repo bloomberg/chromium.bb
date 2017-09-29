@@ -59,7 +59,7 @@ class InheritedShapeChecker
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
-    return DataEquivalent(inherited_shape_.Get(),
+    return DataEquivalent(inherited_shape_.get(),
                           BasicShapePropertyFunctions::GetBasicShape(
                               property_, *state.ParentStyle()));
   }
@@ -76,7 +76,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertNeutral(
   // const_cast is for taking refs.
   NonInterpolableValue* non_interpolable_value =
       const_cast<NonInterpolableValue*>(
-          underlying.non_interpolable_value.Get());
+          underlying.non_interpolable_value.get());
   conversion_checkers.push_back(
       UnderlyingCompatibilityChecker::Create(non_interpolable_value));
   return InterpolationValue(

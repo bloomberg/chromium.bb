@@ -79,7 +79,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
                                  const ComputedStyle& base_style,
                                  const ComputedStyle* parent_style) const final;
     const AnimatableValue* GetAnimatableValue() const final {
-      return animatable_value_cache_.Get();
+      return animatable_value_cache_.get();
     }
 
     bool IsNeutral() const final { return !value_; }

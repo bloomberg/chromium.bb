@@ -58,9 +58,9 @@ void CopyToActiveInterpolationsMap(
         interpolation->IsInvalidatableInterpolation() &&
         ToInvalidatableInterpolation(*interpolation)
             .DependsOnUnderlyingValue()) {
-      active_interpolations.push_back(interpolation.Get());
+      active_interpolations.push_back(interpolation.get());
     } else {
-      active_interpolations.at(0) = interpolation.Get();
+      active_interpolations.at(0) = interpolation.get();
     }
   }
 }

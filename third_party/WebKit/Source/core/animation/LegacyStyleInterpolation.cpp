@@ -53,7 +53,7 @@ LegacyStyleInterpolation::LegacyStyleInterpolation(
 
 void LegacyStyleInterpolation::Apply(StyleResolverState& state) const {
   AnimatedStyleBuilder::ApplyProperty(Id(), *state.Style(),
-                                      CurrentValue().Get());
+                                      CurrentValue().get());
 }
 
 void LegacyStyleInterpolation::Interpolate(int iteration, double fraction) {

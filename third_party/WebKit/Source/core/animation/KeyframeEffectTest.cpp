@@ -124,10 +124,10 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   EXPECT_EQ(1, keyframes[1]->Offset());
 
   const CSSValue& keyframe1_width =
-      ToStringKeyframe(keyframes[0].Get())
+      ToStringKeyframe(keyframes[0].get())
           ->CssPropertyValue(PropertyHandle(CSSPropertyWidth));
   const CSSValue& keyframe2_width =
-      ToStringKeyframe(keyframes[1].Get())
+      ToStringKeyframe(keyframes[1].get())
           ->CssPropertyValue(PropertyHandle(CSSPropertyWidth));
 
   EXPECT_EQ("100px", keyframe1_width.CssText());
@@ -136,7 +136,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   EXPECT_EQ(*(CubicBezierTimingFunction::Preset(
                 CubicBezierTimingFunction::EaseType::EASE_IN_OUT)),
             keyframes[0]->Easing());
-  EXPECT_EQ(*(CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3).Get()),
+  EXPECT_EQ(*(CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3).get()),
             keyframes[1]->Easing());
 }
 

@@ -15,7 +15,7 @@ void TransitionKeyframe::SetCompositorValue(
     RefPtr<AnimatableValue> compositor_value) {
   DCHECK_EQ(
       CompositorAnimations::IsCompositableProperty(property_.CssProperty()),
-      static_cast<bool>(compositor_value.Get()));
+      static_cast<bool>(compositor_value.get()));
   compositor_value_ = std::move(compositor_value);
 }
 

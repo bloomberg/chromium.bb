@@ -51,10 +51,10 @@ class AnimationEffectStackTest : public ::testing::Test {
     AnimatableValueKeyframeVector keyframes(2);
     keyframes[0] = AnimatableValueKeyframe::Create();
     keyframes[0]->SetOffset(0.0);
-    keyframes[0]->SetPropertyValue(id, value.Get());
+    keyframes[0]->SetPropertyValue(id, value.get());
     keyframes[1] = AnimatableValueKeyframe::Create();
     keyframes[1]->SetOffset(1.0);
-    keyframes[1]->SetPropertyValue(id, value.Get());
+    keyframes[1]->SetPropertyValue(id, value.get());
     return AnimatableValueKeyframeEffectModel::Create(keyframes);
   }
 
@@ -77,7 +77,7 @@ class AnimationEffectStackTest : public ::testing::Test {
     Interpolation& interpolation =
         *active_interpolations.at(PropertyHandle(id)).at(0);
     AnimatableValue* animatable_value =
-        ToLegacyStyleInterpolation(interpolation).CurrentValue().Get();
+        ToLegacyStyleInterpolation(interpolation).CurrentValue().get();
     return ToAnimatableDouble(animatable_value)->ToDouble();
   }
 

@@ -140,7 +140,7 @@ class InterpolableAnimatableValue : public InterpolableValue {
   }
 
   bool IsAnimatableValue() const final { return true; }
-  AnimatableValue* Value() const { return value_.Get(); }
+  AnimatableValue* Value() const { return value_.get(); }
   bool Equals(const InterpolableValue&) const final {
     NOTREACHED();
     return false;

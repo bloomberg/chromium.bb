@@ -37,7 +37,7 @@ class TypedInterpolationValue {
     return *value_.interpolable_value;
   }
   const NonInterpolableValue* GetNonInterpolableValue() const {
-    return value_.non_interpolable_value.Get();
+    return value_.non_interpolable_value.get();
   }
   const InterpolationValue& Value() const { return value_; }
 

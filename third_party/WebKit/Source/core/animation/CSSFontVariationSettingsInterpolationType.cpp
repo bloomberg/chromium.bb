@@ -87,7 +87,7 @@ class InheritedFontVariationSettingsChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(
-        settings_.Get(),
+        settings_.get(),
         state.ParentStyle()->GetFontDescription().VariationSettings());
   }
 

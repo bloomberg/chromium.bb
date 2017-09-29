@@ -25,7 +25,7 @@ class AnimationInterpolationEffectTest : public ::testing::Test {
 
   double GetInterpolableNumber(RefPtr<Interpolation> value) {
     LegacyStyleInterpolation& interpolation =
-        ToLegacyStyleInterpolation(*value.Get());
+        ToLegacyStyleInterpolation(*value.get());
     return ToInterpolableNumber(InterpolationValue(interpolation))->Value();
   }
 };

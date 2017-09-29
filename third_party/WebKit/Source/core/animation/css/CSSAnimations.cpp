@@ -129,7 +129,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     // The last keyframe specified at a given offset is used.
     for (size_t j = 1; j < offsets.size(); ++j) {
       keyframes.push_back(
-          ToStringKeyframe(keyframe->CloneWithOffset(offsets[j]).Get()));
+          ToStringKeyframe(keyframe->CloneWithOffset(offsets[j]).get()));
     }
   }
 
@@ -375,7 +375,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
               *InertEffect::Create(
                   CreateKeyframeEffectModel(resolver, animating_element,
                                             element, &style, parent_style, name,
-                                            keyframe_timing_function.Get(), i),
+                                            keyframe_timing_function.get(), i),
                   timing, is_paused, animation->UnlimitedCurrentTimeInternal()),
               specified_timing, keyframes_rule);
         }
@@ -391,7 +391,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
             *InertEffect::Create(
                 CreateKeyframeEffectModel(resolver, animating_element, element,
                                           &style, parent_style, name,
-                                          keyframe_timing_function.Get(), i),
+                                          keyframe_timing_function.get(), i),
                 timing, is_paused, 0),
             specified_timing, keyframes_rule);
       }
@@ -584,9 +584,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       const KeyframeVector& frames = old_effect->GetFrames();
 
       TransitionKeyframeVector new_frames;
-      new_frames.push_back(ToTransitionKeyframe(frames[0]->Clone().Get()));
-      new_frames.push_back(ToTransitionKeyframe(frames[1]->Clone().Get()));
-      new_frames.push_back(ToTransitionKeyframe(frames[2]->Clone().Get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[0]->Clone().get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[1]->Clone().get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[2]->Clone().get()));
 
       InertEffect* inert_animation_for_sampling = InertEffect::Create(
           old_animation->Model(), old_animation->SpecifiedTiming(), false,
@@ -751,7 +751,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     const double interrupted_progress =
         interrupted_transition->animation->effect()->Progress();
     if (!std::isnan(interrupted_progress)) {
-      reversing_adjusted_start_value = interrupted_transition->to.Get();
+      reversing_adjusted_start_value = interrupted_transition->to.get();
       reversing_shortening_factor =
           clampTo((interrupted_progress *
                    interrupted_transition->reversing_shortening_factor) +

@@ -44,7 +44,7 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
   }
 
   const NonInterpolableValue* LengthNonInterpolableValue() const {
-    return length_non_interpolable_value_.Get();
+    return length_non_interpolable_value_.get();
   }
   RefPtr<NonInterpolableValue>& LengthNonInterpolableValue() {
     return length_non_interpolable_value_;

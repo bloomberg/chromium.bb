@@ -32,7 +32,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
 
   const NonInterpolableValue* LengthNonInterpolableValue() const {
     DCHECK(!IsKeyword());
-    return length_non_interpolable_value_.Get();
+    return length_non_interpolable_value_.get();
   }
   RefPtr<NonInterpolableValue>& LengthNonInterpolableValue() {
     DCHECK(!IsKeyword());
@@ -126,8 +126,8 @@ InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
 PairwiseInterpolationValue SizeInterpolationFunctions::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) {
-  if (!NonInterpolableValuesAreCompatible(start.non_interpolable_value.Get(),
-                                          end.non_interpolable_value.Get()))
+  if (!NonInterpolableValuesAreCompatible(start.non_interpolable_value.get(),
+                                          end.non_interpolable_value.get()))
     return nullptr;
   return PairwiseInterpolationValue(std::move(start.interpolable_value),
                                     std::move(end.interpolable_value),

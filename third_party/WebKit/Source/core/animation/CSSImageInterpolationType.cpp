@@ -160,8 +160,8 @@ class UnderlyingImageChecker
     return underlying_.interpolable_value->Equals(
                *underlying.interpolable_value) &&
            CSSImageInterpolationType::EqualNonInterpolableValues(
-               underlying_.non_interpolable_value.Get(),
-               underlying.non_interpolable_value.Get());
+               underlying_.non_interpolable_value.get(),
+               underlying.non_interpolable_value.get());
   }
 
   const InterpolationValue underlying_;
