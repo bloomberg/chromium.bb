@@ -79,6 +79,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     CAPTIVE_PORTAL_CERT_FOUND = 9,
     WWW_MISMATCH_FOUND_IN_SAN = 10,
     SHOW_MITM_SOFTWARE_INTERSTITIAL = 11,
+    OS_REPORTS_CAPTIVE_PORTAL = 12,
     SSL_ERROR_HANDLER_EVENT_COUNT
   };
 
@@ -88,6 +89,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
    public:
     virtual ~Delegate() {}
     virtual void CheckForCaptivePortal() = 0;
+    virtual bool DoesOSReportCaptivePortal() = 0;
     virtual bool GetSuggestedUrl(const std::vector<std::string>& dns_names,
                                  GURL* suggested_url) const = 0;
     virtual void CheckSuggestedUrl(
@@ -136,6 +138,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static bool IsEnterpriseManagedFlagSetForTesting();
   static std::string GetHistogramNameForTesting();
   static int GetErrorAssistantProtoVersionIdForTesting();
+  static void SetOSReportsCaptivePortalForTesting(
+      bool os_reports_captive_portal);
   bool IsTimerRunningForTesting() const;
 
  protected:

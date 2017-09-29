@@ -151,6 +151,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
                               const net::SSLInfo& ssl_info)
       : profile_(profile),
         captive_portal_checked_(false),
+        os_reports_captive_portal_(false),
         suggested_url_exists_(false),
         suggested_url_checked_(false),
         ssl_interstitial_shown_(false),
@@ -199,9 +200,11 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
   void set_suggested_url_exists() { suggested_url_exists_ = true; }
   void set_non_overridable_error() { is_overridable_error_ = false; }
+  void set_os_reports_captive_portal() { os_reports_captive_portal_ = true; }
 
   void ClearSeenOperations() {
     captive_portal_checked_ = false;
+    os_reports_captive_portal_ = false;
     suggested_url_exists_ = false;
     suggested_url_checked_ = false;
     ssl_interstitial_shown_ = false;
@@ -215,6 +218,10 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
  private:
   void CheckForCaptivePortal() override {
     captive_portal_checked_ = true;
+  }
+
+  bool DoesOSReportCaptivePortal() override {
+    return os_reports_captive_portal_;
   }
 
   bool GetSuggestedUrl(const std::vector<std::string>& dns_names,
@@ -258,6 +265,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
   Profile* profile_;
   bool captive_portal_checked_;
+  bool os_reports_captive_portal_;
   bool suggested_url_exists_;
   bool suggested_url_checked_;
   bool ssl_interstitial_shown_;
@@ -846,6 +854,28 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
 }
 
 #endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+
+// Test that a captive portal interstitial is shown if the OS reports a portal.
+TEST_F(SSLErrorHandlerNameMismatchTest, OSReportsCaptivePortal) {
+  base::HistogramTester histograms;
+  delegate()->set_os_reports_captive_portal();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  error_handler()->StartHandlingError();
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  EXPECT_FALSE(delegate()->captive_portal_checked());
+  EXPECT_FALSE(delegate()->ssl_interstitial_shown());
+  EXPECT_TRUE(delegate()->captive_portal_interstitial_shown());
+
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 3);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 1);
+}
 
 TEST_F(SSLErrorHandlerNameMismatchTest,
        ShouldShowSSLInterstitialOnTimerExpiredWhenSuggestedUrlExists) {

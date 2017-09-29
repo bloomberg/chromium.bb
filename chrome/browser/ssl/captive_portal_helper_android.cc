@@ -12,7 +12,7 @@
 namespace chrome {
 namespace android {
 
-void AddCaptivePortalCertificateForTesting(
+void SetCaptivePortalCertificateForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
     const base::android::JavaParamRef<jstring>& jhash) {
@@ -26,6 +26,16 @@ void AddCaptivePortalCertificateForTesting(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
                      std::move(config_proto)));
+}
+
+void SetOSReportsCaptivePortalForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    jboolean os_reports_captive_portal) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(SSLErrorHandler::SetOSReportsCaptivePortalForTesting,
+                     os_reports_captive_portal));
 }
 
 std::string GetCaptivePortalServerUrl(JNIEnv* env) {
