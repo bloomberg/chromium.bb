@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace base {

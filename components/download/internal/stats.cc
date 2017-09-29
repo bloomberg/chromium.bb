@@ -87,6 +87,8 @@ std::string ClientToHistogramSuffix(DownloadClient client) {
       return "__Test__";
     case DownloadClient::OFFLINE_PAGE_PREFETCH:
       return "OfflinePage";
+    case DownloadClient::BACKGROUND_FETCH:
+      return "BackgroundFetch";
     case DownloadClient::BOUNDARY:
       NOTREACHED();
       break;

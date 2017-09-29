@@ -32,7 +32,9 @@ enum class DownloadClient {
 
   OFFLINE_PAGE_PREFETCH = 1,
 
-  BOUNDARY = 2,
+  BACKGROUND_FETCH = 2,
+
+  BOUNDARY = 3,
 };
 
 using DownloadClientMap = std::map<DownloadClient, std::unique_ptr<Client>>;
