@@ -27,7 +27,7 @@ NGTextFragmentPainter::NGTextFragmentPainter(
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
-  const ComputedStyle& style_to_use = fragment_.Style();
+  const ComputedStyle& style = fragment_.Style();
 
   NGPhysicalSize size_;
   NGPhysicalOffset offset_;
@@ -56,16 +56,16 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
   // Determine text colors.
   TextPaintStyle text_style =
-      TextPainterBase::TextPaintingStyle(document, style_to_use, paint_info);
+      TextPainterBase::TextPaintingStyle(document, style, paint_info);
   TextPaintStyle selection_style = TextPainterBase::SelectionPaintingStyle(
-      document, style_to_use, fragment_.GetNode(), have_selection, paint_info,
+      document, style, fragment_.GetNode(), have_selection, paint_info,
       text_style);
   bool paint_selected_text_only = (paint_info.phase == kPaintPhaseSelection);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;
 
   // Set our font.
-  const Font& font = style_to_use.GetFont();
+  const Font& font = style.GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
@@ -107,13 +107,12 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
   NGTextPainter text_painter(context, font, text_fragment, text_origin,
                              box_rect, text_fragment.IsHorizontal());
-  TextEmphasisPosition emphasis_mark_position;
-  bool has_text_emphasis = false;  // TODO(layout-dev): Implement.
-  emphasis_mark_position = TextEmphasisPosition::kOverRight;
-  if (has_text_emphasis) {
-    text_painter.SetEmphasisMark(style_to_use.TextEmphasisMarkString(),
-                                 emphasis_mark_position);
+
+  if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
+    text_painter.SetEmphasisMark(style.TextEmphasisMarkString(),
+                                 style.GetTextEmphasisPosition());
   }
+
   if (truncation != kCNoTruncation && ltr != flow_is_ltr)
     text_painter.SetEllipsisOffset(truncation);
 
@@ -121,7 +120,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
     // Paint text decorations except line-through.
     DecorationInfo decoration_info;
     bool has_line_through_decoration = false;
-    if (style_to_use.TextDecorationsInEffect() != TextDecoration::kNone &&
+    if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
         truncation != kCFullTruncation) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
       LayoutUnit width = fragment_.Size().width;
@@ -134,13 +133,13 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
       text_painter.ComputeDecorationInfo(decoration_info, box_origin,
                                          local_origin, width, baseline_type,
-                                         style_to_use, decorating_box_style);
+                                         style, decorating_box_style);
 
       NGTextDecorationOffset decoration_offset(*decoration_info.style,
                                                text_fragment, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
           decoration_offset, decoration_info, paint_info,
-          style_to_use.AppliedTextDecorations(), text_style,
+          style.AppliedTextDecorations(), text_style,
           &has_line_through_decoration);
     }
 
@@ -164,7 +163,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
     // Paint line-through decoration if needed.
     if (has_line_through_decoration) {
       text_painter.PaintDecorationsOnlyLineThrough(
-          decoration_info, paint_info, style_to_use.AppliedTextDecorations(),
+          decoration_info, paint_info, style.AppliedTextDecorations(),
           text_style);
     }
   }

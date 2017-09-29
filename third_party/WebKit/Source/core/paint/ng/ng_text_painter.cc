@@ -30,7 +30,11 @@ void NGTextPainter::Paint(unsigned start_offset,
   // TODO(layout-dev): Handle combine text here or elsewhere.
   PaintInternal<kPaintText>(start_offset, end_offset, length);
 
-  // TODO(layout-dev): Handle emphasis marks.
+  if (!emphasis_mark_.IsEmpty()) {
+    if (text_style.emphasis_mark_color != text_style.fill_color)
+      graphics_context_.SetFillColor(text_style.emphasis_mark_color);
+    PaintInternal<kPaintEmphasisMark>(start_offset, end_offset, length);
+  }
 }
 
 template <NGTextPainter::PaintInternalStep step>
@@ -63,19 +67,15 @@ void NGTextPainter::PaintInternal(unsigned start_offset,
   if (!fragment_.TextShapeResult())
     return;
 
-  NGTextFragmentPaintInfo fragment_paint_info = fragment_.PaintInfo();
+  NGTextFragmentPaintInfo paint_info = fragment_.PaintInfo();
 
   if (start_offset <= end_offset) {
-    PaintInternalFragment<Step>(fragment_paint_info, start_offset, end_offset);
+    PaintInternalFragment<Step>(paint_info, start_offset, end_offset);
   } else {
-    if (end_offset > 0) {
-      PaintInternalFragment<Step>(fragment_paint_info, ellipsis_offset_,
-                                  end_offset);
-    }
-    if (start_offset < truncation_point) {
-      PaintInternalFragment<Step>(fragment_paint_info, start_offset,
-                                  truncation_point);
-    }
+    if (end_offset > 0)
+      PaintInternalFragment<Step>(paint_info, ellipsis_offset_, end_offset);
+    if (start_offset < truncation_point)
+      PaintInternalFragment<Step>(paint_info, start_offset, truncation_point);
   }
 }
 
