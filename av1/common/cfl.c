@@ -159,7 +159,8 @@ static void sum_left_col(const MACROBLOCKD *xd, int height, int *out_sum_u,
 
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
-static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
+static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize,
+                        TX_SIZE tx_size) {
   CFL_CTX *const cfl = xd->cfl;
 
   // Compute DC_PRED until block boundary. We can't assume the neighbor will use
@@ -201,8 +202,22 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
 
   // TODO(ltrudeau) Because of max_block_wide and max_block_high, num_pel will
   // not be a power of two. So these divisions will have to use a lookup table.
-  cfl->dc_pred[CFL_PRED_U] = (sum_u + (num_pel >> 1)) / num_pel;
-  cfl->dc_pred[CFL_PRED_V] = (sum_v + (num_pel >> 1)) / num_pel;
+  const int16_t dc_pred_u = (sum_u + (num_pel >> 1)) / num_pel;
+  const int16_t dc_pred_v = (sum_v + (num_pel >> 1)) / num_pel;
+  const int blk_width =
+      max_intra_block_width(xd, plane_bsize, AOM_PLANE_U, tx_size);
+  const int blk_height =
+      max_intra_block_height(xd, plane_bsize, AOM_PLANE_U, tx_size);
+  int16_t *p_dc_pred_u = cfl->dc_pred[CFL_PRED_U];
+  int16_t *p_dc_pred_v = cfl->dc_pred[CFL_PRED_V];
+  for (int j = 0; j < blk_height; j++) {
+    for (int i = 0; i < blk_width; i++) {
+      p_dc_pred_u[i] = dc_pred_u;
+      p_dc_pred_v[i] = dc_pred_v;
+    }
+    p_dc_pred_u += MAX_SB_SIZE;
+    p_dc_pred_v += MAX_SB_SIZE;
+  }
 }
 
 static void cfl_subtract_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
@@ -257,29 +272,31 @@ static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
 
 static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
                                      int dst_stride, int width, int height,
-                                     int alpha_q3, int16_t dc_pred) {
+                                     int alpha_q3, const int16_t *dc_pred) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] =
-          clip_pixel(get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred);
+          clip_pixel(get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred[i]);
     }
     dst += dst_stride;
     pred_buf_q3 += MAX_SB_SIZE;
+    dc_pred += MAX_SB_SIZE;
   }
 }
 
 #if CONFIG_HIGHBITDEPTH
 static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
                                      int dst_stride, int width, int height,
-                                     int alpha_q3, int16_t dc_pred,
+                                     int alpha_q3, const int16_t *dc_pred,
                                      int bit_depth) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] = clip_pixel_highbd(
-          get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred, bit_depth);
+          get_scaled_luma_q0(alpha_q3, pred_buf_q3[i]) + dc_pred[i], bit_depth);
     }
     dst += dst_stride;
     pred_buf_q3 += MAX_SB_SIZE;
+    dc_pred += MAX_SB_SIZE;
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -294,6 +311,8 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 
   const int16_t *pred_buf_q3 =
       cfl->pred_buf_q3 + ((row * MAX_SB_SIZE + col) << tx_size_wide_log2[0]);
+  const int16_t *dc_pred = cfl->dc_pred[plane - 1] +
+                           ((row * MAX_SB_SIZE + col) << tx_size_wide_log2[0]);
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 
@@ -302,13 +321,12 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
     uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
     cfl_build_prediction_hbd(pred_buf_q3, dst_16, dst_stride,
                              tx_size_wide[tx_size], tx_size_high[tx_size],
-                             alpha_q3, cfl->dc_pred[plane - 1], xd->bd);
+                             alpha_q3, dc_pred, xd->bd);
     return;
   }
 #endif  // CONFIG_HIGHBITDEPTH
   cfl_build_prediction_lbd(pred_buf_q3, dst, dst_stride, tx_size_wide[tx_size],
-                           tx_size_high[tx_size], alpha_q3,
-                           cfl->dc_pred[plane - 1]);
+                           tx_size_high[tx_size], alpha_q3, dc_pred);
 }
 
 static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
@@ -637,7 +655,7 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   cfl->uv_height =
       max_intra_block_height(xd, plane_bsize, AOM_PLANE_U, tx_size);
 
-  cfl_dc_pred(xd, plane_bsize);
+  cfl_dc_pred(xd, plane_bsize, tx_size);
   cfl_subtract_averages(cfl, tx_size);
   cfl->are_parameters_computed = 1;
 }
