@@ -4,7 +4,9 @@
 
 #include "content/test/test_web_contents.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -51,7 +53,7 @@ TestWebContents::~TestWebContents() {
   EXPECT_FALSE(expect_set_history_offset_and_length_);
 }
 
-TestRenderFrameHost* TestWebContents::GetMainFrame() {
+TestRenderFrameHost* TestWebContents::GetMainFrame() const {
   return static_cast<TestRenderFrameHost*>(WebContentsImpl::GetMainFrame());
 }
 
