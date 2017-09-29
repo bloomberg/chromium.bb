@@ -221,8 +221,7 @@ class MergeFilesOneTests(FileSystemTestCase):
 
 
 class MergeFilesMatchingContentsTests(FileSystemTestCase):
-    # TODO(crbug/764662): Re-enable after fixing the merging logic
-    def disabled_test(self):
+    def test(self):
         mock_filesystem = MockFileSystem({'/s/file1': '1', '/s/file2': '2', '/s/file3': '1'}, dirs=['/output'])
 
         merger = merge_results.MergeFilesMatchingContents(mock_filesystem)
@@ -290,8 +289,7 @@ class DirMergerTests(FileSystemTestCase):
         with self.assertFilesAdded(mock_filesystem, {'/output/file1': '1'}):
             d.merge('/output', ['/shard0', '/shard1'])
 
-    # TODO(crbug/764662): Re-enable after fixing the merging logic
-    def disabled_test_failure_same_file_but_contents_differ(self):
+    def test_failure_same_file_but_contents_differ(self):
         mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file1': '2'})
         d = merge_results.DirMerger(mock_filesystem)
         with self.assertRaises(merge_results.MergeFailure):

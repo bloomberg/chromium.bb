@@ -99,10 +99,10 @@ def _CheckForPrintfDebugging(input_api, output_api):
 
 
 def _CheckForForbiddenNamespace(input_api, output_api):
-    """Checks that Blink uses Chromium classes and namespaces only in permitted code."""
+    """Checks that Blink uses Chromium namespaces only in permitted code."""
     # This list is not exhaustive, but covers likely ones.
     chromium_namespaces = ["base", "cc", "content", "gfx", "net", "ui"]
-    chromium_forbidden_classes = ["scoped_refptr", "GURL"]
+    chromium_forbidden_classes = ["scoped_refptr"]
     chromium_allowed_classes = ["gfx::ColorSpace", "gfx::CubicBezier", "gfx::ICCProfile", "gfx::ScrollOffset"]
 
     def source_file_filter(path):

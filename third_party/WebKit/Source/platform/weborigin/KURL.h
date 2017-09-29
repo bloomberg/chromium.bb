@@ -61,8 +61,6 @@ namespace WTF {
 class TextEncoding;
 }
 
-class GURL;
-
 namespace blink {
 
 struct KURLHash;
@@ -213,11 +211,6 @@ class PLATFORM_EXPORT KURL {
   bool PotentiallyDanglingMarkup() const {
     return parsed_.potentially_dangling_markup;
   }
-
-  // Returns a GURL with the same properties. This can be used in platform/.
-  // However, in core/ and modules/, this should only be used to pass a GURL to
-  // a layer that is expecting one instead of a KURL or a WebURL.
-  operator GURL() const;
 
  private:
   friend struct WTF::HashTraits<blink::KURL>;
