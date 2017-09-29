@@ -114,8 +114,9 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            FindAvailableProcess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
-                           AllocateWorkerProcess_FindAvailableProcess);
+  FRIEND_TEST_ALL_PREFIXES(
+      ServiceWorkerProcessManagerTest,
+      AllocateWorkerProcess_FindAvailableProcess_NonPlzNavigate);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            AllocateWorkerProcess_WithProcessReuse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
