@@ -813,11 +813,11 @@ void ChromeLauncherController::OnAppImageUpdated(const std::string& app_id,
 
 bool ChromeLauncherController::ConnectToShelfController() {
   // Synchronization is required in the Mash config, since Chrome and Ash run in
-  // separate processes; it's optional via kAshEnableShelfModelSynchronization
+  // separate processes; it's optional via kAshDisableShelfModelSynchronization
   // in the Classic Ash config, where Chrome can uses Ash's ShelfModel directly.
   if (!ash_util::IsRunningInMash() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableShelfModelSynchronization)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshDisableShelfModelSynchronization)) {
     return false;
   }
 
