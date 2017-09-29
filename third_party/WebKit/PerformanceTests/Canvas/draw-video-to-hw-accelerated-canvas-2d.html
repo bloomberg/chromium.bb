@@ -44,7 +44,7 @@ window.onload = function () {
     // and the dest canvas is HW accelerated Canvas when setting its size to 1024x1024.
     setSize(1024, 1024);
 
-    videoElement.src = "resources/bear-1280x720.mp4";
+    videoElement.src = "resources/bear-1280x720-long.mp4";
     if(!videoElement.canPlayType('video/mp4').replace(/no/, '')) {
       CanvasRunner.logFatalError("video/mp4 is unsupported");
     };
