@@ -51,6 +51,7 @@ POST_KILL_WAIT = 2
 
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 LSOF_COMMAND = 'lsof %s/chrome'
+DBUS_RELOAD_COMMAND = 'killall -HUP dbus-daemon'
 
 _ANDROID_DIR = '/system/chrome'
 _ANDROID_DIR_EXTRACT_PATH = 'system/chrome/*'
@@ -255,8 +256,6 @@ class DeployChrome(object):
       return not self.device.HasGigabitEthernet()
 
   def _Deploy(self):
-    old_dbus_checksums = self._GetDBusChecksums()
-
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # CopyToDevice will fall back to scp if rsync is corrupted on stateful.
     # This does not work for deploy.
@@ -277,16 +276,11 @@ class DeployChrome(object):
         self.device.RunCommand('chmod %o %s/%s' % (
             p.mode, self.options.target_dir, p.src if not p.dest else p.dest))
 
-    new_dbus_checksums = self._GetDBusChecksums()
-    if old_dbus_checksums != new_dbus_checksums:
-      if self.options.target_dir == _CHROME_DIR:
-        logging.info('Detected change to D-Bus service files, rebooting.')
-        self._Reboot()
-        return
-      else:
-        logging.warn('Detected change in D-Bus service files, but target dir '
-                     'is not %s. D-Bus changes will not be picked up by '
-                     'dbus-daemon at boot time.', _CHROME_DIR)
+    # Send SIGHUP to dbus-daemon to tell it to reload its configs. This won't
+    # pick up major changes (bus type, logging, etc.), but all we care about is
+    # getting the latest policy from /opt/google/chrome/dbus so that Chrome will
+    # be authorized to take ownership of its service names.
+    self.device.RunCommand(DBUS_RELOAD_COMMAND, error_code_ok=True)
 
     if self.options.startui:
       logging.info('Starting UI...')
@@ -332,16 +326,6 @@ class DeployChrome(object):
                                                      self.options.mount_dir))
     # Chrome needs partition to have exec and suid flags set
     self.device.RunCommand(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
-
-  def _GetDBusChecksums(self):
-    """Returns Checksums for D-Bus files deployed with Chrome.
-
-    This is used to determine if a reboot is required after deploying Chrome.
-    """
-    path = os.path.join(_CHROME_DIR, 'dbus/*')
-    result = self.device.RunCommand('md5sum ' + path,
-                                    error_code_ok=True)
-    return result.output
 
   def Cleanup(self):
     """Clean up RemoteDevice."""
