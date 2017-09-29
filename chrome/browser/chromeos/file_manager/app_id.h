@@ -22,6 +22,9 @@ const char kGalleryAppId[] = "nlkncpkkdoccmpiclbokaimcnedabhhm";
 // The audio player's app ID.
 const char kAudioPlayerAppId[] = "cjbfomnbifhcdnihkgipgfcihmgjfhbf";
 
+// The text editor's app ID.
+const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
+
 // The image loader extension's ID.
 const char kImageLoaderExtensionId[] = "pmfjbimdmchhbnneeidfognadeopoehp";
 

@@ -128,9 +128,7 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
     return false;
 
   const char* const kBuiltInApps[] = {
-    kFileManagerAppId,
-    kVideoPlayerAppId,
-    kGalleryAppId,
+      kFileManagerAppId, kVideoPlayerAppId, kGalleryAppId, kTextEditorAppId,
   };
 
   for (size_t i = 0; i < arraysize(kBuiltInApps); ++i) {

@@ -335,6 +335,30 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
   EXPECT_TRUE(tasks[0].is_default());
 }
 
+// Test that Text.app is chosen as default even if nothing is set in the
+// preferences.
+TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackTextApp) {
+  TestingPrefServiceSimple pref_service;
+  RegisterDefaultTaskPreferences(&pref_service);
+
+  // The text editor app was found for "foo.txt".
+  TaskDescriptor files_app_task(kTextEditorAppId, TASK_TYPE_FILE_HANDLER,
+                                "Text");
+  std::vector<FullTaskDescriptor> tasks;
+  tasks.push_back(FullTaskDescriptor(
+      files_app_task, "Text", Verb::VERB_OPEN_WITH,
+      GURL("chrome://extension-icon/mmfbcljfglbokpmkimbfghdkjmjhdgbg/16/1"),
+      false /* is_default */, false /* is_generic_file_handler */));
+  std::vector<extensions::EntryInfo> entries;
+  entries.push_back(extensions::EntryInfo(
+      base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain", false));
+
+  // The text editor app should be chosen as default, as it's a fallback file
+  // browser handler.
+  ChooseAndSetDefaultTask(pref_service, entries, &tasks);
+  EXPECT_TRUE(tasks[0].is_default());
+}
+
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches
 // with files as good match or not.
 TEST(FileManagerFileTasksTest, IsGoodMatchFileHandler) {
