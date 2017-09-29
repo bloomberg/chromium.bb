@@ -1132,7 +1132,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
 
       int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
-      int_mv ref_mvs[MAX_MV_REF_CANDIDATES] = {};
+      int_mv ref_mvs[MAX_MV_REF_CANDIDATES];
 
       av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
                        xd->ref_mv_stack[INTRA_FRAME],
