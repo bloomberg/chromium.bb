@@ -4,9 +4,9 @@
 
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +32,8 @@ class ArcIntentHelperTest : public testing::Test {
 
  private:
   void SetUp() override {
-    arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
-    instance_ = base::MakeUnique<ArcIntentHelperBridge>(
+    arc_bridge_service_ = std::make_unique<ArcBridgeService>();
+    instance_ = std::make_unique<ArcIntentHelperBridge>(
         nullptr /* context */, arc_bridge_service_.get());
   }
 
@@ -151,7 +151,7 @@ TEST_F(ArcIntentHelperTest, TestObserver) {
   };
 
   // Observer should be called when intent filter is updated.
-  auto observer = base::MakeUnique<FakeObserver>();
+  auto observer = std::make_unique<FakeObserver>();
   instance_->AddObserver(observer.get());
   EXPECT_FALSE(observer->IsUpdated());
   instance_->OnIntentFiltersUpdated(std::vector<IntentFilter>());

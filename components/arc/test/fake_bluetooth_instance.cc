@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/arc/test/fake_bluetooth_instance.h"
 
 namespace arc {
@@ -60,7 +59,7 @@ void FakeBluetoothInstance::OnLEDeviceFound(
     mojom::BluetoothAddressPtr addr,
     int32_t rssi,
     std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data) {
-  le_device_found_data_.push_back(base::MakeUnique<LEDeviceFoundData>(
+  le_device_found_data_.push_back(std::make_unique<LEDeviceFoundData>(
       std::move(addr), rssi, std::move(adv_data)));
 }
 
@@ -80,7 +79,7 @@ void FakeBluetoothInstance::OnGetGattDB(
     mojom::BluetoothAddressPtr remote_addr,
     std::vector<mojom::BluetoothGattDBElementPtr> db) {
   gatt_db_result_.push_back(
-      base::MakeUnique<GattDBResult>(std::move(remote_addr), std::move(db)));
+      std::make_unique<GattDBResult>(std::move(remote_addr), std::move(db)));
 }
 
 void FakeBluetoothInstance::OnServicesRemoved(
