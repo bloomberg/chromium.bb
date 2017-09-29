@@ -1028,10 +1028,6 @@ component("net") {
       "nqe/throughput_analyzer.cc",
       "nqe/throughput_analyzer.h",
       "nqe/weighted_observation.h",
-      "ntlm/des.cc",
-      "ntlm/des.h",
-      "ntlm/md4.cc",
-      "ntlm/md4.h",
       "ntlm/ntlm.cc",
       "ntlm/ntlm.h",
       "ntlm/ntlm_buffer_reader.cc",
@@ -1786,10 +1782,6 @@ component("net") {
 
     if (is_win) {
       sources -= [
-        "ntlm/des.cc",
-        "ntlm/des.h",
-        "ntlm/md4.cc",
-        "ntlm/md4.h",
         "ntlm/ntlm.cc",
         "ntlm/ntlm.h",
         "ntlm/ntlm_buffer_reader.cc",
@@ -4919,8 +4911,6 @@ test("net_unittests") {
     "nqe/observation_buffer_unittest.cc",
     "nqe/socket_watcher_unittest.cc",
     "nqe/throughput_analyzer_unittest.cc",
-    "ntlm/des_unittest.cc",
-    "ntlm/md4_unittest.cc",
     "ntlm/ntlm_buffer_reader_unittest.cc",
     "ntlm/ntlm_buffer_writer_unittest.cc",
     "ntlm/ntlm_client_unittest.cc",
@@ -5339,8 +5329,6 @@ test("net_unittests") {
   if (is_win) {
     sources -= [
       "http/http_auth_handler_ntlm_portable_unittest.cc",
-      "ntlm/des_unittest.cc",
-      "ntlm/md4_unittest.cc",
       "ntlm/ntlm_buffer_reader_unittest.cc",
       "ntlm/ntlm_buffer_writer_unittest.cc",
       "ntlm/ntlm_client_unittest.cc",

@@ -22,12 +22,17 @@
 #include "net/base/net_export.h"
 #include "net/ntlm/ntlm_constants.h"
 
-namespace base {
-struct MD5Digest;
-}
-
 namespace net {
 namespace ntlm {
+
+// Maps the bits in the NTLM Hash into 3 DES keys. The DES keys each have 56
+// bits stored in the 7 most significant bits of 8 bytes. The least
+// significant bit is undefined and will subsequently be set with odd parity
+// prior to use.
+// |ntlm_hash| must contain 16 bytes.
+// |keys| must contain 24 bytes.
+NET_EXPORT_PRIVATE void Create3DesKeysFromNtlmHash(const uint8_t* ntlm_hash,
+                                                   uint8_t* keys);
 
 // Generates the NTLMv1 Hash and writes the |kNtlmHashLen| byte result to
 // |hash|. Defined by NTOWFv1() in [MS-NLMP] Section 3.3.1.
@@ -92,10 +97,11 @@ NET_EXPORT_PRIVATE void GenerateLMResponseV1WithSessionSecurity(
 //
 // |server_challenge| must contain |kChallengeLen| bytes.
 // |client_challenge| must contain |kChallengeLen| bytes.
+// |session_hash| must contain |kNtlmHashLen|.
 NET_EXPORT_PRIVATE void GenerateSessionHashV1WithSessionSecurity(
     const uint8_t* server_challenge,
     const uint8_t* client_challenge,
-    base::MD5Digest* session_hash);
+    uint8_t* session_hash);
 
 // Generates the NTLM Response for NTLMv1 with session security.
 // Defined by ComputeResponse() in [MS-NLMP] Section 3.3.1 for the
@@ -216,7 +222,7 @@ NET_EXPORT_PRIVATE void GenerateSessionBaseKeyV2(const uint8_t* v2_hash,
 //     channel_bindings_hash = MD5(ClientChannelBindingsUnhashed)
 NET_EXPORT_PRIVATE void GenerateChannelBindingHashV2(
     const std::string& channel_bindings,
-    base::MD5Digest* channel_bindings_hash);
+    uint8_t* channel_bindings_hash);
 
 // The Message Integrity Check (MIC) is a hash calculated over all three
 // messages in the NTLM protocol. The MIC field in the authenticate message
