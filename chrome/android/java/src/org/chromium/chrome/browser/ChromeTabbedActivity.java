@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -770,10 +769,8 @@ public class ChromeTabbedActivity
 
             final Tracker tracker =
                     TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-            tracker.addOnInitializedCallback((Callback<Boolean>) success
-                    -> maybeShowDownloadHomeTextBubble(tracker,
-                            FeatureConstants.DOWNLOAD_HOME_FEATURE, R.string.iph_download_home_text,
-                            R.string.iph_download_home_accessibility_text));
+            tracker.addOnInitializedCallback(
+                    (Callback<Boolean>) success -> maybeShowDownloadHomeTextBubble(tracker));
 
             mScreenshotMonitor = ScreenshotMonitor.create(ChromeTabbedActivity.this);
 
@@ -783,8 +780,7 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void maybeShowDownloadHomeTextBubble(final Tracker tracker, String featureName,
-            @StringRes int stringId, @StringRes int accessibilityStringId) {
+    private void maybeShowDownloadHomeTextBubble(final Tracker tracker) {
         // Don't show the IPH, if bottom sheet is already open.
         if (FeatureUtilities.isChromeHomeEnabled()
                 && (getBottomSheet() == null
@@ -792,13 +788,23 @@ public class ChromeTabbedActivity
             return;
         }
 
-        if (!tracker.shouldTriggerHelpUI(featureName)) return;
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
 
-        ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(this,
-                getToolbarAnchorViewForDownloadHomeTextBubble(), stringId, accessibilityStringId);
+        int accessibilityStringId = R.string.iph_download_home_accessibility_text;
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            accessibilityStringId = R.string.iph_download_home_accessibility_text_chrome_home;
+            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+                accessibilityStringId =
+                        R.string.iph_download_home_accessibility_text_chrome_home_expand;
+            }
+        }
+
+        ViewAnchoredTextBubble textBubble =
+                new ViewAnchoredTextBubble(this, getToolbarAnchorViewForDownloadHomeTextBubble(),
+                        R.string.iph_download_home_text, accessibilityStringId);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
-            tracker.dismissed(featureName);
+            tracker.dismissed(FeatureConstants.DOWNLOAD_HOME_FEATURE);
             turnOffHighlightForDownloadHomeTextBubble();
         }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
 
@@ -2248,10 +2254,8 @@ public class ChromeTabbedActivity
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                maybeShowDownloadHomeTextBubble(tracker,
-                        FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE,
-                        R.string.iph_download_page_for_offline_usage_text,
-                        R.string.iph_download_page_for_offline_usage_accessibility_text);
+                getToolbarManager().showDownloadPageTextBubble(
+                        getActivityTab(), FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE);
             }
         });
     }
