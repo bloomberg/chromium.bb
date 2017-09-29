@@ -204,7 +204,9 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     int width = requested_media.size_microns.width() / kFromUm;
     int height = requested_media.size_microns.height() / kFromUm;
     unsigned id = 0;
-    if (base::StringToUint(requested_media.vendor_id, &id) && id) {
+    // If the paper size is a custom user size, setting by ID may not work.
+    if (base::StringToUint(requested_media.vendor_id, &id) && id &&
+        id < DMPAPER_USER) {
       dev_mode->dmFields |= DM_PAPERSIZE;
       dev_mode->dmPaperSize = static_cast<short>(id);
     } else if (width > 0 && height > 0) {
