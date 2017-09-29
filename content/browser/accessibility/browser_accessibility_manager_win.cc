@@ -144,12 +144,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
                              GetRoot());
   }
 
-  if (!can_fire_events &&
-      !load_complete_pending_ &&
-      event_type == ui::AX_EVENT_LOAD_COMPLETE &&
-      GetRoot() &&
-      !GetRoot()->HasState(ui::AX_STATE_OFFSCREEN) &&
-      GetRoot()->PlatformChildCount() > 0) {
+  if (!can_fire_events && !load_complete_pending_ &&
+      event_type == ui::AX_EVENT_LOAD_COMPLETE && GetRoot() &&
+      !GetRoot()->IsOffscreen() && GetRoot()->PlatformChildCount() > 0) {
     load_complete_pending_ = true;
   }
 

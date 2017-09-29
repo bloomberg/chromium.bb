@@ -45,6 +45,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
+  bool IsOffscreen() const override;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);

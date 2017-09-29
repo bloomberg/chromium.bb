@@ -1004,10 +1004,8 @@ void AutomationInternalCustomBindings::GetState(
   gin::DataObjectBuilder state(isolate);
   uint32_t state_pos = 0, state_shifter = node->data().state;
   while (state_shifter) {
-    if (state_pos != ui::AX_STATE_OFFSCREEN) {
-      if (state_shifter & 1)
-        state.Set(ToString(static_cast<ui::AXState>(state_pos)), true);
-    }
+    if (state_shifter & 1)
+      state.Set(ToString(static_cast<ui::AXState>(state_pos)), true);
     state_shifter = state_shifter >> 1;
     state_pos++;
   }
@@ -1022,12 +1020,12 @@ void AutomationInternalCustomBindings::GetState(
        focused_cache == cache && focused_node == node) ||
       cache->tree.data().focus_id == node->id();
   if (focused)
-    state.Set("focused", true);
+    state.Set(ToString(api::automation::STATE_TYPE_FOCUSED), true);
 
   bool offscreen = false;
   ComputeGlobalNodeBounds(cache, node, gfx::RectF(), &offscreen);
   if (offscreen)
-    state.Set(ToString(ui::AX_STATE_OFFSCREEN), true);
+    state.Set(ToString(api::automation::STATE_TYPE_OFFSCREEN), true);
 
   args.GetReturnValue().Set(state.Build());
 }

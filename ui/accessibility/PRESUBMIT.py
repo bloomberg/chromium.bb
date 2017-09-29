@@ -91,6 +91,8 @@ def CheckEnumsMatch(input_api, output_api):
 
   # Focused state only exists in automation.
   automation_enums['StateType'].remove('focused')
+  # Offscreen state only exists in automation.
+  automation_enums['StateType'].remove('offscreen')
 
   errs = []
   CheckMatchingEnum(ax_enums, 'AXRole', automation_enums, 'RoleType', errs,

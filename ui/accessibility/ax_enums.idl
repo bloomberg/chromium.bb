@@ -217,7 +217,6 @@
     linked,
     multiline,
     multiselectable,
-    offscreen,
     protected,
     required,
     richly_editable,

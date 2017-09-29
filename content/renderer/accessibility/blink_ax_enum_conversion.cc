@@ -40,9 +40,6 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.IsMultiSelectable())
     state |= (1 << ui::AX_STATE_MULTISELECTABLE);
 
-  if (o.IsOffScreen())
-    state |= (1 << ui::AX_STATE_OFFSCREEN);
-
   if (o.IsPasswordField())
     state |= (1 << ui::AX_STATE_PROTECTED);
 

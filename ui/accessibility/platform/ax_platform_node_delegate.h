@@ -76,6 +76,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // has focus.
   virtual gfx::NativeViewAccessible GetFocus() = 0;
 
+  // Get whether this node is offscreen.
+  virtual bool IsOffscreen() const = 0;
+
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 
   //

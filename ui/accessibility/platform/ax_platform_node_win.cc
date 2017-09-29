@@ -3572,7 +3572,7 @@ int AXPlatformNodeWin::MSAAState() {
     msaa_state |= STATE_SYSTEM_MULTISELECTABLE;
   }
 
-  if (data.HasState(AX_STATE_OFFSCREEN))
+  if (delegate_->IsOffscreen())
     msaa_state |= STATE_SYSTEM_OFFSCREEN;
 
   if (data.HasState(AX_STATE_PROTECTED))

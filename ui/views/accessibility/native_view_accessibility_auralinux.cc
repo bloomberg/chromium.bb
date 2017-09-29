@@ -106,6 +106,11 @@ class AuraLinuxApplication
     return nullptr;
   }
 
+  bool IsOffscreen() const override {
+    // TODO: need to implement.
+    return false;
+  }
+
   int GetIndexInParent() const override { return -1; }
 
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override { return nullptr; }
