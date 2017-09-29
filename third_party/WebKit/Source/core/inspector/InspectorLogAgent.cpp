@@ -141,7 +141,7 @@ Response InspectorLogAgent::enable() {
             .setSource(protocol::Log::LogEntry::SourceEnum::Other)
             .setLevel(protocol::Log::LogEntry::LevelEnum::Warning)
             .setText(String::Number(storage_->ExpiredCount()) +
-                     String(" log entires are not shown."))
+                     String(" log entries are not shown."))
             .setTimestamp(0)
             .build();
     GetFrontend()->entryAdded(std::move(expired));
