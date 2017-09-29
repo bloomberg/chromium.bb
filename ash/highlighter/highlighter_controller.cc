@@ -131,6 +131,7 @@ void HighlighterController::RecognizeGesture() {
 
   aura::Window* current_window =
       highlighter_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  const gfx::Rect bounds = current_window->bounds();
 
   const FastInkPoints& points = highlighter_view_->points();
   gfx::RectF box = points.GetBoundingBoxF();
@@ -145,8 +146,7 @@ void HighlighterController::RecognizeGesture() {
     box = AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
   } else if (gesture_type == HighlighterGestureType::kClosedShape) {
     const float fraction =
-        box.width() * box.height() /
-        (current_window->bounds().width() * current_window->bounds().height());
+        box.width() * box.height() / (bounds.width() * bounds.height());
     UMA_HISTOGRAM_PERCENTAGE("Ash.Shelf.Palette.Assistant.CircledPercentage",
                              static_cast<int>(fraction * 100));
   }
@@ -157,17 +157,28 @@ void HighlighterController::RecognizeGesture() {
                  base::Unretained(this)));
 
   if (gesture_type != HighlighterGestureType::kNotRecognized) {
-    if (observer_) {
-      observer_->HandleSelection(gfx::ToEnclosingRect(
-          gfx::ScaleRect(box, GetScreenshotScale(current_window))));
+    // |box| is not guaranteed to be inside the screen bounds, clip it.
+    // Not converting |box| to gfx::Rect here to avoid accumulating rounding
+    // errors, instead converting |bounds| to gfx::RectF.
+    box.Intersect(
+        gfx::RectF(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
+    if (box.IsEmpty()) {
+      if (observer_)
+        observer_->HandleFailedSelection();
+    } else {
+      if (observer_) {
+        observer_->HandleSelection(gfx::ToEnclosingRect(
+            gfx::ScaleRect(box, GetScreenshotScale(current_window))));
+      }
+
+      result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
+      result_view_->Animate(
+          box, gesture_type,
+          base::Bind(&HighlighterController::DestroyResultView,
+                     base::Unretained(this)));
+
+      recognized_gesture_counter_++;
     }
-
-    result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
-    result_view_->Animate(box, gesture_type,
-                          base::Bind(&HighlighterController::DestroyResultView,
-                                     base::Unretained(this)));
-
-    recognized_gesture_counter_++;
   } else if (observer_) {
     observer_->HandleFailedSelection();
   }

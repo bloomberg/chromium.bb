@@ -348,4 +348,84 @@ TEST_F(HighlighterControllerTest, InterruptedStroke) {
   EXPECT_TRUE(controller_test_api_->IsFadingAway());
 }
 
+// Test that the selection is never crossing the screen bounds.
+TEST_F(HighlighterControllerTest, SelectionInsideScreen) {
+  controller_test_api_->SetEnabled(true);
+  GetEventGenerator().EnterPenPointerMode();
+
+  constexpr float display_scales[] = {1.f, 1.5f, 2.0f};
+
+  for (size_t i = 0; i < sizeof(display_scales) / sizeof(float); ++i) {
+    std::string display_spec =
+        base::StringPrintf("1000x1000*%.2f", display_scales[i]);
+    SCOPED_TRACE(display_spec);
+    UpdateDisplay(display_spec);
+
+    const gfx::Rect screen(0, 0, 1000, 1000);
+
+    // Rectangle completely offscreen.
+    controller_test_api_->ResetSelection();
+    TraceRect(gfx::Rect(-100, -100, 10, 10));
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_failed_selection_called());
+
+    // Rectangle crossing the left edge.
+    controller_test_api_->ResetSelection();
+    TraceRect(gfx::Rect(-100, 100, 200, 200));
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+
+    // Rectangle crossing the top edge.
+    controller_test_api_->ResetSelection();
+    TraceRect(gfx::Rect(100, -100, 200, 200));
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+
+    // Rectangle crossing the right edge.
+    controller_test_api_->ResetSelection();
+    TraceRect(gfx::Rect(900, 100, 200, 200));
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+
+    // Rectangle crossing the bottom edge.
+    controller_test_api_->ResetSelection();
+    TraceRect(gfx::Rect(100, 900, 200, 200));
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+
+    // Horizontal stroke completely offscreen.
+    controller_test_api_->ResetSelection();
+    GetEventGenerator().MoveTouch(gfx::Point(0, -100));
+    GetEventGenerator().PressTouch();
+    GetEventGenerator().MoveTouch(gfx::Point(1000, -100));
+    GetEventGenerator().ReleaseTouch();
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_failed_selection_called());
+
+    // Horizontal stroke along the top edge of the screen.
+    controller_test_api_->ResetSelection();
+    GetEventGenerator().MoveTouch(gfx::Point(0, 0));
+    GetEventGenerator().PressTouch();
+    GetEventGenerator().MoveTouch(gfx::Point(1000, 0));
+    GetEventGenerator().ReleaseTouch();
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+
+    // Horizontal stroke along the bottom edge of the screen.
+    controller_test_api_->ResetSelection();
+    GetEventGenerator().MoveTouch(gfx::Point(0, 999));
+    GetEventGenerator().PressTouch();
+    GetEventGenerator().MoveTouch(gfx::Point(1000, 999));
+    GetEventGenerator().ReleaseTouch();
+    controller_test_api_->SimulateInterruptedStrokeTimeout();
+    EXPECT_TRUE(controller_test_api_->handle_selection_called());
+    EXPECT_TRUE(screen.Contains(controller_test_api_->selection()));
+  }
+}
+
 }  // namespace ash

@@ -29,6 +29,8 @@ void HighlighterControllerTestApi::DestroyPointerView() {
 }
 
 void HighlighterControllerTestApi::SimulateInterruptedStrokeTimeout() {
+  if (!instance_->interrupted_stroke_timer_)
+    return;
   instance_->interrupted_stroke_timer_->Stop();
   instance_->RecognizeGesture();
 }
