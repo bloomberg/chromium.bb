@@ -81,6 +81,40 @@ void SessionMetricsRecorder::WillStopSession(StopTrigger trigger) {
                              base::TimeDelta::FromSeconds(15),
                              base::TimeDelta::FromHours(12), 50);
 
+  if (session_duration <= base::TimeDelta::FromSeconds(15)) {
+    // Record the session duration in finer scale for short sessions
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Remoting.ShortSessionDuration",
+                               session_duration,
+                               base::TimeDelta::FromSecondsD(0.1),
+                               base::TimeDelta::FromSeconds(15), 60);
+
+    if (session_duration <= base::TimeDelta::FromSecondsD(0.1)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration0To100MilliSec", trigger,
+          STOP_TRIGGER_MAX + 1);
+    } else if (session_duration <= base::TimeDelta::FromSeconds(1)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration100MilliSecTo1Sec",
+          trigger, STOP_TRIGGER_MAX + 1);
+    } else if (session_duration <= base::TimeDelta::FromSeconds(3)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration1To3Sec", trigger,
+          STOP_TRIGGER_MAX + 1);
+    } else if (session_duration <= base::TimeDelta::FromSeconds(5)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration3To5Sec", trigger,
+          STOP_TRIGGER_MAX + 1);
+    } else if (session_duration <= base::TimeDelta::FromSeconds(10)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration5To10Sec", trigger,
+          STOP_TRIGGER_MAX + 1);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.Remoting.SessionStopTrigger.Duration10To15Sec", trigger,
+          STOP_TRIGGER_MAX + 1);
+    }
+  }
+
   // Reset |start_trigger_| since metrics recording of the current remoting
   // session has now completed.
   start_trigger_ = base::nullopt;
