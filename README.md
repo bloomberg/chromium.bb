@@ -74,8 +74,8 @@ Makefiles generator, setting `CMAKE_BUILD_TYPE` to Debug is sufficient:
 ~~~
 
 For Xcode, mainly because configuration controls for Xcode builds are buried two
-configuration windows deep and must be set for each subproject within Xcode IDE
-individually, `CMAKE_CONFIGURATION_TYPES` should be set to Debug:
+configuration windows deep and must be set for each subproject within the Xcode
+IDE individually, `CMAKE_CONFIGURATION_TYPES` should be set to Debug:
 
 ~~~
     $ cmake path/to/aom -G Xcode -DCMAKE_CONFIGURATION_TYPES=Debug
@@ -85,7 +85,7 @@ For Visual Studio the in-IDE configuration controls should be used. Simply set
 the IDE project configuration to Debug to allow for stepping through the code.
 
 In addition to the above it can sometimes be useful to debug only C and C++
-code. To disable all assembly code and instrinsics set `AOM_TARGET_CPU` to
+code. To disable all assembly code and intrinsics set `AOM_TARGET_CPU` to
 generic at generation time:
 
 ~~~
@@ -110,7 +110,9 @@ The toolchain files available at the time of this writing are:
  - x86-ios-simulator.cmake
  - x86-linux.cmake
  - x86-macos.cmake
+ - x86-mingw-gcc.cmake
  - x86\_64-ios-simulator.cmake
+ - x86\_64-mingw-gcc.cmake
 
 The following example demonstrates use of the x86-macos.cmake toolchain file on
 a x86\_64 MacOS host:
