@@ -6,8 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -444,11 +442,4 @@ TEST(StartupTabProviderTest, GetNewTabPageTabsForState_Negative) {
       StartupTabProviderImpl::GetNewTabPageTabsForState(pref_last);
 
   ASSERT_TRUE(output.empty());
-}
-
-TEST(StartupTabProviderTest, IncognitoProfile) {
-  content::TestBrowserThreadBundle thread_bundle;
-  TestingProfile profile;
-  Profile* incognito = profile.GetOffTheRecordProfile();
-  EXPECT_TRUE(StartupTabProviderImpl().GetOnboardingTabs(incognito).empty());
 }
