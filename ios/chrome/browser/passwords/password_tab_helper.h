@@ -13,6 +13,7 @@
 @protocol FormInputAccessoryViewProvider;
 @protocol FormSuggestionProvider;
 @class PasswordController;
+@protocol PasswordControllerDelegate;
 @protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
 
@@ -33,6 +34,9 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // Sets the PasswordController dispatcher.
   void SetDispatcher(id<ApplicationCommands> dispatcher);
+
+  // Sets the PasswordController delegate.
+  void SetPasswordControllerDelegate(id<PasswordControllerDelegate> delegate);
 
   // Returns an object that can provide suggestions from the PasswordController.
   // May return nil.

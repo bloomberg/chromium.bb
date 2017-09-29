@@ -133,7 +133,7 @@ void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
     const GURL& origin) {
   DCHECK(!local_forms.empty());
   helper_.NotifyUserAutoSignin();
-  // TODO(crbug.com/435048): Show dialog to inform user about auto sign-in.
+  [delegate_ showAutosigninNotification:std::move(local_forms[0])];
 }
 
 void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(

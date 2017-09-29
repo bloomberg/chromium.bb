@@ -15,15 +15,28 @@
 
 @protocol ApplicationCommands;
 @protocol FormInputAccessoryViewProvider;
+@class NotifyUserAutoSigninViewController;
 @protocol PasswordFormFiller;
 @class PasswordGenerationAgent;
 @protocol PasswordsUiDelegate;
+@class UIViewController;
 
 namespace password_manager {
 class PasswordGenerationManager;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 }  // namespace password_manager
+
+// Delegate for registering view controller and displaying its view. Used to
+// add views to BVC.
+@protocol PasswordControllerDelegate
+
+// Adds |viewController| as child controller in order to display auto sign-in
+// notification. Returns YES if view was displayed, NO otherwise.
+- (BOOL)displaySignInNotification:(UIViewController*)viewController
+                        fromTabId:(NSString*)tabId;
+
+@end
 
 // Per-tab password controller. Handles password autofill and saving.
 @interface PasswordController : NSObject<CRWWebStateObserver,
@@ -56,6 +69,9 @@ class PasswordManagerDriver;
 // The dispatcher used for the PasswordController. This property can return nil
 // even after being set to a non-nil object.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
+// Delegate used by this PasswordController to show UI on BVC.
+@property(weak, nonatomic) id<PasswordControllerDelegate> delegate;
 
 // |webState| should not be nil.
 - (instancetype)initWithWebState:(web::WebState*)webState
