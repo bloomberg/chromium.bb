@@ -7,20 +7,24 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/435048): Add UIImageView with user's avatar.
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
+class GURL;
 
 // UIViewController for the notification about auto sign-in.
 @interface NotifyUserAutoSigninViewController : UIViewController
 
-- (instancetype)initWithUsername:(NSString*)username NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUsername:(NSString*)username
+                         iconURL:(GURL)iconURL
+                   contextGetter:(net::URLRequestContextGetter*)contextGetter
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
-
-// Username, corresponding to Credential.id field in JS.
-@property(copy, nonatomic) NSString* username;
 
 @end
 

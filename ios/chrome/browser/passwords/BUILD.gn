@@ -55,6 +55,8 @@ source_set("passwords") {
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/browser_sync",
+    "//components/image_fetcher/core",
+    "//components/image_fetcher/ios",
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
@@ -86,6 +88,7 @@ source_set("passwords") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios:material_components_ios",
     "//ios/web",
+    "//third_party/material_design_icons:ic_account_circle",
     "//ui/base",
     "//url",
   ]
