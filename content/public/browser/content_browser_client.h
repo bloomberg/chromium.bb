@@ -356,7 +356,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the fully qualified path to the log file name, or an empty path.
   // This function is used by the sandbox to allow write access to the log.
-  virtual base::FilePath GetLoggingFileName();
+  virtual base::FilePath GetLoggingFileName(
+      const base::CommandLine& command_line);
 
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.

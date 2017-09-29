@@ -343,7 +343,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
-  base::FilePath GetLoggingFileName() override;
+  base::FilePath GetLoggingFileName(
+      const base::CommandLine& command_line) override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const base::Callback<content::WebContents*()>& wc_getter) override;

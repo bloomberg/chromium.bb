@@ -55,7 +55,7 @@ base::FilePath GetSessionLogFile(const base::CommandLine& command_line);
 void CleanupChromeLogging();
 
 // Returns the fully-qualified name of the log file.
-base::FilePath GetLogFileName();
+base::FilePath GetLogFileName(const base::CommandLine& command_line);
 
 // Returns true when error/assertion dialogs are not to be shown, false
 // otherwise.

@@ -70,7 +70,7 @@ void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
                              std::to_string(getpid())));
 
   std::string logging_path =
-      GetContentClient()->browser()->GetLoggingFileName().value();
+      GetContentClient()->browser()->GetLoggingFileName(*command_line).value();
   CHECK(client->SetParameter(Sandbox::kSandboxLoggingPathAsLiteral,
                              logging_path));
 
