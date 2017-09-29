@@ -153,23 +153,6 @@ TEST(MojoDecoderBufferConverterTest, Chunked) {
   converter.ConvertAndVerify(buffer);
 }
 
-// This test verifies that MojoDecoderBufferWriter returns NULL if data pipe
-// is already closed.
-TEST(MojoDecoderBufferConverterTest, ReaderSidePipeError) {
-  base::MessageLoop message_loop;
-  const uint8_t kData[] = "Hello, world";
-  const size_t kDataSize = arraysize(kData);
-  scoped_refptr<DecoderBuffer> media_buffer =
-      DecoderBuffer::CopyFrom(kData, kDataSize);
-
-  MojoDecoderBufferConverter converter;
-  // Before sending the buffer, close the handle on reader side.
-  converter.reader.reset();
-  mojom::DecoderBufferPtr mojo_buffer =
-      converter.writer->WriteDecoderBuffer(media_buffer);
-  EXPECT_TRUE(mojo_buffer.is_null());
-}
-
 // This test verifies that MojoDecoderBufferReader::ReadCB is called with a
 // NULL DecoderBuffer if data pipe is closed during transmission.
 TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
@@ -195,6 +178,54 @@ TEST(MojoDecoderBufferConverterTest, WriterSidePipeError) {
   // Before the entire data is transmitted, close the handle on writer side.
   // The reader side will get notified and report the error.
   converter.writer.reset();
+  run_loop.Run();
+}
+
+// This test verifies that MojoDecoderBuffer supports concurrent writes and
+// reads.
+TEST(MojoDecoderBufferConverterTest, ConcurrentDecoderBuffers) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  // Prevent all of the buffers from fitting at once to exercise the chunking
+  // logic.
+  MojoDecoderBufferConverter converter(4);
+
+  // Three buffers: normal, EOS, normal.
+  const uint8_t kData[] = "Hello, world";
+  const size_t kDataSize = arraysize(kData);
+  scoped_refptr<DecoderBuffer> media_buffer1 =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+  scoped_refptr<DecoderBuffer> media_buffer2(DecoderBuffer::CreateEOSBuffer());
+  scoped_refptr<DecoderBuffer> media_buffer3 =
+      DecoderBuffer::CopyFrom(kData, kDataSize);
+
+  // Expect the read callbacks to be issued in the same order.
+  ::testing::InSequence scoper;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb1;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb2;
+  base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb3;
+  EXPECT_CALL(mock_cb1, Run(MatchesDecoderBuffer(media_buffer1)));
+  EXPECT_CALL(mock_cb2, Run(MatchesDecoderBuffer(media_buffer2)));
+  EXPECT_CALL(mock_cb3, Run(MatchesDecoderBuffer(media_buffer3)))
+      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // Write all of the buffers at once.
+  mojom::DecoderBufferPtr mojo_buffer1 =
+      converter.writer->WriteDecoderBuffer(media_buffer1);
+  mojom::DecoderBufferPtr mojo_buffer2 =
+      converter.writer->WriteDecoderBuffer(media_buffer2);
+  mojom::DecoderBufferPtr mojo_buffer3 =
+      converter.writer->WriteDecoderBuffer(media_buffer3);
+
+  // Read all of the buffers at once.
+  // Technically could be satisfied by ReadDecoderBuffer() blocking, but that's
+  // actually a valid implementation. (Quitting the |run_loop| won't work
+  // properly with that setup though.)
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer1), mock_cb1.Get());
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer2), mock_cb2.Get());
+  converter.reader->ReadDecoderBuffer(std::move(mojo_buffer3), mock_cb3.Get());
+
   run_loop.Run();
 }
 
