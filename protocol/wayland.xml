@@ -57,6 +57,12 @@
 	This request creates a registry object that allows the client
 	to list and bind the global objects available from the
 	compositor.
+
+	It should be noted that the server side resources consumed in
+	response to a get_registry request can only be released when the
+	client disconnects, not when the client side proxy is destroyed.
+	Therefore, clients should invoke get_registry as infrequently as
+	possible to avoid wasting memory.
       </description>
       <arg name="registry" type="new_id" interface="wl_registry"
 	   summary="global registry object"/>
