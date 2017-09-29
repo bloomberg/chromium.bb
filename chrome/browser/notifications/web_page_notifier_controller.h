@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_SOURCE_H_
-#define CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_SOURCE_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_CONTROLLER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_CONTROLLER_H_
 
-#include "chrome/browser/notifications/notifier_source.h"
+#include "chrome/browser/notifications/notifier_controller.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace base {
@@ -16,10 +16,10 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
-class WebPageNotifierSource : public NotifierSource {
+class WebPageNotifierController : public NotifierController {
  public:
-  explicit WebPageNotifierSource(Observer* observer);
-  ~WebPageNotifierSource() override;
+  explicit WebPageNotifierController(Observer* observer);
+  ~WebPageNotifierController() override;
 
   std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
       Profile* profile) override;
@@ -29,8 +29,6 @@ class WebPageNotifierSource : public NotifierSource {
                           bool enabled) override;
 
   void OnNotifierSettingsClosing() override;
-
-  message_center::NotifierId::NotifierType GetNotifierType() override;
 
  private:
   void OnFaviconLoaded(const GURL& url,
@@ -45,4 +43,4 @@ class WebPageNotifierSource : public NotifierSource {
   Observer* observer_;
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_SOURCE_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_WEB_PAGE_NOTIFIER_CONTROLLER_H_

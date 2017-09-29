@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/application_notifier_source.h"
+#include "chrome/browser/notifications/extension_notifier_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
@@ -15,13 +15,13 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/message_center/notifier_settings.h"
 
-ApplicationNotifierSource::ApplicationNotifierSource(Observer* observer)
+ExtensionNotifierController::ExtensionNotifierController(Observer* observer)
     : observer_(observer) {}
 
-ApplicationNotifierSource::~ApplicationNotifierSource() {}
+ExtensionNotifierController::~ExtensionNotifierController() {}
 
 std::vector<std::unique_ptr<message_center::Notifier>>
-ApplicationNotifierSource::GetNotifierList(Profile* profile) {
+ExtensionNotifierController::GetNotifierList(Profile* profile) {
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
@@ -60,7 +60,7 @@ ApplicationNotifierSource::GetNotifierList(Profile* profile) {
   return notifiers;
 }
 
-void ApplicationNotifierSource::SetNotifierEnabled(
+void ExtensionNotifierController::SetNotifierEnabled(
     Profile* profile,
     const message_center::NotifierId& notifier_id,
     bool enabled) {
@@ -69,13 +69,9 @@ void ApplicationNotifierSource::SetNotifierEnabled(
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
 }
 
-message_center::NotifierId::NotifierType
-ApplicationNotifierSource::GetNotifierType() {
-  return message_center::NotifierId::APPLICATION;
-}
-
-void ApplicationNotifierSource::OnAppImageUpdated(const std::string& id,
-                                                  const gfx::ImageSkia& image) {
+void ExtensionNotifierController::OnAppImageUpdated(
+    const std::string& id,
+    const gfx::ImageSkia& image) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::APPLICATION, id),
       gfx::Image(image));

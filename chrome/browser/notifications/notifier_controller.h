@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_SOURCE_H_
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_SOURCE_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_CONTROLLER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
@@ -17,7 +17,10 @@ namespace message_center {
 struct Notifier;
 }
 
-class NotifierSource {
+// An interface to control Notifiers, grouped by NotifierType. Controllers are
+// responsible for both collating display data and toggling settings in response
+// to user inputs.
+class NotifierController {
  public:
   class Observer {
    public:
@@ -27,11 +30,11 @@ class NotifierSource {
                                           bool enabled) = 0;
   };
 
-  NotifierSource() = default;
-  virtual ~NotifierSource() = default;
+  NotifierController() = default;
+  virtual ~NotifierController() = default;
 
-  // Returns notifiers.
-  // If the source starts loading for icon images, it needs to call
+  // Returns notifiers to display in the settings UI. Not all notifiers appear
+  // in settings. If the source starts loading for icon images, it needs to call
   // Observer::OnIconImageUpdated after the icon is loaded.
   virtual std::vector<std::unique_ptr<message_center::Notifier>>
   GetNotifierList(Profile* profile) = 0;
@@ -47,11 +50,8 @@ class NotifierSource {
   // time.
   virtual void OnNotifierSettingsClosing() {}
 
-  // Notifier type provided by the source.
-  virtual message_center::NotifierId::NotifierType GetNotifierType() = 0;
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(NotifierSource);
+  DISALLOW_COPY_AND_ASSIGN(NotifierController);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_SOURCE_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFIER_CONTROLLER_H_

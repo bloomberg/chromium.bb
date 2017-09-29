@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/web_page_notifier_source.h"
+#include "chrome/browser/notifications/web_page_notifier_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -15,13 +15,13 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon/core/favicon_service.h"
 
-WebPageNotifierSource::WebPageNotifierSource(Observer* observer)
+WebPageNotifierController::WebPageNotifierController(Observer* observer)
     : observer_(observer) {}
 
-WebPageNotifierSource::~WebPageNotifierSource() {}
+WebPageNotifierController::~WebPageNotifierController() {}
 
 std::vector<std::unique_ptr<message_center::Notifier>>
-WebPageNotifierSource::GetNotifierList(Profile* profile) {
+WebPageNotifierController::GetNotifierList(Profile* profile) {
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
 
   ContentSettingsForOneType settings;
@@ -55,7 +55,7 @@ WebPageNotifierSource::GetNotifierList(Profile* profile) {
     // that URL.
     favicon_service->GetFaviconImageForPageURL(
         url,
-        base::Bind(&WebPageNotifierSource::OnFaviconLoaded,
+        base::Bind(&WebPageNotifierController::OnFaviconLoaded,
                    base::Unretained(this), url),
         favicon_tracker_.get());
   }
@@ -63,7 +63,7 @@ WebPageNotifierSource::GetNotifierList(Profile* profile) {
   return notifiers;
 }
 
-void WebPageNotifierSource::SetNotifierEnabled(
+void WebPageNotifierController::SetNotifierEnabled(
     Profile* profile,
     const message_center::NotifierId& notifier_id,
     bool enabled) {
@@ -127,18 +127,13 @@ void WebPageNotifierSource::SetNotifierEnabled(
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
 }
 
-void WebPageNotifierSource::OnNotifierSettingsClosing() {
+void WebPageNotifierController::OnNotifierSettingsClosing() {
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
   patterns_.clear();
 }
 
-message_center::NotifierId::NotifierType
-WebPageNotifierSource::GetNotifierType() {
-  return message_center::NotifierId::WEB_PAGE;
-}
-
-void WebPageNotifierSource::OnFaviconLoaded(
+void WebPageNotifierController::OnFaviconLoaded(
     const GURL& url,
     const favicon_base::FaviconImageResult& favicon_result) {
   observer_->OnIconImageUpdated(message_center::NotifierId(url),
