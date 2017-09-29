@@ -22,15 +22,15 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='innerWrapper'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV class='red'",
-      "reason": "subtree"
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV id='ucp' class='green'",
-      "reason": "subtree"
+      "reason": "geometry"
     }
   ]
 }
