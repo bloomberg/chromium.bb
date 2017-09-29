@@ -34,12 +34,6 @@ If this option is greyed out, stay awake is probably disabled by policy. In that
 case, get another device or log in with a normal, unmanaged account (because the
 tests will break in exciting ways if stay awake is off).
 
-#### Enable Asserts
-
-```
-adb shell setprop debug.assert 1
-```
-
 #### Disable Verify Apps
 
 You may see a dialog like [this
