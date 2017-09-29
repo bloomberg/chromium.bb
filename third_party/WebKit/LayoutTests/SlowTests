@@ -137,6 +137,7 @@ crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]
 crbug.com/246190 [ Release ] virtual/mojo-loading/http/tests/devtools/indexeddb/ [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-events.html [ Slow ]
+crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.html [ Slow ]
 
 # Random slow tests
 webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.html [ Slow ]
