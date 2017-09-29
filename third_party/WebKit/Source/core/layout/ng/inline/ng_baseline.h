@@ -16,8 +16,6 @@ class NGLayoutInputNode;
 enum class NGBaselineAlgorithmType {
   // Compute baselines for atomic inlines.
   kAtomicInline,
-  // Compute baselines for atomic inlines using the first line style.
-  kAtomicInlineForFirstLine,
   // Compute baseline of first line box.
   kFirstLine
 };
