@@ -18,15 +18,13 @@ using ::testing::ElementsAreArray;
 
 namespace blink {
 namespace scheduler {
-
-namespace {
+// To avoid symbol collisions in jumbo builds.
+namespace worker_global_scope_scheduler_unittest {
 
 void AppendToVectorTestTask(std::vector<std::string>* vector,
                             std::string value) {
   vector->push_back(value);
 }
-
-}  // namespace
 
 class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
  public:
@@ -87,5 +85,6 @@ TEST_F(WorkerGlobalScopeSchedulerTest, TestPostTasks) {
   EXPECT_TRUE(run_order.empty());
 }
 
+}  // namespace worker_global_scope_scheduler_unittest
 }  // namespace scheduler
 }  // namespace blink
