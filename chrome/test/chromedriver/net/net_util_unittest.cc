@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "net/base/ip_endpoint.h"
@@ -33,7 +34,9 @@ class FetchUrlTest : public testing::Test,
  public:
   FetchUrlTest()
       : io_thread_("io"),
-        response_(kSendHello) {
+        response_(kSendHello),
+        scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(io_thread_.task_runner());
@@ -108,6 +111,7 @@ class FetchUrlTest : public testing::Test,
   std::unique_ptr<net::HttpServer> server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   std::string server_url_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 }  // namespace
