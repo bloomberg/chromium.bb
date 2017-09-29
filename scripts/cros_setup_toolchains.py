@@ -904,7 +904,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
     root: The root path to pull all packages/files from
   """
   # Link in all the files.
-  sym_paths = []
+  sym_paths = {}
   for path in paths:
     new_path = path_rewrite_func(path)
     dst = output_dir + new_path
@@ -916,7 +916,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
     if os.path.islink(src):
       tgt = os.readlink(src)
       if os.path.sep in tgt:
-        sym_paths.append((new_path, lddtree.normpath(ReadlinkRoot(src, root))))
+        sym_paths[lddtree.normpath(ReadlinkRoot(src, root))] = new_path
 
         # Rewrite absolute links to relative and then generate the symlink
         # ourselves.  All other symlinks can be hardlinked below.
@@ -926,11 +926,6 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
           continue
 
     os.link(src, dst)
-
-  # Now see if any of the symlinks need to be wrapped.
-  for sym, tgt in sym_paths:
-    if tgt in elfs:
-      GeneratePathWrapper(output_dir, sym, tgt)
 
   # Locate all the dependencies for all the ELFs.  Stick them all in the
   # top level "lib" dir to make the wrapper simpler.  This exact path does
@@ -950,6 +945,11 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
       lddtree.GenerateLdsoWrapper(output_dir, path_rewrite_func(elf), interp,
                                   libpaths=e['rpath'] + e['runpath'])
       FixClangXXWrapper(output_dir, path_rewrite_func(elf))
+
+      # Wrap any symlinks to the wrapper.
+      if elf in sym_paths:
+        link = sym_paths[elf]
+        GeneratePathWrapper(output_dir, link, elf)
 
     for lib, lib_data in e['libs'].iteritems():
       if lib in donelibs:
@@ -1158,7 +1158,9 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
   ldpaths = lddtree.LoadLdpaths(root)
   targets = ExpandTargets(targets_wanted)
 
-  with osutils.TempDir() as tempdir:
+  with osutils.TempDir(prefix='create-packages') as tempdir:
+    logging.debug('Using tempdir: %s', tempdir)
+
     # We have to split the root generation from the compression stages.  This is
     # because we hardlink in all the files (to avoid overhead of reading/writing
     # the copies multiple times).  But tar gets angry if a file's hardlink count
