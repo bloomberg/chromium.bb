@@ -46,14 +46,8 @@ PasswordsAndFormsBrowserTest.prototype = {
   },
 };
 
-// TODO(crbug.com/770047): deflake. Fialing on Linux ChromiumOS Test (dbg)(1).
-GEN('#if defined(OS_CHROMEOS) && !defined(NDEBUG)');
-GEN('#define MAYBE_uiTests DISABLED_uiTests');
-GEN('#else');
-GEN('#define MAYBE_uiTests uiTests');
-GEN('#endif');
 /** This test will validate that the section is loaded with data. */
-TEST_F('PasswordsAndFormsBrowserTest', 'MAYBE_uiTests', function() {
+TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
   var passwordManager;
   var autofillManager;
 
