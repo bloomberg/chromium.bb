@@ -10,23 +10,21 @@
   <template strip-whitespace="">
     <style include="cr-hidden-style cr-icons">
       :host {
+        align-items: center;
         align-self: stretch;
         background: none;
         border: none;
         color: inherit;
         cursor: pointer;
+        display: flex;
+        flex: 1;
         font-size: 100%;  /* Specifically for Mac OSX, harmless elsewhere. */
         line-height: 154%;  /* 20px. */
         margin: 0;
+        min-height: var(--cr-section-min-height);
         outline: none;
-        padding: 0;
+        padding: 0 var(--cr-section-padding);
         position: relative;
-        @apply(--cr-section);
-      }
-
-      :host(.continuation),
-      :host(.first) {
-        border-top: none;
       }
 
       :host([disabled]) {
@@ -77,6 +75,7 @@
         <div id="label" class="label">[[label]]</div>
         <div id="subLabel" class="secondary label">[[subLabel]]</div>
       </div>
+      <slot></slot>
       <div id="icon" class$="cr-icon [[iconClass]]" aria-label$="[[label]]">
       </div>
     </div>

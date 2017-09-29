@@ -37,51 +37,46 @@
         };
         width: 100%;  /* Pushes policy indicators to end. */
       }
+
+      /* The theme mixes a link and a paper-button divided by a separator with
+       * grit expressions and dom-if templates. That leads to a tricky thing
+       * to style correctly, these are a workaround. */
+      #themeRow paper-button {
+        -webkit-margin-end: 8px;
+      }
+
+      #themeRow .separator {
+         -webkit-margin-start: 0;
+      }
+
+      #useSystem {
+        -webkit-margin-start: calc(var(--cr-button-edge-spacing) * -1);
+      }
     </style>
     <settings-animated-pages id="pages" section="appearance"
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
 <if expr="chromeos">
-        <div class="settings-box first two-line" id="wallpaperButton"
-            on-tap="openWallpaperManager_" actionable
-            hidden="[[!pageVisibility.setWallpaper]]">
-          <div class="start">
-            $i18n{setWallpaper}
-            <div class="secondary" id="wallpaperSecondary">
-              $i18n{openWallpaperApp}
-            </div>
-          </div>
+        <button icon-class="icon-external" id="wallpaperButton"
+            is="cr-link-row"
+            hidden="[[!pageVisibility.setWallpaper]]"
+            on-tap="openWallpaperManager_"
+            label="$i18n{setWallpaper}" sub-label="$i18n{openWallpaperApp}"
+            disabled="[[isWallpaperPolicyControlled_]]">
           <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
             <cr-policy-indicator id="wallpaperPolicyIndicator"
                 indicator-type="devicePolicy">
             </cr-policy-indicator>
           </template>
-          <button class="icon-external" id="showWallpaperManager"
-              is="paper-icon-button-light" aria-label="$i18n{setWallpaper}"
-              disabled="[[isWallpaperPolicyControlled_]]"
-              aria-describedby="wallpaperSecondary">
-          </button>
-        </div>
-        <div class="settings-box two-line"
-            hidden="[[!pageVisibility.setTheme]]">
+        </button>
+        <div class="hr"></div>
 </if>
-<if expr="not chromeos">
-        <div class="settings-box two-line first"
+        <div class="settings-row continuation" id="themeRow"
             hidden="[[!pageVisibility.setTheme]]">
-</if>
-          <a class="start two-line inherit-color no-outline" tabindex="-1"
-              target="_blank" href$="[[getThemeHref_(themeUrl_)]]">
-            <div class="flex">
-              $i18n{themes}
-              <div class="secondary" id="themesSecondary">
-                [[themeSublabel_]]
-              </div>
-            </div>
-            <button class="icon-external" is="paper-icon-button-light"
-                actionable aria-label="$i18n{themes}"
-                aria-describedby="themesSecondary">
-            </button>
-          </a>
+          <button class="first" icon-class="icon-external" is="cr-link-row"
+              hidden="[[!pageVisibility.setTheme]]"
+              label="$i18n{themes}" sub-label="[[themeSublabel_]]"
+              on-tap="openThemeUrl_"></button>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="separator"></div>
@@ -92,7 +87,8 @@
           </template>
 </if>
 <if expr="is_linux and not chromeos">
-          <div class="settings-row" hidden="[[!showThemesSecondary_(
+          <div class="settings-row continuation"
+              hidden="[[!showThemesSecondary_(
               prefs.extensions.theme.id.value, useSystemTheme_)]]"
               id="themesSecondaryActions">
             <div class="separator"></div>
@@ -170,7 +166,7 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <button is="cr-link-row"
+        <button class="hr" is="cr-link-row"
             icon-class="subpage-arrow" id="customize-fonts-subpage-trigger"
             label="$i18n{customizeFonts}" on-tap="onCustomizeFontsTap_">
         </button>

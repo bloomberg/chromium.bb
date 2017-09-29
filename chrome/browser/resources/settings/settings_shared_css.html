@@ -90,7 +90,7 @@
       }
 
       /* Adjust the margin between the separator and the first button. */
-      .settings-box .separator + paper-button {
+      .separator + paper-button {
         -webkit-margin-start: calc(var(--cr-button-edge-spacing) * -1);
       }
 
@@ -339,7 +339,7 @@
       /* The separator a vertical line like a horizontal rule <hr> tag, but goes
        * the other way. An example is near the |sign out| button on the People
        * settings. */
-      :-webkit-any(.settings-box, .list-item) .separator {
+      .separator {
         -webkit-border-start: var(--settings-separator-line);
         -webkit-margin-end: var(--settings-box-row-padding);
         -webkit-margin-start: var(--settings-box-row-padding);
@@ -349,7 +349,7 @@
             var(--settings-separator-gaps));
       }
 
-      :-webkit-any(.settings-box, .list-item).two-line .separator {
+      .two-line .separator {
         height: calc(var(--settings-row-two-line-min-height) -
             2 * var(--settings-separator-gaps));
       }
