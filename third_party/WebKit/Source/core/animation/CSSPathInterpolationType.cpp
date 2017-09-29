@@ -64,7 +64,7 @@ class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    return state.ParentStyle()->SvgStyle().D() == style_path_.Get();
+    return state.ParentStyle()->SvgStyle().D() == style_path_.get();
   }
 
   const RefPtr<StylePath> style_path_;

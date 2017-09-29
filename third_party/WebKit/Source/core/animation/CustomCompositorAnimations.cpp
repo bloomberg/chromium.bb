@@ -32,10 +32,10 @@ static KeyframeEffect* CreateInfiniteKeyFrameEffect(
   AnimatableValueKeyframeVector keyframes(2);
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(property_id, value.Get());
+  keyframes[0]->SetPropertyValue(property_id, value.get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetPropertyValue(property_id, value.Get());
+  keyframes[1]->SetPropertyValue(property_id, value.get());
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
 
   Timing timing;
@@ -55,10 +55,10 @@ static KeyframeEffect* UpdateInfiniteKeyframeEffect(
       ToAnimatableValueKeyframeEffectModel(keyframe_effect.Model())
           ->GetFrames();
   AnimatableValueKeyframeVector keyframes(2);
-  keyframes[0] = ToAnimatableValueKeyframe(old_frames[0]->Clone().Get());
-  keyframes[1] = ToAnimatableValueKeyframe(old_frames[1]->Clone().Get());
-  keyframes[0]->SetPropertyValue(property_id, value.Get());
-  keyframes[1]->SetPropertyValue(property_id, value.Get());
+  keyframes[0] = ToAnimatableValueKeyframe(old_frames[0]->Clone().get());
+  keyframes[1] = ToAnimatableValueKeyframe(old_frames[1]->Clone().get());
+  keyframes[0]->SetPropertyValue(property_id, value.get());
+  keyframes[1]->SetPropertyValue(property_id, value.get());
 
   AnimatableValueKeyframeEffectModel* effect_model =
       AnimatableValueKeyframeEffectModel::Create(keyframes);

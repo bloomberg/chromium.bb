@@ -14,7 +14,7 @@ AnimatableValueKeyframe::AnimatableValueKeyframe(
   for (PropertyValueMap::const_iterator iter =
            copy_from.property_values_.begin();
        iter != copy_from.property_values_.end(); ++iter)
-    SetPropertyValue(iter->key, iter->value.Get());
+    SetPropertyValue(iter->key, iter->value.get());
 }
 
 PropertyHandleSet AnimatableValueKeyframe::Properties() const {

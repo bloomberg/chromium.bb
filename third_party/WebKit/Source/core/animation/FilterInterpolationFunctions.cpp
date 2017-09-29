@@ -27,7 +27,7 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
 
   FilterOperation::OperationType GetOperationType() const { return type_; }
   const NonInterpolableValue* TypeNonInterpolableValue() const {
-    return type_non_interpolable_value_.Get();
+    return type_non_interpolable_value_.get();
   }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();

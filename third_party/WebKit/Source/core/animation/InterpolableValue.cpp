@@ -96,7 +96,7 @@ void InterpolableAnimatableValue::Interpolate(const InterpolableValue& to,
   if (progress == 1)
     result_value.value_ = to_value.value_;
   result_value.value_ = AnimatableValue::Interpolate(
-      value_.Get(), to_value.value_.Get(), progress);
+      value_.get(), to_value.value_.get(), progress);
 }
 
 }  // namespace blink

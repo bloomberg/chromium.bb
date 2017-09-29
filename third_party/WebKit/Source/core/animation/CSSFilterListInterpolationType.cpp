@@ -272,7 +272,7 @@ void CSSFilterListInterpolationType::Composite(
       std::move(extended_interpolable_list);
   // const_cast to take a ref.
   underlying_value_owner.MutableValue().non_interpolable_value =
-      const_cast<NonInterpolableValue*>(value.non_interpolable_value.Get());
+      const_cast<NonInterpolableValue*>(value.non_interpolable_value.get());
 }
 
 void CSSFilterListInterpolationType::ApplyStandardPropertyValue(

@@ -52,34 +52,34 @@ AnimatableValueKeyframeVector KeyframesAtZeroAndOne(
   AnimatableValueKeyframeVector keyframes(2);
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft, zero_value.Get());
+  keyframes[0]->SetPropertyValue(CSSPropertyLeft, zero_value.get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft, one_value.Get());
+  keyframes[1]->SetPropertyValue(CSSPropertyLeft, one_value.get());
   return keyframes;
 }
 
 void ExpectProperty(CSSPropertyID property,
                     RefPtr<Interpolation> interpolation_value) {
   LegacyStyleInterpolation* interpolation =
-      ToLegacyStyleInterpolation(interpolation_value.Get());
+      ToLegacyStyleInterpolation(interpolation_value.get());
   ASSERT_EQ(property, interpolation->Id());
 }
 
 void ExpectDoubleValue(double expected_value,
                        RefPtr<Interpolation> interpolation_value) {
   LegacyStyleInterpolation* interpolation =
-      ToLegacyStyleInterpolation(interpolation_value.Get());
+      ToLegacyStyleInterpolation(interpolation_value.get());
   RefPtr<AnimatableValue> value = interpolation->CurrentValue();
 
   ASSERT_TRUE(value->IsDouble() || value->IsUnknown());
 
   double actual_value;
   if (value->IsDouble())
-    actual_value = ToAnimatableDouble(value.Get())->ToDouble();
+    actual_value = ToAnimatableDouble(value.get())->ToDouble();
   else
     actual_value =
-        ToCSSPrimitiveValue(ToAnimatableUnknown(value.Get())->ToCSSValue())
+        ToCSSPrimitiveValue(ToAnimatableUnknown(value.get())->ToCSSValue())
             ->GetDoubleValue();
 
   EXPECT_FLOAT_EQ(static_cast<float>(expected_value), actual_value);
@@ -88,8 +88,8 @@ void ExpectDoubleValue(double expected_value,
 Interpolation* FindValue(Vector<RefPtr<Interpolation>>& values,
                          CSSPropertyID id) {
   for (auto& value : values) {
-    if (ToLegacyStyleInterpolation(value.Get())->Id() == id)
-      return value.Get();
+    if (ToLegacyStyleInterpolation(value.get())->Id() == id)
+      return value.get();
   }
   return 0;
 }
@@ -226,7 +226,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetZero) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -241,7 +241,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetOne) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(1.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(5.0).Get());
+                                 AnimatableDouble::Create(5.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -255,15 +255,15 @@ TEST(AnimationKeyframeEffectModel, MoreThanTwoKeyframes) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).Get());
+                                 UnknownAnimatableValue(4.0).get());
   keyframes[2] = AnimatableValueKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
   keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).Get());
+                                 UnknownAnimatableValue(5.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -278,14 +278,14 @@ TEST(AnimationKeyframeEffectModel, EndKeyframeOffsetsUnspecified) {
   AnimatableValueKeyframeVector keyframes(3);
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).Get());
+                                 UnknownAnimatableValue(4.0).get());
   keyframes[2] = AnimatableValueKeyframe::Create();
   keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).Get());
+                                 UnknownAnimatableValue(5.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -303,15 +303,15 @@ TEST(AnimationKeyframeEffectModel, SampleOnKeyframe) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).Get());
+                                 UnknownAnimatableValue(4.0).get());
   keyframes[2] = AnimatableValueKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
   keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).Get());
+                                 UnknownAnimatableValue(5.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -329,39 +329,39 @@ TEST(AnimationKeyframeEffectModel, MultipleKeyframesWithSameOffset) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(0.0).Get());
+                                 UnknownAnimatableValue(0.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(0.1);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(1.0).Get());
+                                 UnknownAnimatableValue(1.0).get());
   keyframes[2] = AnimatableValueKeyframe::Create();
   keyframes[2]->SetOffset(0.1);
   keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(2.0).Get());
+                                 UnknownAnimatableValue(2.0).get());
   keyframes[3] = AnimatableValueKeyframe::Create();
   keyframes[3]->SetOffset(0.5);
   keyframes[3]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
   keyframes[4] = AnimatableValueKeyframe::Create();
   keyframes[4]->SetOffset(0.5);
   keyframes[4]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).Get());
+                                 UnknownAnimatableValue(4.0).get());
   keyframes[5] = AnimatableValueKeyframe::Create();
   keyframes[5]->SetOffset(0.5);
   keyframes[5]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).Get());
+                                 UnknownAnimatableValue(5.0).get());
   keyframes[6] = AnimatableValueKeyframe::Create();
   keyframes[6]->SetOffset(0.9);
   keyframes[6]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(6.0).Get());
+                                 UnknownAnimatableValue(6.0).get());
   keyframes[7] = AnimatableValueKeyframe::Create();
   keyframes[7]->SetOffset(0.9);
   keyframes[7]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(7.0).Get());
+                                 UnknownAnimatableValue(7.0).get());
   keyframes[8] = AnimatableValueKeyframe::Create();
   keyframes[8]->SetOffset(1.0);
   keyframes[8]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(7.0).Get());
+                                 UnknownAnimatableValue(7.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -388,11 +388,11 @@ TEST(AnimationKeyframeEffectModel, DISABLED_PerKeyframeComposite) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(3.0).Get());
+                                 AnimatableDouble::Create(3.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(5.0).Get());
+                                 AnimatableDouble::Create(5.0).get());
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
 
   AnimatableValueKeyframeEffectModel* effect =
@@ -407,15 +407,15 @@ TEST(AnimationKeyframeEffectModel, MultipleProperties) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).Get());
+                                 UnknownAnimatableValue(3.0).get());
   keyframes[0]->SetPropertyValue(CSSPropertyRight,
-                                 UnknownAnimatableValue(4.0).Get());
+                                 UnknownAnimatableValue(4.0).get());
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).Get());
+                                 UnknownAnimatableValue(5.0).get());
   keyframes[1]->SetPropertyValue(CSSPropertyRight,
-                                 UnknownAnimatableValue(6.0).Get());
+                                 UnknownAnimatableValue(6.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);
@@ -464,16 +464,16 @@ TEST(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue) {
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).Get());
+                                 AnimatableDouble::Create(1.0).get());
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1] = AnimatableValueKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
   keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).Get());
+                                 AnimatableDouble::Create(1.0).get());
   keyframes[2] = AnimatableValueKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
   keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).Get());
+                                 AnimatableDouble::Create(1.0).get());
 
   AnimatableValueKeyframeEffectModel* effect =
       AnimatableValueKeyframeEffectModel::Create(keyframes);

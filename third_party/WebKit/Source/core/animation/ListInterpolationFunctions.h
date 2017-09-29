@@ -70,9 +70,9 @@ class NonInterpolableList : public NonInterpolableValue {
 
   size_t length() const { return list_.size(); }
   const NonInterpolableValue* Get(size_t index) const {
-    return list_[index].Get();
+    return list_[index].get();
   }
-  NonInterpolableValue* Get(size_t index) { return list_[index].Get(); }
+  NonInterpolableValue* Get(size_t index) { return list_[index].get(); }
   RefPtr<NonInterpolableValue>& GetMutable(size_t index) {
     return list_[index];
   }

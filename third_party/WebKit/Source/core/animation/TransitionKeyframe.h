@@ -37,7 +37,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
     }
 
     const AnimatableValue* GetAnimatableValue() const final {
-      return compositor_value_.Get();
+      return compositor_value_.get();
     }
 
     bool IsNeutral() const final { return false; }

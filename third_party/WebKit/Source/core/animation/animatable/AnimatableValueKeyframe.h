@@ -42,9 +42,9 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
           offset, std::move(easing), std::move(value), composite));
     }
 
-    AnimatableValue* Value() const { return value_.Get(); }
+    AnimatableValue* Value() const { return value_.get(); }
     const AnimatableValue* GetAnimatableValue() const final {
-      return value_.Get();
+      return value_.get();
     }
 
     bool IsNeutral() const final { return false; }

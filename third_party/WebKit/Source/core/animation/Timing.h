@@ -87,7 +87,7 @@ struct Timing {
             iteration_duration == other.iteration_duration) &&
            playback_rate == other.playback_rate &&
            direction == other.direction &&
-           DataEquivalent(timing_function.Get(), other.timing_function.Get());
+           DataEquivalent(timing_function.get(), other.timing_function.get());
   }
 
   bool operator!=(const Timing& other) const { return !(*this == other); }

@@ -264,7 +264,7 @@ EffectModel* EffectInput::ConvertArrayForm(
       String value;
       DictionaryHelper::Get(keyframe_dictionary, property, value);
 
-      SetKeyframeValue(element, *keyframe.Get(), property, value,
+      SetKeyframeValue(element, *keyframe.get(), property, value,
                        execution_context);
     }
     keyframes.push_back(keyframe);
@@ -381,7 +381,7 @@ EffectModel* EffectInput::ConvertObjectForm(
         keyframe->SetComposite(EffectModel::kCompositeAdd);
       // TODO(alancutter): Support "accumulate" keyframe composition.
 
-      SetKeyframeValue(element, *keyframe.Get(), property, values[i],
+      SetKeyframeValue(element, *keyframe.get(), property, values[i],
                        execution_context);
       keyframes.push_back(keyframe);
     }

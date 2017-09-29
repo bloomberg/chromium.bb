@@ -139,7 +139,7 @@ void CSSLengthInterpolationType::Composite(
   LengthInterpolationFunctions::Composite(
       underlying.interpolable_value, underlying.non_interpolable_value,
       underlying_fraction, *value.interpolable_value,
-      value.non_interpolable_value.Get());
+      value.non_interpolable_value.get());
 }
 
 void CSSLengthInterpolationType::ApplyStandardPropertyValue(
