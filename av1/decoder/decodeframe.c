@@ -5216,9 +5216,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
 #endif
 
-#if CONFIG_LV_MAP
+#if CONFIG_LV_MAP && !LV_MAP_PROB
   av1_read_txb_probs(fc, cm->tx_mode, &r, &cm->counts);
-#endif  // CONFIG_LV_MAP
+#endif  // CONFIG_LV_MAP && !LV_MAP_PROB
 
 #if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_VAR_TX

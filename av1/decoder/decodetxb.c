@@ -556,6 +556,7 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
   return cul_level;
 }
 
+#if !LV_MAP_PROB
 static void read_txb_probs(FRAME_CONTEXT *fc, const TX_SIZE tx_size,
                            aom_reader *r, FRAME_COUNTS *counts) {
 #if !CONFIG_SYMBOLRATE
@@ -593,10 +594,6 @@ void av1_read_txb_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r,
   TX_SIZE tx_size;
   int ctx, plane;
 
-#if LV_MAP_PROB
-  return;
-#endif
-
   for (plane = 0; plane < PLANE_TYPES; ++plane)
     for (ctx = 0; ctx < DC_SIGN_CONTEXTS; ++ctx)
       av1_diff_update_prob(r, &fc->dc_sign[plane][ctx], ACCT_STR);
@@ -604,3 +601,4 @@ void av1_read_txb_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r,
   for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
     read_txb_probs(fc, tx_size, r, counts);
 }
+#endif  // !LV_MAP_PROB
