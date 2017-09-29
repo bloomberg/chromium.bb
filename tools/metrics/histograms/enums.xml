@@ -23409,6 +23409,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
+  <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408288176" label="enable-account-consistency"/>
@@ -23648,6 +23649,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-680589442" label="MacRTL:disabled"/>
+  <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
