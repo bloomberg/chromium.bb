@@ -390,7 +390,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
       if (gr_context) {
         gr_context->flush();
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
         if (egl_sync_type_) {
           buffer->egl_sync.reset(new ScopedEglSync(eglCreateSyncKHR(
               eglGetCurrentDisplay(), egl_sync_type_, nullptr)));
@@ -423,7 +423,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
                         surface_size_.height());
       wl_surface_attach(surface, frame->buffer->buffer.get(), 0, 0);
 
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
       if (frame->buffer->egl_sync) {
         eglClientWaitSyncKHR(eglGetCurrentDisplay(),
                              frame->buffer->egl_sync->get(),

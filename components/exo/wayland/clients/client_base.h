@@ -18,6 +18,10 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/scoped_make_current.h"
 
+#if defined(USE_GBM)
+#include <gbm.h>
+#endif
+
 namespace base {
 class CommandLine;
 class MessageLoopForUI;
@@ -69,7 +73,7 @@ class ClientBase {
 
     std::unique_ptr<wl_buffer> buffer;
     bool busy = false;
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
     std::unique_ptr<gbm_bo> bo;
     std::unique_ptr<ScopedEglImage> egl_image;
     std::unique_ptr<ScopedEglSync> egl_sync;
@@ -104,7 +108,7 @@ class ClientBase {
   std::unique_ptr<wl_surface> surface_;
   std::unique_ptr<wl_shell_surface> shell_surface_;
   Globals globals_;
-#if defined(OZONE_PLATFORM_GBM)
+#if defined(USE_GBM)
   std::unique_ptr<base::MessageLoopForUI> ui_loop_;
   base::ScopedFD drm_fd_;
   std::unique_ptr<gbm_device> device_;
