@@ -20,8 +20,9 @@ using ::testing::ElementsAreArray;
 
 namespace blink {
 namespace scheduler {
+// To avoid symbol collisions in jumbo builds.
+namespace worker_scheduler_impl_unittest {
 
-namespace {
 void NopTask() {}
 
 int TimeTicksToIntMs(const base::TimeTicks& time) {
@@ -50,8 +51,6 @@ void TimelineIdleTestTask(std::vector<std::string>* timeline,
   timeline->push_back(base::StringPrintf("run TimelineIdleTestTask deadline %d",
                                          TimeTicksToIntMs(deadline)));
 }
-
-};  // namespace
 
 class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
  public:
@@ -399,5 +398,6 @@ TEST_F(WorkerSchedulerImplTest, TestLongIdlePeriodTimeline) {
   EXPECT_THAT(timeline, ElementsAreArray(expected_timeline));
 }
 
+}  // namespace worker_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink
