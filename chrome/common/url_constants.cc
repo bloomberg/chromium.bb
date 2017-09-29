@@ -188,6 +188,7 @@ const char kChromeUIDelayedHangUIHost[] = "delayeduithreadhang";
 const char kChromeUIDeviceLogHost[] = "device-log";
 const char kChromeUIDevicesHost[] = "devices";
 const char kChromeUIDevToolsHost[] = "devtools";
+const char kChromeUIDevToolsBlankPath[] = "blank";
 const char kChromeUIDevToolsBundledPath[] = "bundled";
 const char kChromeUIDevToolsCustomPath[] = "custom";
 const char kChromeUIDevToolsRemotePath[] = "remote";
