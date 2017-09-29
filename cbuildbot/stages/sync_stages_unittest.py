@@ -645,58 +645,6 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     failed_configs = self.sync_stage._GetFailedPreCQConfigs(action_history)
     self.assertItemsEqual(failed_configs, ['lumpy-pre-cq'])
 
-  def testFailureStreakCounterExceedsThreshold(self):
-    """Test FailureStreakCounterExceedsThreshold."""
-    pre_cq_1 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 0, 'lumpy-pre-cq',
-        'bot hostname')
-    pre_cq_2 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 1, 'lumpy-pre-cq',
-        'bot hostname')
-    pre_cq_3 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
-        'bot hostname')
-    self.fake_db.FinishBuild(pre_cq_1, status=constants.BUILDER_STATUS_PASSED)
-    self.fake_db.FinishBuild(pre_cq_2, status=constants.BUILDER_STATUS_FAILED)
-    self.fake_db.FinishBuild(pre_cq_3, status=constants.BUILDER_STATUS_FAILED)
-
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
-    self.assertFalse(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
-
-    pre_cq_4 = self.fake_db.InsertBuild(
-        'lumpy-pre-cq', constants.WATERFALL_TRYBOT, 2, 'lumpy-pre-cq',
-        'bot hostname')
-    self.fake_db.FinishBuild(pre_cq_4, status=constants.BUILDER_STATUS_FAILED)
-
-    build_history = self.fake_db.GetBuildHistory('lumpy-pre-cq', -1, final=True)
-    self.assertTrue(self.sync_stage. _FailureStreakCounterExceedsThreshold(
-        'lumpy-pre-cq', build_history))
-
-  def testGetBuildConfigsToSanityCheck(self):
-    """Test _GetBuildConfigsToSanityCheck."""
-    build_configs = {'lumpy-pre-cq', 'cyan-pre-cq', 'betty-pre-cq'}
-
-    for build_config in ('lumpy-pre-cq', 'cyan-pre-cq'):
-      for _ in range(0, 3):
-        pre_cq = self.fake_db.InsertBuild(
-            build_config, constants.WATERFALL_TRYBOT, 0, build_config,
-            'bot hostname')
-        self.fake_db.FinishBuild(pre_cq, status=constants.BUILDER_STATUS_FAILED)
-
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'lumpy-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_1', timestamp=datetime.datetime.now())
-
-    stale_timestamp = datetime.datetime.now() - datetime.timedelta(hours=10)
-    self.fake_db.InsertBuildRequest(
-        self.build_id, 'cyan-pre-cq', 'sanity-pre-cq',
-        request_buildbucket_id='bb_id_2', timestamp=stale_timestamp)
-
-    sanity_check_build_configs = self.sync_stage._GetBuildConfigsToSanityCheck(
-        self.fake_db, build_configs)
-    self.assertEqual(sanity_check_build_configs, ['cyan-pre-cq'])
-
   def testLaunchSanityCheckPreCQsIfNeeded(self):
     """Test _LaunchSanityCheckPreCQsIfNeeded."""
     mock_pool = mock.Mock()

@@ -1898,7 +1898,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
                   'if supported.',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
-      health_threshold=3,
   )
 
   # Pre-CQ targets that only check compilation and unit tests.
@@ -1940,9 +1939,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       description='Launcher for Pre-CQ builders',
       trybot_list=False,
       manifest_version=False,
-      # Every Pre-CQ launch failure should send out an alert.
-      health_threshold=1,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
   )
@@ -2373,8 +2369,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # build_internals/masters/master.chromeos/board_config.py.
       # TODO(mtennant): Fix this.  There should be some amount of auto-
       # configuration in the board_config.py code.
-      health_threshold=3,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com'],
       sanity_check_slaves=['wolf-tot-paladin'],
       trybot_list=False,
       auto_reboot=False,
