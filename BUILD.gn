@@ -720,7 +720,9 @@ group("gn_all") {
 
   if (enable_vr) {
     deps += [ "//chrome/browser/vr:vr_common_unittests" ]
-
+    if (is_linux && use_ozone) {
+      deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
+    }
     if (is_android) {
       deps += [ "//tools/perf/contrib/vr_benchmarks:vr_perf_tests" ]
     }
