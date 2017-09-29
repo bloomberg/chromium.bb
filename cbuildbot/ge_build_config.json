@@ -1544,7 +1544,17 @@
         },
         {
           "board_name": "fizz",
+          "name": "kench",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "fizz",
           "name": "sion",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "fizz",
+          "name": "talon",
           "cq_test_enabled": false
         },
         {

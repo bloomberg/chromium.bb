@@ -9093,7 +9093,9 @@
         "important": true,
         "models": [
             "{\n    \"name\": \"fizz\",\n    \"test_suites\": []\n}",
+            "{\n    \"name\": \"kench\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"sion\",\n    \"test_suites\": []\n}",
+            "{\n    \"name\": \"talon\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"teemo\",\n    \"test_suites\": []\n}"
         ],
         "vm_tests": [],
