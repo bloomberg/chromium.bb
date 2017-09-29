@@ -37,7 +37,6 @@
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/SincResampler.h"
 #include "platform/audio/VectorMath.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioBus.h"
 
@@ -537,9 +536,10 @@ void AudioBus::CopyWithGainFrom(const AudioBus& source_bus,
 
   if (frames_to_dezipper) {
     if (!dezipper_gain_values_.get() ||
-        dezipper_gain_values_->size() < frames_to_dezipper)
+        dezipper_gain_values_->size() < frames_to_dezipper) {
       dezipper_gain_values_ =
-          WTF::MakeUnique<AudioFloatArray>(frames_to_dezipper);
+          std::make_unique<AudioFloatArray>(frames_to_dezipper);
+    }
 
     float* gain_values = dezipper_gain_values_->Data();
     for (unsigned i = 0; i < frames_to_dezipper; ++i) {

@@ -12,7 +12,6 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +28,7 @@ class FIFOClient {
       : fifo_(fifo),
         bus_(AudioBus::Create(fifo->NumberOfChannels(), bus_length)),
         client_thread_(Platform::Current()->CreateThread("client thread")),
-        done_event_(WTF::MakeUnique<WaitableEvent>()),
+        done_event_(std::make_unique<WaitableEvent>()),
         jitter_range_ms_(jitter_range_ms) {}
 
   WaitableEvent* Start(double duration_ms, double interval_ms) {

@@ -31,7 +31,6 @@
 #include <memory>
 #include "platform/audio/EqualPowerPanner.h"
 #include "platform/audio/HRTFPanner.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -40,10 +39,10 @@ std::unique_ptr<Panner> Panner::Create(PanningModel model,
                                        HRTFDatabaseLoader* database_loader) {
   switch (model) {
     case kPanningModelEqualPower:
-      return WTF::MakeUnique<EqualPowerPanner>(sample_rate);
+      return std::make_unique<EqualPowerPanner>(sample_rate);
 
     case kPanningModelHRTF:
-      return WTF::MakeUnique<HRTFPanner>(sample_rate, database_loader);
+      return std::make_unique<HRTFPanner>(sample_rate, database_loader);
 
     default:
       NOTREACHED();

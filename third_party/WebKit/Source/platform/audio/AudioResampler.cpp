@@ -25,21 +25,21 @@
 
 #include "platform/audio/AudioResampler.h"
 #include <algorithm>
+#include <memory>
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 const double AudioResampler::kMaxRate = 8.0;
 
 AudioResampler::AudioResampler() : rate_(1.0) {
-  kernels_.push_back(WTF::MakeUnique<AudioResamplerKernel>(this));
+  kernels_.push_back(std::make_unique<AudioResamplerKernel>(this));
   source_bus_ = AudioBus::Create(1, 0, false);
 }
 
 AudioResampler::AudioResampler(unsigned number_of_channels) : rate_(1.0) {
   for (unsigned i = 0; i < number_of_channels; ++i)
-    kernels_.push_back(WTF::MakeUnique<AudioResamplerKernel>(this));
+    kernels_.push_back(std::make_unique<AudioResamplerKernel>(this));
 
   source_bus_ = AudioBus::Create(number_of_channels, 0, false);
 }
@@ -52,7 +52,7 @@ void AudioResampler::ConfigureChannels(unsigned number_of_channels) {
   // First deal with adding or removing kernels.
   if (number_of_channels > current_size) {
     for (unsigned i = current_size; i < number_of_channels; ++i)
-      kernels_.push_back(WTF::MakeUnique<AudioResamplerKernel>(this));
+      kernels_.push_back(std::make_unique<AudioResamplerKernel>(this));
   } else
     kernels_.resize(number_of_channels);
 

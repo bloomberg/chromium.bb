@@ -97,7 +97,7 @@ HRTFKernel::HRTFKernel(AudioChannel* channel,
     }
   }
 
-  fft_frame_ = WTF::MakeUnique<FFTFrame>(fft_size);
+  fft_frame_ = std::make_unique<FFTFrame>(fft_size);
   fft_frame_->DoPaddedFFT(impulse_response, truncated_response_length);
 }
 
