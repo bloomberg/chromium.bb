@@ -165,6 +165,7 @@ void OffscreenCanvasResourceProvider::
 
   std::unique_ptr<FrameResource> frame_resource =
       CreateOrRecycleFrameResource();
+  frame_resource->context_provider_wrapper_ = image->ContextProviderWrapper();
   frame_resource->image_ = std::move(image);
   resources_.insert(next_resource_id_, std::move(frame_resource));
 }
