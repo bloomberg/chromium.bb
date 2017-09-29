@@ -236,7 +236,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   // install source.  In this case, signal that this extension will not be
   // installed by returning false.
   if (!pending_extension_manager()->AddFromExternalUpdateUrl(
-          info.extension_id, info.install_parameter, *info.update_url,
+          info.extension_id, info.install_parameter, info.update_url,
           info.download_location, info.creation_flags,
           info.mark_acknowledged)) {
     return false;
@@ -2058,9 +2058,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
          Manifest::IsExternalLocation(existing->location()));
 
     if (!is_default_apps_migration) {
-      DCHECK(info.version.get());
-
-      switch (existing->version()->CompareTo(*info.version)) {
+      switch (existing->version()->CompareTo(info.version)) {
         case -1:  // existing version is older, we should upgrade
           break;
         case 0:  // existing version is same, do nothing
@@ -2070,7 +2068,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
                        << info.extension_id
                        << "that is older than current version. Current version "
                        << "is: " << existing->VersionString() << ". New "
-                       << "version is: " << info.version->GetString()
+                       << "version is: " << info.version.GetString()
                        << ". Keeping current version.";
           return false;
       }
@@ -2079,7 +2077,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
 
   // If the extension is already pending, don't start an install.
   if (!pending_extension_manager()->AddFromExternalFile(
-          info.extension_id, info.crx_location, *info.version,
+          info.extension_id, info.crx_location, info.version,
           info.creation_flags, info.mark_acknowledged)) {
     return false;
   }
@@ -2088,7 +2086,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->set_install_source(info.crx_location);
   installer->set_expected_id(info.extension_id);
-  installer->set_expected_version(*info.version,
+  installer->set_expected_version(info.version,
                                   true /* fail_install_if_unexpected */);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->set_install_immediately(info.install_immediately);

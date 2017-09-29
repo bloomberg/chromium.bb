@@ -6,13 +6,9 @@
 #define EXTENSIONS_BROWSER_EXTERNAL_INSTALL_INFO_H_
 
 #include "base/files/file_path.h"
+#include "base/version.h"
 #include "extensions/common/manifest.h"
-
-class GURL;
-
-namespace base {
-class Version;
-}
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -34,7 +30,7 @@ struct ExternalInstallInfo {
 
 struct ExternalInstallInfoFile : public ExternalInstallInfo {
   ExternalInstallInfoFile(const std::string& extension_id,
-                          std::unique_ptr<base::Version> version,
+                          const base::Version& version,
                           const base::FilePath& path,
                           Manifest::Location crx_location,
                           int creation_flags,
@@ -42,7 +38,7 @@ struct ExternalInstallInfoFile : public ExternalInstallInfo {
                           bool install_immediately);
   ~ExternalInstallInfoFile() override;
 
-  std::unique_ptr<base::Version> version;
+  base::Version version;
   base::FilePath path;
   Manifest::Location crx_location;
   bool install_immediately;
@@ -51,14 +47,14 @@ struct ExternalInstallInfoFile : public ExternalInstallInfo {
 struct ExternalInstallInfoUpdateUrl : public ExternalInstallInfo {
   ExternalInstallInfoUpdateUrl(const std::string& extension_id,
                                const std::string& install_parameter,
-                               std::unique_ptr<GURL> update_url,
+                               GURL update_url,
                                Manifest::Location download_location,
                                int creation_flags,
                                bool mark_acknowledged);
   ~ExternalInstallInfoUpdateUrl() override;
 
   std::string install_parameter;
-  std::unique_ptr<GURL> update_url;
+  GURL update_url;
   Manifest::Location download_location;
 };
 
