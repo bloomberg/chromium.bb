@@ -1775,6 +1775,14 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
                            main_thread_only().web_view_schedulers.size());
+
+  size_t frame_count = 0;
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       main_thread_only().web_view_schedulers) {
+    frame_count += web_view_scheduler->FrameCount();
+  }
+  UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebFramesPerScheduler",
+                           frame_count);
 }
 
 void RendererSchedulerImpl::SetTopLevelBlameContext(
