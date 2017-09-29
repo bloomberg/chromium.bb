@@ -305,6 +305,8 @@ void FocusController::SetActiveWindow(
       focused_window_ != active_window_) {
     observer_manager_.Remove(active_window_);
   }
+  for (auto& observer : activation_observers_)
+    observer.OnWindowActivating(reason, window, active_window_);
   active_window_ = window;
   if (active_window_ && !observer_manager_.IsObserving(active_window_))
     observer_manager_.Add(active_window_);

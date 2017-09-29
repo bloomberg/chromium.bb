@@ -658,6 +658,17 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
   EXPECT_EQ(bounds, window->bounds());
 }
 
+// Tests that activation of a minimized window unminimizes the window.
+TEST_F(WorkspaceLayoutManagerSoloTest, UnminimizeWithActivation) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  wm::GetWindowState(window.get())->Minimize();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsActive());
+  wm::GetWindowState(window.get())->Activate();
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsActive());
+}
+
 // A aura::WindowObserver which sets the focus when the window becomes visible.
 class FocusDuringUnminimizeWindowObserver : public aura::WindowObserver {
  public:

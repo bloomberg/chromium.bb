@@ -250,16 +250,21 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, wm::ActivationChangeObserver implementation:
 
-void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
-                                               aura::Window* gained_active,
-                                               aura::Window* lost_active) {
+void WorkspaceLayoutManager::OnWindowActivating(ActivationReason reason,
+                                                aura::Window* gaining_active,
+                                                aura::Window* losing_active) {
   wm::WindowState* window_state =
-      gained_active ? wm::GetWindowState(gained_active) : nullptr;
+      gaining_active ? wm::GetWindowState(gaining_active) : nullptr;
   if (window_state && window_state->IsMinimized() &&
-      !gained_active->IsVisible()) {
+      !gaining_active->IsVisible()) {
     window_state->Unminimize();
     DCHECK(!window_state->IsMinimized());
   }
+}
+
+void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
+                                               aura::Window* gained_active,
+                                               aura::Window* lost_active) {
   UpdateFullscreenState();
   UpdateShelfVisibility();
 }

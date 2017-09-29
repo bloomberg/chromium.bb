@@ -70,6 +70,9 @@ void DefaultActivationClient::ActivateWindowImpl(
   if (last_active == window)
     return;
 
+  for (auto& observer : observers_)
+    observer.OnWindowActivating(reason, window, last_active);
+
   last_active_ = last_active;
   RemoveActiveWindow(window);
   active_windows_.push_back(window);
