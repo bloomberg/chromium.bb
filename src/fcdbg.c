@@ -47,9 +47,9 @@ _FcValuePrintFile (FILE *f, const FcValue v)
 	break;
     case FcTypeBool:
 	fprintf (f,
-		 v.u.b == FcTrue  ? (FcChar8 *) "True" :
-		 v.u.b == FcFalse ? (FcChar8 *) "False" :
-				    (FcChar8 *) "DontCare", 0);
+		 v.u.b == FcTrue  ? "True" :
+		 v.u.b == FcFalse ? "False" :
+				    "DontCare");
 	break;
     case FcTypeMatrix:
 	fprintf (f, "[%g %g; %g %g]", v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);
