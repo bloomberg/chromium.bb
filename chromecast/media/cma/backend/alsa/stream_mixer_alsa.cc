@@ -85,7 +85,7 @@ const int kDefaultCheckCloseTimeoutMs = 2000;
 
 // The minimum amount of data that we allow in the ALSA buffer before starting
 // to skip inputs with no available data.
-const int kMinBufferedDataMs = 8;
+const int kMinBufferedDataMs = 20;
 
 // A list of supported sample rates.
 // TODO(jyw): move this up into chromecast/public for 1) documentation and
