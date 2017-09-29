@@ -18,21 +18,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #import "ios/net/request_tracker.h"
-#import "ios/web/net/crw_request_tracker_delegate.h"
 #include "ios/web/public/web_thread.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 @class SSLCarrier;
-@class CRWSSLCarrier;
 struct TrackerCounts;
 
 namespace net {
-class HttpResponseHeaders;
 class URLRequest;
 class URLRequestContext;
 class SSLInfo;
-class X509Certificate;
 }
 
 namespace web {
@@ -116,8 +113,7 @@ class RequestTrackerImpl
   static scoped_refptr<RequestTrackerImpl> CreateTrackerForRequestGroupID(
       NSString* request_group_id,
       BrowserState* browser_state,
-      net::URLRequestContextGetter* context_getter,
-      id<CRWRequestTrackerDelegate> delegate);
+      net::URLRequestContextGetter* context_getter);
 
   // The network layer has no way to know which network request is the primary
   // one for a page load. The tab knows, either because it initiated the page
@@ -189,7 +185,6 @@ class RequestTrackerImpl
 
   // RequestTracker implementation.
   void StartRequest(net::URLRequest* request) override;
-  void CaptureHeaders(net::URLRequest* request) override;
   void CaptureExpectedLength(const net::URLRequest* request,
                              uint64_t length) override;
   void CaptureReceivedBytes(const net::URLRequest* request,
@@ -213,8 +208,7 @@ class RequestTrackerImpl
   // Private. RequestTrackerImpls are created through
   // CreateTrackerForRequestGroupID().
   RequestTrackerImpl(NSString* request_group_id,
-                     net::URLRequestContextGetter* context_getter,
-                     id<CRWRequestTrackerDelegate> delegate);
+                     net::URLRequestContextGetter* context_getter);
 
   void InitOnIOThread(
       const scoped_refptr<web::CertificatePolicyCache>& policy_cache);
@@ -242,9 +236,6 @@ class RequestTrackerImpl
   // and load progress.
   void StackNotification();
 
-  // Notify the consumer about the SSL status of this tracker's page load.
-  void SSLNotify();
-
   // If the counts is for a request currently waiting for the user to approve it
   // will reevaluate the approval.
   void EvaluateSSLCallbackForCounts(TrackerCounts* counts);
@@ -264,7 +255,6 @@ class RequestTrackerImpl
   // The URL change notification is often late, therefore the mixed content
   // status and the certificate policies may need to be recomputed.
   void RecomputeMixedContent(const TrackerCounts* split_position);
-  void RecomputeCertificatePolicy(const TrackerCounts* split_position);
 
   // Remove all finished request up to the last instance of |url|. If url is not
   // found, this will clear all the requests.
@@ -277,30 +267,6 @@ class RequestTrackerImpl
   // Note that the page started by a call to Trim is no longer loading.
   // |load_success| indicates if the page successfully loaded.
   void StopPageLoad(const GURL& url, bool load_success);
-
-#pragma mark Private Consumer API
-  // Private methods that call into delegate methods.
-
-  // Notify* methods are posted to the UI thread by the provider API
-  // methods.
-
-  // Has the delegate handle |headers| for |request_url|.
-  void NotifyResponseHeaders(net::HttpResponseHeaders* headers,
-                             const GURL& request_url);
-
-  // Notifies the deleage of certificate use.
-  void NotifyCertificateUsed(net::X509Certificate* certificate,
-                             const std::string& host,
-                             net::CertStatus status);
-
-  // Notifies the deleate of a load completion estimate.
-  void NotifyUpdatedProgress(float estimate);
-
-  // Has the delegate clear SSL certificates.
-  void NotifyClearCertificates();
-
-  // Notifies the delegate of an SSL status update.
-  void NotifyUpdatedSSLStatus(base::scoped_nsobject<CRWSSLCarrier> carrier);
 
 #pragma mark Internal utilities for task posting
   // Posts |task| to |thread|. Must not be called from |thread|. If |thread| is
@@ -317,11 +283,6 @@ class RequestTrackerImpl
   // Like description, but cannot be called from any thread. It must be called
   // only from the IO thread.
   NSString* UnsafeDescription();
-
-#pragma mark Non thread-safe fields, only accessed from the main thread.
-  // The RequestTrackerImpl delegate. All changes and access to this object
-  // should be done on the main thread.
-  id<CRWRequestTrackerDelegate> delegate_;  // Weak.
 
 #pragma mark Non thread-safe fields, only accessed from the IO thread.
   // All the tracked requests for the page, indexed by net::URLRequest (Cast as

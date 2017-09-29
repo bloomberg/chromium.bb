@@ -67,9 +67,6 @@ class RequestTracker {
   // Informs the tracker that a request has started.
   virtual void StartRequest(URLRequest* request) = 0;
 
-  // Informs the tracker that the headers for the request are available.
-  virtual void CaptureHeaders(URLRequest* request) = 0;
-
   // Informs the tracker the expected length of the result, if known.
   virtual void CaptureExpectedLength(const URLRequest* request,
                                      uint64_t length) = 0;

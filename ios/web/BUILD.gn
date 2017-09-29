@@ -99,7 +99,6 @@ source_set("web") {
     "net/cookie_notification_bridge.mm",
     "net/crw_cert_verification_controller.h",
     "net/crw_cert_verification_controller.mm",
-    "net/crw_request_tracker_delegate.h",
     "net/crw_ssl_status_updater.h",
     "net/crw_ssl_status_updater.mm",
     "net/request_group_util.h",
