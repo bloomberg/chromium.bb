@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/demuxer_stream.h"
@@ -18,8 +19,8 @@ namespace media {
 
 class DecoderBuffer;
 
-// A helper class that converts mojom::DecoderBuffer to media::DecoderBuffer.
-// The data part of the DecoderBuffer is read from a DataPipe.
+// Combines mojom::DecoderBuffers with data read from a DataPipe to produce
+// media::DecoderBuffers (counterpart of MojoDecoderBufferWriter).
 class MojoDecoderBufferReader {
  public:
   using ReadCB = base::OnceCallback<void(scoped_refptr<DecoderBuffer>)>;
@@ -35,30 +36,56 @@ class MojoDecoderBufferReader {
 
   ~MojoDecoderBufferReader();
 
-  // Converts |buffer| into a DecoderBuffer (read data from DataPipe if needed).
-  // |read_cb| is called with the result DecoderBuffer.
-  // Reports a null DecoderBuffer in case of an error.
+  // Enqueues conversion of and reading data for a mojom::DecoderBuffer. Once
+  // the data has been read, |read_cb| will be called with the converted
+  // media::DecoderBuffer.
+  //
+  // |read_cb| will be called in the same order as ReadDecoderBuffer(). This
+  // order must match the order that the data was written into the DataPipe!
+  // Callbacks may run on the original stack, on a Mojo stack, or on a future
+  // ReadDecoderBuffer() stack.
+  //
+  // If reading fails (for example, if the DataPipe is closed), |read_cb| will
+  // be called with nullptr.
   void ReadDecoderBuffer(mojom::DecoderBufferPtr buffer, ReadCB read_cb);
 
  private:
-  void OnPipeError(MojoResult result);
-  void OnPipeReadable(MojoResult result);
+  void CancelReadCB(ReadCB read_cb);
+  void CompleteCurrentRead();
+  void ScheduleNextRead();
+  void OnPipeReadable(MojoResult result, const mojo::HandleSignalsState& state);
   void ReadDecoderBufferData();
+  void OnPipeError(MojoResult result);
 
-  // For reading the data section of a DecoderBuffer.
+  // Read side of the DataPipe for receiving DecoderBuffer data.
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
-  mojo::SimpleWatcher pipe_watcher_;
 
-  // Only valid during pending read.
-  ReadCB read_cb_;
-  scoped_refptr<DecoderBuffer> media_buffer_;
+  // Provides notification about |consumer_handle_| readiness.
+  mojo::SimpleWatcher pipe_watcher_;
+  bool armed_;
+
+  // Buffers waiting to be read in sequence.
+  base::circular_deque<scoped_refptr<DecoderBuffer>> pending_buffers_;
+
+  // Callbacks for pending buffers.
+  base::circular_deque<ReadCB> pending_read_cbs_;
+
+  // Number of bytes already read into the current buffer.
   uint32_t bytes_read_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoDecoderBufferReader);
 };
 
-// A helper class that converts media::DecoderBuffer to mojom::DecoderBuffer.
-// The data part of the DecoderBuffer is written into a DataPipe.
+// Converts media::DecoderBuffers to mojom::DecoderBuffers, writing the data
+// part to a DataPipe (counterpart of MojoDecoderBufferReader).
+//
+// If necessary, writes to the DataPipe will be chunked to fit.
+// MojoDecoderBufferWriter maintains an internal queue of buffers to enable
+// this asynchronous process.
+//
+// On DataPipe closure, future calls to WriteDecoderBuffer() will return
+// nullptr. There is no mechanism to determine which past writes were
+// successful prior to the closure.
 class MojoDecoderBufferWriter {
  public:
   // Creates a MojoDecoderBufferWriter of |type| and set the |consumer_handle|.
@@ -72,23 +99,30 @@ class MojoDecoderBufferWriter {
 
   ~MojoDecoderBufferWriter();
 
-  // Converts a DecoderBuffer into mojo DecoderBuffer.
-  // DecoderBuffer data is asynchronously written into DataPipe if needed.
-  // Returns null if conversion failed or if the data pipe is already closed.
+  // Converts a media::DecoderBuffer to a mojom::DecoderBuffer and enqueues the
+  // data to be written to the DataPipe.
+  //
+  // Returns nullptr if the DataPipe is already closed.
   mojom::DecoderBufferPtr WriteDecoderBuffer(
       const scoped_refptr<DecoderBuffer>& media_buffer);
 
  private:
+  void ScheduleNextWrite();
+  void OnPipeWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  void WriteDecoderBufferData();
   void OnPipeError(MojoResult result);
-  void OnPipeWritable(MojoResult result);
-  MojoResult WriteDecoderBufferData();
 
-  // For writing the data section of DecoderBuffer into DataPipe.
+  // Write side of the DataPipe for sending DecoderBuffer data.
   mojo::ScopedDataPipeProducerHandle producer_handle_;
-  mojo::SimpleWatcher pipe_watcher_;
 
-  // Only valid when data is being written to the pipe.
-  scoped_refptr<DecoderBuffer> media_buffer_;
+  // Provides notifications about |producer_handle_| readiness.
+  mojo::SimpleWatcher pipe_watcher_;
+  bool armed_;
+
+  // Buffers waiting to be written in sequence.
+  base::circular_deque<scoped_refptr<DecoderBuffer>> pending_buffers_;
+
+  // Number of bytes already written from the current buffer.
   uint32_t bytes_written_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoDecoderBufferWriter);

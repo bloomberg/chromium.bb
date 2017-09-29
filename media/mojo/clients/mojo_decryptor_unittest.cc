@@ -123,12 +123,9 @@ TEST_F(MojoDecryptorTest, VideoDecodeFreesBuffer) {
 TEST_F(MojoDecryptorTest, VideoDecodeFreesMultipleBuffers) {
   // Call DecryptAndDecodeVideo() multiple times.
   const int TIMES = 5;
-  {
-    InSequence seq;
-    EXPECT_CALL(*this, VideoDecoded(Decryptor::Status::kSuccess, NotNull()))
-        .Times(TIMES);
-    EXPECT_CALL(*this, OnFrameDestroyed()).Times(TIMES);
-  }
+  EXPECT_CALL(*this, VideoDecoded(Decryptor::Status::kSuccess, NotNull()))
+      .Times(TIMES);
+  EXPECT_CALL(*this, OnFrameDestroyed()).Times(TIMES);
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
       .WillRepeatedly(Invoke(this, &MojoDecryptorTest::ReturnSimpleVideoFrame));
 
