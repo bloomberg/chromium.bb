@@ -259,7 +259,7 @@ static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
 
 static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
                                      int dst_stride, int width, int height,
-                                     int alpha_q3, int dc_pred) {
+                                     int alpha_q3, int16_t dc_pred) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] =
@@ -273,7 +273,8 @@ static void cfl_build_prediction_lbd(const int16_t *pred_buf_q3, uint8_t *dst,
 #if CONFIG_HIGHBITDEPTH
 static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
                                      int dst_stride, int width, int height,
-                                     int alpha_q3, int dc_pred, int bit_depth) {
+                                     int alpha_q3, int16_t dc_pred,
+                                     int bit_depth) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
       dst[i] = clip_pixel_highbd(
