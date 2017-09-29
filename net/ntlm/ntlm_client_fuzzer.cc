@@ -18,12 +18,16 @@ base::string16 ConsumeRandomLengthString16(
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  net::ntlm::NtlmClient client(net::ntlm::NtlmFeatures(false));
+  base::FuzzedDataProvider fdp(data, size);
+  bool is_v2 = fdp.ConsumeBool();
+  uint64_t client_time =
+      ((uint64_t)fdp.ConsumeUint32InRange(0, 0xffffffffu) << 32) |
+      (uint64_t)fdp.ConsumeUint32InRange(0, 0xffffffffu);
+  net::ntlm::NtlmClient client((net::ntlm::NtlmFeatures(is_v2)));
 
   // Generate the input strings and challenge message. The strings will have a
   // maximum length 1 character longer than the maximum that |NtlmClient| will
   // accept to allow exploring the error cases.
-  base::FuzzedDataProvider fdp(data, size);
   base::string16 domain =
       ConsumeRandomLengthString16(fdp, net::ntlm::kMaxFqdnLen + 1);
   base::string16 username =
@@ -32,10 +36,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       ConsumeRandomLengthString16(fdp, net::ntlm::kMaxPasswordLen + 1);
   std::string hostname =
       fdp.ConsumeRandomLengthString(net::ntlm::kMaxFqdnLen + 1);
+  std::string channel_bindings = fdp.ConsumeRandomLengthString(150);
+  std::string spn =
+      fdp.ConsumeRandomLengthString(net::ntlm::kMaxFqdnLen + 5 + 1);
   std::string challenge_msg_bytes = fdp.ConsumeRemainingBytes();
 
-  client.GenerateAuthenticateMessageV1(
-      domain, username, password, hostname, net::ntlm::test::kClientChallenge,
+  client.GenerateAuthenticateMessage(
+      domain, username, password, hostname, channel_bindings, spn, client_time,
+      net::ntlm::test::kClientChallenge,
       net::ntlm::Buffer(
           reinterpret_cast<const uint8_t*>(challenge_msg_bytes.data()),
           challenge_msg_bytes.size()));
