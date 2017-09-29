@@ -101,6 +101,7 @@
     {
       'target_name': 'settings_toggle_button',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_toggle/compiled_resources2.gyp:cr_toggle',
         'settings_boolean_control_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
