@@ -1609,8 +1609,11 @@ void PaintPropertyTreeBuilder::UpdateFragmentPropertiesForSelf(
                     full_context.force_subtree_update);
     UpdateCssClip(object, *properties, fragment_context,
                   full_context.force_subtree_update, full_context.clip_changed);
-    UpdateEffect(object, *properties, fragment_context,
-                 full_context.force_subtree_update, full_context.clip_changed);
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      UpdateEffect(object, *properties, fragment_context,
+                   full_context.force_subtree_update,
+                   full_context.clip_changed);
+    }
     UpdateFilter(object, *properties, fragment_context,
                  full_context.force_subtree_update);
   }
