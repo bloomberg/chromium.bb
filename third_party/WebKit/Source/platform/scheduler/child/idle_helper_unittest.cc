@@ -34,8 +34,9 @@ using ::testing::Return;
 
 namespace blink {
 namespace scheduler {
+// To avoid symbol collisions in jumbo builds.
+namespace idle_helper_unittest {
 
-namespace {
 void AppendToVectorTestTask(std::vector<std::string>* vector,
                             std::string value) {
   vector->push_back(value);
@@ -174,8 +175,6 @@ class ScopedAutoAdvanceNowEnabler {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAutoAdvanceNowEnabler);
 };
-
-};  // namespace
 
 class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
  public:
@@ -1209,5 +1208,6 @@ TEST_F(IdleHelperTest, OnPendingTasksChanged_TwoTasksAtTheSameTime) {
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
+}  // namespace idle_helper_unittest
 }  // namespace scheduler
 }  // namespace blink

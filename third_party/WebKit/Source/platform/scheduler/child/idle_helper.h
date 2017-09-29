@@ -15,6 +15,10 @@
 
 namespace blink {
 namespace scheduler {
+namespace idle_helper_unittest {
+class BaseIdleHelperTest;
+class IdleHelperTest;
+}  // namespace idle_helper_unittest
 
 class SchedulerHelper;
 
@@ -149,8 +153,8 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
   static const char* IdlePeriodStateToString(IdlePeriodState state);
 
  private:
-  friend class BaseIdleHelperTest;
-  friend class IdleHelperTest;
+  friend class idle_helper_unittest::BaseIdleHelperTest;
+  friend class idle_helper_unittest::IdleHelperTest;
 
   const scoped_refptr<TaskQueue>& idle_queue() const { return idle_queue_; }
 

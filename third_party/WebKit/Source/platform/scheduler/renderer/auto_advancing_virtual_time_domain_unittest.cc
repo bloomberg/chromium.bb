@@ -17,6 +17,8 @@
 
 namespace blink {
 namespace scheduler {
+// Namespace to avoid symbol collisions in jumbo builds.
+namespace auto_advancing_virtual_time_domain_unittest {
 
 class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
  public:
@@ -95,5 +97,6 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
   EXPECT_FALSE(task_run);
 }
 
+}  // namespace auto_advancing_virtual_time_domain_unittest
 }  // namespace scheduler
 }  // namespace blink
