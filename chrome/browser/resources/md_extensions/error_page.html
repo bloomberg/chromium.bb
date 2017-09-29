@@ -14,22 +14,35 @@
 <dom-module id="extensions-error-page">
   <template>
     <style include="cr-icons cr-hidden-style">
+      :host {
+        display: block;
+        height: 100%;
+        overflow: auto;
+      }
+
       #main {
         background-color: white;
-        height: 800px;
-        width: 90%;
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+        min-height: 100%;
+        width: 640px;
       }
 
       #heading {
-        color: var(--paper-grey-600);
         height: 40px;
         margin-bottom: 30px;
         padding: 8px 12px 0;
+        @apply(--cr-title-text);
       }
 
       #errors-list {
         min-height: 100px;
-        padding: 0 10px;
+        padding: 0 var(--cr-section-padding);
+      }
+
+      #content-view {
+        padding: 0 var(--cr-section-padding);
       }
 
       .error-item {
@@ -37,6 +50,10 @@
         color: var(--paper-grey-800);
         display: flex;
         margin: 5px 0;
+      }
+
+      .error-item button[is='paper-icon-button-light'] {
+        -webkit-margin-end: 0;
       }
 
       .error-item.selected {
@@ -68,16 +85,18 @@
         </button>
         <span>$i18n{errorsPageHeading}</span>
       </div>
-      <iron-list id="errors-list" items="[[calculateShownItems_(data.*)]]">
+      <iron-list id="errors-list" items="[[calculateShownItems_(data.*)]]"
+          preserve-focus>
         <template>
-          <div class$="[[computeErrorClass_(selectedError_, item)]]"
+          <div class$="error-item [[computeErrorClass_(selectedError_, item)]]"
               error="[[item]]"
               tabindex$="[[tabIndex]]"
-              on-tap="onErrorItemTap_" on-keydown="onErrorItemKeydown_">
+              on-tap="onErrorItemAction_" on-keydown="onErrorItemAction_">
             <img class$="[[computeErrorIconClass_(item)]]">
             <div class="error-message">[[item.message]]</div>
             <button is="paper-icon-button-light" class="icon-delete-gray"
-                on-tap="onDeleteErrorTap_" tabindex$="[[tabIndex]]"></button>
+                on-tap="onDeleteErrorAction_" tabindex$="[[tabIndex]]"
+                on-keydown="onDeleteErrorAction_"></button>
           </div>
         </template>
       </iron-list>
