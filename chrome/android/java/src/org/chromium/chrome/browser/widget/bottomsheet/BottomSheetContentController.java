@@ -119,7 +119,7 @@ public class BottomSheetContentController extends BottomNavigationView
 
             if (mHighlightItemId != null) {
                 mHighlightedView = mActivity.findViewById(mHighlightItemId);
-                ViewHighlighter.turnOnHighlight(mHighlightedView, false);
+                ViewHighlighter.turnOnHighlight(mHighlightedView, true);
             }
         }
 

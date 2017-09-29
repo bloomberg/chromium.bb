@@ -284,6 +284,12 @@ public class TextBubble implements OnTouchListener {
 
         mRootView.getWindowVisibleDisplayFrame(mCachedWindowRect);
 
+        // In multi-window, the coordinates of root view will be different than (0,0).
+        // So we translate the coordinates of |mCachedWindowRect| w.r.t. its window.
+        int[] rootCoordinates = new int[2];
+        mRootView.getLocationOnScreen(rootCoordinates);
+        mCachedWindowRect.offset(-rootCoordinates[0], -rootCoordinates[1]);
+
         // TODO(dtrainor): This follows the previous logic.  But we should look into if we want to
         // use the root view dimensions instead of the window dimensions here so the bubble can't
         // bleed onto the decorations.
@@ -320,7 +326,10 @@ public class TextBubble implements OnTouchListener {
         }
 
         mX = mAnchorRect.left + (mAnchorRect.width() - mWidth) / 2 + mMarginPx;
-        mX = MathUtils.clamp(mX, mMarginPx, mRootView.getWidth() - mWidth - mMarginPx);
+
+        // In landscape mode, root view includes the decorations in some devices. So we guard the
+        // window dimensions against |mCachedWindowRect.right| instead.
+        mX = MathUtils.clamp(mX, mMarginPx, mCachedWindowRect.right - mWidth - mMarginPx);
         int arrowXOffset = mAnchorRect.centerX() - mX;
 
         // Force the anchor to be in a reasonable spot w.r.t. the bubble (not over the corners).
