@@ -22,6 +22,12 @@ void RecordMetricsReportingDefaultState(PrefService* local_state,
   local_state->SetInteger(prefs::kMetricsDefaultOptIn, default_state);
 }
 
+void ForceRecordMetricsReportingDefaultState(
+    PrefService* local_state,
+    EnableMetricsDefault default_state) {
+  local_state->SetInteger(prefs::kMetricsDefaultOptIn, default_state);
+}
+
 EnableMetricsDefault GetMetricsReportingDefaultState(PrefService* local_state) {
   return static_cast<EnableMetricsDefault>(
       local_state->GetInteger(prefs::kMetricsDefaultOptIn));

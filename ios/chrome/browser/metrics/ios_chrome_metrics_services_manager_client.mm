@@ -99,6 +99,10 @@ bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
 }
 
+bool IOSChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
+  return enabled_state_provider_->IsConsentGiven();
+}
+
 metrics::MetricsStateManager*
 IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());

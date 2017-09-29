@@ -46,16 +46,22 @@
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // defined(OS_CHROMEOS)
 
-namespace {
+namespace metrics {
 
-// Name of the variations param that defines the sampling rate.
-const char kRateParamName[] = "sampling_rate_per_mille";
-
+namespace internal {
 // Metrics reporting feature. This feature, along with user consent, controls if
 // recording and reporting are enabled. If the feature is enabled, but no
 // consent is given, then there will be no recording or reporting.
 const base::Feature kMetricsReportingFeature{"MetricsReporting",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace internal
+}  // namespace metrics
+
+namespace {
+
+// Name of the variations param that defines the sampling rate.
+const char kRateParamName[] = "sampling_rate_per_mille";
 
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
@@ -180,7 +186,7 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
   // Setup the feature.
   const std::string& group_name = trial->GetGroupNameWithoutActivation();
   feature_list->RegisterFieldTrialOverride(
-      kMetricsReportingFeature.name,
+      metrics::internal::kMetricsReportingFeature.name,
       group_name == kSampledOutGroup
           ? base::FeatureList::OVERRIDE_DISABLE_FEATURE
           : base::FeatureList::OVERRIDE_ENABLE_FEATURE,
@@ -196,7 +202,8 @@ bool ChromeMetricsServicesManagerClient::IsClientInSample() {
   if (!IsClientEligibleForSampling())
     return true;
 
-  return base::FeatureList::IsEnabled(kMetricsReportingFeature);
+  return base::FeatureList::IsEnabled(
+      metrics::internal::kMetricsReportingFeature);
 }
 
 // static
@@ -207,7 +214,7 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
     return false;
 
   std::string rate_str = variations::GetVariationParamValueByFeature(
-      kMetricsReportingFeature, kRateParamName);
+      metrics::internal::kMetricsReportingFeature, kRateParamName);
   if (rate_str.empty())
     return false;
 
@@ -251,6 +258,10 @@ ChromeMetricsServicesManagerClient::GetURLRequestContext() {
 
 bool ChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
   return enabled_state_provider_->IsReportingEnabled();
+}
+
+bool ChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
+  return enabled_state_provider_->IsConsentGiven();
 }
 
 #if defined(OS_WIN)

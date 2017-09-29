@@ -77,10 +77,6 @@ class MetricsServicesManager {
   // renderer process exits unexpectedly.
   void OnRendererProcessCrash();
 
-  // Update the managed services when permissions for recording/uploading
-  // metrics change.
-  void UpdatePermissions(bool current_may_record, bool current_may_upload);
-
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);
 
@@ -101,6 +97,12 @@ class MetricsServicesManager {
   // Update the state of UkmService to match current permissions.
   void UpdateUkmService();
 
+  // Update the managed services when permissions for recording/uploading
+  // metrics change.
+  void UpdatePermissions(bool current_may_record,
+                         bool current_consent_given,
+                         bool current_may_upload);
+
   // The client passed in from the embedder.
   std::unique_ptr<MetricsServicesManagerClient> client_;
 
@@ -112,6 +114,9 @@ class MetricsServicesManager {
 
   // The current metrics recording setting.
   bool may_record_;
+
+  // The current metrics setting reflecting if consent was given.
+  bool consent_given_;
 
   // The MetricsServiceClient. Owns the MetricsService.
   std::unique_ptr<metrics::MetricsServiceClient> metrics_service_client_;
