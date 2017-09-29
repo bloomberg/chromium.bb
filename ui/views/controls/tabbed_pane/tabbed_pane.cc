@@ -415,9 +415,10 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
   DCHECK(!from_tab->selected());
   DCHECK(to_tab->selected());
 
-  animating_from_ =
-      gfx::Range(from_tab->x(), from_tab->x() + from_tab->width());
-  animating_to_ = gfx::Range(to_tab->x(), to_tab->x() + to_tab->width());
+  animating_from_ = gfx::Range(from_tab->GetMirroredX(),
+                               from_tab->GetMirroredX() + from_tab->width());
+  animating_to_ = gfx::Range(to_tab->GetMirroredX(),
+                             to_tab->GetMirroredX() + to_tab->width());
 
   contract_animation_->Stop();
   expand_animation_->Start();
@@ -478,8 +479,8 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
       max_x = animating_to_.end();
     }
   } else if (tab) {
-    min_x = tab->x();
-    max_x = tab->x() + tab->width();
+    min_x = tab->GetMirroredX();
+    max_x = tab->GetMirroredX() + tab->width();
   }
 
   DCHECK(min_x != max_x);
