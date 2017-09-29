@@ -150,6 +150,13 @@ struct CrossThreadCopier<
   }
 };
 
+template <size_t inlineCapacity, typename Allocator>
+struct CrossThreadCopier<Vector<uint64_t, inlineCapacity, Allocator>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = Vector<uint64_t, inlineCapacity, Allocator>;
+  static Type Copy(Type value) { return value; }
+};
+
 template <typename T>
 struct CrossThreadCopier<CrossThreadPersistent<T>>
     : public CrossThreadCopierPassThrough<CrossThreadPersistent<T>> {

@@ -240,9 +240,6 @@ class CORE_EXPORT InspectorDOMAgent final
   static String DocumentURLString(Document*);
   static String DocumentBaseURLString(Document*);
 
-  std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
-  ResolveNode(Node*, const String& object_group);
-
   InspectorHistory* History() { return history_.Get(); }
 
   // We represent embedded doms as a part of the same hierarchy. Hence we treat
@@ -254,7 +251,6 @@ class CORE_EXPORT InspectorDOMAgent final
   static unsigned InnerChildNodeCount(Node*);
   static Node* InnerParentNode(Node*);
   static bool IsWhitespace(Node*);
-  static v8::Local<v8::Value> NodeV8Value(v8::Local<v8::Context>, Node*);
   static void CollectNodes(Node* root,
                            int depth,
                            bool pierce,

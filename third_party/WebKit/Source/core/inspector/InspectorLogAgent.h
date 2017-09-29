@@ -10,6 +10,10 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Log.h"
 
+namespace v8_inspector {
+class V8InspectorSession;
+}
+
 namespace blink {
 
 class ConsoleMessage;
@@ -22,7 +26,9 @@ class CORE_EXPORT InspectorLogAgent
   WTF_MAKE_NONCOPYABLE(InspectorLogAgent);
 
  public:
-  InspectorLogAgent(ConsoleMessageStorage*, PerformanceMonitor*);
+  InspectorLogAgent(ConsoleMessageStorage*,
+                    PerformanceMonitor*,
+                    v8_inspector::V8InspectorSession*);
   ~InspectorLogAgent() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -51,6 +57,7 @@ class CORE_EXPORT InspectorLogAgent
   bool enabled_;
   Member<ConsoleMessageStorage> storage_;
   Member<PerformanceMonitor> performance_monitor_;
+  v8_inspector::V8InspectorSession* v8_session_;
 };
 
 }  // namespace blink

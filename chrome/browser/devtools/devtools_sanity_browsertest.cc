@@ -136,6 +136,7 @@ const char kEmulateNetworkConditionsPage[] =
     "files/devtools/emulate_network_conditions.html";
 const char kDispatchKeyEventShowsAutoFill[] =
     "files/devtools/dispatch_key_event_shows_auto_fill.html";
+const char kDOMWarningsTestPage[] = "files/devtools/dom_warnings_page.html";
 
 template <typename... T>
 void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
@@ -1681,6 +1682,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkPushTime) {
       base::BindOnce(&TestInterceptor::Unregister, push_url));
 
   CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDOMWarnings) {
+  RunTest("testDOMWarnings", kDOMWarningsTestPage);
 }
 
 // Tests that console messages are not duplicated on navigation back.

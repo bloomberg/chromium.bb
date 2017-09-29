@@ -360,7 +360,8 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
 
   session->Append(new InspectorLogAgent(
       &inspected_frames_->Root()->GetPage()->GetConsoleMessageStorage(),
-      inspected_frames_->Root()->GetPerformanceMonitor()));
+      inspected_frames_->Root()->GetPerformanceMonitor(),
+      session->V8Session()));
 
   InspectorOverlayAgent* overlay_agent =
       new InspectorOverlayAgent(web_local_frame_impl_, inspected_frames_.Get(),

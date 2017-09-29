@@ -261,16 +261,6 @@ base::string16 FindChildTextWithIgnoreList(
   return node_text;
 }
 
-// Returns the aggregated values of the descendants of |element| that are
-// non-empty text nodes.  This is a faster alternative to |innerText()| for
-// performance critical operations.  It does a full depth-first search so can be
-// used when the structure is not directly known.  However, unlike with
-// |innerText()|, the search depth and breadth are limited to a fixed threshold.
-// Whitespace is trimmed from text accumulated at descendant nodes.
-base::string16 FindChildText(const WebNode& node) {
-  return FindChildTextWithIgnoreList(node, std::set<WebNode>());
-}
-
 // Shared function for InferLabelFromPrevious() and InferLabelFromNext().
 base::string16 InferLabelFromSibling(const WebFormControlElement& element,
                                      bool forward) {
@@ -1806,6 +1796,10 @@ void PreviewSuggestion(const base::string16& suggestion,
   }
 
   input_element->SetSelectionRange(selection_start, suggestion.length());
+}
+
+base::string16 FindChildText(const WebNode& node) {
+  return FindChildTextWithIgnoreList(node, std::set<WebNode>());
 }
 
 }  // namespace form_util
