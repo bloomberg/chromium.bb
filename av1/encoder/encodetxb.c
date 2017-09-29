@@ -1572,7 +1572,7 @@ static int all_ref_offset[ALL_REF_OFFSET_NUM][2] = {
   { 1, 0 },  { 2, 0 },   { 0, 1 },  { 0, 2 },  { 1, 1 },
 };
 
-static int try_level_down_ref(int coeff_idx, const TxbProbs *txb_probs,
+static int try_level_down_ref(int coeff_idx, const LV_MAP_COEFF_COST *txb_costs,
                               TxbInfo *txb_info,
                               int (*cost_map)[COST_MAP_SIZE]) {
   if (cost_map) {
@@ -1591,7 +1591,7 @@ static int try_level_down_ref(int coeff_idx, const TxbProbs *txb_probs,
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
         nb_row < txb_info->stride && nb_col < txb_info->stride) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
-      int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_probs);
+      int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
         cost_map[nb_row - row + COST_MAP_OFFSET]
                 [nb_col - col + COST_MAP_OFFSET] -= cost;
@@ -1608,7 +1608,7 @@ static int try_level_down_ref(int coeff_idx, const TxbProbs *txb_probs,
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
         nb_row < txb_info->stride && nb_col < txb_info->stride) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
-      int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_probs);
+      int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
         cost_map[nb_row - row + COST_MAP_OFFSET]
                 [nb_col - col + COST_MAP_OFFSET] += cost;
@@ -1620,13 +1620,14 @@ static int try_level_down_ref(int coeff_idx, const TxbProbs *txb_probs,
 }
 
 static void test_level_down(int coeff_idx, const TxbCache *txb_cache,
-                            const TxbProbs *txb_probs, TxbInfo *txb_info) {
+                            const LV_MAP_COEFF_COST *txb_costs,
+                            TxbInfo *txb_info) {
   int cost_map[COST_MAP_SIZE][COST_MAP_SIZE];
   int ref_cost_map[COST_MAP_SIZE][COST_MAP_SIZE];
   const int cost_diff =
-      try_level_down(coeff_idx, txb_cache, txb_probs, txb_info, cost_map);
+      try_level_down(coeff_idx, txb_cache, txb_costs, txb_info, cost_map, 0);
   const int cost_diff_ref =
-      try_level_down_ref(coeff_idx, txb_probs, txb_info, ref_cost_map);
+      try_level_down_ref(coeff_idx, txb_costs, txb_info, ref_cost_map);
   if (cost_diff != cost_diff_ref) {
     printf("qc %d cost_diff %d cost_diff_ref %d\n", txb_info->qcoeff[coeff_idx],
            cost_diff, cost_diff_ref);
@@ -1659,7 +1660,7 @@ int get_txb_cost(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs) {
 }
 
 #if TEST_OPTIMIZE_TXB
-void test_try_change_eob(TxbInfo *txb_info, TxbProbs *txb_probs,
+void test_try_change_eob(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
                          TxbCache *txb_cache) {
   int eob = txb_info->eob;
   const int16_t *scan = txb_info->scan_order->scan;
@@ -1670,13 +1671,13 @@ void test_try_change_eob(TxbInfo *txb_info, TxbProbs *txb_probs,
     if (abs(last_coeff) == 1) {
       int new_eob;
       int cost_diff =
-          try_change_eob(&new_eob, last_ci, txb_cache, txb_probs, txb_info, 0);
+          try_change_eob(&new_eob, last_ci, txb_cache, txb_costs, txb_info, 0);
       int org_eob = txb_info->eob;
-      int cost = get_txb_cost(txb_info, txb_probs);
+      int cost = get_txb_cost(txb_info, txb_costs);
 
       txb_info->qcoeff[last_ci] = get_lower_coeff(last_coeff);
       set_eob(txb_info, new_eob);
-      int new_cost = get_txb_cost(txb_info, txb_probs);
+      int new_cost = get_txb_cost(txb_info, txb_costs);
       set_eob(txb_info, org_eob);
       txb_info->qcoeff[last_ci] = last_coeff;
 
@@ -1740,7 +1741,7 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
     stats->cost_diff = try_level_down(coeff_idx, txb_cache, txb_costs, txb_info,
                                       NULL, fast_mode);
 #if TEST_OPTIMIZE_TXB
-    test_level_down(coeff_idx, txb_cache, txb_probs, txb_info);
+    test_level_down(coeff_idx, txb_cache, txb_costs, txb_info);
 #endif
   }
   stats->rd_diff = RDCOST(txb_info->rdmult, stats->cost_diff, stats->dist_diff);
@@ -1762,7 +1763,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int64_t org_dist =
       av1_block_error_c(txb_info->tcoeff, txb_info->dqcoeff, max_eob, &sse) *
       (1 << (2 * txb_info->shift));
-  int org_cost = get_txb_cost(txb_info, txb_probs);
+  int org_cost = get_txb_cost(txb_info, txb_costs);
 #endif
 
   tran_low_t *org_qcoeff = txb_info->qcoeff;
@@ -1832,7 +1833,7 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   int64_t new_dist =
       av1_block_error_c(txb_info->tcoeff, txb_info->dqcoeff, max_eob, &sse) *
       (1 << (2 * txb_info->shift));
-  int new_cost = get_txb_cost(txb_info, txb_probs);
+  int new_cost = get_txb_cost(txb_info, txb_costs);
   int64_t ref_dist_diff = new_dist - org_dist;
   int ref_cost_diff = new_cost - org_cost;
   if (cost_diff != ref_cost_diff || dist_diff != ref_dist_diff)
