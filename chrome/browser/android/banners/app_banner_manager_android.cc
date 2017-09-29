@@ -174,6 +174,8 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
     for (const auto& application : manifest_.related_applications) {
       std::string platform = base::UTF16ToUTF8(application.platform.string());
       std::string id = base::UTF16ToUTF8(application.id.string());
+      // TODO(crbug/770050): convert CanHandleNonWebApp() to return an
+      // InstallableStatusCode and pass it to StopWithCode here.
       if (CanHandleNonWebApp(platform, application.url, id))
         return;
     }
@@ -182,8 +184,7 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
 
   if (can_install_webapk_) {
     if (!AreWebManifestUrlsWebApkCompatible(manifest_)) {
-      ReportStatus(web_contents(), URL_NOT_SUPPORTED_FOR_WEBAPK);
-      Stop();
+      StopWithCode(URL_NOT_SUPPORTED_FOR_WEBAPK);
       return;
     }
   }
@@ -206,8 +207,7 @@ void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
 
 void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing()) {
-    ReportStatus(web_contents(), NO_ICON_AVAILABLE);
-    Stop();
+    StopWithCode(NO_ICON_AVAILABLE);
     return;
   }
 
