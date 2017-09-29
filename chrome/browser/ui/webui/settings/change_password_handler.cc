@@ -46,14 +46,13 @@ void ChangePasswordHandler::OnJavascriptDisallowed() {
 }
 
 void ChangePasswordHandler::OnGaiaPasswordChanged() {
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("change-password-on-dismiss"));
+  FireWebUIListener("change-password-on-dismiss");
 }
 
 void ChangePasswordHandler::OnMarkingSiteAsLegitimate(const GURL& url) {
-  if (service_->unhandled_password_reuses().empty()) {
-    CallJavascriptFunction("cr.webUIListenerCallback",
-                           base::Value("change-password-on-dismiss"));
+  if (!ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile_)) {
+    FireWebUIListener("change-password-on-dismiss");
   }
 }
 
