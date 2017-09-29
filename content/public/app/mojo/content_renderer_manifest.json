@@ -22,7 +22,11 @@
       },
       "requires": {
         "*": [ "app" ],
-        "content_browser": [ "renderer" ],
+        "content_browser": [
+          "memory_instrumentation",
+          "renderer",
+          "url_keyed_metrics"
+        ],
         "device": [
           "device:power_monitor",
           "device:screen_orientation",
