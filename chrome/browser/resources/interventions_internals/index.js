@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('interventions_internals', function() {
+cr.define('interventions_internals', () => {
   let pageHandler = null;
 
   function init(handler) {
@@ -12,13 +12,23 @@ cr.define('interventions_internals', function() {
 
   function getPreviewsEnabled() {
     pageHandler.getPreviewsEnabled()
-        .then(function(response) {
-          let message = 'OfflinePreviews: ';
-          message += response.enabled ? 'Enabled' : 'Disabled';
-          $('offlinePreviews').textContent = message;
+        .then((response) => {
+          let statuses = $('previewsStatuses');
+
+          response.statuses.forEach((value, key) => {
+            let message = value.description + ': ';
+            message += value.enabled ? 'Enabled' : 'Disabled';
+
+            assert(!$(key), 'Component ' + key + ' already existed!');
+
+            let node = document.createElement('p');
+            node.setAttribute('id', key);
+            node.textContent = message;
+            statuses.appendChild(node);
+          });
         })
-        .catch(function(error) {
-          node.textContent = error.message;
+        .catch((error) => {
+          console.error(error.message);
         });
   }
 
@@ -31,10 +41,10 @@ window.setupFn = window.setupFn || function() {
   return Promise.resolve();
 };
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
   let pageHandler = null;
 
-  window.setupFn().then(function() {
+  window.setupFn().then(() => {
     if (window.testPageHandler) {
       pageHandler = window.testPageHandler;
     } else {
