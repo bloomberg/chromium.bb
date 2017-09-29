@@ -233,7 +233,8 @@ class GclientApi(recipe_api.RecipeApi):
             cfg.solutions[0].custom_vars[custom_var] = val
 
   def checkout(self, gclient_config=None, revert=RevertOnTryserver,
-               inject_parent_got_revision=True, **kwargs):
+               inject_parent_got_revision=True, extra_sync_flags=None,
+               **kwargs):
     """Return a step generator function for gclient checkouts."""
     cfg = gclient_config or self.c
     assert cfg.complete()
@@ -248,7 +249,7 @@ class GclientApi(recipe_api.RecipeApi):
 
     sync_step = None
     try:
-      sync_step = self.sync(cfg, **kwargs)
+      sync_step = self.sync(cfg, extra_sync_flags=extra_sync_flags, **kwargs)
 
       cfg_cmds = [
         ('user.name', 'local_bot'),
