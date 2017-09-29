@@ -374,13 +374,18 @@ TEST_F(SimpleFeatureTest, Context) {
               availability.message());
   }
 
-  feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
-  feature.set_location(SimpleFeature::COMPONENT_LOCATION);
-  EXPECT_EQ(Feature::INVALID_LOCATION, feature.IsAvailableToContext(
-      extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
-      Feature::CHROMEOS_PLATFORM).result());
-  feature.set_location(SimpleFeature::UNSPECIFIED_LOCATION);
+  {
+    SimpleFeature feature;
+    feature.set_location(SimpleFeature::COMPONENT_LOCATION);
+    EXPECT_EQ(Feature::INVALID_LOCATION,
+              feature
+                  .IsAvailableToContext(extension.get(),
+                                        Feature::BLESSED_EXTENSION_CONTEXT,
+                                        Feature::CHROMEOS_PLATFORM)
+                  .result());
+  }
 
+  feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
   EXPECT_EQ(Feature::INVALID_PLATFORM, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::UNSPECIFIED_PLATFORM).result());
@@ -540,8 +545,6 @@ TEST_F(SimpleFeatureTest, Location) {
                                   Manifest::COMPONENT));
   EXPECT_TRUE(
       LocationIsAvailable(SimpleFeature::POLICY_LOCATION, Manifest::COMPONENT));
-  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNSPECIFIED_LOCATION,
-                                  Manifest::COMPONENT));
 
   // Only component extensions can access the "component" location.
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,

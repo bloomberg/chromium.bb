@@ -210,11 +210,7 @@ SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
 }
 
 SimpleFeature::SimpleFeature()
-    : location_(UNSPECIFIED_LOCATION),
-      min_manifest_version_(0),
-      max_manifest_version_(0),
-      component_extensions_auto_granted_(true),
-      is_internal_(false) {}
+    : component_extensions_auto_granted_(true), is_internal_(false) {}
 
 SimpleFeature::~SimpleFeature() {}
 
@@ -317,15 +313,15 @@ std::string SimpleFeature::GetAvailabilityMessage(
           "'%s' is not allowed for specified platform.",
           name().c_str());
     case INVALID_MIN_MANIFEST_VERSION:
+      DCHECK(min_manifest_version_);
       return base::StringPrintf(
-          "'%s' requires manifest version of at least %d.",
-          name().c_str(),
-          min_manifest_version_);
+          "'%s' requires manifest version of at least %d.", name().c_str(),
+          *min_manifest_version_);
     case INVALID_MAX_MANIFEST_VERSION:
+      DCHECK(max_manifest_version_);
       return base::StringPrintf(
-          "'%s' requires manifest version of %d or lower.",
-          name().c_str(),
-          max_manifest_version_);
+          "'%s' requires manifest version of %d or lower.", name().c_str(),
+          *max_manifest_version_);
     case INVALID_SESSION_TYPE:
       return base::StringPrintf(
           "'%s' is only allowed to run in %s sessions, but this is %s session.",
@@ -344,9 +340,10 @@ std::string SimpleFeature::GetAvailabilityMessage(
           name().c_str(), GetDisplayName(channel).c_str(),
           GetDisplayName(GetCurrentChannel()).c_str());
     case MISSING_COMMAND_LINE_SWITCH:
+      DCHECK(command_line_switch_);
       return base::StringPrintf(
           "'%s' requires the '%s' command line switch to be enabled.",
-          name().c_str(), command_line_switch_.c_str());
+          name().c_str(), command_line_switch_->c_str());
   }
 
   NOTREACHED();
@@ -442,9 +439,8 @@ bool SimpleFeature::IsIdInList(const HashedExtensionId& hashed_id,
 
 bool SimpleFeature::MatchesManifestLocation(
     Manifest::Location manifest_location) const {
-  switch (location_) {
-    case SimpleFeature::UNSPECIFIED_LOCATION:
-      return true;
+  DCHECK(location_);
+  switch (*location_) {
     case SimpleFeature::COMPONENT_LOCATION:
       return manifest_location == Manifest::COMPONENT;
     case SimpleFeature::EXTERNAL_COMPONENT_LOCATION:
@@ -566,8 +562,8 @@ Feature::Availability SimpleFeature::GetEnvironmentAvailability(
       return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
   }
 
-  if (!command_line_switch_.empty() &&
-      !IsCommandLineSwitchEnabled(command_line, command_line_switch_)) {
+  if (command_line_switch_ &&
+      !IsCommandLineSwitchEnabled(command_line, *command_line_switch_)) {
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH);
   }
 
@@ -608,13 +604,13 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
     return CreateAvailability(NOT_FOUND_IN_WHITELIST);
   }
 
-  if (!MatchesManifestLocation(location))
+  if (location_ && !MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION);
 
-  if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
+  if (min_manifest_version_ && manifest_version < *min_manifest_version_)
     return CreateAvailability(INVALID_MIN_MANIFEST_VERSION);
 
-  if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
+  if (max_manifest_version_ && manifest_version > *max_manifest_version_)
     return CreateAvailability(INVALID_MAX_MANIFEST_VERSION);
 
   return CreateAvailability(IS_AVAILABLE);

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/optional.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/simple_feature.h"
@@ -21,9 +22,6 @@ void ExpectVectorsEqual(std::vector<T> expected,
   EXPECT_EQ(expected, actual) << name;
 }
 
-SimpleFeature::Location kDefaultLocation = SimpleFeature::UNSPECIFIED_LOCATION;
-const int kDefaultMinVersion = 0;
-const int kDefaultMaxVersion = 0;
 const bool kDefaultAutoGrant = true;
 const bool kDefaultInternal = false;
 
@@ -44,23 +42,24 @@ struct FeatureComparator {
   std::vector<Manifest::Type> extension_types;
   std::vector<Feature::Context> contexts;
   std::vector<Feature::Platform> platforms;
+
   URLPatternSet matches;
-  SimpleFeature::Location location;
-  int min_manifest_version;
-  int max_manifest_version;
-  bool component_extensions_auto_granted;
-  std::string command_line_switch;
-  std::unique_ptr<version_info::Channel> channel;
-  bool internal;
+
+  base::Optional<SimpleFeature::Location> location;
+  base::Optional<int> min_manifest_version;
+  base::Optional<int> max_manifest_version;
+  base::Optional<std::string> command_line_switch;
+  base::Optional<version_info::Channel> channel;
+
   std::string alias;
   std::string source;
+
+  bool component_extensions_auto_granted;
+  bool internal;
 };
 
 FeatureComparator::FeatureComparator(const std::string& name)
     : name(name),
-      location(kDefaultLocation),
-      min_manifest_version(kDefaultMinVersion),
-      max_manifest_version(kDefaultMaxVersion),
       component_extensions_auto_granted(kDefaultAutoGrant),
       internal(kDefaultInternal) {}
 
@@ -83,9 +82,7 @@ void FeatureComparator::CompareFeature(const SimpleFeature* feature) {
             feature->component_extensions_auto_granted())
       << name;
   EXPECT_EQ(command_line_switch, feature->command_line_switch()) << name;
-  ASSERT_EQ(channel.get() != nullptr, feature->has_channel()) << name;
-  if (channel)
-    EXPECT_EQ(*channel, feature->channel()) << name;
+  EXPECT_EQ(channel, feature->channel()) << name;
   EXPECT_EQ(internal, feature->IsInternal()) << name;
   EXPECT_EQ(alias, feature->alias()) << name;
   EXPECT_EQ(source, feature->source()) << name;
@@ -114,8 +111,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     FeatureComparator comparator("alpha");
     comparator.dependencies = {"permission:alpha"};
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::STABLE));
+    comparator.channel = version_info::Channel::STABLE;
     comparator.max_manifest_version = 1;
     comparator.CompareFeature(feature);
   }
@@ -123,8 +119,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     const SimpleFeature* feature = GetAsSimpleFeature("beta");
     FeatureComparator comparator("beta");
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::DEV));
+    comparator.channel = version_info::Channel::DEV;
     comparator.extension_types = {Manifest::TYPE_EXTENSION,
                                   Manifest::TYPE_PLATFORM_APP};
     comparator.location = SimpleFeature::COMPONENT_LOCATION;
@@ -136,8 +131,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
   {
     const SimpleFeature* feature = GetAsSimpleFeature("gamma");
     FeatureComparator comparator("gamma");
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::BETA));
+    comparator.channel = version_info::Channel::BETA;
     comparator.platforms = {Feature::WIN_PLATFORM, Feature::MACOSX_PLATFORM};
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
     comparator.dependencies = {"permission:gamma"};
@@ -161,8 +155,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     FeatureComparator comparator("gamma.unparented");
     comparator.blacklist = {"ddd"};
     comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::DEV));
+    comparator.channel = version_info::Channel::DEV;
     comparator.CompareFeature(feature);
   }
   {
@@ -170,8 +163,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
         GetAsComplexFeature("gamma.complex_unparented");
     FeatureComparator comparator("gamma.complex_unparented");
     comparator.contexts = {Feature::UNBLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::STABLE));
+    comparator.channel = version_info::Channel::STABLE;
     // We cheat and have both children exactly the same for ease of comparing;
     // complex features are tested more thoroughly below.
     for (const auto& feature : complex_feature->features_)
@@ -182,8 +174,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     FeatureComparator comparator("delta");
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT,
                            Feature::WEBUI_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::DEV));
+    comparator.channel = version_info::Channel::DEV;
     comparator.matches.AddPattern(
         URLPattern(URLPattern::SCHEME_ALL, "*://example.com/*"));
     comparator.min_manifest_version = 2;
@@ -204,8 +195,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
         Manifest::TYPE_EXTENSION,           Manifest::TYPE_HOSTED_APP,
         Manifest::TYPE_LEGACY_PACKAGED_APP, Manifest::TYPE_PLATFORM_APP,
         Manifest::TYPE_SHARED_MODULE,       Manifest::TYPE_THEME};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::BETA));
+    comparator.channel = version_info::Channel::BETA;
     comparator.CompareFeature(feature);
   }
   {
@@ -213,8 +203,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     const SimpleFeature* feature = GetAsSimpleFeature("omega");
     FeatureComparator comparator("omega");
     comparator.contexts = {Feature::WEB_PAGE_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::DEV));
+    comparator.channel = version_info::Channel::DEV;
     comparator.min_manifest_version = 2;
     comparator.CompareFeature(feature);
   }
@@ -250,8 +239,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     {
       // Check the default parent.
       FeatureComparator comparator("complex");
-      comparator.channel.reset(
-          new version_info::Channel(version_info::Channel::STABLE));
+      comparator.channel = version_info::Channel::STABLE;
       comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
       comparator.extension_types = {Manifest::TYPE_EXTENSION};
       comparator.CompareFeature(default_parent);
@@ -266,8 +254,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     {
       // Finally, check the branch of the complex feature.
       FeatureComparator comparator("complex");
-      comparator.channel.reset(
-          new version_info::Channel(version_info::Channel::BETA));
+      comparator.channel = version_info::Channel::BETA;
       comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
       comparator.extension_types = {Manifest::TYPE_EXTENSION};
       comparator.whitelist = {"aaa"};
@@ -280,8 +267,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     const SimpleFeature* feature = GetAsSimpleFeature("alias");
     FeatureComparator comparator("alias");
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::STABLE));
+    comparator.channel = version_info::Channel::STABLE;
     comparator.source = "alias_source";
     comparator.CompareFeature(feature);
   }
@@ -289,8 +275,7 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     const SimpleFeature* feature = GetAsSimpleFeature("alias_source");
     FeatureComparator comparator("alias_source");
     comparator.contexts = {Feature::BLESSED_EXTENSION_CONTEXT};
-    comparator.channel.reset(
-        new version_info::Channel(version_info::Channel::STABLE));
+    comparator.channel = version_info::Channel::STABLE;
     comparator.alias = "alias";
     comparator.CompareFeature(feature);
   }
