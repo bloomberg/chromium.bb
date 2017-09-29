@@ -4783,7 +4783,8 @@ cr.define('login', function() {
      */
     maybePreselectPod: function() {
       var pod = this.preselectedPod;
-      this.focusPod(pod);
+      // Force a focus update to ensure the correct wallpaper is loaded.
+      this.focusPod(pod, true /* force */);
 
       // Hide user-type-bubble in case all user pods are disabled and we focus
       // first pod.
