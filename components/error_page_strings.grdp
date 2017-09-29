@@ -218,7 +218,9 @@
   <message name="IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING" desc="Heading in the error page for HTTP 5xx errors, which are considered to be server side errors. Also used for bad responses.">
     This page isn’t working
   </message>
-
+  <message name="IDS_ERRORPAGES_SUMMARY_CONTACT_SITE_OWNER" desc="Generic suggestion for when the server returns a HTTP 4xx or 5xx error asking users to contact the site owner.">
+    If the problem continues, contact the site owner.
+  </message>
   <message name="IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST" desc="Summary in the error page when the server returns a 501 or 505.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> is currently unable to handle this request.
   </message>
