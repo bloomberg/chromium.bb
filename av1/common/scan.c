@@ -6680,7 +6680,7 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
           uint32_t count =
               non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + 1];
           count = ROUND_POWER_OF_TWO(count, 1);
-          count = clamp64(count, 0, block_num);
+          count = clamp32u(count, 0, block_num);
           non_zero_count[ci + 1] = count;
         } else {
           non_zero_count[ci + 1] = non_zero_count_ds[ci_ds];
@@ -6694,7 +6694,7 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
         if (r + 2 < tx_h) {
           uint32_t count = non_zero_count[ci] + non_zero_count[ci + 2 * tx_w];
           count = ROUND_POWER_OF_TWO(count, 1);
-          count = clamp64(count, 0, block_num);
+          count = clamp32u(count, 0, block_num);
           non_zero_count[ci + tx_w] = count;
         } else {
           non_zero_count[ci + tx_w] = non_zero_count[ci];
@@ -6715,7 +6715,7 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
           uint32_t count =
               non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + 1];
           count = ROUND_POWER_OF_TWO(count, 1);
-          count = clamp64(count, 0, block_num);
+          count = clamp32u(count, 0, block_num);
           non_zero_count[ci + 1] = count;
         } else {
           non_zero_count[ci + 1] = non_zero_count_ds[ci_ds];
@@ -6736,7 +6736,7 @@ void av1_up_sample_scan_count(uint32_t *non_zero_count,
           uint32_t count =
               non_zero_count_ds[ci_ds] + non_zero_count_ds[ci_ds + tx_w_ds];
           count = ROUND_POWER_OF_TWO(count, 1);
-          count = clamp64(count, 0, block_num);
+          count = clamp32u(count, 0, block_num);
           non_zero_count[ci + tx_w] = count;
         } else {
           non_zero_count[ci + tx_w] = non_zero_count_ds[ci_ds];

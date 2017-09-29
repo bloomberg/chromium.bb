@@ -77,6 +77,10 @@ static INLINE int clamp(int value, int low, int high) {
   return value < low ? low : (value > high ? high : value);
 }
 
+static INLINE uint32_t clamp32u(uint32_t value, uint32_t low, uint32_t high) {
+  return value < low ? low : (value > high ? high : value);
+}
+
 static INLINE int64_t clamp64(int64_t value, int64_t low, int64_t high) {
   return value < low ? low : (value > high ? high : value);
 }
