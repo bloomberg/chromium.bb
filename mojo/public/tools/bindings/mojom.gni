@@ -16,6 +16,13 @@ declare_args() {
 
 mojom_generator_root = "//mojo/public/tools/bindings"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
+
+# See //mojo/public/tools/bindings:generate_message_id_salt
+mojom_message_id_salt_filename = get_label_info(
+                                     "//mojo/public/tools/bindings:generate_message_id_salt($default_toolchain)",
+                                     "target_gen_dir") +
+                                 "/mojom-message-id-salt"
+
 mojom_generator_sources = [
   "$mojom_generator_root/generators/mojom_cpp_generator.py",
   "$mojom_generator_root/generators/mojom_js_generator.py",
@@ -34,6 +41,7 @@ mojom_generator_sources = [
   "$mojom_generator_root/pylib/mojom/parse/lexer.py",
   "$mojom_generator_root/pylib/mojom/parse/parser.py",
   "$mojom_generator_script",
+  "$mojom_message_id_salt_filename",
 ]
 
 generate_export_header_script =
@@ -184,6 +192,10 @@ if (enable_mojom_typemapping) {
 #       be serialized and deserialized using a legacy IPC::ParamTraits
 #       specialization.
 #
+#   scramble_message_ids (optional)
+#       If set to |true| (the default), generated mojom interfaces will use
+#       scrambled ordinal identifiers in encoded messages.
+#
 #   component_output_prefix (optional)
 #       The prefix to use for the output_name of any component library emitted
 #       for generated C++ bindings. If this is omitted, C++ bindings targets are
@@ -323,6 +335,13 @@ template("mojom") {
       rebase_path("$root_gen_dir/mojo/public/tools/bindings", root_build_dir),
     ]
 
+    if (!defined(invoker.scramble_message_ids) || invoker.scramble_message_ids) {
+      common_generator_args += [
+        "--scrambled_message_id_salt",
+        rebase_path("$mojom_message_id_salt_filename", root_build_dir),
+      ]
+    }
+
     if (!defined(invoker.allow_native_structs) || invoker.allow_native_structs) {
       common_generator_args += [ "--allow_native_structs" ]
     }
@@ -388,6 +407,7 @@ template("mojom") {
       inputs = mojom_generator_sources
       sources = invoker.sources
       deps = [
+        "//mojo/public/tools/bindings:generate_message_id_salt($default_toolchain)",
         "//mojo/public/tools/bindings:precompile_templates",
       ]
       outputs = generator_shared_cpp_outputs
@@ -608,6 +628,7 @@ template("mojom") {
         sources = invoker.sources
         deps = [
           ":$type_mappings_target_name",
+          "//mojo/public/tools/bindings:generate_message_id_salt($default_toolchain)",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
         outputs = generator_cpp_outputs + generator_java_outputs
@@ -922,6 +943,7 @@ template("mojom") {
           sources += invoker.sources
         }
         deps = [
+          "//mojo/public/tools/bindings:generate_message_id_salt($default_toolchain)",
           "//mojo/public/tools/bindings:precompile_templates",
         ]
         outputs = generator_js_outputs

@@ -14,4 +14,9 @@ mojom("interfaces") {
   deps = [
     "//mojo/common:common_custom_types",
   ]
+
+  # USB Mojom interfaces are exposed publicly to layout tests which use
+  # prepackaged redistributable JS bindings. It is therefore not desirable to
+  # scramble these messages.
+  scramble_message_ids = false
 }
