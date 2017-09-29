@@ -111,7 +111,11 @@ TEST(FontDescriptionTest, ToString) {
       "historical=Normal, contextual=Normal], keyword_size=0, "
       "font_smoothing=Auto, text_rendering=OptimizeLegibility, "
       "synthetic_bold=false, synthetic_italic=false, "
-      "subpixel_positioning=false, subpixel_ascent_descent=false",
+      "subpixel_positioning=false, subpixel_ascent_descent=false, "
+      "variant_numeric=[numeric_figure=NormalFigure, "
+      "numeric_spacing=NormalSpacing, numeric_fraction=Normal, ordinal=Off, "
+      "slashed_zero=Off], variant_east_asian=[form=Normal, width=Normal, "
+      "ruby=false]",
       description.ToString());
 }
 
