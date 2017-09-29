@@ -146,9 +146,6 @@ static void unmount_callback(DADiskRef disk,
 - (void)didFinishEjectingDisk:(DADiskRef)disk
                 withDissenter:(DADissenterRef)dissenter {
   DASessionSetDispatchQueue(session_, NULL);
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
-  dispatch_release(unpack_dq_);
-#endif
   CFRelease(session_);
   NSError* error = nil;
   if (dissenter) {

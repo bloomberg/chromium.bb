@@ -23,17 +23,6 @@
 #include "chrome/common/mac/mock_launchd.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Once Chrome no longer supports OSX 10.7, everything within this
-// preprocessor block can be removed.
-#if !defined(MAC_OS_X_VERSION_10_8) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
-@interface NSFileManager (Chrome)
-- (BOOL)trashItemAtURL:(NSURL*)url
-      resultingItemURL:(NSURL* __nullable* __nullable)outResultingURL
-                 error:(NSError**)error;
-@end
-#endif
-
 class ServiceProcessStateFileManipulationTest : public ::testing::Test {
  public:
   void TrashFunc(const base::FilePath& src) {

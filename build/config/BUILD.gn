@@ -300,10 +300,7 @@ config("executable_config") {
     # Currently only turn on linker CFI for executables.
     configs += [ "//build/config/win:cfi_linker" ]
   } else if (is_mac) {
-    configs += [
-      "//build/config/mac:mac_dynamic_flags",
-      "//build/config/mac:mac_executable_flags",
-    ]
+    configs += [ "//build/config/mac:mac_dynamic_flags" ]
   } else if (is_ios) {
     configs += [
       "//build/config/ios:ios_dynamic_flags",

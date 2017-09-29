@@ -21,12 +21,6 @@
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_keys.h"
 
-#if !defined(OS_IOS) && (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6)
-// Apparently objc/runtime.h doesn't define this with the 10.6 SDK yet.
-// The docs say it exists since 10.6 however.
-OBJC_EXPORT void *objc_destructInstance(id obj);
-#endif
-
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
 // because then the class would have to override many/most of the
 // inherited methods (|NSObject| is like a category magnet!).

@@ -33,15 +33,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-
-@interface IOBluetoothDevice (LionSDKDeclarations)
-- (IOReturn)performSDPQuery:(id)target uuids:(NSArray*)uuids;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 using device::BluetoothSocket;
 
 // A simple helper class that forwards SDP query completed notifications to its

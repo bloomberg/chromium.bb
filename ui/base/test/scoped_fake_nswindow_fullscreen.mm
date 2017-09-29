@@ -17,17 +17,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-// This method exists on NSWindowDelegate on 10.7+.
-// To build on 10.6, we just need to declare it somewhere. We'll test
-// -[NSObject respondsToSelector] before calling it.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-@protocol NSWindowDelegateLion
-- (NSSize)window:(NSWindow*)window
-    willUseFullScreenContentSize:(NSSize)proposedSize;
-@end
-#endif
-
 // Donates a testing implementation of [NSWindow toggleFullScreen:].
 @interface ToggleFullscreenDonorForWindow : NSObject
 @end
