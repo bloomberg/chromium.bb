@@ -5,12 +5,19 @@
 Displays LayoutTests results.
 -->
 <style>
+html {
+  scroll-behavior: smooth;
+}
 body {
   font-family: sans-serif;
   min-height: 200vh;
 }
 button {
   margin-top: 4px;
+}
+
+p, h2, h3, h4 {
+  margin: 8px 0 4px 0;
 }
 
 #right-toolbar {
@@ -81,7 +88,7 @@ button {
   line-height: 200%;
   cursor: zoom-in;
 }
-.expect:hover {
+.expect:hover, .expect:focus {
   background-color: #F4F4F4;
 }
 .expect:focus > .details {
@@ -162,22 +169,42 @@ button {
   <div style="">go back to <a href="results.html">legacy results.html</a></div>
 </div>
 
-<div id="help" class="hidden">
+<div id="help" class="hidden hide-on-esc">
   <button style="position:fixed;right:30px;" onclick="GUI.toggleVisibility('help')">Close</button>
+  <h3>Keyboard navigation</h3>
+
+  <ul>
+  <li><b>Space</b> Show full results of the next test. This is the easiest way to navigate, just hit spacebar (and shift space to go back).
+  <li><b>Tab</b> to select the next test.
+  <li><b>Enter</b> to see test details. This will automatically close other details.
+  <li><b>C</b> to select text of the selected test.
+  <li><b>ctrl A</b> to select text of all tests for easy copying.
+  </ul>
+  <p>Modifiers:</p>
+  <ul>
+  <li><b>Shift</b> hold shift key to keep other details open.
+  <li><b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
+  </ul>
   <p>This page lets you query and display test results.</p>
 
-  <h3>Results</h3>
+  <h3>Querying Results</h3>
 
-  <p>Select the results you are interested in with "Query" buttons.
+  <p>Select the results you are interested in using "Query" buttons.
   Narrow down the results further with "Filter" checkboxes.</p>
 
   <p>"Did not pass" query will exclude PASS and WONTFIX tests.</p>
 
-  <p>The results are shown in either plain text, or <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> format.</p>
-
-  <p>TestExpectations result lines usually looks like this:</p>
-
+  <h3>Displaying results.</h3>
+  <p>You can view the list of matched tests in several result formats.
+  Select format that works best for what you are trying to accomplish
+  using "format" popup. Following formats are available:</p>
+  <h4>1. Plain text</h4>
+  <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
+  <p>Plain text shows the test path.</p>
+  <h4>2. TestExpectations</a></h4>
 <pre><a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]</pre>
+  <p>TestExpectationsshow lines as they'd appear in <a
+    href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> file.</p>
 
   <p>The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
   can have multiple values, representing all expected results. For example:</p>
@@ -194,19 +221,28 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
   your job as easy as copy and paste.</p>
 
-  <h3>Keyboard navigation</h3>
-
-  <ul>
-  <li><b>Tab</b> to select the next test.
-  <li><b>Enter</b> to see test details. This will automatically close other details.
-  <li><b>S</b> to select the full name of the test under the cursor
-  <li><b>ctrl A</b> to select text of all tests for easy copying.
-  </ul>
-  <p>Modifiers:</p>
-  <ul>
-  <li><b>Shift</b> hold shift key to keep other details open.
-  <li><b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
-  </ul>
+  <h4>3. Crash site</h4>
+  <pre>
+### Crash site: Internals.cpp(3455)
+  editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
+  <p>Crash site groups "Crash" tests with similar stack traces together. For best results, use it while filtering only crashes.</p>
+  <h4>4. Text mismatch</h4>
+  <pre>
+### Text mismatch failure: general text mismatch
+  accessibility/dimensions-include-descendants.html
+### Text mismatch failure: newlines only
+  accessibility/aria-controls-with-tabs.html
+### Text mismatch failure: spaces and tabs only
+  accessibility/aria-describedby-on-input.html
+</pre>
+  <p>Text mistmatch groups "Text failure" tests together.
+  </p>
+  <h3>Viewing results of a single test</h3>
+  <p>Click on images to zoom in. Select image viewing mode from the popup.</p>
+  <p>When viewing images for the first time, red flash highlights enclosing
+  rectangle that was colored red in the diff. Diff flash and color eyedropper
+  will not be available on file:// urls because of CSP.</p>
+  <h3>Bugs</h3>
   <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.</p>
 </div>
 <div id="summary">
@@ -284,21 +320,13 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <pre id="rebaseline_script"></pre>
 </div>
 
-<template id="genericResult">
-<div class="result-frame">
-  <ul class="result-menu">
-  </ul>
-  <div class="result-output">
-  </div>
-</div>
-</template>
 <script>
 "use strict";
 
 // Results loaded from full_results_jsonp.js.
-let fullResults = {};
+let globalResults = {};
 
-let TestResultInformation = {
+const TestResultInformation = {
   "CRASH":      { index: 1, text: "Crash", isFailure: true, isSuccess: false },
   "FAIL":       { index: 2, text: "Failure", isFailure: true, isSuccess: false },
   "TEXT":       { index: 3, text: "Failure", isFailure: true, isSuccess: false },
@@ -311,39 +339,41 @@ let TestResultInformation = {
   "WONTFIX":    { index: 10, text: "WontFix", isFailure: false, isSuccess: false },
   "NEEDSMANUALREBASELINE": { index: 11, text: "NeedsManualRebaseline", isFailure: false, isSuccess: false },
   "PASS":       { index: 12, text: "Pass", isFailure: false, isSuccess: true },
-}
+};
 
-// Sorted from worst to best
-let TestResultComparator = function (a, b) {
+// Sorted from worst to best.
+const TestResultComparator = function (a, b) {
   if (TestResultInformation[a].index > TestResultInformation[b].index)
     return 1;
   else if (TestResultInformation[a].index == TestResultInformation[b].index)
     return 0;
   else
     return -1;
-}
+};
 
 // Traversal traverses all the tests.
 // Use Traversal.traverse(filter, action) to perform action on selected tests.
-let Traversal = function(testRoot) {
-  this.root = testRoot;
-  this.reset();
-}
-Traversal.prototype = {
-  traverse: function(filter, action) {
+class Traversal {
+  constructor(testRoot) {
+    this.root = testRoot;
+    this.reset();
+  }
+
+  traverse(filter, action) {
     action = action || function() {};
     this._helper(this.root, "", filter, action);
-  },
-  reset: function() {
+  }
+
+  reset() {
     this.testCount = 0;
     this.filteredCount = 0;
     this.lastDir = "";
     this.html = [];
     this.resultCounts = {};
     return this;
-  },
+  }
 
-  _helper: function(node, path, filter, action) {
+  _helper(node, path, filter, action) {
     if ("actual" in node) {
       this.testCount++;
       if (filter(node, path)) {
@@ -360,44 +390,55 @@ Traversal.prototype = {
         this._helper(node.get(p), path + "/" + p, filter, action);
     }
   }
-}
+} // class Traversal
 
-// Parses test path into parts: dir, extension, href.
-let PathParser = function(path) {
-  this.path = path;
-  let [href, dir, file] = path.match("/(.*)/(.*)");
-  this.dir = dir;
-  this.file = file;
-  let tmp;
-  [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
-  this.testHref = this.testBaseHref() + href.replace(/\/virtual\/[^\/]*/, "");
-}
-PathParser.prototype = {
-  resultLink: function(resultName) {
+const PathParserGlobals = {
+  layout_tests_dir: null,
+  chromium_revision: null
+};
+
+class PathParser {
+  constructor(path) {
+    this.path = path;
+    let [href, dir, file] = path.match("/(.*)/(.*)");
+    this.dir = dir;
+    this.file = file;
+    let tmp;
+    [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
+    this.testHref = this.testBaseHref() + href.replace(/\/virtual\/[^\/]*/, "");
+  }
+
+  static initGlobals(fullResults) {
+    for (let p in PathParserGlobals)
+      PathParserGlobals[p] = fullResults[p];
+  }
+
+  resultLink(resultName) {
     return this.dir + "/" + this.basename + resultName;
-  },
-  testBaseHref: function() {
+  }
+
+  testBaseHref() {
     if (window.localStorage.getItem("testLocationOverride")) {
       // Experimental preference.
       // Use "window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")
       return window.localStorage.getItem("testLocationOverride");
-    } else if (fullResults.layout_tests_dir) {
-      return fullResults.layout_tests_dir;
+    } else if (PathParserGlobals.layout_tests_dir) {
+      return PathParserGlobals.layout_tests_dir;
     } else if (location.toString().indexOf('file://') == 0) {
       // tests were run locally.
       return "../../../third_party/WebKit/LayoutTests";
-    } else if (fullResults.chromium_revision) {
+    } else if (PathParserGlobals.chromium_revision) {
       // Existing crrev list is incorrect:  https://crbug.com/750347
-      let correctedRevision = fullResults.chromium_revision.replace("refs/heads/master@{#", "").replace("}", "");
+      let correctedRevision = PathParserGlobals.chromium_revision.replace("refs/heads/master@{#", "").replace("}", "");
       return "https://crrev.com/" + correctedRevision + "/third_party/WebKit/LayoutTests";
     } else {
       return "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests";
     }
   }
-}
+} // class PathParser
 
 // Report deals with displaying a single test.
-let Report = {
+const Report = {
 
   getDefaultPrinter: () => {
     let val = document.querySelector("#report_format").value;
@@ -417,12 +458,12 @@ let Report = {
 
   printPlainTest: (test, path, traversal) => {
     let pathParser = new PathParser(path);
-    let html = ""
-      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
-      + pathParser.dir + "/"
-      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
-      + pathParser.file + "</a>";
-    html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
+    let html = `
+    <div class='expect' tabindex='0' data-id='${test.expectId}'>
+      <div class='details'></div>
+      <input type='checkbox' class='rebaseline-checkbox' style='display:none'>
+     ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+    </div>`;
     traversal.html.push(html);
   },
 
@@ -452,26 +493,24 @@ let Report = {
     let status = "";
     for (let key of statusMap.keys()) {
       if (statusMap.get(key) == "bold")
-        status += " <b>" + TestResultInformation[key].text + "</b>";
+        status += ` <b>${TestResultInformation[key].text}</b>`;
       else
-        status += " " + TestResultInformation[key].text;
+        status += ` ${TestResultInformation[key].text}`;
     }
     let bug = test.actualMap.has("PASS") ? "" : "<span class='warn'>NEEDBUG</span>";
     if (test.bugs && test.bugs.length > 0) {
       bug = "";
       for (let b of test.bugs) {
-        bug += "<a target='crbug' tabindex='-1' href='https://" + b + "'>" + b + "</a> ";
+        bug += `<a target='crbug' tabindex='-1' href='https://${b}'>${b}</a> `;
       }
     }
-    let html = "";
-    html += bug;
-    html += " "
-      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
-      + pathParser.dir + "/"
-      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
-      + pathParser.file + "</a>";
-    html += " [ " + status + " ]";
-    html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
+    let html = `
+      <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${bug}
+        <input type='checkbox' class='rebaseline-checkbox' style='display:none'>
+        ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+        [ ${status} ]
+    </div>
+    `;
     traversal.html.push(html);
   },
 
@@ -495,13 +534,13 @@ let Report = {
     Report.printWithKey(test, path, traversal, "text_mismatch");
   },
 
-  indicateNone: function(report) {
+  indicateNone: (report) => {
     let pre = document.createElement("div");
     pre.innerHTML = "<i>None</i>";
     report.appendChild(pre);
   },
 
-  renderResultList: function(html) {
+  renderResultList: (html) => {
     let report = document.querySelector("#report");
     if (report.childNodes.length === 0 && html.length === 0) {
       Report.indicateNone(report);
@@ -513,7 +552,7 @@ let Report = {
     report.appendChild(pre);
   },
 
-  createContainerForGroup: function(report, key, keyed_title, null_title) {
+  createContainerForGroup: (report, key, keyed_title, null_title) => {
     let container = document.createElement("div");
     container.setAttribute("key", key);
     container.innerHTML = ""
@@ -543,7 +582,7 @@ let Report = {
     return container;
   },
 
-  renderGroup: function(html, keyed_title, null_title) {
+  renderGroup: (html, keyed_title, null_title) => {
     let report = document.querySelector("#report");
     if (report.childNodes.length === 0 && html.length === 0) {
       Report.indicateNone(report);
@@ -566,17 +605,17 @@ let Report = {
       renderMap[key].container.insertAdjacentHTML('beforeend', renderMap[key].html);
   },
 
-  renderGroupCrashSite: function(html) {
+  renderGroupCrashSite: (html) => {
     Report.renderGroup(html, "Crash site", "Didn't crash");
   },
 
-  renderGroupTextMismatch: function(html) {
+  renderGroupTextMismatch: (html) => {
     Report.renderGroup(html, "Text mismatch failure", "Didn't find text mismatch");
   },
 
-  getTestById: function(testId) {
+  getTestById: (testId) => {
     let test;
-    (new Traversal(fullResults.tests)).traverse(function(thisTest) {
+    (new Traversal(globalResults.tests)).traverse(function(thisTest) {
       if (thisTest.expectId == testId)
         test = thisTest;
         return false;
@@ -584,94 +623,73 @@ let Report = {
     return test;
   },
 
-  // Returns links to test results [ {text:, link:}, ... ]
-  getResultLinks: function (test) {
-    let links = [];
+   // Returns links to test results [ {text:, link:}, ... ]
+  getResultToolbars: (test) => {
+    let toolbars = [];
     let pathParser = new PathParser(test.expectPath);
-    links.push({text: test.actual});
+    toolbars.push(new PlainHtmlToolbar().createDom(test.actual));
     for (let result of test.actualMap.keys()) {
       switch(result) {
         case "PASS":
         case "SLOW":
           if (Filters.unexpectedPass(test))
-            links.push({text: "Expected: " + test.expected});
+            toolbars.push(new PlainHtmlToolbar().createDom("Expected: " + test.expected));
           if (!test.has_stderr)
-            links.push({text: "No errors"});
+            toolbars.push(new PlainHtmlToolbar().createDom("No errors"));
           break;
         case "SKIP":
-          links.push({text: "Test did not run."});
+          toolbars.push(new PlainHtmlToolbar().createDom("Test did not run."));
           break;
         case "CRASH":
-          links.push({text: "crash log", link: pathParser.resultLink("-crash-log.txt")});
+          toolbars.push(new SimpleLinkToolbar().createDom(
+            pathParser.resultLink("-crash-log.txt"), "Crash log", "crash log"));
           break;
         case "TIMEOUT":
-          links.push({text: "Test timed out. "
-            + ("time" in test ? `(${test.time}s)` : "")});
+          toolbars.push(new PlainHtmlToolbar().createDom("Test timed out. "
+            + ("time" in test ? `(${test.time}s)` : "")));
           if (test.text_mismatch)
-            links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
+            toolbars.push(new TextResultsToolbar().createDom(test));
           break;
         case "TEXT":
-          links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
-          if (!test.is_testharness_test) {
-            links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
-            links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
-          }
+          toolbars.push(new TextResultsToolbar().createDom(test));
           break;
         case "IMAGE":
-          links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
-          links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
-          links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
+          toolbars.push(new ImageResultsToolbar().createDom(test));
           break;
         case "IMAGE+TEXT":
-          links.push({text: "actual image", link: pathParser.resultLink("-actual.png")});
-          links.push({text: "expected image ", link: pathParser.resultLink("-expected.png")});
-          links.push({text: "diff", link: pathParser.resultLink("-diff.png")});
-          links.push({text: "actual text", link: pathParser.resultLink('-actual.txt')});
-          if (!test.is_testharness_test) {
-            links.push({text: "expected text", link: pathParser.resultLink('-expected.txt')});
-            links.push({text: "diff", link: pathParser.resultLink('-diff.txt')});
-          }
+          toolbars.push(new ImageResultsToolbar().createDom(test));
+          toolbars.push(new TextResultsToolbar().createDom(test));
           break;
         case "MISSING":
-          links.push({text: "Test is missing."});
+          toolbars.push(new PlainHtmlToolbar().createDom("Baseline is missing."));
           break;
         default:
           console.error("unexpected actual", test.actual);
       }
     }
     if (test.has_stderr) {
-      links.push({text: "stderr", link: pathParser.resultLink("-stderr.txt")});
+      toolbars.push(new SimpleLinkToolbar().createDom(
+            pathParser.resultLink("-stderr.txt"), "standard error", "stderr"));
     }
-    return links;
+    return toolbars;
   },
-  getResultsDiv: function(test) {
-    let clone = document.importNode(
-      document.querySelector("#genericResult").content, true);
-    let div = clone.children[0];
-    // Initialize the results
+  getResultsDiv: (test) => {
+    let div = document.createElement("div");
+    div.classList.add("result-frame");
+    div.innerHTML = `
+      <ul class="result-menu"></ul>
+      <div class="result-output"></div>
+    `;
+    // Initialize the results.
     let menu = div.querySelector(".result-menu");
-    menu.innerHTML = "";
-    for (let link of Report.getResultLinks(test)) {
-      let li = document.createElement("li");
-      if (link.link) {
-        let anchor = document.createElement("a");
-        anchor.setAttribute("onclick", "return GUI.loadResult(this)");
-        anchor.setAttribute("href", link.link || "");
-        anchor.setAttribute("onfocus", "return GUI.loadResult(this)");
-        anchor.innerText = link.text;
-        li.appendChild(anchor);
-      }
-      else {
-        li.innerText = link.text;
-      }
-      menu.appendChild(li);
-    }
+    for (let toolbar of Report.getResultToolbars(test))
+      menu.appendChild(toolbar);
     return div;
   }
-}
+}; // Report
 
 // Query generates a report for a given query.
-let Query = {
+const Query = {
   lastReport: null,
   currentRAF: null,
   currentPromise: null,
@@ -698,7 +716,7 @@ let Query = {
   },
 
   resetFilters: function() {
-    // Reset all filters
+    // Reset all filters.
     for (let el of Array.from(
           document.querySelectorAll("#filters > label"))) {
       el.querySelector('input').checked = true;
@@ -752,8 +770,8 @@ let Query = {
       );
   },
 
-  // generateReport is async, returns promise
-  // promise if fullfilled when traversal completes. Display will continue async.
+  // generateReport is async, returns promise.
+  // promise id fullfilled when traversal completes. Display will continue async.
   generateReport: function(name, filter, report) {
     if (this.currentRAF)
       window.cancelAnimationFrame(this.currentRAF);
@@ -761,13 +779,13 @@ let Query = {
     filter = filter || this.lastReport.filter;
     name = name || this.lastReport.name;
 
-    // Store last report to redisplay
-    this.lastReport = { name: name, filter: filter };
+    // Store last report to redisplay.
+    this.lastReport = {name: name, filter: filter};
     this.createReportPromise();
 
     document.querySelector("#report").innerHTML = "";
     document.querySelector("#report_title").innerHTML = name;
-    let traversal = new Traversal(fullResults.tests);
+    let traversal = new Traversal(globalResults.tests);
 
     let chunkSize = 1000;
     let index = 0;
@@ -777,18 +795,18 @@ let Query = {
       index += chunkSize;
       if (index < traversal.html.length)
         this.currentRAF = window.requestAnimationFrame(callback);
-    }
+    };
     window.setTimeout( _ => {
       traversal.traverse(filter, report.print);
       this.completeReportPromise(traversal);
-      this.currentRAF = window.requestAnimationFrame(callback)
+      this.currentRAF = window.requestAnimationFrame(callback);
     }, 0);
     return this.currentPromise;
   }
-};
+}; // Query
 
 // Test filters for queries.
-let Filters = {
+const Filters = {
   containsPass: function (map) {
     return map.has("PASS") || map.has("SLOW");
   },
@@ -833,24 +851,25 @@ let Filters = {
   actual: tag => {  // Returns comparator for tag.
     return function(test) {
       return test.actualMap.has(tag);
-    }
+    };
   },
   wontfix: test => test.expected == "WONTFIX",
   all: _ => true,
   flaky: test => test.actualMap.size > 1
-}
+}; // Filters
 
 // Event handling, initialization.
-let GUI = {
+const GUI = {
   initPage: function(results) {
     results.tests = GUI.convertToMap(results.tests);
-    fullResults = results;
+    globalResults = results;
     if (window.localStorage.getItem("reportFormat")) {
       document.querySelector("#report_format").value = window.localStorage.getItem("reportFormat");
     }
-    GUI.optimizeResults();
-    GUI.printSummary(fullResults);
+    GUI.optimizeResults(globalResults);
+    GUI.printSummary(globalResults);
     GUI.initEvents();
+    PathParser.initGlobals(results);
     // Show unexpected failures on startup.
     document.querySelector("#button_unexpected_fail").click();
   },
@@ -873,8 +892,8 @@ let GUI = {
     }
   },
 
-  optimizeResults: function() {
-    // Optimizes fullResults for querying
+  optimizeResults: function(fullResults) {
+    // Optimizes fullResults for querying.
     let t = new Traversal(fullResults.tests);
     // To all tests add:
     // - test.expectId, a unique id
@@ -882,7 +901,7 @@ let GUI = {
     // - test.actualMap, map of actual results
     // - test.actualFinal, last result
     // - test.expectedMap, maps of expected results
-    // For all crashing tests without crash_site, set crash_site to "Can't identify"
+    // For all crashing tests without crash_site, set crash_site to "Can't identify".
     let nextId = 1;
     t.traverse(
       test => true,
@@ -905,6 +924,48 @@ let GUI = {
     );
   },
 
+  nextExpectation: function(expectation) {
+    let nextSiblingWithKeyedParentSkip = function(el) {
+      let sibling = el.nextElementSibling;
+      if (sibling == null && el.parentNode.hasAttribute("key")) {
+        let nextKey = el.parentNode.nextElementSibling;
+        if (nextKey)
+          sibling = nextKey.firstElementChild;
+      }
+      return sibling;
+    };
+    if (expectation == null)
+      return null;
+    let sibling = nextSiblingWithKeyedParentSkip(expectation);
+    while (sibling) {
+      if (sibling.classList.contains("expect"))
+        return sibling;
+      else
+        sibling = nextSiblingWithKeyedParentSkip(sibling);
+    }
+  },
+
+  previousExpectation: function(expectation) {
+    let previousSiblingWithKeyedParentSkip = function(el) {
+      let sibling = el.previousElementSibling;
+      if (sibling == null && el.parentNode.hasAttribute("key")) {
+        let nextKey = el.parentNode.previousElementSibling;
+        if (nextKey)
+          sibling = nextKey.lastElementChild;
+      }
+      return sibling;
+    };
+    if (expectation == null)
+      return null;
+    let sibling = previousSiblingWithKeyedParentSkip(expectation);
+    while (sibling) {
+      if (sibling.classList.contains("expect"))
+        return sibling;
+      else
+        sibling = previousSiblingWithKeyedParentSkip(sibling);
+    }
+  },
+
   initEvents: function() {
     document.addEventListener("click", function(ev) {
       if (GUI.isExpectation(ev.target)) {
@@ -913,30 +974,57 @@ let GUI = {
         ev.stopPropagation();
       }
     });
-    document.addEventListener('keydown', ev => {
+    document.addEventListener("keydown", ev => {
       {
         switch(ev.key) {
+          case "Escape": // Close/hide divs.
+            for (let el of Array.from(document.querySelectorAll(".close-on-esc")))
+              el.remove();
+            for (let el of Array.from(document.querySelectorAll(".hide-on-esc")))
+              el.classList.add("hidden");
+            if (document.activeElement && document.activeElement.classList.contains("expect"))
+              GUI.hideResults(document.activeElement);
+            break;
+          case " ": // Scroll to next expectation.
+            let nextExpectation;
+            let openDetails = document.querySelector(".details.open");
+            if (openDetails) {
+              let openExpectation = GUI.closest(openDetails, "expect");
+              nextExpectation = ev.shiftKey ?
+                GUI.previousExpectation(openExpectation) :
+                GUI.nextExpectation(openExpectation);
+              GUI.hideResults(openExpectation);
+            } else {
+              if (document.activeElement && document.activeElement.classList.contains("expect"))
+                nextExpectation = document.activeElement;
+              else
+                nextExpectation = document.querySelector(".expect");
+            }
+            if (nextExpectation) {
+              nextExpectation.focus();
+              GUI.showResults(nextExpectation);
+            }
+            ev.preventDefault();
+            break;
           case "Enter":
             if (GUI.isExpectation(ev.target))
               GUI.toggleResults(ev.target, ev);
-          break;
-          case "s":
-          case "S":
+            break;
+          case "c":
+          case "C":
             if (GUI.isExpectation(ev.target))
               GUI.selectText(ev.altKey ? document.querySelector("#report") : ev.target);
             else {
               GUI.selectText(document.querySelector("#report"));
             }
-          break;
+            break;
           case "a":
           case "A":
             if (ev.ctrlKey) {
               GUI.selectText(document.querySelector("#report"));
               ev.preventDefault();
             }
-          break;
-          default:
-            ;
+            break;
         }
       }
     });
@@ -955,16 +1043,16 @@ let GUI = {
   },
 
   isExpectation: function(el) {
-    return el.classList.contains("expect")
+    return el.classList.contains("expect");
   },
 
-  printSummary: function (r) {
-    if (r.builder_name)
-      document.querySelector("#builder_name").innerText = r.builder_name;
-    document.querySelector("#summary_total").innerText = r.num_passes + r.num_regressions;
-    document.querySelector("#summary_passed").innerText = r.num_passes;
-    document.querySelector("#summary_regressions").innerText = r.num_regressions;
-    let failures = r["num_failures_by_type"];
+  printSummary: function (fullResults) {
+    if (fullResults.builder_name)
+      document.querySelector("#builder_name").innerText = fullResults.builder_name;
+    document.querySelector("#summary_total").innerText = fullResults.num_passes + fullResults.num_regressions;
+    document.querySelector("#summary_passed").innerText = fullResults.num_passes;
+    document.querySelector("#summary_regressions").innerText = fullResults.num_regressions;
+    let failures = fullResults["num_failures_by_type"];
     var totalFailures = 0;
 
     let resultsText = "";
@@ -980,7 +1068,7 @@ let GUI = {
       "count_unexpected_fail": 0,
       "count_testexpectations": 0,
       "count_flaky": 0
-    }
+    };
     var t = new Traversal(fullResults.tests);
     t.traverse( test => {
       if (Filters.unexpectedPass(test))
@@ -993,8 +1081,8 @@ let GUI = {
         counts.count_flaky++;
     });
     for (let p in counts)
-      document.getElementById(p).innerText = counts[p];
-    document.querySelector("#count_all").innerText = r.num_passes + r.num_regressions;
+      document.querySelector("#" + p).innerText = counts[p];
+    document.querySelector("#count_all").innerText = fullResults.num_passes + fullResults.num_regressions;
   },
 
   toggleVisibility: function(id) {
@@ -1028,6 +1116,18 @@ let GUI = {
     }
   },
 
+  getResultViewer: function(toolbar) {
+    let output = GUI.closest(toolbar, "result-frame").querySelector(".result-output");
+    if (output && output.children.length > 0)
+      return output.children[0];
+  },
+
+  setResultViewer: function(toolbar, viewer) {
+    let output = GUI.closest(toolbar, "result-frame").querySelector(".result-output");
+    output.innerHTML = "";
+    output.appendChild(viewer);
+  },
+
   closest: function (el, className) {
     while (el) {
       if (el.classList.contains(className))
@@ -1035,21 +1135,6 @@ let GUI = {
       else
         el = el.parentNode;
     }
-  },
-
-  loadResult: function(anchor) {
-    if (!anchor.getAttribute("href"))
-      return false;
-    let frame = GUI.closest(anchor, "result-frame");
-    let output = frame.querySelector(".result-output");
-    let iframe = output.querySelector("iframe");
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      output.appendChild(iframe);
-    }
-    iframe.src = anchor.href;
-    iframe.setAttribute("tabindex", -1);
-    return false;
   },
 
   showResults: function(expectation, doNotScroll) {
@@ -1064,20 +1149,23 @@ let GUI = {
     let results = Report.getResultsDiv(test);
     results.classList.add("results");
     expectation.parentNode.insertBefore(results, expectation.nextSibling);
-    let firstLink = results.querySelector(".result-menu a");
-    if (firstLink) {
-      firstLink.click();
+    for (let toolbar of Array.from(results.querySelectorAll(".tx-toolbar"))) {
+      if (toolbar.showDefault) {
+        toolbar.showDefault();
+        break;
+      }
     }
     if (doNotScroll) {
       return;
     }
-    // Scroll into view
-    let bottomDelta = results.offsetTop + results.offsetHeight - document.documentElement.clientHeight - window.scrollY + 48;
-    if (bottomDelta > 0)
-      window.scrollBy(0, bottomDelta);
-    let topDelta = results.offsetTop - document.documentElement.clientHeight - window.scrollY - 24;
-    if (topDelta > 0)
-      window.scrollBy(0, topDelta);
+    // Scroll result into view, leaving space for image zoom, and
+    // test title on top.
+    let zoomHeight = window.innerWidth / 3 + 10;
+    let resultHeight = Math.min(window.innerHeight - 80, 630) + 34;
+    let overflow = zoomHeight + resultHeight + expectation.offsetHeight - window.innerHeight;
+    if (overflow > 0)
+      zoomHeight = Math.max(0, zoomHeight - overflow);
+    window.scrollTo(0, expectation.offsetTop - zoomHeight);
   },
 
   hideResults: function(expectation) {
@@ -1087,15 +1175,15 @@ let GUI = {
     expectation.querySelector(".details").classList.remove("open");
     expectation.nextSibling.remove();
   }
-}
+}; // GUI
 
-let RebaselineTool = {
+const RebaselineTool = {
   getCheckboxes: function() {
     return document.querySelectorAll(".rebaseline-checkbox");
   },
 
   selectAll: function() {
-    let scriptPre = document.getElementById('rebaseline_script');
+    let scriptPre = document.querySelector('#rebaseline_script');
     getSelection().selectAllChildren(scriptPre);
     document.execCommand('copy');
   },
@@ -1129,10 +1217,10 @@ let RebaselineTool = {
         console.error("could not find test by id");
         return;
       }
-      for (let link of Report.getResultLinks(test)) {
-        if (!link.link || link.text.indexOf("actual") == -1)
-          continue;
-        rebaselinedTests.push(link.link);
+      for (let toolbar of Report.getResultToolbars(test)) {
+        for (let anchor of toolbar.querySelectorAll(".actual")) {
+          rebaselinedTests.push(anchor.href);
+        }
       }
     });
     return rebaselinedTests;
@@ -1170,14 +1258,756 @@ let RebaselineTool = {
 
   doneRebaselineSelection: function() {
     RebaselineTool.hideRebaselineCheckboxes();
-    document.getElementById('rebaseline_script').innerHTML =
+    document.querySelector('#rebaseline_script').innerHTML =
         RebaselineTool.generateRebaselineScript(
             RebaselineTool.getRebaselineList());
     GUI.toggleVisibility('rebaseline');
     RebaselineTool.selectAll();
   }
-}
+}; // RebaselineTool
 
+</script>
+
+<script>
+// test-expectation components
+// These components are in a separate script tag.
+// They are independent of the rest of the page so they can be reused
+// in different pages in the future.
+//
+// Current components include toolbars, and viewers.
+// Toolbars control viewers.
+// Viewers present different views into test results.
+class TXToolbar {
+  importStyle() {
+    if (document.querySelector("#TXToolbarCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "TXToolbarCSS");
+    style.innerText =
+    `.tx-toolbar a[data-selected] {
+      background-color: #DDD;
+      text-decoration-color: aquamarine;
+    }
+    .tx-toolbar a {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+
+  getViewer() {
+    let viewer = GUI.getResultViewer(this.toolbar);
+    return (viewer && viewer.owner == this) ? viewer : null;
+  }
+
+  get defaultExtendSelection() {
+    return false;
+  }
+
+  selectAnchor(target, extendSelection) {
+    let toggle = false;
+    if (extendSelection === undefined) {
+      toggle = true;
+      extendSelection = this.defaultExtendSelection;
+    }
+    for (let anchor of Array.from(this.toolbar.querySelectorAll("a"))) {
+      if (anchor == target) {
+        if (toggle) {
+          if (anchor.hasAttribute("data-selected"))
+            anchor.removeAttribute("data-selected");
+          else
+            anchor.setAttribute("data-selected", "");
+        } else {
+          anchor.setAttribute("data-selected", "");
+        }
+      }
+      else if (!extendSelection)
+        anchor.removeAttribute("data-selected");
+    }
+    this.updateViewer(target);
+  }
+} // class TXToolbar
+
+class ImageResultsToolbar extends TXToolbar {
+  constructor() {
+    super();
+    this.boundViewOptionsChangeHandler = this.viewOptionsChangeHandler.bind(this);
+  }
+
+  createDom(test) {
+    this.importStyle();
+    let pathParser = new PathParser(test.expectPath);
+    this.toolbar = document.createElement("li");
+    this.toolbar.showDefault = _ => this.viewOptionsChangeHandler({target: this.toolbar.querySelector(".view-options")});
+    this.toolbar.classList.add("image-toolbar");
+    this.toolbar.classList.add("tx-toolbar");
+    this.toolbar.innerHTML = `
+      image:
+      <a class="actual" href="${pathParser.resultLink("-actual.png")}" title="Actual result">actual</a>
+      <a class="expected" href="${pathParser.resultLink("-expected.png")}" title="Expected result">expected</a>
+      <a class="diff" href="${pathParser.resultLink("-diff.png")}" title="Difference">diff</a>
+      <label><select class="view-options">
+        <option value="single">Single view</option>
+        <option value="animated">Animated view</option>
+        <option value="multiple">Side by side view</option>
+      </label>
+    `;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+
+    let viewOptions = this.toolbar.querySelector(".view-options");
+    viewOptions.addEventListener("change", this.boundViewOptionsChangeHandler);
+    if (window.localStorage.getItem("ImageToolbarView"))
+      viewOptions.value = window.localStorage.getItem("ImageToolbarView");
+    else
+      viewOptions.value = "animated";
+    return this.toolbar;
+  }
+
+  viewOptionsChangeHandler(ev) {
+    let viewOptions = ev.target;
+    try {
+      window.localStorage.setItem("ImageToolbarView", viewOptions.value);
+    } catch(ex) {}
+
+    switch(viewOptions.value) {
+    case "animated": {
+      let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+      if (selectedAnchors.length == 0)
+        this.selectAnchor(this.toolbar.querySelector("a"));
+      this.setAnimation(true);
+      }
+      break;
+    case "single": {
+      this.setAnimation(false);
+      // Make sure only one is selected.
+      let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+      if (selectedAnchors.length == 0)
+        this.selectAnchor(this.toolbar.querySelector("a"));
+      else
+        this.selectAnchor(selectedAnchors[0]);
+      }
+      break;
+    case "multiple": {
+      this.setAnimation(false);
+      for (let anchor of Array.from(this.toolbar.querySelectorAll("a")))
+        this.selectAnchor(anchor, true);
+      }
+      break;
+    default:
+      console.error("unknown view option");
+    }
+  }
+
+  get defaultExtendSelection() {
+    return this.toolbar.querySelector(".view-options").value == "multiple";
+  }
+
+  updateViewer(element) {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let imgInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title}; });
+      viewer = (new ImageResultsViewer()).createDom(imgInfo, this);
+      this.setAnimation(this.toolbar.querySelector(".view-options").value == "animated");
+      GUI.setResultViewer(element, viewer);
+    }
+    viewer.showImages(selectedAnchors.map(anchor => anchor.href));
+  }
+
+  setAnimation(animate) {
+    if (animate) {
+      if (!this.animationIntervalId)
+        this.animationIntervalId = window.setInterval(_ => {
+          if (!this.getViewer()) {
+            console.log("element is gone");
+            window.clearInterval(this.animationIntervalId);
+            this.animationIntervalId = null;
+            return;
+          }
+          // Find next anchor.
+          let allAnchors = Array.from(this.toolbar.querySelectorAll("a"));
+          let nextAnchor = allAnchors[0];
+          for (let i = 0; i < allAnchors.length; i++) {
+            if (allAnchors[i].hasAttribute("data-selected")) {
+              nextAnchor = allAnchors[(i + 1) % (allAnchors.length - 1)];
+              break;
+            }
+          }
+          this.selectAnchor(nextAnchor, false);
+        }, 400);
+    } else {
+      if (this.animationIntervalId) {
+        window.clearInterval(this.animationIntervalId);
+        this.animationIntervalId = null;
+      }
+    }
+  }
+} // class ImageResultsToolbar
+
+class ImageResultsViewer {
+  constructor() {
+    this.boundMouseMoveHandler = this.mouseMoveHandler.bind(this);
+    this.boundTileScrollHandler = this.tileScrollHandler.bind(this);
+    this.boundWheelHandler = this.tileWheelHandler.bind(this);
+  }
+
+  importStyle() {
+    if (document.querySelector("#ImageViewerCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "ImageViewerCSS");
+    style.innerText =
+    ` .image-viewer {
+      position: relative;
+      display: flex;
+    }
+    .image-viewer-tile {
+      flex-shrink: 1;
+      border: 1px solid #EEE;
+      overflow: auto;
+      max-height: calc(100vh - 80px);
+      margin-right: 8px;
+    }
+    .image-viewer-highlight {
+      position: absolute;
+      background-color: red;
+      opacity: 0.5;
+      box-shadow: 0px 0px 8px 2px rgba(255,0,0,1);
+    }
+    .image-viewer-highlight.animate {
+      animation-name: highlight-animation;
+      animation-duration: 0.15s;
+      animation-timing-function: ease-out;
+      animation-delay: 0s;
+      animation-direction: alternate;
+      animation-iteration-count: 2;
+    }
+    .image-viewer-highlight.animate-long {
+      animation-iteration-count: 4;
+    }
+    @keyframes highlight-animation {
+      0% {
+        display: block;
+        opacity: 0;
+        transform: scale(1.0);
+      }
+      100% {
+        display: block;
+        opacity: 0.5;
+        transform: scale(1.1);
+      }
+    }`;
+    document.head.appendChild(style);
+  }
+
+  /* ImageResultsViewer dom
+    <div class="image-viewer">
+      <div class="image-viewer-tile">
+        <img src="...-actual" title="Actual result">
+      </div>
+      <div class="image-viewer-tile">
+        <img src="...-expected" title="Expected result">
+      </div>
+      <div class="image-viewer-tile">
+        <img src="...-diff" title="Difference">
+      </div>
+    </div>
+  */
+  createDom(imgInfo, owner) {
+    this.importStyle();
+    this.viewer = document.createElement("div");
+    // Viewer DOM API
+    this.viewer.showImages = this.showImages.bind(this);
+    this.viewer.owner = owner;
+
+    this.viewer.classList.add("image-viewer");
+    this.viewer.addEventListener("click", (ev) => {
+      this.toggleZoom({x: ev.offsetX, y: ev.offsetY}, ev.target);
+    });
+    for (let info of imgInfo) {
+      let imgTile = document.createElement("div");
+      imgTile.classList.add("image-viewer-tile");
+      imgTile.classList.add("hidden");
+      imgTile.innerHTML = `<img src="${info.src}" title="${info.title}">`;
+      imgTile.addEventListener("scroll", this.boundTileScrollHandler, {passive: true});
+      imgTile.addEventListener("wheel", this.boundWheelHandler);
+      this.viewer.appendChild(imgTile);
+      if (info.title == "Difference") {
+        let diffImage = new Image();
+        diffImage.addEventListener("load", function(ev) {
+          this.computeDiffRect(ev.target);
+        }.bind(this), false);
+        diffImage.src = info.src;
+      }
+    }
+    return this.viewer;
+  }
+
+  // public API
+  showImages(sources) {
+    let tiles = Array.from(this.viewer.querySelectorAll(".image-viewer-tile"));
+    // Newly shown tiles should have the same scroll position as existing tiles.
+    let scrollPosition;
+    for (let tile of tiles) {
+      if (!tile.classList.contains("hidden")) {
+        scrollPosition = {top: tile.scrollTop, left: tile.scrollLeft};
+        break;
+      }
+    }
+    for (let tile of tiles) {
+      let tileImage = tile.querySelector("img");
+      let visible = sources.includes(tileImage.src);
+      if (visible) {
+        tile.classList.remove("hidden");
+        if (scrollPosition) {
+          tile.scrollTop = scrollPosition.top;
+          tile.scrollLeft = scrollPosition.left;
+        }
+      }
+      else
+        tile.classList.add("hidden");
+    }
+  }
+
+  findVisibleImage(preferredImage) {
+    if (preferredImage && !preferredImage.parentNode.classList.contains("hidden"))
+      return preferredImage;
+    for (let image of Array.from(this.viewer.querySelectorAll("img")))
+      if (!image.parentNode.classList.contains("hidden") && image)
+        return image;
+  }
+
+  tileScrollHandler(ev) {
+    let sourceTile = ev.target;
+    if (sourceTile.classList.contains("hidden"))
+      return;
+    for (let tile of Array.from(this.viewer.querySelectorAll(".image-viewer-tile"))) {
+      if (tile != sourceTile) {
+        tile.scrollTop = sourceTile.scrollTop;
+        tile.scrollLeft = sourceTile.scrollLeft;
+      }
+    }
+  }
+
+  tileWheelHandler(ev) {
+    // Prevent page back/forward gestures when scrolling inside tiles.
+    if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX))
+      return;
+    let target = ev.currentTarget;
+    let blockScrollRight = (target.scrollLeft + target.clientWidth) == target.scrollWidth;
+    let blockScrollLeft = target.scrollLeft == 0;
+    if (blockScrollRight && ev.deltaX > 0) {
+      ev.preventDefault();
+    }
+    if (blockScrollLeft && ev.deltaX < 0) {
+      ev.preventDefault();
+    }
+  }
+
+  mouseMoveHandler(ev) {
+    let imageRect = this.findVisibleImage(this.zoomTarget).getBoundingClientRect();
+    let zoom = this.viewer.querySelector(".image-viewer-zoom");
+    if (zoom)
+      zoom.showLocation({
+      x: ev.pageX - (imageRect.left +  window.scrollX),
+      y: ev.pageY - (imageRect.top + window.scrollY)
+    });
+  }
+
+  toggleZoom(location, zoomTarget) {
+    let zoom = this.viewer.querySelector(".image-viewer-zoom");
+    if (zoom) {
+      zoom.remove();
+      delete this.zoomTarget;
+      this.viewer.removeEventListener("mousemove", this.boundMouseMoveHandler);
+    } else {
+      this.zoomTarget = zoomTarget;
+      let zoomElement = (new ImageViewerZoom()).createDom(this.viewer, this.viewer.querySelectorAll("img"));
+      this.viewer.addEventListener("mousemove", this.boundMouseMoveHandler);
+      zoomElement.showLocation(location);
+    }
+  }
+
+  computeDiffRect(image) {
+    let canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    let top = image.naturalHeight;
+    let bottom = 0;
+    let left = image.naturalWidth;
+    let right = 0;
+    try {
+      let imageData = ctx.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
+      for (let x = 0; x < imageData.width; x++)
+        for (let y = 0; y < imageData.height; y++) {
+          let offset  = y * imageData.width * 4 + x * 4;
+          if (imageData.data[offset] == 255 && imageData.data[offset+1] == 0 && imageData.data[offset+2] == 0) {
+            if (x < left) left = x;
+            if (x > right) right = x;
+            if (y < top) top = y;
+            if (y > bottom) bottom = y;
+          }
+        }
+      if (bottom != 0 && right != 0)
+        this.animateDiffRect({top: top, left: left, width: Math.max(0, right - left), height: Math.max(0, bottom - top)}, image);
+    } catch(ex) {
+      console.error("cannot show error rect on local files because of cross origin taint");
+    }
+  }
+
+  animateDiffRect(diffRect, image) {
+    if (!image)
+      return;
+    if (!image.complete) {
+      image.addEventListener("load", _ => this.animateDiffRect(diffRect, image));
+      return;
+    }
+    let highlight = document.createElement("div");
+    highlight.classList.add("image-viewer-highlight");
+    highlight.style.top = image.offsetTop + diffRect.top + "px";
+    highlight.style.left = image.offsetLeft + diffRect.left  + "px";
+    highlight.style.width = Math.max(5, diffRect.width) + "px";
+    highlight.style.height = Math.max(5, diffRect.height) + "px";
+    this.viewer.appendChild(highlight);
+    highlight.addEventListener("animationend", _ => highlight.remove());
+    if (diffRect.width < 100 || diffRect.height < 100) {
+      highlight.classList.add("animate-long");
+    }
+    highlight.classList.add("animate");
+  }
+} // class ImageResultsViewer
+
+class ImageViewerZoom {
+  constructor(zoomFactor = 6) {
+    this.zoomFactor = zoomFactor;
+  }
+
+  importStyle() {
+    if (document.querySelector("#ImageViewerZoomCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "ImageViewerZoomCSS");
+    style.innerText = `
+    .image-viewer-zoom {
+      display: flex;
+      background-color: #555;
+      position: fixed;
+      padding-left: 4px;
+      padding-right: 4px;
+      top: 20px;
+      left: 16px;
+      bottom: 16px;
+      right: 16px;
+      height: calc((100vw - 32px) / 3);
+      max-height: 50vh;
+      box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.68);
+    }
+    .image-viewer-zoom-tile {
+      position: relative;
+      flex-grow: 1;
+      flex-shrink: 1;
+      margin: 16px 8px 16px 8px;
+    }
+    .image-viewer-zoom-tile > canvas {
+      width: 100%;
+      height: 100%;
+    }
+    .image-viewer-zoom-tile > .title {
+      position: absolute;
+      top: -36px;
+      left: -px;
+      background-color: white;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .image-viewer-zoom-color {
+      font-size: smaller;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+  /*
+    <div class="image-viewer-zoom">
+      <div class="image-viewer-zoom-tile"> // repeat for each image
+        <canvas></canvas>
+        <div class="title"><span class="color"></span></div>
+      </div>
+  */
+  createDom(container, images) {
+    this.importStyle();
+    this.images = Array.from(images);
+    this.zoomElement = document.createElement("div");
+    // ImageViewer DOM API
+    this.zoomElement.showLocation = this.showLocation.bind(this);
+
+    this.zoomElement.classList.add("image-viewer-zoom");
+    this.zoomElement.classList.add("close-on-esc");
+    container.appendChild(this.zoomElement);
+    // Add canvas for each image.
+    for (let img of this.images) {
+      let tile = document.createElement("div");
+      tile.classList.add("image-viewer-zoom-tile");
+      tile.innerHTML = `<canvas></canvas><div class="title">${img.title} <span class="image-viewer-zoom-color"></span></div>`;
+      this.zoomElement.appendChild(tile);
+    }
+    return this.zoomElement;
+  }
+
+  showLocation(location) {
+    let canvases = Array.from(this.zoomElement.querySelectorAll("canvas"));
+    let naturalSize;
+    // Find non-hidden image to determine size.
+    for (let image of this.images) {
+      if (image.complete && !image.classList.contains("hidden")) {
+        naturalSize = {width: image.naturalWidth, height: image.naturalHeight};
+        break;
+      }
+    }
+    if (!naturalSize) {
+      console.warn("image not loaded");
+      return;
+    }
+    for (let i = 0; i < canvases.length; i++) {
+      // Set canvas to right size if window resized.
+      let canvasWidth = canvases[i].clientWidth;
+      let canvasHeight = canvases[i].clientHeight;
+      canvases[i].width = canvasWidth;
+      canvases[i].height = canvasHeight;
+      let ctx = canvases[i].getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      // Copy over zoomed image.
+      let sWidth = canvasWidth / this.zoomFactor;
+      let sHeight = canvasHeight / this.zoomFactor;
+      let pad = 20;
+      let sx = Math.floor(Math.min(Math.max(-pad, location.x - sWidth / 2), naturalSize.width + pad - sWidth));
+      let sy = Math.floor(Math.min(Math.max(-pad, location.y - sHeight / 2), naturalSize.height + pad - sHeight));
+
+      ctx.drawImage(this.images[i], sx, sy, sWidth, sHeight, 0, 0, canvasWidth, canvasHeight);
+      // Draw grid.
+      ctx.strokeStyle = "rgba(0,0,0,0.05)";
+      let pixelSize = canvasWidth / sWidth;
+      ctx.beginPath();
+      for (let y = 1; y < sHeight; y++) {
+        ctx.moveTo(0, y * pixelSize);
+        ctx.lineTo(canvasWidth, y * pixelSize);
+      }
+      for (let x = 1; x < sWidth; x++) {
+        ctx.moveTo(x*pixelSize, 0);
+        ctx.lineTo(x*pixelSize, canvasHeight);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      // Highlight middle pixel whose color is measured.
+
+      try { // getImageData throws on local file system.
+        let middleX = Math.floor(sWidth / 2);
+        let middleY = Math.floor(sHeight / 2);
+        let imageData = ctx.getImageData(middleX * pixelSize + 2, middleY * pixelSize + 2, 1, 1);
+        let r = imageData.data[0];
+        let g = imageData.data[1];
+        let b = imageData.data[2];
+        let a = imageData.data[3];
+        let colorSpan = canvases[i].parentNode.querySelector(".image-viewer-zoom-color");
+        let color = `rgba(${r}, ${g}, ${b}, ${a})`;
+        colorSpan.innerText = `(${sx + middleX}, ${sy + middleY}) ${color}`;
+        colorSpan.style.backgroundColor = color;
+        colorSpan.style.color =  ((r + g + b) > 300 ) ? "black" : "white";
+        ctx.beginPath();
+        ctx.moveTo(middleX * pixelSize, middleY * pixelSize);
+        ctx.lineTo((middleX + 1) * pixelSize, middleY * pixelSize);
+        ctx.lineTo((middleX + 1) * pixelSize, (middleY + 1) * pixelSize);
+        ctx.lineTo(middleX * pixelSize, (middleY + 1) * pixelSize);
+        ctx.lineTo(middleX * pixelSize, middleY * pixelSize);
+        ctx.strokeStyle = "rgba(0,0,0,0.2)";
+        ctx.closePath();
+        ctx.stroke();
+      } catch(ex) {}
+    }
+  }
+} // class ImageViewerZoom
+
+class TextResultsToolbar extends TXToolbar {
+  constructor() {
+    super();
+  }
+
+  createDom(test) {
+    this.importStyle();
+    let pathParser = new PathParser(test.expectPath);
+    this.toolbar = document.createElement("li");
+    this.toolbar.showDefault = (_ => {
+      this.selectAnchor(
+        this.toolbar.querySelector("a.pretty")  || this.toolbar.querySelector("a.actual"));
+    }).bind(this);
+    this.toolbar.classList.add("text-results-toolbar");
+    this.toolbar.classList.add("tx-toolbar");
+    let html = "text:";
+    if (!test.is_testharness_test)
+      html += `<a class="pretty" href="${pathParser.resultLink("-pretty-diff.html")}" title="Pretty difference">pretty</a>`;
+    html += `<a class="actual" href="${pathParser.resultLink("-actual.txt")}" title="Actual text">actual</a>`;
+    if (!test.is_testharness_test) {
+      html += `<a class="expected" href="${pathParser.resultLink("-expected.txt")}" title="Expected result">expected</a><a
+        class="diff" href="${pathParser.resultLink("-diff.txt")}" title="Difference">diff</a>
+      `;
+    }
+    this.toolbar.innerHTML = html;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+    return this.toolbar;
+  }
+
+  updateViewer() {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let fileInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title}; });
+      viewer = (new TextFileViewer()).createDom(fileInfo, this);
+      GUI.setResultViewer(this.toolbar, viewer);
+    }
+    viewer.showFile(selectedAnchors.map( anchor => anchor.href));
+  }
+} // class TextResultsToolbar
+
+class TextFileViewer {
+  importStyle() {
+    if (document.querySelector("#TextFileViewerCSS"))
+      return;
+    let style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("id", "TextFileViewerCSS");
+    style.innerText =
+    ` .text-file-viewer {
+      position: relative;
+      display: flex;
+    }
+    .text-file-viewer > iframe {
+      flex-shrink: 1;
+      flex-grow: 1;
+      border: 1px solid #888;
+      overflow: scroll;
+      max-height: calc(100vh - 80px);
+      margin-right: 8px;
+      height: 600px;
+    }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /* TextFileViewer dom
+    <div class="text-file-viewer">
+      <iframe class="text-file-viewer-iframe" src="file..">
+      <iframe class="text-file-viewer-iframe" src="file..">
+      <iframe class="text-file-viewer-iframe" src="file..">
+    </div>
+  */
+  createDom(fileInfo, owner) {
+    this.importStyle();
+    this.viewer = document.createElement("div");
+    // TextFileViewer DOM API
+    this.viewer.owner = owner;
+    this.viewer.showFile = this.showFile.bind(this);
+
+    this.viewer.classList.add("text-file-viewer");
+    for (let info of fileInfo) {
+      let iframe = document.createElement("iframe");
+      iframe.classList.add("text-file-viewer-iframe");
+      iframe.classList.add("hidden");
+      iframe.src = info.src;
+      iframe.setAttribute("tabindex", -1);
+      this.viewer.appendChild(iframe);
+    }
+    return this.viewer;
+  }
+
+  showFile(sources) {
+    let iframes = Array.from(this.viewer.querySelectorAll(".text-file-viewer-iframe"));
+    for (let iframe of iframes) {
+      let visible = sources.includes(iframe.src);
+      if (visible) {
+        iframe.classList.remove("hidden");
+      } else {
+        iframe.classList.add("hidden");
+      }
+    }
+  }
+} // class TextFileViewer
+
+class PlainHtmlToolbar extends TXToolbar {
+  createDom(html) {
+    super.importStyle();
+    let dom = document.createElement("li");
+    dom.classList.add("tx-toolbar");
+    dom.innerHTML = html;
+    return dom;
+  }
+} // class PlainHtmlToolbar
+
+class SimpleLinkToolbar extends TXToolbar {
+  createDom(href, title, text) {
+    super.importStyle();
+    this.toolbar = document.createElement("li");
+    // Toolbar DOM API
+    this.toolbar.showDefault = (_ => {this.selectAnchor(this.toolbar.querySelector("a"));}).bind(this);
+
+    this.toolbar.classList.add("tx-toolbar");
+    this.toolbar.innerHTML = `<a href="${href}" title="${title}">${text}</a>`;
+    this.toolbar.addEventListener("click", ev => {
+      if (ev.target.tagName == "A") {
+        this.selectAnchor(ev.target);
+        ev.preventDefault();
+      }
+    });
+    return this.toolbar;
+  }
+
+  updateViewer() {
+    // Find currently selected anchor.
+    let selectedAnchors = Array.from(this.toolbar.querySelectorAll("a[data-selected]"));
+    if (selectedAnchors.length == 0) {
+      selectedAnchors.push(this.toolbar.querySelector("a"));
+      selectedAnchors[0].setAttribute("data-selected", "");
+    }
+    let viewer = this.getViewer();
+    if (!viewer) {
+      let fileInfo = Array.from(this.toolbar.querySelectorAll("a")).map(
+        anchor => { return {src: anchor.href, title: anchor.title};});
+      viewer = (new TextFileViewer()).createDom(fileInfo, this);
+      GUI.setResultViewer(this.toolbar, viewer);
+    }
+    viewer.showFile(selectedAnchors.map( anchor => anchor.href));
+  }
+} // class SimpleLinkToolbar
+
+</script>
+<script>
 // jsonp callback
 function ADD_FULL_RESULTS(results) {
   GUI.initPage(results);
