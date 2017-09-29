@@ -1589,7 +1589,7 @@ static int try_level_down_ref(int coeff_idx, const LV_MAP_COEFF_COST *txb_costs,
     int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
     int nb_scan_idx = txb_info->scan_order->iscan[nb_coeff_idx];
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
-        nb_row < txb_info->stride && nb_col < txb_info->stride) {
+        nb_row < txb_info->height && nb_col < txb_info->stride) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
       int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
@@ -1606,7 +1606,7 @@ static int try_level_down_ref(int coeff_idx, const LV_MAP_COEFF_COST *txb_costs,
     int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
     int nb_scan_idx = txb_info->scan_order->iscan[nb_coeff_idx];
     if (nb_scan_idx < txb_info->eob && nb_row >= 0 && nb_col >= 0 &&
-        nb_row < txb_info->stride && nb_col < txb_info->stride) {
+        nb_row < txb_info->height && nb_col < txb_info->stride) {
       tran_low_t nb_coeff = txb_info->qcoeff[nb_coeff_idx];
       int cost = get_coeff_cost(nb_coeff, nb_scan_idx, txb_info, txb_costs);
       if (cost_map)
