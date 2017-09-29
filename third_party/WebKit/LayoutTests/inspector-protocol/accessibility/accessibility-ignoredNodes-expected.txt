@@ -340,6 +340,9 @@ WebArea
   GenericContainer
   *combobox
     MenuListPopup
+      menuitem "Options should be"
+      menuitem "sent down even though"
+      menuitem "they are grandchildren"
 {
   "nodeId": "<string>",
   "ignored": false,
