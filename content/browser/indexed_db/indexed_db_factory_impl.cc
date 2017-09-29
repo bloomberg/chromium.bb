@@ -619,4 +619,14 @@ size_t IndexedDBFactoryImpl::GetConnectionCount(const Origin& origin) const {
   return count;
 }
 
+void IndexedDBFactoryImpl::NotifyIndexedDBContentChanged(
+    const url::Origin& origin,
+    const base::string16& database_name,
+    const base::string16& object_store_name) {
+  if (!context_)
+    return;
+  context_->NotifyIndexedDBContentChanged(origin, database_name,
+                                          object_store_name);
+}
+
 }  // namespace content

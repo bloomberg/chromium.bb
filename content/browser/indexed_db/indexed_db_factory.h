@@ -10,7 +10,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -93,6 +92,11 @@ class CONTENT_EXPORT IndexedDBFactory
       const IndexedDBDatabase::Identifier& identifier) = 0;
 
   virtual size_t GetConnectionCount(const url::Origin& origin) const = 0;
+
+  virtual void NotifyIndexedDBContentChanged(
+      const url::Origin& origin,
+      const base::string16& database_name,
+      const base::string16& object_store_name) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBFactory>;

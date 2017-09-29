@@ -1380,6 +1380,9 @@ leveldb::Status IndexedDBDatabase::PutOperation(
                         ? blink::kWebIDBAdd
                         : blink::kWebIDBPut,
                     IndexedDBKeyRange(*key), &params->value);
+  factory_->NotifyIndexedDBContentChanged(
+      origin(), metadata_.name,
+      metadata_.object_stores[params->object_store_id].name);
   return s;
 }
 
@@ -1678,6 +1681,8 @@ leveldb::Status IndexedDBDatabase::DeleteRangeOperation(
   callbacks->OnSuccess();
   FilterObservation(transaction, object_store_id, blink::kWebIDBDelete,
                     *key_range, nullptr);
+  factory_->NotifyIndexedDBContentChanged(
+      origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
   return s;
 }
 
@@ -1708,6 +1713,8 @@ leveldb::Status IndexedDBDatabase::ClearOperation(
 
   FilterObservation(transaction, object_store_id, blink::kWebIDBClear,
                     IndexedDBKeyRange(), nullptr);
+  factory_->NotifyIndexedDBContentChanged(
+      origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
   return s;
 }
 
