@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
@@ -511,7 +510,7 @@ void ArcSessionImpl::OnMojoConnected(
   mojom::ArcBridgeInstancePtr instance;
   instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
       std::move(server_pipe), 0u));
-  arc_bridge_host_ = base::MakeUnique<ArcBridgeHostImpl>(arc_bridge_service_,
+  arc_bridge_host_ = std::make_unique<ArcBridgeHostImpl>(arc_bridge_service_,
                                                          std::move(instance));
 
   VLOG(0) << "ARC ready.";
@@ -699,7 +698,7 @@ void ArcSession::RemoveObserver(Observer* observer) {
 // static
 std::unique_ptr<ArcSession> ArcSession::Create(
     ArcBridgeService* arc_bridge_service) {
-  return base::MakeUnique<ArcSessionImpl>(arc_bridge_service);
+  return std::make_unique<ArcSessionImpl>(arc_bridge_service);
 }
 
 }  // namespace arc

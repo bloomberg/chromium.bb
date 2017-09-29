@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -125,7 +124,7 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
 
   switch (result->type) {
     case bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE:
-      result->value.Append(base::MakeUnique<base::Value>());
+      result->value.Append(std::make_unique<base::Value>());
       break;
     case bluez::BluetoothServiceAttributeValueBlueZ::UINT:
     case bluez::BluetoothServiceAttributeValueBlueZ::INT:
@@ -140,7 +139,7 @@ TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth) {
         result->type = bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
         result->type_size = 0;
-        result->value.Append(base::MakeUnique<base::Value>());
+        result->value.Append(std::make_unique<base::Value>());
         return result;
       }
       for (const auto& child : attr_bluez.sequence()) {
@@ -175,7 +174,7 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
       if (attr->value.GetSize() != 1) {
         return bluez::BluetoothServiceAttributeValueBlueZ(
             bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-            base::MakeUnique<base::Value>());
+            std::make_unique<base::Value>());
       }
 
       std::unique_ptr<base::Value> value;
@@ -188,10 +187,10 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
       if (depth + 1 >= arc::kBluetoothSDPMaxDepth || attr->sequence.empty()) {
         return bluez::BluetoothServiceAttributeValueBlueZ(
             bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-            base::MakeUnique<base::Value>());
+            std::make_unique<base::Value>());
       }
 
-      auto bluez_sequence = base::MakeUnique<
+      auto bluez_sequence = std::make_unique<
           bluez::BluetoothServiceAttributeValueBlueZ::Sequence>();
       for (const auto& child : attr->sequence) {
         bluez_sequence->push_back(Convert(child, depth + 1));
@@ -205,7 +204,7 @@ TypeConverter<bluez::BluetoothServiceAttributeValueBlueZ,
   }
   return bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, 0,
-      base::MakeUnique<base::Value>());
+      std::make_unique<base::Value>());
 }
 
 // static

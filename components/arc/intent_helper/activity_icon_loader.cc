@@ -11,7 +11,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/arc/arc_bridge_service.h"
@@ -81,7 +80,7 @@ mojom::IntentHelperInstance* GetInstanceForRequestActivityIcons(
 
 std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> ResizeAndEncodeIcons(
     std::vector<mojom::ActivityIconPtr> icons) {
-  auto result = base::MakeUnique<ActivityIconLoader::ActivityToIconsMap>();
+  auto result = std::make_unique<ActivityIconLoader::ActivityToIconsMap>();
   for (size_t i = 0; i < icons.size(); ++i) {
     static const size_t kBytesPerPixel = 4;
     const mojom::ActivityIconPtr& icon = icons.at(i);
@@ -214,7 +213,7 @@ ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
 void ActivityIconLoader::OnIconsResizedForTesting(
     const OnIconsReadyCallback& cb,
     std::unique_ptr<ActivityToIconsMap> result) {
-  OnIconsResized(base::MakeUnique<ActivityToIconsMap>(), cb, std::move(result));
+  OnIconsResized(std::make_unique<ActivityToIconsMap>(), cb, std::move(result));
 }
 
 void ActivityIconLoader::AddCacheEntryForTesting(const ActivityName& activity) {

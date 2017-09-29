@@ -5,7 +5,6 @@
 #include "components/arc/arc_service_manager.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_session_runner.h"
@@ -19,7 +18,7 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 }  // namespace
 
 ArcServiceManager::ArcServiceManager()
-    : arc_bridge_service_(base::MakeUnique<ArcBridgeService>()) {
+    : arc_bridge_service_(std::make_unique<ArcBridgeService>()) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 }

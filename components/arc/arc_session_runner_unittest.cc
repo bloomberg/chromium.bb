@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -45,7 +44,7 @@ class ArcSessionRunnerTest : public testing::Test,
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::MakeUnique<chromeos::FakeSessionManagerClient>());
+        std::make_unique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
 
     stop_reason_ = ArcStopReason::SHUTDOWN;
@@ -55,7 +54,7 @@ class ArcSessionRunnerTest : public testing::Test,
 
     // We inject FakeArcSession here so we do not need task_runner.
     arc_session_runner_ =
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create));
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create));
     arc_session_runner_->AddObserver(this);
   }
 
@@ -89,19 +88,19 @@ class ArcSessionRunnerTest : public testing::Test,
   void ResetArcSessionFactory(
       const ArcSessionRunner::ArcSessionFactory& factory) {
     arc_session_runner_->RemoveObserver(this);
-    arc_session_runner_ = base::MakeUnique<ArcSessionRunner>(factory);
+    arc_session_runner_ = std::make_unique<ArcSessionRunner>(factory);
     arc_session_runner_->AddObserver(this);
   }
 
   static std::unique_ptr<ArcSession> CreateSuspendedArcSession() {
-    auto arc_session = base::MakeUnique<FakeArcSession>();
+    auto arc_session = std::make_unique<FakeArcSession>();
     arc_session->SuspendBoot();
     return std::move(arc_session);
   }
 
   static std::unique_ptr<ArcSession> CreateBootFailureArcSession(
       ArcStopReason reason) {
-    auto arc_session = base::MakeUnique<FakeArcSession>();
+    auto arc_session = std::make_unique<FakeArcSession>();
     arc_session->EnableBootFailureEmulation(reason);
     return std::move(arc_session);
   }

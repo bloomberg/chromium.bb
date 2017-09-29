@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -114,7 +113,7 @@ TEST(BluetoothTypeConvertorTest, ConvertMojoValueAttributeToBlueZAttribute) {
   nulltypeAttributeMojo->type =
       bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE;
   nulltypeAttributeMojo->type_size = 0;
-  nulltypeAttributeMojo->value.Append(base::MakeUnique<base::Value>());
+  nulltypeAttributeMojo->value.Append(std::make_unique<base::Value>());
 
   auto nulltypeAttributeBlueZ =
       nulltypeAttributeMojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
@@ -287,7 +286,7 @@ TEST(BluetoothTypeConvertorTest,
   auto sequenceNoData = arc::mojom::BluetoothSdpAttribute::New();
   sequenceNoData->type = bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE;
   sequenceNoData->type_size = 0;
-  sequenceNoData->value.Append(base::MakeUnique<base::Value>());
+  sequenceNoData->value.Append(std::make_unique<base::Value>());
 
   auto sequenceNoDataBlueZ =
       sequenceNoData.To<bluez::BluetoothServiceAttributeValueBlueZ>();
@@ -329,7 +328,7 @@ TEST(BluetoothTypeConvertorTest, ConvertBlueZValueAttributeToMojoAttribute) {
   int valueUint16AsInt;
   auto uintAttributeBlueZ = bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::UINT, sizeof(valueUint16),
-      base::MakeUnique<base::Value>(static_cast<int>(valueUint16)));
+      std::make_unique<base::Value>(static_cast<int>(valueUint16)));
 
   auto uintAttributeMojo =
       ConvertTo<arc::mojom::BluetoothSdpAttributePtr>(uintAttributeBlueZ);
@@ -345,7 +344,7 @@ TEST(BluetoothTypeConvertorTest, ConvertBlueZValueAttributeToMojoAttribute) {
   bool actualBool = true;
   auto boolAttributeBlueZ = bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::BOOL, sizeof(bool),
-      base::MakeUnique<base::Value>(valueBool));
+      std::make_unique<base::Value>(valueBool));
 
   auto boolAttributeMojo =
       ConvertTo<arc::mojom::BluetoothSdpAttributePtr>(boolAttributeBlueZ);
@@ -362,7 +361,7 @@ TEST(BluetoothTypeConvertorTest, ConvertBlueZValueAttributeToMojoAttribute) {
   std::string actualUUID;
   auto uuidAttributeBlueZ = bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::UUID, sizeof(uint16_t),
-      base::MakeUnique<base::Value>(valueUUID));
+      std::make_unique<base::Value>(valueUUID));
 
   auto uuidAttributeMojo =
       ConvertTo<arc::mojom::BluetoothSdpAttributePtr>(uuidAttributeBlueZ);
@@ -379,7 +378,7 @@ TEST(BluetoothTypeConvertorTest, ConvertBlueZValueAttributeToMojoAttribute) {
   std::string actualString;
   auto stringAttributeBlueZ = bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::STRING, valueString.length(),
-      base::MakeUnique<base::Value>(valueString));
+      std::make_unique<base::Value>(valueString));
 
   auto stringAttributeMojo =
       ConvertTo<arc::mojom::BluetoothSdpAttributePtr>(stringAttributeBlueZ);
@@ -400,10 +399,10 @@ TEST(BluetoothTypeConvertorTest, ConvertBlueZSequenceAttributeToMojoAttribute) {
       sequence(new bluez::BluetoothServiceAttributeValueBlueZ::Sequence());
   sequence->push_back(bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::UUID, sizeof(uint16_t),
-      base::MakeUnique<base::Value>(l2capUUID)));
+      std::make_unique<base::Value>(l2capUUID)));
   sequence->push_back(bluez::BluetoothServiceAttributeValueBlueZ(
       bluez::BluetoothServiceAttributeValueBlueZ::UINT, sizeof(uint16_t),
-      base::MakeUnique<base::Value>(l2capChannel)));
+      std::make_unique<base::Value>(l2capChannel)));
 
   auto sequenceBlueZ =
       bluez::BluetoothServiceAttributeValueBlueZ(std::move(sequence));

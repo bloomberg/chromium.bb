@@ -4,12 +4,12 @@
 
 #include "components/arc/bluetooth/bluetooth_struct_traits.h"
 
+#include <initializer_list>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -43,7 +43,7 @@ struct ServiceUUIDEntry : public AdvertisementEntry {
   ~ServiceUUIDEntry() override {}
 
   void AddTo(device::BluetoothAdvertisement::Data* data) override {
-    auto string_uuids = base::MakeUnique<std::vector<std::string>>();
+    auto string_uuids = std::make_unique<std::vector<std::string>>();
     for (const auto& uuid : service_uuids) {
       string_uuids->emplace_back(uuid.value());
     }
@@ -59,9 +59,10 @@ struct ServiceDataEntry : public AdvertisementEntry {
 
   void AddTo(device::BluetoothAdvertisement::Data* data) override {
     std::string string_uuid = base::StringPrintf("%04x", service_uuid);
+    using MapType = std::map<std::string, std::vector<uint8_t>>;
     data->set_service_data(
-        base::WrapUnique(new std::map<std::string, std::vector<uint8_t>>{
-            {string_uuid, service_data}}));
+        std::make_unique<MapType, std::initializer_list<MapType::value_type>>(
+            {{string_uuid, service_data}}));
   }
 };
 
@@ -72,8 +73,10 @@ struct ManufacturerDataEntry : public AdvertisementEntry {
   ~ManufacturerDataEntry() override {}
 
   void AddTo(device::BluetoothAdvertisement::Data* data) override {
-    data->set_manufacturer_data(base::WrapUnique(
-        new std::map<uint16_t, std::vector<uint8_t>>{{company_id_code, blob}}));
+    using MapType = std::map<uint16_t, std::vector<uint8_t>>;
+    data->set_manufacturer_data(
+        std::make_unique<MapType, std::initializer_list<MapType::value_type>>(
+            {{company_id_code, blob}}));
   }
 };
 
@@ -166,7 +169,7 @@ struct UnionTraits<arc::mojom::BluetoothAdvertisingDataDataView,
     switch (data.tag()) {
       case arc::mojom::BluetoothAdvertisingDataDataView::Tag::SERVICE_UUIDS: {
         std::unique_ptr<ServiceUUIDEntry> service_uuids =
-            base::MakeUnique<ServiceUUIDEntry>();
+            std::make_unique<ServiceUUIDEntry>();
         if (!data.ReadServiceUuids(&service_uuids->service_uuids))
           return false;
         *output = std::move(service_uuids);
@@ -174,7 +177,7 @@ struct UnionTraits<arc::mojom::BluetoothAdvertisingDataDataView,
       }
       case arc::mojom::BluetoothAdvertisingDataDataView::Tag::SERVICE_DATA: {
         std::unique_ptr<ServiceDataEntry> service_data =
-            base::MakeUnique<ServiceDataEntry>();
+            std::make_unique<ServiceDataEntry>();
         if (!data.ReadServiceData(service_data.get()))
           return false;
         *output = std::move(service_data);
@@ -183,7 +186,7 @@ struct UnionTraits<arc::mojom::BluetoothAdvertisingDataDataView,
       case arc::mojom::BluetoothAdvertisingDataDataView::Tag::
           MANUFACTURER_DATA: {
         std::unique_ptr<ManufacturerDataEntry> manufacturer_data =
-            base::MakeUnique<ManufacturerDataEntry>();
+            std::make_unique<ManufacturerDataEntry>();
         // We get manufacturer data as a big blob. The first two bytes
         // should be a company identifier code and the rest is manufacturer-
         // specific.
@@ -207,7 +210,7 @@ struct UnionTraits<arc::mojom::BluetoothAdvertisingDataDataView,
         // device::BluetoothAdvertisement::AdvertisementData, so data we
         // don't know how to handle yet will be dropped but won't cause a
         // failure to deserialize.
-        *output = base::MakeUnique<AdvertisementEntry>();
+        *output = std::make_unique<AdvertisementEntry>();
         break;
       }
     }
@@ -223,7 +226,7 @@ bool StructTraits<arc::mojom::BluetoothAdvertisementDataView,
   device::BluetoothAdvertisement::AdvertisementType adv_type;
   if (!advertisement.ReadType(&adv_type))
     return false;
-  auto data = base::MakeUnique<device::BluetoothAdvertisement::Data>(adv_type);
+  auto data = std::make_unique<device::BluetoothAdvertisement::Data>(adv_type);
 
   std::vector<std::unique_ptr<AdvertisementEntry>> adv_entries;
   if (!advertisement.ReadData(&adv_entries))
