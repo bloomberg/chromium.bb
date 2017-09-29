@@ -53,15 +53,17 @@ void CSSFontFace::DidBeginLoad() {
     SetLoadStatus(FontFace::kLoading);
 }
 
-void CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
+void CSSFontFace::FontLoaded(RemoteFontFaceSource* source,
+                             LoadFinishReason reason) {
   if (!IsValid() || source != sources_.front())
     return;
 
   if (LoadStatus() == FontFace::kLoading) {
     if (source->IsValid()) {
       SetLoadStatus(FontFace::kLoaded);
-    } else if (source->GetDisplayPeriod() ==
-               RemoteFontFaceSource::kFailurePeriod) {
+    } else if (reason == LoadFinishReason::WasCancelled ||
+               source->GetDisplayPeriod() ==
+                   RemoteFontFaceSource::kFailurePeriod) {
       sources_.clear();
       SetLoadStatus(FontFace::kError);
     } else {
