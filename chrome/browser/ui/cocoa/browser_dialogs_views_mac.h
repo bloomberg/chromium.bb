@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BROWSER_DIALOGS_VIEWS_MAC_H_
 #define CHROME_BROWSER_UI_COCOA_BROWSER_DIALOGS_VIEWS_MAC_H_
 
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -91,6 +92,11 @@ void ShowImportLockDialogViews(gfx::NativeWindow parent,
 
 // Shows the first run bubble.
 void ShowFirstRunBubbleViews(Browser* browser);
+
+void ShowPasswordReuseWarningDialog(
+    content::WebContents* web_contents,
+    safe_browsing::ChromePasswordProtectionService* service,
+    safe_browsing::OnWarningDone done_callback);
 
 }  // namespace chrome
 

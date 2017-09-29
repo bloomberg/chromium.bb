@@ -20,8 +20,10 @@
 #include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
+#include "components/constrained_window/constrained_window_views.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // Mac where a Cocoa browser is using Views dialogs. I.e. it is included in the
@@ -138,6 +140,18 @@ void ShowImportLockDialogViews(gfx::NativeWindow parent,
 
 void ShowFirstRunBubbleViews(Browser* browser) {
   return FirstRunBubble::Show(browser);
+}
+
+void ShowPasswordReuseWarningDialog(
+    content::WebContents* web_contents,
+    safe_browsing::ChromePasswordProtectionService* service,
+    safe_browsing::OnWarningDone done_callback) {
+  safe_browsing::PasswordReuseModalWarningDialog* dialog =
+      new safe_browsing::PasswordReuseModalWarningDialog(
+          web_contents, service, std::move(done_callback));
+  constrained_window::CreateBrowserModalDialogViews(
+      dialog, web_contents->GetTopLevelNativeWindow())
+      ->Show();
 }
 
 }  // namespace chrome
