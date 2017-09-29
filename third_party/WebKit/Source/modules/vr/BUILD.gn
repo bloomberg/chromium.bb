@@ -33,6 +33,10 @@ blink_modules_sources("vr") {
     "latest/VRDevice.h",
     "latest/VRDeviceEvent.cpp",
     "latest/VRDeviceEvent.h",
+    "latest/VRSession.cpp",
+    "latest/VRSession.h",
+    "latest/VRSessionEvent.cpp",
+    "latest/VRSessionEvent.h",
   ]
 
   deps = [

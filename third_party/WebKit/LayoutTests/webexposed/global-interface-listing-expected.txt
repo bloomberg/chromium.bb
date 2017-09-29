@@ -7245,6 +7245,28 @@ interface VRPose
     getter orientation
     getter position
     method constructor
+interface VRSession : EventTarget
+    attribute @@toStringTag
+    getter depthFar
+    getter depthNear
+    getter device
+    getter exclusive
+    getter onblur
+    getter onend
+    getter onfocus
+    getter onresetpose
+    method constructor
+    method end
+    setter depthFar
+    setter depthNear
+    setter onblur
+    setter onend
+    setter onfocus
+    setter onresetpose
+interface VRSessionEvent : Event
+    attribute @@toStringTag
+    getter session
+    method constructor
 interface VRStageParameters
     attribute @@toStringTag
     getter sittingToStandingTransform

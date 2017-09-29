@@ -46,6 +46,7 @@
     "modules/vr/VRDisplay",
     "modules/vr/latest/VR",
     "modules/vr/latest/VRDevice",
+    "modules/vr/latest/VRSession",
     "modules/webaudio/AudioContext",
     "modules/webaudio/AudioNode",
     "modules/webmidi/MIDIAccess",
