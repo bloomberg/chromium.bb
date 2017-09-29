@@ -19,6 +19,7 @@ class ListValue;
 
 namespace safe_browsing {
 // Features list
+extern const base::Feature kAdSamplerCollectButDontSendFeature;
 extern const base::Feature kAdSamplerTriggerFeature;
 // Gates logging of GaiaPasswordReuse user events.
 extern const base::Feature kGaiaPasswordReuseReporting;
