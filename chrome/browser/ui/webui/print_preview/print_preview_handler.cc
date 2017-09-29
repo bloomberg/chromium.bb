@@ -725,9 +725,9 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     PrinterType type = PrinterType::kPdfPrinter;
     if (print_with_extension)
-      type = PrinterType::kPrivetPrinter;
-    else if (print_with_privet)
       type = PrinterType::kExtensionPrinter;
+    else if (print_with_privet)
+      type = PrinterType::kPrivetPrinter;
     PrinterHandler* handler = GetPrinterHandler(type);
     handler->StartPrint(destination_id, capabilities, title, print_ticket,
                         gfx::Size(width, height), data,
