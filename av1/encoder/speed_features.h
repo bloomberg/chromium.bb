@@ -207,6 +207,12 @@ typedef struct {
   // Use a skip flag prediction model to detect blocks with skip = 1 early
   // and avoid doing full TX type search for such blocks.
   int use_skip_flag_prediction;
+
+  // Use a model to predict TX block split decisions on the highest level
+  // of TX partition tree and apply adaptive pruning based on that to speed up
+  // RD search (currently works only when prune_mode equals to PRUNE_2D_ACCURATE
+  // or PRUNE_2D_FAST).
+  int use_tx_size_pruning;
 } TX_TYPE_SEARCH;
 
 typedef enum {
