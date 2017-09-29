@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "net/http/mock_allow_http_auth_preferences.h"
+#include "build/build_config.h"
 
 namespace net {
 
 MockAllowHttpAuthPreferences::MockAllowHttpAuthPreferences()
     : HttpAuthPreferences(std::vector<std::string>()
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                               ,
                           std::string()
 #endif

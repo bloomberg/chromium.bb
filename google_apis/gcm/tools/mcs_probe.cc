@@ -192,7 +192,7 @@ class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
  public:
   MCSProbeAuthPreferences()
       : HttpAuthPreferences(std::vector<std::string>()
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                 ,
                             std::string()
 #endif

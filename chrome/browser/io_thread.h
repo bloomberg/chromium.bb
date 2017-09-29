@@ -301,7 +301,7 @@ class IOThread : public content::BrowserThreadDelegate {
 #if defined(OS_ANDROID)
   StringPrefMember auth_android_negotiate_account_type_;
 #endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // No PrefMember for the GSSAPI library name, since changing it after startup
   // requires unloading the existing GSSAPI library, which could cause all sorts
   // of problems for, for example, active Negotiate transactions.

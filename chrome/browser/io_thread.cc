@@ -328,7 +328,7 @@ IOThread::IOThread(
                  base::Unretained(this)));
   auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
 #endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
 #endif
 #if defined(OS_CHROMEOS)
@@ -648,7 +648,7 @@ IOThread::CreateDefaultAuthHandlerFactory(net::HostResolver* host_resolver) {
       auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   globals_->http_auth_preferences.reset(new net::HttpAuthPreferences(
       supported_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       ,
       gssapi_library_name_
 #endif
