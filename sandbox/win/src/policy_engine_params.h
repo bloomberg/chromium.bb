@@ -173,7 +173,7 @@ ParameterSet ParamPickerMake(T& parameter) {
 };
 
 struct CountedParameterSetBase {
-  int count;
+  size_t count;
   ParameterSet parameters[1];
 };
 
@@ -193,7 +193,7 @@ struct CountedParameterSet {
     return reinterpret_cast<CountedParameterSetBase*>(this);
   }
 
-  int count;
+  size_t count;
   ParameterSet parameters[T::PolParamLast];
 };
 

@@ -67,7 +67,7 @@ extern "C" long _InterlockedCompareExchange(long volatile* destination,
 // the one provided by kernel32.
 __forceinline void* _InterlockedCompareExchangePointer(
     void* volatile* destination, void* exchange, void* comperand) {
-  size_t ret = _InterlockedCompareExchange(
+  long ret = _InterlockedCompareExchange(
       reinterpret_cast<long volatile*>(destination),
       static_cast<long>(reinterpret_cast<size_t>(exchange)),
       static_cast<long>(reinterpret_cast<size_t>(comperand)));

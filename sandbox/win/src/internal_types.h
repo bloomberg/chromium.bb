@@ -51,12 +51,12 @@ class IPCInt {
     buffer_.vp = buffer;
   }
 
-  explicit IPCInt(unsigned __int32 i32) {
+  explicit IPCInt(uint32_t i32) {
     buffer_.vp = NULL;
     buffer_.i32 = i32;
   }
 
-  unsigned __int32 As32Bit() const {
+  uint32_t As32Bit() const {
     return buffer_.i32;
   }
 
@@ -67,7 +67,7 @@ class IPCInt {
  private:
   union U {
     void* vp;
-    unsigned __int32 i32;
+    uint32_t i32;
   } buffer_;
 };
 

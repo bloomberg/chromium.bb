@@ -53,7 +53,7 @@ bool QueryBroker(int ipc_id, CountedParameterSetBase* params) {
     return false;
   }
 
-  for (int i = 0; i < params->count; i++) {
+  for (size_t i = 0; i < params->count; i++) {
     if (!params->parameters[i].IsValid()) {
       NOTREACHED_NT();
       return false;

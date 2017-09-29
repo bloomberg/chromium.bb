@@ -252,6 +252,9 @@ class TargetPolicy {
   virtual void SetEnableOPMRedirection() = 0;
   // Enable OPM API emulation when in Win32k lockdown.
   virtual bool GetEnableOPMRedirection() = 0;
+
+ protected:
+  ~TargetPolicy() {}
 };
 
 }  // namespace sandbox
