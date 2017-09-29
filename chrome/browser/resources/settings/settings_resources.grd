@@ -76,7 +76,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_ALL_SITES_JS"
                  file="site_settings/all_sites.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_CATEGORY_DEFAULT_SETTING_HTML"
                  file="site_settings/category_default_setting.html"
                  type="chrome_html" />
