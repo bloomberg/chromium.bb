@@ -58,9 +58,16 @@ void RunBenchmark(RasterSource* raster_source,
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
 
-      PlaybackImageProvider image_provider(false, PaintImageIdFlatSet(), {},
-                                           image_decode_cache,
-                                           gfx::ColorSpace(), {});
+      // Pass an empty settings to make sure that the decode cache is used to
+      // replace all images.
+      base::Optional<PlaybackImageProvider::Settings> image_settings;
+      image_settings.emplace();
+      image_settings->images_to_skip = {};
+      image_settings->at_raster_images = {};
+      image_settings->image_to_current_frame_index = {};
+
+      PlaybackImageProvider image_provider(
+          image_decode_cache, gfx::ColorSpace(), std::move(image_settings));
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
 

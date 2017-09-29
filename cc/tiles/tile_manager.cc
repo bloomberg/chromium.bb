@@ -1186,10 +1186,17 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   const bool has_at_raster_images = !at_raster_images.empty();
   if (skip_images || has_checker_images || has_sync_decoded_images ||
       has_at_raster_images) {
-    image_provider.emplace(skip_images, std::move(images_to_skip),
-                           std::move(at_raster_images),
-                           image_controller_.cache(), color_space,
-                           std::move(image_id_to_current_frame_index));
+    base::Optional<PlaybackImageProvider::Settings> settings;
+    if (!skip_images) {
+      settings.emplace();
+      settings->images_to_skip = std::move(images_to_skip);
+      settings->at_raster_images = std::move(at_raster_images);
+      settings->image_to_current_frame_index =
+          std::move(image_id_to_current_frame_index);
+    }
+
+    image_provider.emplace(image_controller_.cache(), color_space,
+                           std::move(settings));
   }
 
   return base::MakeRefCounted<RasterTaskImpl>(

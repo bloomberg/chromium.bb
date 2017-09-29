@@ -18,18 +18,12 @@ void UnrefImageFromCache(DrawImage draw_image,
 }  // namespace
 
 PlaybackImageProvider::PlaybackImageProvider(
-    bool skip_all_images,
-    PaintImageIdFlatSet images_to_skip,
-    std::vector<DrawImage> at_raster_images,
     ImageDecodeCache* cache,
     const gfx::ColorSpace& target_color_space,
-    base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index)
-    : skip_all_images_(skip_all_images),
-      images_to_skip_(std::move(images_to_skip)),
-      at_raster_images_(std::move(at_raster_images)),
-      cache_(cache),
+    base::Optional<Settings> settings)
+    : cache_(cache),
       target_color_space_(target_color_space),
-      image_to_current_frame_index_(std::move(image_to_current_frame_index)) {
+      settings_(std::move(settings)) {
   DCHECK(cache_);
 }
 
@@ -47,7 +41,11 @@ void PlaybackImageProvider::BeginRaster() {
   DCHECK(decoded_at_raster_.empty());
   DCHECK(!in_raster_);
   in_raster_ = true;
-  for (auto& draw_image : at_raster_images_)
+
+  if (!settings_.has_value())
+    return;
+
+  for (auto& draw_image : settings_->at_raster_images)
     decoded_at_raster_.push_back(GetDecodedDrawImage(draw_image));
 }
 
@@ -61,14 +59,14 @@ ImageProvider::ScopedDecodedDrawImage
 PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
   DCHECK(in_raster_);
 
-  // Return an empty decoded images if we are skipping all images during this
+  // Return an empty decoded image if we are skipping all images during this
   // raster.
-  if (skip_all_images_)
+  if (!settings_.has_value())
     return ScopedDecodedDrawImage();
 
   const PaintImage& paint_image = draw_image.paint_image();
 
-  if (images_to_skip_.count(paint_image.stable_id()) != 0) {
+  if (settings_->images_to_skip.count(paint_image.stable_id()) != 0) {
     DCHECK(paint_image.GetSkImage()->isLazyGenerated());
     return ScopedDecodedDrawImage();
   }
@@ -79,8 +77,9 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
                          SkSize::Make(1.f, 1.f), draw_image.filter_quality()));
   }
 
-  const auto& it = image_to_current_frame_index_.find(paint_image.stable_id());
-  size_t frame_index = it == image_to_current_frame_index_.end()
+  const auto& it =
+      settings_->image_to_current_frame_index.find(paint_image.stable_id());
+  size_t frame_index = it == settings_->image_to_current_frame_index.end()
                            ? paint_image.frame_index()
                            : it->second;
 
@@ -91,5 +90,9 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
       decoded_draw_image,
       base::BindOnce(&UnrefImageFromCache, std::move(adjusted_image), cache_));
 }
+
+PlaybackImageProvider::Settings::Settings() = default;
+PlaybackImageProvider::Settings::Settings(const Settings& other) = default;
+PlaybackImageProvider::Settings::~Settings() = default;
 
 }  // namespace cc
