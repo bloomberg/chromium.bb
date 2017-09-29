@@ -4,10 +4,10 @@
 
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 
-#include "base/threading/thread_task_runner_handle.h"
+#include <memory>
+
+#include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_server_properties_manager.h"
@@ -15,38 +15,61 @@
 namespace {
 
 class PrefServiceAdapter
-    : public net::HttpServerPropertiesManager::PrefDelegate {
+    : public net::HttpServerPropertiesManager::PrefDelegate,
+      public PrefStore::Observer {
  public:
-  explicit PrefServiceAdapter(PrefService* pref_service)
-      : pref_service_(pref_service), path_(prefs::kHttpServerProperties) {
-    pref_change_registrar_.Init(pref_service_);
+  explicit PrefServiceAdapter(scoped_refptr<WriteablePrefStore> pref_store)
+      : pref_store_(std::move(pref_store)),
+        path_(prefs::kHttpServerProperties) {
+    pref_store_->AddObserver(this);
   }
 
-  ~PrefServiceAdapter() override {}
+  ~PrefServiceAdapter() override { pref_store_->RemoveObserver(this); }
 
   // PrefDelegate implementation.
   bool HasServerProperties() override {
-    return pref_service_->HasPrefPath(path_);
+    return pref_store_->GetValue(path_, nullptr);
   }
   const base::DictionaryValue& GetServerProperties() const override {
-    // Guaranteed not to return null when the pref is registered
-    // (RegisterProfilePrefs was called).
-    return *pref_service_->GetDictionary(path_);
+    const base::Value* value;
+    if (pref_store_->GetValue(path_, &value)) {
+      const base::DictionaryValue* dict;
+      if (value->GetAsDictionary(&dict))
+        return *dict;
+    }
+
+    return empty_dictionary_;
   }
   void SetServerProperties(const base::DictionaryValue& value) override {
-    return pref_service_->Set(path_, value);
+    return pref_store_->SetValue(path_, value.CreateDeepCopy(),
+                                 WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
   void StartListeningForUpdates(const base::Closure& callback) override {
-    pref_change_registrar_.Add(path_, callback);
+    on_changed_callback_ = callback;
   }
   void StopListeningForUpdates() override {
-    pref_change_registrar_.RemoveAll();
+    on_changed_callback_ = base::Closure();
+  }
+
+  // PrefStore::Observer implementation.
+  void OnPrefValueChanged(const std::string& key) override {
+    if (key == path_ && on_changed_callback_)
+      on_changed_callback_.Run();
+  }
+  void OnInitializationCompleted(bool succeeded) override {
+    if (succeeded && on_changed_callback_ && HasServerProperties())
+      on_changed_callback_.Run();
   }
 
  private:
-  PrefService* pref_service_;
+  scoped_refptr<WriteablePrefStore> pref_store_;
   const std::string path_;
-  PrefChangeRegistrar pref_change_registrar_;
+
+  // Returned when the pref is not set. Since the method returns a const
+  // net::DictionaryValue&, can't just create one on the stack.
+  base::DictionaryValue empty_dictionary_;
+
+  base::Closure on_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
 };
@@ -55,16 +78,12 @@ class PrefServiceAdapter
 
 // static
 net::HttpServerPropertiesManager*
-HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service,
-                                                  net::NetLog* net_log) {
+HttpServerPropertiesManagerFactory::CreateManager(
+    scoped_refptr<WriteablePrefStore> pref_store,
+    net::NetLog* net_log) {
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   return new net::HttpServerPropertiesManager(
-      new PrefServiceAdapter(pref_service),  // Transfers ownership.
-      base::ThreadTaskRunnerHandle::Get(),
+      new PrefServiceAdapter(std::move(pref_store)),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO), net_log);
-}
-
-// static
-void HttpServerPropertiesManagerFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kHttpServerProperties);
 }
