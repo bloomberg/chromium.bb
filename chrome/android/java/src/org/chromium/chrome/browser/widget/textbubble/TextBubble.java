@@ -188,9 +188,9 @@ public class TextBubble implements OnTouchListener {
     }
 
     /**
-     * Dismisses the active bubbles if user has pressed the back button.
+     * Dismisses all the currently showing bubbles.
      */
-    public static void onBackPressed() {
+    public static void dismissBubbles() {
         Set<TextBubble> bubbles = new HashSet<>(sBubbles);
         for (TextBubble bubble : bubbles) {
             bubble.dismiss();

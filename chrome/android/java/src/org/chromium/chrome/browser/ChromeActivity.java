@@ -1373,6 +1373,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void showAppMenuForKeyboardEvent() {
         if (getAppMenuHandler() == null) return;
 
+        TextBubble.dismissBubbles();
         boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
         getAppMenuHandler().showAppMenu(
                 hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false);
@@ -1796,7 +1797,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public final void onBackPressed() {
         if (mNativeInitialized) RecordUserAction.record("SystemBack");
 
-        TextBubble.onBackPressed();
+        TextBubble.dismissBubbles();
         if (VrShellDelegate.onBackPressed()) return;
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
