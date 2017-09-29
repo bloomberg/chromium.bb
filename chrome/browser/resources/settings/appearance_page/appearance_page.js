@@ -197,12 +197,11 @@ Polymer({
   },
 
   /**
-   * URL for either current theme or the theme gallery.
-   * @return {string}
+   * Open URL for either current theme or the theme gallery.
    * @private
    */
-  getThemeHref_: function() {
-    return this.themeUrl_ || loadTimeData.getString('themesGalleryUrl');
+  openThemeUrl_: function() {
+    window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
 
   // <if expr="chromeos">

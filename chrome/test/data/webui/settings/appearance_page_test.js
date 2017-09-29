@@ -149,10 +149,18 @@ suite('AppearanceHandler', function() {
 
   if (cr.isChromeOS) {
     test('wallpaperManager', function() {
-      var button = appearancePage.$.wallpaperButton;
-      assertTrue(!!button);
-      MockInteractions.tap(button);
-      return appearanceBrowserProxy.whenCalled('openWallpaperManager');
+      appearanceBrowserProxy.setIsWallpaperPolicyControlled(false);
+      // TODO(dschuyler): This should notice the policy change without needing
+      // the page to be recreated.
+      createAppearancePage();
+      return appearanceBrowserProxy.whenCalled('isWallpaperPolicyControlled')
+          .then(() => {
+            var button = appearancePage.$.wallpaperButton;
+            assertTrue(!!button);
+            assertFalse(button.disabled);
+            MockInteractions.tap(button);
+            return appearanceBrowserProxy.whenCalled('openWallpaperManager');
+          });
     });
 
     test('wallpaperSettingVisible', function() {
@@ -173,7 +181,7 @@ suite('AppearanceHandler', function() {
           .then(function() {
             Polymer.dom.flush();
             assertFalse(appearancePage.$$('#wallpaperPolicyIndicator').hidden);
-            assertTrue(appearancePage.$$('#showWallpaperManager').disabled);
+            assertTrue(appearancePage.$$('#wallpaperButton').disabled);
           });
     });
   } else {
