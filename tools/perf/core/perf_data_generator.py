@@ -122,17 +122,21 @@ def get_fyi_waterfall_config():
   return waterfall
 
 
+# Additional compile targets to add to builders.
+BUILDER_ADDITIONAL_COMPILE_TARGETS = {
+    'Android Compile': ['microdump_stackwalk'],
+    'Android arm64 Compile': ['microdump_stackwalk'],
+    # crbug.com/758630. Test builder, will be removed.
+    'Linux Builder': ['telemetry_perf_tests_new'],
+}
+
+
 def get_waterfall_config():
   waterfall = {'builders':{}, 'testers': {}}
 
-  waterfall = add_builder(
-      waterfall, 'Android Compile', additional_compile_targets=[
-          'microdump_stackwalk'
-      ])
-  waterfall = add_builder(
-      waterfall, 'Android arm64 Compile', additional_compile_targets=[
-          'microdump_stackwalk'
-      ])
+  for builder, targets in BUILDER_ADDITIONAL_COMPILE_TARGETS.items():
+    waterfall = add_builder(
+        waterfall, builder, additional_compile_targets=targets)
 
   # These configurations are taken from chromium_perf.py in
   # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
@@ -1049,9 +1053,8 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
     elif 'scripts' in tests[t]:
       scripts = tests[t]['scripts']
     else:
-      assert('Android Compile' == t
-        or 'Android arm64 Compile' == t
-        or t.startswith('AAAAA')), 'Unknown test data %s' % t
+      assert(t in BUILDER_ADDITIONAL_COMPILE_TARGETS
+             or t.startswith('AAAAA')), 'Unknown test data %s' % t
     for s in scripts:
       name = s['name']
       name = re.sub('\\.reference$', '', name)
