@@ -66,12 +66,6 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     SyncCycle* cycle,
                                     const base::TimeDelta& new_poll);
 
-// Works with normal cycles.
-void SimulateSessionsCommitDelayUpdateImpl(ModelTypeSet requested_types,
-                                           NudgeTracker* nudge_tracker,
-                                           SyncCycle* cycle,
-                                           const base::TimeDelta& new_delay);
-
 ACTION_P(SimulateThrottled, throttle) {
   SimulateThrottledImpl(arg0, throttle);
 }
@@ -86,10 +80,6 @@ ACTION_P(SimulatePartialFailure, types) {
 
 ACTION_P(SimulatePollIntervalUpdate, poll) {
   SimulatePollIntervalUpdateImpl(arg0, arg1, poll);
-}
-
-ACTION_P(SimulateSessionsCommitDelayUpdate, poll) {
-  SimulateSessionsCommitDelayUpdateImpl(arg0, arg1, arg2, poll);
 }
 
 ACTION_P(SimulateGuRetryDelayCommand, delay) {

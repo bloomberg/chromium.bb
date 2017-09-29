@@ -4,8 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/test_util.h"
 
-#include <map>
-
 namespace syncer {
 namespace test_util {
 
@@ -111,16 +109,6 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     const base::TimeDelta& new_poll) {
   SimulatePollSuccess(requested_types, cycle);
   cycle->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
-}
-
-void SimulateSessionsCommitDelayUpdateImpl(ModelTypeSet requested_types,
-                                           NudgeTracker* nudge_tracker,
-                                           SyncCycle* cycle,
-                                           const base::TimeDelta& new_delay) {
-  SimulateNormalSuccess(requested_types, nudge_tracker, cycle);
-  std::map<ModelType, base::TimeDelta> delay_map;
-  delay_map[SESSIONS] = new_delay;
-  cycle->delegate()->OnReceivedCustomNudgeDelays(delay_map);
 }
 
 void SimulateGuRetryDelayCommandImpl(SyncCycle* cycle, base::TimeDelta delay) {
