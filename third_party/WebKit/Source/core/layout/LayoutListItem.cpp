@@ -146,8 +146,8 @@ static LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
       break;
 
     if (curr->IsListItem() && in_quirks_mode && curr_child->GetNode() &&
-        (isHTMLUListElement(*curr_child->GetNode()) ||
-         isHTMLOListElement(*curr_child->GetNode())))
+        (IsHTMLUListElement(*curr_child->GetNode()) ||
+         IsHTMLOListElement(*curr_child->GetNode())))
       break;
 
     LayoutObject* line_box =

@@ -44,11 +44,11 @@ void HTMLImageLoader::DispatchLoadEvent() {
 
   // HTMLVideoElement uses this class to load the poster image, but it should
   // not fire events for loading or failure.
-  if (isHTMLVideoElement(*GetElement()))
+  if (IsHTMLVideoElement(*GetElement()))
     return;
 
   bool error_occurred = GetImage()->ErrorOccurred();
-  if (isHTMLObjectElement(*GetElement()) && !error_occurred) {
+  if (IsHTMLObjectElement(*GetElement()) && !error_occurred) {
     // An <object> considers a 404 to be an error and should fire onerror.
     error_occurred = (GetImage()->GetResponse().HttpStatusCode() >= 400);
   }
@@ -89,7 +89,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
   }
 
   if ((load_error || cached_image->GetResponse().HttpStatusCode() >= 400) &&
-      isHTMLObjectElement(*element))
+      IsHTMLObjectElement(*element))
     toHTMLObjectElement(element)->RenderFallbackContent();
 }
 

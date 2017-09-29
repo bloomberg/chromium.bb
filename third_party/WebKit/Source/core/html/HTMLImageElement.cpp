@@ -303,14 +303,14 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   DCHECK(IsMainThread());
   Node* parent = parentNode();
   source_ = nullptr;
-  if (!parent || !isHTMLPictureElement(*parent))
+  if (!parent || !IsHTMLPictureElement(*parent))
     return ImageCandidate();
   for (Node* child = parent->firstChild(); child;
        child = child->nextSibling()) {
     if (child == this)
       return ImageCandidate();
 
-    if (!isHTMLSourceElement(*child))
+    if (!IsHTMLSourceElement(*child))
       continue;
 
     HTMLSourceElement* source = toHTMLSourceElement(child);
@@ -400,7 +400,7 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
   if (listener_)
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
   Node* parent = parentNode();
-  if (parent && isHTMLPictureElement(*parent))
+  if (parent && IsHTMLPictureElement(*parent))
     toHTMLPictureElement(parent)->AddListenerToSourceChildren();
 
   bool image_was_modified = false;
@@ -429,7 +429,7 @@ void HTMLImageElement::RemovedFrom(ContainerNode* insertion_point) {
   if (listener_) {
     GetDocument().GetMediaQueryMatcher().RemoveViewportListener(listener_);
     Node* parent = parentNode();
-    if (parent && isHTMLPictureElement(*parent))
+    if (parent && IsHTMLPictureElement(*parent))
       toHTMLPictureElement(parent)->RemoveListenerFromSourceChildren();
   }
   HTMLElement::RemovedFrom(insertion_point);

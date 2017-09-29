@@ -472,7 +472,7 @@ void ContainerNode::ParserInsertBefore(Node* new_child, Node& next_child) {
   DCHECK(new_child);
   DCHECK_EQ(next_child.parentNode(), this);
   DCHECK(!new_child->IsDocumentFragment());
-  DCHECK(!isHTMLTemplateElement(this));
+  DCHECK(!IsHTMLTemplateElement(this));
 
   if (next_child.previousSibling() == new_child ||
       &next_child == new_child)  // nothing to do
@@ -844,7 +844,7 @@ Node* ContainerNode::AppendChild(Node* new_child) {
 void ContainerNode::ParserAppendChild(Node* new_child) {
   DCHECK(new_child);
   DCHECK(!new_child->IsDocumentFragment());
-  DCHECK(!isHTMLTemplateElement(this));
+  DCHECK(!IsHTMLTemplateElement(this));
 
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kParserAppendChild);
@@ -1686,7 +1686,7 @@ ClassCollection* ContainerNode::getElementsByClassName(
 
 RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
                                                bool only_match_img_elements) {
-  DCHECK(isHTMLFormElement(this) || isHTMLFieldSetElement(this));
+  DCHECK(IsHTMLFormElement(this) || IsHTMLFieldSetElement(this));
   CollectionType type =
       only_match_img_elements ? kRadioImgNodeListType : kRadioNodeListType;
   return EnsureCachedCollection<RadioNodeList>(type, name);
@@ -1724,7 +1724,7 @@ bool ChildAttachedAllowedWhenAttachingChildren(ContainerNode* node) {
   if (node->IsV0InsertionPoint())
     return true;
 
-  if (isHTMLSlotElement(node))
+  if (IsHTMLSlotElement(node))
     return true;
 
   if (node->IsElementNode() && ToElement(node)->Shadow())

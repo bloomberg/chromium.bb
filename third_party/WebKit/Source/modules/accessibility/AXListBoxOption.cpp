@@ -80,7 +80,7 @@ bool AXListBoxOption::IsParentPresentationalRole() const {
 }
 
 bool AXListBoxOption::IsSelected() const {
-  return isHTMLOptionElement(GetNode()) &&
+  return IsHTMLOptionElement(GetNode()) &&
          toHTMLOptionElement(GetNode())->Selected();
 }
 

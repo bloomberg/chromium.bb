@@ -3520,7 +3520,7 @@ bool Element::ShouldStoreNonLayoutObjectComputedStyle(
 #endif
 
   return style.Display() == EDisplay::kContents ||
-         isHTMLOptGroupElement(*this) || isHTMLOptionElement(*this);
+         IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this);
 }
 
 void Element::StoreNonLayoutObjectComputedStyle(RefPtr<ComputedStyle> style) {
@@ -3781,8 +3781,8 @@ DOMStringMap& Element::dataset() {
 KURL Element::HrefURL() const {
   // FIXME: These all have href() or url(), but no common super class. Why
   // doesn't <link> implement URLUtils?
-  if (isHTMLAnchorElement(*this) || isHTMLAreaElement(*this) ||
-      isHTMLLinkElement(*this))
+  if (IsHTMLAnchorElement(*this) || IsHTMLAreaElement(*this) ||
+      IsHTMLLinkElement(*this))
     return GetURLAttribute(hrefAttr);
   if (auto* svg_a = ToSVGAElementOrNull(*this))
     return svg_a->LegacyHrefURL(GetDocument());

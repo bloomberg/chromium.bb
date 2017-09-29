@@ -114,7 +114,7 @@ bool AXTable::IsDataTable() const {
 
   LayoutTable* table = ToLayoutTable(layout_object_);
   Node* table_node = table->GetNode();
-  if (!isHTMLTableElement(table_node))
+  if (!IsHTMLTableElement(table_node))
     return false;
 
   // Do not consider it a data table if any of its descendants have an ARIA
@@ -382,7 +382,7 @@ void AXTable::AddChildren() {
   AXObjectCacheImpl& ax_cache = AxObjectCache();
 
   Node* table_node = table->GetNode();
-  if (!isHTMLTableElement(table_node))
+  if (!IsHTMLTableElement(table_node))
     return;
 
   // Add caption

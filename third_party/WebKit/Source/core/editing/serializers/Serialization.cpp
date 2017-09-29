@@ -131,7 +131,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
     return 0;
 
   if (common_ancestor_block->HasTagName(tbodyTag) ||
-      isHTMLTableRowElement(*common_ancestor_block))
+      IsHTMLTableRowElement(*common_ancestor_block))
     return Traversal<HTMLTableElement>::FirstAncestor(*common_ancestor_block);
 
   if (IsNonTableCellHTMLBlockElement(common_ancestor_block))
@@ -491,7 +491,7 @@ static void FillContainerFromString(ContainerNode* paragraph,
 
 bool IsPlainTextMarkup(Node* node) {
   DCHECK(node);
-  if (!isHTMLDivElement(*node))
+  if (!IsHTMLDivElement(*node))
     return false;
 
   HTMLDivElement& element = toHTMLDivElement(*node);
@@ -558,7 +558,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
   Element* block =
       EnclosingBlock(context.StartPosition().NodeAsRangeFirstNode());
   bool use_clones_of_enclosing_block =
-      block && !isHTMLBodyElement(*block) && !isHTMLHtmlElement(*block) &&
+      block && !IsHTMLBodyElement(*block) && !IsHTMLHtmlElement(*block) &&
       block != RootEditableElementOf(context.StartPosition());
 
   Vector<String> list;
@@ -592,7 +592,7 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
     ExceptionState& exception_state) {
   DCHECK(context_element);
   Document& document =
-      isHTMLTemplateElement(*context_element)
+      IsHTMLTemplateElement(*context_element)
           ? context_element->GetDocument().EnsureTemplateDocument()
           : context_element->GetDocument();
   DocumentFragment* fragment = DocumentFragment::Create(document);
@@ -674,8 +674,8 @@ DocumentFragment* CreateContextualFragment(
   Node* next_node = nullptr;
   for (Node* node = fragment->firstChild(); node; node = next_node) {
     next_node = node->nextSibling();
-    if (isHTMLHtmlElement(*node) || isHTMLHeadElement(*node) ||
-        isHTMLBodyElement(*node)) {
+    if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
+        IsHTMLBodyElement(*node)) {
       HTMLElement* element = ToHTMLElement(node);
       if (Node* first_child = element->firstChild())
         next_node = first_child;

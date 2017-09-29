@@ -45,7 +45,7 @@ WebElement WebLabelElement::CorrespondingControl() {
 WebLabelElement::WebLabelElement(HTMLLabelElement* elem) : WebElement(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement,
-                           isHTMLLabelElement(ConstUnwrap<Node>()));
+                           IsHTMLLabelElement(ConstUnwrap<Node>()));
 
 WebLabelElement& WebLabelElement::operator=(HTMLLabelElement* elem) {
   private_ = elem;

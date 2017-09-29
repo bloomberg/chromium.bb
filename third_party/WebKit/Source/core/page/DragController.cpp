@@ -343,7 +343,7 @@ DragSession DragController::DragEnteredOrUpdated(DragData* drag_data,
 static HTMLInputElement* AsFileInput(Node* node) {
   DCHECK(node);
   for (; node; node = node->OwnerShadowHost()) {
-    if (isHTMLInputElement(*node) &&
+    if (IsHTMLInputElement(*node) &&
         toHTMLInputElement(node)->type() == InputTypeNames::file)
       return toHTMLInputElement(node);
   }
@@ -828,7 +828,7 @@ Node* DragController::DraggableNode(const LocalFrame* src,
         candidate_drag_type = kDragSourceActionDHTML;
         break;
       }
-      if (isHTMLAnchorElement(*node) &&
+      if (IsHTMLAnchorElement(*node) &&
           toHTMLAnchorElement(node)->IsLiveLink()) {
         candidate_drag_type = kDragSourceActionLink;
         break;
@@ -927,7 +927,7 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   DataTransfer* data_transfer = state.drag_data_transfer_.Get();
   Node* node = state.drag_src_.Get();
 
-  if (isHTMLAnchorElement(*node) && toHTMLAnchorElement(node)->IsLiveLink() &&
+  if (IsHTMLAnchorElement(*node) && toHTMLAnchorElement(node)->IsLiveLink() &&
       !link_url.IsEmpty()) {
     // Simplify whitespace so the title put on the clipboard resembles what
     // the user sees on the web page. This includes replacing newlines with

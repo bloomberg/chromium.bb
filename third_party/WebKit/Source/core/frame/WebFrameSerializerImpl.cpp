@@ -129,13 +129,13 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
     // have overrided the META which have correct charset declaration after
     // serializing open tag of HEAD element.
     DCHECK(element);
-    if (isHTMLMetaElement(element) &&
+    if (IsHTMLMetaElement(element) &&
         toHTMLMetaElement(element)->ComputeEncoding().IsValid()) {
       // Found META tag declared charset, we need to skip it when
       // serializing DOM.
       param->skip_meta_element = element;
       *need_skip = true;
-    } else if (isHTMLHtmlElement(*element)) {
+    } else if (IsHTMLHtmlElement(*element)) {
       // Check something before processing the open tag of HEAD element.
       // First we add doc type declaration if original document has it.
       if (!param->have_seen_doc_type) {
@@ -147,7 +147,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
       // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
       result.Append(
           WebFrameSerializer::GenerateMarkOfTheWebDeclaration(param->url));
-    } else if (isHTMLBaseElement(*element)) {
+    } else if (IsHTMLBaseElement(*element)) {
       // Comment the BASE tag when serializing dom.
       result.Append("<!--");
     }
@@ -187,7 +187,7 @@ String WebFrameSerializerImpl::PostActionAfterSerializeOpenTag(
   if (!param->is_html_document)
     return result.ToString();
   // Check after processing the open tag of HEAD element
-  if (!param->have_added_charset_declaration && isHTMLHeadElement(*element)) {
+  if (!param->have_added_charset_declaration && IsHTMLHeadElement(*element)) {
     param->have_added_charset_declaration = true;
     // Check meta element. WebKit only pre-parse the first 512 bytes of the
     // document. If the whole <HEAD> is larger and meta is the end of head
@@ -236,7 +236,7 @@ String WebFrameSerializerImpl::PostActionAfterSerializeEndTag(
   if (!param->is_html_document)
     return result.ToString();
   // Comment the BASE tag when serializing DOM.
-  if (isHTMLBaseElement(*element)) {
+  if (IsHTMLBaseElement(*element)) {
     result.Append("-->");
     // Append a new base tag declaration.
     result.Append(WebFrameSerializer::GenerateBaseTagDeclaration(
@@ -351,7 +351,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
   // is written even if the original document didn't have that attribute
   // (mainly needed for iframes with srcdoc, but with no src attribute).
   if (should_rewrite_frame_src && !did_rewrite_frame_src &&
-      isHTMLIFrameElement(element)) {
+      IsHTMLIFrameElement(element)) {
     AppendAttribute(result, param->is_html_document,
                     HTMLNames::srcAttr.ToString(), rewritten_frame_link);
   }

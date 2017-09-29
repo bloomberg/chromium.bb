@@ -189,7 +189,7 @@ void SVGAnimateElement::ResolveTargetProperty() {
   // also disallows the perfectly "valid" animation of 'className' on said
   // element. If SVGScriptElement.href is transitioned off of SVGAnimatedHref,
   // this can be removed.
-  if (isSVGScriptElement(*targetElement())) {
+  if (IsSVGScriptElement(*targetElement())) {
     type_ = kAnimatedUnknown;
     css_property_id_ = CSSPropertyInvalid;
   }
@@ -345,7 +345,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
   DCHECK_EQ(result_animation_element->GetAnimatedPropertyType(),
             GetAnimatedPropertyType());
 
-  if (isSVGSetElement(*this))
+  if (IsSVGSetElement(*this))
     percentage = 1;
 
   if (GetCalcMode() == kCalcModeDiscrete)
@@ -406,7 +406,7 @@ bool SVGAnimateElement::CalculateFromAndByValues(const String& from_string,
       !AnimatedPropertyTypeSupportsAddition())
     return false;
 
-  DCHECK(!isSVGSetElement(*this));
+  DCHECK(!IsSVGSetElement(*this));
 
   from_property_ = CreatePropertyForAnimation(from_string);
   from_property_value_type_ = PropertyValueType(AttributeName(), from_string);

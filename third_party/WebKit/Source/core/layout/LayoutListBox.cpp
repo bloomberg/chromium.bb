@@ -48,7 +48,7 @@ const int kDefaultPaddingBottom = 1;
 LayoutListBox::LayoutListBox(Element* element) : LayoutBlockFlow(element) {
   DCHECK(element);
   DCHECK(element->IsHTMLElement());
-  DCHECK(isHTMLSelectElement(element));
+  DCHECK(IsHTMLSelectElement(element));
 }
 
 LayoutListBox::~LayoutListBox() {}

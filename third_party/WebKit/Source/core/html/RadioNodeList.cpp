@@ -44,14 +44,14 @@ RadioNodeList::RadioNodeList(ContainerNode& root_node,
     : LiveNodeList(root_node,
                    type,
                    kInvalidateForFormControls,
-                   isHTMLFormElement(root_node) ? NodeListRootType::kTreeScope
+                   IsHTMLFormElement(root_node) ? NodeListRootType::kTreeScope
                                                 : NodeListRootType::kNode),
       name_(name) {}
 
 RadioNodeList::~RadioNodeList() {}
 
 static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
-  if (!isHTMLInputElement(element))
+  if (!IsHTMLInputElement(element))
     return nullptr;
   HTMLInputElement& input_element = toHTMLInputElement(element);
   if (input_element.type() != InputTypeNames::radio ||
@@ -94,9 +94,9 @@ bool RadioNodeList::MatchesByIdOrName(const Element& test_element) const {
 bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
     const Element& test_element) const {
   DCHECK(!ShouldOnlyMatchImgElements());
-  DCHECK(isHTMLObjectElement(test_element) ||
+  DCHECK(IsHTMLObjectElement(test_element) ||
          test_element.IsFormControlElement());
-  if (isHTMLFormElement(ownerNode())) {
+  if (IsHTMLFormElement(ownerNode())) {
     HTMLFormElement* form_element = ToHTMLElement(test_element).formOwner();
     if (!form_element || form_element != ownerNode())
       return false;
@@ -107,7 +107,7 @@ bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
 
 bool RadioNodeList::ElementMatches(const Element& element) const {
   if (ShouldOnlyMatchImgElements()) {
-    if (!isHTMLImageElement(element))
+    if (!IsHTMLImageElement(element))
       return false;
 
     if (toHTMLImageElement(element).formOwner() != ownerNode())
@@ -116,10 +116,10 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
     return MatchesByIdOrName(element);
   }
 
-  if (!isHTMLObjectElement(element) && !element.IsFormControlElement())
+  if (!IsHTMLObjectElement(element) && !element.IsFormControlElement())
     return false;
 
-  if (isHTMLInputElement(element) &&
+  if (IsHTMLInputElement(element) &&
       toHTMLInputElement(element).type() == InputTypeNames::image)
     return false;
 

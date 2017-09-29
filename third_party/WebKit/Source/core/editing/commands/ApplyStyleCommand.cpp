@@ -882,7 +882,7 @@ void ApplyStyleCommand::FixRangeAndApplyInlineStyle(
 
   // FIXME: Callers should perform this operation on a Range that includes the
   // br if they want style applied to the empty line.
-  if (start == end && isHTMLBRElement(*start.AnchorNode()))
+  if (start == end && IsHTMLBRElement(*start.AnchorNode()))
     past_end_node = NodeTraversal::Next(*start.AnchorNode());
 
   // Start from the highest fully selected ancestor so that we can modify the
@@ -1006,7 +1006,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     Node* sibling = node->nextSibling();
     while (sibling && sibling != past_end_node &&
            !sibling->contains(past_end_node) &&
-           (!IsEnclosingBlock(sibling) || isHTMLBRElement(*sibling)) &&
+           (!IsEnclosingBlock(sibling) || IsHTMLBRElement(*sibling)) &&
            !ContainsNonEditableRegion(*sibling)) {
       run_end = sibling;
       sibling = run_end->nextSibling();
@@ -1297,7 +1297,7 @@ void ApplyStyleCommand::ApplyInlineStyleToPushDown(
   node->GetDocument().UpdateStyleAndLayoutTree();
 
   if (!style || style->IsEmpty() || !node->GetLayoutObject() ||
-      isHTMLIFrameElement(*node))
+      IsHTMLIFrameElement(*node))
     return;
 
   EditingStyle* new_inline_style = style;
@@ -1378,7 +1378,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
           element->removeAttribute(HTMLNames::idAttr);
-          if (isHTMLAnchorElement(element))
+          if (IsHTMLAnchorElement(element))
             element->removeAttribute(HTMLNames::nameAttr);
           SurroundNodeRangeWithElement(child, child, wrapper, editing_state);
           if (editing_state->IsAborted())
@@ -1708,7 +1708,7 @@ bool ApplyStyleCommand::MergeEndWithNextIfIdentical(
     end_node = end.AnchorNode()->parentNode();
   }
 
-  if (!end_node->IsElementNode() || isHTMLBRElement(*end_node))
+  if (!end_node->IsElementNode() || IsHTMLBRElement(*end_node))
     return false;
 
   Node* next_sibling = end_node->nextSibling();
@@ -1872,10 +1872,10 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
        container = container->firstChild()) {
     if (auto* font = ToHTMLFontElementOrNull(container))
       font_container = font;
-    bool style_container_is_not_span = !isHTMLSpanElement(style_container);
+    bool style_container_is_not_span = !IsHTMLSpanElement(style_container);
     if (container->IsHTMLElement()) {
       HTMLElement* container_element = ToHTMLElement(container);
-      if (isHTMLSpanElement(*container_element) ||
+      if (IsHTMLSpanElement(*container_element) ||
           (style_container_is_not_span && container_element->HasChildren()))
         style_container = ToHTMLElement(container);
     }

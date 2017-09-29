@@ -74,13 +74,13 @@ static bool IsFrameFocused(const Element& element) {
 }
 
 static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
-  return isHTMLOptionElement(element) &&
+  return IsHTMLOptionElement(element) &&
          toHTMLOptionElement(element).SpatialNavigationFocused() &&
          IsFrameFocused(element);
 }
 
 static bool MatchesListBoxPseudoClass(const Element& element) {
-  return isHTMLSelectElement(element) &&
+  return IsHTMLSelectElement(element) &&
          !toHTMLSelectElement(element).UsesMenuList();
 }
 
@@ -994,7 +994,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (input_element->ShouldAppearChecked() &&
             !input_element->ShouldAppearIndeterminate())
           return true;
-      } else if (isHTMLOptionElement(element) &&
+      } else if (IsHTMLOptionElement(element) &&
                  toHTMLOptionElement(element).Selected()) {
         return true;
       }
@@ -1035,7 +1035,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.ContainsFullScreenElement();
     case CSSSelector::kPseudoVideoPersistent:
       DCHECK(is_ua_rule_);
-      return isHTMLVideoElement(element) &&
+      return IsHTMLVideoElement(element) &&
              toHTMLVideoElement(element).IsPersistent();
     case CSSSelector::kPseudoVideoPersistentAncestor:
       DCHECK(is_ua_rule_);

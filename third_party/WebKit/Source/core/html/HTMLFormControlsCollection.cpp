@@ -43,7 +43,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(
     : HTMLCollection(owner_node, kFormControls, kOverridesItemAfter),
       cached_element_(nullptr),
       cached_element_offset_in_array_(0) {
-  DCHECK(isHTMLFormElement(owner_node));
+  DCHECK(IsHTMLFormElement(owner_node));
 }
 
 HTMLFormControlsCollection* HTMLFormControlsCollection::Create(
@@ -182,7 +182,7 @@ void HTMLFormControlsCollection::namedGetter(
     return;
 
   if (named_items.size() == 1) {
-    if (!isHTMLImageElement(*named_items[0]))
+    if (!IsHTMLImageElement(*named_items[0]))
       return_value.SetElement(named_items.at(0));
     return;
   }

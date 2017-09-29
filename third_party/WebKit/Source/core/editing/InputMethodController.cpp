@@ -186,7 +186,7 @@ AtomicString GetInputModeAttribute(Element* element) {
   bool query_attribute = false;
   if (auto* input = ToHTMLInputElementOrNull(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
-  } else if (isHTMLTextAreaElement(*element)) {
+  } else if (IsHTMLTextAreaElement(*element)) {
     query_attribute = true;
   } else {
     element->GetDocument().UpdateStyleAndLayoutTree();

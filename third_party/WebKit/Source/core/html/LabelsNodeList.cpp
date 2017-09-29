@@ -42,7 +42,7 @@ LabelsNodeList::LabelsNodeList(ContainerNode& owner_node)
 LabelsNodeList::~LabelsNodeList() {}
 
 bool LabelsNodeList::ElementMatches(const Element& element) const {
-  return isHTMLLabelElement(element) &&
+  return IsHTMLLabelElement(element) &&
          toHTMLLabelElement(element).control() == ownerNode();
 }
 

@@ -49,7 +49,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
   void OnResize(
       const HeapVector<Member<ResizeObserverEntry>>& entries) override {
     DCHECK_EQ(entries.size(), 1u);
-    DCHECK(isHTMLVideoElement(entries[0]->target()));
+    DCHECK(IsHTMLVideoElement(entries[0]->target()));
     text_track_container_->UpdateDefaultFontSize(
         entries[0]->target()->GetLayoutObject());
   }
@@ -79,7 +79,7 @@ TextTrackContainer* TextTrackContainer::Create(
       new TextTrackContainer(media_element.GetDocument());
   element->SetShadowPseudoId(
       AtomicString("-webkit-media-text-track-container"));
-  if (isHTMLVideoElement(media_element))
+  if (IsHTMLVideoElement(media_element))
     element->ObserveSizeChanges(media_element);
   return element;
 }
@@ -134,7 +134,7 @@ void TextTrackContainer::UpdateDisplay(HTMLMediaElement& media_element,
   // 1. If the media element is an audio element, or is another playback
   // mechanism with no rendering area, abort these steps. There is nothing to
   // render.
-  if (isHTMLAudioElement(media_element))
+  if (IsHTMLAudioElement(media_element))
     return;
 
   // 2. Let video be the media element or other playback mechanism.

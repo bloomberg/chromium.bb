@@ -41,7 +41,7 @@ GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder() {}
 
 static bool ShouldAppendLayer(const PaintLayer& layer) {
   Node* node = layer.GetLayoutObject().GetNode();
-  if (node && isHTMLVideoElement(*node)) {
+  if (node && IsHTMLVideoElement(*node)) {
     HTMLVideoElement* element = toHTMLVideoElement(node);
     if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
       return false;

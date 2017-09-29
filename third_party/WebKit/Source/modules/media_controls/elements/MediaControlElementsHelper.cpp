@@ -57,7 +57,7 @@ MediaControlElementType MediaControlElementsHelper::GetMediaControlElementType(
     const Node* node) {
   SECURITY_DCHECK(node->IsMediaControlElement());
   const HTMLElement* element = ToHTMLElement(node);
-  if (isHTMLInputElement(*element))
+  if (IsHTMLInputElement(*element))
     return static_cast<const MediaControlInputElement*>(element)->DisplayType();
   return static_cast<const MediaControlDivElement*>(element)->DisplayType();
 }

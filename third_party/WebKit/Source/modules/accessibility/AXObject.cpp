@@ -596,7 +596,7 @@ AccessibilityCheckedState AXObject::CheckedState() const {
     if (IsNativeCheckboxInMixedState(node))
       return kCheckedStateMixed;
 
-    if (isHTMLInputElement(*node) &&
+    if (IsHTMLInputElement(*node) &&
         toHTMLInputElement(*node).ShouldAppearChecked()) {
       return kCheckedStateTrue;
     }
@@ -606,7 +606,7 @@ AccessibilityCheckedState AXObject::CheckedState() const {
 }
 
 bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
-  if (!isHTMLInputElement(node))
+  if (!IsHTMLInputElement(node))
     return false;
 
   const HTMLInputElement* input = toHTMLInputElement(node);
@@ -1141,7 +1141,7 @@ String AXObject::GetName(AXNameFrom& name_from,
                                 &related_objects, nullptr);
 
   AccessibilityRole role = RoleValue();
-  if (!GetNode() || (!isHTMLBRElement(GetNode()) && role != kStaticTextRole &&
+  if (!GetNode() || (!IsHTMLBRElement(GetNode()) && role != kStaticTextRole &&
                      role != kInlineTextBoxRole))
     text = CollapseWhitespace(text);
 

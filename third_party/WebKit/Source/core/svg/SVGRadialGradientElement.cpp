@@ -141,7 +141,7 @@ bool SVGRadialGradientElement::CollectGradientAttributes(
 
   while (true) {
     SetGradientAttributes(*current, attributes,
-                          isSVGRadialGradientElement(*current));
+                          IsSVGRadialGradientElement(*current));
     visited.insert(current);
 
     current = current->ReferencedElement();

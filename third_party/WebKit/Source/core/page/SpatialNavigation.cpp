@@ -538,8 +538,8 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
   if (!first_candidate.rect.Intersects(second_candidate.rect))
     return false;
 
-  if (isHTMLAreaElement(*first_candidate.focusable_node) ||
-      isHTMLAreaElement(*second_candidate.focusable_node))
+  if (IsHTMLAreaElement(*first_candidate.focusable_node) ||
+      IsHTMLAreaElement(*second_candidate.focusable_node))
     return false;
 
   if (!first_candidate.visible_node->GetLayoutObject()->IsLayoutInline() ||

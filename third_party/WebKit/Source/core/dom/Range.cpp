@@ -1015,7 +1015,7 @@ DocumentFragment* Range::createContextualFragment(
     element = node->parentElement();
 
   // Step 2.
-  if (!element || isHTMLHtmlElement(element)) {
+  if (!element || IsHTMLHtmlElement(element)) {
     Document& document = node->GetDocument();
 
     if (document.IsSVGDocument()) {

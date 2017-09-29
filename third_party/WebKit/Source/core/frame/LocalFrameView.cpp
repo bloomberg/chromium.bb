@@ -1199,9 +1199,9 @@ void LocalFrameView::UpdateLayout() {
       ClearLayoutSubtreeRootsAndMarkContainingBlocks();
       Node* body = document->body();
       if (body && body->GetLayoutObject()) {
-        if (isHTMLFrameSetElement(*body)) {
+        if (IsHTMLFrameSetElement(*body)) {
           body->GetLayoutObject()->SetChildNeedsLayout();
-        } else if (isHTMLBodyElement(*body)) {
+        } else if (IsHTMLBodyElement(*body)) {
           if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&
               body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
             body->GetLayoutObject()->SetChildNeedsLayout();
@@ -1502,7 +1502,7 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   // Tell the DOM element that it needs a Plugin update.
   Node* node = object.GetNode();
   DCHECK(node);
-  if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
+  if (IsHTMLObjectElement(*node) || IsHTMLEmbedElement(*node))
     ToHTMLPlugInElement(node)->SetNeedsPluginUpdate(true);
 
   part_update_set_.insert(&object);

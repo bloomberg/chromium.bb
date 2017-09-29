@@ -2624,7 +2624,7 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
   DCHECK(layout_object);
   Node* parent_node = layout_object->GeneratingNode();
   DCHECK(parent_node);
-  DCHECK(isHTMLOListElement(parent_node) || isHTMLUListElement(parent_node));
+  DCHECK(IsHTMLOListElement(parent_node) || IsHTMLUListElement(parent_node));
   DCHECK_NE(layout_object->Style()->TextAutosizingMultiplier(), 1);
 #endif
   float max_width = 0;
@@ -2755,8 +2755,8 @@ void LayoutBox::ComputeLogicalWidth(
   if (style_to_use.TextAutosizingMultiplier() != 1 &&
       style_to_use.MarginStart().GetType() == kFixed) {
     Node* parent_node = GeneratingNode();
-    if (parent_node && (isHTMLOListElement(*parent_node) ||
-                        isHTMLUListElement(*parent_node))) {
+    if (parent_node && (IsHTMLOListElement(*parent_node) ||
+                        IsHTMLUListElement(*parent_node))) {
       // Make sure the markers in a list are properly positioned (i.e. not
       // chopped off) when autosized.
       const float adjusted_margin =
@@ -2975,9 +2975,9 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
 
 bool LayoutBox::AutoWidthShouldFitContent() const {
   return GetNode() &&
-         (isHTMLInputElement(*GetNode()) || isHTMLSelectElement(*GetNode()) ||
-          isHTMLButtonElement(*GetNode()) ||
-          isHTMLTextAreaElement(*GetNode()) || IsRenderedLegend());
+         (IsHTMLInputElement(*GetNode()) || IsHTMLSelectElement(*GetNode()) ||
+          IsHTMLButtonElement(*GetNode()) ||
+          IsHTMLTextAreaElement(*GetNode()) || IsRenderedLegend());
 }
 
 void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
@@ -4935,7 +4935,7 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   Node* node = this->GetNode();
   return node && node->IsElementNode() &&
          (ToElement(node)->IsFormControlElement() ||
-          isHTMLImageElement(ToElement(node)));
+          IsHTMLImageElement(ToElement(node)));
 }
 
 bool LayoutBox::AvoidsFloats() const {
@@ -5031,7 +5031,7 @@ void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
 }
 
 bool LayoutBox::IsRenderedLegend() const {
-  if (!isHTMLLegendElement(GetNode()))
+  if (!IsHTMLLegendElement(GetNode()))
     return false;
   if (IsFloatingOrOutOfFlowPositioned())
     return false;

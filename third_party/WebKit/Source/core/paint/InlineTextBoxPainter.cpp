@@ -70,7 +70,7 @@ static LineLayoutItem EnclosingUnderlineObject(
       return current;
 
     if (Node* node = current.GetNode()) {
-      if (isHTMLAnchorElement(node) || node->HasTagName(HTMLNames::fontTag))
+      if (IsHTMLAnchorElement(node) || node->HasTagName(HTMLNames::fontTag))
         return current;
     }
   }

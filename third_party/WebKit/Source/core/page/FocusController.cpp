@@ -321,7 +321,7 @@ bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
     const Element& current) {
   Element* parent = current.parentElement();
   while (parent) {
-    if (isHTMLSlotElement(parent) &&
+    if (IsHTMLSlotElement(parent) &&
         toHTMLSlotElement(parent)->AssignedNodes().IsEmpty())
       return !SlotScopedTraversal::IsSlotScoped(current) &&
              toHTMLSlotElement(parent) == slot;
@@ -410,7 +410,7 @@ inline bool IsKeyboardFocusableShadowHost(const Element& element) {
 inline bool IsNonFocusableFocusScopeOwner(Element& element) {
   return IsNonKeyboardFocusableShadowHost(element) ||
          IsShadowInsertionPointFocusScopeOwner(element) ||
-         isHTMLSlotElement(element);
+         IsHTMLSlotElement(element);
 }
 
 inline bool IsShadowHostDelegatesFocus(const Element& element) {

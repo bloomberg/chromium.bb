@@ -18,13 +18,13 @@ bool DocumentNameCollection::ElementMatches(const HTMLElement& element) const {
   // Match images, forms, embeds, objects and iframes by name,
   // object by id, and images by id but only if they have
   // a name attribute (this very strange rule matches IE)
-  if (isHTMLFormElement(element) || isHTMLIFrameElement(element) ||
-      (isHTMLEmbedElement(element) && toHTMLEmbedElement(element).IsExposed()))
+  if (IsHTMLFormElement(element) || IsHTMLIFrameElement(element) ||
+      (IsHTMLEmbedElement(element) && toHTMLEmbedElement(element).IsExposed()))
     return element.GetNameAttribute() == name_;
-  if (isHTMLObjectElement(element) && toHTMLObjectElement(element).IsExposed())
+  if (IsHTMLObjectElement(element) && toHTMLObjectElement(element).IsExposed())
     return element.GetNameAttribute() == name_ ||
            element.GetIdAttribute() == name_;
-  if (isHTMLImageElement(element)) {
+  if (IsHTMLImageElement(element)) {
     const AtomicString& name_value = element.GetNameAttribute();
     return name_value == name_ ||
            (element.GetIdAttribute() == name_ && !name_value.IsEmpty());

@@ -74,7 +74,7 @@ static bool IsNonTextAreaFormControl(const LayoutObject* layout_object) {
     return false;
   const Element* element = ToElement(node);
 
-  return (element->IsFormControlElement() && !isHTMLTextAreaElement(element));
+  return (element->IsFormControlElement() && !IsHTMLTextAreaElement(element));
 }
 
 static bool IsPotentialClusterRoot(const LayoutObject* layout_object) {

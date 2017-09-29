@@ -1205,12 +1205,12 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
     return true;
 
   // Don't include inline tables.
-  if (isHTMLTableElement(*node))
+  if (IsHTMLTableElement(*node))
     return false;
 
   // A Marquee elements are moving so we should assume their ends are always
   // visibily distinct.
-  if (isHTMLMarqueeElement(*node))
+  if (IsHTMLMarqueeElement(*node))
     return true;
 
   // There is a VisiblePosition inside an empty inline-block container.
@@ -1490,7 +1490,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
 
     // stop before going above the body, up into the head
     // return the last visible streamer position
-    if (isHTMLBodyElement(*current_node) && current_pos.AtEndOfNode())
+    if (IsHTMLBodyElement(*current_node) && current_pos.AtEndOfNode())
       break;
 
     // Do not move to a visually distinct position.
@@ -1671,7 +1671,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->IsLayoutBlockFlow() || layout_object->IsFlexibleBox() ||
       layout_object->IsLayoutGrid()) {
     if (ToLayoutBlock(layout_object)->LogicalHeight() ||
-        isHTMLBodyElement(*anchor_node)) {
+        IsHTMLBodyElement(*anchor_node)) {
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();
       return HasEditableStyle(*anchor_node) && AtEditingBoundary(position);

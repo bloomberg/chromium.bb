@@ -350,10 +350,10 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                     layout_object->IsLayoutEmbeddedContent() ||
                     (node_ && node_->IsHTMLElement() &&
                      (IsHTMLFormControlElement(ToHTMLElement(*node_)) ||
-                      isHTMLLegendElement(ToHTMLElement(*node_)) ||
-                      isHTMLImageElement(ToHTMLElement(*node_)) ||
-                      isHTMLMeterElement(ToHTMLElement(*node_)) ||
-                      isHTMLProgressElement(ToHTMLElement(*node_)))))) {
+                      IsHTMLLegendElement(ToHTMLElement(*node_)) ||
+                      IsHTMLImageElement(ToHTMLElement(*node_)) ||
+                      IsHTMLMeterElement(ToHTMLElement(*node_)) ||
+                      IsHTMLProgressElement(ToHTMLElement(*node_)))))) {
           HandleReplacedElement();
         } else {
           HandleNonTextNode();
@@ -371,7 +371,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     // To support |TextIteratorEmitsImageAltText|, we don't traversal child
     // nodes, in flat tree.
     Node* next =
-        iteration_progress_ < kHandledChildren && !isHTMLImageElement(*node_)
+        iteration_progress_ < kHandledChildren && !IsHTMLImageElement(*node_)
             ? Strategy::FirstChild(*node_)
             : nullptr;
     if (!next) {
@@ -496,9 +496,9 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(Node* node) {
   HTMLElement& element = ToHTMLElement(*node);
 
   // FIXME: Add isSVGImageElement.
-  if (isHTMLImageElement(element))
+  if (IsHTMLImageElement(element))
     return true;
-  if (isHTMLInputElement(ToHTMLElement(*node)) &&
+  if (IsHTMLInputElement(ToHTMLElement(*node)) &&
       toHTMLInputElement(*node).type() == InputTypeNames::image)
     return true;
   return false;
@@ -574,10 +574,10 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
     bool emits_original_text) {
   LayoutObject* layout_object = node->GetLayoutObject();
 
-  if (layout_object ? !layout_object->IsBR() : !isHTMLBRElement(node))
+  if (layout_object ? !layout_object->IsBR() : !IsHTMLBRElement(node))
     return false;
   return emits_original_text || !(node->IsInShadowTree() &&
-                                  isHTMLInputElement(*node->OwnerShadowHost()));
+                                  IsHTMLInputElement(*node->OwnerShadowHost()));
 }
 
 static bool ShouldEmitNewlinesBeforeAndAfterNode(Node& node) {
@@ -599,7 +599,7 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(Node& node) {
 
   // Need to make an exception for option and optgroup, because we want to
   // keep the legacy behavior before we added layoutObjects to them.
-  if (isHTMLOptionElement(node) || isHTMLOptGroupElement(node))
+  if (IsHTMLOptionElement(node) || IsHTMLOptGroupElement(node))
     return false;
 
   // Need to make an exception for table cells, because they are blocks, but we
@@ -706,7 +706,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
           EVisibility::kVisible ||
       (node_->GetLayoutObject()->IsLayoutBlockFlow() &&
        !ToLayoutBlock(node_->GetLayoutObject())->Size().Height() &&
-       !isHTMLBodyElement(*node_)))
+       !IsHTMLBodyElement(*node_)))
     return false;
 
   // The startPos.isNotNull() check is needed because the start could be before

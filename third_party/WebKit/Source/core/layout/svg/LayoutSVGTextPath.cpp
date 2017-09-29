@@ -62,7 +62,7 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::LayoutPath() const {
       text_path_element.HrefString(),
       text_path_element.TreeScopeForIdResolution());
 
-  if (!isSVGPathElement(target_element))
+  if (!IsSVGPathElement(target_element))
     return nullptr;
 
   SVGPathElement& path_element = toSVGPathElement(*target_element);

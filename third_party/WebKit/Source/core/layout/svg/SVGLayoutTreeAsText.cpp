@@ -349,7 +349,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
   const ComputedStyle& style = shape.StyleRef();
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  if (isSVGRectElement(*svg_element)) {
+  if (IsSVGRectElement(*svg_element)) {
     WriteNameValuePair(ts, "x",
                        length_context.ValueForLength(svg_style.X(), style,
                                                      SVGLengthMode::kWidth));
@@ -362,7 +362,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
     WriteNameValuePair(ts, "height",
                        length_context.ValueForLength(style.Height(), style,
                                                      SVGLengthMode::kHeight));
-  } else if (isSVGLineElement(*svg_element)) {
+  } else if (IsSVGLineElement(*svg_element)) {
     SVGLineElement& element = toSVGLineElement(*svg_element);
     WriteNameValuePair(ts, "x1",
                        element.x1()->CurrentValue()->Value(length_context));
@@ -372,7 +372,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
                        element.x2()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y2",
                        element.y2()->CurrentValue()->Value(length_context));
-  } else if (isSVGEllipseElement(*svg_element)) {
+  } else if (IsSVGEllipseElement(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
                                                      SVGLengthMode::kWidth));
@@ -385,7 +385,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
     WriteNameValuePair(ts, "ry",
                        length_context.ValueForLength(svg_style.Ry(), style,
                                                      SVGLengthMode::kHeight));
-  } else if (isSVGCircleElement(*svg_element)) {
+  } else if (IsSVGCircleElement(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
                                                      SVGLengthMode::kWidth));
@@ -401,7 +401,7 @@ static TextStream& operator<<(TextStream& ts, const LayoutSVGShape& shape) {
                                 .Points()
                                 ->CurrentValue()
                                 ->ValueAsString());
-  } else if (isSVGPathElement(*svg_element)) {
+  } else if (IsSVGPathElement(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
     WriteNameAndQuotedValue(ts, "data",

@@ -85,7 +85,7 @@ Node* FlatTreeTraversal::ResolveDistributionStartingAt(
 Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
     const Node& node,
     TraversalDirection direction) {
-  DCHECK(!isHTMLSlotElement(node) ||
+  DCHECK(!IsHTMLSlotElement(node) ||
          !toHTMLSlotElement(node).SupportsDistribution());
   for (const Node* sibling = &node; sibling;
        sibling = (direction == kTraversalDirectionForward
@@ -98,8 +98,8 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
                            ? insertion_point.FirstDistributedNode()
                            : insertion_point.LastDistributedNode()))
       return found;
-    DCHECK(isHTMLShadowElement(insertion_point) ||
-           (isHTMLContentElement(insertion_point) &&
+    DCHECK(IsHTMLShadowElement(insertion_point) ||
+           (IsHTMLContentElement(insertion_point) &&
             !insertion_point.HasChildren()));
   }
   return nullptr;

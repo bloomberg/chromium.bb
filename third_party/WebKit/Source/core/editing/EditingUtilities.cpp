@@ -343,8 +343,8 @@ bool IsNodeFullyContained(const EphemeralRange& range, Node& node) {
 // TODO(editing-dev): We should make |SelectionAdjuster| to use this funciton
 // instead of |isSelectionBondary()|.
 bool IsUserSelectContain(const Node& node) {
-  return isHTMLTextAreaElement(node) || isHTMLInputElement(node) ||
-         isHTMLSelectElement(node);
+  return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
+         IsHTMLSelectElement(node);
 }
 
 enum EditableLevel { kEditable, kRichlyEditable };
@@ -430,14 +430,14 @@ ContainerNode* HighestEditableRoot(
   if (!highest_root)
     return 0;
 
-  if (isHTMLBodyElement(*highest_root))
+  if (IsHTMLBodyElement(*highest_root))
     return highest_root;
 
   ContainerNode* node = highest_root->parentNode();
   while (node) {
     if (has_editable_style(*node))
       highest_root = node;
-    if (isHTMLBodyElement(*node))
+    if (IsHTMLBodyElement(*node))
       break;
     node = node->parentNode();
   }
@@ -998,7 +998,7 @@ Element* EnclosingBlockFlowElement(const Node& node) {
     return const_cast<Element*>(&ToElement(node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(node)) {
-    if (IsBlockFlowElement(runner) || isHTMLBodyElement(runner))
+    if (IsBlockFlowElement(runner) || IsHTMLBodyElement(runner))
       return ToElement(&runner);
   }
   return nullptr;
@@ -1238,8 +1238,8 @@ VisiblePosition VisiblePositionAfterNode(Node& node) {
 }
 
 bool IsHTMLListElement(Node* n) {
-  return (n && (isHTMLUListElement(*n) || isHTMLOListElement(*n) ||
-                isHTMLDListElement(*n)));
+  return (n && (IsHTMLUListElement(*n) || IsHTMLOListElement(*n) ||
+                IsHTMLDListElement(*n)));
 }
 
 bool IsListItem(const Node* n) {
@@ -1400,7 +1400,7 @@ HTMLElement* EnclosingList(Node* node) {
   ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
-    if (isHTMLUListElement(runner) || isHTMLOListElement(runner))
+    if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
       return ToHTMLElement(&runner);
     if (runner == root)
       return 0;
@@ -1420,7 +1420,7 @@ Node* EnclosingListChild(Node* node) {
   // FIXME: This function is inappropriately named if it starts with node
   // instead of node->parentNode()
   for (Node* n = node; n && n->parentNode(); n = n->parentNode()) {
-    if (isHTMLLIElement(*n) ||
+    if (IsHTMLLIElement(*n) ||
         (IsHTMLListElement(n->parentNode()) && n != root))
       return n;
     if (n == root || IsTableCell(n))
@@ -1496,7 +1496,7 @@ bool CanMergeLists(const Element& first_list, const Element& second_list) {
 }
 
 bool IsDisplayInsideTable(const Node* node) {
-  return node && node->GetLayoutObject() && isHTMLTableElement(node);
+  return node && node->GetLayoutObject() && IsHTMLTableElement(node);
 }
 
 bool IsTableCell(const Node* node) {
@@ -1557,7 +1557,7 @@ HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
 }
 
 bool IsTabHTMLSpanElement(const Node* node) {
-  if (!isHTMLSpanElement(node) || !node->firstChild())
+  if (!IsHTMLSpanElement(node) || !node->firstChild())
     return false;
   if (node->firstChild()->IsCharacterDataNode() &&
       ToCharacterData(node->firstChild())->data().Contains('\t'))
@@ -1654,7 +1654,7 @@ Position LeadingWhitespacePosition(const Position& position,
   if (position.IsNull())
     return Position();
 
-  if (isHTMLBRElement(*MostBackwardCaretPosition(position).AnchorNode()))
+  if (IsHTMLBRElement(*MostBackwardCaretPosition(position).AnchorNode()))
     return Position();
 
   const Position& prev = PreviousCharacterPosition(position, affinity);
@@ -1796,7 +1796,7 @@ bool LineBreakExistsAtPosition(const Position& position) {
   if (position.IsNull())
     return false;
 
-  if (isHTMLBRElement(*position.AnchorNode()) &&
+  if (IsHTMLBRElement(*position.AnchorNode()) &&
       position.AtFirstEditingPositionForNode())
     return true;
 
@@ -2038,7 +2038,7 @@ Position AdjustedSelectionStartForStyleComputation(const Position& position) {
 
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
-  return isHTMLInputElement(text_control) &&
+  return IsHTMLInputElement(text_control) &&
          toHTMLInputElement(text_control)->type() == InputTypeNames::password;
 }
 

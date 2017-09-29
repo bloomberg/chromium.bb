@@ -362,7 +362,7 @@ bool RenderedPosition::IsVisible(bool selection_start) {
   TextControlElement* text_control = EnclosingTextControl(node);
   if (!text_control)
     return true;
-  if (!isHTMLInputElement(text_control))
+  if (!IsHTMLInputElement(text_control))
     return true;
 
   LayoutObject* layout_object = text_control->GetLayoutObject();

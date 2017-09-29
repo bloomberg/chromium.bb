@@ -2905,7 +2905,7 @@ KURL HTMLMediaElement::SelectNextSourceChild(
       continue;
     looking_for_start_node = false;
 
-    if (!isHTMLSourceElement(*node))
+    if (!IsHTMLSourceElement(*node))
       continue;
     if (node->parentNode() != this)
       continue;

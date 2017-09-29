@@ -145,10 +145,10 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
     if (control.IsDisabledFormControl() || control.GetName().IsNull())
       continue;
 
-    if (!IsInDefaultState(control) || isHTMLTextAreaElement(control))
+    if (!IsInDefaultState(control) || IsHTMLTextAreaElement(control))
       return nullptr;
 
-    if (isHTMLInputElement(control) && control.willValidate()) {
+    if (IsHTMLInputElement(control) && control.willValidate()) {
       const HTMLInputElement& input = toHTMLInputElement(control);
 
       // Return nothing if a file upload field or a password field are

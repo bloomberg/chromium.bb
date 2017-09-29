@@ -263,7 +263,7 @@ bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
 }
 
 bool LayoutObject::IsHR() const {
-  return isHTMLHRElement(GetNode());
+  return IsHTMLHRElement(GetNode());
 }
 
 void LayoutObject::SetIsInsideFlowThreadIncludingDescendants(
@@ -2467,7 +2467,7 @@ RespectImageOrientationEnum LayoutObject::ShouldRespectImageOrientation(
   if (layout_object->GetDocument().IsImageDocument())
     return kRespectImageOrientation;
 
-  if (!isHTMLImageElement(layout_object->GetNode()))
+  if (!IsHTMLImageElement(layout_object->GetNode()))
     return kDoNotRespectImageOrientation;
 
   if (layout_object->GetDocument().GetSettings() &&
@@ -3170,11 +3170,11 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
     if (ancestor->CanContainAbsolutePositionObjects())
       break;
 
-    if (isHTMLBodyElement(*node))
+    if (IsHTMLBodyElement(*node))
       break;
 
     if (!IsPositioned() &&
-        (isHTMLTableElement(*node) || IsHTMLTableCellElement(*node)))
+        (IsHTMLTableElement(*node) || IsHTMLTableCellElement(*node)))
       break;
 
     // Webkit specific extension where offsetParent stops at zoom level changes.

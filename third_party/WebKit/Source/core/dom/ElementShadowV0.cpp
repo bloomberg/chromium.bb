@@ -64,7 +64,7 @@ inline void DistributionPool::Clear() {
 inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   Clear();
   for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
-    if (isHTMLSlotElement(child)) {
+    if (IsHTMLSlotElement(child)) {
       // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
       continue;
     }
@@ -88,7 +88,7 @@ void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
     if (distributed_[i])
       continue;
 
-    if (isHTMLContentElement(*insertion_point) &&
+    if (IsHTMLContentElement(*insertion_point) &&
         !toHTMLContentElement(insertion_point)->CanSelectNode(nodes_, i))
       continue;
 

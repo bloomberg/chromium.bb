@@ -127,7 +127,7 @@ SVGElementRareData* SVGElement::EnsureSVGRareData() {
 }
 
 bool SVGElement::IsOutermostSVGSVGElement() const {
-  if (!isSVGSVGElement(*this))
+  if (!IsSVGSVGElement(*this))
     return false;
 
   // Element may not be in the document, pretend we're outermost for viewport(),
@@ -137,7 +137,7 @@ bool SVGElement::IsOutermostSVGSVGElement() const {
 
   // We act like an outermost SVG element, if we're a direct child of a
   // <foreignObject> element.
-  if (isSVGForeignObjectElement(*parentNode()))
+  if (IsSVGForeignObjectElement(*parentNode()))
     return true;
 
   // If we're living in a shadow tree, we're a <svg> element that got created as
@@ -357,7 +357,7 @@ AffineTransform SVGElement::CalculateTransform(
     ComputedStyle::ApplyTransformOrigin apply_transform_origin =
         ComputedStyle::kIncludeTransformOrigin;
     // SVGTextElements need special handling for the text positioning code.
-    if (isSVGTextElement(this)) {
+    if (IsSVGTextElement(this)) {
       // Do not take into account transform-origin, or percentage values.
       reference_box = FloatRect();
       apply_transform_origin = ComputedStyle::kExcludeTransformOrigin;
@@ -587,7 +587,7 @@ void SVGElement::UpdateRelativeLengthsInformation(
   }
 
   // Register root SVG elements for top level viewport change notifications.
-  if (isSVGSVGElement(*client_element)) {
+  if (IsSVGSVGElement(*client_element)) {
     SVGDocumentExtensions& svg_extensions = GetDocument().AccessSVGExtensions();
     if (client_element->HasRelativeLengths())
       svg_extensions.AddSVGRootWithRelativeLengthDescendents(
@@ -628,7 +628,7 @@ void SVGElement::InvalidateRelativeLengthClients(
 SVGSVGElement* SVGElement::ownerSVGElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (isSVGSVGElement(*n))
+    if (IsSVGSVGElement(*n))
       return toSVGSVGElement(n);
 
     n = n->ParentOrShadowHostNode();
@@ -643,7 +643,7 @@ SVGElement* SVGElement::viewportElement() const {
   // work otherwhise.
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (isSVGSVGElement(*n) || isSVGImageElement(*n) || isSVGSymbolElement(*n))
+    if (IsSVGSVGElement(*n) || IsSVGImageElement(*n) || IsSVGSymbolElement(*n))
       return ToSVGElement(n);
 
     n = n->ParentOrShadowHostNode();
@@ -697,7 +697,7 @@ SVGElement* SVGElement::CorrespondingElement() const {
 
 SVGUseElement* SVGElement::CorrespondingUseElement() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
-    if (isSVGUseElement(root->host()))
+    if (IsSVGUseElement(root->host()))
       return &toSVGUseElement(root->host());
   }
   return nullptr;
@@ -946,7 +946,7 @@ static bool HasLoadListener(Element* element) {
 bool SVGElement::SendSVGLoadEventIfPossible() {
   if (!HaveLoadedRequiredResources())
     return false;
-  if ((IsStructurallyExternal() || isSVGSVGElement(*this)) &&
+  if ((IsStructurallyExternal() || IsSVGSVGElement(*this)) &&
       HasLoadListener(this))
     DispatchEvent(Event::Create(EventTypeNames::load));
   return true;
@@ -1290,7 +1290,7 @@ bool SVGElement::IsAnimatableAttribute(const QualifiedName& name) const {
 
 SVGElementProxySet* SVGElement::ElementProxySet() {
   // Limit to specific element types.
-  if (!isSVGFilterElement(*this) && !isSVGClipPathElement(*this))
+  if (!IsSVGFilterElement(*this) && !IsSVGClipPathElement(*this))
     return nullptr;
   return &EnsureSVGRareData()->EnsureElementProxySet();
 }

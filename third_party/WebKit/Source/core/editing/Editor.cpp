@@ -605,12 +605,12 @@ static void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
   // FIXME: This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   AtomicString url_string;
-  if (isHTMLImageElement(*node) || isHTMLInputElement(*node))
+  if (IsHTMLImageElement(*node) || IsHTMLInputElement(*node))
     url_string = ToHTMLElement(node)->getAttribute(srcAttr);
-  else if (isSVGImageElement(*node))
+  else if (IsSVGImageElement(*node))
     url_string = ToSVGElement(node)->ImageSourceURL();
-  else if (isHTMLEmbedElement(*node) || isHTMLObjectElement(*node) ||
-           isHTMLCanvasElement(*node))
+  else if (IsHTMLEmbedElement(*node) || IsHTMLObjectElement(*node) ||
+           IsHTMLCanvasElement(*node))
     url_string = ToHTMLElement(node)->ImageSourceURL();
   KURL url = url_string.IsEmpty()
                  ? KURL()
@@ -1290,23 +1290,23 @@ static void CountEditingEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (isHTMLInputElement(node)) {
+  if (IsHTMLInputElement(node)) {
     UseCounter::Count(execution_context, feature_on_input);
     return;
   }
 
-  if (isHTMLTextAreaElement(node)) {
+  if (IsHTMLTextAreaElement(node)) {
     UseCounter::Count(execution_context, feature_on_text_area);
     return;
   }
 
   TextControlElement* control = EnclosingTextControl(node);
-  if (isHTMLInputElement(control)) {
+  if (IsHTMLInputElement(control)) {
     UseCounter::Count(execution_context, feature_on_input);
     return;
   }
 
-  if (isHTMLTextAreaElement(control)) {
+  if (IsHTMLTextAreaElement(control)) {
     UseCounter::Count(execution_context, feature_on_text_area);
     return;
   }
@@ -1781,13 +1781,13 @@ void Editor::TidyUpHTMLStructure(Document& document) {
   Element* existing_body = nullptr;
   Element* current_root = document.documentElement();
   if (current_root) {
-    if (isHTMLHtmlElement(current_root))
+    if (IsHTMLHtmlElement(current_root))
       return;
-    if (isHTMLHeadElement(current_root))
+    if (IsHTMLHeadElement(current_root))
       existing_head = current_root;
-    else if (isHTMLBodyElement(current_root))
+    else if (IsHTMLBodyElement(current_root))
       existing_body = current_root;
-    else if (isHTMLFrameSetElement(current_root))
+    else if (IsHTMLFrameSetElement(current_root))
       existing_body = current_root;
   }
   // We ensure only "the root is <html>."

@@ -1427,7 +1427,7 @@ bool LayoutBoxModelObject::BackgroundStolenForBeingBody(
     return false;
 
   Element* root_element = GetDocument().documentElement();
-  if (!isHTMLHtmlElement(root_element))
+  if (!IsHTMLHtmlElement(root_element))
     return false;
 
   if (!root_element_style)

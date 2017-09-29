@@ -58,7 +58,7 @@ AccessibilityRole AXListBox::DetermineAccessibilityRole() {
 }
 
 AXObject* AXListBox::ActiveDescendant() {
-  if (!isHTMLSelectElement(GetNode()))
+  if (!IsHTMLSelectElement(GetNode()))
     return nullptr;
 
   HTMLSelectElement* select = toHTMLSelectElement(GetNode());
@@ -72,7 +72,7 @@ AXObject* AXListBox::ActiveDescendant() {
 }
 
 void AXListBox::ActiveIndexChanged() {
-  if (!isHTMLSelectElement(GetNode()))
+  if (!IsHTMLSelectElement(GetNode()))
     return;
 
   HTMLSelectElement* select = toHTMLSelectElement(GetNode());

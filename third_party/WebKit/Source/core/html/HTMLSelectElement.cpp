@@ -132,7 +132,7 @@ bool HTMLSelectElement::HasPlaceholderLabelOption() const {
 
   // TODO(tkent): This function is called in CSS selector matching. Using
   // listItems() might have performance impact.
-  if (GetListItems().size() == 0 || !isHTMLOptionElement(GetListItems()[0]))
+  if (GetListItems().size() == 0 || !IsHTMLOptionElement(GetListItems()[0]))
     return false;
   return toHTMLOptionElement(GetListItems()[0])->value().IsEmpty();
 }
@@ -471,7 +471,7 @@ HTMLOptionElement* HTMLSelectElement::NextValidOption(int list_index,
        list_index += direction) {
     --skip;
     HTMLElement* element = list_items[list_index];
-    if (!isHTMLOptionElement(*element))
+    if (!IsHTMLOptionElement(*element))
       continue;
     if (toHTMLOptionElement(*element).IsDisplayNone())
       continue;
@@ -562,7 +562,7 @@ void HTMLSelectElement::SaveLastSelection() {
   last_on_change_selection_.clear();
   for (auto& element : GetListItems())
     last_on_change_selection_.push_back(
-        isHTMLOptionElement(*element) &&
+        IsHTMLOptionElement(*element) &&
         toHTMLOptionElement(element)->Selected());
 }
 
@@ -650,7 +650,7 @@ void HTMLSelectElement::ListBoxOnChange() {
   bool fire_on_change = false;
   for (unsigned i = 0; i < items.size(); ++i) {
     HTMLElement* element = items[i];
-    bool selected = isHTMLOptionElement(*element) &&
+    bool selected = IsHTMLOptionElement(*element) &&
                     toHTMLOptionElement(element)->Selected();
     if (selected != last_on_change_selection_[i])
       fire_on_change = true;
@@ -752,7 +752,7 @@ void HTMLSelectElement::RecalcListItems() const {
     // We should ignore nested optgroup elements. The HTML parser flatten
     // them.  However we need to ignore nested optgroups built by DOM APIs.
     // This behavior matches to IE and Firefox.
-    if (isHTMLOptGroupElement(current)) {
+    if (IsHTMLOptGroupElement(current)) {
       if (current.parentNode() != this) {
         current_element = ElementTraversal::NextSkippingChildren(current, this);
         continue;
@@ -764,10 +764,10 @@ void HTMLSelectElement::RecalcListItems() const {
       }
     }
 
-    if (isHTMLOptionElement(current))
+    if (IsHTMLOptionElement(current))
       list_items_.push_back(&current);
 
-    if (isHTMLHRElement(current))
+    if (IsHTMLHRElement(current))
       list_items_.push_back(&current);
 
     // In conforming HTML code, only <optgroup> and <option> will be found
@@ -852,7 +852,7 @@ void HTMLSelectElement::setSelectedIndex(int index) {
 int HTMLSelectElement::SelectedListIndex() const {
   int index = 0;
   for (const auto& item : GetListItems()) {
-    if (isHTMLOptionElement(item) && toHTMLOptionElement(item)->Selected())
+    if (IsHTMLOptionElement(item) && toHTMLOptionElement(item)->Selected())
       return index;
     ++index;
   }
@@ -1102,7 +1102,7 @@ FormControlState HTMLSelectElement::SaveFormControlState() const {
   size_t length = items.size();
   FormControlState state;
   for (unsigned i = 0; i < length; ++i) {
-    if (!isHTMLOptionElement(*items[i]))
+    if (!IsHTMLOptionElement(*items[i]))
       continue;
     HTMLOptionElement* option = toHTMLOptionElement(items[i]);
     if (!option->Selected())
@@ -1121,7 +1121,7 @@ size_t HTMLSelectElement::SearchOptionsForValue(const String& value,
   const ListItems& items = GetListItems();
   size_t loop_end_index = std::min(items.size(), list_index_end);
   for (size_t i = list_index_start; i < loop_end_index; ++i) {
-    if (!isHTMLOptionElement(items[i]))
+    if (!IsHTMLOptionElement(items[i]))
       continue;
     if (toHTMLOptionElement(items[i])->value() == value)
       return i;
@@ -1143,7 +1143,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   DCHECK_GE(state.ValueSize(), 2u);
   if (!IsMultiple()) {
     size_t index = state[1].ToUInt();
-    if (index < items_size && isHTMLOptionElement(items[index]) &&
+    if (index < items_size && IsHTMLOptionElement(items[index]) &&
         toHTMLOptionElement(items[index])->value() == state[0]) {
       toHTMLOptionElement(items[index])->SetSelectedState(true);
       toHTMLOptionElement(items[index])->SetDirty(true);
@@ -1161,7 +1161,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
     for (size_t i = 0; i < state.ValueSize(); i += 2) {
       const String& value = state[i];
       const size_t index = state[i + 1].ToUInt();
-      if (index < items_size && isHTMLOptionElement(items[index]) &&
+      if (index < items_size && IsHTMLOptionElement(items[index]) &&
           toHTMLOptionElement(items[index])->value() == value) {
         toHTMLOptionElement(items[index])->SetSelectedState(true);
         toHTMLOptionElement(items[index])->SetDirty(true);
@@ -1434,7 +1434,7 @@ void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
 
 HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
   Node* target_node = event.target()->ToNode();
-  if (!target_node || !isHTMLOptionElement(*target_node))
+  if (!target_node || !IsHTMLOptionElement(*target_node))
     return nullptr;
   return toHTMLOptionElement(target_node);
 }

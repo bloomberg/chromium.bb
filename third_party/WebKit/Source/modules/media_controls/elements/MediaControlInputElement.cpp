@@ -115,7 +115,7 @@ void MediaControlInputElement::UpdateShownState() {
   if (is_overflow_element_) {
     Element* parent = parentElement();
     DCHECK(parent);
-    DCHECK(isHTMLLabelElement(parent));
+    DCHECK(IsHTMLLabelElement(parent));
 
     if (IsWanted() && DoesFit())
       parent->RemoveInlineStyleProperty(CSSPropertyDisplay);

@@ -103,7 +103,7 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
       current = LayoutTreeBuilderTraversal::ParentElement(*current);
       if (!current)
         break;
-      if (isHTMLUListElement(*current) || isHTMLOListElement(*current))
+      if (IsHTMLUListElement(*current) || IsHTMLOListElement(*current))
         list_node = current;
     }
 

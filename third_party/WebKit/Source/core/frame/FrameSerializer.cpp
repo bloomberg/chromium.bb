@@ -157,11 +157,11 @@ bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
 
 bool SerializerMarkupAccumulator::ShouldIgnoreElement(
     const Element& element) const {
-  if (isHTMLScriptElement(element))
+  if (IsHTMLScriptElement(element))
     return true;
-  if (isHTMLNoScriptElement(element))
+  if (IsHTMLNoScriptElement(element))
     return true;
-  if (isHTMLMetaElement(element) &&
+  if (IsHTMLMetaElement(element) &&
       toHTMLMetaElement(element).ComputeEncoding().IsValid()) {
     return true;
   }
@@ -175,7 +175,7 @@ void SerializerMarkupAccumulator::AppendElement(StringBuilder& result,
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML
-  if (isHTMLHeadElement(element)) {
+  if (IsHTMLHeadElement(element)) {
     result.Append("<meta http-equiv=\"Content-Type\" content=\"");
     AppendAttributeValue(result, document_->SuggestedMIMEType());
     result.Append("; charset=");

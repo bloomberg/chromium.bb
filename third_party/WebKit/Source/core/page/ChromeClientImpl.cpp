@@ -497,8 +497,8 @@ void ChromeClientImpl::ShowMouseOverURL(const HitTestResult& result) {
         !result.AbsoluteLinkURL().GetString().IsEmpty()) {
       url = result.AbsoluteLinkURL();
     } else if (result.InnerNode() &&
-               (isHTMLObjectElement(*result.InnerNode()) ||
-                isHTMLEmbedElement(*result.InnerNode()))) {
+               (IsHTMLObjectElement(*result.InnerNode()) ||
+                IsHTMLEmbedElement(*result.InnerNode()))) {
       LayoutObject* object = result.InnerNode()->GetLayoutObject();
       if (object && object->IsLayoutEmbeddedContent()) {
         PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();

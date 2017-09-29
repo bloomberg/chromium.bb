@@ -239,7 +239,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     }
   }
 
-  if (isHTMLCanvasElement(r.InnerNode())) {
+  if (IsHTMLCanvasElement(r.InnerNode())) {
     data.media_type = WebContextMenuData::kMediaTypeCanvas;
     data.has_image_contents = true;
   } else if (!r.AbsoluteImageURL().IsEmpty()) {
@@ -253,7 +253,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     data.is_placeholder_image =
         r.GetImage() && r.GetImage()->IsPlaceholderImage();
     if (data.has_image_contents &&
-        isHTMLImageElement(r.InnerNodeOrImageMapImage())) {
+        IsHTMLImageElement(r.InnerNodeOrImageMapImage())) {
       HTMLImageElement* image_element =
           toHTMLImageElement(r.InnerNodeOrImageMapImage());
       if (image_element && image_element->CachedImage()) {
@@ -267,9 +267,9 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     // We know that if absoluteMediaURL() is not empty, then this
     // is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(r.InnerNode());
-    if (isHTMLVideoElement(*media_element))
+    if (IsHTMLVideoElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeVideo;
-    else if (isHTMLAudioElement(*media_element))
+    else if (IsHTMLAudioElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
     if (media_element->error())
@@ -293,8 +293,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
       data.media_flags |= WebContextMenuData::kMediaCanToggleControls;
     if (media_element->ShouldShowControls())
       data.media_flags |= WebContextMenuData::kMediaControls;
-  } else if (isHTMLObjectElement(*r.InnerNode()) ||
-             isHTMLEmbedElement(*r.InnerNode())) {
+  } else if (IsHTMLObjectElement(*r.InnerNode()) ||
+             IsHTMLEmbedElement(*r.InnerNode())) {
     LayoutObject* object = r.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {
       PluginView* plugin_view = ToLayoutEmbeddedContent(object)->Plugin();
@@ -396,7 +396,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     }
 
     HTMLFormElement* form = CurrentForm(selected_frame->Selection());
-    if (form && isHTMLInputElement(*r.InnerNode())) {
+    if (form && IsHTMLInputElement(*r.InnerNode())) {
       HTMLInputElement& selected_element = toHTMLInputElement(*r.InnerNode());
       WebSearchableFormData ws = WebSearchableFormData(
           WebFormElement(form), WebInputElement(&selected_element));

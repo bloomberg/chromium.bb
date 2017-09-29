@@ -1029,7 +1029,7 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
 
   // Note: |insertedByParser| will perform dispatching if this is an
   // HTMLHtmlElement.
-  if (isHTMLHtmlElement(*new_element) && is_first_element) {
+  if (IsHTMLHtmlElement(*new_element) && is_first_element) {
     toHTMLHtmlElement(*new_element).InsertedByParser();
   } else if (!parsing_fragment_ && is_first_element &&
              GetDocument()->GetFrame()) {

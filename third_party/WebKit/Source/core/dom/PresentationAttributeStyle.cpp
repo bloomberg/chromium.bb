@@ -140,7 +140,7 @@ static void MakePresentationAttributeCacheKey(
     return;
   // Interpretation of the size attributes on <input> depends on the type
   // attribute.
-  if (isHTMLInputElement(element))
+  if (IsHTMLInputElement(element))
     return;
   AttributeCollection attributes = element.AttributesWithoutUpdate();
   for (const Attribute& attr : attributes) {

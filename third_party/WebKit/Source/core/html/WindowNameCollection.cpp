@@ -15,8 +15,8 @@ WindowNameCollection::WindowNameCollection(ContainerNode& document,
 bool WindowNameCollection::ElementMatches(const Element& element) const {
   // Match only images, forms, embeds and objects by name,
   // but anything by id
-  if (isHTMLImageElement(element) || isHTMLFormElement(element) ||
-      isHTMLEmbedElement(element) || isHTMLObjectElement(element)) {
+  if (IsHTMLImageElement(element) || IsHTMLFormElement(element) ||
+      IsHTMLEmbedElement(element) || IsHTMLObjectElement(element)) {
     if (element.GetNameAttribute() == name_)
       return true;
   }

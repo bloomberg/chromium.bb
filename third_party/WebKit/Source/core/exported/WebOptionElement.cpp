@@ -53,7 +53,7 @@ WebOptionElement::WebOptionElement(HTMLOptionElement* elem)
     : WebElement(elem) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement,
-                           isHTMLOptionElement(ConstUnwrap<Node>()));
+                           IsHTMLOptionElement(ConstUnwrap<Node>()));
 
 WebOptionElement& WebOptionElement::operator=(HTMLOptionElement* elem) {
   private_ = elem;

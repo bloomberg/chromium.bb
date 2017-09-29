@@ -327,7 +327,7 @@ void DataTransfer::setDragImage(Element* image, int x, int y) {
     return;
 
   IntPoint location(x, y);
-  if (isHTMLImageElement(*image) && !image->isConnected())
+  if (IsHTMLImageElement(*image) && !image->isConnected())
     SetDragImageResource(toHTMLImageElement(*image).CachedImage(), location);
   else
     SetDragImageElement(image, location);

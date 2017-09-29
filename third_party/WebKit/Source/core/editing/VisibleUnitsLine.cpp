@@ -301,7 +301,7 @@ Position PreviousRootInlineBoxCandidatePosition(
       break;
 
     const Position& candidate =
-        isHTMLBRElement(*runner)
+        IsHTMLBRElement(*runner)
             ? Position::BeforeNode(*runner)
             : Position::EditingPositionOf(runner, CaretMaxOffset(runner));
     if (IsVisuallyEquivalentCandidate(candidate))
@@ -428,7 +428,7 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
     end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   }
 
-  if (isHTMLBRElement(*end_node)) {
+  if (IsHTMLBRElement(*end_node)) {
     return CreateVisiblePosition(
         PositionTemplate<Strategy>::BeforeNode(*end_node),
         VP_UPSTREAM_IF_POSSIBLE);
