@@ -2527,8 +2527,14 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   // TODO(alexmos, mkwst, arthursonzogni): This block can be removed once error
   // pages are refactored. See crbug.com/588314 and crbug.com/622385.
   if (error.reason == net::ERR_BLOCKED_BY_RESPONSE) {
+    // Do not preserve the history item for blocked navigations, since we will
+    // not attempt to reload it later.  Also, it is important that the document
+    // sequence number is not preserved, so that other navigations will not be
+    // considered same-document with this data URL.
+    const blink::WebHistoryItem& blank_history_item = blink::WebHistoryItem();
+    frame_load_type = blink::WebFrameLoadType::kStandard;
     LoadNavigationErrorPageInternal("", GURL("data:,"), WebURL(), replace,
-                                    frame_load_type, history_item);
+                                    frame_load_type, blank_history_item);
     return;
   }
 

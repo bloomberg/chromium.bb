@@ -6927,6 +6927,59 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             controller.GetLastCommittedEntry()->GetURL().spec());
 }
 
+// Same-document navigations can sometimes succeed but then later be blocked by
+// policy (e.g., X-Frame-Options) after a page is restored or reloaded.  Ensure
+// that navigating back from a newly blocked URL in a subframe is not treated as
+// same-document, even if it had been same-document originally.
+// See https://crbug.com/765291.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackSameDocumentAfterBlockedSubframe) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe_simple.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // pushState to a URL that will be blocked by XFO if loaded from scratch.
+  {
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    std::string pushStateToXfo =
+        "history.pushState({}, '', '/x-frame-options-deny.html')";
+    EXPECT_TRUE(ExecuteScript(root->child_at(0), pushStateToXfo));
+    capturer.Wait();
+    EXPECT_TRUE(capturer.is_same_document());
+  }
+
+  // Navigate the main frame to another page.
+  GURL new_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), new_url));
+
+  // Go back, causing the subframe to be blocked by XFO.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    controller.GoBack();
+    observer.Wait();
+  }
+  EXPECT_EQ(GURL("data:,"), root->child_at(0)->current_url());
+
+  // Go back again.  This would have been same-document if the prior navigation
+  // had succeeded.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    controller.GoBack();
+    observer.Wait();
+  }
+
+  // Check that the renderer is still alive.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), "console.log('Success');"));
+}
+
 // If the main frame does a load, it should not be reported as a subframe
 // navigation. This used to occur in the following case:
 // 1. You're on a site with frames.
