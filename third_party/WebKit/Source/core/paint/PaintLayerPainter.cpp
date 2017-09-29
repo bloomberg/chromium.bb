@@ -508,7 +508,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       }
       PaintLayerFragment& fragment = layer_fragments.emplace_back();
       fragment.SetRects(
-          LayoutRect(offset_from_root, LayoutSize(paint_layer_.size())),
+          LayoutRect(offset_from_root, LayoutSize(paint_layer_.Size())),
           LayoutRect(LayoutRect::InfiniteIntRect()), foreground_clip);
     } else {
       paint_layer_for_fragments->CollectFragmentsForPaint(

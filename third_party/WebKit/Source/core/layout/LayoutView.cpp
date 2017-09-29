@@ -602,13 +602,13 @@ LayoutSize LayoutView::OffsetForFixedPosition(
 void LayoutView::AbsoluteRects(Vector<IntRect>& rects,
                                const LayoutPoint& accumulated_offset) const {
   rects.push_back(
-      PixelSnappedIntRect(accumulated_offset, LayoutSize(Layer()->size())));
+      PixelSnappedIntRect(accumulated_offset, LayoutSize(Layer()->Size())));
 }
 
 void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
   quads.push_back(LocalToAbsoluteQuad(
-      FloatRect(FloatPoint(), FloatSize(Layer()->size())), mode));
+      FloatRect(FloatPoint(), FloatSize(Layer()->Size())), mode));
 }
 
 void LayoutView::ClearSelection() {

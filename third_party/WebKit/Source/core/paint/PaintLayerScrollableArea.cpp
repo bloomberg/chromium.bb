@@ -612,7 +612,7 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
 LayoutRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // LayoutContentRect is conceptually the same as the box's client rect.
-  LayoutSize layer_size = LayoutSize(Layer()->size());
+  LayoutSize layer_size = LayoutSize(Layer()->Size());
   LayoutUnit border_width = Box().BorderWidth();
   LayoutUnit border_height = Box().BorderHeight();
   LayoutUnit horizontal_scrollbar_height, vertical_scrollbar_width;
@@ -1226,7 +1226,7 @@ int PaintLayerScrollableArea::HorizontalScrollbarStart(int min_x) const {
 IntSize PaintLayerScrollableArea::ScrollbarOffset(
     const Scrollbar& scrollbar) const {
   if (&scrollbar == VerticalScrollbar()) {
-    return IntSize(VerticalScrollbarStart(0, Layer()->size().Width()),
+    return IntSize(VerticalScrollbarStart(0, Layer()->Size().Width()),
                    Box().BorderTop().ToInt());
   }
 
@@ -1532,7 +1532,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   int resize_control_size = max(resize_control_rect.Height(), 0);
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
-    LayoutRect v_bar_rect(VerticalScrollbarStart(0, Layer()->size().Width()),
+    LayoutRect v_bar_rect(VerticalScrollbarStart(0, Layer()->Size().Width()),
                           Box().BorderTop().ToInt(),
                           VerticalScrollbar()->ScrollbarThickness(),
                           VisibleContentRect(kIncludeScrollbars).Height() -
@@ -1609,7 +1609,7 @@ bool PaintLayerScrollableArea::IsPointInResizeControl(
 
   IntPoint local_point =
       RoundedIntPoint(Box().AbsoluteToLocal(absolute_point, kUseTransforms));
-  IntRect local_bounds(IntPoint(), Layer()->size());
+  IntRect local_bounds(IntPoint(), Layer()->Size());
   return ResizerCornerRect(local_bounds, resizer_hit_test_type)
       .Contains(local_point);
 }
@@ -1699,7 +1699,7 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   // left corner.
   // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be
   // the case?
-  IntSize element_size = Layer()->size();
+  IntSize element_size = Layer()->Size();
   if (Box().ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     element_size.SetWidth(0);
   IntPoint resizer_point = IntPoint(element_size);
@@ -1971,7 +1971,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (!layer->ScrollsOverflow())
     return false;
 
-  if (layer->size().IsEmpty())
+  if (layer->Size().IsEmpty())
     return false;
 
   // This is for an experiment aiming at memory save by not compositing certain

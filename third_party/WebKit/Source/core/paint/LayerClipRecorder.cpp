@@ -95,7 +95,7 @@ void LayerClipRecorder::CollectRoundedRectClips(
       // getRoundedInnerBorderFor assumes it has not been snapped yet.
       LayoutSize size(layer->GetLayoutBox()
                           ? ToLayoutBox(layer->GetLayoutObject()).Size()
-                          : LayoutSize(layer->size()));
+                          : LayoutSize(layer->Size()));
       rounded_rect_clips.push_back(
           layer->GetLayoutObject().Style()->GetRoundedInnerBorderFor(
               LayoutRect(delta, size)));
