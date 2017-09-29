@@ -322,8 +322,8 @@ PageInfo::PageInfo(PageInfoUI* ui,
   Init(url, security_info);
 
   PresentSitePermissions();
-  PresentSiteData();
   PresentSiteIdentity();
+  PresentSiteData();
 
   // Every time the Page Info UI is opened a |PageInfo| object is
   // created. So this counts how ofter the Page Info UI is opened.
