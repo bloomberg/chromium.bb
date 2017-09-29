@@ -62,7 +62,11 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 * 0 symbols have shared ownership
 
 Showing 49 symbols (46 unique) with total pss: 43785380 bytes
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb    
+Histogram of symbols based on PSS:
+     [2,4): 1    [16,32): 9     [128,256): 2       [4096,8192): 1     [262144,524288): 1     [2097152,4194304): 1
+     [4,8): 9    [32,64): 9     [256,512): 1    [65536,131072): 2    [524288,1048576): 2   [33554432,67108864): 1
+    [8,16): 3   [64,128): 1   [2048,4096): 2   [131072,262144): 2   [1048576,2097152): 2
+.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
@@ -227,7 +231,11 @@ Index | Running Total | Section@Address | ...
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
              flags={anon,gen}  name=g_AnimationFrameTimeHistogram_clazz
 Showing 45 symbols (42 unique) with total pss: 43785380 bytes
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb    
+Histogram of symbols based on PSS:
+      [4,8): 9     [32,64): 9        [256,512): 1    [131072,262144): 2     [1048576,2097152): 1
+     [8,16): 3    [64,128): 1      [2048,4096): 1    [262144,524288): 1     [2097152,4194304): 2
+    [16,32): 9   [128,256): 2   [65536,131072): 2   [524288,1048576): 1   [33554432,67108864): 1
+.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss

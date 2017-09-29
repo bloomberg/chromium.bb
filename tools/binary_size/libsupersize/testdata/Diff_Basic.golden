@@ -39,13 +39,16 @@ Other section sizes:
     .symtab: 0 bytes (0 bytes)
 
 0 symbols added (+), 1 changed (~), 0 removed (-), 40 unchanged (=)
+Of changed symbols, 1 grew, 0 shrank
 Number of unique symbols 46 -> 46 (+0)
 0 paths added, 0 removed, 1 changed
 Changed files:
   base/page_allocator.cc
 
 Showing 41 symbols (aliases not grouped for diffs) with total pss: 10 bytes
-.text=10 bytes   .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    total=10 bytes  
+Histogram of symbols based on PSS:
+    {0}: 40   [8,16): 1
+.text=10 bytes   .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    total=10 bytes
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
