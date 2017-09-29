@@ -1,7 +1,22 @@
 {
     "archives": {
+        "DevOpera": {
+            "DEFAULT": "loading_mobile_003.wprgo"
+        },
         "Facebook": {
             "DEFAULT": "loading_mobile_002.wprgo"
+        },
+        "FlipBoard": {
+            "DEFAULT": "loading_mobile_003.wprgo"
+        },
+        "FlipKart": {
+            "DEFAULT": "loading_mobile_003.wprgo"
+        },
+        "Suumo": {
+            "DEFAULT": "loading_mobile_003.wprgo"
+        },
+        "VoiceMemos": {
+            "DEFAULT": "loading_mobile_003.wprgo"
         },
         "http://enquiry.indianrail.gov.in/mntes/MntesServlet?action=MainMenu&subAction=excep&excpType=EC": {
             "DEFAULT": "loading_mobile_000.wprgo"
@@ -96,25 +111,7 @@
         "http://xw.qq.com/news/20160803025029/NEW2016080302502901": {
             "DEFAULT": "loading_mobile_000.wprgo"
         },
-        "https://2048-opera-pwa.surge.sh/": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://andreasbovens.github.io/inbox-attack/": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://dev.opera.com/": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
         "https://en.m.wikipedia.org/wiki/Solo_Foods": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://flipboard.com/topic/yoga": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://guitar-tuner.appspot.com": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://jakearchibald.github.io/trained-to-thrill/": {
             "DEFAULT": "loading_mobile_000.wprgo"
         },
         "https://m.baidu.com/s?word=%E9%B2%9C%E8%8A%B1%E9%80%9F%E9%80%92&oq=%E9%B2%9C%E8%8A%B1": {
@@ -124,18 +121,6 @@
             "DEFAULT": "loading_mobile_000.wprgo"
         },
         "https://mobile.twitter.com/scottjehl/status/760618697727803394": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://smp.suumo.jp/mansion/tokyo/sc_104/cond/?moreCond=1": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://townwork.net": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://voice-memos.appspot.com": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://www.flipkart.com/big-wing-casuals/p/itmemeageyfn6m9z?lid=LSTSHOEMEAGURG2PHPW18FTBN&pid=SHOEMEAGURG2PHPW": {
             "DEFAULT": "loading_mobile_000.wprgo"
         },
         "https://www.google.co.id/#q=pengiriman+bunga": {
@@ -148,9 +133,6 @@
             "DEFAULT": "loading_mobile_000.wprgo"
         },
         "https://www.google.com/search?q=flower#q=flower+delivery": {
-            "DEFAULT": "loading_mobile_000.wprgo"
-        },
-        "https://www.pokedex.org/": {
             "DEFAULT": "loading_mobile_000.wprgo"
         },
         "https://www.youtube.com/watch?v=MU3YuvNRhVY": {
