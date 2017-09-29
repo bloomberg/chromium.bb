@@ -244,6 +244,18 @@ if (CONFIG_WARPED_MOTION)
   endif ()
 endif ()
 
+if (CONFIG_MFMV)
+  if (NOT CONFIG_FRAME_MARKER)
+    change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_MFMV)
+  endif()
+endif()
+
+if (CONFIG_JNT_COMP)
+  if (NOT CONFIG_FRAME_MARKER)
+    change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_JNT_COMP)
+  endif()
+endif()
+
 if (CONFIG_AMVR)
   change_config_and_warn(CONFIG_HASH_ME 1 CONFIG_AMVR)
 endif ()
