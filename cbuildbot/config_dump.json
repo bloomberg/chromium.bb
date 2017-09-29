@@ -15976,6 +15976,7 @@
             "quawks-paladin",
             "reef-paladin",
             "reef-uni-paladin",
+            "romer-paladin",
             "samus-paladin",
             "scarlet-paladin",
             "sentry-paladin",
@@ -22093,29 +22094,54 @@
             "chrome_internal"
         ]
     },
-    "romer-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "romer"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "romer-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
             "romer"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
         ]
+    },
+    "romer-factory": {
+        "_template": "factory",
+        "boards": [
+            "romer"
+        ],
+        "images": [
+            "test"
+        ],
+        "sync_chrome": false
+    },
+    "romer-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "romer"
+        ],
+        "manifest": "official.xml",
+        "upload_hw_test_artifacts": false
     },
     "romer-full": {
         "_template": "full",
         "boards": [
             "romer"
         ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -22125,14 +22151,38 @@
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "romer"
+        ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "romer-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "romer"
         ],
+        "chrome_sdk": false,
+        "description": "Commit Queue (internal)",
+        "image_test": false,
         "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -22141,31 +22191,54 @@
         "boards": [
             "romer"
         ],
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "romer-release": {
         "_template": "release",
         "active_waterfall": "chromeos",
+        "afdo_use": false,
         "boards": [
             "romer"
         ],
+        "chrome_sdk": false,
+        "dev_installer_prebuilts": false,
+        "hw_tests": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "paygen": false,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "romer-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "romer"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "romer-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
             "romer"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "chrome_internal"
         ]
     },
     "rowan-chrome-pfq": {

@@ -496,6 +496,7 @@ _arm_internal_release_boards = frozenset([
     'octavius',
     'peach_pi',
     'peach_pit',
+    'romer',
     'rowan',
     'scarlet',
     'smaug',
@@ -705,6 +706,7 @@ _loonix_boards = frozenset([
     'lasilla-sky',
     'macchiato-ground',
     'octavius',
+    'romer',
     'wooten',
 ])
 
@@ -2316,6 +2318,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
+      'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'wooten', # contact:icoolidge@
   ])
