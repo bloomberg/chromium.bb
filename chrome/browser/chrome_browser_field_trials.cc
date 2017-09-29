@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
-#include "base/trace_event/freed_object_tracker.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -38,9 +37,6 @@
 #endif
 
 namespace {
-
-const base::Feature kFreedObjectTrackerFeature{
-    "FreedObjectTracker", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Creating a "spare" file for persistent metrics involves a lot of I/O and
 // isn't important so delay the operation for a while after startup.
@@ -241,10 +237,6 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // Persistent histograms must be enabled as soon as possible.
   InstantiatePersistentHistograms();
-
-  // Enable use-after-free information gathering.
-  if (base::FeatureList::IsEnabled(kFreedObjectTrackerFeature))
-    base::trace_event::FreedObjectTracker::GetInstance()->Enable();
 
   tracing::SetupBackgroundTracingFieldTrial();
 }
