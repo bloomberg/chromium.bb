@@ -1,10 +1,5 @@
 <script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
-    // Disable under-invalidation checking because we allow short period of
-    // under-invalidation of buffered ranges.
-    if (window.internals)
-        internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = false;
-
     if (window.testRunner)
         testRunner.waitUntilDone();
 
