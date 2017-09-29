@@ -33,12 +33,8 @@
 #include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/process/launch.h"
-#include "base/sys_info.h"
-#if defined(USE_OZONE)
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif
 #endif  // if defined(OS_CHROMEOS)
 
 namespace {
@@ -136,7 +132,6 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 
 void ToggleTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
-#if defined(USE_OZONE)
   // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
   // InputController for processes that aren't mus-ws.
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
@@ -145,20 +140,6 @@ void ToggleTouchEventLogging(bool enable) {
       ui::OzonePlatform::GetInstance()->GetInputController();
   if (controller)
     controller->SetTouchEventLoggingEnabled(enable);
-#elif defined(USE_X11)
-  if (!base::SysInfo::IsRunningOnChromeOS())
-    return;
-  base::CommandLine command(
-      base::FilePath("/opt/google/touchscreen/toggle_touch_event_logging"));
-  if (enable)
-    command.AppendArg("1");
-  else
-    command.AppendArg("0");
-  VLOG(1) << "Running " << command.GetCommandLineString();
-  base::LaunchOptions options;
-  options.wait = true;
-  base::LaunchProcess(command, options);
-#endif
 #endif  // defined(OS_CHROMEOS)
 }
 
