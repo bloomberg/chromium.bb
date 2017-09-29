@@ -46,6 +46,10 @@ Polymer({
     var types = Object.values(settings.ContentSettingsTypes);
     for (var i = 0; i < types.length; i++) {
       var type = types[i];
+      // <if expr="not chromeos">
+      if (type == settings.ContentSettingsTypes.PROTECTED_CONTENT)
+        continue;
+      // </if>
       if (type == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
           type == settings.ContentSettingsTypes.USB_DEVICES ||
           type == settings.ContentSettingsTypes.ZOOM_LEVELS) {
