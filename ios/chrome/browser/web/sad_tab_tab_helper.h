@@ -69,7 +69,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // WebStateObserver:
   void WasShown() override;
-  void WasHidden() override;
   void RenderProcessGone() override;
   void DidFinishNavigation(web::NavigationContext* navigation_context) override;
   void WebStateDestroyed() override;
@@ -89,9 +88,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Stores the interval window in seconds during which a second
   // RenderProcessGone failure will be considered a repeat failure.
   double repeat_failure_interval_ = kDefaultRepeatFailureInterval;
-
-  // Whether or not WebState is currently being displayed.
-  bool is_visible_ = false;
 
   // true if the WebState needs to be reloaded after web state becomes visible.
   bool requires_reload_on_becoming_visible_ = false;
