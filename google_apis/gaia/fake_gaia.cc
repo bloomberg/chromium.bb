@@ -125,19 +125,16 @@ void SetCookies(BasicHttpResponse* http_response,
 
 }  // namespace
 
-FakeGaia::AccessTokenInfo::AccessTokenInfo()
-  : expires_in(3600) {}
+FakeGaia::AccessTokenInfo::AccessTokenInfo() = default;
 
 FakeGaia::AccessTokenInfo::AccessTokenInfo(const AccessTokenInfo& other) =
     default;
 
-FakeGaia::AccessTokenInfo::~AccessTokenInfo() {}
+FakeGaia::AccessTokenInfo::~AccessTokenInfo() = default;
 
-FakeGaia::MergeSessionParams::MergeSessionParams() {
-}
+FakeGaia::MergeSessionParams::MergeSessionParams() = default;
 
-FakeGaia::MergeSessionParams::~MergeSessionParams() {
-}
+FakeGaia::MergeSessionParams::~MergeSessionParams() = default;
 
 void FakeGaia::MergeSessionParams::Update(const MergeSessionParams& update) {
   // This lambda uses a pointer to data member to merge attributes.
@@ -476,7 +473,8 @@ const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
        entry != access_token_info_map_.upper_bound(auth_token);
        ++entry) {
     if (entry->second.audience == client_id &&
-        (scope_string.empty() || entry->second.scopes == scopes)) {
+        (scope_string.empty() || entry->second.any_scope ||
+         entry->second.scopes == scopes)) {
       return &(entry->second);
     }
   }

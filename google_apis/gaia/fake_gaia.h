@@ -45,8 +45,10 @@ class FakeGaia {
     std::string audience;
     std::string user_id;
     ScopeSet scopes;
-    int expires_in;
+    int expires_in = 3600;
     std::string email;
+    // When set to true, any scope set for issue token request matches |this|.
+    bool any_scope = false;
   };
 
   // Cookies and tokens for /MergeSession call seqeunce.
