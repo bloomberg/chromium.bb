@@ -775,7 +775,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // Creates view controller then shows the subview.
   self.notifyAutoSigninViewController = [
       [NotifyUserAutoSigninViewController alloc]
-      initWithUsername:base::SysUTF16ToNSString(formSignedIn->username_value)];
+      initWithUsername:base::SysUTF16ToNSString(formSignedIn->username_value)
+               iconURL:formSignedIn->icon_url
+         contextGetter:webState_->GetBrowserState()->GetRequestContext()];
   TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(webState_);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:tabIdHelper->tab_id()]) {
