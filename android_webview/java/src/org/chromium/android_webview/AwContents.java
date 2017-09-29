@@ -37,8 +37,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.animation.AnimationUtils;
 import android.view.autofill.AutofillValue;
@@ -2623,22 +2621,7 @@ public class AwContents implements SmartClipProvider {
      * @return The AccessibilityNodeProvider, if available, or null otherwise.
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
-        return isDestroyedOrNoOperation(WARN) ? null
-                : mContentViewCore.getAccessibilityNodeProvider();
-    }
-
-    /**
-     * @see android.webkit.WebView#onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo)
-     */
-    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        // TODO(boliu): remove this method.
-    }
-
-    /**
-     * @see android.webkit.WebView#onInitializeAccessibilityEvent(AccessibilityEvent)
-     */
-    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
-     // TODO(boliu): remove this method.
+        return mAwViewMethods.getAccessibilityNodeProvider();
     }
 
     public boolean supportsAccessibilityAction(int action) {
@@ -2650,8 +2633,7 @@ public class AwContents implements SmartClipProvider {
      * @see android.webkit.WebView#performAccessibilityAction(int, Bundle)
      */
     public boolean performAccessibilityAction(int action, Bundle arguments) {
-        return isDestroyedOrNoOperation(WARN) ? false
-                : mContentViewCore.performAccessibilityAction(action, arguments);
+        return mAwViewMethods.performAccessibilityAction(action, arguments);
     }
 
     /**
@@ -3468,6 +3450,19 @@ public class AwContents implements SmartClipProvider {
         public void computeScroll() {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             nativeOnComputeScroll(mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
+        }
+
+        @Override
+        public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+            return isDestroyedOrNoOperation(WARN) ? null
+                                                  : mContentViewCore.getAccessibilityNodeProvider();
+        }
+
+        @Override
+        public boolean performAccessibilityAction(final int action, final Bundle arguments) {
+            return isDestroyedOrNoOperation(WARN)
+                    ? false
+                    : mContentViewCore.performAccessibilityAction(action, arguments);
         }
     }
 

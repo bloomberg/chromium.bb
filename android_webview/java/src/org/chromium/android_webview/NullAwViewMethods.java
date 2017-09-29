@@ -8,10 +8,12 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -172,5 +174,15 @@ class NullAwViewMethods implements AwViewMethods {
     @Override
     public void computeScroll() {
         // Intentional no-op.
+    }
+
+    @Override
+    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        return null;
+    }
+
+    @Override
+    public boolean performAccessibilityAction(final int action, final Bundle arguments) {
+        return false;
     }
 }
