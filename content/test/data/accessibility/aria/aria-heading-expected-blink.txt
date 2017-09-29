@@ -18,6 +18,6 @@ rootWebArea
 ++++staticText name='ARIA Heading 6'
 ++++++inlineTextBox name='ARIA Heading 6'
 ++genericContainer
-++++heading name='Heading'
+++++heading name='Heading' hierarchicalLevel=2
 ++++++staticText name='Heading'
 ++++++++inlineTextBox name='Heading'
