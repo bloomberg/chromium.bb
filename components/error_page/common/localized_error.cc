@@ -388,6 +388,14 @@ const LocalizedErrorMap http_error_options[] = {
     },
 };
 
+const LocalizedErrorMap generic_4xx_5xx_error = {
+    0,
+    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
+    IDS_ERRORPAGES_SUMMARY_CONTACT_SITE_OWNER,
+    SUGGEST_NONE,
+    SHOW_BUTTON_RELOAD,
+};
+
 const LocalizedErrorMap dns_probe_error_options[] = {
   {error_page::DNS_PROBE_POSSIBLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
@@ -452,9 +460,12 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
                                arraysize(net_error_options),
                                error_code);
   } else if (error_domain == Error::kHttpErrorDomain) {
-    return FindErrorMapInArray(http_error_options,
-                               arraysize(http_error_options),
-                               error_code);
+    const LocalizedErrorMap* map = FindErrorMapInArray(
+        http_error_options, arraysize(http_error_options), error_code);
+    // Handle miscellaneous 400/500 errors.
+    return !map && error_code >= 400 && error_code < 600
+               ? &generic_4xx_5xx_error
+               : map;
   } else if (error_domain == Error::kDnsProbeErrorDomain) {
     const LocalizedErrorMap* map =
         FindErrorMapInArray(dns_probe_error_options,
