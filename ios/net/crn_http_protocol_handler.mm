@@ -500,7 +500,6 @@ void HttpProtocolHandlerCore::StartReading() {
 #endif  // !defined(NDEBUG)
 
   if (tracker_) {
-    tracker_->CaptureHeaders(net_request_);
     long long expectedContentLength = [response expectedContentLength];
     if (expectedContentLength > 0)
       tracker_->CaptureExpectedLength(net_request_, expectedContentLength);

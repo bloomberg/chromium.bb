@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/net/crw_request_tracker_delegate.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ios/web/public/web_state/url_verification_constants.h"

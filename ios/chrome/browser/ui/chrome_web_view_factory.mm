@@ -160,7 +160,7 @@ void RegisterUserAgentForUIWebView(NSString* user_agent) {
     DCHECK(g_external_browser_state);
     g_request_tracker = web::RequestTrackerImpl::CreateTrackerForRequestGroupID(
         ChromeWebView::kExternalRequestGroupID, g_external_browser_state,
-        [self requestContextForExternalService:externalService], nil);
+        [self requestContextForExternalService:externalService]);
   }
   return [[UIWebView alloc] initWithFrame:CGRectZero];
 }
