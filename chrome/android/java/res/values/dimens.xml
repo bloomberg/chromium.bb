@@ -506,6 +506,8 @@
     <dimen name="text_bubble_arrow_width">20dp</dimen>
     <dimen name="text_bubble_arrow_height">10dp</dimen>
     <dimen name="text_bubble_menu_anchor_y_inset">14dp</dimen>
+    <dimen name="iph_pulse_baseline_radius">16dp</dimen>
+    <dimen name="iph_pulse_chrome_home_baseline_radius">16dp</dimen>
 
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
