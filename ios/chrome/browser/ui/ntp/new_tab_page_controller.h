@@ -89,7 +89,8 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
                              OmniboxFocuser,
-                             UrlLoader>)dispatcher;
+                             UrlLoader>)dispatcher
+           safeAreaInset:(UIEdgeInsets)safeAreaInset;
 
 // Select a panel based on the given |panelType|.
 - (void)selectPanel:(ntp_home::PanelIdentifier)panelType;

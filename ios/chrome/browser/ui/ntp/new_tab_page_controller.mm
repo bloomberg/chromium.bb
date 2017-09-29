@@ -220,7 +220,8 @@ enum {
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
                              OmniboxFocuser,
-                             UrlLoader>)dispatcher {
+                             UrlLoader>)dispatcher
+           safeAreaInset:(UIEdgeInsets)safeAreaInset {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
@@ -236,6 +237,9 @@ enum {
     self.title = l10n_util::GetNSString(IDS_NEW_TAB_TITLE);
     _scrollInitialized = NO;
 
+    // It is necessary to initialize the view with a non-empty frame so the NTP
+    // can be scrolled when the Bookmarks/Recent Tabs are opened from the
+    // toolmenu.
     UIScrollView* scrollView =
         [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 412)];
     [scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
@@ -245,6 +249,7 @@ enum {
     _view = [[NewTabPageView alloc] initWithFrame:CGRectMake(0, 0, 320, 460)
                                     andScrollView:scrollView
                                         andTabBar:tabBar];
+    _view.safeAreaInsetForToolbar = safeAreaInset;
     [tabBar setDelegate:self];
 
     bool isIncognito = _browserState->IsOffTheRecord();
@@ -476,7 +481,7 @@ enum {
 
 // Update selectedIndex and scroll position as the scroll view moves.
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (!_scrollInitialized)
+  if (!_scrollInitialized || PresentNTPPanelModally())
     return;
 
   // Position is used to track the exact X position of the scroll view, whereas

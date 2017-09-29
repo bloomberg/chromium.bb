@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/test/block_cleanup_test.h"
@@ -79,7 +80,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                   toolbarDelegate:nil
                                          tabModel:tabModel_
                              parentViewController:parentViewController_
-                                       dispatcher:nil];
+                                       dispatcher:nil
+                                    safeAreaInset:UIEdgeInsetsZero];
 
     incognitoController_ = [[NewTabPageController alloc]
                  initWithUrl:url
@@ -92,7 +94,8 @@ class NewTabPageControllerTest : public BlockCleanupTest {
              toolbarDelegate:nil
                     tabModel:nil
         parentViewController:parentViewController_
-                  dispatcher:nil];
+                  dispatcher:nil
+               safeAreaInset:UIEdgeInsetsZero];
   };
 
   void TearDown() override {
@@ -126,14 +129,15 @@ TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
   NewTabPageBar* bar = [NTPView tabBar];
   NSUInteger bookmarkIndex = 0;
   UIButton* button = [[bar buttons] objectAtIndex:bookmarkIndex];
-  UIControlEvents event =
-      IsIPadIdiom() ? UIControlEventTouchDown : UIControlEventTouchUpInside;
+  UIControlEvents event = !PresentNTPPanelModally()
+                              ? UIControlEventTouchDown
+                              : UIControlEventTouchUpInside;
   [button sendActionsForControlEvents:event];
 
   // Expecting bookmarks panel to be loaded now and to be the current controller
   // on iPad but not iPhone.
   // Deliberately comparing pointers.
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     EXPECT_EQ([controller_ currentController],
               (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
   } else {
@@ -154,7 +158,7 @@ TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
   // Expecting bookmarks panel to be loaded now and to be the current controller
   // on iPad but not iPhone.
   // Deliberately comparing pointers.
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     EXPECT_EQ([controller_ currentController],
               (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
   } else {
@@ -175,7 +179,7 @@ TEST_F(NewTabPageControllerTest, SelectIncognitoPanel) {
   // Expecting bookmarks panel to be loaded now and to be the current controller
   // on iPad but not iPhone.
   // Deliberately comparing pointers.
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     EXPECT_EQ(
         [incognitoController_ currentController],
         (id<NewTabPagePanelProtocol>)[incognitoController_ bookmarkController]);
