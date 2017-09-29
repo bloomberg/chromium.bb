@@ -35,6 +35,12 @@ foreach (example ${AOM_DIST_EXAMPLES})
   file(INSTALL "${example}" DESTINATION "${AOM_DIST_DIR}/bin/examples")
 endforeach ()
 
+if (AOM_DIST_TOOLS)
+  foreach (tool ${AOM_DIST_TOOLS})
+    file(INSTALL "${tool}" DESTINATION "${AOM_DIST_DIR}/bin/tools")
+  endforeach ()
+endif ()
+
 listify_string("${AOM_DIST_APPS}" "AOM_DIST_APPS")
 foreach (app ${AOM_DIST_APPS})
   file(INSTALL "${app}" DESTINATION "${AOM_DIST_DIR}/bin")

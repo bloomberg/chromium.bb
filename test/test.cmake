@@ -373,11 +373,6 @@ if (CONFIG_UNIT_TESTS)
                      EXCLUDE_FROM_ALL)
   endif ()
 
-  # Generate a stub file containing the C function usage_exit(); this is
-  # required because of the test dependency on aom_common_app_util.
-  # Specifically, the function die() in tools_common.c calls usage_exit() to
-  # terminate the program on the caller's behalf.
-  file(WRITE "${AOM_CONFIG_DIR}/usage_exit.c" "void usage_exit(void) {}")
 endif ()
 
 # Setup the targets for CONFIG_UNIT_TESTS. The libaom and app util targets must

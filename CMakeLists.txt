@@ -264,6 +264,11 @@ endforeach ()
 #
 add_library(aom_common_app_util OBJECT ${AOM_COMMON_APP_UTIL_SOURCES})
 
+# Generate a stub file containing the C function usage_exit(). Users of the
+# aom_common_app_util library must define this function. This is a convenience
+# to allow omission of the function from applications that might want to use
+# other pieces of the util support without defining the usage_exit().
+file(WRITE "${AOM_CONFIG_DIR}/usage_exit.c" "void usage_exit(void) {}")
 
 if (CONFIG_AV1_DECODER)
   add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
@@ -353,7 +358,22 @@ if (CONFIG_AV1_ENCODER)
   # Add encoder apps and examples to target lists.
   set(AOM_ENCODER_EXAMPLE_TARGETS
       lossless_encoder set_maps simple_encoder twopass_encoder)
-  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomenc ${AOM_ENCODER_EXAMPLE_TARGETS})
+
+  if (CONFIG_ENTROPY_STATS)
+    # TODO(tomfinegan): Sort out why a simple link command with
+    # aom_entropy_optimizer.c won't work on macos, but dragging in all the
+    # helper machinery allows the link to succeed.
+    add_executable(aom_entropy_optimizer
+                   "${AOM_CONFIG_DIR}/usage_exit.c"
+                   "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_encoder_app_util>)
+    set(AOM_ENCODER_TOOL_TARGETS
+        ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
+  endif ()
+
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS} aomenc
+      ${AOM_ENCODER_EXAMPLE_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 endif ()
 
 # Maintain a separate variable listing only the examples to facilitate
@@ -361,6 +381,9 @@ endif ()
 # $AOM_DIST_DIR/bin when building the dist target.
 set(AOM_EXAMPLE_TARGETS
     ${AOM_DECODER_EXAMPLE_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
+
+# Do the same for tool targets.
+set(AOM_TOOL_TARGETS ${AOM_DECODER_TOOL_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 
 if (CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
   add_executable(aom_cx_set_ref
@@ -448,6 +471,13 @@ if ("${CMAKE_GENERATOR}" MATCHES "Makefiles$" )
   file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/examples")
   set_target_properties(${AOM_EXAMPLE_TARGETS} PROPERTIES
                         RUNTIME_OUTPUT_DIRECTORY "${AOM_CONFIG_DIR}/examples")
+
+  if (AOM_TOOL_TARGETS)
+    # The same expectation is true for tool targets.
+    file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/tools")
+    set_target_properties(${AOM_TOOL_TARGETS} PROPERTIES
+                          RUNTIME_OUTPUT_DIRECTORY "${AOM_CONFIG_DIR}/tools")
+  endif ()
 endif ()
 
 if (BUILD_SHARED_LIBS)
@@ -517,6 +547,10 @@ foreach (example ${AOM_EXAMPLE_TARGETS})
   list(APPEND AOM_DIST_EXAMPLES $<TARGET_FILE:${example}>)
 endforeach ()
 
+foreach (tool ${AOM_TOOL_TARGETS})
+  list(APPEND AOM_DIST_TOOLS $<TARGET_FILE:${tool}>)
+endforeach ()
+
 if (NOT AOM_DIST_DIR)
   set(AOM_DIST_DIR "${AOM_CONFIG_DIR}/dist")
 endif ()
@@ -528,6 +562,7 @@ add_custom_target(dist
                   -DAOM_DIST_DIR=${AOM_DIST_DIR}
                   -DAOM_DIST_APPS="${AOM_DIST_APPS}"
                   -DAOM_DIST_EXAMPLES="${AOM_DIST_EXAMPLES}"
+                  -DAOM_DIST_TOOLS="${AOM_DIST_TOOLS}"
                   -DAOM_DIST_INCLUDES="${AOM_INSTALL_INCS}"
                   -DAOM_DIST_LIBS=$<TARGET_FILE:aom>
                   -DENABLE_DOCS=${ENABLE_DOCS}
