@@ -212,6 +212,7 @@
     "removetrack",
     "repeatEvent",
     "reset",
+    "resetpose",
     "resize",
     "resourcetimingbufferfull",
     "result",

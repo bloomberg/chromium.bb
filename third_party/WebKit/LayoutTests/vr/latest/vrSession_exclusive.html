@@ -14,26 +14,13 @@ let fakeDisplays = fakeVRDisplays();
 vr_test( (t) => {
   return navigator.vr.getDevices().then( (devices) => {
     let pixel = devices[0];
-    let magicWindowOnly = devices[1];
-
-    // Test that requests for an exclusive session outside of a user gesture
-    // are rejected.
-    promise_test( function() {
-      return promise_rejects(this, "InvalidStateError",
-          pixel.requestSession({ exclusive: true }));
-    }, "requestSession rejected outside of a user gesture");
-
     runWithUserGesture( () => {
-      // Test that a device which only supports non-exclusive sessions rejects
-      // requests for an exclusive context.
-      promise_test( function() {
-        return promise_rejects(this, "NotSupportedError",
-            magicWindowOnly.requestSession({ exclusive: true }));
-      }, "requestSession rejected for device that only supports non-exclusive sessions.");
-
       pixel.requestSession({ exclusive: true }).then( (session) => {
         t.step( () => {
           assert_true(session.exclusive);
+          assert_equals(session.device, pixel);
+          assert_approx_equals(session.depthNear, 0.1, FLOAT_EPSILON);
+          assert_approx_equals(session.depthFar, 1000.0, FLOAT_EPSILON);
         }, "requestSession returned correct results");
       }, (err) => {
         t.step( () => {
@@ -48,7 +35,7 @@ vr_test( (t) => {
       assert_unreached("getDevices rejected");
     });
   });
-}, [fakeDisplays["Pixel"], fakeDisplays["FakeMagicWindowOnly"]],
-"supportsSession properly creates or rejects exclusive sessions");
+}, [fakeDisplays["Pixel"]],
+"supportsSession returns expected exclusive session");
 
 </script>

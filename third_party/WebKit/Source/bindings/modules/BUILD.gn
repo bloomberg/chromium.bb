@@ -56,6 +56,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/storage/StorageEvent.idl",
     "//third_party/WebKit/Source/modules/vr/VRDisplayEvent.idl",
     "//third_party/WebKit/Source/modules/vr/latest/VRDeviceEvent.idl",
+    "//third_party/WebKit/Source/modules/vr/latest/VRSessionEvent.idl",
     "//third_party/WebKit/Source/modules/webaudio/AudioProcessingEvent.idl",
     "//third_party/WebKit/Source/modules/webaudio/OfflineAudioCompletionEvent.idl",
     "//third_party/WebKit/Source/modules/webgl/WebGLContextEvent.idl",

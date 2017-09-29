@@ -9,6 +9,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "modules/EventTargetModules.h"
 #include "modules/vr/latest/VR.h"
+#include "modules/vr/latest/VRSession.h"
 
 namespace blink {
 
@@ -22,9 +23,6 @@ const char kNonExclusiveNotSupported[] =
 
 const char kRequestNotInUserGesture[] =
     "Exclusive sessions can only be requested during a user gesture.";
-
-const char kSessionCreationNotImplemented[] =
-    "Session creation not implemented.";
 
 }  // namespace
 
@@ -105,10 +103,16 @@ ScriptPromise VRDevice::requestSession(
     }
   }
 
-  // TODO: Session creation will be implemented in a follow up CL.
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      DOMException::Create(kNotSupportedError, kSessionCreationNotImplemented));
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  VRSession* session = new VRSession(this, options.exclusive());
+
+  // TODO: A follow up CL will establish a VRPresentationProvider connection
+  // before resolving the promise.
+  resolver->Resolve(session);
+
+  return promise;
 }
 
 // TODO: Forward these calls on to the sessions once they've been implemented.
