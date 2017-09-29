@@ -14,8 +14,6 @@ class Infra(config_util.Config):
 
   @staticmethod
   def fetch_spec(props):
-    # This is used by [depot_tools]/testing_support/local_rietveld.py
-    managed = props.get('managed', 'false').lower() == 'true'
     return {
       'type': 'gclient_git',
       'gclient_git_spec': {
@@ -24,7 +22,7 @@ class Infra(config_util.Config):
             'name'     : 'infra',
             'url'      : 'https://chromium.googlesource.com/infra/infra.git',
             'deps_file': '.DEPS.git',
-            'managed'  : managed,
+            'managed'  : False,
           }
         ],
       },

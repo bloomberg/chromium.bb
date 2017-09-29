@@ -63,54 +63,6 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
   return results
 
 
-def RunGitClTests(input_api, output_api):
-  """Run all the shells scripts in the directory test.
-  """
-  if input_api.platform == 'win32':
-    # Skip for now as long as the test scripts are bash scripts.
-    return []
-
-  # First loads a local Rietveld instance.
-  import sys
-  old_sys_path = sys.path
-  try:
-    sys.path = [input_api.PresubmitLocalPath()] + sys.path
-    from testing_support import local_rietveld
-    server = local_rietveld.LocalRietveld()
-  finally:
-    sys.path = old_sys_path
-
-  results = []
-  try:
-    # Start a local rietveld instance to test against.
-    server.start_server()
-    test_path = input_api.os_path.abspath(
-        input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'))
-
-    # test-lib.sh is not an actual test so it should not be run.
-    NON_TEST_FILES = ('test-lib.sh')
-    for test in input_api.os_listdir(test_path):
-      if test in NON_TEST_FILES or not test.endswith('.sh'):
-        continue
-
-      print('Running %s' % test)
-      try:
-        if input_api.verbose:
-          input_api.subprocess.check_call(
-              [input_api.os_path.join(test_path, test)], cwd=test_path)
-        else:
-          input_api.subprocess.check_output(
-              [input_api.os_path.join(test_path, test)], cwd=test_path,
-              stderr=input_api.subprocess.STDOUT)
-      except (OSError, input_api.subprocess.CalledProcessError), e:
-        results.append(output_api.PresubmitError('%s failed\n%s' % (test, e)))
-  except local_rietveld.Failure, e:
-    results.append(output_api.PresubmitError('\n'.join(str(i) for i in e.args)))
-  finally:
-    server.stop_server()
-  return results
-
-
 def CheckChangeOnUpload(input_api, output_api):
   # Do not run integration tests on upload since they are way too slow.
   tests_to_black_list = [
@@ -128,5 +80,4 @@ def CheckChangeOnCommit(input_api, output_api):
   output.extend(input_api.canned_checks.CheckDoNotSubmit(
       input_api,
       output_api))
-  output.extend(RunGitClTests(input_api, output_api))
   return output
