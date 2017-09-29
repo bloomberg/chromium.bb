@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class WebAudioBusPrivate : public AudioBus {};
-
 void WebAudioBus::Initialize(unsigned number_of_channels,
                              size_t length,
                              double sample_rate) {
@@ -38,10 +36,9 @@ void WebAudioBus::Initialize(unsigned number_of_channels,
   audio_bus->SetSampleRate(sample_rate);
 
   if (private_)
-    (static_cast<AudioBus*>(private_))->Deref();
+    private_->Deref();
 
-  audio_bus->Ref();
-  private_ = static_cast<WebAudioBusPrivate*>(audio_bus.get());
+  private_ = audio_bus.LeakRef();
 }
 
 void WebAudioBus::ResizeSmaller(size_t new_length) {
@@ -54,8 +51,8 @@ void WebAudioBus::ResizeSmaller(size_t new_length) {
 
 void WebAudioBus::Reset() {
   if (private_) {
-    (static_cast<AudioBus*>(private_))->Deref();
-    private_ = 0;
+    private_->Deref();
+    private_ = nullptr;
   }
 }
 
@@ -79,14 +76,15 @@ double WebAudioBus::SampleRate() const {
 
 float* WebAudioBus::ChannelData(unsigned channel_index) {
   if (!private_)
-    return 0;
+    return nullptr;
   DCHECK_LT(channel_index, NumberOfChannels());
   return private_->Channel(channel_index)->MutableData();
 }
 
 RefPtr<AudioBus> WebAudioBus::Release() {
-  RefPtr<AudioBus> audio_bus(WTF::AdoptRef(static_cast<AudioBus*>(private_)));
-  private_ = 0;
+  RefPtr<AudioBus> audio_bus(private_);
+  private_->Deref();
+  private_ = nullptr;
   return audio_bus;
 }
 
