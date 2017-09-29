@@ -43,6 +43,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/test/gfx_util.h"
 
 namespace cc {
 namespace {
@@ -1593,6 +1594,161 @@ TEST_F(PictureLayerImplTest, ResourcelessEmptyRecording) {
   active_layer()->DidDraw(nullptr);
 
   EXPECT_EQ(0U, render_pass->quad_list.size());
+}
+
+TEST_F(PictureLayerImplTest, FarScrolledQuadsShifted) {
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+
+  gfx::Size layer_bounds(1000, 10000);
+  scoped_refptr<FakeRasterSource> active_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+  SetupPendingTree(active_raster_source);
+  ActivateTree();
+
+  active_layer()->SetContentsOpaque(true);
+  active_layer()->draw_properties().visible_layer_rect =
+      gfx::Rect(0, 5000, 1000, 1000);
+  active_layer()->UpdateTiles();
+
+  auto* high_res_tiling = active_layer()->HighResTiling();
+  ASSERT_TRUE(high_res_tiling);
+  const std::vector<Tile*>& tiles = high_res_tiling->AllTilesForTesting();
+  ASSERT_GT(tiles.size(), 0u);
+
+  host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
+
+  AppendQuadsData data;
+  active_layer()->WillDraw(DRAW_MODE_HARDWARE, nullptr);
+  active_layer()->AppendQuads(render_pass.get(), &data);
+  active_layer()->DidDraw(nullptr);
+
+  EXPECT_EQ(20u, render_pass->quad_list.size());
+  int last_y = -1;
+  int last_height = -1;
+  int min_y = std::numeric_limits<int>::max();
+  float min_transformed_y = std::numeric_limits<float>::max();
+  float max_transformed_y = -1;
+  for (auto* draw_quad : render_pass->quad_list) {
+    if (last_y == -1) {
+      last_y = draw_quad->rect.y();
+      min_y = last_y;
+      last_height = draw_quad->rect.height();
+    }
+
+    if (last_y != draw_quad->rect.y()) {
+      EXPECT_EQ(last_y + last_height, draw_quad->rect.y());
+      last_y = draw_quad->rect.y();
+      min_y = std::min(min_y, last_y);
+      last_height = draw_quad->rect.height();
+    }
+    EXPECT_LT(last_y, 5000);
+    EXPECT_EQ(draw_quad->material, viz::DrawQuad::TILED_CONTENT);
+
+    auto transform = [draw_quad](const gfx::Rect& rect) {
+      gfx::RectF result(rect);
+      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
+          &result);
+      return result;
+    };
+
+    gfx::RectF transformed_rect = transform(draw_quad->rect);
+    EXPECT_GT(transformed_rect.y(), 0);
+    if (min_transformed_y < 0 || transformed_rect.y() < min_transformed_y)
+      min_transformed_y = transformed_rect.y();
+    if (transformed_rect.bottom() > max_transformed_y)
+      max_transformed_y = transformed_rect.bottom();
+
+    gfx::RectF transformed_quad_layer_rect =
+        transform(draw_quad->shared_quad_state->quad_layer_rect);
+    EXPECT_RECTF_EQ(transformed_quad_layer_rect,
+                    gfx::RectF(0.f, 0.f, 1000.f, 10000.f));
+
+    gfx::RectF transformed_visible_quad_layer_rect =
+        transform(draw_quad->shared_quad_state->visible_quad_layer_rect);
+    EXPECT_RECTF_EQ(transformed_visible_quad_layer_rect,
+                    gfx::RectF(0.f, 5000.f, 1000.f, 1000.f));
+  }
+  EXPECT_EQ(min_y, 0);
+  EXPECT_FLOAT_EQ(min_transformed_y, 5000.f);
+  EXPECT_FLOAT_EQ(max_transformed_y, 6000.f);
+}
+
+TEST_F(PictureLayerImplTest, FarScrolledSolidColorQuadsShifted) {
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+
+  gfx::Size layer_bounds(1000, 10000);
+  scoped_refptr<FakeRasterSource> active_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+  SetupPendingTree(active_raster_source);
+  ActivateTree();
+
+  active_layer()->SetContentsOpaque(true);
+  active_layer()->draw_properties().visible_layer_rect =
+      gfx::Rect(0, 9000, 1000, 1000);
+  active_layer()->UpdateTiles();
+
+  auto* high_res_tiling = active_layer()->HighResTiling();
+  ASSERT_TRUE(high_res_tiling);
+  const std::vector<Tile*>& tiles = high_res_tiling->AllTilesForTesting();
+  ASSERT_GT(tiles.size(), 0u);
+
+  for (auto* tile : tiles)
+    tile->draw_info().SetSolidColorForTesting(SK_ColorBLUE);
+
+  AppendQuadsData data;
+  active_layer()->WillDraw(DRAW_MODE_HARDWARE, nullptr);
+  active_layer()->AppendQuads(render_pass.get(), &data);
+  active_layer()->DidDraw(nullptr);
+
+  EXPECT_EQ(20u, render_pass->quad_list.size());
+  int last_y = -1;
+  int last_height = -1;
+  int min_y = std::numeric_limits<int>::max();
+  float min_transformed_y = std::numeric_limits<float>::max();
+  float max_transformed_y = -1;
+  for (auto* draw_quad : render_pass->quad_list) {
+    if (last_y == -1) {
+      last_y = draw_quad->rect.y();
+      min_y = last_y;
+      last_height = draw_quad->rect.height();
+    }
+
+    if (last_y != draw_quad->rect.y()) {
+      EXPECT_EQ(last_y + last_height, draw_quad->rect.y());
+      last_y = draw_quad->rect.y();
+      min_y = std::min(min_y, last_y);
+      last_height = draw_quad->rect.height();
+    }
+    EXPECT_LT(last_y, 5000);
+    EXPECT_EQ(draw_quad->material, viz::DrawQuad::SOLID_COLOR);
+
+    auto transform = [draw_quad](const gfx::Rect& rect) {
+      gfx::RectF result(rect);
+      draw_quad->shared_quad_state->quad_to_target_transform.TransformRect(
+          &result);
+      return result;
+    };
+
+    gfx::RectF transformed_rect = transform(draw_quad->rect);
+    EXPECT_GT(transformed_rect.y(), 0);
+    if (transformed_rect.y() < min_transformed_y)
+      min_transformed_y = transformed_rect.y();
+    if (transformed_rect.bottom() > max_transformed_y)
+      max_transformed_y = transformed_rect.bottom();
+
+    gfx::RectF transformed_quad_layer_rect =
+        transform(draw_quad->shared_quad_state->quad_layer_rect);
+    EXPECT_RECTF_EQ(transformed_quad_layer_rect,
+                    gfx::RectF(0.f, 0.f, 1000.f, 10000.f));
+
+    gfx::RectF transformed_visible_quad_layer_rect =
+        transform(draw_quad->shared_quad_state->visible_quad_layer_rect);
+    EXPECT_RECTF_EQ(transformed_visible_quad_layer_rect,
+                    gfx::RectF(0.f, 9000.f, 1000.f, 1000.f));
+  }
+  EXPECT_EQ(min_y, 0);
+  EXPECT_FLOAT_EQ(min_transformed_y, 9000.f);
+  EXPECT_FLOAT_EQ(max_transformed_y, 10000.f);
 }
 
 TEST_F(PictureLayerImplTest, SolidColorLayerHasVisibleFullCoverage) {

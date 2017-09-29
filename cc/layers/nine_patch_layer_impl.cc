@@ -64,7 +64,7 @@ void NinePatchLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                         contents_opaque()
                   : false;
   PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
-  AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
+  AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
                         append_quads_data);
 
   if (!is_resource)
