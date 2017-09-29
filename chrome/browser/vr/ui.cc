@@ -27,6 +27,7 @@ Ui::Ui(UiBrowserInterface* browser,
                                                content_input_delegate,
                                                model_.get(),
                                                ui_initial_state)),
+      input_manager_(base::MakeUnique<vr::UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {}
 
 Ui::~Ui() = default;
@@ -100,11 +101,10 @@ bool Ui::ShouldRenderWebVr() {
 }
 
 void Ui::OnGlInitialized(unsigned int content_texture_id) {
-  scene_manager_->OnGlInitialized(content_texture_id);
-  input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_.get());
   vr_shell_renderer_ = base::MakeUnique<vr::VrShellRenderer>();
   ui_renderer_ =
       base::MakeUnique<vr::UiRenderer>(scene_.get(), vr_shell_renderer_.get());
+  scene_manager_->OnGlInitialized(content_texture_id);
 }
 
 void Ui::OnAppButtonClicked() {

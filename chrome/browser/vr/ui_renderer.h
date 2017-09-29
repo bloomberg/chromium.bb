@@ -20,12 +20,12 @@ class VrShellRenderer;
 struct ControllerInfo {
   gfx::Point3F target_point;
   gfx::Point3F laser_origin;
-  UiInputManager::ButtonState touchpad_button_state;
-  UiInputManager::ButtonState app_button_state;
-  UiInputManager::ButtonState home_button_state;
+  UiInputManager::ButtonState touchpad_button_state = UiInputManager::UP;
+  UiInputManager::ButtonState app_button_state = UiInputManager::UP;
+  UiInputManager::ButtonState home_button_state = UiInputManager::UP;
   gfx::Transform transform;
-  float opacity;
-  UiElement* reticle_render_target;
+  float opacity = 1.0f;
+  UiElement* reticle_render_target = nullptr;
 };
 
 // Provides information for rendering such as the viewport and view/projection
