@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -20,7 +21,7 @@ TEST(HttpAuthPreferencesTest, AuthSchemes) {
   std::vector<std::string> expected_schemes_vector(
       expected_schemes, expected_schemes + arraysize(expected_schemes));
   HttpAuthPreferences http_auth_preferences(expected_schemes_vector
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
@@ -37,7 +38,7 @@ TEST(HttpAuthPreferencesTest, AuthSchemes) {
 TEST(HttpAuthPreferencesTest, DisableCnameLookup) {
   std::vector<std::string> auth_schemes;
   HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
@@ -54,7 +55,7 @@ TEST(HttpAuthPreferencesTest, DisableCnameLookup) {
 TEST(HttpAuthPreferencesTest, NegotiateEnablePort) {
   std::vector<std::string> auth_schemes;
   HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
@@ -72,7 +73,7 @@ TEST(HttpAuthPreferencesTest, NegotiateEnablePort) {
 TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
   std::vector<std::string> auth_schemes;
   HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
@@ -89,15 +90,10 @@ TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, GssApiLibraryName) {
   std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, "bar"
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences(AuthSchemes, "bar");
   EXPECT_EQ(std::string("bar"), http_auth_preferences.GssapiLibraryName());
 }
 #endif
@@ -105,7 +101,7 @@ TEST(HttpAuthPreferencesTest, GssApiLibraryName) {
 #if defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadTrue) {
   std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, "foo", true);
+  HttpAuthPreferences http_auth_preferences(AuthSchemes, true);
   EXPECT_TRUE(http_auth_preferences.AllowGssapiLibraryLoad());
 }
 #endif
@@ -113,7 +109,7 @@ TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadTrue) {
 #if defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadFalse) {
   std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, "foo", false);
+  HttpAuthPreferences http_auth_preferences(AuthSchemes, false);
   EXPECT_FALSE(http_auth_preferences.AllowGssapiLibraryLoad());
 }
 #endif
@@ -121,7 +117,7 @@ TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadFalse) {
 TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
   std::vector<std::string> auth_schemes;
   HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
@@ -139,7 +135,7 @@ TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
 TEST(HttpAuthPreferencesTest, AuthDelegateWhitelist) {
   std::vector<std::string> auth_schemes;
   HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
                                             ,
                                             ""
 #endif
