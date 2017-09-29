@@ -30,7 +30,7 @@ class VrCommonTestSuite : public base::TestSuite {
     PathService::Get(base::DIR_MODULE, &pak_path);
 #endif
     ui::ResourceBundle::InitSharedInstanceWithPakPath(
-        pak_path.AppendASCII("components_tests_resources.pak"));
+        pak_path.AppendASCII("vr_test.pak"));
   }
 
   void Shutdown() override {

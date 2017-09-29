@@ -14,11 +14,11 @@ executable("vr_testapp") {
   ]
 
   deps = [
-    ":repack_vr_test_pak",
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//chrome/browser/resources:vr_shell_resources",
     "//chrome/browser/vr:vr_common",
+    "//chrome/browser/vr:vr_test_pak",
     "//components:components_tests_pak",
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
@@ -34,21 +34,5 @@ executable("vr_testapp") {
     "//ui/gl/init",
     "//ui/ozone",
     "//ui/platform_window",
-  ]
-}
-
-repack("repack_vr_test_pak") {
-  sources = [
-    "$root_gen_dir/chrome/generated_resources_en-US.pak",
-    "$root_gen_dir/components/components_resources.pak",
-    "$root_gen_dir/components/strings/components_strings_en-US.pak",
-  ]
-
-  output = "$root_out_dir/vr_test.pak"
-
-  deps = [
-    "//chrome/app:generated_resources",
-    "//components/resources:components_resources",
-    "//components/strings",
   ]
 }
