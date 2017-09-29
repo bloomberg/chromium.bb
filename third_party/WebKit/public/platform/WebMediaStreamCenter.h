@@ -38,6 +38,7 @@ namespace blink {
 class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamTrack;
+class WebMediaStreamSource;
 
 class WebMediaStreamCenter {
  public:
@@ -56,6 +57,9 @@ class WebMediaStreamCenter {
   virtual bool DidStopMediaStreamTrack(const WebMediaStreamTrack&) {
     return false;
   }
+
+  // Source functionality.
+  virtual void DidStopMediaStreamSource(const WebMediaStreamSource&) {}
 
   // Caller must take the ownership of the returned |WebAudioSourceProvider|
   // object.

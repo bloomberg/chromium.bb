@@ -72,24 +72,8 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
             &media_log_)) {}
 
   void SetUp() final {
-    const media::AudioParameters params(
-        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::GuessChannelLayout(kNumChannelsForTest),
-        kAudioTrackSampleRate /* sample_rate */, 16 /* bits_per_sample */,
-        kAudioTrackSamplesPerBuffer /* frames_per_buffer */);
-    audio_source_->Initialize(params, &fake_callback_);
-
-    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
-                                   blink::WebMediaStreamSource::kTypeAudio,
-                                   blink::WebString::FromUTF8("audio_track"),
-                                   false /* remote */);
-    blink_audio_track_.Initialize(blink_audio_source_.Id(),
-                                  blink_audio_source_);
-
-    // |blink_audio_source_| takes ownership of HtmlAudioElementCapturerSource.
-    blink_audio_source_.SetExtraData(
-        new HtmlAudioElementCapturerSource(audio_source_.get()));
-    ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
+    SetUpAudioTrack();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -112,6 +96,27 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
   }
 
  protected:
+  void SetUpAudioTrack() {
+    const media::AudioParameters params(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        media::GuessChannelLayout(kNumChannelsForTest),
+        kAudioTrackSampleRate /* sample_rate */, 16 /* bits_per_sample */,
+        kAudioTrackSamplesPerBuffer /* frames_per_buffer */);
+    audio_source_->Initialize(params, &fake_callback_);
+
+    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
+                                   blink::WebMediaStreamSource::kTypeAudio,
+                                   blink::WebString::FromUTF8("audio_track"),
+                                   false /* remote */);
+    blink_audio_track_.Initialize(blink_audio_source_.Id(),
+                                  blink_audio_source_);
+
+    // |blink_audio_source_| takes ownership of HtmlAudioElementCapturerSource.
+    blink_audio_source_.SetExtraData(
+        new HtmlAudioElementCapturerSource(audio_source_.get()));
+    ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
+  }
+
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   blink::WebMediaStreamSource blink_audio_source_;
@@ -152,6 +157,38 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
   run_loop.Run();
 
   track()->Stop();
+  track()->RemoveSink(&sink);
+}
+
+// When a new source is created and started, it is stopped in the same task
+// when cross-origin data is detected. This test checks that no data is
+// delivered in this case.
+TEST_F(HTMLAudioElementCapturerSourceTest,
+       StartAndStopInSameTaskCapturesZeroFrames) {
+  InSequence s;
+
+  // Stop the original track and start a new one so that it can be stopped in
+  // in the same task.
+  track()->Stop();
+  base::RunLoop().RunUntilIdle();
+  SetUpAudioTrack();
+
+  MockMediaStreamAudioSink sink;
+  track()->AddSink(&sink);
+  EXPECT_CALL(
+      sink,
+      OnData(AllOf(Property(&media::AudioBus::channels, kNumChannelsForTest),
+                   Property(&media::AudioBus::frames,
+                            kAudioTrackSamplesPerBuffer)),
+             _))
+      .Times(0);
+
+  std::unique_ptr<media::AudioBus> bus =
+      media::AudioBus::Create(kNumChannelsForTest, kAudioTrackSamplesPerBuffer);
+  InjectAudio(bus.get());
+
+  track()->Stop();
+  base::RunLoop().RunUntilIdle();
   track()->RemoveSink(&sink);
 }
 

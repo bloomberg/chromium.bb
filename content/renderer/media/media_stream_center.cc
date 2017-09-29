@@ -199,4 +199,14 @@ void MediaStreamCenter::DidStopLocalMediaStream(
     DidStopMediaStreamTrack(video_tracks[i]);
 }
 
+void MediaStreamCenter::DidStopMediaStreamSource(
+    const blink::WebMediaStreamSource& web_source) {
+  if (web_source.IsNull())
+    return;
+  MediaStreamSource* const source =
+      static_cast<MediaStreamSource*>(web_source.GetExtraData());
+  DCHECK(source);
+  source->StopSource();
+}
+
 }  // namespace content

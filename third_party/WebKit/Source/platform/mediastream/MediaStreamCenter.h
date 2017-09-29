@@ -44,6 +44,7 @@ namespace blink {
 class AudioSourceProvider;
 class MediaStreamComponent;
 class MediaStreamDescriptor;
+class MediaStreamSource;
 class WebMediaStream;
 class WebMediaStreamCenter;
 
@@ -68,6 +69,8 @@ class PLATFORM_EXPORT MediaStreamCenter final
 
   void DidCreateMediaStreamAndTracks(MediaStreamDescriptor*);
   void DidStopLocalMediaStream(MediaStreamDescriptor*);
+
+  void DidStopMediaStreamSource(MediaStreamSource*);
 
   // blink::WebMediaStreamCenterClient
   void StopLocalMediaStream(const WebMediaStream&) override;

@@ -28,10 +28,8 @@ class MediaElementEventListener final : public EventListener {
   WTF_MAKE_NONCOPYABLE(MediaElementEventListener);
 
  public:
-  MediaElementEventListener(HTMLMediaElement* element, MediaStream* stream)
-      : EventListener(kCPPEventListenerType),
-        media_element_(element),
-        media_stream_(stream) {}
+  MediaElementEventListener(HTMLMediaElement*, MediaStream*);
+  void UpdateSources(ExecutionContext*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -44,7 +42,16 @@ class MediaElementEventListener final : public EventListener {
 
   Member<HTMLMediaElement> media_element_;
   Member<MediaStream> media_stream_;
+  HeapHashSet<WeakMember<MediaStreamSource>> sources_;
 };
+
+MediaElementEventListener::MediaElementEventListener(HTMLMediaElement* element,
+                                                     MediaStream* stream)
+    : EventListener(kCPPEventListenerType),
+      media_element_(element),
+      media_stream_(stream) {
+  UpdateSources(element->GetExecutionContext());
+}
 
 void MediaElementEventListener::handleEvent(ExecutionContext* context,
                                             Event* event) {
@@ -89,11 +96,25 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
 
   DVLOG(2) << "#videotracks: " << video_tracks.size()
            << " #audiotracks: " << audio_tracks.size();
+
+  UpdateSources(context);
+}
+
+void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
+  for (auto track : media_stream_->getTracks())
+    sources_.insert(track->Component()->Source());
+
+  if (!media_element_->IsMediaDataCORSSameOrigin(
+          context->GetSecurityOrigin())) {
+    for (auto source : sources_)
+      MediaStreamCenter::Instance().DidStopMediaStreamSource(source);
+  }
 }
 
 DEFINE_TRACE(MediaElementEventListener) {
   visitor->Trace(media_element_);
   visitor->Trace(media_stream_);
+  visitor->Trace(sources_);
   EventListener::Trace(visitor);
 }
 
@@ -112,6 +133,14 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     return nullptr;
   }
 
+  if (!(element.currentSrc().IsNull() && !element.GetSrcObject()) &&
+      !element.IsMediaDataCORSSameOrigin(
+          element.GetExecutionContext()->GetSecurityOrigin())) {
+    exception_state.ThrowSecurityError(
+        "Cannot capture from element with cross-origin data");
+    return nullptr;
+  }
+
   WebMediaStream web_stream;
   web_stream.Initialize(WebVector<WebMediaStreamTrack>(),
                         WebVector<WebMediaStreamTrack>());
@@ -120,7 +149,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   MediaStream* stream =
       MediaStream::Create(element.GetExecutionContext(), web_stream);
 
-  EventListener* listener = new MediaElementEventListener(&element, stream);
+  MediaElementEventListener* listener =
+      new MediaElementEventListener(&element, stream);
   element.addEventListener(EventTypeNames::loadedmetadata, listener, false);
   element.addEventListener(EventTypeNames::ended, listener, false);
 
@@ -143,6 +173,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     Platform::Current()->CreateHTMLAudioElementCapturer(
         &web_stream, element.GetWebMediaPlayer());
   }
+  listener->UpdateSources(element.GetExecutionContext());
 
   // If element.currentSrc().isNull() then |stream| will have no tracks, those
   // will be added eventually afterwards via MediaElementEventListener.
