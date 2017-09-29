@@ -30,9 +30,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -187,9 +188,9 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    // @MediumTest
-    // @Feature({"NewTabPage", "RenderTest"})
-    @DisabledTest
+    @MediumTest
+    @RetryOnFailure
+    @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
@@ -204,6 +205,7 @@ public class TileGridLayoutTest {
 
     @Test
     @MediumTest
+    @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome(false)
     public void testTileGridAppearance_Two() throws IOException, InterruptedException {
@@ -272,27 +274,24 @@ public class TileGridLayoutTest {
 
     /**
      * Checks whether the requested orientation matches the current one.
-     * @param activity Activity to check the orientation from. We pull its {@link Configuration}.
+     * @param activity Activity to check the orientation from. We pull its {@link Configuration} and
+     *         content {@link View}.
      * @param requestedOrientation The requested orientation, as used in
-     *         {@link ActivityInfo#screenOrientation}. Note: This value is different from the one we
-     *         check against from {@link Configuration#orientation}. The constants used to represent
-     *         the values are not the same.
+     *         {@link ActivityInfo#screenOrientation}.
      */
-    public boolean orientationMatchesRequest(Activity activity, int requestedOrientation) {
-        int currentOrientation = activity.getResources().getConfiguration().orientation;
+    private boolean orientationMatchesRequest(Activity activity, int requestedOrientation) {
+        // Note: Requests use a constant from ActivityInfo, not Configuration.ORIENTATION_*!
+        boolean expectLandscape = requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 
-        // 1 => 1
-        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-            return currentOrientation == Configuration.ORIENTATION_PORTRAIT;
-        }
+        // We check the orientation by looking at the dimensions of the content view. Looking at
+        // orientation from the configuration is not reliable as sometimes the activity gets the
+        // event that its configuration changed, but has not updated its layout yet.
+        Configuration configuration = activity.getResources().getConfiguration();
+        View contentView = activity.findViewById(android.R.id.content);
+        int smallestWidthPx = ViewUtils.dpToPx(activity, configuration.smallestScreenWidthDp);
+        boolean viewIsLandscape = contentView.getMeasuredWidth() > smallestWidthPx;
 
-        // 0 => 2
-        if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-            return currentOrientation == Configuration.ORIENTATION_LANDSCAPE;
-        }
-
-        throw new IllegalArgumentException(
-                "unexpected orientation requested: " + requestedOrientation);
+        return expectLandscape == viewIsLandscape;
     }
 
     private TileGridLayout getTileGridLayout(NewTabPage ntp) {
