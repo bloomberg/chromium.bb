@@ -1504,7 +1504,7 @@ public class BottomSheet
      * @param state The state to get the height from.
      * @return The height of the sheet at the provided state.
      */
-    private float getSheetHeightForState(@SheetState int state) {
+    public float getSheetHeightForState(@SheetState int state) {
         return mStateRatios[state] * mContainerHeight;
     }
 
@@ -1573,7 +1573,7 @@ public class BottomSheet
         return prevState;
     }
 
-    private boolean isSmallScreen() {
+    public boolean isSmallScreen() {
         // A small screen is defined by there being less than 160dp between half and full states.
         float fullToHalfDiff = (getFullRatio() - getHalfRatio()) * mContainerHeight;
         return fullToHalfDiff < mMinHalfFullDistance;

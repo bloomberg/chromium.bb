@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -89,9 +88,10 @@ public class BottomSheetContentController extends BottomNavigationView
         public void onSheetOffsetChanged(float heightFraction) {
             // If the omnibox is not focused, allow the navigation bar to set its Y translation.
             if (!mOmniboxHasFocus) {
-                float offsetY =
-                        (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
-                        + mDistanceBelowToolbarPx;
+                float offsetY = mBottomSheet.getSheetHeightForState(mBottomSheet.isSmallScreen()
+                                                ? BottomSheet.SHEET_STATE_FULL
+                                                : BottomSheet.SHEET_STATE_HALF)
+                        - mBottomSheet.getSheetOffsetFromBottom();
                 setTranslationY(Math.max(offsetY, 0f));
 
                 if (mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
@@ -172,7 +172,6 @@ public class BottomSheetContentController extends BottomNavigationView
     private BottomSheet mBottomSheet;
     private TabModelSelector mTabModelSelector;
     private SnackbarManager mSnackbarManager;
-    private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
     private ChromeActivity mActivity;
     private boolean mShouldOpenSheetOnNextContentChange;
@@ -209,12 +208,11 @@ public class BottomSheetContentController extends BottomNavigationView
     /**
      * Initializes the {@link BottomSheetContentController}.
      * @param bottomSheet The {@link BottomSheet} associated with this bottom nav.
-     * @param controlContainerHeight The height of the control container in px.
      * @param tabModelSelector The {@link TabModelSelector} for the application.
      * @param activity The {@link ChromeActivity} that owns the BottomSheet.
      */
-    public void init(BottomSheet bottomSheet, int controlContainerHeight,
-            TabModelSelector tabModelSelector, ChromeActivity activity) {
+    public void init(
+            BottomSheet bottomSheet, TabModelSelector tabModelSelector, ChromeActivity activity) {
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(mBottomSheetObserver);
         mActivity = activity;
@@ -235,10 +233,6 @@ public class BottomSheetContentController extends BottomNavigationView
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
-
-        Resources res = getContext().getResources();
-        mDistanceBelowToolbarPx = controlContainerHeight
-                + res.getDimensionPixelOffset(R.dimen.bottom_nav_space_from_toolbar);
 
         setOnNavigationItemSelectedListener(this);
         hideMenuLabels();
