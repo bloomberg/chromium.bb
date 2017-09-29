@@ -667,7 +667,7 @@ crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
-crbug.com/248938 [ Win7 Debug ] virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
+crbug.com/248938 [ Linux Win7 Debug ] virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
@@ -3679,7 +3679,7 @@ crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.
 
 # Sheriff failures 2017-09-11
 crbug.com/763809 [ Win7 Debug ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure Timeout ]
-crbug.com/763810 [ Win7 Debug ] virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
+crbug.com/763810 [ Linux Win7 Debug ] virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12
