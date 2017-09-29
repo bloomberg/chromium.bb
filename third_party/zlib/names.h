@@ -162,6 +162,13 @@
 #define fill_window_sse Cr_z_fill_window_sse
 #define read_buf Cr_z_read_buf
 #define x86_check_features Cr_z_x86_check_features
+/* FIXME: x86_cpu_enable_ssse3 wasn't part of the simd.patch */
+#define x86_cpu_enable_ssse3 Cr_z_x86_cpu_enable_ssse3
 #define x86_cpu_enable_simd Cr_z_x86_cpu_enable_simd
+
+#if defined(ADLER32_SIMD_SSSE3) || defined(ADLER32_SIMD_NEON)
+/* Symbols added by adler_simd.c, see also the FIXME above */
+#define adler32_simd_ Cr_z_adler32_simd_
+#endif
 
 #endif  /* THIRD_PARTY_ZLIB_NAMES_H_ */
