@@ -570,11 +570,6 @@ function (setup_av1_targets)
                                       "AOM_AV1_DECODER_INTRIN_SSSE3" "aom")
       endif ()
     endif ()
-
-    if (CONFIG_AV1_ENCODER)
-      add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_INTRIN_SSSE3" "aom")
-    endif ()
   endif ()
 
   if (HAVE_SSE4_1)
