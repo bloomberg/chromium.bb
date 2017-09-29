@@ -11,7 +11,6 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
@@ -2075,10 +2074,7 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
                          .GetPaintRecord());
 }
 
-TEST_P(PaintControllerTest, OptimizeNoopPairs) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return;
-
+TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
   FakeDisplayItemClient first("first");
   FakeDisplayItemClient second("second");
   FakeDisplayItemClient third("third");
@@ -2132,7 +2128,7 @@ TEST_P(PaintControllerTest, OptimizeNoopPairs) {
                       TestControllerDisplayItem(third, kBackgroundDrawingType));
 }
 
-TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
+TEST_F(PaintControllerTestBase, SmallPaintControllerHasOnePaintChunk) {
   ScopedSlimmingPaintV2ForTest enable_s_pv2(true);
   FakeDisplayItemClient client("test client");
 
@@ -2172,7 +2168,7 @@ void DrawPath(GraphicsContext& context,
     context.DrawPath(path, flags);
 }
 
-TEST_P(PaintControllerTest, BeginAndEndFrame) {
+TEST_F(PaintControllerTestBase, BeginAndEndFrame) {
   class FakeFrame {};
 
   // PaintController should have one null frame in the stack since beginning.
@@ -2447,30 +2443,6 @@ class PaintControllerUnderInvalidationTest
     }
     GetPaintController().CommitNewDisplayItems();
   }
-
-  void TestSkipCacheInSubsequence() {
-    FakeDisplayItemClient container("container");
-    FakeDisplayItemClient content("content");
-    GraphicsContext context(GetPaintController());
-
-    {
-      SubsequenceRecorder r(context, container);
-      DisplayItemCacheSkipper cache_skipper(context);
-      DrawRect(context, content, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-    }
-    GetPaintController().CommitNewDisplayItems();
-
-    {
-      EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
-          context, container));
-      SubsequenceRecorder r(context, container);
-      DisplayItemCacheSkipper cache_skipper(context);
-      DrawRect(context, content, kBackgroundDrawingType,
-               FloatRect(200, 200, 400, 400));
-    }
-    GetPaintController().CommitNewDisplayItems();
-  }
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing) {
@@ -2522,10 +2494,6 @@ TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
 
 TEST_F(PaintControllerUnderInvalidationTest, SubsequenceBecomesEmpty) {
   EXPECT_DEATH(TestSubsequenceBecomesEmpty(), "");
-}
-
-TEST_F(PaintControllerUnderInvalidationTest, SkipCacheInSubsequence) {
-  TestSkipCacheInSubsequence();
 }
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)

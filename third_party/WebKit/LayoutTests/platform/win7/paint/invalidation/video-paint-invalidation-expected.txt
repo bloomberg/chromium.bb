@@ -1,0 +1,91 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [320, 240]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [320, 240],
+              "drawsContent": true
+            },
+            {
+              "position": [8, 8],
+              "bounds": [320, 240],
+              "drawsContent": true,
+              "paintInvalidations": [
+                {
+                  "object": "LayoutFlexibleBox DIV",
+                  "rect": [96, 223, 81, 2],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [96, 223, 81, 2],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [159, 208, 36, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [78, 208, 36, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutButton INPUT",
+                  "rect": [195, 208, 32, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutButton INPUT",
+                  "rect": [0, 208, 32, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [245, 223, 25, 2],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow (anonymous)",
+                  "rect": [32, 208, 18, 23],
+                  "reason": "invalidate paint rectangle"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [32, 217, 18, 14],
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineTextBox ''",
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineTextBox '0:00'",
+                  "reason": "full"
+                },
+                {
+                  "object": "RootInlineBox",
+                  "reason": "full"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
