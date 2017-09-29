@@ -1162,3 +1162,33 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldIgnoreTransientDownloads) {
   // |OnDownloadItemDestroyed| is called from items's destructor.
   downloads_manager()->mutable_items()->clear();
 }
+
+TEST_F(DownloadSuggestionsProviderTest, ShouldNotShowSuggestedDownloads) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  std::vector<OfflinePageItem> offline_pages = CreateDummyOfflinePages({0, 1});
+
+  offline_pages[0].url = GURL("http://dummy.com/0");
+  offline_pages[0].creation_time = kOutdatedTime;
+  offline_pages[0].last_access_time = kNotOutdatedTime;
+
+  // Suggested page should be ignored.
+  offline_pages[1].client_id.name_space = "suggested_articles";
+  offline_pages[1].url = GURL("http://dummy.com/1");
+  offline_pages[1].creation_time = kNotOutdatedTime;
+  offline_pages[1].last_access_time = offline_pages[1].creation_time;
+
+  *(offline_pages_model()->mutable_items()) = offline_pages;
+
+  // Even though page 0 was created long time ago, it should be reported because
+  // it has been visited recently.
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, downloads_category(),
+                       UnorderedElementsAre(HasUrl("http://dummy.com/0"))));
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(now);
+  CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true,
+                 std::move(test_clock));
+}
