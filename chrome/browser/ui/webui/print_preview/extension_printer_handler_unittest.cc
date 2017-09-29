@@ -40,6 +40,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
 #include "printing/pdf_render_settings.h"
+#include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -214,7 +215,15 @@ void RecordCapability(size_t* call_count,
                       std::unique_ptr<base::DictionaryValue>* capability_out,
                       std::unique_ptr<base::DictionaryValue> capability) {
   ++(*call_count);
-  *capability_out = std::move(capability);
+  const base::Value* capabilities = nullptr;
+  if (capability) {
+    capabilities = capability->FindPathOfType({printing::kSettingCapabilities},
+                                              base::Value::Type::DICTIONARY);
+  }
+  *capability_out =
+      capabilities ? base::DictionaryValue::From(
+                         std::make_unique<base::Value>(capabilities->Clone()))
+                   : nullptr;
 }
 
 // Used as a callback to StartPrint in tests.

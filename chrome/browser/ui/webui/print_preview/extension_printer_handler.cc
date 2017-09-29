@@ -34,6 +34,7 @@
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
 #include "extensions/common/value_builder.h"
+#include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
 
 using device::UsbDevice;
@@ -306,8 +307,9 @@ void ExtensionPrinterHandler::WrapGetCapabilityCallback(
     const PrinterHandler::GetCapabilityCallback& callback,
     const base::DictionaryValue& capability) {
   std::unique_ptr<base::DictionaryValue> capabilities =
-      base::DictionaryValue::From(
-          std::make_unique<base::Value>(capability.Clone()));
+      std::make_unique<base::DictionaryValue>();
+  if (!capability.empty())  // empty capability -> empty return dictionary
+    capabilities->SetPath({printing::kSettingCapabilities}, capability.Clone());
   callback.Run(std::move(capabilities));
 }
 

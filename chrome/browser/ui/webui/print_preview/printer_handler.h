@@ -45,6 +45,15 @@ class PrinterHandler {
   using AddedPrintersCallback =
       base::Callback<void(const base::ListValue& printers)>;
   using GetPrintersDoneCallback = base::Closure;
+  // |capability| should contain a CDD with key printing::kSettingCapabilities.
+  // It may also contain other information about the printer in a dictionary
+  // with key printing::kPrinter.
+  // If |capability| is null, empty, or does not contain a dictionary with key
+  // printing::kSettingCapabilities, this indicates a failure to retrieve
+  // capabilities.
+  // If the dictionary with key printing::kSettingCapabilities is
+  // empty, this indicates capabilities were retrieved but the printer does
+  // not support any of the capability fields in a CDD.
   using GetCapabilityCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> capability)>;
   using PrintCallback =

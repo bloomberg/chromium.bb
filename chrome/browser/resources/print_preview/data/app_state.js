@@ -40,7 +40,7 @@ function RecentDestination(destination) {
 
   /**
    * Origin of the RecentDestination.
-   * @type {string}
+   * @type {!print_preview.DestinationOrigin}
    */
   this.origin = destination.origin;
 
