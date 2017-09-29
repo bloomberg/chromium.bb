@@ -27,8 +27,9 @@
  */
 
 #include "platform/audio/MultiChannelResampler.h"
+
+#include <memory>
 #include "platform/audio/AudioBus.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -101,7 +102,7 @@ MultiChannelResampler::MultiChannelResampler(double scale_factor,
   // Create each channel's resampler.
   for (unsigned channel_index = 0; channel_index < number_of_channels;
        ++channel_index)
-    kernels_.push_back(WTF::MakeUnique<SincResampler>(scale_factor));
+    kernels_.push_back(std::make_unique<SincResampler>(scale_factor));
 }
 
 void MultiChannelResampler::Process(AudioSourceProvider* provider,

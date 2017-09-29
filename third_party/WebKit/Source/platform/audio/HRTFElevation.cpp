@@ -33,7 +33,6 @@
 #include <memory>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFPanner.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/StringHash.h"
 
@@ -232,9 +231,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
     return nullptr;
 
   std::unique_ptr<HRTFKernelList> kernel_list_l =
-      WTF::MakeUnique<HRTFKernelList>(kNumberOfTotalAzimuths);
+      std::make_unique<HRTFKernelList>(kNumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernel_list_r =
-      WTF::MakeUnique<HRTFKernelList>(kNumberOfTotalAzimuths);
+      std::make_unique<HRTFKernelList>(kNumberOfTotalAzimuths);
 
   // Load convolution kernels from HRTF files.
   int interpolated_index = 0;
@@ -289,9 +288,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateByInterpolatingSlices(
   DCHECK_LT(x, 1.0);
 
   std::unique_ptr<HRTFKernelList> kernel_list_l =
-      WTF::MakeUnique<HRTFKernelList>(kNumberOfTotalAzimuths);
+      std::make_unique<HRTFKernelList>(kNumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernel_list_r =
-      WTF::MakeUnique<HRTFKernelList>(kNumberOfTotalAzimuths);
+      std::make_unique<HRTFKernelList>(kNumberOfTotalAzimuths);
 
   HRTFKernelList* kernel_list_l1 = hrtf_elevation1->KernelListL();
   HRTFKernelList* kernel_list_r1 = hrtf_elevation1->KernelListR();
