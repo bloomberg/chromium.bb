@@ -21,6 +21,7 @@ import os
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
@@ -80,6 +81,19 @@ def field(fields, **kwargs):
   f = fields.copy()
   f.update(kwargs)
   return f
+
+
+def PrependPath(prepend):
+  """Generate path with new directory at the beginning.
+
+  Args:
+    prepend: Directory to add at the beginning of the path.
+
+  Returns:
+    Extended path as a string.
+  """
+  return os.pathsep.join([prepend, os.environ.get('PATH', os.defpath)])
+
 
 def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
@@ -219,11 +233,12 @@ def InitialCheckout(repo):
 
 
 @StageDecorator
-def RunCbuildbot(buildroot, argv):
+def RunCbuildbot(buildroot, depot_tools_path, argv):
   """Start cbuildbot in specified directory with all arguments.
 
   Args:
     buildroot: Directory to be passed to cbuildbot with --buildroot.
+    depot_tools_path: Directory for depot_tools to be used by cbuildbot.
     argv: Command line options passed to cbuildbot_launch.
 
   Returns:
@@ -245,8 +260,13 @@ def RunCbuildbot(buildroot, argv):
   cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
       buildroot, cbuildbot_path, options)
 
-  # Actually run cbuildbot with the fixed up command line options.
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True, cwd=buildroot)
+  # We want cbuildbot to use branched depot_tools scripts from our manifest,
+  # so that depot_tools is branched to match cbuildbot.
+  logging.info('Adding depot_tools into PATH: %s', depot_tools_path)
+  extra_env = {'PATH': PrependPath(depot_tools_path)}
+
+  result = cros_build_lib.RunCommand(
+      cmd, extra_env=extra_env, error_code_ok=True, cwd=buildroot)
   return result.returncode
 
 
@@ -318,6 +338,7 @@ def _main(argv):
   branchname = options.branch or 'master'
   root = options.buildroot
   buildroot = os.path.join(root, 'repository')
+  depot_tools_path = os.path.join(buildroot, constants.DEPOT_TOOLS_SUBPATH)
   build_config = options.build_targets[0]
 
   metrics_fields = {
@@ -348,13 +369,13 @@ def _main(argv):
       with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
         CleanBuildRoot(root, repo, metrics_fields)
 
-      # Get a checkout close enough the branched cbuildbot can handle it.
+      # Get a checkout close enough to the branch that cbuildbot can handle it.
       with metrics.SecondsTimer(METRIC_INITIAL, fields=metrics_fields):
         InitialCheckout(repo)
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
-      result = RunCbuildbot(buildroot, argv)
+      result = RunCbuildbot(buildroot, depot_tools_path, argv)
       s_fields['success'] = (result == 0)
       return result
 

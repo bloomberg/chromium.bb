@@ -103,10 +103,11 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
         cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
         return_value=version)
 
-    cbuildbot_launch.RunCbuildbot('/cbuildbot_buildroot', args)
+    cbuildbot_launch.RunCbuildbot('/cbuildbot_buildroot', '/depot_tools', args)
 
     self.assertCommandCalled(
-        expected_cmd, cwd='/cbuildbot_buildroot', error_code_ok=True)
+        expected_cmd, extra_env={'PATH': mock.ANY},
+        cwd='/cbuildbot_buildroot', error_code_ok=True)
 
   def testRunCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
@@ -175,6 +176,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
             '-r', '/root/repository',
             '--ts-mon-task-num', '1',
         ],
+        extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
         error_code_ok=True)
 
@@ -231,6 +233,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
             '--remote-trybot',
             '--ts-mon-task-num', '1',
         ],
+        extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
         error_code_ok=True)
 
