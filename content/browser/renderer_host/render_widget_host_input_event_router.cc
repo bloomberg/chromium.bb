@@ -41,6 +41,10 @@ namespace content {
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     RenderWidgetHostViewBase* view) {
+  // RenderWidgetHostViewBase::RemoveObserver() should only ever be called
+  // in this function, except during the shutdown of this class. This prevents
+  // removal of an observed view that is being tracked as an event target
+  // without cleaning up dangling pointers to it.
   view->RemoveObserver(this);
 
   // Remove this view from the owner_map.
@@ -100,6 +104,8 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
 }
 
 void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
+  // Since we're shutting down, it's safe to call RenderWidgetHostViewBase::
+  // RemoveObserver() directly here.
   for (auto entry : owner_map_)
     entry.second->RemoveObserver(this);
   owner_map_.clear();
@@ -830,8 +836,12 @@ void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
     const viz::FrameSinkId& id) {
   auto it_to_remove = owner_map_.find(id);
   if (it_to_remove != owner_map_.end()) {
-    it_to_remove->second->RemoveObserver(this);
-    owner_map_.erase(it_to_remove);
+    // If we remove a view from the observer list, we need to be sure to do a
+    // cleanup of the various targets and target maps, else we will end up with
+    // stale values if the view destructs and isn't an observer anymore.
+    // Note: the view the iterator points at will be deleted in the following
+    // call, and shouldn't be used after this point.
+    OnRenderWidgetHostViewBaseDestroyed(it_to_remove->second);
   }
 
   for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
