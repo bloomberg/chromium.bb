@@ -44,7 +44,7 @@ enum tegra_map_type {
 struct tegra_private_map_data {
 	void *tiled;
 	void *untiled;
-	int prot;
+	uint32_t map_flags;
 };
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
@@ -301,7 +301,7 @@ static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
+static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	struct drm_tegra_gem_mmap gem_map;
@@ -316,13 +316,14 @@ static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane, in
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
+	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+			  gem_map.offset);
 	data->length = bo->total_size;
 	if ((bo->tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
 		priv = calloc(1, sizeof(*priv));
 		priv->untiled = calloc(1, bo->total_size);
 		priv->tiled = addr;
-		priv->prot = prot;
+		priv->map_flags = map_flags;
 		data->priv = priv;
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_READ_TILED_BUFFER);
 		addr = priv->untiled;
@@ -348,7 +349,7 @@ static int tegra_bo_flush(struct bo *bo, struct map_info *data)
 {
 	struct tegra_private_map_data *priv = data->priv;
 
-	if (priv && priv->prot & PROT_WRITE)
+	if (priv && (priv->map_flags & BO_MAP_WRITE))
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_WRITE_TILED_BUFFER);
 
 	return 0;

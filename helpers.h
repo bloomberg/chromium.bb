@@ -15,11 +15,12 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 		       uint64_t use_flags);
 int drv_dumb_bo_destroy(struct bo *bo);
-int drv_map_info_destroy(struct bo *bo);
 int drv_gem_bo_destroy(struct bo *bo);
 int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data);
-void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot);
+void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags);
 int drv_bo_munmap(struct bo *bo, struct map_info *data);
+int drv_map_info_destroy(struct bo *bo);
+int drv_get_prot(uint32_t map_flags);
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane);
 void drv_increment_reference_count(struct driver *drv, struct bo *bo, size_t plane);
 void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t plane);

@@ -309,7 +309,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
+void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	size_t i;
@@ -328,7 +328,8 @@ void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, int pr
 		if (bo->handles[i].u32 == bo->handles[plane].u32)
 			data->length += bo->sizes[i];
 
-	return mmap(0, data->length, prot, MAP_SHARED, bo->drv->fd, map_dumb.offset);
+	return mmap(0, data->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+		    map_dumb.offset);
 }
 
 int drv_bo_munmap(struct bo *bo, struct map_info *data)
@@ -363,6 +364,11 @@ int drv_map_info_destroy(struct bo *bo)
 	}
 
 	return 0;
+}
+
+int drv_get_prot(uint32_t map_flags)
+{
+	return (BO_MAP_WRITE & map_flags) ? PROT_WRITE | PROT_READ : PROT_READ;
 }
 
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane)
