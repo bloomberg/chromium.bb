@@ -30,6 +30,10 @@ class PasswordFormManager;
 - (void)showUpdatePasswordInfoBar:
     (std::unique_ptr<password_manager::PasswordFormManager>)formToUpdate;
 
+// Shows UI to notify the user about auto sign in.
+- (void)showAutosigninNotification:
+    (std::unique_ptr<autofill::PasswordForm>)formSignedIn;
+
 @property(readonly, nonatomic) ios::ChromeBrowserState* browserState;
 
 @property(readonly) password_manager::PasswordManager* passwordManager;

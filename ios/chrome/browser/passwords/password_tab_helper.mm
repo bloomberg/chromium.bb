@@ -30,6 +30,11 @@ void PasswordTabHelper::SetDispatcher(id<ApplicationCommands> dispatcher) {
   controller_.dispatcher = dispatcher;
 }
 
+void PasswordTabHelper::SetPasswordControllerDelegate(
+    id<PasswordControllerDelegate> delegate) {
+  controller_.delegate = delegate;
+}
+
 id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }

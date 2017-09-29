@@ -29,6 +29,8 @@ source_set("passwords") {
     "js_credential_manager.mm",
     "js_password_manager.h",
     "js_password_manager.mm",
+    "notify_auto_signin_view_controller.h",
+    "notify_auto_signin_view_controller.mm",
     "password_controller.h",
     "password_controller.mm",
     "password_form_filler.h",
@@ -79,8 +81,10 @@ source_set("passwords") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/infobars",
+    "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
+    "//ios/third_party/material_components_ios:material_components_ios",
     "//ios/web",
     "//ui/base",
     "//url",
@@ -141,6 +145,36 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",
+  ]
+}
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "credential_manager_egtest.mm",
+  ]
+
+  deps = [
+    ":passwords",
+    "//base",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//components/autofill/ios/browser",
+    "//components/keyed_service/core",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/common",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/web/public/test/http_server",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
   ]
 }
 

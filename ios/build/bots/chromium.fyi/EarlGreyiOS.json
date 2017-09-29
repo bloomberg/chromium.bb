@@ -16,6 +16,9 @@
   "tests": [
     {
       "app": "ios_chrome_integration_egtests",
+      "test args": [
+        "--enable-features=CredentialManager"
+      ],
       "device type": "iPhone 6s",
       "os": "11.0",
       "xcode version": "9.0",
@@ -85,6 +88,9 @@
     },
     {
       "app": "ios_chrome_integration_egtests",
+      "test args": [
+        "--enable-features=CredentialManager"
+      ],
       "device type": "iPad Air 2",
       "os": "11.0",
       "xcode version": "9.0",
