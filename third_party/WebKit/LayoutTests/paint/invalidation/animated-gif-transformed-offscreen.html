@@ -7,6 +7,11 @@
 <script>
 window.testIsAsync = true;
 
+// Disable under-invalidation checking because the "under-invalidation" of
+// offscreen gif animation is intentional.
+if (window.internals)
+    internals.runtimeFlags.paintUnderInvalidationCheckingEnabled = false;
+
 function repaintTest() {
     if (window.internals)
         internals.advanceImageAnimation(targetImage);
