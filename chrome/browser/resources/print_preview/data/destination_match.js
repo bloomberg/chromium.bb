@@ -4,6 +4,24 @@
 
 cr.define('print_preview', function() {
   'use strict';
+  /**
+   * Converts DestinationOrigin to PrinterType.
+   * @param {!print_preview.DestinationOrigin} origin The printer's
+   *     destination origin.
+   * return {?print_preview.PrinterType} The corresponding PrinterType.
+   *     Returns null if no match is found.
+   */
+  var originToType = function(origin) {
+    if (origin === print_preview.DestinationOrigin.LOCAL ||
+        origin === print_preview.DestinationOrigin.CROS) {
+      return print_preview.PrinterType.LOCAL_PRINTER;
+    }
+    if (origin === print_preview.DestinationOrigin.PRIVET)
+      return print_preview.PrinterType.PRIVET_PRINTER;
+    if (origin === print_preview.DestinationOrigin.EXTENSION)
+      return print_preview.PrinterType.EXTENSION_PRINTER;
+    return null;
+  };
 
   /**
    * A set of key parameters describing a destination used to determine
@@ -88,9 +106,17 @@ cr.define('print_preview', function() {
       }
       return arrayContains(
           [print_preview.Destination.GooglePromotedId.DOCS], destination.id);
+    },
+
+    /**
+     * @return {?print_preview.PrinterType} The printer type of this
+     *     destination match. Will return null for Cloud destinations.
+     */
+    getType: function() {
+      return originToType(this.origins_[0]);
     }
   };
 
   // Export
-  return {DestinationMatch: DestinationMatch};
+  return {originToType: originToType, DestinationMatch: DestinationMatch};
 });

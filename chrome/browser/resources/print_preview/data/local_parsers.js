@@ -116,8 +116,6 @@ cr.define('print_preview', function() {
   // Export
   return {
     parseDestination: parseDestination,
-    parseLocalDestination: parseLocalDestination,
-    parsePrivetDestination: parsePrivetDestination,
     parseExtensionDestination: parseExtensionDestination
   };
 });

@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/browser/ui/webui/print_preview/printer_capabilities.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_switches.h"
@@ -1044,10 +1043,10 @@ void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& callback_id,
     std::unique_ptr<base::DictionaryValue> settings_info) {
   // Check that |settings_info| is valid.
-  if (settings_info && !settings_info->empty()) {
+  if (settings_info &&
+      settings_info->FindKeyOfType(printing::kSettingCapabilities,
+                                   base::Value::Type::DICTIONARY)) {
     VLOG(1) << "Get printer capabilities finished";
-    DCHECK(settings_info->FindKeyOfType(printing::kPrinterCapabilities,
-                                        base::Value::Type::DICTIONARY));
     ResolveJavascriptCallback(base::Value(callback_id), *settings_info);
     return;
   }
@@ -1065,7 +1064,7 @@ void PrintPreviewHandler::SendPrinterSetup(
   auto caps_value = base::MakeUnique<base::Value>();
   auto caps = base::MakeUnique<base::DictionaryValue>();
   if (destination_info &&
-      destination_info->Remove(printing::kPrinterCapabilities, &caps_value) &&
+      destination_info->Remove(printing::kSettingCapabilities, &caps_value) &&
       caps_value->IsType(base::Value::Type::DICTIONARY)) {
     caps = base::DictionaryValue::From(std::move(caps_value));
   } else {

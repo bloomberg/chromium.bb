@@ -17,10 +17,6 @@ namespace printing {
 
 struct PrinterBasicInfo;
 
-// Printer capability setting keys.
-extern const char kPrinterId[];
-extern const char kPrinterCapabilities[];
-
 // Extracts the printer display name and description from the
 // appropriate fields in |printer| for the platform.
 std::pair<std::string, std::string> GetPrinterNameAndDescription(

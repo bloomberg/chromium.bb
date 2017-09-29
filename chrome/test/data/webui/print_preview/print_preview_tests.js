@@ -103,8 +103,10 @@ cr.define('print_preview_test', function() {
    */
   function getCddTemplate(printerId, opt_printerName) {
     return {
-      printerId: printerId,
-      printerName: opt_printerName || '',
+      printer: {
+        deviceName: printerId,
+        printerName: opt_printerName || '',
+      },
       capabilities: {
         version: '1.0',
         printer: {
@@ -151,7 +153,9 @@ cr.define('print_preview_test', function() {
    */
   function getPdfPrinter() {
     return {
-      printerId: 'Save as PDF',
+      printer: {
+        deviceName: 'Save as PDF',
+      },
       capabilities: {
         version: '1.0',
         printer: {
@@ -1343,7 +1347,7 @@ cr.define('print_preview_test', function() {
           function(args) {
             // Sanity check some printing argument values.
             var printTicketStore = args.printTicketStore;
-            expectEquals(barDevice.printerId, args.destination.id);
+            expectEquals(barDevice.printer.deviceName, args.destination.id);
             expectEquals(
                 getDefaultOrientation(barDevice) == 'LANDSCAPE',
                 printTicketStore.landscape.getValue());
@@ -1431,11 +1435,11 @@ cr.define('print_preview_test', function() {
       // local printer. See crbug.com/741341 and crbug.com/741528
       test('MacOpenPDFInPreview', function() {
         var device = getPdfPrinter();
-        initialSettings.systemDefaultDestinationId_ = device.printerId;
+        initialSettings.systemDefaultDestinationId_ = device.printer.deviceName;
         return setupSettingsAndDestinationsWithCapabilities(device).
             then(function() {
               assertEquals(
-                device.printerId,
+                device.printer.deviceName,
                 printPreview.destinationStore_.selectedDestination.id);
               return nativeLayer.whenCalled('getPreview');
             }).then(function() {
@@ -1465,7 +1469,7 @@ cr.define('print_preview_test', function() {
       // print ticket is invalid.
       test('MacOpenPDFInPreviewBadPrintTicket', function() {
         var device = getPdfPrinter();
-        initialSettings.systemDefaultDestinationId_ = device.printerId;
+        initialSettings.systemDefaultDestinationId_ = device.printer.deviceName;
         return Promise.all([
           setupSettingsAndDestinationsWithCapabilities(device),
           nativeLayer.whenCalled('getPreview')

@@ -31,8 +31,7 @@
 
 namespace printing {
 
-const char kPrinterId[] = "printerId";
-const char kPrinterCapabilities[] = "capabilities";
+const char kPrinter[] = "printer";
 
 namespace {
 
@@ -152,7 +151,7 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   const std::string& printer_description = printer_name_description.second;
 
   auto printer_info = base::MakeUnique<base::DictionaryValue>();
-  printer_info->SetString(kPrinterId, device_name);
+  printer_info->SetString(kSettingDeviceName, device_name);
   printer_info->SetString(kSettingPrinterName, printer_name);
   printer_info->SetString(kSettingPrinterDescription, printer_description);
   printer_info->SetBoolean(
@@ -160,10 +159,13 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
       base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
           basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue);
 
-  printer_info->Set(kPrinterCapabilities,
-                    GetPrinterCapabilitiesOnBlockingPoolThread(device_name));
+  auto printer_info_capabilities = std::make_unique<base::DictionaryValue>();
+  printer_info_capabilities->SetDictionary(kPrinter, std::move(printer_info));
+  printer_info_capabilities->Set(
+      kSettingCapabilities,
+      GetPrinterCapabilitiesOnBlockingPoolThread(device_name));
 
-  return printer_info;
+  return printer_info_capabilities;
 }
 
 void ConvertPrinterListForCallback(

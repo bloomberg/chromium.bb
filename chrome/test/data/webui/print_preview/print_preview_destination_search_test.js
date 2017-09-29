@@ -140,10 +140,12 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
     test('ResolutionFails', function() {
       var destId = "001122DEADBEEF";
       if (cr.isChromeOS) {
-        nativeLayer_.setSetupPrinterResponse(true, { printerId: destId,
-                                                     success: false,});
+        nativeLayer_.setSetupPrinterResponse(true, {printerId: destId,
+                                                    success: false,});
       } else {
-        nativeLayer_.setLocalDestinationCapabilities({printerId: destId,
+        nativeLayer_.setLocalDestinationCapabilities({printer: {
+                                                          deviceName: destId,
+                                                      },
                                                       capabilities: getCaps()},
                                                      true);
       }
@@ -165,7 +167,9 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       if (cr.isChromeOS)
         nativeLayer_.setSetupPrinterResponse(false, response);
       else
-        nativeLayer_.setLocalDestinationCapabilities({printerId: destId,
+        nativeLayer_.setLocalDestinationCapabilities({printer: {
+                                                          deviceName: destId,
+                                                      },
                                                       capabilities: getCaps()});
 
       var waiter = waitForEvent(
