@@ -11,8 +11,5 @@ petermayo@chromium.org
 phajdan.jr@chromium.org
 tandrii@chromium.org
 
-per-file commit_queue*=phajdan.jr@chromium.org
-per-file commit_queue*=sergiyb@chromium.org
-per-file commit_queue*=tandrii@chromium.org
 per-file ninja*=thakis@chromium.org
 per-file ninja*=scottmg@chromium.org
