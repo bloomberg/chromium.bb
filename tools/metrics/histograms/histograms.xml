@@ -66307,6 +66307,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time between subsequent gestures (scrolls and pinches).</summary>
 </histogram>
 
+<histogram name="RendererScheduler.WebFramesPerScheduler" units="web frames">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Number of web frame schedulers per renderer scheduler. Recorded once per
+    navigation.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.WebViewsPerScheduler" units="web views">
   <owner>altimin@chromium.org</owner>
   <summary>

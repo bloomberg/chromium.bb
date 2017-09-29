@@ -465,6 +465,10 @@ void WebViewSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
   }
 }
 
+size_t WebViewSchedulerImpl::FrameCount() const {
+  return frame_schedulers_.size();
+}
+
 // static
 const char* WebViewSchedulerImpl::VirtualTimePolicyToString(
     VirtualTimePolicy virtual_time_policy) {
