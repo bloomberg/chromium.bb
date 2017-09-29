@@ -2211,6 +2211,71 @@ TEST_F(PaintControllerTestBase, BeginAndEndFrame) {
   EXPECT_FALSE(result.image_painted);
 }
 
+TEST_P(PaintControllerTest, PartialInvalidation) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
+  GraphicsContext context(GetPaintController());
+
+  // Test partial rect invalidation in a new chunk.
+  GetPaintController().UpdateCurrentPaintChunkProperties(
+      &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  client.SetPartialInvalidationRect(LayoutRect(200, 200, 100, 100));
+  DrawRect(context, client, kBackgroundDrawingType,
+           FloatRect(100, 100, 300, 300));
+  GetPaintController().CommitNewDisplayItems();
+  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
+  // Raster invalidation for the whole new chunk will be issued during
+  // PaintArtifactCompositor::Update().
+  EXPECT_TRUE(GetPaintController()
+                  .PaintChunks()[0]
+                  .raster_invalidation_rects.IsEmpty());
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
+
+  // Test partial rect invalidation without other invalidations.
+  GetPaintController().UpdateCurrentPaintChunkProperties(
+      &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
+  DrawRect(context, client, kBackgroundDrawingType,
+           FloatRect(100, 100, 300, 300));
+  GetPaintController().CommitNewDisplayItems();
+  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
+  EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
+              // Partial invalidation.
+              UnorderedElementsAre(FloatRect(150, 160, 170, 180)));
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
+
+  // Test partial rect invalidation with full invalidation.
+  GetPaintController().UpdateCurrentPaintChunkProperties(
+      &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
+  client.SetDisplayItemsUncached();
+  DrawRect(context, client, kBackgroundDrawingType,
+           FloatRect(100, 100, 300, 300));
+  GetPaintController().CommitNewDisplayItems();
+  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
+  EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
+              // Partial invalidation is shadowed by full invalidation.
+              UnorderedElementsAre(FloatRect(100, 100, 300, 300)));
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
+
+  // Test partial rect invalidation with incremental invalidation.
+  GetPaintController().UpdateCurrentPaintChunkProperties(
+      &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
+  client.SetVisualRect(LayoutRect(100, 100, 300, 400));
+  DrawRect(context, client, kBackgroundDrawingType,
+           FloatRect(100, 100, 300, 400));
+  GetPaintController().CommitNewDisplayItems();
+  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
+  EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
+              // Both partial invalidation and incremental invalidation.
+              UnorderedElementsAre(FloatRect(100, 400, 300, 100),
+                                   FloatRect(150, 160, 170, 180)));
+  EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
