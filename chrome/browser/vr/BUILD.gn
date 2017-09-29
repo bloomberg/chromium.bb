@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//device/vr/features/features.gni")
 import("//testing/test.gni")
+import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -171,15 +172,21 @@ test("vr_common_unittests") {
     "test/constants.h",
     "test/fake_ui_element_renderer.cc",
     "test/fake_ui_element_renderer.h",
+    "test/gl_test_environment.cc",
+    "test/gl_test_environment.h",
+    "test/gl_test_environment_unittest.cc",
     "test/mock_browser_interface.cc",
     "test/mock_browser_interface.h",
     "test/mock_content_input_delegate.cc",
     "test/mock_content_input_delegate.h",
     "test/paths.cc",
     "test/paths.h",
+    "test/ui_pixel_test.cc",
+    "test/ui_pixel_test.h",
     "test/ui_scene_manager_test.cc",
     "test/ui_scene_manager_test.h",
     "ui_input_manager_unittest.cc",
+    "ui_pixeltest.cc",
     "ui_scene_manager_unittest.cc",
     "ui_scene_unittest.cc",
     "vr_gl_util_unittest.cc",
@@ -187,8 +194,8 @@ test("vr_common_unittests") {
 
   deps = [
     ":vr_common",
+    ":vr_test_pak",
     "//base/test:test_support",
-    "//components:components_tests_pak",
     "//components/security_state/core",
     "//components/toolbar:vector_icons",
     "//skia",
@@ -198,6 +205,7 @@ test("vr_common_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl:test_support",
   ]
 
   if (is_android) {
@@ -206,6 +214,24 @@ test("vr_common_unittests") {
 
   data = [
     "test/data/",
-    "$root_out_dir/components_tests_resources.pak",
+    "$root_out_dir/vr_test.pak",
+  ]
+}
+
+repack("vr_test_pak") {
+  sources = [
+    "$root_gen_dir/chrome/generated_resources_en-US.pak",
+    "$root_gen_dir/chrome/vr_shell_resources.pak",
+    "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/strings/components_strings_en-US.pak",
+  ]
+
+  output = "$root_out_dir/vr_test.pak"
+
+  deps = [
+    "//chrome/app:generated_resources",
+    "//chrome/browser/resources:vr_shell_resources",
+    "//components/resources:components_resources",
+    "//components/strings",
   ]
 }
