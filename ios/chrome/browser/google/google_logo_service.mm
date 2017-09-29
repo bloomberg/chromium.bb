@@ -35,11 +35,11 @@ base::FilePath DoodleDirectory() {
 GoogleLogoService::GoogleLogoService(
     TemplateURLService* template_url_service,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-    : LogoService(DoodleDirectory(),
-                  template_url_service,
-                  image_fetcher::CreateIOSImageDecoder(),
-                  request_context_getter,
-                  /*use_gray_background=*/false) {}
+    : LogoServiceImpl(DoodleDirectory(),
+                      template_url_service,
+                      image_fetcher::CreateIOSImageDecoder(),
+                      request_context_getter,
+                      /*use_gray_background=*/false) {}
 
 GoogleLogoService::~GoogleLogoService() {}
 
