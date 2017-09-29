@@ -7,33 +7,6 @@
        xmlns:tools="http://schemas.android.com/tools"
        tools:showIn="@layout/personalized_signin_promo_view_settings">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp">
-
-        <ImageView
-            android:id="@+id/signin_promo_image"
-            android:layout_width="@dimen/signin_promo_account_image_size"
-            android:layout_height="@dimen/signin_promo_account_image_size"
-            android:layout_gravity="center"
-            android:contentDescription="@null"
-            android:scaleType="fitCenter"/>
-
-        <ImageButton
-            android:id="@+id/signin_promo_close_button"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="top|end"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="@string/close"
-            android:scaleType="fitCenter"
-            android:src="@drawable/btn_close"
-            android:visibility="gone"/>
-    </FrameLayout>
-
     <TextView
         android:id="@+id/signin_promo_description"
         android:layout_width="wrap_content"
