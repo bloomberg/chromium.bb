@@ -325,6 +325,7 @@ struct AccountReconcilorTestDiceParam {
   const char* cookies;
   bool is_first_reconcile;
   const char* gaia_api_calls;
+  const char* tokens_after_reconcile;
   const char* cookies_after_reconcile;
 };
 
@@ -348,123 +349,123 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     // - API calls:
     //   X: Logout all accounts.
     //   A, B, C: Merge account.
-    // -------------------------------------------------------------------
-    // Tokens | Cookies | First Run | Gaia calls | Cookies after reconcile
-    // -------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Tokens | Cookies | First Run | Gaia calls | Tokens after | Cookies after
+    // -------------------------------------------------------------------------
 
     // First reconcile (Chrome restart): Rebuild the Gaia cookie to match the
     // tokens. Make the Sync account the default account in the Gaia cookie.
     // Sync enabled.
-    {  "*AB",   "AB",     true,       "",          "AB"},
-    {  "*AB",   "BA",     true,       "XAB",       "AB"},
-    {  "*AB",   "A",      true,       "B",         "AB"},
-    {  "*AB",   "B",      true,       "XAB",       "AB"},
-    {  "*AB",   "",       true,       "AB",        "AB"},
+    {  "*AB",   "AB",     true,       "",          "*AB",         "AB"},
+    {  "*AB",   "BA",     true,       "XAB",       "*AB",         "AB"},
+    {  "*AB",   "A",      true,       "B",         "*AB",         "AB"},
+    {  "*AB",   "B",      true,       "XAB",       "*AB",         "AB"},
+    {  "*AB",   "",       true,       "AB",        "*AB",         "AB"},
     // Sync enabled, token error on primary.
-    {  "*xAB",  "AB",     true,       "X",         ""},
-    {  "*xAB",  "BA",     true,       "XB",        "B"},
-    {  "*xAB",  "A",      true,       "X",         ""},
-    {  "*xAB",  "B",      true,       "",          "B"},
-    {  "*xAB",  "",       true,       "B",         "B"},
+    {  "*xAB",  "AB",     true,       "X",         "*xA",         ""},
+    {  "*xAB",  "BA",     true,       "XB",        "*xAB",        "B"},
+    {  "*xAB",  "A",      true,       "X",         "*xA",         ""},
+    {  "*xAB",  "B",      true,       "",          "*xAB",        "B"},
+    {  "*xAB",  "",       true,       "B",         "*xAB",        "B"},
     // Sync enabled, token error on secondary.
-    {  "*AxB",  "AB",     true,       "XA",        "A"},
-    {  "*AxB",  "BA",     true,       "XA",        "A"},
-    {  "*AxB",  "A",      true,       "",          "A"},
-    {  "*AxB",  "B",      true,       "XA",        "A"},
-    {  "*AxB",  "",       true,       "A",         "A"},
+    {  "*AxB",  "AB",     true,       "XA",        "*AxB",        "A"},
+    {  "*AxB",  "BA",     true,       "XA",        "*AxB",        "A"},
+    {  "*AxB",  "A",      true,       "",          "*AxB",        "A"},
+    {  "*AxB",  "B",      true,       "XA",        "*AxB",        "A"},
+    {  "*AxB",  "",       true,       "A",         "*AxB",        "A"},
     // Sync enabled, token error on both accounts.
-    {  "*xAxB", "AB",     true,       "X",         ""},
-    {  "*xAxB", "BA",     true,       "X",         ""},
-    {  "*xAxB", "A",      true,       "X",         ""},
-    {  "*xAxB", "B",      true,       "X",         ""},
-    {  "*xAxB", "",       true,       "",          ""},
+    {  "*xAxB", "AB",     true,       "X",         "*xAxB",       ""},
+    {  "*xAxB", "BA",     true,       "X",         "*xAxB",       ""},
+    {  "*xAxB", "A",      true,       "X",         "*xAxB",       ""},
+    {  "*xAxB", "B",      true,       "X",         "*xAxB",       ""},
+    {  "*xAxB", "",       true,       "",          "*xAxB",       ""},
     // Sync disabled.
-    {  "AB",    "AB",     true,       "",          "AB"},
-    {  "AB",    "BA",     true,       "",          "BA"},
-    {  "AB",    "A",      true,       "B",         "AB"},
-    {  "AB",    "B",      true,       "A",         "BA"},
-    {  "AB",    "",       true,       "AB",        "AB"},
+    {  "AB",    "AB",     true,       "",          "AB",          "AB"},
+    {  "AB",    "BA",     true,       "",          "AB",          "BA"},
+    {  "AB",    "A",      true,       "B",         "AB",          "AB"},
+    {  "AB",    "B",      true,       "A",         "AB",          "BA"},
+    {  "AB",    "",       true,       "AB",        "AB",          "AB"},
     // Sync disabled, token error on first account.
-    {  "xAB",   "AB",     true,       "XB",        "B"},
-    {  "xAB",   "BA",     true,       "XB",        "B"},
-    {  "xAB",   "A",      true,       "XB",        "B"},
-    {  "xAB",   "B",      true,       "",          "B"},
-    {  "xAB",   "",       true,       "B",         "B"},
-    // Sync disabled, token error on second account.
-    {  "AxB",   "AB",     true,       "XA",        "A"},
-    {  "AxB",   "BA",     true,       "XA",        "A"},
-    {  "AxB",   "A",      true,       "",          "A"},
-    {  "AxB",   "B",      true,       "XA",        "A"},
-    {  "AxB",   "",       true,       "A",         "A"},
+    {  "xAB",   "AB",     true,       "XB",        "xAB",         "B"},
+    {  "xAB",   "BA",     true,       "XB",        "xAB",         "B"},
+    {  "xAB",   "A",      true,       "XB",        "xAB",         "B"},
+    {  "xAB",   "B",      true,       "",          "xAB",         "B"},
+    {  "xAB",   "",       true,       "B",         "xAB",         "B"},
+    // Sync disabled, token error on second account       .
+    {  "AxB",   "AB",     true,       "XA",        "AxB",         "A"},
+    {  "AxB",   "BA",     true,       "XA",        "AxB",         "A"},
+    {  "AxB",   "A",      true,       "",          "AxB",         "A"},
+    {  "AxB",   "B",      true,       "XA",        "AxB",         "A"},
+    {  "AxB",   "",       true,       "A",         "AxB",         "A"},
     // Sync disabled, token error on both accounts.
-    {  "xAxB",  "AB",     true,       "X",         ""},
-    {  "xAxB",  "BA",     true,       "X",         ""},
-    {  "xAxB",  "A",      true,       "X",         ""},
-    {  "xAxB",  "B",      true,       "X",         ""},
-    {  "xAxB",  "",       true,       "",          ""},
+    {  "xAxB",  "AB",     true,       "X",         "xAxB",        ""},
+    {  "xAxB",  "BA",     true,       "X",         "xAxB",        ""},
+    {  "xAxB",  "A",      true,       "X",         "xAxB",        ""},
+    {  "xAxB",  "B",      true,       "X",         "xAxB",        ""},
+    {  "xAxB",  "",       true,       "",          "xAxB",        ""},
 
     // Chrome is running: Do not change the order of accounts already present in
     // the Gaia cookies.
     // Sync enabled.
-    {  "*AB",   "AB",     false,      "",          "AB"},
-    {  "*AB",   "BA",     false,      "",          "BA"},
-    {  "*AB",   "A",      false,      "B",         "AB"},
-    {  "*AB",   "B",      false,      "A",         "BA"},
-    {  "*AB",   "",       false,      "AB",        "AB"},
+    {  "*AB",   "AB",     false,      "",          "*AB",         "AB"},
+    {  "*AB",   "BA",     false,      "",          "*AB",         "BA"},
+    {  "*AB",   "A",      false,      "B",         "*AB",         "AB"},
+    {  "*AB",   "B",      false,      "A",         "*AB",         "BA"},
+    {  "*AB",   "",       false,      "AB",        "*AB",         "AB"},
     // Sync enabled, token error on primary.
-    {  "*xAB",  "AB",     false,      "X",         ""},
-    {  "*xAB",  "BA",     false,      "XB",        "B"},
-    {  "*xAB",  "A",      false,      "X",         ""},
-    {  "*xAB",  "B",      false,      "",          "B"},
-    {  "*xAB",  "",       false,      "B",         "B"},
+    {  "*xAB",  "AB",     false,      "X",         "*xA",         ""},
+    {  "*xAB",  "BA",     false,      "XB",        "*xAB",        "B"},
+    {  "*xAB",  "A",      false,      "X",         "*xA",         ""},
+    {  "*xAB",  "B",      false,      "",          "*xAB",        "B"},
+    {  "*xAB",  "",       false,      "B",         "*xAB",        "B"},
     // Sync enabled, token error on secondary.
-    {  "*AxB",  "AB",     false,      "XA",        "A"},
+    {  "*AxB",  "AB",     false,      "XA",        "*AxB",        "A"},
     // TODO(droger): consider doing XA:
-    {  "*AxB",  "BA",     false,      "X",         ""},
-    {  "*AxB",  "A",      false,      "",          "A"},
+    {  "*AxB",  "BA",     false,      "X",         "*AxB",        ""},
+    {  "*AxB",  "A",      false,      "",          "*AxB",        "A"},
     // TODO(droger): consider doing XA:
-    {  "*AxB",  "B",      false,      "X",         ""},
-    {  "*AxB",  "",       false,      "A",         "A"},
+    {  "*AxB",  "B",      false,      "X",         "*AxB",        ""},
+    {  "*AxB",  "",       false,      "A",         "*AxB",        "A"},
     // Sync enabled, token error on both accounts.
-    {  "*xAxB", "AB",     false,      "X",         ""},
-    {  "*xAxB", "BA",     false,      "X",         ""},
-    {  "*xAxB", "A",      false,      "X",         ""},
-    {  "*xAxB", "B",      false,      "X",         ""},
-    {  "*xAxB", "",       false,      "",          ""},
+    {  "*xAxB", "AB",     false,      "X",         "*xAxB",       ""},
+    {  "*xAxB", "BA",     false,      "X",         "*xAxB",       ""},
+    {  "*xAxB", "A",      false,      "X",         "*xAxB",       ""},
+    {  "*xAxB", "B",      false,      "X",         "*xAxB",       ""},
+    {  "*xAxB", "",       false,      "",          "*xAxB",       ""},
     // Sync disabled.
-    {  "AB",    "AB",     false,      "",          "AB"},
-    {  "AB",    "BA",     false,      "",          "BA"},
-    {  "AB",    "A",      false,      "B",         "AB"},
-    {  "AB",    "B",      false,      "A",         "BA"},
-    {  "AB",    "",       false,      "AB",        "AB"},
+    {  "AB",    "AB",     false,      "",          "AB",          "AB"},
+    {  "AB",    "BA",     false,      "",          "AB",          "BA"},
+    {  "AB",    "A",      false,      "B",         "AB",          "AB"},
+    {  "AB",    "B",      false,      "A",         "AB",          "BA"},
+    {  "AB",    "",       false,      "AB",        "AB",          "AB"},
     // Sync disabled, token error on first account.
-    {  "xAB",   "AB",     false,      "X",         ""},
-    {  "xAB",   "BA",     false,      "XB",        "B"},
-    {  "xAB",   "A",      false,      "X",         ""},
-    {  "xAB",   "B",      false,      "",          "B"},
-    {  "xAB",   "",       false,      "B",         "B"},
+    {  "xAB",   "AB",     false,      "X",         "xA",          ""},
+    {  "xAB",   "BA",     false,      "XB",        "xAB",         "B"},
+    {  "xAB",   "A",      false,      "X",         "xA",          ""},
+    {  "xAB",   "B",      false,      "",          "xAB",         "B"},
+    {  "xAB",   "",       false,      "B",         "xAB",         "B"},
     // Sync disabled, token error on second account.
-    {  "AxB",   "AB",     false,      "XA",        "A"},
-    {  "AxB",   "BA",     false,      "X",         ""},
-    {  "AxB",   "A",      false,      "",          "A"},
-    {  "AxB",   "B",      false,      "X",         ""},
-    {  "AxB",   "",       false,      "A",         "A"},
+    {  "AxB",   "AB",     false,      "XA",        "AxB",         "A"},
+    {  "AxB",   "BA",     false,      "X",         "xB",          ""},
+    {  "AxB",   "A",      false,      "",          "AxB",         "A"},
+    {  "AxB",   "B",      false,      "X",         "xB",          ""},
+    {  "AxB",   "",       false,      "A",         "AxB",         "A"},
     // Sync disabled, token error on both accounts.
-    {  "xAxB",  "AB",     false,      "X",         ""},
-    {  "xAxB",  "BA",     false,      "X",         ""},
-    {  "xAxB",  "A",      false,      "X",         ""},
-    {  "xAxB",  "B",      false,      "X",         ""},
-    {  "xAxB",  "",       false,      "",          ""},
+    {  "xAxB",  "AB",     false,      "X",         "xAxB",        ""},
+    {  "xAxB",  "BA",     false,      "X",         "xAxB",        ""},
+    {  "xAxB",  "A",      false,      "X",         "xAxB",        ""},
+    {  "xAxB",  "B",      false,      "X",         "xAxB",        ""},
+    {  "xAxB",  "",       false,      "",          "xAxB",        ""},
 
     // Miscellaneous cases.
     // Check that unknown Gaia accounts are signed out.
-    {  "",      "A",      true,       "X",         ""},
-    {  "",      "A",      false,      "X",         ""},
-    {  "*A",    "AB",     true,       "XA",        "A"},
-    {  "*A",    "AB",     false,      "XA",        "A"},
+    {  "",      "A",      true,       "X",         "",            ""},
+    {  "",      "A",      false,      "X",         "",            ""},
+    {  "*A",    "AB",     true,       "XA",        "*A",          "A"},
+    {  "*A",    "AB",     false,      "XA",        "*A",          "A"},
     // Check that Gaia default account is kept in first position.
-    {  "AB",    "BC",     true,       "XBA",       "BA"},
-    {  "AB",    "BC",     false,      "XBA",       "BA"},
+    {  "AB",    "BC",     true,       "XBA",       "AB",          "BA"},
+    {  "AB",    "BC",     false,      "XBA",       "AB",          "BA"},
 };
 // clang-format on
 
@@ -478,10 +479,61 @@ class AccountReconcilorTestDice
     std::string gaia_id;
   };
 
+  struct Token {
+    std::string gaia_id;
+    std::string email;
+    bool is_authenticated;
+    bool has_error;
+  };
+
   AccountReconcilorTestDice() {
     accounts_['A'] = {"a@gmail.com", "A"};
     accounts_['B'] = {"b@gmail.com", "B"};
     accounts_['C'] = {"c@gmail.com", "C"};
+  }
+
+  // Build Tokens from string.
+  std::vector<Token> ParseTokenString(const char* token_string) {
+    std::vector<Token> parsed_tokens;
+    bool is_authenticated = false;
+    bool has_error = false;
+    for (int i = 0; token_string[i] != '\0'; ++i) {
+      char token_code = token_string[i];
+      if (token_code == '*') {
+        is_authenticated = true;
+        continue;
+      }
+      if (token_code == 'x') {
+        has_error = true;
+        continue;
+      }
+      parsed_tokens.push_back({accounts_[token_code].gaia_id,
+                               accounts_[token_code].email, is_authenticated,
+                               has_error});
+      is_authenticated = false;
+      has_error = false;
+    }
+    return parsed_tokens;
+  }
+
+  // Checks that the tokens in the TokenService match the tokens.
+  void VerifyCurrentTokens(const std::vector<Token>& tokens) {
+    EXPECT_EQ(token_service()->GetAccounts().size(), tokens.size());
+    bool authenticated_account_found = false;
+    for (const Token& token : tokens) {
+      std::string account_id =
+          PickAccountIdForAccount(token.gaia_id, token.email);
+      EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
+      EXPECT_EQ(
+          token.has_error,
+          token_service()->GetDelegate()->RefreshTokenHasError(account_id));
+      if (token.is_authenticated) {
+        EXPECT_EQ(account_id, signin_manager()->GetAuthenticatedAccountId());
+        authenticated_account_found = true;
+      }
+    }
+    if (!authenticated_account_found)
+      EXPECT_EQ("", signin_manager()->GetAuthenticatedAccountId());
   }
 
   std::map<char, Account> accounts_;
@@ -493,35 +545,22 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
   signin::ScopedAccountConsistencyDice scoped_dice;
 
   // Setup tokens.
-  bool signin = false;
-  bool token_error = false;
-  for (int i = 0; GetParam().tokens[i] != '\0'; ++i) {
-    char token_code = GetParam().tokens[i];
-    if (token_code == '*') {
-      signin = true;
-      continue;
-    }
-    if (token_code == 'x') {
-      token_error = true;
-      continue;
-    }
-
-    std::string account_id = PickAccountIdForAccount(
-        accounts_[token_code].gaia_id, accounts_[token_code].email);
-    if (signin) {
-      ConnectProfileToAccount(accounts_[token_code].gaia_id,
-                              accounts_[token_code].email);
-      signin = false;
-    } else {
+  std::vector<Token> tokens_before_reconcile =
+      ParseTokenString(GetParam().tokens);
+  for (const Token& token : tokens_before_reconcile) {
+    std::string account_id =
+        PickAccountIdForAccount(token.gaia_id, token.email);
+    if (token.is_authenticated)
+      ConnectProfileToAccount(token.gaia_id, token.email);
+    else
       token_service()->UpdateCredentials(account_id, "refresh_token");
-    }
-    if (token_error) {
+    if (token.has_error) {
       token_service_delegate()->SetLastErrorForAccount(
           account_id, GoogleServiceAuthError(
                           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-      token_error = false;
     }
   }
+  VerifyCurrentTokens(tokens_before_reconcile);
 
   // Setup cookies.
   std::string cookies(GetParam().cookies);
@@ -583,6 +622,7 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
   }
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+  VerifyCurrentTokens(ParseTokenString(GetParam().tokens_after_reconcile));
   // Another reconcile is sometimes triggered if Chrome accounts have changed.
   // Allow it to finish.
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
