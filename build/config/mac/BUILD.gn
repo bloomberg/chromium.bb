@@ -82,12 +82,6 @@ config("mac_dynamic_flags") {
   }
 }
 
-# On Mac, this is used only for executables.
-config("mac_executable_flags") {
-  # Remove this when targeting >=10.7 since it is the default in that config.
-  ldflags = [ "-Wl,-pie" ]  # Position independent.
-}
-
 # The ldflags referenced below are handled by
 # //build/toolchain/mac/linker_driver.py.
 # Remove this config if a target wishes to change the arguments passed to the

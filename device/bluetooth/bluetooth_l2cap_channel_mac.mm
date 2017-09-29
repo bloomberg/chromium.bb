@@ -53,13 +53,6 @@
   channel_->OnChannelClosed(l2capChannel);
 }
 
-// These methods are marked as optional in the 10.8 SDK, but not in the 10.6
-// SDK. These empty implementations can be removed once we drop the 10.6 SDK.
-- (void)l2capChannelReconfigured:(IOBluetoothL2CAPChannel*)l2capChannel {
-}
-- (void)l2capChannelQueueSpaceAvailable:(IOBluetoothL2CAPChannel*)l2capChannel {
-}
-
 @end
 
 namespace device {

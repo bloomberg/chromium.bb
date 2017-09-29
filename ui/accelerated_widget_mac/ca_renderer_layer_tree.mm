@@ -22,33 +22,6 @@
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
 
-#if !defined(MAC_OS_X_VERSION_10_8) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
-extern NSString* const AVLayerVideoGravityResize;
-extern "C" void NSAccessibilityPostNotificationWithUserInfo(
-    id object,
-    NSString* notification,
-    NSDictionary* user_info);
-extern "C" OSStatus CMSampleBufferCreateForImageBuffer(
-    CFAllocatorRef,
-    CVImageBufferRef,
-    Boolean dataReady,
-    CMSampleBufferMakeDataReadyCallback,
-    void*,
-    CMVideoFormatDescriptionRef,
-    const CMSampleTimingInfo*,
-    CMSampleBufferRef*);
-extern "C" CFArrayRef CMSampleBufferGetSampleAttachmentsArray(CMSampleBufferRef,
-                                                              Boolean);
-extern "C" OSStatus CMVideoFormatDescriptionCreateForImageBuffer(
-    CFAllocatorRef,
-    CVImageBufferRef,
-    CMVideoFormatDescriptionRef*);
-extern "C" CMTime CMTimeMake(int64_t, int32_t);
-extern CFStringRef const kCMSampleAttachmentKey_DisplayImmediately;
-extern const CMTime kCMTimeInvalid;
-#endif  // MAC_OS_X_VERSION_10_8
-
 namespace ui {
 
 namespace {
