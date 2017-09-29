@@ -49,10 +49,6 @@
       "reason": "subtree"
     },
     {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
       "object": "Caret",
       "reason": "caret"
     },

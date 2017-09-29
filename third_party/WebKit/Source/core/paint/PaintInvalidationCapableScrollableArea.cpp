@@ -76,7 +76,12 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
           PaintInvalidationReason::kScrollControl);
     }
     should_invalidate_new_rect = true;
+  } else if (previous_visual_rect.IsEmpty()) {
+    DCHECK(new_visual_rect.IsEmpty());
+    // Do not issue an empty invalidation.
+    should_invalidate_new_rect = false;
   }
+
   if (should_invalidate_new_rect) {
     // TODO(crbug.com/732612): Implement partial raster invalidation for scroll
     // controls.

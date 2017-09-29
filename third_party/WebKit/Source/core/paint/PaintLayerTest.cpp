@@ -263,6 +263,12 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
 }
 
 TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
+  // SPV2 scrolling raster invalidation decisions are made in
+  // ContentLayerClientImpl::GenerateRasterInvalidations through
+  // PaintArtifactCompositor.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML(
       "<div id='scroll' style='width: 100px; height: 100px; overflow: scroll'>"
       "  <div id='content' style='position: relative; background: blue;"

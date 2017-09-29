@@ -46,10 +46,6 @@
       "reason": "subtree"
     },
     {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll control"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "subtree"
     },

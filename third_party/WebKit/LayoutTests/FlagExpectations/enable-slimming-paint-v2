@@ -1750,6 +1750,14 @@ crbug.com/738613 paint/invalidation/repaint-composited-child-in-scrolled-contain
 crbug.com/738613 paint/invalidation/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Failure ]
 crbug.com/738613 paint/invalidation/selection/selection-within-composited-scroller.html [ Failure ]
 
+# Sticky positioned objects are not invalidated when scroll offset changes.
+crbug.com/762098 compositing/overflow/composited-nested-sticky-table.html [ Failure ]
+crbug.com/762098 compositing/overflow/mixed-composited-nested-sticky-overflow-scroller.html [ Failure ]
+crbug.com/762098 compositing/overflow/composited-nested-sticky-left.html [ Failure ]
+crbug.com/762098 compositing/overflow/composited-nested-sticky-deep.html [ Failure ]
+crbug.com/762098 compositing/overflow/composited-nested-sticky-top.html [ Failure ]
+crbug.com/762098 compositing/overflow/non-composited-sticky-element-in-main-thread-scrolled-composited-ancestor.html [ Failure ]
+
 # Subsequence under-invalidation of scroller related to ScrollHitTest.
 crbug.com/738613 compositing/overflow/overflow-scroll-with-pointer-events-toggle.html [ Failure Crash ]
 
