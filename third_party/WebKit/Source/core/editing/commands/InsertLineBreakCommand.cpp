@@ -104,8 +104,8 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
 
   if (IsEndOfParagraph(CreateVisiblePosition(caret.ToPositionWithAffinity())) &&
       !LineBreakExistsAtVisiblePosition(caret)) {
-    bool need_extra_line_break = !isHTMLHRElement(*pos.AnchorNode()) &&
-                                 !isHTMLTableElement(*pos.AnchorNode());
+    bool need_extra_line_break = !IsHTMLHRElement(*pos.AnchorNode()) &&
+                                 !IsHTMLTableElement(*pos.AnchorNode());
 
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())

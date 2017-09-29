@@ -1057,7 +1057,7 @@ SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
     SMILTime simple_duration = this->SimpleDuration();
-    if (simple_duration.IsIndefinite() || isSVGSetElement(*this)) {
+    if (simple_duration.IsIndefinite() || IsSVGSetElement(*this)) {
       SMILTime repeating_duration_end = interval_.begin + RepeatingDuration();
       // We are supposed to do freeze semantics when repeating ends, even if the
       // element is still active.

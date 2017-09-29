@@ -84,7 +84,7 @@ void LayoutSVGEllipse::CalculateRadiiAndCenter() {
       length_context.ValueForLength(Style()->SvgStyle().Cy(), StyleRef(),
                                     SVGLengthMode::kHeight));
 
-  if (isSVGCircleElement(*GetElement())) {
+  if (IsSVGCircleElement(*GetElement())) {
     float radius = length_context.ValueForLength(
         Style()->SvgStyle().R(), StyleRef(), SVGLengthMode::kOther);
     radii_ = FloatSize(radius, radius);

@@ -74,8 +74,8 @@ static bool IsAcceptableCSSStyleSheetParent(const Node& parent_node) {
   // Only these nodes can be parents of StyleSheets, and they need to call
   // clearOwnerNode() when moved out of document. Note that destructor of
   // the nodes don't call clearOwnerNode() with Oilpan.
-  return parent_node.IsDocumentNode() || isHTMLLinkElement(parent_node) ||
-         isHTMLStyleElement(parent_node) || isSVGStyleElement(parent_node) ||
+  return parent_node.IsDocumentNode() || IsHTMLLinkElement(parent_node) ||
+         IsHTMLStyleElement(parent_node) || IsSVGStyleElement(parent_node) ||
          parent_node.getNodeType() == Node::kProcessingInstructionNode;
 }
 #endif

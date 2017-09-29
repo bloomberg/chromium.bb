@@ -35,7 +35,7 @@ namespace blink {
 
 HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
     : HTMLCollection(select, kSelectOptions, kDoesNotOverrideItemAfter) {
-  DCHECK(isHTMLSelectElement(select));
+  DCHECK(IsHTMLSelectElement(select));
 }
 
 void HTMLOptionsCollection::SupportedPropertyNames(Vector<String>& names) {

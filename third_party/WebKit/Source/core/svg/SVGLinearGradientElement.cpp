@@ -126,7 +126,7 @@ bool SVGLinearGradientElement::CollectGradientAttributes(
 
   while (true) {
     SetGradientAttributes(*current, attributes,
-                          isSVGLinearGradientElement(*current));
+                          IsSVGLinearGradientElement(*current));
     visited.insert(current);
 
     current = current->ReferencedElement();

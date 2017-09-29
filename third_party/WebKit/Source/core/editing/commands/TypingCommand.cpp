@@ -708,7 +708,7 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
     return false;
 
   if (root->firstChild() == root->lastChild()) {
-    if (isHTMLBRElement(root->firstChild())) {
+    if (IsHTMLBRElement(root->firstChild())) {
       // If there is a single child and it could be a placeholder, leave it
       // alone.
       if (root->GetLayoutObject() &&

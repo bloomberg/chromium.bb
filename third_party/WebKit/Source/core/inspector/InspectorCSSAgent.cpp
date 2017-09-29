@@ -257,10 +257,10 @@ bool GetColorsFromRect(LayoutRect rect,
     if (!layout_object)
       continue;
 
-    if (isHTMLCanvasElement(element) || isHTMLEmbedElement(element) ||
-        isHTMLImageElement(element) || isHTMLObjectElement(element) ||
-        isHTMLPictureElement(element) || element->IsSVGElement() ||
-        isHTMLVideoElement(element)) {
+    if (IsHTMLCanvasElement(element) || IsHTMLEmbedElement(element) ||
+        IsHTMLImageElement(element) || IsHTMLObjectElement(element) ||
+        IsHTMLPictureElement(element) || element->IsSVGElement() ||
+        IsHTMLVideoElement(element)) {
       colors.clear();
       found_opaque_color = false;
       continue;

@@ -167,11 +167,11 @@ bool FullscreenElementReady(const Element& element) {
 bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
   // |pending|'s namespace is the HTML namespace or |pending| is an SVG svg or
   // MathML math element. Note: MathML is not supported.
-  if (!pending.IsHTMLElement() && !isSVGSVGElement(pending))
+  if (!pending.IsHTMLElement() && !IsSVGSVGElement(pending))
     return false;
 
   // |pending| is not a dialog element.
-  if (isHTMLDialogElement(pending))
+  if (IsHTMLDialogElement(pending))
     return false;
 
   // The fullscreen element ready check for |pending| returns false.
@@ -862,7 +862,7 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
     // the iframe element for the out-of-process frame that contains the
     // fullscreen element. Hence, it must match :-webkit-full-screen-ancestor.
     if (new_request_type == RequestType::kPrefixedForCrossProcessDescendant) {
-      DCHECK(isHTMLIFrameElement(new_element));
+      DCHECK(IsHTMLIFrameElement(new_element));
       new_element->SetContainsFullScreenElement(true);
     }
     new_element->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(

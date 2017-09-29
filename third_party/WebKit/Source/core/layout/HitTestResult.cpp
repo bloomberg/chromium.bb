@@ -183,7 +183,7 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
   // case so that a toolip title in the shadow tree works.
   while (containing_shadow_root &&
          (containing_shadow_root->GetType() == ShadowRootType::kUserAgent ||
-          isSVGUseElement(containing_shadow_root->host()))) {
+          IsSVGUseElement(containing_shadow_root->host()))) {
     shadow_host = &containing_shadow_root->host();
     containing_shadow_root = shadow_host->ContainingShadowRoot();
     SetInnerNode(node->OwnerShadowHost());
@@ -323,16 +323,16 @@ KURL HitTestResult::AbsoluteImageURL() const {
   // even if they don't have a LayoutImage (e.g. because the image didn't load
   // and we are using an alt container). For other elements we don't create alt
   // containers so ensure they contain a loaded image.
-  if (isHTMLImageElement(*inner_node_or_image_map_image) ||
-      (isHTMLInputElement(*inner_node_or_image_map_image) &&
+  if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
+      (IsHTMLInputElement(*inner_node_or_image_map_image) &&
        toHTMLInputElement(inner_node_or_image_map_image)->type() ==
            InputTypeNames::image))
     url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
-           (isHTMLEmbedElement(*inner_node_or_image_map_image) ||
-            isHTMLObjectElement(*inner_node_or_image_map_image) ||
-            isSVGImageElement(*inner_node_or_image_map_image)))
+           (IsHTMLEmbedElement(*inner_node_or_image_map_image) ||
+            IsHTMLObjectElement(*inner_node_or_image_map_image) ||
+            IsSVGImageElement(*inner_node_or_image_map_image)))
     url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
   if (url_string.IsEmpty())
     return KURL();

@@ -478,7 +478,7 @@ bool Internals::isValidContentSelect(Element* insertion_point,
     return false;
   }
 
-  return isHTMLContentElement(*insertion_point) &&
+  return IsHTMLContentElement(*insertion_point) &&
          toHTMLContentElement(*insertion_point).IsSelectValid();
 }
 
@@ -1350,7 +1350,7 @@ void Internals::setEditingValue(Element* element,
                                 const String& value,
                                 ExceptionState& exception_state) {
   DCHECK(element);
-  if (!isHTMLInputElement(*element)) {
+  if (!IsHTMLInputElement(*element)) {
     exception_state.ThrowDOMException(kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;
@@ -2923,7 +2923,7 @@ String Internals::getImageSourceURL(Element* element) {
 
 void Internals::forceImageReload(Element* element,
                                  ExceptionState& exception_state) {
-  if (!element || !isHTMLImageElement(*element)) {
+  if (!element || !IsHTMLImageElement(*element)) {
     exception_state.ThrowDOMException(
         kInvalidAccessError, "The element should be HTMLImageElement.");
   }
@@ -2950,7 +2950,7 @@ bool Internals::isSelectPopupVisible(Node* node) {
 }
 
 bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
-  if (!node || !isHTMLSelectElement(*node))
+  if (!node || !IsHTMLSelectElement(*node))
     return false;
 
   HTMLSelectElement& select = toHTMLSelectElement(*node);
@@ -2963,7 +2963,7 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
 }
 
 int Internals::selectPopupItemStyleFontHeight(Node* node, int item_index) {
-  if (!node || !isHTMLSelectElement(*node))
+  if (!node || !IsHTMLSelectElement(*node))
     return false;
 
   HTMLSelectElement& select = toHTMLSelectElement(*node);
@@ -3024,7 +3024,7 @@ void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
   DCHECK(element);
-  if (!isHTMLInputElement(element)) {
+  if (!IsHTMLInputElement(element)) {
     exception_state.ThrowDOMException(kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;

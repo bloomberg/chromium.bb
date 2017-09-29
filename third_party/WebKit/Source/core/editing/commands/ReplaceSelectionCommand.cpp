@@ -113,7 +113,7 @@ class ReplacementFragment final {
 static bool IsInterchangeHTMLBRElement(const Node* node) {
   DEFINE_STATIC_LOCAL(String, interchange_newline_class_string,
                       (AppleInterchangeNewline));
-  if (!isHTMLBRElement(node) ||
+  if (!IsHTMLBRElement(node) ||
       toHTMLBRElement(node)->getAttribute(classAttr) !=
           interchange_newline_class_string)
     return false;
@@ -479,7 +479,7 @@ bool ReplaceSelectionCommand::ShouldMergeStart(
   return !selection_start_was_start_of_paragraph &&
          !fragment_has_interchange_newline_at_start &&
          IsStartOfParagraph(start_of_inserted_content) &&
-         !isHTMLBRElement(
+         !IsHTMLBRElement(
              *start_of_inserted_content.DeepEquivalent().AnchorNode()) &&
          ShouldMerge(start_of_inserted_content, prev);
 }
@@ -494,7 +494,7 @@ bool ReplaceSelectionCommand::ShouldMergeEnd(
 
   return !selection_end_was_end_of_paragraph &&
          IsEndOfParagraph(end_of_inserted_content) &&
-         !isHTMLBRElement(
+         !IsHTMLBRElement(
              *end_of_inserted_content.DeepEquivalent().AnchorNode()) &&
          ShouldMerge(end_of_inserted_content, next);
 }
@@ -823,8 +823,8 @@ VisiblePosition ReplaceSelectionCommand::PositionAtStartOfInsertedContent()
 static void RemoveHeadContents(ReplacementFragment& fragment) {
   Node* next = nullptr;
   for (Node* node = fragment.FirstChild(); node; node = next) {
-    if (isHTMLBaseElement(*node) || isHTMLLinkElement(*node) ||
-        isHTMLMetaElement(*node) || isHTMLTitleElement(*node)) {
+    if (IsHTMLBaseElement(*node) || IsHTMLLinkElement(*node) ||
+        IsHTMLMetaElement(*node) || IsHTMLTitleElement(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
       fragment.RemoveNode(node);
     } else {
@@ -849,7 +849,7 @@ static bool FollowBlockElementStyle(const Node* node) {
 static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
                                             const Position& insertion_pos) {
   Node* top_node = fragment.FirstChild();
-  if (!isHTMLSpanElement(top_node))
+  if (!IsHTMLSpanElement(top_node))
     return;
 
   // Handling the case where we are doing Paste as Quotation or pasting into
@@ -967,7 +967,7 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
 
 static Node* EnclosingInline(Node* node) {
   while (ContainerNode* parent = node->parentNode()) {
-    if (IsBlockFlowElement(*parent) || isHTMLBodyElement(*parent))
+    if (IsBlockFlowElement(*parent) || IsHTMLBodyElement(*parent))
       return node;
     // Stop if any previous sibling is a block.
     for (Node* sibling = node->previousSibling(); sibling;
@@ -1186,7 +1186,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       return;
     // This will leave a br between the split.
     Node* br = EndingVisibleSelection().Start().AnchorNode();
-    DCHECK(isHTMLBRElement(br)) << br;
+    DCHECK(IsHTMLBRElement(br)) << br;
     // Insert content between the two blockquotes, but remove the br (since it
     // was just a placeholder).
     insertion_pos = Position::InParentBeforeNode(*br);
@@ -1655,7 +1655,7 @@ bool ReplaceSelectionCommand::ShouldPerformSmartReplace() const {
 
   TextControlElement* text_control =
       EnclosingTextControl(PositionAtStartOfInsertedContent().DeepEquivalent());
-  if (isHTMLInputElement(text_control) &&
+  if (IsHTMLInputElement(text_control) &&
       toHTMLInputElement(text_control)->type() == InputTypeNames::password)
     return false;  // Disable smart replace for password fields.
 
@@ -2012,7 +2012,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (node_after_insertion_pos && node_after_insertion_pos->parentNode() &&
-      isHTMLBRElement(*node_after_insertion_pos) &&
+      IsHTMLBRElement(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
           toHTMLBRElement(node_after_insertion_pos),
           VisiblePosition::BeforeNode(*node_after_insertion_pos))) {

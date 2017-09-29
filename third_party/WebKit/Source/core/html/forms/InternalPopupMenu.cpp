@@ -272,7 +272,7 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   const HeapVector<Member<HTMLElement>>& items = owner_element.GetListItems();
   for (; context.list_index_ < items.size(); ++context.list_index_) {
     Element& child = *items[context.list_index_];
-    if (!isHTMLOptGroupElement(child.parentNode()))
+    if (!IsHTMLOptGroupElement(child.parentNode()))
       context.FinishGroupIfNecessary();
     if (auto* option = ToHTMLOptionElementOrNull(child))
       AddOption(context, *option);
@@ -532,7 +532,7 @@ void InternalPopupMenu::Update() {
   const HeapVector<Member<HTMLElement>>& items = owner_element_->GetListItems();
   for (; context.list_index_ < items.size(); ++context.list_index_) {
     Element& child = *items[context.list_index_];
-    if (!isHTMLOptGroupElement(child.parentNode()))
+    if (!IsHTMLOptGroupElement(child.parentNode()))
       context.FinishGroupIfNecessary();
     if (auto* option = ToHTMLOptionElementOrNull(child))
       AddOption(context, *option);

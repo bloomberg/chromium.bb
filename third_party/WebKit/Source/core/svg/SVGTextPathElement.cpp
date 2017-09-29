@@ -113,7 +113,7 @@ LayoutObject* SVGTextPathElement::CreateLayoutObject(const ComputedStyle&) {
 
 bool SVGTextPathElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   if (parentNode() &&
-      (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
+      (IsSVGAElement(*parentNode()) || IsSVGTextElement(*parentNode())))
     return SVGElement::LayoutObjectIsNeeded(style);
 
   return false;
@@ -124,7 +124,7 @@ void SVGTextPathElement::BuildPendingResource() {
   if (!isConnected())
     return;
   Element* target = ObserveTarget(target_id_observer_, *this);
-  if (isSVGPathElement(target)) {
+  if (IsSVGPathElement(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.

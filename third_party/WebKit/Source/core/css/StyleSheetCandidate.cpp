@@ -105,16 +105,16 @@ StyleSheetCandidate::Type StyleSheetCandidate::TypeOf(Node& node) {
     return kPi;
 
   if (node.IsHTMLElement()) {
-    if (isHTMLLinkElement(node))
+    if (IsHTMLLinkElement(node))
       return kHTMLLink;
-    if (isHTMLStyleElement(node))
+    if (IsHTMLStyleElement(node))
       return kHTMLStyle;
 
     NOTREACHED();
     return kInvalid;
   }
 
-  if (isSVGStyleElement(node))
+  if (IsSVGStyleElement(node))
     return kSVGStyle;
 
   NOTREACHED();

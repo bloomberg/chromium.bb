@@ -139,12 +139,12 @@ Node* DOMPatchSupport::PatchNode(Node* node,
     new_list.push_back(CreateDigest(child, 0));
   for (Node* child = fragment->firstChild(); child;
        child = child->nextSibling()) {
-    if (isHTMLHeadElement(*child) && !child->hasChildren() &&
+    if (IsHTMLHeadElement(*child) && !child->hasChildren() &&
         markup_copy.Find("</head>") == kNotFound) {
       // HTML5 parser inserts empty <head> tag whenever it parses <body>
       continue;
     }
-    if (isHTMLBodyElement(*child) && !child->hasChildren() &&
+    if (IsHTMLBodyElement(*child) && !child->hasChildren() &&
         markup_copy.Find("</body>") == kNotFound) {
       // HTML5 parser inserts empty <body> tag whenever it parses </head>
       continue;
@@ -335,11 +335,11 @@ bool DOMPatchSupport::InnerPatchChildren(
 
     // Always match <head> and <body> tags with each other - we can't remove
     // them from the DOM upon patching.
-    if (isHTMLHeadElement(*old_list[i]->node_)) {
+    if (IsHTMLHeadElement(*old_list[i]->node_)) {
       old_head = old_list[i].Get();
       continue;
     }
-    if (isHTMLBodyElement(*old_list[i]->node_)) {
+    if (IsHTMLBodyElement(*old_list[i]->node_)) {
       old_body = old_list[i].Get();
       continue;
     }
@@ -386,9 +386,9 @@ bool DOMPatchSupport::InnerPatchChildren(
   // Mark <head> and <body> nodes for merge.
   if (old_head || old_body) {
     for (size_t i = 0; i < new_list.size(); ++i) {
-      if (old_head && isHTMLHeadElement(*new_list[i]->node_))
+      if (old_head && IsHTMLHeadElement(*new_list[i]->node_))
         merges.Set(new_list[i].Get(), old_head);
-      if (old_body && isHTMLBodyElement(*new_list[i]->node_))
+      if (old_body && IsHTMLBodyElement(*new_list[i]->node_))
         merges.Set(new_list[i].Get(), old_body);
     }
   }
@@ -417,7 +417,7 @@ bool DOMPatchSupport::InnerPatchChildren(
     Node* anchor_node = NodeTraversal::ChildAt(*parent_node, old_map[i].second);
     if (node == anchor_node)
       continue;
-    if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node)) {
+    if (IsHTMLBodyElement(*node) || IsHTMLHeadElement(*node)) {
       // Never move head or body, move the rest of the nodes around them.
       continue;
     }

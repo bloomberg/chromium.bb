@@ -168,7 +168,7 @@ bool HasOpenGraphArticle(const Element& head) {
   DEFINE_STATIC_LOCAL(AtomicString, property_attr, ("property"));
   for (const Element* child = ElementTraversal::FirstChild(head); child;
        child = ElementTraversal::NextSibling(*child)) {
-    if (!isHTMLMetaElement(*child))
+    if (!IsHTMLMetaElement(*child))
       continue;
     const HTMLMetaElement& meta = toHTMLMetaElement(*child);
 

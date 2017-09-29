@@ -120,7 +120,7 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   DCHECK(event->target());
   Node* target = event->target()->ToNode();
   DCHECK(target);
-  if (!isHTMLImageElement(*target))
+  if (!IsHTMLImageElement(*target))
     return;
 
   HTMLImageElement& image_element = toHTMLImageElement(*target);

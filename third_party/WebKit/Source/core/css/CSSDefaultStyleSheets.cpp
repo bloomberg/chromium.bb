@@ -162,7 +162,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   // FIXME: We should assert that this sheet only contains rules for <video> and
   // <audio>.
   if (!media_controls_style_sheet_ &&
-      (isHTMLVideoElement(element) || isHTMLAudioElement(element))) {
+      (IsHTMLVideoElement(element) || IsHTMLAudioElement(element))) {
     String media_rules;
     if (RuntimeEnabledFeatures::ModernMediaControlsEnabled()) {
       media_rules = GetDataResourceAsASCIIString("modernMediaControls.css");

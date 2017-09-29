@@ -193,7 +193,7 @@ class PrerenderingTest : public ::testing::Test {
     Document* document =
         web_view_helper_.LocalMainFrame()->GetFrame()->GetDocument();
     Element* console = document->getElementById("console");
-    DCHECK(isHTMLUListElement(console));
+    DCHECK(IsHTMLUListElement(console));
     return *console;
   }
 
@@ -205,7 +205,7 @@ class PrerenderingTest : public ::testing::Test {
     Node* item = NodeTraversal::ChildAt(Console(), 1 + i);
 
     DCHECK(item);
-    DCHECK(isHTMLLIElement(item));
+    DCHECK(IsHTMLLIElement(item));
     DCHECK(item->hasChildren());
 
     return item->textContent();

@@ -444,7 +444,7 @@ bool SVGLengthContext::DetermineViewport(FloatSize& viewport_size) const {
 
   // Take size from nearest viewport element.
   SVGElement* viewport_element = context_->viewportElement();
-  if (!isSVGSVGElement(viewport_element))
+  if (!IsSVGSVGElement(viewport_element))
     return false;
 
   const SVGSVGElement& svg = toSVGSVGElement(*viewport_element);

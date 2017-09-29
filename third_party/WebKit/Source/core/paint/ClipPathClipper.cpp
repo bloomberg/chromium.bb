@@ -51,7 +51,7 @@ LayoutSVGResourceClipper* ResolveElementReference(
     return nullptr;
   SVGElement* element =
       reference_clip_path_operation.FindElement(target_node->GetTreeScope());
-  if (!isSVGClipPathElement(element) || !element->GetLayoutObject())
+  if (!IsSVGClipPathElement(element) || !element->GetLayoutObject())
     return nullptr;
   return ToLayoutSVGResourceClipper(
       ToLayoutSVGResourceContainer(element->GetLayoutObject()));

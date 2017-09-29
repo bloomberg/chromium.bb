@@ -42,16 +42,16 @@ void LayoutSVGResourceFilterPrimitive::StyleDidChange(
     return;
   const SVGComputedStyle& new_style = this->StyleRef().SvgStyle();
   DCHECK(GetElement());
-  if (isSVGFEFloodElement(*GetElement()) ||
-      isSVGFEDropShadowElement(*GetElement())) {
+  if (IsSVGFEFloodElement(*GetElement()) ||
+      IsSVGFEDropShadowElement(*GetElement())) {
     if (new_style.FloodColor() != old_style->SvgStyle().FloodColor())
       ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
           this, SVGNames::flood_colorAttr);
     if (new_style.FloodOpacity() != old_style->SvgStyle().FloodOpacity())
       ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
           this, SVGNames::flood_opacityAttr);
-  } else if (isSVGFEDiffuseLightingElement(*GetElement()) ||
-             isSVGFESpecularLightingElement(*GetElement())) {
+  } else if (IsSVGFEDiffuseLightingElement(*GetElement()) ||
+             IsSVGFESpecularLightingElement(*GetElement())) {
     if (new_style.LightingColor() != old_style->SvgStyle().LightingColor())
       ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
           this, SVGNames::lighting_colorAttr);

@@ -53,8 +53,8 @@ bool IsEnclosedBy(const PositionInFlatTree& position, const Node& node) {
 }
 
 bool IsSelectionBoundary(const Node& node) {
-  return isHTMLTextAreaElement(node) || isHTMLInputElement(node) ||
-         isHTMLSelectElement(node);
+  return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
+         IsHTMLSelectElement(node);
 }
 
 Node* EnclosingShadowHostForStart(const PositionInFlatTree& position) {

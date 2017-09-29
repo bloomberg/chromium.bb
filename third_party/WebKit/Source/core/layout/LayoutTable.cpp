@@ -398,7 +398,7 @@ LayoutUnit LayoutTable::ConvertStyleLogicalWidthToComputedWidth(
   // HTML tables' width styles already include borders and paddings, but CSS
   // tables' width styles do not.
   LayoutUnit borders;
-  bool is_css_table = !isHTMLTableElement(GetNode());
+  bool is_css_table = !IsHTMLTableElement(GetNode());
   if (is_css_table && style_logical_width.IsSpecified() &&
       style_logical_width.IsPositive() &&
       Style()->BoxSizing() == EBoxSizing::kContentBox) {
@@ -426,7 +426,7 @@ LayoutUnit LayoutTable::ConvertStyleLogicalHeightToComputedHeight(
     LayoutUnit borders = LayoutUnit();
     // FIXME: We cannot apply box-sizing: content-box on <table> which other
     // browsers allow.
-    if (isHTMLTableElement(GetNode()) ||
+    if (IsHTMLTableElement(GetNode()) ||
         Style()->BoxSizing() == EBoxSizing::kBorderBox) {
       borders = border_and_padding;
     }

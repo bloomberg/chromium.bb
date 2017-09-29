@@ -317,7 +317,7 @@ static bool IntersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2) {
 static bool IsIntersectionOrEnclosureTarget(LayoutObject* layout_object) {
   return layout_object->IsSVGShape() || layout_object->IsSVGText() ||
          layout_object->IsSVGImage() ||
-         isSVGUseElement(*layout_object->GetNode());
+         IsSVGUseElement(*layout_object->GetNode());
 }
 
 bool SVGSVGElement::CheckIntersectionOrEnclosure(
@@ -716,7 +716,7 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
 
   SetViewSpec(nullptr);
 
-  if (!isSVGViewElement(anchor_node))
+  if (!IsSVGViewElement(anchor_node))
     return;
 
   SVGViewElement& view_element = toSVGViewElement(*anchor_node);

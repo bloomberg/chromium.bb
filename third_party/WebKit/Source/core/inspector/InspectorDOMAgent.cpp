@@ -1270,7 +1270,7 @@ Response InspectorDOMAgent::setFileInputFiles(
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
-  if (!isHTMLInputElement(*node) ||
+  if (!IsHTMLInputElement(*node) ||
       toHTMLInputElement(*node).type() != InputTypeNames::file)
     return Response::Error("Node is not a file input element");
 

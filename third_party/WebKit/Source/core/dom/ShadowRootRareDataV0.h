@@ -104,9 +104,9 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
 inline void ShadowRootRareDataV0::DidAddInsertionPoint(
     V0InsertionPoint* point) {
   DCHECK(point);
-  if (isHTMLShadowElement(*point))
+  if (IsHTMLShadowElement(*point))
     ++descendant_shadow_element_count_;
-  else if (isHTMLContentElement(*point))
+  else if (IsHTMLContentElement(*point))
     ++descendant_content_element_count_;
   else
     NOTREACHED();
@@ -115,10 +115,10 @@ inline void ShadowRootRareDataV0::DidAddInsertionPoint(
 inline void ShadowRootRareDataV0::DidRemoveInsertionPoint(
     V0InsertionPoint* point) {
   DCHECK(point);
-  if (isHTMLShadowElement(*point)) {
+  if (IsHTMLShadowElement(*point)) {
     DCHECK_GT(descendant_shadow_element_count_, 0u);
     --descendant_shadow_element_count_;
-  } else if (isHTMLContentElement(*point)) {
+  } else if (IsHTMLContentElement(*point)) {
     DCHECK_GT(descendant_content_element_count_, 0u);
     --descendant_content_element_count_;
   } else {

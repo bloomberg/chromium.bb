@@ -85,8 +85,8 @@ static bool HasImpliedEndTag(const HTMLStackItem* item) {
 }
 
 static bool ShouldUseLengthLimit(const ContainerNode& node) {
-  return !isHTMLScriptElement(node) && !isHTMLStyleElement(node) &&
-         !isSVGScriptElement(node);
+  return !IsHTMLScriptElement(node) && !IsHTMLStyleElement(node) &&
+         !IsSVGScriptElement(node);
 }
 
 static unsigned TextLengthLimitForContainer(const ContainerNode& node) {

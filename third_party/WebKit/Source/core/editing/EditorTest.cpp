@@ -31,7 +31,7 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromBody) {
   GetDocument().AppendChild(body);
   Editor::TidyUpHTMLStructure(GetDocument());
 
-  EXPECT_TRUE(isHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
   EXPECT_EQ(body, GetDocument().body());
   EXPECT_EQ(GetDocument().documentElement(), body->parentNode());
 }
@@ -43,8 +43,8 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromDiv) {
   GetDocument().AppendChild(div);
   Editor::TidyUpHTMLStructure(GetDocument());
 
-  EXPECT_TRUE(isHTMLHtmlElement(GetDocument().documentElement()));
-  EXPECT_TRUE(isHTMLBodyElement(GetDocument().body()));
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
   EXPECT_EQ(GetDocument().body(), div->parentNode());
 }
 
@@ -55,8 +55,8 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromHead) {
   GetDocument().AppendChild(head);
   Editor::TidyUpHTMLStructure(GetDocument());
 
-  EXPECT_TRUE(isHTMLHtmlElement(GetDocument().documentElement()));
-  EXPECT_TRUE(isHTMLBodyElement(GetDocument().body()));
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
   EXPECT_EQ(GetDocument().documentElement(), head->parentNode());
 }
 

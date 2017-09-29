@@ -175,7 +175,7 @@ void SVGAnimationElement::ParseAttribute(
   }
 
   if (name == SVGNames::keyPointsAttr) {
-    if (isSVGAnimateMotionElement(*this)) {
+    if (IsSVGAnimateMotionElement(*this)) {
       // This is specified to be an animateMotion attribute only but it is
       // simpler to put it here where the other timing calculatations are.
       if (!ParseKeyTimes(params.new_value, key_points_, false)) {
@@ -291,21 +291,22 @@ void SVGAnimationElement::SetCalcMode(const AtomicString& calc_mode) {
     UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeDiscrete);
     SetCalcMode(kCalcModeDiscrete);
   } else if (calc_mode == linear) {
-    if (isSVGAnimateMotionElement(*this))
+    if (IsSVGAnimateMotionElement(*this))
       UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeLinear);
     // else linear is the default.
     SetCalcMode(kCalcModeLinear);
   } else if (calc_mode == paced) {
-    if (!isSVGAnimateMotionElement(*this))
+    if (!IsSVGAnimateMotionElement(*this))
       UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModePaced);
     // else paced is the default.
     SetCalcMode(kCalcModePaced);
   } else if (calc_mode == spline) {
     UseCounter::Count(GetDocument(), WebFeature::kSVGCalcModeSpline);
     SetCalcMode(kCalcModeSpline);
-  } else
-    SetCalcMode(isSVGAnimateMotionElement(*this) ? kCalcModePaced
+  } else {
+    SetCalcMode(IsSVGAnimateMotionElement(*this) ? kCalcModePaced
                                                  : kCalcModeLinear);
+  }
 }
 
 String SVGAnimationElement::ToValue() const {

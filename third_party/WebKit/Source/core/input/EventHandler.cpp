@@ -117,7 +117,7 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   if (!target_node || !target_node->parentNode())
     return true;
   return target_node->IsShadowRoot() &&
-         isHTMLInputElement(ToShadowRoot(target_node)->host());
+         IsHTMLInputElement(ToShadowRoot(target_node)->host());
 }
 
 }  // namespace
@@ -320,7 +320,7 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
 }
 
 static bool IsSubmitImage(Node* node) {
-  return isHTMLInputElement(node) &&
+  return IsHTMLInputElement(node) &&
          toHTMLInputElement(node)->type() == InputTypeNames::image;
 }
 

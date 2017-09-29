@@ -71,7 +71,7 @@ int HTMLTableRowElement::rowIndex() const {
     // Skip THEAD, TBODY and TFOOT.
     maybe_table = maybe_table->parentNode();
   }
-  if (!(maybe_table && isHTMLTableElement(maybe_table)))
+  if (!(maybe_table && IsHTMLTableElement(maybe_table)))
     return -1;
   return FindIndexInRowCollection(*toHTMLTableElement(maybe_table)->rows(),
                                   *this);

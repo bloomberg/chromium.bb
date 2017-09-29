@@ -206,7 +206,7 @@ bool HTMLObjectElement::HasFallbackContent() const {
     if (child->IsTextNode()) {
       if (!ToText(child)->ContainsOnlyWhitespace())
         return true;
-    } else if (!isHTMLParamElement(*child)) {
+    } else if (!IsHTMLParamElement(*child)) {
       return true;
     }
   }
@@ -396,7 +396,7 @@ bool HTMLObjectElement::IsExposed() const {
       return false;
   }
   for (HTMLElement& element : Traversal<HTMLElement>::DescendantsOf(*this)) {
-    if (isHTMLObjectElement(element) || isHTMLEmbedElement(element))
+    if (IsHTMLObjectElement(element) || IsHTMLEmbedElement(element))
       return false;
   }
   return true;
@@ -407,12 +407,12 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
     return true;
 
   for (HTMLElement& child : Traversal<HTMLElement>::ChildrenOf(*this)) {
-    if (isHTMLParamElement(child) &&
+    if (IsHTMLParamElement(child) &&
         DeprecatedEqualIgnoringCase(child.GetNameAttribute(), "type") &&
         MIMETypeRegistry::IsJavaAppletMIMEType(
             child.getAttribute(valueAttr).GetString()))
       return true;
-    if (isHTMLObjectElement(child) &&
+    if (IsHTMLObjectElement(child) &&
         toHTMLObjectElement(child).ContainsJavaApplet())
       return true;
   }

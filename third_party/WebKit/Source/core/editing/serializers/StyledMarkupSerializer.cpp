@@ -149,7 +149,7 @@ static bool NeedInterchangeNewlineAfter(
   // Add an interchange newline if a paragraph break is selected and a br won't
   // already be added to the markup to represent it.
   return IsEndOfParagraph(v) && IsStartOfParagraph(next) &&
-         !(isHTMLBRElement(*upstream_node) && upstream_node == downstream_node);
+         !(IsHTMLBRElement(*upstream_node) && upstream_node == downstream_node);
 }
 
 template <typename Strategy>
@@ -481,7 +481,7 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
   switch (node.getNodeType()) {
     case Node::kTextNode: {
       Text& text = ToText(node);
-      if (text.parentElement() && isHTMLTextAreaElement(text.parentElement())) {
+      if (text.parentElement() && IsHTMLTextAreaElement(text.parentElement())) {
         accumulator_->AppendText(text);
         break;
       }

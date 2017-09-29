@@ -611,7 +611,7 @@ bool CSPDirectiveList::AllowInlineScript(
   SourceListDirective* directive = OperativeDirective(script_src_.Get());
   if (IsMatchingNoncePresent(directive, nonce))
     return true;
-  if (element && isHTMLScriptElement(element) &&
+  if (element && IsHTMLScriptElement(element) &&
       !toHTMLScriptElement(element)->Loader()->IsParserInserted() &&
       AllowDynamic()) {
     return true;

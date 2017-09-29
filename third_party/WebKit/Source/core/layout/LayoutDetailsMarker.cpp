@@ -61,11 +61,11 @@ bool LayoutDetailsMarker::IsOpen() const {
        layout_object = layout_object->Parent()) {
     if (!layout_object->GetNode())
       continue;
-    if (isHTMLDetailsElement(*layout_object->GetNode()))
+    if (IsHTMLDetailsElement(*layout_object->GetNode()))
       return !ToElement(layout_object->GetNode())
                   ->getAttribute(openAttr)
                   .IsNull();
-    if (isHTMLInputElement(*layout_object->GetNode()))
+    if (IsHTMLInputElement(*layout_object->GetNode()))
       return true;
   }
 

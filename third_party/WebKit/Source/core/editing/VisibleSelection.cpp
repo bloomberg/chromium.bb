@@ -625,7 +625,7 @@ static Element* LowestEditableAncestor(Node* node) {
   while (node) {
     if (HasEditableStyle(*node))
       return RootEditableElement(*node);
-    if (isHTMLBodyElement(*node))
+    if (IsHTMLBodyElement(*node))
       break;
     node = node->parentNode();
   }

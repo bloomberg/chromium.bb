@@ -38,7 +38,7 @@ namespace blink {
 ListItemOrdinal::ListItemOrdinal() : type_(kNeedsUpdate), not_in_list_(false) {}
 
 bool ListItemOrdinal::IsList(const Node& node) {
-  return isHTMLUListElement(node) || isHTMLOListElement(node);
+  return IsHTMLUListElement(node) || IsHTMLOListElement(node);
 }
 
 bool ListItemOrdinal::IsListItem(const LayoutObject* layout_object) {

@@ -143,7 +143,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
 // evaluation is undefined and can differ between compilers.
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     : HTMLCollection(table, kTableRows, kOverridesItemAfter) {
-  DCHECK(isHTMLTableElement(table));
+  DCHECK(IsHTMLTableElement(table));
 }
 
 HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,

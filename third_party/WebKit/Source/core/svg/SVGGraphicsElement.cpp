@@ -51,8 +51,8 @@ DEFINE_TRACE(SVGGraphicsElement) {
 }
 
 static bool IsViewportElement(const Element& element) {
-  return (isSVGSVGElement(element) || isSVGSymbolElement(element) ||
-          isSVGForeignObjectElement(element) || isSVGImageElement(element));
+  return (IsSVGSVGElement(element) || IsSVGSymbolElement(element) ||
+          IsSVGForeignObjectElement(element) || IsSVGImageElement(element));
 }
 
 AffineTransform SVGGraphicsElement::ComputeCTM(

@@ -15,32 +15,32 @@ namespace blink {
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 class {{tag.interface}};
 // Catch unnecessary runtime check of type known at compile time.
-void is{{tag.interface}}(const {{tag.interface}}&);
-void is{{tag.interface}}(const {{tag.interface}}*);
+void Is{{tag.interface}}(const {{tag.interface}}&);
+void Is{{tag.interface}}(const {{tag.interface}}*);
 
-inline bool is{{tag.interface}}(const {{namespace}}Element& element) {
+inline bool Is{{tag.interface}}(const {{namespace}}Element& element) {
   {% if tag.runtimeEnabled %}
   if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
     return false;
   {% endif %}
   return element.HasTagName({{namespace}}Names::{{tag|symbol}}Tag);
 }
-inline bool is{{tag.interface}}(const {{namespace}}Element* element) {
-  return element && is{{tag.interface}}(*element);
+inline bool Is{{tag.interface}}(const {{namespace}}Element* element) {
+  return element && Is{{tag.interface}}(*element);
 }
-inline bool is{{tag.interface}}(const Node& node) {
-  return node.Is{{namespace}}Element() && is{{tag.interface}}(To{{namespace}}Element(node));
+inline bool Is{{tag.interface}}(const Node& node) {
+  return node.Is{{namespace}}Element() && Is{{tag.interface}}(To{{namespace}}Element(node));
 }
-inline bool is{{tag.interface}}(const Node* node) {
-  return node && is{{tag.interface}}(*node);
+inline bool Is{{tag.interface}}(const Node* node) {
+  return node && Is{{tag.interface}}(*node);
 }
 template <>
 inline bool IsElementOfType<const {{tag.interface}}>(const Node& node) {
-  return is{{tag.interface}}(node);
+  return Is{{tag.interface}}(node);
 }
 template <>
 inline bool IsElementOfType<const {{tag.interface}}>(const {{namespace}}Element& element) {
-  return is{{tag.interface}}(element);
+  return Is{{tag.interface}}(element);
 }
 
 {% endfor %}

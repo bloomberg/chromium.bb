@@ -98,7 +98,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
   if (new_image != image_resource_->ImagePtr())
     return;
 
-  if (IsGeneratedContent() && isHTMLImageElement(GetNode()) &&
+  if (IsGeneratedContent() && IsHTMLImageElement(GetNode()) &&
       image_resource_->ErrorOccurred()) {
     toHTMLImageElement(GetNode())->EnsureFallbackForGeneratedContent();
     return;

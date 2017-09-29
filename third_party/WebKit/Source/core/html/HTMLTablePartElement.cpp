@@ -109,7 +109,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
 
 HTMLTableElement* HTMLTablePartElement::FindParentTable() const {
   ContainerNode* parent = FlatTreeTraversal::Parent(*this);
-  while (parent && !isHTMLTableElement(*parent))
+  while (parent && !IsHTMLTableElement(*parent))
     parent = FlatTreeTraversal::Parent(*parent);
   return toHTMLTableElement(parent);
 }

@@ -39,7 +39,7 @@ DEFINE_TYPE_CASTS(HTMLDataListOptionsCollection,
 
 inline bool HTMLDataListOptionsCollection::ElementMatches(
     const HTMLElement& element) const {
-  return isHTMLOptionElement(element);
+  return IsHTMLOptionElement(element);
 }
 
 }  // namespace blink

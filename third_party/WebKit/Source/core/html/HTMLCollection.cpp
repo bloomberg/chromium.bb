@@ -109,9 +109,9 @@ static NodeListRootType RootTypeFromCollectionType(const ContainerNode& owner,
     case kMapAreas:
       return NodeListRootType::kNode;
     case kFormControls:
-      if (isHTMLFieldSetElement(owner))
+      if (IsHTMLFieldSetElement(owner))
         return NodeListRootType::kNode;
-      DCHECK(isHTMLFormElement(owner));
+      DCHECK(IsHTMLFormElement(owner));
       return NodeListRootType::kTreeScope;
     case kNameNodeListType:
     case kRadioNodeListType:
@@ -225,7 +225,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
     case kSelectOptions:
       return ToHTMLOptionsCollection(html_collection).ElementMatches(element);
     case kSelectedOptions:
-      return isHTMLOptionElement(element) &&
+      return IsHTMLOptionElement(element) &&
              toHTMLOptionElement(element).Selected();
     case kDataListOptions:
       return ToHTMLDataListOptionsCollection(html_collection)
@@ -233,7 +233,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
     case kMapAreas:
       return element.HasTagName(areaTag);
     case kDocApplets:
-      return isHTMLObjectElement(element) &&
+      return IsHTMLObjectElement(element) &&
              toHTMLObjectElement(element).ContainsJavaApplet();
     case kDocEmbeds:
       return element.HasTagName(embedTag);
@@ -243,8 +243,8 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
     case kDocAnchors:
       return element.HasTagName(aTag) && element.FastHasAttribute(nameAttr);
     case kFormControls:
-      DCHECK(isHTMLFieldSetElement(html_collection.ownerNode()));
-      return isHTMLObjectElement(element) || IsHTMLFormControlElement(element);
+      DCHECK(IsHTMLFieldSetElement(html_collection.ownerNode()));
+      return IsHTMLObjectElement(element) || IsHTMLFormControlElement(element);
     case kClassCollectionType:
     case kTagCollectionType:
     case kTagCollectionNSType:

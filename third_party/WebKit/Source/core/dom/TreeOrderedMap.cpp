@@ -66,13 +66,13 @@ inline bool KeyMatchesId(const AtomicString& key, const Element& element) {
 }
 
 inline bool KeyMatchesMapName(const AtomicString& key, const Element& element) {
-  return isHTMLMapElement(element) &&
+  return IsHTMLMapElement(element) &&
          toHTMLMapElement(element).GetName() == key;
 }
 
 inline bool KeyMatchesSlotName(const AtomicString& key,
                                const Element& element) {
-  return isHTMLSlotElement(element) &&
+  return IsHTMLSlotElement(element) &&
          toHTMLSlotElement(element).GetName() == key;
 }
 

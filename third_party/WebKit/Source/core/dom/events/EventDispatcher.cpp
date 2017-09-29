@@ -306,7 +306,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // TODO(dtapuska): Change this to a target SDK quirk crbug.com/643705
   if (!is_trusted_or_click && event_->IsMouseEvent() &&
       event_->type() == EventTypeNames::mousedown &&
-      isHTMLSelectElement(*node_)) {
+      IsHTMLSelectElement(*node_)) {
     if (Settings* settings = node_->GetDocument().GetSettings()) {
       is_trusted_or_click = settings->GetWideViewportQuirkEnabled();
     }
@@ -342,7 +342,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // events to open select boxes.
   if (!event_->isTrusted() && event_->IsMouseEvent() &&
       event_->type() == EventTypeNames::mousedown &&
-      isHTMLSelectElement(*node_)) {
+      IsHTMLSelectElement(*node_)) {
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kUntrustedMouseDownEventDispatchedToSelect);
   }

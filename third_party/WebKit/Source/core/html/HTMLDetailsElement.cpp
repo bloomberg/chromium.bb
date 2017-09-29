@@ -116,7 +116,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
   HTMLContentElement* content =
       toHTMLContentElementOrDie(UserAgentShadowRoot()->firstChild());
   DCHECK(content->firstChild());
-  CHECK(isHTMLSummaryElement(*content->firstChild()));
+  CHECK(IsHTMLSummaryElement(*content->firstChild()));
   return ToElement(content->firstChild());
 }
 
