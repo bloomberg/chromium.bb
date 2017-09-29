@@ -259,8 +259,12 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, ui
 
 	pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		if (plane > 0)
+			assert(bo->offsets[plane] >= bo->offsets[plane - 1]);
+
 		drv_increment_reference_count(drv, bo, plane);
+	}
 
 	pthread_mutex_unlock(&drv->driver_lock);
 
@@ -293,8 +297,12 @@ struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint
 
 	pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->num_planes; plane++)
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		if (plane > 0)
+			assert(bo->offsets[plane] >= bo->offsets[plane - 1]);
+
 		drv_increment_reference_count(drv, bo, plane);
+	}
 
 	pthread_mutex_unlock(&drv->driver_lock);
 
@@ -330,6 +338,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	int ret;
 	size_t plane;
 	struct bo *bo;
+	off_t seek_end;
 
 	bo = drv_bo_new(drv, data->width, data->height, data->format, data->use_flags);
 
@@ -346,18 +355,32 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		bo->strides[plane] = data->strides[plane];
 		bo->offsets[plane] = data->offsets[plane];
 		bo->format_modifiers[plane] = data->format_modifiers[plane];
-		if (plane == bo->num_planes - 1 || data->offsets[plane + 1] == 0) {
-			bo->sizes[plane] =
-			    lseek(data->fds[plane], 0, SEEK_END) - data->offsets[plane];
-			lseek(data->fds[plane], 0, SEEK_SET);
-		} else {
+
+		seek_end = lseek(data->fds[plane], 0, SEEK_END);
+		if (seek_end == (off_t)(-1)) {
+			fprintf(stderr, "drv: lseek() failed with %s\n", strerror(errno));
+			goto destroy_bo;
+		}
+
+		lseek(data->fds[plane], 0, SEEK_SET);
+		if (plane == bo->num_planes - 1 || data->offsets[plane + 1] == 0)
+			bo->sizes[plane] = seek_end - data->offsets[plane];
+		else
 			bo->sizes[plane] = data->offsets[plane + 1] - data->offsets[plane];
+
+		if ((int64_t)bo->offsets[plane] + bo->sizes[plane] > seek_end) {
+			fprintf(stderr, "drv: buffer size is too large.\n");
+			goto destroy_bo;
 		}
 
 		bo->total_size += bo->sizes[plane];
 	}
 
 	return bo;
+
+destroy_bo:
+	drv_bo_destroy(bo);
+	return NULL;
 }
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
