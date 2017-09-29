@@ -315,13 +315,15 @@ class _BuildHelper(object):
 
 class _BuildArchive(object):
   """Class for managing a directory with build results and build metadata."""
-  def __init__(self, rev, base_archive_dir, build, subrepo, slow_options):
+  def __init__(self, rev, base_archive_dir, build, subrepo, slow_options,
+               save_unstripped):
     self.build = build
     self.dir = os.path.join(base_archive_dir, rev)
     metadata_path = os.path.join(self.dir, 'metadata.txt')
     self.rev = rev
     self.metadata = _Metadata([self], build, metadata_path, subrepo)
     self._slow_options = slow_options
+    self._save_unstripped = save_unstripped
 
   def ArchiveBuildResults(self, supersize_path):
     """Save build artifacts necessary for diffing."""
@@ -332,10 +334,24 @@ class _BuildArchive(object):
       self._ArchiveFile(self.build.abs_apk_path + '.mapping')
       self._ArchiveResourceSizes()
     self._ArchiveSizeFile(supersize_path)
+    if self._save_unstripped:
+      self._ArchiveFile(self.build.abs_main_lib_path)
     self.metadata.Write()
+    assert self.Exists()
 
   def Exists(self):
-    return self.metadata.Exists()
+    ret = self.metadata.Exists() and os.path.exists(self.archived_size_path)
+    if self._save_unstripped:
+      ret = ret and os.path.exists(self.archived_unstripped_path)
+    return ret
+
+  @property
+  def archived_unstripped_path(self):
+    return os.path.join(self.dir, os.path.basename(self.build.main_lib_path))
+
+  @property
+  def archived_size_path(self):
+    return os.path.join(self.dir, self.build.size_name)
 
   def _ArchiveResourceSizes(self):
     cmd = [_RESOURCE_SIZES_PATH, self.build.abs_apk_path,'--output-dir',
@@ -355,12 +371,10 @@ class _BuildArchive(object):
     existing_size_file = self.build.abs_apk_path + '.size'
     if os.path.exists(existing_size_file):
       logging.info('Found existing .size file')
-      os.rename(
-          existing_size_file, os.path.join(self.dir, self.build.size_name))
+      shutil.copy(existing_size_file, self.archived_size_path)
     else:
-      size_path = os.path.join(self.dir, self.build.size_name)
-      supersize_cmd = [supersize_path, 'archive', size_path, '--elf-file',
-                       self.build.abs_main_lib_path]
+      supersize_cmd = [supersize_path, 'archive', self.archived_size_path,
+                       '--elf-file', self.build.abs_main_lib_path]
       if self.build.IsCloud():
         supersize_cmd += ['--no-source-paths']
       else:
@@ -373,11 +387,13 @@ class _BuildArchive(object):
 
 class _DiffArchiveManager(object):
   """Class for maintaining BuildArchives and their related diff artifacts."""
-  def __init__(self, revs, archive_dir, diffs, build, subrepo, slow_options):
+  def __init__(self, revs, archive_dir, diffs, build, subrepo, slow_options,
+               save_unstripped):
     self.archive_dir = archive_dir
     self.build = build
     self.build_archives = [
-        _BuildArchive(rev, archive_dir, build, subrepo, slow_options)
+        _BuildArchive(rev, archive_dir, build, subrepo, slow_options,
+                      save_unstripped)
         for rev in revs
     ]
     self.diffs = diffs
@@ -410,18 +426,10 @@ class _DiffArchiveManager(object):
       with open(diff_path, 'a') as diff_file:
         for d in self.diffs:
           d.RunDiff(diff_file, before.dir, after.dir)
-        logging.info('See detailed diff results here: %s',
-                     os.path.relpath(diff_path))
-        if len(self.build_archives) == 2:
-          supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
-          size_paths = [os.path.join(a.dir, a.build.size_name)
-                        for a in self.build_archives]
-          logging.info('Enter supersize console via: %s console %s %s',
-                       os.path.relpath(supersize_path),
-                       os.path.relpath(size_paths[0]),
-                       os.path.relpath(size_paths[1]))
       metadata.Write()
       self._AddDiffSummaryStat(before, after)
+    logging.info('See detailed diff results here: %s',
+                 os.path.relpath(diff_path))
 
   def Summarize(self):
     if self._summary_stats:
@@ -433,11 +441,14 @@ class _DiffArchiveManager(object):
         for s, before, after in stats:
           _PrintAndWriteToFile(f, '{:>+10} {} {} for range: {}..{}',
                                s.value, s.units, s.name, before, after)
-    elif self.build_archives:
+    if self.build_archives:
       supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
-      size_path = os.path.join(self.build_archives[0].dir, self.build.size_name)
-      logging.info('Enter supersize console via: %s console %s',
-                   os.path.relpath(supersize_path), os.path.relpath(size_path))
+      size2 = ''
+      if len(self.build_archives) > 1:
+        size2 = os.path.relpath(self.build_archives[-1].archived_size_path)
+      logging.info('Enter supersize console via: %s console %s %s',
+          os.path.relpath(supersize_path),
+          os.path.relpath(self.build_archives[0].archived_size_path), size2)
 
 
   def _AddDiffSummaryStat(self, before, after):
@@ -756,6 +767,9 @@ def main():
   parser.add_argument('--single',
                       action='store_true',
                       help='Sets --reference-rev=rev')
+  parser.add_argument('--unstripped',
+                      action='store_true',
+                      help='Save the unstripped native library when archiving.')
   parser.add_argument('--depot-tools-path',
                       help='Custom path to depot tools. Needed for --cloud if '
                            'depot tools isn\'t in your PATH.')
@@ -836,7 +850,8 @@ def main():
           ResourceSizesDiff(build.apk_name)
       ]
     diff_mngr = _DiffArchiveManager(revs, args.archive_directory, diffs, build,
-                                    subrepo, args.include_slow_options)
+                                    subrepo, args.include_slow_options,
+                                    args.unstripped)
     consecutive_failures = 0
     for i, archive in enumerate(diff_mngr.IterArchives()):
       if archive.Exists():
