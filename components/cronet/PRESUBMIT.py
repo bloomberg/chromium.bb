@@ -8,6 +8,8 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+import os
+
 def _PyLintChecks(input_api, output_api):
   pylint_checks = input_api.canned_checks.GetPylint(input_api, output_api,
           extra_paths_list=_GetPathsToPrepend(input_api), pylintrc='pylintrc')
@@ -73,6 +75,26 @@ def _RunUnittests(input_api, output_api):
       input_api, output_api, '.', [ r'^.+_unittest\.py$'])
 
 
+def _ChangeAffectsCronetForAndroid(change):
+  """ Returns |true| if the change may affect Cronet for Android. """
+
+  for affected_file in change.AffectedFiles():
+    path = affected_file.LocalPath()
+    if not path.startswith(os.path.join('components', 'cronet', 'ios')):
+      return True
+  return False
+
+
+def _ChangeAffectsCronetForIos(change):
+  """ Returns |true| if the change may affect Cronet for iOS. """
+
+  for affected_file in change.AffectedFiles():
+    path = affected_file.LocalPath()
+    if not path.startswith(os.path.join('components', 'cronet', 'android')):
+      return True
+  return False
+
+
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
@@ -91,9 +113,12 @@ def PostUploadHook(cl, change, output_api):
   This hook adds an extra try bot to the CL description in order to run Cronet
   tests in addition to CQ try bots.
   """
+
+  try_bots = []
+  if _ChangeAffectsCronetForAndroid(change):
+    try_bots.append('master.tryserver.chromium.android:android_cronet_tester')
+  if _ChangeAffectsCronetForIos(change):
+    try_bots.append('master.tryserver.chromium.mac:ios-simulator-cronet')
+
   return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl,
-    [
-      'master.tryserver.chromium.android:android_cronet_tester',
-    ],
-    'Automatically added Cronet trybot to run tests on CQ.')
+    cl, try_bots, 'Automatically added Cronet trybots to run tests on CQ.')
