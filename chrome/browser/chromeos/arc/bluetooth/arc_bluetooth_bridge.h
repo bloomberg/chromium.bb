@@ -312,8 +312,8 @@ class ArcBluetoothBridge
   enum class AdapterPowerState { TURN_OFF, TURN_ON };
 
   // Chrome observer callbacks
-  void OnPoweredOn(AdapterStateCallback callback) const;
-  void OnPoweredOff(AdapterStateCallback callback) const;
+  void OnPoweredOn(AdapterStateCallback callback, bool save_user_pref) const;
+  void OnPoweredOff(AdapterStateCallback callback, bool save_user_pref) const;
   void OnPoweredError(AdapterStateCallback callback) const;
   void OnDiscoveryStarted(
       std::unique_ptr<device::BluetoothDiscoverySession> session);

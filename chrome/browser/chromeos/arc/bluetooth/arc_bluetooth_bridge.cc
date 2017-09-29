@@ -820,7 +820,7 @@ void ArcBluetoothBridge::EnableAdapter(EnableAdapterCallback callback) {
     }
   }
 
-  OnPoweredOn(std::move(callback));
+  OnPoweredOn(std::move(callback), false /* save_user_pref */);
 }
 
 void ArcBluetoothBridge::DisableAdapter(DisableAdapterCallback callback) {
@@ -835,7 +835,7 @@ void ArcBluetoothBridge::DisableAdapter(DisableAdapterCallback callback) {
     }
   }
 
-  OnPoweredOff(std::move(callback));
+  OnPoweredOff(std::move(callback), false /* save_user_pref */);
 }
 
 void ArcBluetoothBridge::GetAdapterProperty(mojom::BluetoothPropertyType type) {
@@ -1039,18 +1039,22 @@ void ArcBluetoothBridge::CancelDiscovery() {
 }
 
 void ArcBluetoothBridge::OnPoweredOn(
-    ArcBluetoothBridge::AdapterStateCallback callback) const {
-  // Saves the power state to user preference.
-  SetPrimaryUserBluetoothPowerSetting(true);
+    ArcBluetoothBridge::AdapterStateCallback callback,
+    bool save_user_pref) const {
+  // Saves the power state to user preference only if Android initiated it.
+  if (save_user_pref)
+    SetPrimaryUserBluetoothPowerSetting(true);
 
   std::move(callback).Run(mojom::BluetoothAdapterState::ON);
   SendCachedPairedDevices();
 }
 
 void ArcBluetoothBridge::OnPoweredOff(
-    ArcBluetoothBridge::AdapterStateCallback callback) const {
-  // Saves the power state to user preference.
-  SetPrimaryUserBluetoothPowerSetting(false);
+    ArcBluetoothBridge::AdapterStateCallback callback,
+    bool save_user_pref) const {
+  // Saves the power state to user preference only if Android initiated it.
+  if (save_user_pref)
+    SetPrimaryUserBluetoothPowerSetting(false);
 
   std::move(callback).Run(mojom::BluetoothAdapterState::OFF);
 }
@@ -2191,7 +2195,8 @@ void ArcBluetoothBridge::EnqueueRemotePowerChange(
       turn_on,
       base::Bind(turn_on ? &ArcBluetoothBridge::OnPoweredOn
                          : &ArcBluetoothBridge::OnPoweredOff,
-                 weak_factory_.GetWeakPtr(), repeating_callback),
+                 weak_factory_.GetWeakPtr(), repeating_callback,
+                 true /* save_user_pref */),
       base::Bind(&ArcBluetoothBridge::OnPoweredError,
                  weak_factory_.GetWeakPtr(), repeating_callback));
 }
