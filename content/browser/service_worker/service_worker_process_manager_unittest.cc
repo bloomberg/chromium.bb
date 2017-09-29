@@ -6,9 +6,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -108,8 +110,13 @@ TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
   EXPECT_EQ(host3->GetID(), process_manager_->FindAvailableProcess(pattern_));
 }
 
+// This tests the process host tracking by ServiceWorkerProcessManager
+// which only is done when PlzNavigate is disabled.
 TEST_F(ServiceWorkerProcessManagerTest,
-       AllocateWorkerProcess_FindAvailableProcess) {
+       AllocateWorkerProcess_FindAvailableProcess_NonPlzNavigate) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kBrowserSideNavigation);
+
   const int kEmbeddedWorkerId1 = 100;
   const int kEmbeddedWorkerId2 = 200;
   const int kEmbeddedWorkerId3 = 300;
