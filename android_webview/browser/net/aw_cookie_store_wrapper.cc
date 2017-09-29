@@ -20,6 +20,21 @@ void PostTaskToCookieStoreTaskRunner(base::OnceClosure task) {
   GetCookieStoreTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
+class AwCookieChangedSubscription
+    : public net::CookieStore::CookieChangedSubscription {
+ public:
+  explicit AwCookieChangedSubscription(
+      std::unique_ptr<net::CookieStore::CookieChangedCallbackList::Subscription>
+          subscription)
+      : subscription_(std::move(subscription)) {}
+
+ private:
+  std::unique_ptr<net::CookieStore::CookieChangedCallbackList::Subscription>
+      subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(AwCookieChangedSubscription);
+};
+
 // Wraps a subscription to cookie change notifications for the global
 // CookieStore for a consumer that lives on another thread. Handles passing
 // messages between thread, and destroys itself when the consumer unsubscribes.
@@ -38,7 +53,8 @@ class SubscriptionWrapper {
 
     nested_subscription_ =
         new NestedSubscription(url, name, weak_factory_.GetWeakPtr());
-    return callback_list_.Add(callback);
+    return std::make_unique<AwCookieChangedSubscription>(
+        callback_list_.Add(callback));
   }
 
  private:

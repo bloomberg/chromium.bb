@@ -147,6 +147,47 @@ const int CookieMonster::kSafeFromGlobalPurgeDays = 30;
 
 namespace {
 
+// This class owns the CookieStore::CookieChangedCallbackList::Subscription,
+// thus guaranteeing destruction when it is destroyed.  In addition, it
+// wraps the callback for a particular subscription, guaranteeing that it
+// won't be run even if a PostTask completes after the subscription has
+// been destroyed.
+class CookieMonsterCookieChangedSubscription
+    : public CookieStore::CookieChangedSubscription {
+ public:
+  CookieMonsterCookieChangedSubscription(
+      const CookieStore::CookieChangedCallback& callback)
+      : callback_(callback), weak_ptr_factory_(this) {}
+  ~CookieMonsterCookieChangedSubscription() override {}
+
+  void SetCallbackSubscription(
+      std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
+          subscription) {
+    subscription_ = std::move(subscription);
+  }
+
+  // The returned callback runs the callback passed to the constructor
+  // directly as long as this object hasn't been destroyed.
+  CookieStore::CookieChangedCallback WeakCallback() {
+    return base::Bind(&CookieMonsterCookieChangedSubscription::RunCallback,
+                      weak_ptr_factory_.GetWeakPtr());
+  }
+
+ private:
+  void RunCallback(const CanonicalCookie& cookie,
+                   CookieStore::ChangeCause cause) {
+    callback_.Run(cookie, cause);
+  }
+
+  const CookieStore::CookieChangedCallback callback_;
+  std::unique_ptr<CookieStore::CookieChangedCallbackList::Subscription>
+      subscription_;
+  base::WeakPtrFactory<CookieMonsterCookieChangedSubscription>
+      weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieMonsterCookieChangedSubscription);
+};
+
 bool ContainsControlCharacter(const std::string& s) {
   for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {
     if ((*i >= 0) && (*i <= 31))
@@ -382,7 +423,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
-      global_hook_map_(base::MakeUnique<CookieChangedCallbackList>()),
+      global_hook_map_(std::make_unique<CookieChangedCallbackList>()),
       weak_ptr_factory_(this) {
   InitializeHistograms();
   cookieable_schemes_.insert(
@@ -628,16 +669,24 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0)
     hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
-  return hook_map_[key]->Add(
-      base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
+
+  std::unique_ptr<CookieMonsterCookieChangedSubscription> sub(
+      std::make_unique<CookieMonsterCookieChangedSubscription>(callback));
+  sub->SetCallbackSubscription(hook_map_[key]->Add(base::Bind(
+      &RunAsync, base::ThreadTaskRunnerHandle::Get(), sub->WeakCallback())));
+
+  return std::move(sub);
 }
 
 std::unique_ptr<CookieStore::CookieChangedSubscription>
 CookieMonster::AddCallbackForAllChanges(const CookieChangedCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return global_hook_map_->Add(
-      base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
+  std::unique_ptr<CookieMonsterCookieChangedSubscription> sub(
+      std::make_unique<CookieMonsterCookieChangedSubscription>(callback));
+  sub->SetCallbackSubscription(global_hook_map_->Add(base::Bind(
+      &RunAsync, base::ThreadTaskRunnerHandle::Get(), sub->WeakCallback())));
+  return std::move(sub);
 }
 
 bool CookieMonster::IsEphemeral() {
