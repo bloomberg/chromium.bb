@@ -17,6 +17,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -78,8 +79,27 @@ mojom::IntentHelperInstance* GetInstanceForRequestActivityIcons(
   return instance;
 }
 
+// Encodes the |image| as PNG data considering scale factor, and returns it as
+// data: URL.
+scoped_refptr<base::RefCountedData<GURL>> GeneratePNGDataUrl(
+    const gfx::ImageSkia& image,
+    ui::ScaleFactor scale_factor) {
+  float scale = ui::GetScaleForScaleFactor(scale_factor);
+  std::vector<unsigned char> output;
+  gfx::PNGCodec::EncodeBGRASkBitmap(image.GetRepresentation(scale).sk_bitmap(),
+                                    false /* discard_transparency */, &output);
+  std::string encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(output.data()),
+                        output.size()),
+      &encoded);
+  return base::WrapRefCounted(
+      new base::RefCountedData<GURL>(GURL(kPngDataUrlPrefix + encoded)));
+}
+
 std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> ResizeAndEncodeIcons(
-    std::vector<mojom::ActivityIconPtr> icons) {
+    std::vector<mojom::ActivityIconPtr> icons,
+    ui::ScaleFactor scale_factor) {
   auto result = std::make_unique<ActivityIconLoader::ActivityToIconsMap>();
   for (size_t i = 0; i < icons.size(); ++i) {
     static const size_t kBytesPerPixel = 4;
@@ -109,23 +129,14 @@ std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> ResizeAndEncodeIcons(
     gfx::Image icon16(icon_small);
     gfx::Image icon20(icon_large);
 
-    // Encode the icon as PNG data, and then as data: URL.
-    scoped_refptr<base::RefCountedMemory> img = icon16.As1xPNGBytes();
-    if (!img)
-      continue;
-    std::string encoded;
-    base::Base64Encode(base::StringPiece(img->front_as<char>(), img->size()),
-                       &encoded);
-    scoped_refptr<base::RefCountedData<GURL>> dataurl(
-        new base::RefCountedData<GURL>(GURL(kPngDataUrlPrefix + encoded)));
-
     const std::string activity_name = icon->activity->activity_name.has_value()
                                           ? (*icon->activity->activity_name)
                                           : std::string();
-    result->insert(
-        std::make_pair(ActivityIconLoader::ActivityName(
-                           icon->activity->package_name, activity_name),
-                       ActivityIconLoader::Icons(icon16, icon20, dataurl)));
+    result->insert(std::make_pair(
+        ActivityIconLoader::ActivityName(icon->activity->package_name,
+                                         activity_name),
+        ActivityIconLoader::Icons(
+            icon16, icon20, GeneratePNGDataUrl(icon_small, scale_factor))));
   }
 
   return result;
@@ -240,7 +251,8 @@ void ActivityIconLoader::OnIconsReady(
     std::vector<mojom::ActivityIconPtr> icons) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, base::Bind(&ResizeAndEncodeIcons, base::Passed(&icons)),
+      FROM_HERE,
+      base::Bind(&ResizeAndEncodeIcons, base::Passed(&icons), scale_factor_),
       base::Bind(&ActivityIconLoader::OnIconsResized,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&cached_result),
                  cb));
