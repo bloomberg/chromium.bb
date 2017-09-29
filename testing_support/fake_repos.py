@@ -518,6 +518,7 @@ deps_os ={
 hooks = [
   {
     'pattern': '.',
+    'condition': 'True',
     'action': ['python', '-c',
                'open(\\'src/git_hooked1\\', \\'w\\').write(\\'{hook1_contents}\\')'],
   },

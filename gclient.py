@@ -181,6 +181,10 @@ class Hook(object):
   def name(self):
     return self._name
 
+  @property
+  def condition(self):
+    return self._condition
+
   def matches(self, file_list):
     """Returns true if the pattern matches any of files in the list."""
     if not self._pattern:
@@ -2042,6 +2046,8 @@ def _HooksToLines(name, hooks):
       s.append('    "name": "%s",' % hook.name)
     if hook.pattern is not None:
       s.append('    "pattern": "%s",' % hook.pattern)
+    if hook.condition is not None:
+      s.append('    "condition": "%s",' % hook.condition)
     s.extend(
         # Hooks run in the parent directory of their dep.
         ['    "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
@@ -2069,6 +2075,8 @@ def _HooksOsToLines(hooks_os):
         s.append('      "name": "%s",' % hook.name)
       if hook.pattern is not None:
         s.append('      "pattern": "%s",' % hook.pattern)
+      if hook.condition is not None:
+        s.append('    "condition": "%s",' % hook.condition)
       s.extend(
           # Hooks run in the parent directory of their dep.
           ['      "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
