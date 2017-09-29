@@ -384,9 +384,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
         path = base_path.Append(external_crx);
       }
 
-      std::unique_ptr<base::Version> version(
-          new base::Version(external_version));
-      if (!version->IsValid()) {
+      base::Version version(external_version);
+      if (!version.IsValid()) {
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Invalid version string \""
                      << external_version << "\".";
@@ -394,8 +393,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       }
       external_file_extensions->push_back(
           base::MakeUnique<ExternalInstallInfoFile>(
-              extension_id, std::move(version), path, crx_location_,
-              creation_flags, auto_acknowledge_, install_immediately_));
+              extension_id, version, path, crx_location_, creation_flags,
+              auto_acknowledge_, install_immediately_));
     } else {  // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Manifest::INVALID_LOCATION) {
@@ -403,8 +402,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
                      << "extensions from update URLs.";
         continue;
       }
-      std::unique_ptr<GURL> update_url(new GURL(external_update_url));
-      if (!update_url->is_valid()) {
+      GURL update_url(external_update_url);
+      if (!update_url.is_valid()) {
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Key " << kExternalUpdateUrl
                      << " has value \"" << external_update_url

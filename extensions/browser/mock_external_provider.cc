@@ -4,7 +4,8 @@
 
 #include "extensions/browser/mock_external_provider.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/version.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/common/extension.h"
@@ -20,10 +21,9 @@ MockExternalProvider::~MockExternalProvider() {}
 void MockExternalProvider::UpdateOrAddExtension(const ExtensionId& id,
                                                 const std::string& version_str,
                                                 const base::FilePath& path) {
-  auto version = std::make_unique<base::Version>(version_str);
   auto info = std::make_unique<ExternalInstallInfoFile>(
-      id, std::move(version), path, location_, Extension::NO_FLAGS, false,
-      false);
+      id, base::Version(version_str), path, location_, Extension::NO_FLAGS,
+      false, false);
   extension_map_[id] = std::move(info);
 }
 
@@ -57,7 +57,7 @@ bool MockExternalProvider::GetExtensionDetails(
     return false;
 
   if (version)
-    version->reset(new base::Version(it->second->version->GetString()));
+    version->reset(new base::Version(it->second->version));
 
   if (location)
     *location = location_;

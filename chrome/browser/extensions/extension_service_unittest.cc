@@ -277,8 +277,8 @@ std::unique_ptr<ExternalInstallInfoFile> CreateExternalExtension(
     Manifest::Location location,
     Extension::InitFromValueFlags flags) {
   return base::MakeUnique<ExternalInstallInfoFile>(
-      extension_id, base::MakeUnique<base::Version>(version_str), path,
-      location, flags, false, false);
+      extension_id, base::Version(version_str), path, location, flags, false,
+      false);
 }
 
 // Helper function to persist the passed directories and file paths in
@@ -422,13 +422,13 @@ class MockProviderVisitor
       base::FilePath crx_path;
 
       EXPECT_TRUE(provider_->GetExtensionDetails(info.extension_id, NULL, &v1));
-      EXPECT_STREQ(info.version->GetString().c_str(), v1->GetString().c_str());
+      EXPECT_EQ(info.version.GetString(), v1->GetString());
 
       std::unique_ptr<base::Version> v2;
       EXPECT_TRUE(
           provider_->GetExtensionDetails(info.extension_id, &location, &v2));
-      EXPECT_STREQ(info.version->GetString().c_str(), v1->GetString().c_str());
-      EXPECT_STREQ(info.version->GetString().c_str(), v2->GetString().c_str());
+      EXPECT_EQ(info.version.GetString(), v1->GetString());
+      EXPECT_EQ(info.version.GetString(), v2->GetString());
       EXPECT_EQ(crx_location_, location);
 
       // Remove it so we won't count it ever again.
@@ -4487,12 +4487,12 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatingPendingExternalExtensionWithFlags) {
   base::FilePath path = data_dir().AppendASCII("good.crx");
 
   // Register and install an external extension.
-  std::unique_ptr<base::Version> version(new base::Version("1.0.0.0"));
+  base::Version version("1.0.0.0");
   content::WindowedNotificationObserver observer(
       extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
   std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
-      good_crx, std::move(version), path, Manifest::EXTERNAL_PREF,
+      good_crx, version, path, Manifest::EXTERNAL_PREF,
       Extension::FROM_BOOKMARK, false /* mark_acknowledged */,
       false /* install_immediately */));
   ASSERT_TRUE(service()->OnExternalExtensionFileFound(*info));
@@ -5988,7 +5988,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Skip install when the location is the same.
-  std::unique_ptr<GURL> good_update_url(new GURL(kGoodUpdateURL));
+  GURL good_update_url(kGoodUpdateURL);
   std::unique_ptr<ExternalInstallInfoUpdateUrl> info(
       new ExternalInstallInfoUpdateUrl(
           kGoodId, std::string(), std::move(good_update_url),
@@ -6051,12 +6051,9 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
       service()->pending_extension_manager();
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
-  std::unique_ptr<base::Version> older_version_ptr(
-      new base::Version(older_version));
   std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
-      kGoodId, std::move(older_version_ptr), kInvalidPathToCrx,
-      Manifest::INTERNAL, kCreationFlags, kDontMarkAcknowledged,
-      kDontInstallImmediately));
+      kGoodId, older_version, kInvalidPathToCrx, Manifest::INTERNAL,
+      kCreationFlags, kDontMarkAcknowledged, kDontInstallImmediately));
   {
     // Simulate an external source adding the extension as INTERNAL.
     content::WindowedNotificationObserver observer(
@@ -6133,29 +6130,29 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   // older, or the same, and succeed if the version is newer.
 
   // Older than the installed version...
-  info->version.reset(new base::Version(older_version));
+  info->version = older_version;
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Same version as the installed version...
-  info->version.reset(new base::Version(ext->VersionString()));
+  info->version = *ext->version();
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Newer than the installed version...
-  info->version.reset(new base::Version(newer_version));
+  info->version = newer_version;
   EXPECT_TRUE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 
   // An external install for a higher priority install source should succeed
   // if the version is greater.  |older_version| is not...
-  info->version.reset(new base::Version(older_version));
+  info->version = older_version;
   info->crx_location = Manifest::EXTERNAL_PREF;
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 
   // |newer_version| is newer.
-  info->version.reset(new base::Version(newer_version));
+  info->version = newer_version;
   EXPECT_TRUE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
 
@@ -6189,9 +6186,8 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
 
   // An external provider starts installing from a local crx.
   std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
-      kGoodId, base::MakeUnique<base::Version>(kVersion123),
-      kInvalidPathToCrx, Manifest::EXTERNAL_PREF, kCreationFlags,
-      kDontMarkAcknowledged, kDontInstallImmediately));
+      kGoodId, kVersion123, kInvalidPathToCrx, Manifest::EXTERNAL_PREF,
+      kCreationFlags, kDontMarkAcknowledged, kDontInstallImmediately));
   EXPECT_TRUE(service()->OnExternalExtensionFileFound(*info));
 
   const extensions::PendingExtensionInfo* pending_info;
@@ -6200,14 +6196,14 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   EXPECT_EQ(pending_info->version(), kVersion123);
 
   // Adding a newer version overrides the currently pending version.
-  info->version.reset(new base::Version(kVersion124));
+  info->version = kVersion124;
   EXPECT_TRUE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_TRUE((pending_info = pending->GetById(kGoodId)));
   EXPECT_TRUE(pending_info->version().IsValid());
   EXPECT_EQ(pending_info->version(), kVersion124);
 
   // Adding an older version fails.
-  info->version.reset(new base::Version(kVersion123));
+  info->version = kVersion123;
   EXPECT_FALSE(service()->OnExternalExtensionFileFound(*info));
   EXPECT_TRUE((pending_info = pending->GetById(kGoodId)));
   EXPECT_TRUE(pending_info->version().IsValid());
@@ -6222,10 +6218,9 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   EXPECT_EQ(pending_info->version(), kVersion124);
 
   // Adding the latest version from the webstore overrides a specific version.
-  GURL kUpdateUrl("http://example.com/update");
   std::unique_ptr<ExternalInstallInfoUpdateUrl> update_info(
       new ExternalInstallInfoUpdateUrl(
-          kGoodId, std::string(), base::MakeUnique<GURL>(kUpdateUrl),
+          kGoodId, std::string(), GURL("http://example.com/update"),
           Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS, false));
   EXPECT_TRUE(service()->OnExternalExtensionUpdateUrlFound(*update_info, true));
   EXPECT_TRUE((pending_info = pending->GetById(kGoodId)));
@@ -6280,9 +6275,8 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
 
   // Fake an external file from external_extensions.json.
   bool AddPendingExternalPrefFileInstall() {
-    std::unique_ptr<base::Version> version(new base::Version("1.0.0.0"));
     std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
-        crx_id_, std::move(version), crx_path_, Manifest::EXTERNAL_PREF,
+        crx_id_, base::Version("1.0.0.0"), crx_path_, Manifest::EXTERNAL_PREF,
         Extension::NO_FLAGS, false, false));
     return service()->OnExternalExtensionFileFound(*info);
   }
@@ -6300,11 +6294,10 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   // Fake a policy install.
   bool AddPendingPolicyInstall() {
     // Get path to the CRX with id |kGoodId|.
-    std::unique_ptr<GURL> empty_url(new GURL());
     std::unique_ptr<ExternalInstallInfoUpdateUrl> info(
-        new ExternalInstallInfoUpdateUrl(
-            crx_id_, std::string(), std::move(empty_url),
-            Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS, false));
+        new ExternalInstallInfoUpdateUrl(crx_id_, std::string(), GURL(),
+                                         Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                                         Extension::NO_FLAGS, false));
     return service()->OnExternalExtensionUpdateUrlFound(*info, true);
   }
 

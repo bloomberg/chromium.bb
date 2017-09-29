@@ -392,7 +392,7 @@ class TestExternalProvider : public ExternalProviderInterface {
     visitor_->OnExternalExtensionUpdateUrlFound(
         ExternalInstallInfoUpdateUrl(
             extension_id_, std::string() /* install_parameter */,
-            base::MakeUnique<GURL>(extension_urls::GetWebstoreUpdateUrl()),
+            extension_urls::GetWebstoreUpdateUrl(),
             Manifest::EXTERNAL_POLICY_DOWNLOAD, 0 /* creation_flags */,
             true /* mark_acknowledged */),
         true /* is_initial_load */);
