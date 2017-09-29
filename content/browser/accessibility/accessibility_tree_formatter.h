@@ -17,6 +17,10 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
 
+namespace {
+const char kChildrenDictAttr[] = "children";
+}
+
 namespace content {
 
 // A utility class for formatting platform-specific accessibility information,
@@ -71,8 +75,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   //     "children": [ ]
   //   } ]
   // }
-  std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      BrowserAccessibility* root);
+  virtual std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
+      BrowserAccessibility* root) = 0;
 
   // Dumps a BrowserAccessibility tree into a string.
   void FormatAccessibilityTree(
@@ -115,15 +119,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Overridden by platform subclasses.
   //
 
-  virtual uint32_t ChildCount(const BrowserAccessibility& node) const;
-
-  virtual BrowserAccessibility* GetChild(const BrowserAccessibility& node,
-                                         uint32_t i) const;
-
-  // Add the attributes for each node into the given dict.
-  virtual void AddProperties(const BrowserAccessibility& node,
-                             base::DictionaryValue* dict) = 0;
-
   // Returns a platform specific representation of a BrowserAccessibility.
   virtual base::string16 ToString(const base::DictionaryValue& node) = 0;
 
@@ -150,8 +145,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
                                         base::string16* contents,
                                         int indent);
-  void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
-                                       base::DictionaryValue* tree_node);
   void RecursiveFormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                         base::string16* contents,
                                         int depth = 0);

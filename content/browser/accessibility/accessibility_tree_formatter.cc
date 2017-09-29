@@ -29,7 +29,6 @@ const char kIndentSymbol = '+';
 const int kIndentSymbolCount = 2;
 const char kSkipString[] = "@NO_DUMP";
 const char kSkipChildren[] = "@NO_CHILDREN_DUMP";
-const char kChildrenDictAttr[] = "children";
 
 }  // namespace
 
@@ -40,34 +39,10 @@ AccessibilityTreeFormatter::AccessibilityTreeFormatter()
 AccessibilityTreeFormatter::~AccessibilityTreeFormatter() {
 }
 
-std::unique_ptr<base::DictionaryValue>
-AccessibilityTreeFormatter::BuildAccessibilityTree(BrowserAccessibility* root) {
-  CHECK(root);
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  RecursiveBuildAccessibilityTree(*root, dict.get());
-  return dict;
-}
-
 void AccessibilityTreeFormatter::FormatAccessibilityTree(
     BrowserAccessibility* root, base::string16* contents) {
   std::unique_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);
   RecursiveFormatAccessibilityTree(*(dict.get()), contents);
-}
-
-void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
-    const BrowserAccessibility& node, base::DictionaryValue* dict) {
-  AddProperties(node, dict);
-
-  auto children = base::MakeUnique<base::ListValue>();
-
-  for (size_t i = 0; i < ChildCount(node); ++i) {
-    BrowserAccessibility* child_node = GetChild(node, i);
-    std::unique_ptr<base::DictionaryValue> child_dict(
-        new base::DictionaryValue);
-    RecursiveBuildAccessibilityTree(*child_node, child_dict.get());
-    children->Append(std::move(child_dict));
-  }
-  dict->Set(kChildrenDictAttr, std::move(children));
 }
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
@@ -100,17 +75,6 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
 void AccessibilityTreeFormatter::SetFilters(
     const std::vector<Filter>& filters) {
   filters_ = filters;
-}
-
-uint32_t AccessibilityTreeFormatter::ChildCount(
-    const BrowserAccessibility& node) const {
-  return node.PlatformChildCount();
-}
-
-BrowserAccessibility* AccessibilityTreeFormatter::GetChild(
-    const BrowserAccessibility& node,
-    uint32_t i) const {
-  return node.PlatformGetChild(i);
 }
 
 // static

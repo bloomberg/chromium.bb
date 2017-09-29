@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
 namespace content {
 
 class CONTENT_EXPORT AccessibilityTreeFormatterBlink
-    : public AccessibilityTreeFormatter {
+    : public AccessibilityTreeFormatterBrowser {
  public:
   explicit AccessibilityTreeFormatterBlink();
   ~AccessibilityTreeFormatterBlink() override;

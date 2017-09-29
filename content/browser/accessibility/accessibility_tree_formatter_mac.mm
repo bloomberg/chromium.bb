@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -204,7 +204,7 @@ NSArray* BuildAllAttributesArray() {
 
 }  // namespace
 
-class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
  public:
   explicit AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;

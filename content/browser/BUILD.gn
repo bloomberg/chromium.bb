@@ -239,6 +239,8 @@ source_set("browser") {
     "accessibility/accessibility_tree_formatter.h",
     "accessibility/accessibility_tree_formatter_blink.cc",
     "accessibility/accessibility_tree_formatter_blink.h",
+    "accessibility/accessibility_tree_formatter_browser.cc",
+    "accessibility/accessibility_tree_formatter_browser.h",
     "accessibility/accessibility_tree_formatter_mac.mm",
     "accessibility/accessibility_tree_formatter_stub.cc",
     "accessibility/accessibility_tree_formatter_utils_win.cc",
