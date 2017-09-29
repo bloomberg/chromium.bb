@@ -38,6 +38,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/DataResourceHelper.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/LeakAnnotations.h"
 
 namespace blink {
@@ -162,8 +163,13 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   // <audio>.
   if (!media_controls_style_sheet_ &&
       (isHTMLVideoElement(element) || isHTMLAudioElement(element))) {
-    String media_rules = GetDataResourceAsASCIIString("mediaControls.css") +
-                         LayoutTheme::GetTheme().ExtraMediaControlsStyleSheet();
+    String media_rules;
+    if (RuntimeEnabledFeatures::ModernMediaControlsEnabled()) {
+      media_rules = GetDataResourceAsASCIIString("modernMediaControls.css");
+    } else {
+      media_rules = GetDataResourceAsASCIIString("legacyMediaControls.css") +
+                    LayoutTheme::GetTheme().ExtraMediaControlsStyleSheet();
+    }
     media_controls_style_sheet_ = ParseUASheet(media_rules);
     default_style_->AddRulesFromSheet(MediaControlsStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(MediaControlsStyleSheet(),

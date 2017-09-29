@@ -98,6 +98,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMediaCapture(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaSession(bool);
   BLINK_PLATFORM_EXPORT static void EnableMiddleClickAutoscroll(bool);
+  BLINK_PLATFORM_EXPORT static void EnableModernMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableModuleScripts(bool);
   BLINK_PLATFORM_EXPORT static void EnableModuleScriptsDynamicImport(bool);
   BLINK_PLATFORM_EXPORT static void EnableMojoBlobs(bool);
