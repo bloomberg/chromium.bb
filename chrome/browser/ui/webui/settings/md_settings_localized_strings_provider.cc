@@ -1602,12 +1602,18 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
+#if defined(OS_CHROMEOS)
+  const bool is_user_primary =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile) ==
+      user_manager::UserManager::Get()->GetPrimaryUser();
+#endif
+
   LocalizedString localized_strings[] = {
 #if defined(OS_CHROMEOS)
-    {"searchPageTitle",
-     !profile->IsSupervised() && chromeos::switches::IsVoiceInteractionEnabled()
-         ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
-         : IDS_SETTINGS_SEARCH},
+    {"searchPageTitle", !profile->IsSupervised() && is_user_primary &&
+                                chromeos::switches::IsVoiceInteractionEnabled()
+                            ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                            : IDS_SETTINGS_SEARCH},
 #else
     {"searchPageTitle", IDS_SETTINGS_SEARCH},
 #endif
@@ -1644,8 +1650,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("enableVoiceInteraction",
-                          chromeos::switches::IsVoiceInteractionEnabled());
+  html_source->AddBoolean(
+      "enableVoiceInteraction",
+      chromeos::switches::IsVoiceInteractionEnabled() && is_user_primary);
 #endif
 }
 
