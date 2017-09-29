@@ -10,7 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_impl.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
@@ -26,13 +25,12 @@ RendererScheduler::RAILModeObserver::~RAILModeObserver() = default;
 // static
 std::unique_ptr<RendererScheduler> RendererScheduler::Create() {
   // Ensure categories appear as an option in chrome://tracing.
-  base::trace_event::TraceLog::GetCategoryGroupEnabled(
-      TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
-  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+  TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
+  TRACE_EVENT_WARMUP_CATEGORY(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler.debug"));
-  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+  TRACE_EVENT_WARMUP_CATEGORY(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug"));
-  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+  TRACE_EVENT_WARMUP_CATEGORY(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.enable_verbose_snapshots"));
 
   base::MessageLoop* message_loop = base::MessageLoop::current();
