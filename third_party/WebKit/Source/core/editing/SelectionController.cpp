@@ -561,6 +561,12 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
                             TextGranularity::kWord)
                       : VisibleSelectionInFlatTree();
 
+  // TODO(editing-dev): Fix CreateVisibleSelectionWithGranularity() to not
+  // return invalid ranges. Until we do that, we need this check here to avoid a
+  // renderer crash when we call PlainText() below (see crbug.com/735774).
+  if (new_selection.IsNone() || new_selection.Start() > new_selection.End())
+    return false;
+
   HandleVisibility visibility = HandleVisibility::kNotVisible;
   if (select_input_event_type == SelectInputEventType::kTouch) {
     // If node doesn't have text except space, tab or line break, do not
