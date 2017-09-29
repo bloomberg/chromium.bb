@@ -611,7 +611,7 @@ EvalResult PolicyBase::EvalPolicy(int service,
       // deal.
       return DENY_ACCESS;
     }
-    for (int i = 0; i < params->count; i++) {
+    for (size_t i = 0; i < params->count; i++) {
       if (!params->parameters[i].IsValid()) {
         NOTREACHED();
         return SIGNAL_ALARM;

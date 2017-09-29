@@ -91,6 +91,9 @@ class BrokerServices {
   //   If the return is ERROR_GENERIC, you can call ::GetLastError() to get
   //   more information.
   virtual ResultCode WaitForAllTargets() = 0;
+
+ protected:
+  ~BrokerServices() {}
 };
 
 // TargetServices models the current process from the perspective
@@ -133,6 +136,9 @@ class TargetServices {
   // information about the current state of the process, such as whether
   // LowerToken has been called or not.
   virtual ProcessState* GetState() = 0;
+
+ protected:
+  ~TargetServices() {}
 };
 
 }  // namespace sandbox

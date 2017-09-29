@@ -57,6 +57,7 @@ class TargetServicesBase : public TargetServices {
   bool TestIPCPing(int version);
 
  private:
+  ~TargetServicesBase() {}
   ProcessState process_state_;
   DISALLOW_COPY_AND_ASSIGN(TargetServicesBase);
 };

@@ -29,12 +29,12 @@ class AutoLock {
   // Acquires the lock.
   explicit AutoLock(CRITICAL_SECTION *lock) : lock_(lock) {
     ::EnterCriticalSection(lock);
-  };
+  }
 
   // Releases the lock;
   ~AutoLock() {
     ::LeaveCriticalSection(lock_);
-  };
+  }
 
  private:
   CRITICAL_SECTION *lock_;

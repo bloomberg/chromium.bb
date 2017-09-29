@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "sandbox/win/src/policy_engine_params.h"
@@ -185,7 +186,7 @@ class PolicyOpcode {
   // evaluating it. Used to do a quick scan forward to the next opcode group.
   bool IsAction() const {
     return (OP_ACTION == opcode_id_);
-  };
+  }
 
   // Returns the opcode type.
   OpcodeID GetID() const {
@@ -294,6 +295,7 @@ class OpcodeFactory {
 
   // Returns the available memory to make opcodes.
   size_t memory_size() const {
+    DCHECK_GE(memory_bottom_, memory_top_);
     return memory_bottom_ - memory_top_;
   }
 
