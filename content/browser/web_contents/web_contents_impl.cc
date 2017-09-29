@@ -1532,7 +1532,7 @@ void WebContentsImpl::WasHidden() {
       view->Hide();
 
     if (!ShowingInterstitialPage())
-      SetVisibilityForChildViews(true);
+      SetVisibilityForChildViews(false);
 
     SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
