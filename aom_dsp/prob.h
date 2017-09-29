@@ -50,6 +50,10 @@ typedef uint16_t aom_cdf_prob;
 
 #define BR_NODE 1
 
+#if CONFIG_ADAPT_SCAN
+#define CACHE_SCAN_PROB 1
+#endif
+
 #define aom_prob_half ((aom_prob)128)
 
 typedef int8_t aom_tree_index;
