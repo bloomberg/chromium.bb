@@ -58,6 +58,9 @@ public class CaptivePortalTest {
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_MISMATCHED_NAME);
+
+        CaptivePortalHelper.setOSReportsCaptivePortalForTesting(false);
+        CaptivePortalHelper.setCaptivePortalCertificateForTesting("sha256/test");
     }
 
     @After
@@ -74,18 +77,10 @@ public class CaptivePortalTest {
         }));
     }
 
-    @Test
-    public void testCaptivePortalInterstitial() throws Exception {
-        // Add the SPKI of the root cert to captive portal certificate list.
-        byte[] rootCertSPKI = CertTestUtil.getPublicKeySha256(X509Util.createCertificateFromBytes(
-                CertTestUtil.pemToDer(mServer.getRootCertPemPath())));
-        Assert.assertTrue(rootCertSPKI != null);
-        CaptivePortalHelper.addCaptivePortalCertificateForTesting(
-                "sha256/" + Base64.encodeToString(rootCertSPKI, Base64.NO_WRAP));
-
-        // Navigate the tab to an interstitial with a name mismatch error. This should
-        // result in a captive portal interstitial since the certificate's SPKI hash
-        // is added to the captive portal certificate list.
+    /** Navigate the tab to an interstitial with a name mismatch error and check if this
+    /*  results in a captive portal interstitial.
+     */
+    private void navigateAndCheckCaptivePortalInterstitial() throws Exception {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ChromeTabUtils.loadUrlOnUiThread(
                 tab, mServer.getURL("/chrome/test/data/android/navigate/simple.html"));
@@ -101,5 +96,23 @@ public class CaptivePortalTest {
                 .waitForTitleUpdate(INTERSTITIAL_TITLE_UPDATE_TIMEOUT_SECONDS);
 
         Assert.assertEquals(0, tab.getTitle().indexOf(CAPTIVE_PORTAL_INTERSTITIAL_TITLE_PREFIX));
+    }
+
+    @Test
+    public void testCaptivePortalCertificateListFeature() throws Exception {
+        // Add the SPKI of the root cert to captive portal certificate list.
+        byte[] rootCertSPKI = CertTestUtil.getPublicKeySha256(X509Util.createCertificateFromBytes(
+                CertTestUtil.pemToDer(mServer.getRootCertPemPath())));
+        Assert.assertTrue(rootCertSPKI != null);
+        CaptivePortalHelper.setCaptivePortalCertificateForTesting(
+                "sha256/" + Base64.encodeToString(rootCertSPKI, Base64.NO_WRAP));
+
+        navigateAndCheckCaptivePortalInterstitial();
+    }
+
+    @Test
+    public void testOSReportsCaptivePortal() throws Exception {
+        CaptivePortalHelper.setOSReportsCaptivePortalForTesting(true);
+        navigateAndCheckCaptivePortalInterstitial();
     }
 }

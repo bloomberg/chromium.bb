@@ -17,17 +17,21 @@ import java.lang.reflect.Method;
 /** Helper class for captive portal related methods on Android. */
 @JNINamespace("chrome::android")
 public class CaptivePortalHelper {
-    public static void addCaptivePortalCertificateForTesting(String spkiHash) {
-        nativeAddCaptivePortalCertificateForTesting(spkiHash);
+    public static void setCaptivePortalCertificateForTesting(String spkiHash) {
+        nativeSetCaptivePortalCertificateForTesting(spkiHash);
+    }
+
+    public static void setOSReportsCaptivePortalForTesting(boolean osReportsCaptivePortal) {
+        nativeSetOSReportsCaptivePortalForTesting(osReportsCaptivePortal);
     }
 
     @CalledByNative
     private static String getCaptivePortalServerUrl() {
-        // Since Android N MR2 it is possible that a captive portal was detected with a different
-        // URL than getCaptivePortalServerUrl(). By default, Android uses the URL from
-        // getCaptivePortalServerUrl() first, but there are also two additional fallback HTTP URLs
-        // to probe if the first HTTP probe does not find anything. Using the default URL is
-        // acceptable as the return value is only used by the captive portal interstitial.
+        // Since Android N MR2 it is possible that a captive portal was detected with a
+        // different URL than getCaptivePortalServerUrl(). By default, Android uses the URL from
+        // getCaptivePortalServerUrl() first, but there are also two additional fallback HTTP
+        // URLs to probe if the first HTTP probe does not find anything. Using the default URL
+        // is acceptable as the return value is only used by the captive portal interstitial.
         try {
             Context context = ContextUtils.getApplicationContext();
             ConnectivityManager connectivityManager =
@@ -43,5 +47,8 @@ public class CaptivePortalHelper {
 
     private CaptivePortalHelper() {}
 
-    private static native void nativeAddCaptivePortalCertificateForTesting(String spkiHash);
+    private static native void nativeSetCaptivePortalCertificateForTesting(String spkiHash);
+
+    private static native void nativeSetOSReportsCaptivePortalForTesting(
+            boolean osReportsCaptivePortal);
 }
