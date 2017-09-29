@@ -256,7 +256,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   }
 
   ash::ShelfItemDelegate* GetShelfItemDelegate(const std::string& id) {
-    ash::ShelfModel* model = ash::Shell::Get()->shelf_model();
+    auto* model = ChromeLauncherController::instance()->shelf_model();
     return model->GetShelfItemDelegate(ash::ShelfID(id));
   }
 

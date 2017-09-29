@@ -39,6 +39,10 @@ class ShelfController : public mojom::ShelfController,
 
   ShelfModel* model() { return &model_; }
 
+  bool should_synchronize_shelf_models() const {
+    return should_synchronize_shelf_models_;
+  }
+
   // mojom::ShelfController:
   void AddObserver(mojom::ShelfObserverAssociatedPtrInfo observer) override;
   void AddShelfItem(int32_t index, const ShelfItem& item) override;
