@@ -31,6 +31,12 @@ FakeRemoteGattService::FakeRemoteGattService(
 
 FakeRemoteGattService::~FakeRemoteGattService() {}
 
+bool FakeRemoteGattService::AllResponsesConsumed() {
+  return std::all_of(
+      fake_characteristics_.begin(), fake_characteristics_.end(),
+      [](const auto& e) { return e.second->AllResponsesConsumed(); });
+}
+
 std::string FakeRemoteGattService::AddFakeCharacteristic(
     const device::BluetoothUUID& characteristic_uuid,
     mojom::CharacteristicPropertiesPtr properties) {

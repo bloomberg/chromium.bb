@@ -41,4 +41,9 @@ void FakeBluetooth::SimulateCentral(mojom::CentralState state,
   std::move(callback).Run(std::move(fake_central_ptr));
 }
 
+void FakeBluetooth::AllResponsesConsumed(
+    AllResponsesConsumedCallback callback) {
+  std::move(callback).Run(fake_central_->AllResponsesConsumed());
+}
+
 }  // namespace bluetooth

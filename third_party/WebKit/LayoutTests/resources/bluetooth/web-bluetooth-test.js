@@ -127,6 +127,12 @@
       return new FakeCentral(fake_central_ptr);
     }
 
+    // Returns true if there are no pending responses.
+    async allResponsesConsumed() {
+      let {consumed} = await this.fake_bluetooth_ptr_.allResponsesConsumed();
+      return consumed;
+    }
+
     async initFakeBluetoothInterfacePtr_() {
       if (typeof this.fake_bluetooth_ptr_ !== 'undefined') {
         return this.fake_bluetooth_ptr_;

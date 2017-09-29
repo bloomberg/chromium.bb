@@ -32,6 +32,9 @@ class FakeRemoteGattService : public device::BluetoothRemoteGattService {
                         device::BluetoothDevice* device);
   ~FakeRemoteGattService() override;
 
+  // Returns true if there are no pending responses for any characterstics.
+  bool AllResponsesConsumed();
+
   // Adds a fake characteristic with |characteristic_uuid| and |properties|
   // to this service. Returns the characteristic's Id.
   std::string AddFakeCharacteristic(

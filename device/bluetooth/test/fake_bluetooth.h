@@ -27,6 +27,7 @@ class FakeBluetooth : public mojom::FakeBluetooth {
   void SetLESupported(bool available, SetLESupportedCallback callback) override;
   void SimulateCentral(mojom::CentralState state,
                        SimulateCentralCallback callback) override;
+  void AllResponsesConsumed(AllResponsesConsumedCallback callback) override;
 
  private:
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>

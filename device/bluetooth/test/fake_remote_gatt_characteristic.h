@@ -54,6 +54,10 @@ class FakeRemoteGattCharacteristic
   // call its error callback.
   void SetNextSubscribeToNotificationsResponse(uint16_t gatt_code);
 
+  // Returns true if there are no pending responses for this characteristc or
+  // any of its descriptors.
+  bool AllResponsesConsumed();
+
   // Returns the last sucessfully written value to the characteristic. Returns
   // nullopt if no value has been written yet.
   const base::Optional<std::vector<uint8_t>>& last_written_value() {

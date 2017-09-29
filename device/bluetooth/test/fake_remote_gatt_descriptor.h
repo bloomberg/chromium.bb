@@ -33,6 +33,9 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
   void SetNextReadResponse(uint16_t gatt_code,
                            const base::Optional<std::vector<uint8_t>>& value);
 
+  // Returns true if there are no pending responses for this descriptor.
+  bool AllResponsesConsumed();
+
   // device::BluetoothGattDescriptor overrides:
   std::string GetIdentifier() const override;
   device::BluetoothUUID GetUUID() const override;

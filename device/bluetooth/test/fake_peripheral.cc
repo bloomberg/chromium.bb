@@ -49,6 +49,16 @@ void FakePeripheral::SetNextGATTDiscoveryResponse(uint16_t code) {
   next_discovery_response_ = code;
 }
 
+bool FakePeripheral::AllResponsesConsumed() {
+  return !next_connection_response_ && !next_discovery_response_ &&
+         std::all_of(gatt_services_.begin(), gatt_services_.end(),
+                     [](const auto& e) {
+                       FakeRemoteGattService* fake_remote_gatt_service =
+                           static_cast<FakeRemoteGattService*>(e.second.get());
+                       return fake_remote_gatt_service->AllResponsesConsumed();
+                     });
+}
+
 void FakePeripheral::SimulateGATTDisconnection() {
   gatt_services_.clear();
   // TODO(crbug.com/728870): Only set get_connected_ to false once system
