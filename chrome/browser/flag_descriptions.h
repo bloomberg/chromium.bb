@@ -1704,13 +1704,6 @@ extern const char kUiSlowAnimationsDescription[];
 
 #endif  // defined(USE_ASH)
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-
-extern const char kShowCertLinkOnPageInfoName[];
-extern const char kShowCertLinkOnPageInfoDescription[];
-
-#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 extern const char kAutofillCreditCardUploadName[];

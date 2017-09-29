@@ -197,9 +197,6 @@ class PageInfoUI {
   static const gfx::ImageSkia GetCertificateIcon();
 #endif
 
-  // Returns true if the Certificate Viewer link should be shown.
-  static bool ShouldShowCertificateLink();
-
   // Return true if the given ContentSettingsType is in PageInfoUI.
   static bool ContentSettingsTypeInPageInfo(ContentSettingsType type);
 

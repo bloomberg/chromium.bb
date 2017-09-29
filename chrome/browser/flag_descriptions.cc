@@ -2761,15 +2761,6 @@ const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
 #endif  // defined(USE_ASH)
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-
-const char kShowCertLinkOnPageInfoName[] = "Show certificate link";
-const char kShowCertLinkOnPageInfoDescription[] =
-    "Add a link from the Page Info bubble to the certificate viewer for HTTPS "
-    "sites.";
-
-#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 const char kAutofillCreditCardUploadName[] =

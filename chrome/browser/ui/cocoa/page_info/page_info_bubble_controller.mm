@@ -922,31 +922,30 @@ bool IsInternalURL(const GURL& url) {
       }
     }
 
-    if (PageInfoUI::ShouldShowCertificateLink()) {
-      bool isValid = (identityInfo.identity_status !=
-                      PageInfo::SITE_IDENTITY_STATUS_ERROR);
-      NSString* linkText = l10n_util::GetNSString(
-          isValid ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
-                  : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
+    // Show information about the page's certificate.
+    bool isValid =
+        (identityInfo.identity_status != PageInfo::SITE_IDENTITY_STATUS_ERROR);
+    NSString* linkText = l10n_util::GetNSString(
+        isValid ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
+                : IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK);
 
-      certificateView_ =
-          [self addInspectLinkToView:siteSettingsSectionView_
-                         sectionIcon:NSImageFromImageSkia(
-                                         PageInfoUI::GetCertificateIcon())
-                        sectionTitle:l10n_util::GetStringUTF16(
-                                         IDS_PAGE_INFO_CERTIFICATE)
-                            linkText:linkText];
-      if (isValid) {
-        [certificateView_
-            setLinkToolTip:l10n_util::GetNSStringF(
-                               IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
-                               base::UTF8ToUTF16(
-                                   certificate_->issuer().GetDisplayName()))];
-      }
-
-      [certificateView_ setLinkTarget:self
-                           withAction:@selector(showCertificateInfo:)];
+    certificateView_ =
+        [self addInspectLinkToView:siteSettingsSectionView_
+                       sectionIcon:NSImageFromImageSkia(
+                                       PageInfoUI::GetCertificateIcon())
+                      sectionTitle:l10n_util::GetStringUTF16(
+                                       IDS_PAGE_INFO_CERTIFICATE)
+                          linkText:linkText];
+    if (isValid) {
+      [certificateView_
+          setLinkToolTip:l10n_util::GetNSStringF(
+                             IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
+                             base::UTF8ToUTF16(
+                                 certificate_->issuer().GetDisplayName()))];
     }
+
+    [certificateView_ setLinkTarget:self
+                         withAction:@selector(showCertificateInfo:)];
   }
   if (identityInfo.show_change_password_buttons) {
     changePasswordButton_ =
