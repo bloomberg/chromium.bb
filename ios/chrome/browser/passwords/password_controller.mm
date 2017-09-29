@@ -301,6 +301,10 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // True indicates that a request for credentials has been sent to the password
   // store.
   BOOL sent_request_to_store_;
+
+  // User credential waiting to be displayed in autosign-in snackbar, once tab
+  // becomes active.
+  std::unique_ptr<autofill::PasswordForm> pendingAutoSigninPasswordForm_;
 }
 
 @synthesize isWebStateDestroyed = _isWebStateDestroyed;
@@ -442,6 +446,15 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 #pragma mark -
 #pragma mark CRWWebStateObserver
+
+// If Tab was shown, and there is a pending PasswordForm, display autosign-in
+// notification.
+- (void)webStateWasShown:(web::WebState*)webState {
+  if (pendingAutoSigninPasswordForm_) {
+    [self showAutosigninNotification:std::move(pendingAutoSigninPasswordForm_)];
+    pendingAutoSigninPasswordForm_.reset();
+  }
+}
 
 // If Tab was hidden, hide auto sign-in notification.
 - (void)webStateWasHidden:(web::WebState*)webState {
@@ -781,9 +794,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(webState_);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:tabIdHelper->tab_id()]) {
-    // The notification was not shown.
-    // TODO(crbug.com/435048): Display the suppressed notification once the tab
-    // is shown again.
+    // The notification was not shown. Store the password form in
+    // |pendingAutoSigninPasswordForm_| to show the notification later.
+    pendingAutoSigninPasswordForm_ = std::move(formSignedIn);
     self.notifyAutoSigninViewController = nil;
     return;
   }
