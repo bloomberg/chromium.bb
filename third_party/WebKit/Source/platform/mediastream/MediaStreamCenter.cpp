@@ -41,6 +41,7 @@
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
+#include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"
 
 namespace blink {
@@ -114,6 +115,11 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
   }
 
   return nullptr;
+}
+
+void MediaStreamCenter::DidStopMediaStreamSource(MediaStreamSource* source) {
+  if (private_)
+    private_->DidStopMediaStreamSource(source);
 }
 
 void MediaStreamCenter::StopLocalMediaStream(const WebMediaStream& web_stream) {

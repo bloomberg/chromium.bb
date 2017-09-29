@@ -40,6 +40,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
   // MediaStreamAudioSource implementation.
   bool EnsureSourceIsStarted() final;
   void EnsureSourceIsStopped() final;
+  void SetAudioCallback();
 
   // To act as an WebAudioSourceProviderImpl::CopyAudioCB.
   void OnAudioBus(std::unique_ptr<media::AudioBus> audio_bus,
@@ -54,6 +55,8 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
   int last_bus_frames_;
 
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<HtmlAudioElementCapturerSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlAudioElementCapturerSource);
 };
