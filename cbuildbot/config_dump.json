@@ -20239,6 +20239,24 @@
         ],
         "vm_tests": []
     },
+    "pyro-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "pyro"
+        ]
+    },
+    "pyro-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "pyro"
+        ]
+    },
+    "pyro-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "pyro"
+        ]
+    },
     "pyro-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -20820,24 +20838,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "reef-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "reef"
-        ]
-    },
-    "reef-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "reef"
-        ]
-    },
-    "reef-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "reef"
-        ]
     },
     "reef-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -23939,24 +23939,6 @@
             "-chrome_internal"
         ]
     },
-    "squawks-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "squawks"
-        ]
-    },
-    "squawks-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "squawks"
-        ]
-    },
-    "squawks-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "squawks"
-        ]
-    },
     "squawks-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -24707,6 +24689,24 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "swanky-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "boards": [
+            "swanky"
+        ]
+    },
+    "swanky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "swanky"
+        ]
+    },
+    "swanky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "swanky"
         ]
     },
     "swanky-no-vmtest-pre-cq": {
