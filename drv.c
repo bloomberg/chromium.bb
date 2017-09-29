@@ -361,7 +361,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 }
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t flags, struct map_info **map_data, size_t plane)
+		 uint32_t map_flags, struct map_info **map_data, size_t plane)
 {
 	void *ptr;
 	uint8_t *addr;
@@ -373,7 +373,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	assert(height > 0);
 	assert(x + width <= drv_bo_get_width(bo));
 	assert(y + height <= drv_bo_get_height(bo));
-	assert(BO_TRANSFER_READ_WRITE & flags);
+	assert(BO_MAP_READ_WRITE & map_flags);
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
@@ -384,7 +384,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	}
 
 	data = calloc(1, sizeof(*data));
-	prot = BO_TRANSFER_WRITE & flags ? PROT_WRITE | PROT_READ : PROT_READ;
+	prot = BO_MAP_WRITE & map_flags ? PROT_WRITE | PROT_READ : PROT_READ;
 	addr = bo->drv->backend->bo_map(bo, data, plane, prot);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;

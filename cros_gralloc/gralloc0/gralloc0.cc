@@ -78,6 +78,18 @@ static uint64_t gralloc0_convert_usage(int usage)
 	return use_flags;
 }
 
+static uint32_t gralloc0_convert_map_usage(int map_usage)
+{
+	uint32_t map_flags = BO_MAP_NONE;
+
+	if (map_usage & GRALLOC_USAGE_SW_READ_MASK)
+		map_flags |= BO_MAP_READ;
+	if (map_usage & GRALLOC_USAGE_SW_WRITE_MASK)
+		map_flags |= BO_MAP_WRITE;
+
+	return map_flags;
+}
+
 static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usage,
 			  buffer_handle_t *handle, int *stride)
 {
@@ -282,7 +294,7 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 			       int usage, int l, int t, int w, int h, void **vaddr, int fence_fd)
 {
 	int32_t ret;
-	uint64_t flags;
+	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES];
 	auto mod = (struct gralloc0_module *)module;
 
@@ -297,8 +309,8 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 		return -EINVAL;
 	}
 
-	flags = gralloc0_convert_usage(usage);
-	ret = mod->driver->lock(handle, fence_fd, flags, addr);
+	map_flags = gralloc0_convert_map_usage(usage);
+	ret = mod->driver->lock(handle, fence_fd, map_flags, addr);
 	*vaddr = addr[0];
 	return ret;
 }
@@ -314,8 +326,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 				     int usage, int l, int t, int w, int h,
 				     struct android_ycbcr *ycbcr, int fence_fd)
 {
-	uint64_t flags;
 	int32_t ret;
+	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module *)module;
 
@@ -332,8 +344,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 		return -EINVAL;
 	}
 
-	flags = gralloc0_convert_usage(usage);
-	ret = mod->driver->lock(handle, fence_fd, flags, addr);
+	map_flags = gralloc0_convert_map_usage(usage);
+	ret = mod->driver->lock(handle, fence_fd, map_flags, addr);
 	if (ret)
 		return ret;
 

@@ -223,15 +223,16 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 }
 
 PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-			uint32_t flags, uint32_t *stride, void **map_data, size_t plane)
+			uint32_t transfer_flags, uint32_t *stride, void **map_data, size_t plane)
 {
+	uint32_t map_flags;
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
 	*stride = gbm_bo_get_plane_stride(bo, plane);
-	uint32_t drv_flags = flags & GBM_BO_TRANSFER_READ ? BO_TRANSFER_READ : BO_TRANSFER_NONE;
-	drv_flags |= flags & GBM_BO_TRANSFER_WRITE ? BO_TRANSFER_WRITE : BO_TRANSFER_NONE;
-	return drv_bo_map(bo->bo, x, y, width, height, drv_flags, (struct map_info **)map_data,
+	map_flags = (transfer_flags & GBM_BO_TRANSFER_READ) ? BO_MAP_READ : BO_MAP_NONE;
+	map_flags |= (transfer_flags & GBM_BO_TRANSFER_WRITE) ? BO_MAP_WRITE : BO_MAP_NONE;
+	return drv_bo_map(bo->bo, x, y, width, height, map_flags, (struct map_info **)map_data,
 			  plane);
 }
 

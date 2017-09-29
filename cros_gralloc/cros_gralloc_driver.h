@@ -26,7 +26,7 @@ class cros_gralloc_driver
 	int32_t retain(buffer_handle_t handle);
 	int32_t release(buffer_handle_t handle);
 
-	int32_t lock(buffer_handle_t handle, int32_t acquire_fence, uint64_t flags,
+	int32_t lock(buffer_handle_t handle, int32_t acquire_fence, uint32_t map_flags,
 		     uint8_t *addr[DRV_MAX_PLANES]);
 	int32_t unlock(buffer_handle_t handle, int32_t *release_fence);
 

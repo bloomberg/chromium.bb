@@ -38,11 +38,11 @@ extern "C" {
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
 #define BO_USE_TEXTURE			(1ull << 17)
 
-/* Read-Write permissions for drv_bo_map() flags */
-#define BO_TRANSFER_NONE 0
-#define BO_TRANSFER_READ (1 << 0)
-#define BO_TRANSFER_WRITE (1 << 1)
-#define BO_TRANSFER_READ_WRITE (BO_TRANSFER_READ | BO_TRANSFER_WRITE)
+/* Map flags */
+#define BO_MAP_NONE 0
+#define BO_MAP_READ (1 << 0)
+#define BO_MAP_WRITE (1 << 1)
+#define BO_MAP_READ_WRITE (BO_MAP_READ | BO_MAP_WRITE)
 
 /* This is our extension to <drm_fourcc.h>.  We need to make sure we don't step
  * on the namespace of already defined formats, which can be done by using invalid
@@ -110,7 +110,7 @@ void drv_bo_destroy(struct bo *bo);
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t flags, struct map_info **map_data, size_t plane);
+		 uint32_t map_flags, struct map_info **map_data, size_t plane);
 
 int drv_bo_unmap(struct bo *bo, struct map_info *data);
 
