@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/grit",
   "+chrome/installer/util",
   "+chrome/profiling",
+  "+components/font_service/font_service_app.h",
   "+components/payments/content/utility",
   "+components/printing/service/public/cpp",
   "+components/printing/service/public/interfaces",
@@ -15,7 +16,24 @@ include_rules = [
   "+media",
   "+services/service_manager/embedder",
   "+services/service_manager/public/cpp",
+  "+services/ui/public",
+  "+services/ui/service.h",
   "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",
 ]
+
+specific_include_rules = {
+  "mash_service_factory.cc": [
+    "+ash/mus/window_manager_application.h",
+    "+ash/autoclick/mus/autoclick_application.h",
+    "+ash/public/interfaces",
+    "+ash/touch_hud/mus/touch_hud_application.h",
+    "+components/font_service/font_service_app.h",
+    "+components/font_service/public/interfaces",
+    "+mash/quick_launch/public",
+    "+mash/quick_launch/quick_launch.h",
+    "+services/ui/public",
+    "+services/ui/service.h",
+  ]
+}

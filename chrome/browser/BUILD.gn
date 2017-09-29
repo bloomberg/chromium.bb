@@ -3989,6 +3989,28 @@ split_static_library("browser") {
       "password_manager/password_store_signin_notifier_impl.h",
     ]
   }
+
+  if (enable_package_mash_services) {
+    sources += [
+      "mash_service_registry.cc",
+      "mash_service_registry.h",
+    ]
+
+    deps += [
+      "//mash/quick_launch/public/interfaces:constants",
+      "//services/ui/public/interfaces",
+    ]
+
+    if (is_linux && !is_android) {
+      deps += [
+        "//components/font_service:lib",
+        "//components/font_service/public/interfaces",
+      ]
+    }
+    if (is_chromeos) {
+      deps += [ "//ash/public/cpp:ash_public_cpp" ]
+    }
+  }
 }
 
 if (is_android) {

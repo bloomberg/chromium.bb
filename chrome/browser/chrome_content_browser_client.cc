@@ -244,6 +244,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -364,6 +365,11 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#include "chrome/browser/mash_service_registry.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
@@ -1826,6 +1832,36 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 }
 
+void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
+    const service_manager::Identity& identity,
+    base::CommandLine* command_line) {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  // Mash services do their own resource loading.
+  if (IsMashServiceName(identity.name()))
+    command_line->AppendSwitch(switches::kDisableServiceProcessResourceLoading);
+  bool copy_switches = false;
+  if (identity.name() == ui::mojom::kServiceName) {
+    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
+    copy_switches = true;
+  }
+#if defined(OS_CHROMEOS)
+  if (identity.name() == ash::mojom::kServiceName)
+    copy_switches = true;
+#endif
+  // TODO(sky): move to a whitelist, but currently the set of flags is rather
+  // sprawling.
+  if (copy_switches) {
+    base::CommandLine::SwitchMap switches =
+        base::CommandLine::ForCurrentProcess()->GetSwitches();
+    switches.erase("single_process");
+    switches.erase(switches::kSingleProcess);
+    switches.erase("gtest_filter");
+    for (const auto& sw : switches)
+      command_line->AppendSwitchNative(sw.first, sw.second);
+  }
+#endif
+}
+
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
     return g_io_thread_application_locale.Get();
@@ -3014,7 +3050,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
-      OutOfProcessServiceMap* services) {
+    OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
   (*services)[printing::mojom::kServiceName] =
       base::ASCIIToUTF16("PDF Compositor Service");
@@ -3031,6 +3067,11 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #if !defined(OS_ANDROID)
   (*services)[chrome::mojom::kProfileImportServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
+#endif
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash))
+    RegisterOutOfProcessServicesForMash(services);
 #endif
 }
 

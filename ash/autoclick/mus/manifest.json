@@ -1,6 +1,7 @@
 {
   "name": "accessibility_autoclick",
   "display_name": "Autoclick",
+  "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

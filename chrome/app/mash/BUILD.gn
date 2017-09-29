@@ -10,17 +10,14 @@ import("//services/service_manager/public/service_manifest.gni")
 
 assert(enable_package_mash_services)
 
-source_set("embedded_services") {
-  sources = [
-    "embedded_services.cc",
-    "embedded_services.h",
-  ]
-
+# TODO(sky): clean this and catalog entries up.
+group("embedded_services") {
   deps = [
     ":chrome_mash_catalog",
     "//base:i18n",
     "//chrome/common:constants",
     "//components/tracing:startup_tracing",
+    "//content/public/browser",
     "//content/public/common",
     "//mash/catalog_viewer:lib",
     "//mash/catalog_viewer/public/interfaces:constants",
@@ -62,7 +59,10 @@ source_set("embedded_services") {
   }
 
   if (is_linux && !is_android) {
-    deps += [ "//components/font_service:lib" ]
+    deps += [
+      "//components/font_service:lib",
+      "//components/font_service/public/interfaces",
+    ]
   }
 }
 

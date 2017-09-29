@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/common/chrome_switches.h",
   "+components/font_service",
   "+components/tracing",
+  "+content/public",
   "+services/ui",
   "+mash",
   "+mojo/edk/embedder",

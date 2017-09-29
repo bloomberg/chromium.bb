@@ -285,28 +285,8 @@ bool NeedRestartToApplyPerSessionFlags(
   if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
     return false;
 
-  // When running Mus+ash, the flags stored in Profile Prefs will contain
-  // --mash, while the browser command line will not (and should not) have
-  // it, so ignore it for the purpose of comparison.
-  // TODO(mfomitchev): Find a better way. crbug.com/690083
-  bool in_mash = false;
-  base::CommandLine user_flags_no_mash = user_flags;
-
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  in_mash = user_flags.HasSwitch(::switches::kMash);
-  if (in_mash) {
-    base::CommandLine::SwitchMap switches = user_flags.GetSwitches();
-    switches.erase(::switches::kMash);
-    user_flags_no_mash = base::CommandLine(user_flags.GetProgram());
-    for (const std::pair<std::string, base::CommandLine::StringType>& sw :
-         switches) {
-      user_flags_no_mash.AppendSwitchNative(sw.first, sw.second);
-    }
-  }
-#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-
   if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-          user_flags_no_mash, *base::CommandLine::ForCurrentProcess(),
+          user_flags, *base::CommandLine::ForCurrentProcess(),
           out_command_line_difference)) {
     return false;
   }
@@ -314,7 +294,7 @@ bool NeedRestartToApplyPerSessionFlags(
   // TODO(mfomitchev): Browser restart doesn't currently work in Mus+ash.
   // So if we are running Mustash and we need to restart - just crash right
   // here. crbug.com/690140
-  CHECK(!in_mash);
+  CHECK(!user_flags.HasSwitch(::switches::kMash));
 
   return true;
 }

@@ -5,6 +5,7 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
+import("//chrome/common/features.gni")
 import("//extensions/features/features.gni")
 import("//printing/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -142,6 +143,34 @@ static_library("utility") {
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]
     }
+  }
+
+  if (enable_package_mash_services) {
+    sources += [
+      "mash_service_factory.cc",
+      "mash_service_factory.h",
+    ]
+    deps += [
+      "//mash/quick_launch:lib",
+      "//mash/quick_launch/public/interfaces",
+      "//services/ui:lib",
+      "//services/ui/public/interfaces",
+    ]
+
+    if (is_linux) {
+      deps += [
+        "//components/font_service:lib",
+        "//components/font_service/public/interfaces",
+      ]
+    }
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "//ash/autoclick/mus:lib",
+      "//ash/mus:lib",
+      "//ash/touch_hud/mus:lib",
+    ]
   }
 
   if (use_nss_certs) {

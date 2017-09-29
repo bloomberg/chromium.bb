@@ -1,9 +1,3 @@
 per-file js2gtest.*=dtseng@chromium.org
 
 per-file *tracing*=file://base/trace_event/OWNERS
-
-per-file mash_browser_tests_manifest.json=set noparent
-per-file mash_browser_tests_manifest.json=file://ipc/SECURITY_OWNERS
-
-per-file mus_browser_tests_manifest.json=set noparent
-per-file mus_browser_tests_manifest.json=file://ipc/SECURITY_OWNERS

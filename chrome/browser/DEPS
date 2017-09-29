@@ -94,6 +94,8 @@ include_rules = [
   # Should be removed once the actual network service ships.
   "+content/public/network",
 
+  "+mash/quick_launch/public/interfaces",
+
   # Other libraries.
   "+libxml",
   "+third_party/google_toolbox_for_mac/src",
@@ -179,5 +181,8 @@ specific_include_rules = {
   "fullscreen_chromeos\.cc": [
     "+ash/root_window_controller.h",
     "+ash/shell.h",
+  ],
+  "mash_service_registry.cc": [
+    "+mash/quick_launch/quick_launch.h",
   ]
 }

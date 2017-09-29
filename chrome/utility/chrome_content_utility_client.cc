@@ -57,6 +57,10 @@
 #include "chrome/utility/extensions/extensions_handler.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#include "chrome/utility/mash_service_factory.h"
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
 #include "chrome/utility/printing/pdf_to_pwg_raster_converter_service.h"
@@ -358,6 +362,10 @@ void ChromeContentUtilityClient::RegisterServices(
       base::Bind(&ProfileImportService::CreateService);
   services->emplace(chrome::mojom::kProfileImportServiceName,
                     profile_import_info);
+#endif
+
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  RegisterMashServices(services);
 #endif
 }
 

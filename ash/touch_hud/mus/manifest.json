@@ -1,6 +1,7 @@
 {
   "name": "touch_hud",
   "display_name": "Touch Hud",
+  "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },

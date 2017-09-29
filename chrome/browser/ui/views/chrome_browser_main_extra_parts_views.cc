@@ -49,6 +49,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ash_config.h"
+#include "mash/common/config.h"                                   // nogncheck
+#include "mash/quick_launch/public/interfaces/constants.mojom.h"  // nogncheck
 #endif
 
 namespace {
@@ -166,6 +168,17 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
 #if defined(USE_AURA)
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
     return;
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    connection->GetConnector()->StartService(
+        service_manager::Identity(ui::mojom::kServiceName));
+    connection->GetConnector()->StartService(
+        service_manager::Identity(mash::common::GetWindowManagerServiceName()));
+    connection->GetConnector()->StartService(
+        service_manager::Identity(mash::quick_launch::mojom::kServiceName));
+  }
+#endif
 
   input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
   ui::mojom::InputDeviceServerPtr server;
