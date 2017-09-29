@@ -55,7 +55,7 @@ class MockDecodeCache : public StubDecodeCache {
 
 TEST(PlaybackImageProviderTest, SkipsAllImages) {
   MockDecodeCache cache;
-  PlaybackImageProvider provider(true, {}, {}, &cache, gfx::ColorSpace(), {});
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), base::nullopt);
   provider.BeginRaster();
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
@@ -79,8 +79,12 @@ TEST(PlaybackImageProviderTest, SkipsAllImages) {
 TEST(PlaybackImageProviderTest, SkipsSomeImages) {
   MockDecodeCache cache;
   PaintImage skip_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
-  PlaybackImageProvider provider(false, {skip_image.stable_id()}, {}, &cache,
-                                 gfx::ColorSpace(), {});
+
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  settings->images_to_skip = {skip_image.stable_id()};
+
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
   provider.BeginRaster();
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
@@ -93,7 +97,10 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
 
 TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
   MockDecodeCache cache;
-  PlaybackImageProvider provider(false, {}, {}, &cache, gfx::ColorSpace(), {});
+
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
   provider.BeginRaster();
 
   {
@@ -122,8 +129,11 @@ TEST(PlaybackImageProviderTest, AtRasterImages) {
   auto draw_image2 = CreateDiscardableDrawImage(
       size, nullptr, rect, kMedium_SkFilterQuality, matrix);
 
-  PlaybackImageProvider provider(false, {}, {draw_image1, draw_image2}, &cache,
-                                 gfx::ColorSpace(), {});
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  settings->at_raster_images = {draw_image1, draw_image2};
+
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
 
   EXPECT_EQ(cache.refed_image_count(), 0);
   provider.BeginRaster();
@@ -144,8 +154,11 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
 
   base::flat_map<PaintImage::Id, size_t> image_to_frame;
   image_to_frame[image.stable_id()] = 1u;
-  PlaybackImageProvider provider(false, {}, {}, &cache, gfx::ColorSpace(),
-                                 image_to_frame);
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  settings->image_to_current_frame_index = image_to_frame;
+
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
   provider.BeginRaster();
 
   SkIRect rect = SkIRect::MakeWH(10, 10);
