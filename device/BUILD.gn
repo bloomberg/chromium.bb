@@ -71,6 +71,7 @@ test("device_unittests") {
     "sensors/sensor_manager_android_unittest.cc",
     "sensors/sensor_manager_chromeos_unittest.cc",
     "test/run_all_unittests.cc",
+    "u2f/u2f_ble_frames_unittest.cc",
   ]
 
   deps = [
@@ -90,6 +91,7 @@ test("device_unittests") {
     "//device/sensors",
     "//device/sensors/public/cpp:full",
     "//device/sensors/public/interfaces",
+    "//device/u2f",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
