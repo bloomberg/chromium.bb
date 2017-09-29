@@ -117,7 +117,9 @@ class OnScreenKeyboardDetector {
 OnScreenKeyboardDetector::OnScreenKeyboardDetector()
     : keyboard_detector_factory_(this) {}
 
-OnScreenKeyboardDetector::~OnScreenKeyboardDetector() {}
+OnScreenKeyboardDetector::~OnScreenKeyboardDetector() {
+  ClearObservers();
+}
 
 void OnScreenKeyboardDetector::DetectKeyboard(HWND main_window) {
   main_window_ = main_window;
