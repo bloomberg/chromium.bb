@@ -25,7 +25,6 @@
 
 #include "platform/wtf/FilePrintStream.h"
 
-#include "platform/wtf/PtrUtil.h"
 #include <memory>
 
 namespace WTF {
@@ -45,7 +44,7 @@ std::unique_ptr<FilePrintStream> FilePrintStream::Open(const char* filename,
   if (!file)
     return std::unique_ptr<FilePrintStream>();
 
-  return WTF::MakeUnique<FilePrintStream>(file);
+  return std::make_unique<FilePrintStream>(file);
 }
 
 void FilePrintStream::Vprintf(const char* format, va_list arg_list) {

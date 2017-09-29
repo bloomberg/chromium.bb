@@ -25,7 +25,6 @@
 
 #include "platform/wtf/text/TextCodecUTF16.h"
 
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
@@ -51,13 +50,13 @@ void TextCodecUTF16::RegisterEncodingNames(EncodingNameRegistrar registrar) {
 static std::unique_ptr<TextCodec> NewStreamingTextDecoderUTF16LE(
     const TextEncoding&,
     const void*) {
-  return WTF::MakeUnique<TextCodecUTF16>(true);
+  return std::make_unique<TextCodecUTF16>(true);
 }
 
 static std::unique_ptr<TextCodec> NewStreamingTextDecoderUTF16BE(
     const TextEncoding&,
     const void*) {
-  return WTF::MakeUnique<TextCodecUTF16>(false);
+  return std::make_unique<TextCodecUTF16>(false);
 }
 
 void TextCodecUTF16::RegisterCodecs(TextCodecRegistrar registrar) {

@@ -147,14 +147,14 @@ class HashTableStatsPtr<Allocator, false> final {
 
  public:
   static std::unique_ptr<HashTableStats> Create() {
-    return base::MakeUnique<HashTableStats>();
+    return std::make_unique<HashTableStats>();
   }
 
   static std::unique_ptr<HashTableStats> copy(
       const std::unique_ptr<HashTableStats>& other) {
     if (!other)
       return nullptr;
-    return base::MakeUnique<HashTableStats>(*other);
+    return std::make_unique<HashTableStats>(*other);
   }
 
   static void swap(std::unique_ptr<HashTableStats>& stats,

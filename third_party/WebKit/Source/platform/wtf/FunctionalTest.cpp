@@ -25,10 +25,11 @@
 
 #include "platform/wtf/Functional.h"
 
+#include <memory>
+#include <utility>
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/WeakPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <utility>
 
 namespace WTF {
 
@@ -306,13 +307,13 @@ TEST(FunctionalTest, MemberFunctionPartBind) {
 }
 
 TEST(FunctionalTest, MemberFunctionBindByUniquePtr) {
-  Function<int()> function1 = WTF::Bind(&A::F, WTF::MakeUnique<A>(10));
+  Function<int()> function1 = WTF::Bind(&A::F, std::make_unique<A>(10));
   EXPECT_EQ(10, function1());
 }
 
 TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
   Function<int()> function1 =
-      WTF::Bind(&A::F, WTF::Passed(WTF::MakeUnique<A>(10)));
+      WTF::Bind(&A::F, WTF::Passed(std::make_unique<A>(10)));
   EXPECT_EQ(10, function1());
 }
 
