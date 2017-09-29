@@ -71,8 +71,6 @@ struct CONTENT_EXPORT DesktopMediaID {
 #endif
 
   // This records whether the desktop share has sound or not.
-  // TODO(crbug.com/766728): Replace with a capture type bitmask
-  // with AUDIO, VIDEO, and AUDIO_VIDEO values.
   bool audio_share = false;
 
   // This id contains information for WebContents capture.
