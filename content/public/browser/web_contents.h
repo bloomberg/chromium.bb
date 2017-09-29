@@ -9,6 +9,8 @@
 
 #include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -248,7 +250,7 @@ class WebContents : public PageNavigator,
   virtual RenderProcessHost* GetRenderProcessHost() const = 0;
 
   // Returns the main frame for the currently active view.
-  virtual RenderFrameHost* GetMainFrame() = 0;
+  virtual RenderFrameHost* GetMainFrame() const = 0;
 
   // Returns the focused frame for the currently active view.
   virtual RenderFrameHost* GetFocusedFrame() = 0;
@@ -740,8 +742,9 @@ class WebContents : public PageNavigator,
 
   // Returns true if the WebContents is responsible for displaying a subframe
   // in a different process from its parent page.
-  // TODO: this doesn't really belong here. With site isolation, this should be
-  // removed since we can then embed iframes in different processes.
+  // TODO(lazyboy): https://crbug.com/542893: this doesn't really belong here.
+  // With site isolation, this should be removed since we can then embed iframes
+  // in different processes.
   virtual bool IsSubframe() const = 0;
 
   // Finds text on a page. |search_text| should not be empty.

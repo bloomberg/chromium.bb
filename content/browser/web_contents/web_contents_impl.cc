@@ -937,7 +937,7 @@ RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
   return host ? host->GetProcess() : NULL;
 }
 
-RenderFrameHostImpl* WebContentsImpl::GetMainFrame() {
+RenderFrameHostImpl* WebContentsImpl::GetMainFrame() const {
   return frame_tree_.root()->current_frame_host();
 }
 
@@ -5821,7 +5821,7 @@ void WebContentsImpl::NotifyFindReply(int request_id,
                                       int active_match_ordinal,
                                       bool final_update) {
   if (delegate_ && !is_being_destroyed_ &&
-      !GetRenderProcessHost()->FastShutdownStarted()) {
+      !GetMainFrame()->GetProcess()->FastShutdownStarted()) {
     delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
   }
@@ -5847,7 +5847,7 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
     return;
   }
   // Notify for UI updates if the state changes.
-  DCHECK(bluetooth_connected_device_count_ != 0);
+  DCHECK_NE(bluetooth_connected_device_count_, 0u);
   bluetooth_connected_device_count_--;
   if (bluetooth_connected_device_count_ == 0) {
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
