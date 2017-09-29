@@ -224,12 +224,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!ReadUint32(&index) || index >= blob_info_array_->size())
         return nullptr;
       const WebBlobInfo& info = (*blob_info_array_)[index];
-      auto blob_handle = info.GetBlobHandle();
-      if (!blob_handle) {
-        blob_handle =
-            GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size());
-      }
-      return Blob::Create(blob_handle);
+      return Blob::Create(
+          GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size()));
     }
     case kFileTag:
       return ReadFile();
@@ -526,14 +522,9 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   const WebBlobInfo& info = (*blob_info_array_)[index];
   // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
   double last_modified_ms = info.LastModified() * kMsPerSecond;
-  auto blob_handle = info.GetBlobHandle();
-  if (!blob_handle) {
-    blob_handle =
-        GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size());
-  }
-  return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
-                                              info.size(), last_modified_ms,
-                                              blob_handle);
+  return File::CreateFromIndexedSerialization(
+      info.FilePath(), info.FileName(), info.size(), last_modified_ms,
+      GetOrCreateBlobDataHandle(info.Uuid(), info.GetType(), info.size()));
 }
 
 RefPtr<BlobDataHandle> V8ScriptValueDeserializer::GetOrCreateBlobDataHandle(
