@@ -470,8 +470,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   _isPrerenderTab = isPrerender;
 
-  self.webController.shouldSuppressDialogs =
-      (isPrerender && !isLinkLoadingPrerenderTab_);
+  self.webState->SetShouldSuppressDialogs(isPrerender &&
+                                          !isLinkLoadingPrerenderTab_);
 
   if (_isPrerenderTab)
     return;
