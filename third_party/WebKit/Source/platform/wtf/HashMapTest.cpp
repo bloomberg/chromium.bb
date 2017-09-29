@@ -175,7 +175,7 @@ TEST(HashMapTest, RefPtrAsKey) {
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
   EXPECT_EQ(1, map.at(ptr));
 
-  DummyRefCounted* raw_ptr = ptr.Get();
+  DummyRefCounted* raw_ptr = ptr.get();
 
   EXPECT_TRUE(map.Contains(raw_ptr));
   EXPECT_NE(map.end(), map.find(raw_ptr));

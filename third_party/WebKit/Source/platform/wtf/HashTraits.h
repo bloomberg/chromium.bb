@@ -252,7 +252,7 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
   }
 
   typedef P* PeekOutType;
-  static PeekOutType Peek(const RefPtr<P>& value) { return value.Get(); }
+  static PeekOutType Peek(const RefPtr<P>& value) { return value.get(); }
 };
 
 template <typename T>

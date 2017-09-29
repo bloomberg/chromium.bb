@@ -98,7 +98,7 @@ DEFINE_TRACE(ElementAnimations) {
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {
 #if !DCHECK_IS_ON()
   if (IsAnimationStyleChange())
-    return base_computed_style_.Get();
+    return base_computed_style_.get();
 #endif
   return nullptr;
 }

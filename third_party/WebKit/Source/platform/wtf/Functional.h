@@ -278,7 +278,7 @@ namespace base {
 
 template <typename T>
 struct BindUnwrapTraits<WTF::RefPtr<T>> {
-  static T* Unwrap(const WTF::RefPtr<T>& wrapped) { return wrapped.Get(); }
+  static T* Unwrap(const WTF::RefPtr<T>& wrapped) { return wrapped.get(); }
 };
 
 template <typename T>

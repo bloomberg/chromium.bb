@@ -6,7 +6,7 @@ static {{field.type_name}}* {{field.initial_method_name}}() {
   return {{field.default_value}};
 }
 {{field.type_name}}* {{field.getter_method_name}}() const {
-  return {{decode(field, getter_expression(field))}}.Get();
+  return {{decode(field, getter_expression(field))}}.get();
 }
 
 void {{field.setter_method_name}}({{field.wrapper_pointer_name}}<{{field.type_name}}> v) {

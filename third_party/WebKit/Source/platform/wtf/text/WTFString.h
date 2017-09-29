@@ -112,7 +112,7 @@ class WTF_EXPORT String {
   bool IsNull() const { return !impl_; }
   bool IsEmpty() const { return !impl_ || !impl_->length(); }
 
-  StringImpl* Impl() const { return impl_.Get(); }
+  StringImpl* Impl() const { return impl_.get(); }
   RefPtr<StringImpl> ReleaseImpl() { return std::move(impl_); }
 
   unsigned length() const {

@@ -51,7 +51,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual ViewType GetType() const = 0;
   const char* TypeName();
 
-  ArrayBuffer* Buffer() const { return buffer_.Get(); }
+  ArrayBuffer* Buffer() const { return buffer_.get(); }
 
   void* BaseAddress() const {
     DCHECK(!IsShared());

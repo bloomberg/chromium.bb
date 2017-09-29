@@ -91,7 +91,7 @@ class WTF_EXPORT CString {
 
   bool IsSafeToSendToAnotherThread() const;
 
-  CStringImpl* Impl() const { return buffer_.Get(); }
+  CStringImpl* Impl() const { return buffer_.get(); }
 
  private:
   RefPtr<CStringImpl> buffer_;
