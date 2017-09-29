@@ -397,10 +397,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheetContentController =
                     (BottomSheetContentController) ((ViewStub) findViewById(R.id.bottom_nav_stub))
                             .inflate();
-            int controlContainerHeight =
-                    ((ControlContainer) findViewById(R.id.control_container)).getView().getHeight();
-            mBottomSheetContentController.init(
-                    mBottomSheet, controlContainerHeight, mTabModelSelector, this);
+            mBottomSheetContentController.init(mBottomSheet, mTabModelSelector, this);
         }
         ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
     }
