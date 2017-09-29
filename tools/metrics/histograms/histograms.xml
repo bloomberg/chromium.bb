@@ -83112,6 +83112,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.VisibleTimeAfterCrossOriginRedirect" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total time a tab is visible after it navigates itself
+    cross-origin in the background. Measured at WebContents destruction.
+  </summary>
+</histogram>
+
 <histogram
     name="TabManager.BackgroundTabOpening.ForegroundTab.ExpectedTaskQueueingDuration"
     units="ms">
