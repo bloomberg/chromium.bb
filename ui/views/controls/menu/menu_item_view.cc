@@ -696,6 +696,7 @@ void MenuItemView::Init(MenuItemView* parent,
         type_ == RADIO ||
         (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand()));
     radio_check_image_view_->SetVisible(show_check_radio_icon);
+    radio_check_image_view_->set_can_process_events_within_subtree(false);
     AddChildView(radio_check_image_view_);
   }
 
