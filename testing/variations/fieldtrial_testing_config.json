@@ -3089,6 +3089,25 @@
             ]
         }
     ],
+    "StabilityDebugging": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "collect_postmortem": "false",
+                        "init_flush": "true"
+                    },
+                    "enable_features": [
+                        "StabilityDebugging"
+                    ]
+                }
+            ]
+        }
+    ],
     "SubresourceFilter": [
         {
             "platforms": [
