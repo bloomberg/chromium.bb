@@ -415,6 +415,8 @@ const std::vector<Display>& ScreenWin::GetAllDisplays() const {
 }
 
 Display ScreenWin::GetDisplayNearestWindow(gfx::NativeWindow window) const {
+  if (!window)
+    return GetPrimaryDisplay();
   HWND window_hwnd = GetHWNDFromNativeView(window);
   if (!window_hwnd) {
     // When |window| isn't rooted to a display, we should just return the
