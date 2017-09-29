@@ -3229,6 +3229,15 @@ void PaintLayer::RemoveAncestorOverflowLayer(const PaintLayer* removed_layer) {
     return;
 
   if (AncestorOverflowLayer()) {
+    // If the previous AncestorOverflowLayer is the root and this object is a
+    // sticky viewport constrained object, it is no longer known to be
+    // constrained by the root.
+    if (AncestorOverflowLayer()->IsRootLayer() &&
+        GetLayoutObject().Style()->HasStickyConstrainedPosition()) {
+      GetLayoutObject().View()->GetFrameView()->RemoveViewportConstrainedObject(
+          GetLayoutObject());
+    }
+
     if (PaintLayerScrollableArea* ancestor_scrollable_area =
             AncestorOverflowLayer()->GetScrollableArea()) {
       // TODO(pdr): When slimming paint v2 is enabled, we will need to
