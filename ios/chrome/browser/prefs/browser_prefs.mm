@@ -46,7 +46,6 @@
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
-#include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/physical_web/physical_web_prefs_registration.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -104,7 +103,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   FirstRun::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
-  HttpServerPropertiesManagerFactory::RegisterProfilePrefs(registry);
   language::UrlLanguageHistogram::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
