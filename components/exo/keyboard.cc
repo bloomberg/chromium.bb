@@ -24,12 +24,6 @@ namespace {
 // Delay until a key state change expected to be acknowledged is expired.
 const int kExpirationDelayForPendingKeyAcksMs = 1000;
 
-// This is a struct for accelerator keys.
-struct Accelerator {
-  ui::KeyboardCode keycode;
-  int modifiers;
-};
-
 // The accelerator keys reserved to be processed by chrome.
 const struct {
   ui::KeyboardCode keycode;
