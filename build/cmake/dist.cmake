@@ -17,8 +17,8 @@ function (listify_string in_string out_string)
   set(${out_string} "${${out_string}}" PARENT_SCOPE)
 endfunction ()
 
-set(REQUIRED_ARGS "AOM_ROOT" "AOM_CONFIG_DIR" "AOM_DIST_DIR" "AOM_DIST_EXAMPLES"
-    "AOM_DIST_APPS" "AOM_DIST_INCLUDES" "AOM_DIST_LIBS" "ENABLE_DOCS")
+set(REQUIRED_ARGS "AOM_ROOT" "AOM_CONFIG_DIR" "AOM_DIST_DIR" "AOM_DIST_APPS"
+    "AOM_DIST_INCLUDES" "AOM_DIST_LIBS" "ENABLE_DOCS")
 
 foreach (arg ${REQUIRED_ARGS})
   if ("${${arg}}" STREQUAL "")
@@ -30,10 +30,12 @@ if (ENABLE_DOCS)
   file(INSTALL "${AOM_CONFIG_DIR}/docs" DESTINATION "${AOM_DIST_DIR}")
 endif ()
 
-listify_string("${AOM_DIST_EXAMPLES}" "AOM_DIST_EXAMPLES")
-foreach (example ${AOM_DIST_EXAMPLES})
-  file(INSTALL "${example}" DESTINATION "${AOM_DIST_DIR}/bin/examples")
-endforeach ()
+if (AOM_DIST_EXAMPLES)
+  listify_string("${AOM_DIST_EXAMPLES}" "AOM_DIST_EXAMPLES")
+  foreach (example ${AOM_DIST_EXAMPLES})
+    file(INSTALL "${example}" DESTINATION "${AOM_DIST_DIR}/bin/examples")
+  endforeach ()
+endif ()
 
 if (AOM_DIST_TOOLS)
   foreach (tool ${AOM_DIST_TOOLS})
