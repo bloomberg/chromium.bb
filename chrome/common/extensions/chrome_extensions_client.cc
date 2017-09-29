@@ -259,8 +259,9 @@ bool ChromeExtensionsClient::IsAPISchemaGenerated(
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
     const std::string& name) const {
   // Test from most common to least common.
-  if (api::ChromeGeneratedSchemas::IsGenerated(name))
-    return api::ChromeGeneratedSchemas::Get(name);
+  base::StringPiece chrome_schema = api::ChromeGeneratedSchemas::Get(name);
+  if (!chrome_schema.empty())
+    return chrome_schema;
 
   return api::GeneratedSchemas::Get(name);
 }
