@@ -600,6 +600,7 @@ const char kManagedCredentialsProperty[] = "ManagedCredentials";
 const char kOpenVPNCaCertPemProperty[] = "OpenVPN.CACertPEM";
 const char kOpenVPNCertProperty[] = "OpenVPN.Cert";
 const char kOpenVPNExtraCertPemProperty[] = "OpenVPN.ExtraCertPEM";
+const char kOpenVPNExtraHostsProperty[] = "OpenVPN.ExtraHosts";
 const char kOpenVPNKeyProperty[] = "OpenVPN.Key";
 const char kOpenVPNPingProperty[] = "OpenVPN.Ping";
 const char kOpenVPNPingExitProperty[] = "OpenVPN.PingExit";
