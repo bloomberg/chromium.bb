@@ -119,4 +119,8 @@ bool AXSystemCaretWin::ShouldIgnoreHoveredStateForTesting() {
   return false;
 }
 
+bool AXSystemCaretWin::IsOffscreen() const {
+  return false;
+}
+
 }  // namespace ui

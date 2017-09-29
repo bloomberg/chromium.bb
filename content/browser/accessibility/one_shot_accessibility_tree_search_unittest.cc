@@ -54,6 +54,7 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.location = gfx::RectF(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
   root.child_ids.push_back(6);
@@ -83,7 +84,7 @@ void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
   footer.id = 6;
   footer.SetName("Footer");
   footer.role = ui::AX_ROLE_FOOTER;
-  footer.AddState(ui::AX_STATE_OFFSCREEN);
+  footer.location = gfx::RectF(0, 650, 100, 800);
 
   tree_.reset(new TestBrowserAccessibilityManager(
       MakeAXTreeUpdate(root, heading, list, list_item_1, list_item_2, footer)));

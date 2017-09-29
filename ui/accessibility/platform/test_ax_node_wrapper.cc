@@ -225,6 +225,10 @@ bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }
 
+bool TestAXNodeWrapper::IsOffscreen() const {
+  return false;
+}
+
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

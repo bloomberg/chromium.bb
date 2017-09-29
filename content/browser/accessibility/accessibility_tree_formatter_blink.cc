@@ -30,6 +30,9 @@ AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {
 const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
                                             "TreeData.textSelEndOffset"};
 
+const char* STATE_FOCUSED = "focused";
+const char* STATE_OFFSCREEN = "offscreen";
+
 uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
   if (node.HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
@@ -152,15 +155,13 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   for (int state_index = ui::AX_STATE_NONE;
        state_index <= ui::AX_STATE_LAST;
        ++state_index) {
-    if (state_index == ui::AX_STATE_OFFSCREEN)
-      continue;
     auto state = static_cast<ui::AXState>(state_index);
     if (node.HasState(state))
       dict->SetBoolean(ui::ToString(state), true);
   }
 
   if (offscreen)
-    dict->SetBoolean(ui::ToString(ui::AX_STATE_OFFSCREEN), true);
+    dict->SetBoolean(STATE_OFFSCREEN, true);
 
   for (int attr_index = ui::AX_STRING_ATTRIBUTE_NONE;
        attr_index <= ui::AX_STRING_ATTRIBUTE_LAST;
@@ -266,6 +267,15 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
 
     WriteAttribute(false, ui::ToString(state), &line);
   }
+
+  // Offscreen and Focused states are not in the state list.
+  bool value = false;
+  dict.GetBoolean(STATE_OFFSCREEN, &value);
+  if (value)
+    WriteAttribute(false, STATE_OFFSCREEN, &line);
+  dict.GetBoolean(STATE_FOCUSED, &value);
+  if (value)
+    WriteAttribute(false, STATE_FOCUSED, &line);
 
   WriteAttribute(false,
                  FormatCoordinates("location", "boundsX", "boundsY", dict),

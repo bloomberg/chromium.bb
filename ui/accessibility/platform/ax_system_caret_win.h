@@ -48,6 +48,7 @@ class AX_EXPORT AXSystemCaretWin : private AXPlatformNodeDelegate {
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
+  bool IsOffscreen() const override;
 
   AXPlatformNodeWin* caret_;
   gfx::AcceleratedWidget event_target_;
