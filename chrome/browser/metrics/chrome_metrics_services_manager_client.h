@@ -22,6 +22,11 @@ class PrefService;
 namespace metrics {
 class EnabledStateProvider;
 class MetricsStateManager;
+
+// Used only for testing.
+namespace internal {
+extern const base::Feature kMetricsReportingFeature;
+}
 }
 
 namespace version_info {
@@ -72,6 +77,7 @@ class ChromeMetricsServicesManagerClient
   CreateEntropyProvider() override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   bool IsMetricsReportingEnabled() override;
+  bool IsMetricsConsentGiven() override;
 
 #if defined(OS_WIN)
   // On Windows, the client controls whether Crashpad can upload crash reports.

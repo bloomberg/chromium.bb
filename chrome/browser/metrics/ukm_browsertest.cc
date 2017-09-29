@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -49,10 +50,12 @@ class UkmBrowserTest : public SyncTest {
  public:
   UkmBrowserTest() : SyncTest(SINGLE_CLIENT) {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SyncTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    ukm::kUkmFeature.name);
+  void SetUp() override {
+    // Explicitly enable UKM and disable the MetricsReporting (which should
+    // not affect UKM).
+    scoped_feature_list_.InitWithFeatures({ukm::kUkmFeature},
+                                          {internal::kMetricsReportingFeature});
+    SyncTest::SetUp();
   }
 
  protected:
@@ -97,6 +100,7 @@ class UkmBrowserTest : public SyncTest {
   ukm::UkmService* ukm_service() {
     return static_cast<ukm::UkmService*>(ukm::UkmRecorder::Get());
   }
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
@@ -217,6 +221,36 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DisableSyncCheck) {
   EXPECT_TRUE(ukm_enabled());
   // Client ID should be reset.
   EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Make sure that UKM is not affected by MetricsReporting Feature (sampling).
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
+  // Need to set the Metrics Default to OPT_OUT to trigger MetricsReporting.
+  DCHECK(g_browser_process);
+  PrefService* local_state = g_browser_process->local_state();
+  metrics::ForceRecordMetricsReportingDefaultState(
+      local_state, metrics::EnableMetricsDefault::OPT_OUT);
+  // Verify that kMetricsReportingFeature is disabled (i.e. other metrics
+  // services will be sampled out).
+  EXPECT_FALSE(
+      base::FeatureList::IsEnabled(internal::kMetricsReportingFeature));
+
+  // Enable metrics recording and update MetricsServicesManager.
+  bool metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &metrics_enabled);
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);

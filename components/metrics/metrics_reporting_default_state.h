@@ -34,6 +34,11 @@ void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry);
 void RecordMetricsReportingDefaultState(PrefService* local_state,
                                         EnableMetricsDefault default_state);
 
+// Same as above, but does not verify the current state is UNKNOWN.
+void ForceRecordMetricsReportingDefaultState(
+    PrefService* local_state,
+    EnableMetricsDefault default_state);
+
 // Gets information about the default value for the enable metrics reporting
 // checkbox shown during first-run.
 EnableMetricsDefault GetMetricsReportingDefaultState(PrefService* local_state);
