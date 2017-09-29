@@ -150,6 +150,14 @@ void DevToolsDataSource::StartDataRequest(
     return;
   }
 
+  // Serve empty page.
+  std::string empty_path_prefix(chrome::kChromeUIDevToolsBlankPath);
+  if (base::StartsWith(path, empty_path_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    callback.Run(new base::RefCountedStaticMemory());
+    return;
+  }
+
   // Serve request from remote location.
   std::string remote_path_prefix(chrome::kChromeUIDevToolsRemotePath);
   remote_path_prefix += "/";
