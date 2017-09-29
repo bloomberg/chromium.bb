@@ -80,12 +80,11 @@ const char kWindowPrefix[] = "window";
 #if defined(USE_AURA)
 
 // static
-DesktopMediaID DesktopMediaID::RegisterAuraWindow(
-    DesktopMediaID::Source source_type,
-    aura::Window* window) {
-  DCHECK(source_type == SOURCE_SCREEN || source_type == SOURCE_WINDOW);
+DesktopMediaID DesktopMediaID::RegisterAuraWindow(DesktopMediaID::Type type,
+                                                  aura::Window* window) {
+  DCHECK(type == TYPE_SCREEN || type == TYPE_WINDOW);
   DCHECK(window);
-  DesktopMediaID media_id(source_type, kNullId);
+  DesktopMediaID media_id(type, kNullId);
   media_id.aura_id = AuraWindowRegistry::GetInstance()->RegisterWindow(window);
   return media_id;
 }
@@ -99,36 +98,26 @@ aura::Window* DesktopMediaID::GetAuraWindowById(const DesktopMediaID& id) {
 
 bool DesktopMediaID::operator<(const DesktopMediaID& other) const {
 #if defined(USE_AURA)
-  return std::tie(source_type, id, aura_id, web_contents_id, capture_type) <
-         std::tie(other.source_type, other.id, other.aura_id,
-                  other.web_contents_id, other.capture_type);
+  return std::tie(type, id, aura_id, web_contents_id, audio_share) <
+         std::tie(other.type, other.id, other.aura_id, other.web_contents_id,
+                  other.audio_share);
 #else
-  return std::tie(source_type, id, web_contents_id, capture_type) <
-         std::tie(other.source_type, other.id, other.web_contents_id,
-                  other.capture_type);
+  return std::tie(type, id, web_contents_id, audio_share) <
+         std::tie(other.type, other.id, other.web_contents_id,
+                  other.audio_share);
 #endif
 }
 
 bool DesktopMediaID::operator==(const DesktopMediaID& other) const {
 #if defined(USE_AURA)
-  return source_type == other.source_type && id == other.id &&
-         aura_id == other.aura_id && web_contents_id == other.web_contents_id &&
-         capture_type == other.capture_type;
-#else
-  return source_type == other.source_type && id == other.id &&
+  return type == other.type && id == other.id && aura_id == other.aura_id &&
          web_contents_id == other.web_contents_id &&
-         capture_type == other.capture_type;
+         audio_share == other.audio_share;
+#else
+  return type == other.type && id == other.id &&
+         web_contents_id == other.web_contents_id &&
+         audio_share == other.audio_share;
 #endif
-}
-
-void DesktopMediaID::set_video_capture(bool capture) {
-  capture_type =
-      (capture_type & ~CAPTURE_VIDEO) | (capture ? CAPTURE_VIDEO : 0);
-}
-
-void DesktopMediaID::set_audio_capture(bool capture) {
-  capture_type =
-      (capture_type & ~CAPTURE_AUDIO) | (capture ? CAPTURE_AUDIO : 0);
 }
 
 // static
@@ -142,7 +131,7 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   // For WebContents type.
   WebContentsMediaCaptureId web_id;
   if (WebContentsMediaCaptureId::Parse(str, &web_id))
-    return DesktopMediaID(SOURCE_WEB_CONTENTS, 0, web_id);
+    return DesktopMediaID(TYPE_WEB_CONTENTS, 0, web_id);
 
   // For screen and window types.
   std::vector<std::string> parts = base::SplitString(
@@ -156,11 +145,11 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
     return DesktopMediaID();
 #endif
 
-  Source source_type = SOURCE_NONE;
+  Type type = TYPE_NONE;
   if (parts[0] == kScreenPrefix) {
-    source_type = SOURCE_SCREEN;
+    type = TYPE_SCREEN;
   } else if (parts[0] == kWindowPrefix) {
-    source_type = SOURCE_WINDOW;
+    type = TYPE_WINDOW;
   } else {
     return DesktopMediaID();
   }
@@ -169,7 +158,7 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   if (!base::StringToInt64(parts[1], &id))
     return DesktopMediaID();
 
-  DesktopMediaID media_id(source_type, id);
+  DesktopMediaID media_id(type, id);
 
 #if defined(USE_AURA)
   int64_t aura_id;
@@ -183,17 +172,16 @@ DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
 
 std::string DesktopMediaID::ToString() const {
   std::string prefix;
-  switch (source_type) {
-    case SOURCE_NONE:
-      NOTREACHED();
+  switch (type) {
+    case TYPE_NONE:
       return std::string();
-    case SOURCE_SCREEN:
+    case TYPE_SCREEN:
       prefix = kScreenPrefix;
       break;
-    case SOURCE_WINDOW:
+    case TYPE_WINDOW:
       prefix = kWindowPrefix;
       break;
-    case SOURCE_WEB_CONTENTS:
+    case TYPE_WEB_CONTENTS:
       return web_contents_id.ToString();
       break;
   }

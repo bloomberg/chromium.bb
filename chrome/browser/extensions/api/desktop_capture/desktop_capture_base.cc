@@ -114,14 +114,14 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         std::unique_ptr<DesktopMediaList> screen_list;
         if (g_picker_factory) {
           screen_list =
-              g_picker_factory->CreateMediaList(DesktopMediaID::SOURCE_SCREEN);
+              g_picker_factory->CreateMediaList(DesktopMediaID::TYPE_SCREEN);
         } else {
 #if defined(USE_ASH)
           screen_list = base::MakeUnique<DesktopMediaListAsh>(
-              DesktopMediaID::SOURCE_SCREEN);
+              DesktopMediaID::TYPE_SCREEN);
 #else   // !defined(USE_ASH)
           screen_list = base::MakeUnique<NativeDesktopMediaList>(
-              content::DesktopMediaID::SOURCE_SCREEN,
+              content::DesktopMediaID::TYPE_SCREEN,
               webrtc::DesktopCapturer::CreateScreenCapturer(
                   content::CreateDesktopCaptureOptions()));
 #endif  // !defined(USE_ASH)
@@ -137,11 +137,11 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         std::unique_ptr<DesktopMediaList> window_list;
         if (g_picker_factory) {
           window_list =
-              g_picker_factory->CreateMediaList(DesktopMediaID::SOURCE_WINDOW);
+              g_picker_factory->CreateMediaList(DesktopMediaID::TYPE_WINDOW);
         } else {
 #if defined(USE_ASH)
           window_list = base::MakeUnique<DesktopMediaListAsh>(
-              DesktopMediaID::SOURCE_WINDOW);
+              DesktopMediaID::TYPE_WINDOW);
 #else   // !defined(USE_ASH)
           // NativeDesktopMediaList calls the capturers on a background thread.
           // This means that the two DesktopCapturer instances (for screens and
@@ -149,7 +149,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
           // instance. DesktopCaptureOptions owns X connection, which cannot be
           // used on multiple threads concurrently.
           window_list = base::MakeUnique<NativeDesktopMediaList>(
-              content::DesktopMediaID::SOURCE_WINDOW,
+              content::DesktopMediaID::TYPE_WINDOW,
               webrtc::DesktopCapturer::CreateWindowCapturer(
                   content::CreateDesktopCaptureOptions()));
 #endif  // !defined(USE_ASH)
@@ -167,7 +167,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         std::unique_ptr<DesktopMediaList> tab_list;
         if (g_picker_factory) {
           tab_list = g_picker_factory->CreateMediaList(
-              DesktopMediaID::SOURCE_WEB_CONTENTS);
+              DesktopMediaID::TYPE_WEB_CONTENTS);
         } else {
           tab_list = base::MakeUnique<TabDesktopMediaList>();
         }
@@ -232,7 +232,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::WebContentsDestroyed() {
 void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
     DesktopMediaID source) {
   std::string result;
-  if (source.source_type != DesktopMediaID::SOURCE_NONE && web_contents()) {
+  if (source.type != DesktopMediaID::TYPE_NONE && web_contents()) {
     DesktopStreamsRegistry* registry =
         MediaCaptureDevicesDispatcher::GetInstance()->
         GetDesktopStreamsRegistry();
@@ -250,7 +250,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
   }
 
   api::desktop_capture::ChooseDesktopMedia::Results::Options options;
-  options.can_request_audio_track = source.is_audio_capture();
+  options.can_request_audio_track = source.audio_share;
   results_ = api::desktop_capture::ChooseDesktopMedia::Results::Create(result,
                                                                        options);
   SendResponse(true);

@@ -21,7 +21,7 @@ class DesktopCapturer;
 // native windows.
 class NativeDesktopMediaList : public DesktopMediaListBase {
  public:
-  NativeDesktopMediaList(content::DesktopMediaID::Source type,
+  NativeDesktopMediaList(content::DesktopMediaID::Type type,
                          std::unique_ptr<webrtc::DesktopCapturer> capturer);
   ~NativeDesktopMediaList() override;
 
