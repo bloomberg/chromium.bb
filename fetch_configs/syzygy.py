@@ -20,7 +20,7 @@ class Syzygy(config_util.Config):
         'solutions': [
           {
             'name'     : 'src',
-            'url'      : 'https://github.com/google/syzygy.git',
+            'url'      : 'https://chromium.googlesource.com/syzygy',
             'deps_file': 'DEPS',
             'managed'  : False,
           }
