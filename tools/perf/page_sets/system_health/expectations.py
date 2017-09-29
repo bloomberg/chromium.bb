@@ -26,6 +26,8 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       [expectations.MAC_10_11], 'crbug.com/760966')
     self.DisableStory('browse:news:cnn',
                       [expectations.ALL_MAC], 'crbug.com/728576')
+    self.DisableStory('browse_accessibility:tools:gmail_compose',
+                      [expectations.ALL], 'crbug.com/769809')
 
 
 class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
