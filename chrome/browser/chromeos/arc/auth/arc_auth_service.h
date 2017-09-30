@@ -49,29 +49,12 @@ class ArcAuthService : public KeyedService,
 
   // mojom::AuthHost:
   void OnSignInComplete() override;
-  void OnSignInFailed(mojom::ArcSignInFailureReason reason) override;
+  void OnSignInFailed(mojom::ArcSignInStatus reason) override;
   void RequestAccountInfo() override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
 
-  // Deprecated methods:
-  // For security reason this code can be used only once and exists for specific
-  // period of time.
-  void GetAuthCodeDeprecated0(GetAuthCodeDeprecated0Callback callback) override;
-  void GetAuthCodeDeprecated(GetAuthCodeDeprecatedCallback callback) override;
-  void GetAuthCodeAndAccountTypeDeprecated(
-      GetAuthCodeAndAccountTypeDeprecatedCallback callback) override;
-  void GetIsAccountManagedDeprecated(
-      GetIsAccountManagedDeprecatedCallback callback) override;
-
  private:
-  using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;
-  class AccountInfoNotifier;
-
-  // Starts to request account info.
-  void RequestAccountInfoInternal(
-      std::unique_ptr<AccountInfoNotifier> account_info_notifier);
-
   // Callbacks when auth info is fetched.
   void OnEnrollmentTokenFetched(
       ArcActiveDirectoryEnrollmentTokenFetcher::Status status,
@@ -80,14 +63,14 @@ class ArcAuthService : public KeyedService,
   void OnAuthCodeFetched(bool success, const std::string& auth_code);
 
   // Called to let ARC container know the account info.
-  void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
+  void OnAccountInfoReady(mojom::AccountInfoPtr account_info,
+                          mojom::ArcSignInStatus status);
 
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
 
   mojo::Binding<mojom::AuthHost> binding_;
 
-  std::unique_ptr<AccountInfoNotifier> notifier_;
   std::unique_ptr<ArcFetcherBase> fetcher_;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
