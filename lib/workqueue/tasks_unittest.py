@@ -56,6 +56,7 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
         len(self._REQUEST_IDS), _TaskHandler, _INTERVAL)
     self._pending_tasks = {}
     self._expected = set()
+    self._stop_count = 0
 
   def tearDown(self):
     self._task_manager.Close()
@@ -64,6 +65,7 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
     """Stop a task and return its expected result."""
     rqfile = self._pending_tasks.pop(rqid)
     os.remove(rqfile)
+    self._stop_count += 1
     return rqfile
 
   def _StartTask(self, rqid):
@@ -94,12 +96,13 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
 
   def _TerminateTask(self, rqid):
     """Call the task manager's `TerminateTask()` method."""
+    has_capacity = self._task_manager.HasCapacity()
     prior_len = len(self._task_manager)
     self._task_manager.TerminateTask(rqid)
-    after_len = len(self._task_manager)
     self._StopTask(rqid)
-    self.assertEqual(prior_len, after_len + 1)
-    self.assertTrue(self._task_manager.HasCapacity())
+    after_len = len(self._task_manager)
+    self.assertEqual(prior_len, after_len)
+    self.assertEqual(has_capacity, self._task_manager.HasCapacity())
 
   def _EndTask(self, rqid):
     """Stop a task and remember its expected return value."""
@@ -118,12 +121,13 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
     actual = set(self._task_manager.Reap())
     self.assertEqual(actual, self._expected)
     self.assertEqual(prior_size,
-                     len(self._task_manager) + len(actual))
-    if self._expected or prior_capacity:
+                     len(self._task_manager) + self._stop_count)
+    if self._stop_count or prior_capacity:
       self.assertTrue(self._task_manager.HasCapacity())
     else:
       self.assertFalse(self._task_manager.HasCapacity())
     self._expected.clear()
+    self._stop_count = 0
 
   def _StartAll(self):
     """Start one task for every entry in `self._REQUEST_IDS`."""

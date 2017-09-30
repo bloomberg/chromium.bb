@@ -96,6 +96,7 @@ class ProcessPoolTaskManager(TaskManager):
     self._pool = multiprocessing.Pool(max_tasks)
     self._max_tasks = max_tasks
     self._pending_results = {}
+    self._pending_aborts = set()
 
   def __len__(self):
     return len(self._pending_results)
@@ -112,13 +113,16 @@ class ProcessPoolTaskManager(TaskManager):
                                (self._handler, request_data)))
 
   def TerminateTask(self, request_id):
-    del self._pending_results[request_id]
+    self._pending_aborts.add(request_id)
 
   def Reap(self):
     for request_id, result in self._pending_results.items():
       if result.ready():
         del self._pending_results[request_id]
-        yield request_id, result.get()
+        if request_id in self._pending_aborts:
+          self._pending_aborts.remove(request_id)
+        else:
+          yield request_id, result.get()
 
   def Close(self):
     self._pool.terminate()
