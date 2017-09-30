@@ -125,16 +125,15 @@ static INLINE void write_nz_map(aom_writer *w, const tran_low_t *tcoeff,
     if (c == seg_eob - 1) break;
 
 #if LV_MAP_PROB
-    aom_write_symbol(w, is_nz, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx],
-                     2);
+    aom_write_bin(w, is_nz, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
 #else
     aom_write(w, is_nz, nz_map[coeff_ctx]);
 #endif
 
     if (is_nz) {
 #if LV_MAP_PROB
-      aom_write_symbol(w, c == (eob - 1),
-                       fc->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2);
+      aom_write_bin(w, c == (eob - 1),
+                    fc->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2);
 #else
       aom_write(w, c == (eob - 1), eob_flag[eob_ctx]);
 #endif
@@ -165,9 +164,8 @@ static INLINE void write_nz_map_vert(aom_writer *w, const tran_low_t *tcoeff,
     assert(veob <= height);
     int el_ctx = get_empty_line_ctx(c, eob_ls);
 #if LV_MAP_PROB
-    aom_write_symbol(w, veob == 0,
-                     fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
-                     2);
+    aom_write_bin(w, veob == 0,
+                  fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx], 2);
 #else
     aom_write(w, veob == 0,
               fc->empty_line[txs_ctx][plane_type][tx_class][el_ctx]);
@@ -179,15 +177,15 @@ static INLINE void write_nz_map_vert(aom_writer *w, const tran_low_t *tcoeff,
         int coeff_ctx = get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
         if (r + 1 != height) {
 #if LV_MAP_PROB
-          aom_write_symbol(w, is_nz,
-                           fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
+          aom_write_bin(w, is_nz,
+                        fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
 #else
           aom_write(w, is_nz, nz_map[coeff_ctx]);
 #endif
           if (is_nz) {
             int eob_ctx = get_hv_eob_ctx(c, r, eob_ls);
 #if LV_MAP_PROB
-            aom_write_symbol(
+            aom_write_bin(
                 w, r == veob - 1,
                 fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2);
 #else
@@ -222,9 +220,8 @@ static INLINE void write_nz_map_horiz(aom_writer *w, const tran_low_t *tcoeff,
     int16_t heob = eob_ls[r];
     int el_ctx = get_empty_line_ctx(r, eob_ls);
 #if LV_MAP_PROB
-    aom_write_symbol(w, heob == 0,
-                     fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
-                     2);
+    aom_write_bin(w, heob == 0,
+                  fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx], 2);
 #else
     aom_write(w, heob == 0,
               fc->empty_line[txs_ctx][plane_type][tx_class][el_ctx]);
@@ -236,15 +233,15 @@ static INLINE void write_nz_map_horiz(aom_writer *w, const tran_low_t *tcoeff,
         int coeff_ctx = get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
         if (c + 1 != width) {
 #if LV_MAP_PROB
-          aom_write_symbol(w, is_nz,
-                           fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
+          aom_write_bin(w, is_nz,
+                        fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
 #else
           aom_write(w, is_nz, nz_map[coeff_ctx]);
 #endif
           if (is_nz) {
             int eob_ctx = get_hv_eob_ctx(r, c, eob_ls);
 #if LV_MAP_PROB
-            aom_write_symbol(
+            aom_write_bin(
                 w, c == heob - 1,
                 fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2);
 #else
@@ -280,8 +277,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   (void)blk_col;
 
 #if LV_MAP_PROB
-  aom_write_symbol(w, eob == 0,
-                   ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
+  aom_write_bin(w, eob == 0,
+                ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
 #else
   aom_write(w, eob == 0, ec_ctx->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx]);
 #endif
@@ -301,8 +298,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     const int eob_offset = width + height;
     const int eob_mode = eob > eob_offset;
 #if LV_MAP_PROB
-    aom_write_symbol(w, eob_mode,
-                     ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], 2);
+    aom_write_bin(w, eob_mode,
+                  ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], 2);
 #else
     aom_write(w, eob_mode, ec_ctx->eob_mode[txs_ctx][plane_type][tx_class]);
 #endif
@@ -340,16 +337,16 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (level == i + 1) {
 #if LV_MAP_PROB
-        aom_write_symbol(
-            w, 1, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2);
+        aom_write_bin(w, 1, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
+                      2);
 #else
         aom_write(w, 1, coeff_base[ctx]);
 #endif
         if (c == 0) {
 #if LV_MAP_PROB
-          aom_write_symbol(
-              w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx],
-              2);
+          aom_write_bin(w, sign,
+                        ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx],
+                        2);
 #else
           aom_write(w, sign, ec_ctx->dc_sign[plane_type][txb_ctx->dc_sign_ctx]);
 #endif
@@ -360,8 +357,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       }
 
 #if LV_MAP_PROB
-      aom_write_symbol(w, 0,
-                       ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2);
+      aom_write_bin(w, 0, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
+                    2);
 #else
       aom_write(w, 0, coeff_base[ctx]);
 #endif
@@ -380,8 +377,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     if (c == 0) {
 #if LV_MAP_PROB
-      aom_write_symbol(
-          w, sign, ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
+      aom_write_bin(w, sign,
+                    ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
 #else
       aom_write(w, sign, ec_ctx->dc_sign[plane_type][txb_ctx->dc_sign_ctx]);
 #endif
@@ -404,20 +401,20 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       br_set_idx = coeff_to_br_index[base_range];
 
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
-      aom_write_symbol(w, idx == br_set_idx,
-                       ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
+      aom_write_bin(w, idx == br_set_idx,
+                    ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
       if (idx == br_set_idx) {
         br_base = br_index_to_coeff[br_set_idx];
         br_offset = base_range - br_base;
         int extra_bits = (1 << br_extra_bits[idx]) - 1;
         for (int tok = 0; tok < extra_bits; ++tok) {
           if (tok == br_offset) {
-            aom_write_symbol(
-                w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
+            aom_write_bin(w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
+                          2);
             break;
           }
-          aom_write_symbol(w, 0,
-                           ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
+          aom_write_bin(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
+                        2);
         }
         //        aom_write_literal(w, br_offset, br_extra_bits[idx]);
         break;
@@ -429,16 +426,14 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
       if (level == (idx + 1 + NUM_BASE_LEVELS)) {
 #if LV_MAP_PROB
-        aom_write_symbol(w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
-                         2);
+        aom_write_bin(w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
 #else
         aom_write(w, 1, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx]);
 #endif
         break;
       }
 #if LV_MAP_PROB
-      aom_write_symbol(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
-                       2);
+      aom_write_bin(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
 #else
       aom_write(w, 0, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx]);
 #endif
@@ -2004,13 +1999,13 @@ static INLINE void av1_update_nz_eob_counts(FRAME_CONTEXT *fc,
 
     ++(*nz_map_count)[coeff_ctx][is_nz];
 #if LV_MAP_PROB
-    update_cdf(fc->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz, 2);
+    update_bin(fc->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz, 2);
 #endif
 
     if (is_nz) {
       ++counts->eob_flag[txsize_ctx][plane_type][eob_ctx][c == (eob - 1)];
 #if LV_MAP_PROB
-      update_cdf(fc->eob_flag_cdf[txsize_ctx][plane_type][eob_ctx],
+      update_bin(fc->eob_flag_cdf[txsize_ctx][plane_type][eob_ctx],
                  c == (eob - 1), 2);
 #endif
     }
@@ -2040,7 +2035,7 @@ static INLINE void av1_update_nz_eob_counts_vert(
     int el_ctx = get_empty_line_ctx(c, eob_ls);
     ++counts->empty_line[txs_ctx][plane_type][tx_class][el_ctx][veob == 0];
 #if LV_MAP_PROB
-    update_cdf(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+    update_bin(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
                veob == 0, 2);
 #endif
     if (veob) {
@@ -2052,14 +2047,14 @@ static INLINE void av1_update_nz_eob_counts_vert(
               get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
           ++(*nz_map_count)[coeff_ctx][is_nz];
 #if LV_MAP_PROB
-          update_cdf(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
+          update_bin(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
 #endif
           if (is_nz) {
             int eob_ctx = get_hv_eob_ctx(c, r, eob_ls);
             ++counts->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]
                             [r == veob - 1];
 #if LV_MAP_PROB
-            update_cdf(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
+            update_bin(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
                        r == veob - 1, 2);
 #endif
           }
@@ -2090,7 +2085,7 @@ static INLINE void av1_update_nz_eob_counts_horiz(
     int el_ctx = get_empty_line_ctx(r, eob_ls);
     ++counts->empty_line[txs_ctx][plane_type][tx_class][el_ctx][heob == 0];
 #if LV_MAP_PROB
-    update_cdf(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+    update_bin(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
                heob == 0, 2);
 #endif
     if (heob) {
@@ -2102,14 +2097,14 @@ static INLINE void av1_update_nz_eob_counts_horiz(
               get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
           ++(*nz_map_count)[coeff_ctx][is_nz];
 #if LV_MAP_PROB
-          update_cdf(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
+          update_bin(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
 #endif
           if (is_nz) {
             int eob_ctx = get_hv_eob_ctx(r, c, eob_ls);
             ++counts->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]
                             [c == heob - 1];
 #if LV_MAP_PROB
-            update_cdf(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
+            update_bin(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
                        c == heob - 1, 2);
 #endif
           }
@@ -2157,7 +2152,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
   ++td->counts->txb_skip[txsize_ctx][txb_ctx.txb_skip_ctx][eob == 0];
 #if LV_MAP_PROB
-  update_cdf(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
+  update_bin(ec_ctx->txb_skip_cdf[txsize_ctx][txb_ctx.txb_skip_ctx], eob == 0,
              2);
 #endif
   x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
@@ -2186,7 +2181,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     const TX_SIZE txs_ctx = get_txsize_context(tx_size);
     ++td->counts->eob_mode[txs_ctx][plane_type][tx_class][eob_mode];
 #if LV_MAP_PROB
-    update_cdf(ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], eob_mode,
+    update_bin(ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], eob_mode,
                2);
 #endif
     if (eob_mode == 0) {
@@ -2222,7 +2217,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       if (level == i + 1) {
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];
 #if LV_MAP_PROB
-        update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 1,
+        update_bin(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 1,
                    2);
 #endif
         if (c == 0) {
@@ -2230,7 +2225,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
           ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
 #if LV_MAP_PROB
-          update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+          update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
 #endif
           x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
         }
@@ -2239,7 +2234,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       }
       ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][0];
 #if LV_MAP_PROB
-      update_cdf(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 0, 2);
+      update_bin(ec_ctx->coeff_base_cdf[txsize_ctx][plane_type][i][ctx], 0, 2);
 #endif
       update_eob = AOMMAX(update_eob, c);
     }
@@ -2259,7 +2254,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
       ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
 #if LV_MAP_PROB
-      update_cdf(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+      update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
 #endif
       x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
     }
@@ -2279,7 +2274,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
         int br_offset = base_range - br_base;
         ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][1];
 #if LV_MAP_PROB
-        update_cdf(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 1,
+        update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 1,
                    2);
 #endif
         int extra_bits = (1 << br_extra_bits[idx]) - 1;
@@ -2287,21 +2282,21 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
           if (br_offset == tok) {
             ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
 #if LV_MAP_PROB
-            update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1,
+            update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1,
                        2);
 #endif
             break;
           }
           ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
 #if LV_MAP_PROB
-          update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
+          update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
 #endif
         }
         break;
       }
       ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][0];
 #if LV_MAP_PROB
-      update_cdf(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0, 2);
+      update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0, 2);
 #endif
     }
 #else  // BR_NODE
@@ -2309,13 +2304,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       if (level == (idx + 1 + NUM_BASE_LEVELS)) {
         ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
 #if LV_MAP_PROB
-        update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1, 2);
+        update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1, 2);
 #endif
         break;
       }
       ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
 #if LV_MAP_PROB
-      update_cdf(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
+      update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0, 2);
 #endif
     }
     if (idx < COEFF_BASE_RANGE) continue;

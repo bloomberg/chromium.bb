@@ -195,6 +195,12 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   cdf[nsymbs] += (cdf[nsymbs] < 32);
 }
 
+#if CONFIG_LV_MAP
+static INLINE void update_bin(aom_cdf_prob *cdf, int val, int nsymbs) {
+  update_cdf(cdf, val, nsymbs);
+}
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

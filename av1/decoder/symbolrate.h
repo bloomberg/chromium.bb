@@ -28,6 +28,16 @@ static INLINE int av1_read_record_symbol(FRAME_COUNTS *counts, aom_reader *r,
   return aom_read_symbol(r, cdf, nsymbs, str);
 }
 
+#if CONFIG_LV_MAP
+static INLINE int av1_read_record_bin(FRAME_COUNTS *counts, aom_reader *r,
+                                      aom_cdf_prob *cdf, int nsymbs,
+                                      const char *str) {
+  (void)str;
+  if (counts) ++counts->symbol_num[0];
+  return aom_read_bin(r, cdf, nsymbs, str);
+}
+#endif
+
 static INLINE int av1_read_record(FRAME_COUNTS *counts, aom_reader *r, int prob,
                                   const char *str) {
   (void)str;
@@ -58,6 +68,11 @@ static INLINE void av1_record_coeff(FRAME_COUNTS *counts, tran_low_t qcoeff) {
 
 #define av1_read_record_symbol(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME)
+
+#if CONFIG_LV_MAP
+#define av1_read_record_bin(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_bin(r, cdf, nsymbs, ACCT_STR_NAME)
+#endif
 
 #define av1_read_record(counts, r, prob, ACCT_STR_NAME) \
   aom_read(r, prob, ACCT_STR_NAME)

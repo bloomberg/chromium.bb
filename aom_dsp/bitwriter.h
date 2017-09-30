@@ -142,6 +142,14 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
   update_cdf(cdf, symb, nsymbs);
 }
 
+#if CONFIG_LV_MAP
+static INLINE void aom_write_bin(aom_writer *w, int symb, aom_cdf_prob *cdf,
+                                 int nsymbs) {
+  aom_write_cdf(w, symb, cdf, nsymbs);
+  update_cdf(cdf, symb, nsymbs);
+}
+#endif
+
 static INLINE void aom_write_tree_as_cdf(aom_writer *w,
                                          const aom_tree_index *tree,
                                          const aom_prob *probs, int bits,

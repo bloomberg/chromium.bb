@@ -76,7 +76,7 @@ static INLINE int read_nz_map(aom_reader *r, tran_low_t *tcoeffs, int plane,
 
     if (c < seg_eob - 1) {
 #if LV_MAP_PROB
-      is_nz = av1_read_record_symbol(
+      is_nz = av1_read_record_bin(
           counts, r, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
           ACCT_STR);
 #else
@@ -98,7 +98,7 @@ static INLINE int read_nz_map(aom_reader *r, tran_low_t *tcoeffs, int plane,
 
     if (is_nz) {
 #if LV_MAP_PROB
-      int is_eob = av1_read_record_symbol(
+      int is_eob = av1_read_record_bin(
           counts, r, fc->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2,
           ACCT_STR);
 #else
@@ -130,7 +130,7 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
   for (int col = 0; col < width; ++col) {
     int el_ctx = get_empty_line_ctx(col, eob_ls);
 #if LV_MAP_PROB
-    int empty_line = av1_read_record_symbol(
+    int empty_line = av1_read_record_bin(
         counts, r, fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx], 2,
         ACCT_STR);
 #else
@@ -147,7 +147,7 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
             get_nz_map_ctx(tcoeffs, coeff_idx, bwl, height, tx_type);
         if (row + 1 != height) {
 #if LV_MAP_PROB
-          int is_nz = av1_read_record_symbol(
+          int is_nz = av1_read_record_bin(
               counts, r, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
               ACCT_STR);
 #else
@@ -160,7 +160,7 @@ static INLINE int read_nz_map_vert(aom_reader *r, tran_low_t *tcoeffs,
             if (row + 1 != height) {
               int eob_ctx = get_hv_eob_ctx(col, row, eob_ls);
 #if LV_MAP_PROB
-              int is_eob = av1_read_record_symbol(
+              int is_eob = av1_read_record_bin(
                   counts, r,
                   fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2,
                   ACCT_STR);
@@ -206,7 +206,7 @@ static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
   for (int row = 0; row < height; ++row) {
     int el_ctx = get_empty_line_ctx(row, eob_ls);
 #if LV_MAP_PROB
-    int empty_line = av1_read_record_symbol(
+    int empty_line = av1_read_record_bin(
         counts, r, fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx], 2,
         ACCT_STR);
 #else
@@ -223,7 +223,7 @@ static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
             get_nz_map_ctx(tcoeffs, coeff_idx, bwl, height, tx_type);
         if (col + 1 != width) {
 #if LV_MAP_PROB
-          int is_nz = av1_read_record_symbol(
+          int is_nz = av1_read_record_bin(
               counts, r, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
               ACCT_STR);
 #else
@@ -235,7 +235,7 @@ static INLINE int read_nz_map_horiz(aom_reader *r, tran_low_t *tcoeffs,
             eob = AOMMAX(eob, iscan[coeff_idx] + 1);
             int eob_ctx = get_hv_eob_ctx(row, col, eob_ls);
 #if LV_MAP_PROB
-            int is_eob = av1_read_record_symbol(
+            int is_eob = av1_read_record_bin(
                 counts, r,
                 fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2,
                 ACCT_STR);
@@ -286,7 +286,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   memset(tcoeffs, 0, sizeof(*tcoeffs) * seg_eob);
 
 #if LV_MAP_PROB
-  int all_zero = av1_read_record_symbol(
+  int all_zero = av1_read_record_bin(
       counts, r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2,
       ACCT_STR);
 #else
@@ -324,7 +324,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         read_nz_map(r, tcoeffs, plane, scan, tx_size, tx_type, ec_ctx, counts);
   } else {
 #if LV_MAP_PROB
-    const int eob_mode = av1_read_record_symbol(
+    const int eob_mode = av1_read_record_bin(
         counts, r, ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], 2,
         ACCT_STR);
 #else
@@ -366,7 +366,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       ctx = get_base_ctx(tcoeffs, scan[c], bwl, height, i + 1);
 
 #if LV_MAP_PROB
-      if (av1_read_record_symbol(
+      if (av1_read_record_bin(
               counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2,
               ACCT_STR))
 #else
@@ -381,7 +381,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (c == 0) {
           int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
-          sign = av1_read_record_symbol(
+          sign = av1_read_record_bin(
               counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2,
               ACCT_STR);
 #else
@@ -414,7 +414,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (c == 0) {
       int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
-      sign = av1_read_record_symbol(
+      sign = av1_read_record_bin(
           counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
 #else
       sign = aom_read(r, ec_ctx->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
@@ -431,7 +431,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if BR_NODE
     for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
 #if LV_MAP_PROB
-      if (av1_read_record_symbol(
+      if (av1_read_record_bin(
               counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2,
               ACCT_STR))
 #else   // LV_MAP_PROB
@@ -446,7 +446,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (counts) ++counts->coeff_br[txs_ctx][plane_type][idx][ctx][1];
         for (tok = 0; tok < extra_bits; ++tok) {
 #if LV_MAP_PROB
-          if (av1_read_record_symbol(
+          if (av1_read_record_bin(
                   counts, r, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2,
                   ACCT_STR))
 #else
@@ -476,9 +476,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #else
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
 #if LV_MAP_PROB
-      if (av1_read_record_symbol(
-              counts, r, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2,
-              ACCT_STR))
+      if (av1_read_record_bin(counts, r,
+                              ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
+                              2, ACCT_STR))
 #else
       if (aom_read(r, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx], ACCT_STR))
 #endif
