@@ -42,10 +42,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/win/core_winrt_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_hstring.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 
@@ -100,55 +102,20 @@ bool IsWindows10TabletMode(HWND hwnd) {
   if (GetVersion() < VERSION_WIN10)
     return false;
 
-  using RoGetActivationFactoryFunction = decltype(&RoGetActivationFactory);
-  using WindowsCreateStringFunction = decltype(&WindowsCreateString);
-
-  static RoGetActivationFactoryFunction get_factory = nullptr;
-  static WindowsCreateStringFunction create_string = nullptr;
-
-  if (!get_factory) {
-    DCHECK_EQ(create_string, static_cast<WindowsCreateStringFunction>(
-        nullptr));
-
-    HMODULE combase_dll = ::LoadLibrary(L"combase.dll");
-    if (!combase_dll)
-      return false;
-
-    get_factory = reinterpret_cast<RoGetActivationFactoryFunction>(
-        ::GetProcAddress(combase_dll, "RoGetActivationFactory"));
-    if (!get_factory) {
-      CHECK(false);
-      return false;
-    }
-
-    create_string = reinterpret_cast<WindowsCreateStringFunction>(
-        ::GetProcAddress(combase_dll, "WindowsCreateString"));
-    if (!create_string) {
-      CHECK(false);
-      return false;
-    }
+  if (!ResolveCoreWinRTDelayload() ||
+      !ScopedHString::ResolveCoreWinRTStringDelayload()) {
+    return false;
   }
 
-  HRESULT hr = E_FAIL;
-  // This HSTRING is allocated on the heap and is leaked.
-  static HSTRING view_settings_guid = NULL;
-  if (!view_settings_guid) {
-    hr = create_string(
-        RuntimeClass_Windows_UI_ViewManagement_UIViewSettings,
-        static_cast<UINT32>(
-            wcslen(RuntimeClass_Windows_UI_ViewManagement_UIViewSettings)),
-        &view_settings_guid);
-    if (FAILED(hr))
-      return false;
-  }
-
-  base::win::ScopedComPtr<IUIViewSettingsInterop> view_settings_interop;
-  hr = get_factory(view_settings_guid, IID_PPV_ARGS(&view_settings_interop));
+  ScopedHString view_settings_guid = ScopedHString::Create(
+      RuntimeClass_Windows_UI_ViewManagement_UIViewSettings);
+  ScopedComPtr<IUIViewSettingsInterop> view_settings_interop;
+  HRESULT hr = base::win::RoGetActivationFactory(
+      view_settings_guid.get(), IID_PPV_ARGS(&view_settings_interop));
   if (FAILED(hr))
     return false;
 
-  base::win::ScopedComPtr<ABI::Windows::UI::ViewManagement::IUIViewSettings>
-      view_settings;
+  ScopedComPtr<ABI::Windows::UI::ViewManagement::IUIViewSettings> view_settings;
   // TODO(ananta)
   // Avoid using GetForegroundWindow here and pass in the HWND of the window
   // intiating the request to display the keyboard.
@@ -570,7 +537,7 @@ bool IsUser32AndGdi32Available() {
     // If win32k syscalls aren't disabled, then user32 and gdi32 are available.
 
     // Can't disable win32k prior to windows 8.
-    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    if (GetVersion() < VERSION_WIN8)
       return true;
 
     typedef decltype(
