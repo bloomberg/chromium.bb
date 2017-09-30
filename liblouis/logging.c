@@ -32,147 +32,129 @@
 
 #include "internal.h"
 
-void EXPORT_CALL _lou_logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int wlen)
-{
-  /* When calculating output size:
-   * Each wdiechar is represented in hex, thus needing two bytes for each
-   * byte in the widechar (sizeof(widechar) * 2)
-   * Allow space for the "0x%X " formatting (+ 3)
-   * Number of characters in widechar buffer (wlen * )
-   * Give space for additional message (+ strlen(msg))
-   * Remember the null terminator (+ 1)
-   */
-  int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + (int)strlen(msg);
-  char *logMsg = malloc(logBufSize);
-  char *p = logMsg;
-  char *formatString;
-  int i = 0;
-  if (sizeof(widechar) == 2)
-    formatString = "0x%04X ";
-  else
-    formatString = "0x%08X ";
-  for (i = 0; i < (int) strlen(msg); i++)
-    logMsg[i] = msg[i];
-  p += strlen(msg);
-  for (i = 0; i < wlen; i++)
-    {
-      p += sprintf(p, formatString, wbuf[i]);
-    }
+void EXPORT_CALL
+_lou_logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int wlen) {
+	/* When calculating output size:
+	 * Each wdiechar is represented in hex, thus needing two bytes for each
+	 * byte in the widechar (sizeof(widechar) * 2)
+	 * Allow space for the "0x%X " formatting (+ 3)
+	 * Number of characters in widechar buffer (wlen * )
+	 * Give space for additional message (+ strlen(msg))
+	 * Remember the null terminator (+ 1)
+	 */
+	int logBufSize = (wlen * ((sizeof(widechar) * 3) + 3)) + 3 + (int)strlen(msg);
+	char *logMsg = malloc(logBufSize);
+	char *p = logMsg;
+	char *formatString;
+	int i = 0;
+	if (sizeof(widechar) == 2)
+		formatString = "0x%04X ";
+	else
+		formatString = "0x%08X ";
+	for (i = 0; i < (int)strlen(msg); i++) logMsg[i] = msg[i];
+	p += strlen(msg);
+	for (i = 0; i < wlen; i++) {
+		p += sprintf(p, formatString, wbuf[i]);
+	}
 	*p = '~';
 	p++;
 	*p = ' ';
 	p++;
-	for(i = 0; i < wlen; i++)
-	{
-		if(wbuf[i] & 0xff00)
+	for (i = 0; i < wlen; i++) {
+		if (wbuf[i] & 0xff00)
 			*p = ' ';
 		else
 			*p = (char)wbuf[i];
 		p++;
-	}	
-  *p = '\0';
-  _lou_logMessage(level, "%s", logMsg);
-  free(logMsg);
+	}
+	*p = '\0';
+	_lou_logMessage(level, "%s", logMsg);
+	free(logMsg);
 }
 
-static void defaultLogCallback(logLevels level, const char *message)
-{
-  lou_logPrint("%s", message); // lou_logPrint takes formatting, protect against % in message
+static void
+defaultLogCallback(logLevels level, const char *message) {
+	lou_logPrint("%s",
+			message);  // lou_logPrint takes formatting, protect against % in message
 }
 
 static logcallback logCallbackFunction = defaultLogCallback;
-void EXPORT_CALL lou_registerLogCallback(logcallback callback)
-{
-  if (callback == NULL)
-    logCallbackFunction = defaultLogCallback;
-  else
-    logCallbackFunction = callback;
+void EXPORT_CALL
+lou_registerLogCallback(logcallback callback) {
+	if (callback == NULL)
+		logCallbackFunction = defaultLogCallback;
+	else
+		logCallbackFunction = callback;
 }
 
 static logLevels logLevel = LOG_INFO;
-void EXPORT_CALL lou_setLogLevel(logLevels level)
-{
-  logLevel = level;
+void EXPORT_CALL
+lou_setLogLevel(logLevels level) {
+	logLevel = level;
 }
 
-void EXPORT_CALL _lou_logMessage(logLevels level, const char *format, ...)
-{
-  if (format == NULL)
-      return;
-  if (level < logLevel)
-      return;
-  if (logCallbackFunction != NULL)
-    {
+void EXPORT_CALL
+_lou_logMessage(logLevels level, const char *format, ...) {
+	if (format == NULL) return;
+	if (level < logLevel) return;
+	if (logCallbackFunction != NULL) {
 #ifdef _WIN32
-      double f = 2.3; // Needed to force VC++ runtime floating point support
+		double f = 2.3;  // Needed to force VC++ runtime floating point support
 #endif
-      char *s;
-      size_t len;
-      va_list argp;
-      va_start(argp, format);
-      len = vsnprintf(0, 0, format, argp);
-      va_end(argp);
-      if ((s = malloc(len+1)) != 0)
-        {
-          va_start(argp, format);
-          vsnprintf(s, len+1, format, argp);
-          va_end(argp);
-          logCallbackFunction(level, s);
-          free(s);
-        }
-    }
+		char *s;
+		size_t len;
+		va_list argp;
+		va_start(argp, format);
+		len = vsnprintf(0, 0, format, argp);
+		va_end(argp);
+		if ((s = malloc(len + 1)) != 0) {
+			va_start(argp, format);
+			vsnprintf(s, len + 1, format, argp);
+			va_end(argp);
+			logCallbackFunction(level, s);
+			free(s);
+		}
+	}
 }
-
 
 static FILE *logFile = NULL;
 static char initialLogFileName[256] = "";
 
 void EXPORT_CALL
-lou_logFile (const char *fileName)
-{
-	if(logFile)
-	{
+lou_logFile(const char *fileName) {
+	if (logFile) {
 		fclose(logFile);
 		logFile = NULL;
 	}
-  if (fileName == NULL || fileName[0] == 0)
-    return;
-  if (initialLogFileName[0] == 0)
-    strcpy (initialLogFileName, fileName);
-  logFile = fopen (fileName, "a");
-  if (logFile == NULL && initialLogFileName[0] != 0)
-    logFile = fopen (initialLogFileName, "a");
-  if (logFile == NULL)
-    {
-      fprintf (stderr, "Cannot open log file %s\n", fileName);
-      logFile = stderr;
-    }
+	if (fileName == NULL || fileName[0] == 0) return;
+	if (initialLogFileName[0] == 0) strcpy(initialLogFileName, fileName);
+	logFile = fopen(fileName, "a");
+	if (logFile == NULL && initialLogFileName[0] != 0)
+		logFile = fopen(initialLogFileName, "a");
+	if (logFile == NULL) {
+		fprintf(stderr, "Cannot open log file %s\n", fileName);
+		logFile = stderr;
+	}
 }
 
 void EXPORT_CALL
-lou_logPrint (const char *format, ...)
-{
+lou_logPrint(const char *format, ...) {
 #ifndef __SYMBIAN32__
-  va_list argp;
-  if (format == NULL)
-    return;
-  if (logFile == NULL)
-    logFile = fopen (initialLogFileName, "a");
-  if (logFile == NULL)
-    logFile = stderr;
-  va_start (argp, format);
-  vfprintf (logFile, format, argp);
-  fprintf (logFile, "\n");
-  fflush(logFile);
-  va_end (argp);
+	va_list argp;
+	if (format == NULL) return;
+	if (logFile == NULL) logFile = fopen(initialLogFileName, "a");
+	if (logFile == NULL) logFile = stderr;
+	va_start(argp, format);
+	vfprintf(logFile, format, argp);
+	fprintf(logFile, "\n");
+	fflush(logFile);
+	va_end(argp);
 #endif
 }
 
 /* Close the log file */
 void EXPORT_CALL
-lou_logEnd (void)
-{
-  if (logFile != NULL && logFile != stderr)
-    fclose (logFile);
-  logFile = NULL;
+lou_logEnd(void) {
+	if (logFile != NULL && logFile != stderr) fclose(logFile);
+	logFile = NULL;
 }

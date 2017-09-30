@@ -48,193 +48,165 @@
 #include <shlobj.h>
 
 static void *
-reallocWrapper (void *address, size_t size)
-{
-  if (!(address = realloc (address, size)) && size)
-    _lou_outOfMemory ();
-  return address;
+reallocWrapper(void *address, size_t size) {
+	if (!(address = realloc(address, size)) && size) _lou_outOfMemory();
+	return address;
 }
 
 static char *
-strdupWrapper (const char *string)
-{
-  char *address = strdup (string);
-  if (!address)
-    _lou_outOfMemory ();
-  return address;
+strdupWrapper(const char *string) {
+	char *address = strdup(string);
+	if (!address) _lou_outOfMemory();
+	return address;
 }
 
 char *EXPORT_CALL
-lou_getProgramPath (void)
-{
-  char *path = NULL;
-  HMODULE handle;
+lou_getProgramPath(void) {
+	char *path = NULL;
+	HMODULE handle;
 
-  if ((handle = GetModuleHandle (NULL)))
-    {
-      DWORD size = 0X80;
-      char *buffer = NULL;
+	if ((handle = GetModuleHandle(NULL))) {
+		DWORD size = 0X80;
+		char *buffer = NULL;
 
-      while (1)
-	{
-	  buffer = reallocWrapper (buffer, size <<= 1);
+		while (1) {
+			buffer = reallocWrapper(buffer, size <<= 1);
 
-	  {
-		// As the "UNICODE" Windows define may have been set at compilation,
-		// This call must be specifically GetModuleFilenameA as further code expects it to be single byte chars.
-		DWORD length = GetModuleFileNameA (handle, buffer, size);
+			{
+				// As the "UNICODE" Windows define may have been set at compilation,
+				// This call must be specifically GetModuleFilenameA as further code
+				// expects it to be single byte chars.
+				DWORD length = GetModuleFileNameA(handle, buffer, size);
 
-	    if (!length)
-	      {
-		printf ("GetModuleFileName\n");
-		exit (3);
-	      }
+				if (!length) {
+					printf("GetModuleFileName\n");
+					exit(3);
+				}
 
-	    if (length < size)
-	      {
-		buffer[length] = 0;
-		path = strdupWrapper (buffer);
+				if (length < size) {
+					buffer[length] = 0;
+					path = strdupWrapper(buffer);
 
-		while (length > 0)
-		  if (path[--length] == '\\')
-		    break;
+					while (length > 0)
+						if (path[--length] == '\\') break;
 
-		strncpy (path, path, length + 1);
-		path[length + 1] = '\0';
-		break;
-	      }
-	  }
+					strncpy(path, path, length + 1);
+					path[length + 1] = '\0';
+					break;
+				}
+			}
+		}
+
+		free(buffer);
+	} else {
+		printf("GetModuleHandle\n");
+		exit(3);
 	}
 
-      free (buffer);
-    }
-  else
-    {
-      printf ("GetModuleHandle\n");
-      exit (3);
-    }
-
-  return path;
+	return path;
 }
 #endif
 /* End of MS contribution */
 
 int EXPORT_CALL
-_lou_stringHash (const widechar * c)
-{
-  /* hash function for strings */
-  unsigned long int makeHash = (((unsigned long int) c[0] << 8) +
-				(unsigned long int) c[1]) % HASHNUM;
-  return (int) makeHash;
+_lou_stringHash(const widechar *c) {
+	/* hash function for strings */
+	unsigned long int makeHash =
+			(((unsigned long int)c[0] << 8) + (unsigned long int)c[1]) % HASHNUM;
+	return (int)makeHash;
 }
 
 int EXPORT_CALL
-_lou_charHash (widechar c)
-{
-  unsigned long int makeHash = (unsigned long int) c % HASHNUM;
-  return (int) makeHash;
+_lou_charHash(widechar c) {
+	unsigned long int makeHash = (unsigned long int)c % HASHNUM;
+	return (int)makeHash;
 }
 
 char *EXPORT_CALL
-_lou_showString (widechar const *chars, int length)
-{
-  /* Translate a string of characters to the encoding used in character
-   * operands */
-  int charPos;
-  int bufPos = 0;
-  static char scratchBuf[MAXSTRING];
-  scratchBuf[bufPos++] = '\'';
-  for (charPos = 0; charPos < length && bufPos < (MAXSTRING-2); charPos++)
-    {
-      if (chars[charPos] >= 32 && chars[charPos] < 127)
-	scratchBuf[bufPos++] = (char) chars[charPos];
-      else
-	{
-	  char hexbuf[20];
-	  int hexLength;
-	  char escapeLetter;
+_lou_showString(widechar const *chars, int length) {
+	/* Translate a string of characters to the encoding used in character
+	 * operands */
+	int charPos;
+	int bufPos = 0;
+	static char scratchBuf[MAXSTRING];
+	scratchBuf[bufPos++] = '\'';
+	for (charPos = 0; charPos < length && bufPos < (MAXSTRING - 2); charPos++) {
+		if (chars[charPos] >= 32 && chars[charPos] < 127)
+			scratchBuf[bufPos++] = (char)chars[charPos];
+		else {
+			char hexbuf[20];
+			int hexLength;
+			char escapeLetter;
 
-	  int leadingZeros;
-	  int hexPos;
-	  hexLength = sprintf (hexbuf, "%x", chars[charPos]);
-	  switch (hexLength)
-	    {
-	    case 1:
-	    case 2:
-	    case 3:
-	    case 4:
-	      escapeLetter = 'x';
-	      leadingZeros = 4 - hexLength;
-	      break;
-	    case 5:
-	      escapeLetter = 'y';
-	      leadingZeros = 0;
-	      break;
-	    case 6:
-	    case 7:
-	    case 8:
-	      escapeLetter = 'z';
-	      leadingZeros = 8 - hexLength;
-	      break;
-	    default:
-	      escapeLetter = '?';
-	      leadingZeros = 0;
-	      break;
-	    }
-	  if ((bufPos + leadingZeros + hexLength + 4) >= (MAXSTRING-2))
-	    break;
-	  scratchBuf[bufPos++] = '\\';
-	  scratchBuf[bufPos++] = escapeLetter;
-	  for (hexPos = 0; hexPos < leadingZeros; hexPos++)
-	    scratchBuf[bufPos++] = '0';
-	  for (hexPos = 0; hexPos < hexLength; hexPos++)
-	    scratchBuf[bufPos++] = hexbuf[hexPos];
+			int leadingZeros;
+			int hexPos;
+			hexLength = sprintf(hexbuf, "%x", chars[charPos]);
+			switch (hexLength) {
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+				escapeLetter = 'x';
+				leadingZeros = 4 - hexLength;
+				break;
+			case 5:
+				escapeLetter = 'y';
+				leadingZeros = 0;
+				break;
+			case 6:
+			case 7:
+			case 8:
+				escapeLetter = 'z';
+				leadingZeros = 8 - hexLength;
+				break;
+			default:
+				escapeLetter = '?';
+				leadingZeros = 0;
+				break;
+			}
+			if ((bufPos + leadingZeros + hexLength + 4) >= (MAXSTRING - 2)) break;
+			scratchBuf[bufPos++] = '\\';
+			scratchBuf[bufPos++] = escapeLetter;
+			for (hexPos = 0; hexPos < leadingZeros; hexPos++) scratchBuf[bufPos++] = '0';
+			for (hexPos = 0; hexPos < hexLength; hexPos++)
+				scratchBuf[bufPos++] = hexbuf[hexPos];
+		}
 	}
-    }
-  scratchBuf[bufPos++] = '\'';
-  scratchBuf[bufPos] = 0;
-  return scratchBuf;
+	scratchBuf[bufPos++] = '\'';
+	scratchBuf[bufPos] = 0;
+	return scratchBuf;
 }
 
 /**
  * Translate a sequence of dots to the encoding used in dots operands.
  */
 char *EXPORT_CALL
-_lou_showDots (widechar const *dots, int length) {
-  int bufPos = 0;
-  static char scratchBuf[MAXSTRING];
-  for (int dotsPos = 0; dotsPos < length && bufPos < (MAXSTRING-1); dotsPos++) {
-    for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
-      if ((dots[dotsPos] & dotMapping[mappingPos].key) && (bufPos < (MAXSTRING-1)))
-	scratchBuf[bufPos++] = dotMapping[mappingPos].value;
-    }
-    if ((dots[dotsPos] == B16) && (bufPos < (MAXSTRING-1)))
-      scratchBuf[bufPos++] = '0';
-    if ((dotsPos != length - 1) && (bufPos < (MAXSTRING-1)))
-      scratchBuf[bufPos++] = '-';
-  }
-  scratchBuf[bufPos] = 0;
-  return scratchBuf;
+_lou_showDots(widechar const *dots, int length) {
+	int bufPos = 0;
+	static char scratchBuf[MAXSTRING];
+	for (int dotsPos = 0; dotsPos < length && bufPos < (MAXSTRING - 1); dotsPos++) {
+		for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
+			if ((dots[dotsPos] & dotMapping[mappingPos].key) &&
+					(bufPos < (MAXSTRING - 1)))
+				scratchBuf[bufPos++] = dotMapping[mappingPos].value;
+		}
+		if ((dots[dotsPos] == B16) && (bufPos < (MAXSTRING - 1)))
+			scratchBuf[bufPos++] = '0';
+		if ((dotsPos != length - 1) && (bufPos < (MAXSTRING - 1)))
+			scratchBuf[bufPos++] = '-';
+	}
+	scratchBuf[bufPos] = 0;
+	return scratchBuf;
 }
 
 /**
  * Mapping between character attribute and textual representation
  */
 const static intCharTupple attributeMapping[] = {
-  {CTC_Space, 's'},
-  {CTC_Letter, 'l'},
-  {CTC_Digit, 'd'},
-  {CTC_Punctuation, 'p'},
-  {CTC_UpperCase, 'U'},
-  {CTC_LowerCase, 'u'},
-  {CTC_Math, 'm'},
-  {CTC_Sign, 'S'},
-  {CTC_LitDigit, 'D'},
-  {CTC_Class1, 'w'},
-  {CTC_Class2, 'x'},
-  {CTC_Class3, 'y'},
-  {CTC_Class4, 'z'},
-  0,
+	{ CTC_Space, 's' }, { CTC_Letter, 'l' }, { CTC_Digit, 'd' }, { CTC_Punctuation, 'p' },
+	{ CTC_UpperCase, 'U' }, { CTC_LowerCase, 'u' }, { CTC_Math, 'm' }, { CTC_Sign, 'S' },
+	{ CTC_LitDigit, 'D' }, { CTC_Class1, 'w' }, { CTC_Class2, 'x' }, { CTC_Class3, 'y' },
+	{ CTC_Class4, 'z' }, 0,
 };
 
 /**
@@ -242,29 +214,27 @@ const static intCharTupple attributeMapping[] = {
  * opcodes.
  */
 char *EXPORT_CALL
-_lou_showAttributes (TranslationTableCharacterAttributes a) {
-  int bufPos = 0;
-  static char scratchBuf[MAXSTRING];
-  for (int mappingPos = 0; attributeMapping[mappingPos].key; mappingPos++) {
-    if ((a & attributeMapping[mappingPos].key) && bufPos < (MAXSTRING - 1))
-      scratchBuf[bufPos++] = attributeMapping[mappingPos].value;
-  }
-  scratchBuf[bufPos] = 0;
-  return scratchBuf;
+_lou_showAttributes(TranslationTableCharacterAttributes a) {
+	int bufPos = 0;
+	static char scratchBuf[MAXSTRING];
+	for (int mappingPos = 0; attributeMapping[mappingPos].key; mappingPos++) {
+		if ((a & attributeMapping[mappingPos].key) && bufPos < (MAXSTRING - 1))
+			scratchBuf[bufPos++] = attributeMapping[mappingPos].value;
+	}
+	scratchBuf[bufPos] = 0;
+	return scratchBuf;
 }
 
 void EXPORT_CALL
-_lou_outOfMemory (void)
-{
-  _lou_logMessage(LOG_FATAL, "liblouis: Insufficient memory\n");
-  exit (3);
+_lou_outOfMemory(void) {
+	_lou_logMessage(LOG_FATAL, "liblouis: Insufficient memory\n");
+	exit(3);
 }
 
 #ifdef DEBUG
 void EXPORT_CALL
-_lou_debugHook (void)
-{
-  char *hook = "debug hook";
-  printf ("%s\n", hook);
+_lou_debugHook(void) {
+	char *hook = "debug hook";
+	printf("%s\n", hook);
 }
 #endif

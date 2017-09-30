@@ -30,74 +30,64 @@
 static int passVariables[NUMVAR];
 
 void EXPORT_CALL
-_lou_resetPassVariables(void)
-{
-  memset(passVariables, 0, sizeof(passVariables[0]) * NUMVAR);
+_lou_resetPassVariables(void) {
+	memset(passVariables, 0, sizeof(passVariables[0]) * NUMVAR);
 }
 
 int EXPORT_CALL
-_lou_handlePassVariableTest (const widechar *instructions, int *IC, int *itsTrue)
-{
-  switch (instructions[*IC])
-    {
-      case pass_eq:
-	if (passVariables[instructions[*IC + 1]] != instructions[*IC + 2])
-	  *itsTrue = 0;
-	*IC += 3;
-	return 1;
+_lou_handlePassVariableTest(const widechar *instructions, int *IC, int *itsTrue) {
+	switch (instructions[*IC]) {
+	case pass_eq:
+		if (passVariables[instructions[*IC + 1]] != instructions[*IC + 2]) *itsTrue = 0;
+		*IC += 3;
+		return 1;
 
-      case pass_lt:
-	if (passVariables[instructions[*IC + 1]] >= instructions[*IC + 2])
-	  *itsTrue = 0;
-	*IC += 3;
-	return 1;
+	case pass_lt:
+		if (passVariables[instructions[*IC + 1]] >= instructions[*IC + 2]) *itsTrue = 0;
+		*IC += 3;
+		return 1;
 
-      case pass_gt:
-	if (passVariables[instructions[*IC + 1]] <= instructions[*IC + 2])
-	  *itsTrue = 0;
-	*IC += 3;
-	return 1;
+	case pass_gt:
+		if (passVariables[instructions[*IC + 1]] <= instructions[*IC + 2]) *itsTrue = 0;
+		*IC += 3;
+		return 1;
 
-      case pass_lteq:
-	if (passVariables[instructions[*IC + 1]] > instructions[*IC + 2])
-	  *itsTrue = 0;
-	*IC += 3;
-	return 1;
+	case pass_lteq:
+		if (passVariables[instructions[*IC + 1]] > instructions[*IC + 2]) *itsTrue = 0;
+		*IC += 3;
+		return 1;
 
-      case pass_gteq:
-	if (passVariables[instructions[*IC + 1]] < instructions[*IC + 2])
-	  *itsTrue = 0;
-	*IC += 3;
-	return 1;
+	case pass_gteq:
+		if (passVariables[instructions[*IC + 1]] < instructions[*IC + 2]) *itsTrue = 0;
+		*IC += 3;
+		return 1;
 
-      default:
-        return 0;
-    }
+	default:
+		return 0;
+	}
 }
 
 int EXPORT_CALL
-_lou_handlePassVariableAction (const widechar *instructions, int *IC)
-{
-  switch (instructions[*IC])
-    {
-      case pass_eq:
-	passVariables[instructions[*IC + 1]] = instructions[*IC + 2];
-	*IC += 3;
-	return 1;
+_lou_handlePassVariableAction(const widechar *instructions, int *IC) {
+	switch (instructions[*IC]) {
+	case pass_eq:
+		passVariables[instructions[*IC + 1]] = instructions[*IC + 2];
+		*IC += 3;
+		return 1;
 
-      case pass_hyphen:
-	passVariables[instructions[*IC + 1]] -= 1;
-	if (passVariables[instructions[*IC + 1]] < 0)
-	  passVariables[instructions[*IC + 1]] = 0;
-	*IC += 2;
-	return 1;
+	case pass_hyphen:
+		passVariables[instructions[*IC + 1]] -= 1;
+		if (passVariables[instructions[*IC + 1]] < 0)
+			passVariables[instructions[*IC + 1]] = 0;
+		*IC += 2;
+		return 1;
 
-      case pass_plus:
-	passVariables[instructions[*IC + 1]] += 1;
-	*IC += 2;
-	return 1;
+	case pass_plus:
+		passVariables[instructions[*IC + 1]] += 1;
+		*IC += 2;
+		return 1;
 
-      default:
-        return 0;
-    }
+	default:
+		return 0;
+	}
 }

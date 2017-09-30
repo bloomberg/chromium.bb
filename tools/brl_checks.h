@@ -22,79 +22,86 @@
 
 #include "liblouis.h"
 
-int check_inpos(const char *tableList, const char *str, const int *expected_poslist);
+int
+check_inpos(const char *tableList, const char *str, const int *expected_poslist);
 
-int check_outpos(const char *tableList, const char *str, const int *expected_poslist);
+int
+check_outpos(const char *tableList, const char *str, const int *expected_poslist);
 
 /* Check if the cursor position is where you expect it to be after
  * translating str. Return 0 if the translation is as expected and 1
  * otherwise. */
-int check_cursor_pos(const char *tableList, const char *str, const int *expected_pos);
+int
+check_cursor_pos(const char *tableList, const char *str, const int *expected_pos);
 
 /* Check if a string is translated as expected. Return 0 if the
  * translation is as expected and 1 otherwise. */
-int check_translation(const char *tableList, const char *str,
-                      const formtype *typeform, const char *expected);
+int
+check_translation(const char *tableList, const char *str, const formtype *typeform,
+		const char *expected);
 
 /* Check if a string is translated as expected. Return 0 if the
  * translation is as expected and 1 otherwise. */
-int check_translation_with_mode(const char *tableList, const char *str,
-                                const formtype *typeform, const char *expected,
-                                int mode);
+int
+check_translation_with_mode(const char *tableList, const char *str,
+		const formtype *typeform, const char *expected, int mode);
 
 /* Check if a string is translated as expected. Return 0 if the
  * translation is as expected and 1 otherwise. */
-int check_translation_with_cursorpos(const char *tableList, const char *str,
-                                     const formtype *typeform,
-                                     const char *expected,
-                                     const int *cursorPos);
+int
+check_translation_with_cursorpos(const char *tableList, const char *str,
+		const formtype *typeform, const char *expected, const int *cursorPos);
 
 /* Check if a string is translated as expected. Return 0 if the
  * translation is as expected and 1 otherwise. */
-int check_translation_full(const char *tableList, const char *str,
-                           const formtype *typeform, const char *expected,
-                           int mode, const int *cursorPos);
+int
+check_translation_full(const char *tableList, const char *str, const formtype *typeform,
+		const char *expected, int mode, const int *cursorPos);
 
 /* Check if a string is backtranslated as expected. Return 0 if the
  * backtranslation is as expected and 1 otherwise. */
-int check_backtranslation(const char *tableList, const char *str,
-                          const formtype *typeform, const char *expected);
+int
+check_backtranslation(const char *tableList, const char *str, const formtype *typeform,
+		const char *expected);
 
 /* Check if a string is backtranslated as expected. Return 0 if the
  * backtranslation is as expected and 1 otherwise. */
-int check_backtranslation_with_mode(const char *tableList, const char *str,
-                                    const formtype *typeform,
-                                    const char *expected, int mode);
+int
+check_backtranslation_with_mode(const char *tableList, const char *str,
+		const formtype *typeform, const char *expected, int mode);
 
 /* Check if a string is backtranslated as expected. Return 0 if the
  * backtranslation is as expected and 1 otherwise. */
-int check_backtranslation_with_cursorpos(const char *tableList, const char *str,
-                                         const formtype *typeform,
-                                         const char *expected,
-                                         const int *cursorPos);
+int
+check_backtranslation_with_cursorpos(const char *tableList, const char *str,
+		const formtype *typeform, const char *expected, const int *cursorPos);
 
 /* Check if a string is backtranslated as expected. Return 0 if the
  * backtranslation is as expected and 1 otherwise. */
-int check_backtranslation_full(const char *tableList, const char *str,
-                               const formtype *typeform, const char *expected,
-                               int mode, const int *cursorPos);
+int
+check_backtranslation_full(const char *tableList, const char *str,
+		const formtype *typeform, const char *expected, int mode, const int *cursorPos);
 
 /* Check if a string is translated as expected for the given direction
  * (0 = forward, backward otherwise). Return 0 if the translation is
  * as expected and 1 otherwise. Print diagnostic output on failure if
  * diagnostics is not 0. */
-int check_full(const char *tableList, const char *str,
-               const formtype *typeform, const char *expected,
-               int mode, const int *cursorPos, int direction, int diagnostics);
+int
+check_full(const char *tableList, const char *str, const formtype *typeform,
+		const char *expected, int mode, const int *cursorPos, int direction,
+		int diagnostics);
 
 /* Check if a string is hyphenated as expected. Return 0 if the
  * hyphenation is as expected and 1 otherwise. */
-int check_hyphenation(const char *tableList, const char *str, const char *expected);
+int
+check_hyphenation(const char *tableList, const char *str, const char *expected);
 
 /* Helper function to convert a typeform string of '0's, '1's, '2's etc.
  * to the required format, which is an array of 0s, 1s, 2s, etc.
  * For example, "0000011111000" is converted to {0,0,0,0,0,1,1,1,1,1,0,0,0}
  * The caller is responsible for freeing the returned array. */
-formtype * convert_typeform(const char* typeform_string);
+formtype *
+convert_typeform(const char *typeform_string);
 
-void update_typeform(const char* typeform_string, formtype* typeform, typeforms kind);
+void
+update_typeform(const char *typeform_string, formtype *typeform, typeforms kind);
