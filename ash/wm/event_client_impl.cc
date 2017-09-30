@@ -36,15 +36,11 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
       root_window, kShellWindowId_LockScreenWallpaperContainer);
   const aura::Window* lock_screen_related_containers = Shell::GetContainer(
       root_window, kShellWindowId_LockScreenRelatedContainersContainer);
-  const aura::Window* lock_action_handler_container = Shell::GetContainer(
-      root_window, kShellWindowId_LockActionHandlerContainer);
   bool can_process_events =
       (window->Contains(lock_screen_containers) &&
        window->Contains(lock_wallpaper_containers) &&
        window->Contains(lock_screen_related_containers)) ||
-      (lock_screen_containers->Contains(window) &&
-       (!lock_action_handler_container->Contains(window) ||
-        Shell::Get()->tray_action()->IsLockScreenNoteActive())) ||
+      lock_screen_containers->Contains(window) ||
       lock_wallpaper_containers->Contains(window) ||
       lock_screen_related_containers->Contains(window);
   if (keyboard::IsKeyboardEnabled()) {
