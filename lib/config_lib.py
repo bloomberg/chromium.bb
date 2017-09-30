@@ -418,6 +418,7 @@ class ModelTestConfig(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
+
 class HWTestConfig(object):
   """Config object for hardware tests suites.
 
@@ -522,6 +523,7 @@ class HWTestConfig(object):
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
+
 
 def DefaultSettings():
   # Enumeration of valid settings; any/all config settings must be in this.
@@ -1683,11 +1685,11 @@ def LoadConfigFromString(json_string):
   # Use standard defaults, but allow the config to override.
   defaults = DefaultSettings()
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
-  _UpdateConfig(defaults)
+  _DeserializeTestConfigs(defaults)
 
   templates = config_dict.pop('_templates', {})
   for t in templates.itervalues():
-    _UpdateConfig(t)
+    _DeserializeTestConfigs(t)
 
   site_params = DefaultSiteParameters()
   site_params.update(config_dict.pop('_site_params', {}))
@@ -1705,76 +1707,52 @@ def LoadConfigFromString(json_string):
   return result
 
 
-def _CreateVmTestConfig(jsonString):
-  """Create a VMTestConfig object from a JSON string."""
-  if isinstance(jsonString, VMTestConfig):
-    return jsonString
-  # Each VM Test is dumped as a json string embedded in json.
-  vm_test_config = json.loads(jsonString)
-  return VMTestConfig(**vm_test_config)
+def _DeserializeTestConfig(build_dict, config_key, test_class,
+                           preserve_none=False):
+  """Deserialize test config of given type inside build_dict.
 
-def _CreateModelTestConfig(jsonString):
-  """Create a ModelTestConfig object from a JSON string."""
-  if isinstance(jsonString, ModelTestConfig):
-    return jsonString
-  model_test_config = json.loads(jsonString)
-  return ModelTestConfig(**model_test_config)
+  Args:
+    build_dict: The build_dict to update (in place)
+    config_key: Key for the config inside build_dict.
+    test_class: The class to instantiate for the config.
+    preserve_none: If True, None values are preserved as is. By default, they
+        are dropped.
+  """
+  serialized_test_configs = build_dict.pop(config_key, None)
+  if serialized_test_configs is None:
+    if preserve_none:
+      build_dict[config_key] = None
+    return
 
-def _CreateHwTestConfig(jsonString):
-  """Create a HWTestConfig object from a JSON string."""
-  if isinstance(jsonString, HWTestConfig):
-    return jsonString
-  # Each HW Test is dumped as a json string embedded in json.
-  hw_test_config = json.loads(jsonString)
-  return HWTestConfig(**hw_test_config)
-
-
-def _CreateGceTestConfig(jsonString):
-  """Create a GCETestConfig object from a JSON string."""
-  if isinstance(jsonString, GCETestConfig):
-    return jsonString
-  # Each GCE Test is dumped as a json string embedded in json.
-  gce_test_config = json.loads(jsonString)
-  return GCETestConfig(**gce_test_config)
+  test_configs = []
+  for test_config_string in serialized_test_configs:
+    if isinstance(test_config_string, test_class):
+      test_config = test_config_string
+    else:
+      # Each test config is dumped as a json string embedded in json.
+      embedded_configs = json.loads(test_config_string)
+      test_config = test_class(**embedded_configs)
+    test_configs.append(test_config)
+  build_dict[config_key] = test_configs
 
 
-def _UpdateConfig(build_dict):
-  """Updates a config dictionary with recreated objects."""
-  # VM, HW and GCE test configs are serialized as strings (rather than JSON
-  # objects), so we need to turn them into real objects before they can be
-  # consumed.
-  vmtests = build_dict.pop('vm_tests', None)
-  if vmtests is not None:
-    build_dict['vm_tests'] = [_CreateVmTestConfig(vmtest) for vmtest in vmtests]
+def _DeserializeTestConfigs(build_dict):
+  """Updates a config dictionary with recreated objects.
 
-  vmtests = build_dict.pop('vm_tests_override', None)
-  if vmtests is not None:
-    build_dict['vm_tests_override'] = [
-        _CreateVmTestConfig(vmtest) for vmtest in vmtests
-    ]
-  else:
-    build_dict['vm_tests_override'] = None
+  Various test configs are serialized as strings (rather than JSON objects), so
+  we need to turn them into real objects before they can be consumed.
 
-  models = build_dict.pop('models', None)
-  if models is not None:
-    build_dict['models'] = [_CreateModelTestConfig(model) for model in models]
-
-  hwtests = build_dict.pop('hw_tests', None)
-  if hwtests is not None:
-    build_dict['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
-
-  hwtests = build_dict.pop('hw_tests_override', None)
-  if hwtests is not None:
-    build_dict['hw_tests_override'] = [
-        _CreateHwTestConfig(hwtest) for hwtest in hwtests
-    ]
-  else:
-    build_dict['hw_tests_override'] = None
-
-  gcetests = build_dict.pop('gce_tests', None)
-  if gcetests is not None:
-    build_dict['gce_tests'] = [_CreateGceTestConfig(gcetest) for gcetest in
-                               gcetests]
+  Args:
+    build_dict: The config dictionary to update (in place).
+  """
+  _DeserializeTestConfig(build_dict, 'vm_tests', VMTestConfig)
+  _DeserializeTestConfig(build_dict, 'vm_tests_override', VMTestConfig,
+                         preserve_none=True)
+  _DeserializeTestConfig(build_dict, 'models', ModelTestConfig)
+  _DeserializeTestConfig(build_dict, 'hw_tests', HWTestConfig)
+  _DeserializeTestConfig(build_dict, 'hw_tests_override', HWTestConfig,
+                         preserve_none=True)
+  _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):
@@ -1792,7 +1770,7 @@ def _CreateBuildConfig(name, default, build_dict, templates):
     result.update(templates[template])
   result.update(build_dict)
 
-  _UpdateConfig(result)
+  _DeserializeTestConfigs(result)
 
   if child_configs is not None:
     result['child_configs'] = [
