@@ -101,8 +101,10 @@ PositionIteratorAlgorithm<Strategy>::DeprecatedComputePosition() const {
     return PositionTemplate<Strategy>(
         anchor_node_, offsets_in_anchor_node_[depth_to_anchor_node_]);
   }
-  if (Strategy::HasChildren(*anchor_node_))
-    return PositionTemplate<Strategy>::LastPositionInOrAfterNode(anchor_node_);
+  if (Strategy::HasChildren(*anchor_node_)) {
+    return PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(
+        anchor_node_);
+  }
   return PositionTemplate<Strategy>::EditingPositionOf(anchor_node_,
                                                        offset_in_anchor_);
 }
@@ -131,9 +133,11 @@ PositionIteratorAlgorithm<Strategy>::ComputePosition() const {
     return PositionTemplate<Strategy>(
         anchor_node_, offsets_in_anchor_node_[depth_to_anchor_node_]);
   }
-  if (ShouldTraverseChildren<Strategy>(*anchor_node_))
+  if (ShouldTraverseChildren<Strategy>(*anchor_node_)) {
     // For example, position is the end of B.
-    return PositionTemplate<Strategy>::LastPositionInOrAfterNode(anchor_node_);
+    return PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(
+        anchor_node_);
+  }
   if (anchor_node_->IsTextNode())
     return PositionTemplate<Strategy>(anchor_node_, offset_in_anchor_);
   if (offset_in_anchor_)

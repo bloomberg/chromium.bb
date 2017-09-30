@@ -291,7 +291,8 @@ bool SelectionController::HandleSingleClick(
   const PositionInFlatTreeWithAffinity& position_to_use =
       visible_hit_position.IsNull()
           ? CreateVisiblePosition(
-                PositionInFlatTree::FirstPositionInOrBeforeNode(inner_node))
+                PositionInFlatTree::FirstPositionInOrBeforeNodeDeprecated(
+                    inner_node))
                 .ToPositionWithAffinity()
           : visible_hit_position.ToPositionWithAffinity();
   const VisibleSelectionInFlatTree& selection =
@@ -856,7 +857,8 @@ void SelectionController::SetCaretAtHitTestResult(
   const VisiblePositionInFlatTree& visible_pos =
       visible_hit_pos.IsNull()
           ? CreateVisiblePosition(
-                PositionInFlatTree::FirstPositionInOrBeforeNode(inner_node))
+                PositionInFlatTree::FirstPositionInOrBeforeNodeDeprecated(
+                    inner_node))
           : visible_hit_pos;
 
   if (visible_pos.IsNull()) {

@@ -4821,7 +4821,7 @@ PositionWithAffinity LayoutBox::PositionForPoint(const LayoutPoint& point) {
   LayoutObject* first_child = SlowFirstChild();
   if (!first_child)
     return CreatePositionWithAffinity(
-        NonPseudoNode() ? FirstPositionInOrBeforeNode(NonPseudoNode())
+        NonPseudoNode() ? FirstPositionInOrBeforeNodeDeprecated(NonPseudoNode())
                         : Position());
 
   if (IsTable() && NonPseudoNode()) {
@@ -4830,11 +4830,12 @@ PositionWithAffinity LayoutBox::PositionForPoint(const LayoutPoint& point) {
 
     if (point.X() < 0 || point.X() > right || point.Y() < 0 ||
         point.Y() > bottom) {
-      if (point.X() <= right / 2)
+      if (point.X() <= right / 2) {
         return CreatePositionWithAffinity(
-            FirstPositionInOrBeforeNode(NonPseudoNode()));
+            FirstPositionInOrBeforeNodeDeprecated(NonPseudoNode()));
+      }
       return CreatePositionWithAffinity(
-          LastPositionInOrAfterNode(NonPseudoNode()));
+          LastPositionInOrAfterNodeDeprecated(NonPseudoNode()));
     }
   }
 
@@ -4912,7 +4913,7 @@ PositionWithAffinity LayoutBox::PositionForPoint(const LayoutPoint& point) {
     return closest_layout_object->PositionForPoint(
         adjusted_point - closest_layout_object->LocationOffset());
   return CreatePositionWithAffinity(
-      FirstPositionInOrBeforeNode(NonPseudoNode()));
+      FirstPositionInOrBeforeNodeDeprecated(NonPseudoNode()));
 }
 
 DISABLE_CFI_PERF

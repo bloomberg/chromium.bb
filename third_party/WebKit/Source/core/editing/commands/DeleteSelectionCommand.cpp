@@ -461,7 +461,7 @@ static Position FirstEditablePositionInNode(Node* node) {
   Node* next = node;
   while (next && !HasEditableStyle(*next))
     next = NodeTraversal::Next(*next, node);
-  return next ? FirstPositionInOrBeforeNode(next) : Position();
+  return next ? FirstPositionInOrBeforeNodeDeprecated(next) : Position();
 }
 
 void DeleteSelectionCommand::RemoveNode(
@@ -687,7 +687,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
 
     // handle deleting all nodes that are completely selected
     while (node && node != downstream_end_.AnchorNode()) {
-      if (ComparePositions(FirstPositionInOrBeforeNode(node),
+      if (ComparePositions(FirstPositionInOrBeforeNodeDeprecated(node),
                            downstream_end_) >= 0) {
         // NodeTraversal::nextSkippingChildren just blew past the end position,
         // so stop deleting

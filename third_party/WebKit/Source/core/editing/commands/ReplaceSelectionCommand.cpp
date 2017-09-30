@@ -735,7 +735,7 @@ void ReplaceSelectionCommand::MoveElementOutOfAncestor(
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   VisiblePosition position_at_end_of_node =
-      CreateVisiblePosition(LastPositionInOrAfterNode(element));
+      CreateVisiblePosition(LastPositionInOrAfterNodeDeprecated(element));
   VisiblePosition last_position_in_paragraph =
       VisiblePosition::LastPositionInNode(*ancestor);
   if (position_at_end_of_node.DeepEquivalent() ==
@@ -774,10 +774,12 @@ void ReplaceSelectionCommand::RemoveUnrenderedTextNodesAtEnds(
   Node* last_leaf_inserted = inserted_nodes.LastLeafInserted();
   if (last_leaf_inserted && last_leaf_inserted->IsTextNode() &&
       !NodeHasVisibleLayoutText(ToText(*last_leaf_inserted)) &&
-      !EnclosingElementWithTag(FirstPositionInOrBeforeNode(last_leaf_inserted),
-                               selectTag) &&
-      !EnclosingElementWithTag(FirstPositionInOrBeforeNode(last_leaf_inserted),
-                               scriptTag)) {
+      !EnclosingElementWithTag(
+          FirstPositionInOrBeforeNodeDeprecated(last_leaf_inserted),
+          selectTag) &&
+      !EnclosingElementWithTag(
+          FirstPositionInOrBeforeNodeDeprecated(last_leaf_inserted),
+          scriptTag)) {
     inserted_nodes.WillRemoveNode(*last_leaf_inserted);
     // Removing a Text node won't dispatch synchronous events.
     RemoveNode(last_leaf_inserted, ASSERT_NO_EDITING_ABORT);
@@ -804,8 +806,10 @@ VisiblePosition ReplaceSelectionCommand::PositionAtEndOfInsertedContent()
   // not editable, or SELECT element is an atomic on editing.
   HTMLSelectElement* enclosing_select = toHTMLSelectElement(
       EnclosingElementWithTag(end_of_inserted_content_, selectTag));
-  if (enclosing_select)
-    return CreateVisiblePosition(LastPositionInOrAfterNode(enclosing_select));
+  if (enclosing_select) {
+    return CreateVisiblePosition(
+        LastPositionInOrAfterNodeDeprecated(enclosing_select));
+  }
   if (end_of_inserted_content_.IsOrphan())
     return VisiblePosition();
   return CreateVisiblePosition(end_of_inserted_content_);
@@ -855,7 +859,7 @@ static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
   // Handling the case where we are doing Paste as Quotation or pasting into
   // quoted content is more complicated (see handleStyleSpans) and doesn't
   // receive the optimization.
-  if (EnclosingNodeOfType(FirstPositionInOrBeforeNode(top_node),
+  if (EnclosingNodeOfType(FirstPositionInOrBeforeNodeDeprecated(top_node),
                           IsMailHTMLBlockquoteElement,
                           kCanCrossEditingBoundary))
     return;
@@ -1383,8 +1387,9 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       !enclosing_block_of_insertion_pos->isConnected())
     enclosing_block_of_insertion_pos = nullptr;
 
-  VisiblePosition start_of_inserted_content = CreateVisiblePosition(
-      FirstPositionInOrBeforeNode(inserted_nodes.FirstNodeInserted()));
+  VisiblePosition start_of_inserted_content =
+      CreateVisiblePosition(FirstPositionInOrBeforeNodeDeprecated(
+          inserted_nodes.FirstNodeInserted()));
 
   // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and
   // the content before the enclosingBlockOfInsertionPos wasn't in its own block
@@ -1451,9 +1456,9 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // Setup m_startOfInsertedContent and m_endOfInsertedContent. This should be
   // the last two lines of code that access insertedNodes.
   start_of_inserted_content_ =
-      FirstPositionInOrBeforeNode(inserted_nodes.FirstNodeInserted());
+      FirstPositionInOrBeforeNodeDeprecated(inserted_nodes.FirstNodeInserted());
   end_of_inserted_content_ =
-      LastPositionInOrAfterNode(inserted_nodes.LastLeafInserted());
+      LastPositionInOrAfterNodeDeprecated(inserted_nodes.LastLeafInserted());
 
   // Determine whether or not we should merge the end of inserted content with
   // what's after it before we do the start merge so that the start merge
@@ -1964,10 +1969,10 @@ void ReplaceSelectionCommand::UpdateNodesInserted(Node* node) {
     return;
 
   if (start_of_inserted_content_.IsNull())
-    start_of_inserted_content_ = FirstPositionInOrBeforeNode(node);
+    start_of_inserted_content_ = FirstPositionInOrBeforeNodeDeprecated(node);
 
-  end_of_inserted_content_ =
-      LastPositionInOrAfterNode(&NodeTraversal::LastWithinOrSelf(*node));
+  end_of_inserted_content_ = LastPositionInOrAfterNodeDeprecated(
+      &NodeTraversal::LastWithinOrSelf(*node));
 }
 
 // During simple pastes, where we're just pasting a text node into a run of

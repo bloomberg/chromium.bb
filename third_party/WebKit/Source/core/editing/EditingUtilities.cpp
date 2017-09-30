@@ -741,8 +741,9 @@ PositionTemplate<Strategy> LastEditablePositionBeforePositionInRootAlgorithm(
     if (!shadow_ancestor)
       return PositionTemplate<Strategy>();
 
-    editable_position = PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(
-        shadow_ancestor);
+    editable_position =
+        PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(
+            shadow_ancestor);
   }
 
   while (editable_position.AnchorNode() &&
@@ -849,8 +850,10 @@ PositionTemplate<Strategy> PreviousPositionOfAlgorithm(
   if (offset > 0) {
     if (EditingIgnoresContent(*node))
       return PositionTemplate<Strategy>::BeforeNode(*node);
-    if (Node* child = Strategy::ChildAt(*node, offset - 1))
-      return PositionTemplate<Strategy>::LastPositionInOrAfterNode(child);
+    if (Node* child = Strategy::ChildAt(*node, offset - 1)) {
+      return PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(
+          child);
+    }
 
     // There are two reasons child might be 0:
     //   1) The node is node like a text node that is not an element, and
@@ -906,8 +909,10 @@ PositionTemplate<Strategy> NextPositionOfAlgorithm(
 
   const int offset = position.ComputeEditingOffset();
 
-  if (Node* child = Strategy::ChildAt(*node, offset))
-    return PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(child);
+  if (Node* child = Strategy::ChildAt(*node, offset)) {
+    return PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(
+        child);
+  }
 
   // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
   // DOM tree version.
@@ -971,7 +976,7 @@ bool IsInline(const Node* node) {
 // the block that contains the table and not the table, and this function should
 // be the only one responsible for knowing about these kinds of special cases.
 Element* EnclosingBlock(Node* node, EditingBoundaryCrossingRule rule) {
-  return EnclosingBlock(FirstPositionInOrBeforeNode(node), rule);
+  return EnclosingBlock(FirstPositionInOrBeforeNodeDeprecated(node), rule);
 }
 
 template <typename Strategy>
@@ -1020,10 +1025,10 @@ EUserSelect UsedValueOfUserSelect(const Node& node) {
 template <typename Strategy>
 TextDirection DirectionOfEnclosingBlockOfAlgorithm(
     const PositionTemplate<Strategy>& position) {
-  Element* enclosing_block_element =
-      EnclosingBlock(PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(
-                         position.ComputeContainerNode()),
-                     kCannotCrossEditingBoundary);
+  Element* enclosing_block_element = EnclosingBlock(
+      PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(
+          position.ComputeContainerNode()),
+      kCannotCrossEditingBoundary);
   if (!enclosing_block_element)
     return TextDirection::kLtr;
   LayoutObject* layout_object = enclosing_block_element->GetLayoutObject();
@@ -1118,8 +1123,8 @@ static HTMLElement* FirstInSpecialElement(const Position& pos) {
     if (IsSpecialHTMLElement(runner)) {
       HTMLElement* special_element = ToHTMLElement(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
-      VisiblePosition first_in_element =
-          CreateVisiblePosition(FirstPositionInOrBeforeNode(special_element));
+      VisiblePosition first_in_element = CreateVisiblePosition(
+          FirstPositionInOrBeforeNodeDeprecated(special_element));
       if (IsDisplayInsideTable(special_element) &&
           v_pos.DeepEquivalent() ==
               NextPositionOf(first_in_element).DeepEquivalent())
@@ -1140,8 +1145,8 @@ static HTMLElement* LastInSpecialElement(const Position& pos) {
     if (IsSpecialHTMLElement(runner)) {
       HTMLElement* special_element = ToHTMLElement(&runner);
       VisiblePosition v_pos = CreateVisiblePosition(pos);
-      VisiblePosition last_in_element =
-          CreateVisiblePosition(LastPositionInOrAfterNode(special_element));
+      VisiblePosition last_in_element = CreateVisiblePosition(
+          LastPositionInOrAfterNodeDeprecated(special_element));
       if (IsDisplayInsideTable(special_element) &&
           v_pos.DeepEquivalent() ==
               PreviousPositionOf(last_in_element).DeepEquivalent())
@@ -1221,7 +1226,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
 VisiblePosition VisiblePositionBeforeNode(Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(FirstPositionInOrBeforeNode(&node));
+    return CreateVisiblePosition(FirstPositionInOrBeforeNodeDeprecated(&node));
   DCHECK(node.parentNode()) << node;
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
   return VisiblePosition::InParentBeforeNode(node);
@@ -1231,7 +1236,7 @@ VisiblePosition VisiblePositionBeforeNode(Node& node) {
 VisiblePosition VisiblePositionAfterNode(Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(LastPositionInOrAfterNode(&node));
+    return CreateVisiblePosition(LastPositionInOrAfterNodeDeprecated(&node));
   DCHECK(node.parentNode()) << node.parentNode();
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
   return VisiblePosition::InParentAfterNode(node);
@@ -1397,7 +1402,8 @@ HTMLElement* EnclosingList(Node* node) {
   if (!node)
     return 0;
 
-  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(node));
+  ContainerNode* root =
+      HighestEditableRoot(FirstPositionInOrBeforeNodeDeprecated(node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
@@ -1415,7 +1421,8 @@ Node* EnclosingListChild(Node* node) {
   // Check for a list item element, or for a node whose parent is a list
   // element. Such a node will appear visually as a list item (but without a
   // list marker)
-  ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(node));
+  ContainerNode* root =
+      HighestEditableRoot(FirstPositionInOrBeforeNodeDeprecated(node));
 
   // FIXME: This function is inappropriately named if it starts with node
   // instead of node->parentNode()
@@ -1442,10 +1449,10 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
       !IsEndOfParagraph(visible_pos))
     return 0;
 
-  VisiblePosition first_in_list_child =
-      CreateVisiblePosition(FirstPositionInOrBeforeNode(list_child_node));
-  VisiblePosition last_in_list_child =
-      CreateVisiblePosition(LastPositionInOrAfterNode(list_child_node));
+  VisiblePosition first_in_list_child = CreateVisiblePosition(
+      FirstPositionInOrBeforeNodeDeprecated(list_child_node));
+  VisiblePosition last_in_list_child = CreateVisiblePosition(
+      LastPositionInOrAfterNodeDeprecated(list_child_node));
 
   if (first_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent() ||
       last_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent())
