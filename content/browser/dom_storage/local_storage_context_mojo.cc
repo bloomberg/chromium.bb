@@ -924,6 +924,11 @@ void LocalStorageContextMojo::OnGotMetaData(
   for (const auto& it : level_db_wrappers_) {
     if (origins.find(it.first) != origins.end())
       continue;
+    // Skip any origins that definitely don't have any data.
+    if (!it.second->level_db_wrapper()->has_pending_load_tasks() &&
+        it.second->level_db_wrapper()->empty()) {
+      continue;
+    }
     LocalStorageUsageInfo info;
     info.origin = it.first.GetURL();
     info.last_modified = now;
