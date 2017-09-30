@@ -2218,11 +2218,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-#if CONFIG_SPEED_REFS
-  // First scanning pass of an SB is dry run only.
-  if (cpi->sb_scanning_pass_idx == 0) assert(dry_run == DRY_RUN_NORMAL);
-#endif  // CONFIG_SPEED_REFS
-
   if (!dry_run && ctx >= 0) td->counts->partition[ctx][partition]++;
 
 #if CONFIG_SUPERTX
@@ -3726,17 +3721,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif
 
-#if CONFIG_SPEED_REFS
-  if (cpi->sb_scanning_pass_idx == 0) {
-    // NOTE: For the 1st pass of scanning, check all the subblocks of equal size
-    //       only.
-    partition_none_allowed = (bsize == MIN_SPEED_REFS_BLKSIZE);
-    partition_horz_allowed = 0;
-    partition_vert_allowed = 0;
-    do_square_split = (bsize > MIN_SPEED_REFS_BLKSIZE);
-  }
-#endif  // CONFIG_SPEED_REFS
-
   // PARTITION_NONE
   if (partition_none_allowed) {
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
@@ -4573,11 +4557,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_SPEED_REFS
-  // First scanning is done.
-  if (cpi->sb_scanning_pass_idx == 0 && bsize == cm->sb_size) return;
-#endif  // CONFIG_SPEED_REFS
-
   // TODO(jbb): This code added so that we avoid static analysis
   // warning related to the fact that best_rd isn't used after this
   // point.  This code should be refactored so that the duplicate
@@ -4629,22 +4608,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     assert(tp_orig == *tp);
   }
 }
-
-#if CONFIG_SPEED_REFS
-static void restore_mi(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                       int mi_row, int mi_col) {
-  const AV1_COMMON *cm = &cpi->common;
-  MACROBLOCKD *const xd = &x->e_mbd;
-  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
-  int x_idx, y;
-  for (y = 0; y < mi_size_high[cm->sb_size]; y++)
-    for (x_idx = 0; x_idx < mi_size_wide[cm->sb_size]; x_idx++)
-      if (mi_col + x_idx < cm->mi_cols && mi_row + y < cm->mi_rows) {
-        memset(xd->mi + y * cm->mi_stride + x_idx, 0, sizeof(*xd->mi));
-        memset(x->mbmi_ext + y * cm->mi_cols + x_idx, 0, sizeof(*x->mbmi_ext));
-      }
-}
-#endif  // CONFIG_SPEED_REFS
 
 static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, int mi_row,
@@ -4802,35 +4765,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         rd_auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
                                 &x->min_partition_size, &x->max_partition_size);
       }
-#if CONFIG_SPEED_REFS
-      // NOTE: Two scanning passes for the current superblock - the first pass
-      //       is only targeted to collect stats.
-      int m_search_count_backup = *(x->m_search_count_ptr);
-      for (int sb_pass_idx = 0; sb_pass_idx < 2; ++sb_pass_idx) {
-        cpi->sb_scanning_pass_idx = sb_pass_idx;
-        if (frame_is_intra_only(cm) && sb_pass_idx == 0) continue;
-
-        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
-                          &dummy_rdc,
-#if CONFIG_SUPERTX
-                          &dummy_rate_nocoef,
-#endif  // CONFIG_SUPERTX
-                          INT64_MAX, pc_root);
-        if (sb_pass_idx == 0) {
-          av1_zero(x->pred_mv);
-          pc_root->index = 0;
-          restore_mi(cpi, x, mi_row, mi_col);
-          *(x->m_search_count_ptr) = m_search_count_backup;
-        }
-      }
-#else  // !CONFIG_SPEED_REFS
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
                         &dummy_rdc,
 #if CONFIG_SUPERTX
                         &dummy_rate_nocoef,
 #endif  // CONFIG_SUPERTX
                         INT64_MAX, pc_root);
-#endif  // CONFIG_SPEED_REFS
     }
   }
 }
