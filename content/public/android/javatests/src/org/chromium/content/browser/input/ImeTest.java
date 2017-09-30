@@ -1081,73 +1081,111 @@ public class ImeTest {
     @Feature({"TextInput", "Main"})
     public void testPhysicalKeyboard_AccentKeyCodes() throws Throwable {
         mRule.focusElementAndWaitForStateUpdate("textarea");
+        int index = 0;
 
         // h
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_H));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_H));
         Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(index++, 1, 1, -1, -1);
 
-        // ALT-i  (circumflex accent key on virtual keyboard)
+        // ALT-i  (circumflex accent key on virtual keyboard). Accent should not appear until the
+        // next letter is entered.
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hˆ", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hˆ", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(1, 2, 2, 1, 2);
+        Assert.assertEquals("h", mRule.getTextBeforeCursor(9, 0));
+
+        // finishComposingText() should not prevent the accent from being joined.
+        mRule.finishComposingText();
 
         // o
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
         Assert.assertEquals("hô", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
         Assert.assertEquals("hô", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(index++, 2, 2, -1, -1);
 
         // o again. Should not have accent mark this time.
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
         Assert.assertEquals("hôo", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
         Assert.assertEquals("hôo", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(3, 3, 3, -1, -1);
+        mRule.waitAndVerifyUpdateSelection(index++, 3, 3, -1, -1);
 
-        // ALT-i
+        // ALT-i. Should not display anything until the next key is pressed.
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        Assert.assertEquals("hôo", mRule.getTextBeforeCursor(9, 0));
+
+        // ALT-i again should commit the caret this time.
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(4, 4, 4, 3, 4);
-
-        // ALT-i again should have no effect
-        mRule.dispatchKeyEvent(new KeyEvent(
-                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        mRule.dispatchKeyEvent(new KeyEvent(
-                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
 
         // b (cannot be accented, should just appear after)
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
         Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
         Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
-        int index = 5;
         mRule.waitAndVerifyUpdateSelection(index++, 5, 5, -1, -1);
 
-        // ALT-i
+        // ALT-i. Should not display anything.
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
         mRule.dispatchKeyEvent(new KeyEvent(
                 0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
-        Assert.assertEquals("hôoˆbˆ", mRule.getTextBeforeCursor(9, 0));
-        mRule.waitAndVerifyUpdateSelection(index++, 6, 6, 5, 6);
+        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
 
-        // Backspace
+        // Backspace. Should delete the b even though we have a pending accent.
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-        Assert.assertEquals("hôoˆb", mRule.getTextBeforeCursor(9, 0));
+        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
+
+        // Alt-i. Should not display anything (the pending accent should have been cleared by the
+        // backspace).
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        Assert.assertEquals("hôoˆ", mRule.getTextBeforeCursor(9, 0));
+
+        // Space. Should display the pending accent.
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+        Assert.assertEquals("hôoˆˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SPACE));
+        Assert.assertEquals("hôoˆˆ", mRule.getTextBeforeCursor(9, 0));
         mRule.waitAndVerifyUpdateSelection(index++, 5, 5, -1, -1);
+
+        // Alt-i. Should not display anything but should set a circumflex as the pending accent.
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        Assert.assertEquals("hôoˆˆ", mRule.getTextBeforeCursor(9, 0));
+
+        // Alt-e. Should output the circumflex and set an acute accent as the pending accent.
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_E, 0, KeyEvent.META_ALT_ON));
+        mRule.dispatchKeyEvent(new KeyEvent(
+                0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_E, 0, KeyEvent.META_ALT_ON));
+        Assert.assertEquals("hôoˆˆˆ", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 6, 6, -1, -1);
+
+        // e. Should output an e with an acute accent.
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_E));
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_E));
+        Assert.assertEquals("hôoˆˆˆé", mRule.getTextBeforeCursor(9, 0));
+        mRule.waitAndVerifyUpdateSelection(index++, 7, 7, -1, -1);
     }
 
     @Test
