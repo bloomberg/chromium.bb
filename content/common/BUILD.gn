@@ -245,12 +245,6 @@ source_set("common") {
     "media/peer_connection_tracker_messages.h",
     "media/surface_view_manager_messages_android.h",
     "media/video_capture.h",
-    "message_port.cc",
-    "message_port.h",
-    "message_port_message.cc",
-    "message_port_message.h",
-    "message_port_message_struct_traits.cc",
-    "message_port_message_struct_traits.h",
     "navigation_gesture.h",
     "navigation_params.cc",
     "navigation_params.h",
@@ -384,6 +378,7 @@ source_set("common") {
     "//gpu/command_buffer/common",
     "//ipc",
     "//services/service_manager/sandbox",
+    "//third_party/WebKit/common:blink_common",
     "//third_party/WebKit/public:blink_headers",
   ]
   deps = [
@@ -648,7 +643,6 @@ mojom("mojo_bindings") {
     "media/media_stream.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",
-    "message_port.mojom",
     "native_types.mojom",
     "push_messaging.mojom",
     "render_frame_message_filter.mojom",

@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 component("blink_common") {
@@ -23,12 +24,24 @@ component("blink_common") {
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "device_memory/approximated_device_memory.h",
+    "message_port/message_port_channel.cc",
+    "message_port/message_port_channel.h",
+    "message_port/message_port_message.cc",
+    "message_port/message_port_message.h",
+    "message_port/message_port_message_struct_traits.cc",
+    "message_port/message_port_message_struct_traits.h",
     "mime_util/mime_util.cc",
     "mime_util/mime_util.h",
   ]
 
+  public_deps = [
+    ":mojo_bindings",
+  ]
+
   deps = [
     "//base",
+    "//mojo/common:common_base",
+    "//mojo/public/cpp/system",
     "//net",
   ]
 
@@ -53,5 +66,14 @@ test("blink_common_unittests") {
     "//base/test:test_support",
     "//net",
     "//testing/gtest",
+  ]
+}
+
+mojom("mojo_bindings") {
+  # This interface is internal to blink_common.
+  visibility = [ "//third_party/WebKit/common/*" ]
+
+  sources = [
+    "message_port/message_port.mojom",
   ]
 }

@@ -12,7 +12,6 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/common/message_port.h"
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -21,6 +20,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
@@ -136,7 +136,7 @@ IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
   IPC_STRUCT_MEMBER(int, provider_id)
   IPC_STRUCT_MEMBER(content::ServiceWorkerObjectInfo, service_worker_info)
   IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(std::vector<content::MessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<blink::MessagePortChannel>, message_ports)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
@@ -200,7 +200,7 @@ IPC_MESSAGE_CONTROL5(
     int /* provider_id */,
     base::string16 /* message */,
     url::Origin /* source_origin */,
-    std::vector<content::MessagePort> /* sent_message_ports */)
+    std::vector<blink::MessagePortChannel> /* sent_message_ports */)
 
 // Increments and decrements the ServiceWorker object's reference
 // counting in the browser side. The ServiceWorker object is created
@@ -230,7 +230,7 @@ IPC_MESSAGE_ROUTED3(
     ServiceWorkerHostMsg_PostMessageToClient,
     std::string /* uuid */,
     base::string16 /* message */,
-    std::vector<content::MessagePort> /* sent_message_ports */)
+    std::vector<blink::MessagePortChannel> /* sent_message_ports */)
 
 // ServiceWorker -> Browser message to request that the ServiceWorkerStorage
 // cache |data| associated with |url|.

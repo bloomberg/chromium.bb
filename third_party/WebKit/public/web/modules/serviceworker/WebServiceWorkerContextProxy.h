@@ -31,7 +31,6 @@
 #ifndef WebServiceWorkerContextProxy_h
 #define WebServiceWorkerContextProxy_h
 
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
@@ -39,6 +38,7 @@
 
 namespace blink {
 
+class MessagePortChannel;
 struct WebBackgroundFetchSettledFetch;
 struct WebCanMakePaymentEventData;
 class WebDataConsumerHandle;
@@ -81,13 +81,13 @@ class WebServiceWorkerContextProxy {
       int event_id,
       const WebString& message,
       const WebSecurityOrigin& source_origin,
-      WebMessagePortChannelArray,
+      WebVector<MessagePortChannel>,
       const WebServiceWorkerClientInfo&) = 0;
   virtual void DispatchExtendableMessageEvent(
       int event_id,
       const WebString& message,
       const WebSecurityOrigin& source_origin,
-      WebMessagePortChannelArray,
+      WebVector<MessagePortChannel>,
       std::unique_ptr<WebServiceWorker::Handle>) = 0;
   virtual void DispatchInstallEvent(int event_id) = 0;
   virtual void DispatchFetchEvent(int fetch_event_id,

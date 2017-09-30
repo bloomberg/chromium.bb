@@ -35,11 +35,11 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
 
 class Document;
+class MessagePortChannel;
 class KURL;
 class SharedWorker;
 
@@ -52,7 +52,7 @@ class CORE_EXPORT SharedWorkerRepositoryClient {
   virtual ~SharedWorkerRepositoryClient() {}
 
   virtual void Connect(SharedWorker*,
-                       std::unique_ptr<WebMessagePortChannel>,
+                       MessagePortChannel,
                        const KURL&,
                        const String& name) = 0;
 

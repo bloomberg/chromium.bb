@@ -84,5 +84,10 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/WebTriggeringEventInfo.h",
-  "+third_party/WebKit/public/web/win/WebFontRendering.h"
+  "+third_party/WebKit/public/web/win/WebFontRendering.h",
+
+  # Unlike other WebKit directories WebKit/common is for the files that
+  # are commonly referenced by renderer-side and browser-side code, and
+  # does not use Blink types like WTF.
+  "+third_party/WebKit/common"
 ]

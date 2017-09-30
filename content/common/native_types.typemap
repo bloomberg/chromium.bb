@@ -53,6 +53,7 @@ public_deps = [
   "//media/base/ipc",
   "//net",
   "//ppapi/features",
+  "//third_party/WebKit/common:blink_common",
   "//ui/accessibility",
   "//ui/base/ime:text_input_types",
   "//ui/gfx/ipc",

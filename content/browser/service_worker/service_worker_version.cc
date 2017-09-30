@@ -1213,7 +1213,7 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
 void ServiceWorkerVersion::OnPostMessageToClient(
     const std::string& client_uuid,
     const base::string16& message,
-    const std::vector<MessagePort>& sent_message_ports) {
+    const std::vector<blink::MessagePortChannel>& sent_message_ports) {
   if (!context_)
     return;
   TRACE_EVENT1("ServiceWorker",

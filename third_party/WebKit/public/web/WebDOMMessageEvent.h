@@ -30,11 +30,11 @@
 #ifndef WebDOMMessageEvent_h
 #define WebDOMMessageEvent_h
 
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebSerializedScriptValue.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 
 #if INSIDE_BLINK
 #include "core/events/MessageEvent.h"
@@ -54,13 +54,13 @@ class WebDOMMessageEvent : public WebDOMEvent {
       const WebString& origin = WebString(),
       const WebFrame* source_frame = nullptr,
       const WebDocument& target_document = WebDocument(),
-      WebMessagePortChannelArray channels = WebMessagePortChannelArray());
+      WebVector<MessagePortChannel> ports = WebVector<MessagePortChannel>());
   WebDOMMessageEvent() {}
 
   BLINK_EXPORT WebSerializedScriptValue Data() const;
   BLINK_EXPORT WebString Origin() const;
 
-  BLINK_EXPORT WebMessagePortChannelArray ReleaseChannels();
+  BLINK_EXPORT WebVector<MessagePortChannel> ReleaseChannels();
 
 #if INSIDE_BLINK
   explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) {}

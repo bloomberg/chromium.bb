@@ -28,26 +28,15 @@
 
 #include "core/dom/MessagePort.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
-
-static void CreateChannel(MessagePort* port1, MessagePort* port2) {
-  std::unique_ptr<WebMessagePortChannel> channel1;
-  std::unique_ptr<WebMessagePortChannel> channel2;
-  Platform::Current()->CreateMessageChannel(&channel1, &channel2);
-  DCHECK(channel1);
-  DCHECK(channel2);
-
-  // Now entangle the proxies with the appropriate local ports.
-  port1->Entangle(std::move(channel2));
-  port2->Entangle(std::move(channel1));
-}
 
 MessageChannel::MessageChannel(ExecutionContext* context)
     : port1_(MessagePort::Create(*context)),
       port2_(MessagePort::Create(*context)) {
-  CreateChannel(port1_.Get(), port2_.Get());
+  mojo::MessagePipe pipe;
+  port1_->Entangle(std::move(pipe.handle0));
+  port2_->Entangle(std::move(pipe.handle1));
 }
 
 DEFINE_TRACE(MessageChannel) {

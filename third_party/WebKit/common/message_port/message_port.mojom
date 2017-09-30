@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 // This struct represents a message as it is sent across a MessagePort. A
 // MessagePort itself is represented as a raw mojo message pipe, and messages

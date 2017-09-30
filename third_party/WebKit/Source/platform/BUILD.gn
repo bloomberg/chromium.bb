@@ -622,7 +622,6 @@ jumbo_component("platform") {
     "exported/WebMediaStreamSource.cpp",
     "exported/WebMediaStreamTrack.cpp",
     "exported/WebMemoryCoordinator.cpp",
-    "exported/WebMessagePortChannelClient.cpp",
     "exported/WebMixedContent.cpp",
     "exported/WebNetworkStateNotifier.cpp",
     "exported/WebPasswordCredential.cpp",
