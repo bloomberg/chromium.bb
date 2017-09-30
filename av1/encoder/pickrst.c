@@ -1377,7 +1377,7 @@ static void search_switchable_for_rtile(const struct rest_search_ctxt *ctxt,
                  swctxt->tile_cost[RESTORE_NONE][rtile_idx]);
   rsi->restoration_type[rtile_idx] = RESTORE_NONE;
   for (RestorationType r = 1; r < RESTORE_SWITCHABLE_TYPES; r++) {
-    if (force_restore_type != 0)
+    if (force_restore_type != RESTORE_TYPES)
       if (r != force_restore_type) continue;
     int tilebits = 0;
     if (swctxt->restore_types[r][rtile_idx] != r) continue;
@@ -1402,7 +1402,7 @@ static void search_switchable_for_rtile(const struct rest_search_ctxt *ctxt,
     swctxt->wiener_info = rsi->wiener_info[rtile_idx];
   else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ)
     swctxt->sgrproj_info = rsi->sgrproj_info[rtile_idx];
-  if (force_restore_type != 0)
+  if (force_restore_type != RESTORE_TYPES)
     assert(rsi->restoration_type[rtile_idx] == force_restore_type ||
            rsi->restoration_type[rtile_idx] == RESTORE_NONE);
   swctxt->cost_switchable += best_cost;
