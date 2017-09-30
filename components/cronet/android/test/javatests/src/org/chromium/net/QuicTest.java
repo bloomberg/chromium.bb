@@ -62,7 +62,6 @@ public class QuicTest {
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
                                         .put("max_server_configs_stored_in_properties", 2)
                                         .put("idle_connection_timeout_seconds", 300)
-                                        .put("close_sessions_on_ip_change", false)
                                         .put("migrate_sessions_on_network_change", false)
                                         .put("migrate_sessions_early", false)
                                         .put("race_cert_verification", true);
