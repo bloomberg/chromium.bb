@@ -246,7 +246,7 @@ INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,
 
 #if HAVE_SSSE3
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
-  lowbd_intrapred(paeth, ssse3),
+  lowbd_intrapred(paeth, ssse3), lowbd_intrapred(smooth, ssse3),
 };
 
 INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,

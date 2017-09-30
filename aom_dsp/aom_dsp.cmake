@@ -23,6 +23,7 @@ set(AOM_DSP_COMMON_SOURCES
     "${AOM_ROOT}/aom_dsp/blend_a64_mask.c"
     "${AOM_ROOT}/aom_dsp/blend_a64_vmask.c"
     "${AOM_ROOT}/aom_dsp/intrapred.c"
+    "${AOM_ROOT}/aom_dsp/intrapred_common.h"
     "${AOM_ROOT}/aom_dsp/loopfilter.c"
     "${AOM_ROOT}/aom_dsp/prob.c"
     "${AOM_ROOT}/aom_dsp/prob.h"

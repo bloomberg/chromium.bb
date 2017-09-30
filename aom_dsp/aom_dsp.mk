@@ -64,6 +64,7 @@ endif
 
 # intra predictions
 DSP_SRCS-yes += intrapred.c
+DSP_SRCS-yes += intrapred_common.h
 
 ifneq ($(CONFIG_ANS),yes)
 DSP_SRCS-yes += entcode.c

@@ -16,6 +16,7 @@
 #include "./aom_dsp_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/intrapred_common.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 
@@ -206,40 +207,6 @@ static INLINE void paeth_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
     dst += stride;
   }
 }
-
-// Weights are quadratic from '1' to '1 / block_size', scaled by
-// 2^sm_weight_log2_scale.
-static const int sm_weight_log2_scale = 8;
-
-#if CONFIG_TX64X64
-// max(block_size_wide[BLOCK_LARGEST], block_size_high[BLOCK_LARGEST])
-#define MAX_BLOCK_DIM 64
-#else
-#define MAX_BLOCK_DIM 32
-#endif  // CONFIG_TX64X64
-
-static const uint8_t sm_weight_arrays[2 * MAX_BLOCK_DIM] = {
-  // Unused, because we always offset by bs, which is at least 2.
-  0, 0,
-  // bs = 2
-  255, 128,
-  // bs = 4
-  255, 149, 85, 64,
-  // bs = 8
-  255, 197, 146, 105, 73, 50, 37, 32,
-  // bs = 16
-  255, 225, 196, 170, 145, 123, 102, 84, 68, 54, 43, 33, 26, 20, 17, 16,
-  // bs = 32
-  255, 240, 225, 210, 196, 182, 169, 157, 145, 133, 122, 111, 101, 92, 83, 74,
-  66, 59, 52, 45, 39, 34, 29, 25, 21, 17, 14, 12, 10, 9, 8, 8,
-#if CONFIG_TX64X64
-  // bs = 64
-  255, 248, 240, 233, 225, 218, 210, 203, 196, 189, 182, 176, 169, 163, 156,
-  150, 144, 138, 133, 127, 121, 116, 111, 106, 101, 96, 91, 86, 82, 77, 73, 69,
-  65, 61, 57, 54, 50, 47, 44, 41, 38, 35, 32, 29, 27, 25, 22, 20, 18, 16, 15,
-  13, 12, 10, 9, 8, 7, 6, 6, 5, 5, 4, 4, 4,
-#endif  // CONFIG_TX64X64
-};
 
 // Some basic checks on weights for smooth predictor.
 #define sm_weights_sanity_checks(weights_w, weights_h, weights_scale, \
