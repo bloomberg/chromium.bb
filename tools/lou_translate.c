@@ -150,7 +150,7 @@ main (int argc, char **argv)
   while ((optc = getopt_long (argc, argv, "hvfb", longopts, NULL)) != -1)
     switch (optc)
       {
-      /* --help and --version exit immediately, per GNU coding standards.  */
+      /* --help and --version exit immediately, per GNU coding standards. */
       case 'v':
         version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
         exit (EXIT_SUCCESS);
@@ -181,19 +181,19 @@ main (int argc, char **argv)
       exit (EXIT_FAILURE);
     }
 
-  /*if (optind != argc - 1)
-    {
-      // Print error message and exit.
-      if (optind < argc - 1)
-	fprintf (stderr, "%s: extra operand: %s\n",
-		 program_name, argv[optind + 1]);
-      else
-	fprintf (stderr, "%s: no table specified\n", 
-		 program_name);
-      fprintf (stderr, "Try `%s --help' for more information.\n",
-               program_name);
-      exit (EXIT_FAILURE);
-    }*/
+  // if (optind != argc - 1)
+  //   {
+  // 	// Print error message and exit.
+  // 	if (optind < argc - 1)
+  //   fprintf (stderr, "%s: extra operand: %s\n",
+  // 	   program_name, argv[optind + 1]);
+  // 	else
+  //   fprintf (stderr, "%s: no table specified\n",
+  // 	   program_name);
+  // 	fprintf (stderr, "Try `%s --help' for more information.\n",
+  // 			 program_name);
+  // 	exit (EXIT_FAILURE);
+  //   }
 	if(!argv[optind + 0])
 	{
 	fprintf (stderr, "%s: no table specified\n", 

@@ -122,7 +122,7 @@ lou_getProgramPath (void)
 int EXPORT_CALL
 _lou_stringHash (const widechar * c)
 {
-  /*hash function for strings */
+  /* hash function for strings */
   unsigned long int makeHash = (((unsigned long int) c[0] << 8) +
 				(unsigned long int) c[1]) % HASHNUM;
   return (int) makeHash;
@@ -138,8 +138,8 @@ _lou_charHash (widechar c)
 char *EXPORT_CALL
 _lou_showString (widechar const *chars, int length)
 {
-  /*Translate a string of characters to the encoding used in character 
-  * operands */
+  /* Translate a string of characters to the encoding used in character
+   * operands */
   int charPos;
   int bufPos = 0;
   static char scratchBuf[MAXSTRING];

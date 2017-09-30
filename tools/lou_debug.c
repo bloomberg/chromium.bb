@@ -85,7 +85,7 @@ getInput (void)
   if (!fgets (inputBuffer, sizeof (inputBuffer), stdin))
     exit (EXIT_FAILURE);
   inputLength = strlen (inputBuffer) - 1;
-  if (inputLength < 0)		/*EOF on script */
+  if (inputLength < 0) /* EOF on script */
     exit (EXIT_FAILURE);
   inputBuffer[inputLength] = 0;
   return inputLength;
@@ -719,7 +719,7 @@ main (int argc, char **argv)
   while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
     switch (optc)
       {
-      /* --help and --version exit immediately, per GNU coding standards.  */
+      /* --help and --version exit immediately, per GNU coding standards. */
       case 'v':
         version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
         exit (EXIT_SUCCESS);
@@ -737,7 +737,7 @@ main (int argc, char **argv)
 
   if (optind != argc - 1)
     {
-      /* Print error message and exit.  */
+      /* Print error message and exit. */
       if (optind < argc - 1)
 	fprintf (stderr, "%s: extra operand: %s\n",
 		 program_name, argv[optind + 1]);

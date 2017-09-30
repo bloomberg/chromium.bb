@@ -106,14 +106,14 @@ const static intCharTupple dotMapping[] = {
   0
 };
 
-/*HASHNUM must be prime */
+/* HASHNUM must be prime */
 #define HASHNUM 1123
 
 #define MAXPASS 4
 #define MAXSTRING 2048
 
 #define MAX_EMPH_CLASSES \
-  10  // {emph_1...emph_10} in typeforms enum (liblouis.h)
+  10 // {emph_1...emph_10} in typeforms enum (liblouis.h)
 
 typedef unsigned int TranslationTableOffset;
 #define OFFSETSIZE sizeof(TranslationTableOffset)
@@ -146,8 +146,8 @@ typedef enum {
   CTC_CapsMode = 0x1000000,
   CTC_NumericMode = 0x2000000,
   CTC_NumericNoContract = 0x4000000,
-  CTC_EndOfInput = 0x8000000,   //   only used by pattern matcher
-  CTC_EmpMatch = 0x10000000,   //   only used in TranslationTableRule->before and TranslationTableRule->after
+  CTC_EndOfInput = 0x8000000, // only used by pattern matcher
+  CTC_EmpMatch = 0x10000000,  // only used in TranslationTableRule->before and TranslationTableRule->after
 } TranslationTableCharacterAttribute;
 
 typedef enum {
@@ -235,9 +235,9 @@ typedef struct {
   widechar lowercase;
 } TranslationTableCharacter;
 
-typedef enum { /*Op codes */
+typedef enum { /* Op codes */
                CTO_IncludeFile,
-               CTO_Locale, /*Deprecated, do not use */
+               CTO_Locale, /* Deprecated, do not use */
                CTO_Undefined,
                /* Do not change the order of the following opcodes! */
                CTO_CapsLetter,
@@ -291,9 +291,9 @@ typedef enum { /*Op codes */
                CTO_MultInd,
                CTO_CompDots,
                CTO_Comp6,
-               CTO_Class, /*define a character class */
-               CTO_After, /*only match if after character in class */
-               CTO_Before, /*only match if before character in class 30      */
+               CTO_Class,  /* define a character class */
+               CTO_After,  /* only match if after character in class */
+               CTO_Before, /* only match if before character in class 30 */
                CTO_NoBack,
                CTO_NoFor,
                CTO_EmpMatchBefore,
@@ -340,14 +340,14 @@ typedef enum { /*Op codes */
                CTO_PrefixableWord, /** whole word or end of word */
                CTO_BegWord,        /** beginning of word only */
                CTO_BegMidWord,     /** beginning or middle of word */
-               CTO_MidWord, /** middle of word only 20      */
-               CTO_MidEndWord, /** middle or end of word */
-               CTO_EndWord,    /** end of word only */
-               CTO_PrePunc,    /** punctuation in string at beginning of word */
-               CTO_PostPunc,   /** punctuation in string at end of word */
-               CTO_BegNum,     /** beginning of number */
-               CTO_MidNum,     /** middle of number, e.g., decimal point */
-               CTO_EndNum,     /** end of number */
+               CTO_MidWord,        /** middle of word only 20 */
+               CTO_MidEndWord,     /** middle or end of word */
+               CTO_EndWord,        /** end of word only */
+               CTO_PrePunc,        /** punctuation in string at beginning of word */
+               CTO_PostPunc,       /** punctuation in string at end of word */
+               CTO_BegNum,         /** beginning of number */
+               CTO_MidNum,         /** middle of number, e.g., decimal point */
+               CTO_EndNum,         /** end of number */
                CTO_DecPoint,
                CTO_Hyphen,
                // CTO_Apostrophe,
@@ -364,8 +364,8 @@ typedef enum { /*Op codes */
                CTO_NoContractRule,
 
                /* Start of (11 x 9) internal opcodes values that match
-                {"singlelettercaps"..."lenemphphrase"}
-                Do not change the order of the following opcodes! */
+                * {"singlelettercaps"..."lenemphphrase"}
+                * Do not change the order of the following opcodes! */
                CTO_CapsLetterRule,
                CTO_BegCapsWordRule,
                CTO_EndCapsWordRule,
@@ -484,7 +484,7 @@ typedef struct {
   widechar charsdots[DEFAULTRULESIZE]; /** find and replacement strings */
 } TranslationTableRule;
 
-typedef struct /*state transition */
+typedef struct /* state transition */
 {
   widechar ch;
   widechar newState;
@@ -495,7 +495,7 @@ typedef union {
   TranslationTableOffset offset;
 } PointOff;
 
-typedef struct /*one state */
+typedef struct /* one state */
 {
   PointOff trans;
   TranslationTableOffset hyphenPattern;
@@ -506,7 +506,7 @@ typedef struct /*one state */
 /**
  * Translation table header
  */
-typedef struct { /*translation table */
+typedef struct { /* translation table */
   int capsNoCont;
   int numPasses;
   int corrections;
@@ -556,7 +556,7 @@ typedef struct { /*translation table */
   TranslationTableOffset backPassRules[MAXPASS + 1];
   TranslationTableOffset forRules[HASHNUM];  /** chains of forward rules */
   TranslationTableOffset backRules[HASHNUM]; /** Chains of backward rules */
-  TranslationTableOffset ruleArea[1];        /** Space for storing all rules and values */
+  TranslationTableOffset ruleArea[1]; /** Space for storing all rules and values */
 } TranslationTableHeader;
 
 typedef enum {
@@ -613,8 +613,8 @@ typedef struct {
 } FileInfo;
 
 /* The following function definitions are hooks into
-* compileTranslationTable.c. Some are used by other library modules.
-* Others are used by tools like lou_allround.c and lou_debug.c. */
+ * compileTranslationTable.c. Some are used by other library modules.
+ * Others are used by tools like lou_allround.c and lou_debug.c. */
 
 /**
  * Comma separated list of directories to search for tables.

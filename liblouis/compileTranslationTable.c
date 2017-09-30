@@ -40,17 +40,17 @@
 #include "internal.h"
 #include "config.h"
 
-#define QUOTESUB 28		/*Stand-in for double quotes in strings */
+#define QUOTESUB 28 /* Stand-in for double quotes in strings */
 
-/*   needed to make debuggin easier   */
+/* needed to make debuggin easier */
 #ifdef DEBUG
 wchar_t wchar;
 #endif
 
-/* The following variables and functions make it possible to specify the 
-* path on which all tables for liblouis and all files for liblouisutdml, 
-* in their proper directories, will be found.
-*/
+/* The following variables and functions make it possible to specify the
+ * path on which all tables for liblouis and all files for liblouisutdml,
+ * in their proper directories, will be found.
+ */
 
 static char *dataPathPtr;
 
@@ -72,7 +72,7 @@ lou_getDataPath (void)
   return dataPathPtr;
 }
 
-/* End of dataPath code.*/
+/* End of dataPath code. */
 
 static int
 eqasc2uni (const unsigned char *a, const widechar * b, const int len)
@@ -239,8 +239,8 @@ static const char *opcodeNames[CTO_None] = {
   "endnum",
   "decpoint",
   "hyphen",
-//  "apostrophe",
-//  "initial",
+// "apostrophe",
+// "initial",
   "nobreak",
   "match",
   "backmatch",
@@ -254,8 +254,8 @@ static void compileError (FileInfo * nested, char *format, ...);
 static int
 getAChar (FileInfo * nested)
 {
-/*Read a big endian, little *ndian or ASCII 8 file and convert it to 
-* 16- or 32-bit unsigned integers */
+/* Read a big endian, little endian or ASCII 8 file and convert it to
+ * 16- or 32-bit unsigned integers */
   int ch1 = 0, ch2 = 0;
   widechar character;
   if (nested->encoding == ascii8)
@@ -323,7 +323,7 @@ getAChar (FileInfo * nested)
 int EXPORT_CALL
 _lou_getALine (FileInfo * nested)
 {
-/*Read a line of widechar's from an input file */
+/* Read a line of widechar's from an input file */
   int ch;
   int pch = 0;
   nested->linelen = 0;
@@ -367,7 +367,7 @@ getToken (FileInfo * nested,
 	  CharsString * result, const char *description,
 	  int *lastToken)
 {
-/*Find the next string of contiguous non-whitespace characters. If this 
+/* Find the next string of contiguous non-whitespace characters. If this
  * is the last token on the line, return 2 instead of 1. */
   while (!atEndOfLine(nested) && atTokenDelimiter(nested))
     nested->linepos++;
@@ -438,8 +438,8 @@ allocateSpaceInTable (FileInfo * nested, TranslationTableOffset * offset,
 		      int count,
 		      TranslationTableHeader **table)
 {
-/* allocate memory for translation table and expand previously allocated 
-* memory if necessary */
+/* allocate memory for translation table and expand previously allocated
+ * memory if necessary */
   int spaceNeeded = ((count + OFFSETSIZE - 1) / OFFSETSIZE) * OFFSETSIZE;
   TranslationTableOffset size = tableUsed + spaceNeeded;
   if (size > tableSize)
@@ -482,12 +482,12 @@ static int
 allocateHeader (FileInfo * nested,
 		TranslationTableHeader **table)
 {
-/*Allocate memory for the table header and a guess on the number of 
-* rules */
+/* Allocate memory for the table header and a guess on the number of
+ * rules */
   const TranslationTableOffset startSize = 2 * sizeof (**table);
   if (*table)
     return 1;
-  tableUsed = sizeof (**table) + OFFSETSIZE;	/*So no offset is ever zero */
+  tableUsed = sizeof (**table) + OFFSETSIZE; /* So no offset is ever zero */
   if (!(*table = malloc (startSize)))
     {
       compileError (nested, "Not enough memory");
@@ -505,10 +505,10 @@ static TranslationTableCharacter *
 compile_findCharOrDots (widechar c, int m,
 			TranslationTableHeader *table)
 {
-/*Look up a character or dot pattern. If m is 0 look up a character, 
-* otherwise look up a dot pattern. Although the algorithms are almost 
-* identical, different tables are needed for characters and dots because 
-* of the possibility of conflicts.*/
+/* Look up a character or dot pattern. If m is 0 look up a character,
+ * otherwise look up a dot pattern. Although the algorithms are almost
+ * identical, different tables are needed for characters and dots because
+ * of the possibility of conflicts. */
   TranslationTableCharacter *character;
   TranslationTableOffset bucket;
   unsigned long int makeHash = (unsigned long int) c % HASHNUM;
@@ -576,9 +576,9 @@ static TranslationTableCharacter *
 addCharOrDots (FileInfo * nested, widechar c, int m,
 	       TranslationTableHeader **table)
 {
-/*See if a character or dot pattern is in the appropriate table. If not, 
-* insert it. In either 
-* case, return a pointer to it. */
+/* See if a character or dot pattern is in the appropriate table. If not,
+ * insert it. In either
+ * case, return a pointer to it. */
   TranslationTableOffset bucket;
   TranslationTableCharacter *character;
   TranslationTableCharacter *oldchar;
@@ -734,8 +734,8 @@ charactersDefined (FileInfo * nested,
 		   TranslationTableRule *newRule,
 		   TranslationTableHeader *table)
 {
-/*Check that all characters are defined by character-definition 
-* opcodes*/
+/* Check that all characters are defined by character-definition
+ * opcodes */
   int noErrors = 1;
   int k;
   if ((newRule->opcode >= CTO_Space && newRule->opcode <= CTO_LitDigit)
@@ -755,7 +755,7 @@ charactersDefined (FileInfo * nested,
 	noErrors = 0;
       }
   if (!(newRule->opcode == CTO_Correct || newRule->opcode == CTO_SwapCc || newRule->opcode == CTO_SwapCd)
-	//TODO:  these just need to know there is a way to get from dots to a char
+	// TODO: these just need to know there is a way to get from dots to a char
 	&& !(newRule->opcode >= CTO_CapsLetterRule && newRule->opcode <= CTO_EndEmph10PhraseAfterRule))
     {
       for (k = newRule->charslen; k < newRule->charslen + newRule->dotslen;
@@ -876,7 +876,7 @@ NOT_FOUND:
   return 0;
 }
 
-/*The following functions are called by addRule to handle various cases.*/
+/* The following functions are called by addRule to handle various cases. */
 
 static void
 addForwardRuleWithSingleChar (FileInfo * nested,
@@ -884,7 +884,7 @@ addForwardRuleWithSingleChar (FileInfo * nested,
 			      TranslationTableRule *newRule,
 			      TranslationTableHeader *table)
 {
-/*direction = 0, newRule->charslen = 1*/
+/* direction = 0, newRule->charslen = 1 */
   TranslationTableRule *currentRule;
   TranslationTableOffset *currentOffsetPtr;
   TranslationTableCharacter *character;
@@ -925,7 +925,7 @@ addForwardRuleWithMultipleChars (TranslationTableOffset *newRuleOffset,
 				 TranslationTableRule *newRule,
 				 TranslationTableHeader *table)
 {
-/*direction = 0 newRule->charslen > 1*/
+/* direction = 0 newRule->charslen > 1 */
   TranslationTableRule *currentRule = NULL;
   TranslationTableOffset *currentOffsetPtr =
     &table->forRules[_lou_stringHash (&newRule->charsdots[0])];
@@ -951,14 +951,14 @@ addBackwardRuleWithSingleCell (FileInfo * nested, widechar cell,
 			       TranslationTableRule *newRule,
 			       TranslationTableHeader *table)
 {
-/*direction = 1, newRule->dotslen = 1*/
+/* direction = 1, newRule->dotslen = 1 */
   TranslationTableRule *currentRule;
   TranslationTableOffset *currentOffsetPtr;
   TranslationTableCharacter *dots;
   if (newRule->opcode == CTO_SwapCc ||
       newRule->opcode == CTO_Repeated ||
       (newRule->opcode == CTO_Always && newRule->charslen == 1))
-    return;			/*too ambiguous */
+    return; /* too ambiguous */
   dots = definedCharOrDots (nested, cell, 1, table);
   if (newRule->opcode >= CTO_Space && newRule->opcode < CTO_UpLow)
     dots->definitionRule = *newRuleOffset;
@@ -985,7 +985,7 @@ addBackwardRuleWithMultipleCells (widechar *cells, int count,
 				  TranslationTableRule *newRule,
 				  TranslationTableHeader *table)
 {
-/*direction = 1, newRule->dotslen > 1*/
+/* direction = 1, newRule->dotslen > 1 */
   TranslationTableRule *currentRule = NULL;
   TranslationTableOffset *currentOffsetPtr =
     &table->backRules[_lou_stringHash(cells)];
@@ -1102,8 +1102,8 @@ static int addRule (FileInfo * nested,
 		    int noback, int nofor,
 		    TranslationTableHeader **table)
 {
-/*Add a rule to the table, using the hash function to find the start of 
-* chains and chaining both the chars and dots strings */
+/* Add a rule to the table, using the hash function to find the start of
+ * chains and chaining both the chars and dots strings */
   int ruleSize = sizeof (TranslationTableRule) - (DEFAULTRULESIZE * CHARSIZE);
   if (ruleChars)
     ruleSize += CHARSIZE * ruleChars->length;
@@ -1130,7 +1130,7 @@ static int addRule (FileInfo * nested,
   if (!charactersDefined (nested, rule, *table))
     return 0;
 
-  /*link new rule into table. */
+  /* link new rule into table. */
   if (opcode == CTO_SwapCc || opcode == CTO_SwapCd || opcode == CTO_SwapDd)
     return 1;
   if (opcode >= CTO_Context && opcode <= CTO_Pass4)
@@ -1179,7 +1179,7 @@ static const CharacterClass *
 findCharacterClass (const CharsString * name,
 		    CharacterClass *characterClasses)
 {
-/*Find a character class, whether predefined or user-defined */
+/* Find a character class, whether predefined or user-defined */
   const CharacterClass *class = characterClasses;
   while (class)
     {
@@ -1197,7 +1197,7 @@ addCharacterClass (FileInfo * nested, const widechar * name, int length,
 		   CharacterClass **characterClasses,
 		   TranslationTableCharacterAttributes *characterClassAttribute)
 {
-/*Define a character class, Whether predefined or user-defined */
+/* Define a character class, Whether predefined or user-defined */
   CharacterClass *class;
   if (*characterClassAttribute)
     {
@@ -1234,7 +1234,7 @@ static int
 allocateCharacterClasses (CharacterClass **characterClasses,
 			  TranslationTableCharacterAttributes *characterClassAttribute)
 {
-/*Allocate memory for predifined character classes */
+/* Allocate memory for predifined character classes */
   int k = 0;
   *characterClasses = NULL;
   *characterClassAttribute = 1;
@@ -1503,8 +1503,8 @@ static int
 parseDots (FileInfo * nested,
 	   CharsString * cells, const CharsString * token)
 {
-  /*get dot patterns */
-  widechar cell = 0;		/*assembly place for dots */
+  /* get dot patterns */
+  widechar cell = 0; /* assembly place for dots */
   int cellCount = 0;
   int index;
   int start = 0;
@@ -1514,7 +1514,7 @@ parseDots (FileInfo * nested,
       int started = index != start;
       widechar character = token->chars[index];
       switch (character)
-	{			/*or dots to make up Braille cell */
+	{ /* or dots to make up Braille cell */
 	  {
 	    int dot;
 	case '1':
@@ -1578,11 +1578,11 @@ parseDots (FileInfo * nested,
 	    cell |= dot;
 	    break;
 	  }
-	case '0':		/*blank */
+	case '0': /* blank */
 	  if (started)
 	    goto invalid;
 	  break;
-	case '-':		/*got all dots for this cell */
+	case '-': /* got all dots for this cell */
 	  if (!started)
 	    {
 	      compileError (nested, "missing cell specification.");
@@ -1604,7 +1604,7 @@ parseDots (FileInfo * nested,
       compileError (nested, "missing cell specification.");
       return 0;
     }
-  cells->chars[cellCount++] = cell | B16;	/*last cell */
+  cells->chars[cellCount++] = cell | B16; /* last cell */
   cells->length = cellCount;
   return 1;
 }
@@ -1637,7 +1637,7 @@ static int
 getCharacters (FileInfo * nested, CharsString * characters,
 	       int *lastToken)
 {
-/*Get ruleChars string */
+/* Get ruleChars string */
   CharsString token;
   if (getToken (nested, &token, "characters", lastToken))
     if (parseChars (nested, characters, &token))
@@ -1671,7 +1671,7 @@ static int
 getRuleDotsPattern (FileInfo * nested, CharsString * ruleDots,
 		    int *lastToken)
 {
-/*Interpret the dets operand */
+/* Interpret the dets operand */
   CharsString token;
   if (getToken (nested, &token, "Dots operand", lastToken))
     {
@@ -1860,7 +1860,7 @@ compileSwap (FileInfo * nested, TranslationTableOpcode opcode,
 static int
 getNumber (widechar * source, widechar * dest)
 {
-/*Convert a string of wide character digits to an integer*/
+/* Convert a string of wide character digits to an integer */
   int k = 0;
   *dest = 0;
   while (source[k] >= '0' && source[k] <= '9')
@@ -1868,7 +1868,7 @@ getNumber (widechar * source, widechar * dest)
   return k;
 }
 
-/* Start of multipass compiler*/
+/* Start of multipass compiler */
 
 static int
 passGetAttributes (CharsString *passLine,
@@ -2041,7 +2041,7 @@ passGetNumber (CharsString *passLine,
 	       int *passLinepos,
 	       widechar *passHoldNumber)
 {
-  /*Convert a string of wide character digits to an integer */
+  /* Convert a string of wide character digits to an integer */
   *passHoldNumber = 0;
   while ((*passLinepos < passLine->length) &&
          (passLine->chars[*passLinepos] >= '0') &&
@@ -2203,7 +2203,7 @@ passGetScriptToken (CharsString *passLine,
 	  if (passGetDots (passLine, passLinepos, passHoldString, passNested))
 	    return pass_dots;
 	  return pass_invalidToken;
-	case '#':		/*comment */
+	case '#': /* comment */
 	  *passLinepos = passLine->length + 1;
 	  return pass_noMoreTokens;
 	case '!':
@@ -2552,7 +2552,7 @@ compilePassOpcode (FileInfo * nested,
 {
   static CharsString passRuleChars;
   static CharsString passRuleDots;
-/*Compile the operands of a pass opcode */
+  /* Compile the operands of a pass opcode */
   widechar passSubOp;
   const CharacterClass *class;
   TranslationTableOffset ruleOffset = 0;
@@ -2563,7 +2563,7 @@ compilePassOpcode (FileInfo * nested,
   int endTest = 0;
   int isScript = 1;
   widechar *passInstructions = passRuleDots.chars;
-  int passIC = 0;			/*Instruction counter */
+  int passIC = 0; /* Instruction counter */
   passRuleChars.length = 0;
   FileInfo *passNested = nested;
   TranslationTableOpcode passOpcode = opcode;
@@ -2679,7 +2679,7 @@ compilePassOpcode (FileInfo * nested,
 		return 0;
 	      if (!passGetEmphasis (&passLine, &passLinepos, passNested))
 		return 0;
-	      /*Right parenthis handled by subfunctiion */
+	      /* Right parenthis handled by subfunctiion */
 	      break;
 	    case pass_lookback:
 	      passInstructions[passIC++] = pass_lookback;
@@ -2892,7 +2892,7 @@ compilePassOpcode (FileInfo * nested,
     {
       /* Older machine-language-like "assembler". */
 
-      /*Compile test part */
+      /* Compile test part */
       for (k = 0; k < passLine.length && passLine.chars[k] != SEPCHAR; k++);
       endTest = k;
       passLine.chars[endTest] = pass_endTest;
@@ -3014,7 +3014,7 @@ compilePassOpcode (FileInfo * nested,
 	      if (passHoldNumber == 0)
 		{
 		  passHoldNumber = passInstructions[passIC++] = 1;
-		  passInstructions[passIC++] = 1;	/*This is not an error */
+		  passInstructions[passIC++] = 1; /* This is not an error */
 		  break;
 		}
 	      passInstructions[passIC++] = passHoldNumber;
@@ -3089,7 +3089,7 @@ compilePassOpcode (FileInfo * nested,
 	      return 0;
 	    }
 
-	}			/*Compile action part */
+	} /* Compile action part */
 
       /* Compile action part */
       while (passLinepos < passLine.length &&
@@ -3202,7 +3202,7 @@ compilePassOpcode (FileInfo * nested,
 	}
     }
 
-  /*Analyze and add rule */
+  /* Analyze and add rule */
   passRuleDots.length = passIC;
 
   {
@@ -3448,9 +3448,9 @@ compileUplow (FileInfo * nested,
   return 1;
 }
 
-/*Functions for compiling hyphenation tables*/
+/* Functions for compiling hyphenation tables */
 
-typedef struct HyphenDict { /*hyphenation dictionary: finite state machine */
+typedef struct HyphenDict { /* hyphenation dictionary: finite state machine */
   int numStates;
   HyphenationState *states;
 } HyphenDict;
@@ -3572,7 +3572,7 @@ hyphenGetNewState (HyphenDict * dict, HyphenHashTab * hashTab, const
 }
 
 /* add a transition from state1 to state2 through ch - assumes that the
-   transition does not already exist */
+ * transition does not already exist */
 static void
 hyphenAddTrans (HyphenDict * dict, int state1, int state2, widechar ch)
 {
@@ -3606,8 +3606,8 @@ compileHyphenation (FileInfo * nested, CharsString * encoding,
   HyphenHashEntry *e;
   HyphenDict dict;
   TranslationTableOffset holdOffset;
-  /*Set aside enough space for hyphenation states and transitions in 
-   * translation table. Must be done before anything else*/
+  /* Set aside enough space for hyphenation states and transitions in
+   * translation table. Must be done before anything else */
   reserveSpaceInTable (nested, 250000, table);
   hashTab = hyphenHashNew ();
   dict.numStates = 1;
@@ -3627,14 +3627,14 @@ compileHyphenation (FileInfo * nested, CharsString * encoding,
 	}
       else
 	{
-	  /*UTF-8 */
+	  /* UTF-8 */
 	  if (!getToken (nested, &word, NULL, lastToken))
 	    continue;
 	  parseChars (nested, &hyph, &word);
 	}
       if (hyph.length == 0 || hyph.chars[0] == '#' || hyph.chars[0] ==
 	  '%' || hyph.chars[0] == '<')
-	continue;		/*comment */
+	continue; /* comment */
       for (i = 0; i < hyph.length; i++)
 	definedCharOrDots (nested, hyph.chars[i], 0, *table);
       j = 0;
@@ -3699,7 +3699,7 @@ compileHyphenation (FileInfo * nested, CharsString * encoding,
 	}
     }
   hyphenHashFree (hashTab);
-/*Transfer hyphenation information to table*/
+  /* Transfer hyphenation information to table */
   for (i = 0; i < dict.numStates; i++)
     {
       if (dict.states[i].numTrans == 0)
@@ -3825,9 +3825,9 @@ compileRule (FileInfo * nested,
   TranslationTableOffset tmp_offset;
 doOpcode:
   if (!getToken (nested, &token, NULL, &lastToken))
-    return 1;			/*blank line */
+    return 1; /* blank line */
   if (token.chars[0] == '#' || token.chars[0] == '<')
-    return 1;			/*comment */
+    return 1; /* comment */
   if (nested->lineNumber == 1 && (eqasc2uni ((unsigned char *) "ISO",
 					     token.chars, 3) ||
 				  eqasc2uni ((unsigned char *) "UTF-8",
@@ -3839,7 +3839,7 @@ doOpcode:
   opcode = getOpcode (nested, &token, opcodeLengths);
   
   switch (opcode)
-    {				/*Carry out operations */
+    { /* Carry out operations */
     case CTO_None:
       break;
     case CTO_IncludeFile:
@@ -3911,7 +3911,7 @@ doOpcode:
 	    break;
 	  }
 
-	/*   realloc may have moved table, so make sure newRule is still valid   */
+	/* realloc may have moved table, so make sure newRule is still valid */
 	*newRule = (TranslationTableRule*)&(*table)->ruleArea[*newRuleOffset];
 
 	memcpy(&(*table)->ruleArea[offset], patterns, len * sizeof(widechar));
@@ -3970,7 +3970,7 @@ doOpcode:
 	    break;
 	  }
 
-	/*   realloc may have moved table, so make sure newRule is still valid   */
+	/* realloc may have moved table, so make sure newRule is still valid */
 	*newRule = (TranslationTableRule*)&(*table)->ruleArea[*newRuleOffset];
 
 	memcpy(&(*table)->ruleArea[offset], patterns, len * sizeof(widechar));
@@ -4103,7 +4103,7 @@ doOpcode:
 		     * status. The hope is that eventually all programs will use liblouis for
 		     * emphasis the recommended way (i.e. by looking up the supported typeforms in
 		     * the documentation or API) so that we can drop this restriction.
-		    */
+		     */
 		  case 0:
 		    if (strcmp(s, "italic") != 0)
 		      {
@@ -4574,12 +4574,12 @@ doOpcode:
 	if (getRuleDotsPattern (nested, &ruleDots, &lastToken))
 	  if (!addRule (nested, opcode, &ruleChars, &ruleDots, after, before, newRuleOffset, newRule, noback, nofor, table))
 	    ok = 0;
-//		if(opcode == CTO_MidNum)
-//		{
-//			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
-//			if(c)
-//				c->attributes |= CTC_NumericMode;
-//		}
+	    // if (opcode == CTO_MidNum)
+	    // {
+	    //   TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+	    //   if(c)
+	    //     c->attributes |= CTC_NumericMode;
+	    // }
       break;
     case CTO_CompDots:
     case CTO_Comp6:
@@ -4824,12 +4824,12 @@ doOpcode:
 	    if (!addRule
 		(nested, opcode, &ruleChars, &ruleDots, after, before, newRuleOffset, newRule, noback, nofor, table))
 	      ok = 0;
-//		if(opcode == CTO_DecPoint)
-//		{
-//			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
-//			if(c)
-//				c->attributes |= CTC_NumericMode;
-//		}
+	      // if (opcode == CTO_DecPoint)
+	      // {
+	      //   TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
+	      //   if(c)
+	      //     c->attributes |= CTC_NumericMode;
+	      // }
 	  }
       break;
     case CTO_Space:
@@ -4893,8 +4893,8 @@ doOpcode:
 int EXPORT_CALL
 lou_readCharFromFile (const char *fileName, int *mode)
 {
-/*Read a character from a file, whether big-endian, little-endian or 
-* ASCII8*/
+/* Read a character from a file, whether big-endian, little-endian or
+ * ASCII8 */
   int ch;
   static FileInfo nested;
   if (fileName == NULL)
@@ -5363,8 +5363,8 @@ compileTranslationTable (const char *tableList,
   /* Initialize emphClasses array */
   table->emphClasses[0] = NULL;
   
-  /* Compile things that are necesary for the proper operation of 
-     liblouis or liblouisxml or liblouisutdml */
+  /* Compile things that are necesary for the proper operation of
+   * liblouis or liblouisxml or liblouisutdml */
   compileString ("space \\s 0", characterClasses, characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
   compileString ("noback sign \\x0000 0", characterClasses, characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
   compileString ("space \\x00a0 a unbreakable space", characterClasses, characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
@@ -5450,7 +5450,7 @@ lou_getEmphClasses(const char* tableList)
 void *EXPORT_CALL
 lou_getTable (const char *tableList)
 {
-  /*Keep track of which tables have already been compiled */
+  /* Keep track of which tables have already been compiled */
   int tableListLen;
   ChainEntry *currentEntry = NULL;
   ChainEntry *lastEntry = NULL;
@@ -5459,14 +5459,14 @@ lou_getTable (const char *tableList)
     return NULL;
   errorCount = fileCount = 0;
   tableListLen = (int)strlen (tableList);
-  /*See if this is the last table used. */
+  /* See if this is the last table used. */
   if (lastTrans != NULL)
     if (tableListLen == lastTrans->tableListLength && (memcmp
 						       (&lastTrans->tableList[0],
 							tableList,
 							tableListLen)) == 0)
       return (gTable = lastTrans->table);
-  /*See if Table has already been compiled*/
+  /* See if Table has already been compiled */
   currentEntry = tableChain;
   while (currentEntry != NULL)
     {
@@ -5484,7 +5484,7 @@ lou_getTable (const char *tableList)
     }
   if ((newTable = compileTranslationTable (tableList, &gCharacterClasses, &gCharacterClassAttribute, gOpcodeLengths, &gNewRuleOffset, &gNewRule, &gRuleNames)))
     {
-      /*Add a new entry to the table chain. */
+      /* Add a new entry to the table chain. */
       int entrySize = sizeof (ChainEntry) + tableListLen;
       ChainEntry *newEntry = malloc (entrySize);
       if (!newEntry)
@@ -5553,7 +5553,7 @@ _lou_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	{
 	  if (typebuf != NULL)
 	    free (typebuf);
-	//TODO:  should this be srcmax?
+	// TODO: should this be srcmax?
 	  typebuf = malloc ((destmax + 4) * sizeof (formtype));
 	  if (!typebuf)
 	    _lou_outOfMemory ();
@@ -5750,39 +5750,37 @@ lou_compileString (const char *tableList, const char *inString)
  * This procedure provides a target for cals that serve as breakpoints 
  * for gdb.
  */
-/*
-char *EXPORT_CALL
-lou_getTablePaths (void)
-{
-  static char paths[MAXSTRING];
-  static char scratchBuf[MAXSTRING];
-  char *pathList;
-  strcpy (paths, tablePath);
-  strcat (paths, ",");
-  pathList = getenv ("LOUIS_TABLEPATH");
-  if (pathList)
-    {
-      strcat (paths, pathList);
-      strcat (paths, ",");
-    }
-  pathList = getcwd (scratchBuf, MAXSTRING);
-  if (pathList)
-    {
-      strcat (paths, pathList);
-      strcat (paths, ",");
-    }
-  pathList = lou_getDataPath ();
-  if (pathList)
-    {
-      strcat (paths, pathList);
-      strcat (paths, ",");
-    }
-#ifdef _WIN32
-  strcpy (paths, lou_getProgramPath ());
-  strcat (paths, "\\share\\liblouss\\tables\\");
-#else
-  strcpy (paths, TABLESDIR);
-#endif
-  return paths;
-}
-*/
+// char *EXPORT_CALL
+// lou_getTablePaths (void)
+// {
+//   static char paths[MAXSTRING];
+//   static char scratchBuf[MAXSTRING];
+//   char *pathList;
+//   strcpy (paths, tablePath);
+//   strcat (paths, ",");
+//   pathList = getenv ("LOUIS_TABLEPATH");
+//   if (pathList)
+//     {
+//       strcat (paths, pathList);
+//       strcat (paths, ",");
+//     }
+//   pathList = getcwd (scratchBuf, MAXSTRING);
+//   if (pathList)
+//     {
+//       strcat (paths, pathList);
+//       strcat (paths, ",");
+//     }
+//   pathList = lou_getDataPath ();
+//   if (pathList)
+//     {
+//       strcat (paths, pathList);
+//       strcat (paths, ",");
+//     }
+// #ifdef _WIN32
+//   strcpy (paths, lou_getProgramPath ());
+//   strcat (paths, "\\share\\liblouss\\tables\\");
+// #else
+//   strcpy (paths, TABLESDIR);
+// #endif
+//   return paths;
+// }

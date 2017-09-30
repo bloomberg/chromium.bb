@@ -31,15 +31,15 @@
 
 static const TranslationTableHeader *table;
 
-//TODO:  these functions are static and copied serveral times
+// TODO: these functions are static and copied serveral times
 
 int translation_direction = 1;
 
 static TranslationTableCharacter *
 back_findCharOrDots (widechar c, int m)
 {
-/*Look up character or dot pattern in the appropriate  
-* table. */
+/* Look up character or dot pattern in the appropriate
+ * table. */
   static TranslationTableCharacter noChar =
     { 0, 0, 0, CTC_Space, 32, 32, 32 };
   static TranslationTableCharacter noDots =
@@ -72,8 +72,8 @@ back_findCharOrDots (widechar c, int m)
 static TranslationTableCharacter *
 findCharOrDots (widechar c, int m)
 {
-/*Look up character or dot pattern in the appropriate
-* table. */
+/* Look up character or dot pattern in the appropriate
+ * table. */
   static TranslationTableCharacter noChar =
     { 0, 0, 0, CTC_Space, 32, 32, 32 };
   static TranslationTableCharacter noDots =
@@ -192,7 +192,7 @@ struct expression
 	widechar data[1];
 };
 
-/*   gdb won't know what this is unless it is actually used   */
+/* gdb won't know what this is unless it is actually used */
 #ifdef DEBUG
 static struct expression *expr_debug;
 #endif
@@ -671,7 +671,7 @@ static int pattern_compile_expression(const widechar *input,
 		if(*input_crs >= input_max)
 			return 0;
 
-		/*   find closing parenthesis   */
+		/* find closing parenthesis */
 		nest = esc = 0;
 		for(input_end = *input_crs; input_end < input_max; input_end++)
 		{
@@ -698,7 +698,7 @@ static int pattern_compile_expression(const widechar *input,
 
 		EXPR_TYPE(*expr_crs) = PTN_GROUP;
 
-		/*   compile sub expressions   */
+		/* compile sub expressions */
 		expr_crs_prv = *expr_crs;
 		*expr_crs += 4;
 		EXPR_DATA_0(expr_crs_prv) = *expr_crs;
@@ -710,7 +710,7 @@ static int pattern_compile_expression(const widechar *input,
 			return 0;
 		(*input_crs)++;
 
-		/*   reset end expression   */
+		/* reset end expression */
 		expr_end = *expr_crs;
 		EXPR_NXT(expr_end) = expr_crs_prv;
 
@@ -727,14 +727,14 @@ static int pattern_compile_expression(const widechar *input,
 		*expr_crs += 4;
 		EXPR_DATA_0(expr_crs_prv) = *expr_crs;
 
-		/*   create start expression   */
+		/* create start expression */
 		expr_start = *expr_crs;
 		EXPR_TYPE(expr_start) = PTN_START;
 		EXPR_PRV(expr_start) = PTN_END;
 		*expr_crs += 3;
 		EXPR_NXT(expr_start) = *expr_crs;
 
-		/*   compile sub expression   */
+		/* compile sub expression */
 		expr_sub = *expr_crs;
 		EXPR_TYPE(expr_sub) = PTN_ERROR;
 		EXPR_PRV(expr_sub) = expr_start;
@@ -745,7 +745,7 @@ static int pattern_compile_expression(const widechar *input,
 
 		EXPR_NXT(expr_sub) = *expr_crs;
 
-		/*   create end expression   */
+		/* create end expression */
 		expr_end = *expr_crs;
 		EXPR_TYPE(expr_end) = PTN_END;
 		EXPR_PRV(expr_end) = expr_sub;
@@ -804,7 +804,7 @@ static int pattern_compile_expression(const widechar *input,
 		if(*input_crs >= input_max)
 			return 0;
 
-		/*   find closing bracket   */
+		/* find closing bracket */
 		if(input[*input_crs] == '[')
 		{
 			set = 1;
@@ -863,7 +863,7 @@ static int pattern_compile_expression(const widechar *input,
 		if(*input_crs >= input_max)
 			return 0;
 
-		/*   find closing bracket   */
+		/* find closing bracket */
 		esc = 0;
 		for(input_end = *input_crs; input_end < input_max; input_end++)
 		{
@@ -908,7 +908,7 @@ static int pattern_compile_expression(const widechar *input,
 		if(*input_crs >= input_max)
 			return 0;
 
-		/*   find closing bracket   */
+		/* find closing bracket */
 		if(input[*input_crs] == '[')
 		{
 			set = 1;
@@ -993,14 +993,14 @@ static int pattern_insert_alternate(const widechar *input,
 	if(*expr_crs + 12 >= expr_max)
 		return 0;
 
-	/*   setup alternate expression   */
+	/* setup alternate expression */
 	expr_alt = *expr_crs;
 	EXPR_TYPE(expr_alt) = PTN_ALTERNATE;
 	EXPR_PRV(expr_alt) = PTN_END;
 	EXPR_NXT(expr_alt) = PTN_END;
 	*expr_crs += 5;
 
-	/*   setup group expression   */
+	/* setup group expression */
 	expr_group = *expr_crs;
 	EXPR_TYPE(expr_group) = PTN_GROUP;
 	EXPR_PRV(expr_group) = PTN_END;
@@ -1016,21 +1016,21 @@ static int pattern_insert_alternate(const widechar *input,
 	expr_end = *expr_crs;
 	EXPR_NXT(expr_end) = expr_group;
 
-	/*   setup last end expression   */
+	/* setup last end expression */
 	if(*expr_crs + 3 >= expr_max)
 		return 0;
 	*expr_crs += 3;
 	EXPR_TYPE(*expr_crs) = PTN_END;
 	EXPR_NXT(*expr_crs) = PTN_END;
 
-	/*   replace insert expression with group expression using last end expression   */
+	/* replace insert expression with group expression using last end expression */
 	EXPR_NXT(EXPR_PRV(expr_insert)) = expr_group;
 	EXPR_PRV(expr_group) = EXPR_PRV(expr_insert);
 
 	EXPR_NXT(expr_group) = *expr_crs;
 	EXPR_PRV(*expr_crs) = expr_group;
 
-	/*   link alternate and insert expressions before group end expression   */
+	/* link alternate and insert expressions before group end expression */
 	EXPR_NXT(EXPR_PRV(expr_end)) = expr_alt;
 	EXPR_PRV(expr_alt) = EXPR_PRV(expr_end);
 
@@ -1046,7 +1046,7 @@ static int pattern_insert_alternate(const widechar *input,
 /* Compile all expression sequences, resolving character sets, attributes,
  * groups, nots, and hooks.  Note that unlike the other compile functions, on
  * returning the expr_crs is set to the last end expression, not after it.
-*/
+ */
 static int pattern_compile_1(const widechar *input,
                              const int input_max,
                              int *input_crs,
@@ -1062,13 +1062,13 @@ static int pattern_compile_1(const widechar *input,
 
 	expr_crs_prv = *expr_crs;
 
-	/*   setup start expression   */
+	/* setup start expression */
 	EXPR_TYPE(*expr_crs) = PTN_START;
 	EXPR_PRV(*expr_crs) = PTN_END;
 	*expr_crs += 3;
 	EXPR_NXT(expr_crs_prv) = *expr_crs;
 
-	/*   setup end expression   */
+	/* setup end expression */
 	EXPR_TYPE(*expr_crs) = PTN_END;
 	EXPR_PRV(*expr_crs) = expr_crs_prv;
 	EXPR_NXT(*expr_crs) = PTN_END;
@@ -1079,7 +1079,7 @@ static int pattern_compile_1(const widechar *input,
 		if(!pattern_compile_expression(input, input_max, input_crs, expr_data, expr_max, expr_crs, loop_cnts))
 			return 0;
 
-		/*   setup end expression   */
+		/* setup end expression */
 		if(*expr_crs + 3 >= expr_max)
 			return 0;
 		EXPR_NXT(expr_crs_prv) = *expr_crs;
@@ -1087,20 +1087,22 @@ static int pattern_compile_1(const widechar *input,
 		EXPR_PRV(*expr_crs) = expr_crs_prv;
 		EXPR_NXT(*expr_crs) = PTN_END;
 
-		/*   insert seqafterexpression before attributes of seqafterchars   */
-//		if(EXPR_TYPE(expr_crs_prv) == PTN_ATTRIBUTES)
-//		if(EXPR_DATA_1(expr_crs_prv) & CTC_SeqAfter)
-//		{
-//			i = 0;
-//			pattern_insert_alternate(table->seqAfterExpression, table->seqAfterExpressionLength, &i, expr_data, expr_max, expr_crs, loop_cnts, expr_crs_prv);
-//		}
+		/* insert seqafterexpression before attributes of seqafterchars */
+		// if(EXPR_TYPE(expr_crs_prv) == PTN_ATTRIBUTES)
+		// if(EXPR_DATA_1(expr_crs_prv) & CTC_SeqAfter)
+		// {
+		// 	i = 0;
+		// 	pattern_insert_alternate(table->seqAfterExpression,
+		// 		table->seqAfterExpressionLength, &i, expr_data, expr_max,
+		// 		expr_crs, loop_cnts, expr_crs_prv);
+		// }
 	}
 
 	return *expr_crs;
 }
 
 /* Resolve optional and loop expressions.
-*/
+ */
 static int pattern_compile_2(widechar *expr_data, int expr_at, const int expr_max, widechar *expr_crs)
 {
 	int expr_start, expr_end, expr_prv, expr_sub;
@@ -1120,33 +1122,33 @@ static int pattern_compile_2(widechar *expr_data, int expr_at, const int expr_ma
 			if(*expr_crs + 6 >= expr_max)
 				return 0;
 
-			/*   get previous expressions, there must
-				 be at least something and a PTN_START   */
+			/* get previous expressions, there must
+			 * be at least something and a PTN_START */
 			expr_sub = EXPR_PRV(expr_at);
 			if(EXPR_TYPE(expr_sub) == PTN_START)
 				return 0;
 			expr_prv = EXPR_PRV(expr_sub);
 
-			/*   create start expression   */
+			/* create start expression */
 			expr_start = *expr_crs;
 			EXPR_TYPE(expr_start) = PTN_START;
 			EXPR_PRV(expr_start) = PTN_END;
 			EXPR_NXT(expr_start) = expr_sub;
 			*expr_crs += 3;
 
-			/*   create end expression   */
+			/* create end expression */
 			expr_end = *expr_crs;
 			EXPR_TYPE(expr_end) = PTN_END;
 			EXPR_PRV(expr_end) = expr_sub;
 			EXPR_NXT(expr_end) = expr_at;
 			*expr_crs += 3;
 
-			/*   relink previous expression before sub expression   */
+			/* relink previous expression before sub expression */
 			EXPR_DATA_0(expr_at) = expr_start;
 			EXPR_NXT(expr_prv) = expr_at;
 			EXPR_PRV(expr_at) = expr_prv;
 
-			/*   relink sub expression to start and end   */
+			/* relink sub expression to start and end */
 			EXPR_PRV(expr_sub) = expr_start;
 			EXPR_NXT(expr_sub) = expr_end;
 		}
@@ -1158,7 +1160,7 @@ static int pattern_compile_2(widechar *expr_data, int expr_at, const int expr_ma
 }
 
 /* Resolves alternative expressions.
-*/
+ */
 static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_max, widechar *expr_crs)
 {
 	int expr_mrk, expr_start, expr_end, expr_sub_start, expr_sub_end;
@@ -1180,8 +1182,8 @@ static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_ma
 			if(*expr_crs + 12 >= expr_max)
 				return 0;
 
-			/*   get previous start expression,
-			     can include alternate expressions   */
+			/* get previous start expression,
+			 * can include alternate expressions */
 			expr_mrk = EXPR_PRV(expr_at);
 			if(EXPR_TYPE(expr_mrk) == PTN_START)
 				return 0;
@@ -1190,30 +1192,30 @@ static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_ma
 				expr_mrk = EXPR_PRV(expr_mrk);
 			expr_sub_start = EXPR_NXT(expr_mrk);
 
-			/*   create first start expression   */
+			/* create first start expression */
 			expr_start = *expr_crs;
 			EXPR_TYPE(expr_start) = PTN_START;
 			EXPR_PRV(expr_start) = PTN_END;
 			EXPR_NXT(expr_start) = expr_sub_start;
 			*expr_crs += 3;
 
-			/*   create first end expression   */
+			/* create first end expression */
 			expr_end = *expr_crs;
 			EXPR_TYPE(expr_end) = PTN_END;
 			EXPR_PRV(expr_end) = expr_sub_end;
 			EXPR_NXT(expr_end) = expr_at;
 			*expr_crs += 3;
 
-			/*   relink previous expression before sub expression   */
+			/* relink previous expression before sub expression */
 			EXPR_DATA_0(expr_at) = expr_start;
 			EXPR_NXT(expr_mrk) = expr_at;
 			EXPR_PRV(expr_at) = expr_mrk;
 
-			/*   relink sub expression to start and end   */
+			/* relink sub expression to start and end */
 			EXPR_PRV(expr_sub_start) = expr_start;
 			EXPR_NXT(expr_sub_end) = expr_end;
 
-			/*   get following PTN_END or PTN_ALTERNATE expression   */
+			/* get following PTN_END or PTN_ALTERNATE expression */
 			expr_mrk = EXPR_NXT(expr_at);
 			if(EXPR_TYPE(expr_mrk) == PTN_END || EXPR_TYPE(expr_mrk) == PTN_ALTERNATE)
 				return 0;
@@ -1222,31 +1224,31 @@ static int pattern_compile_3(widechar *expr_data, int expr_at, const int expr_ma
 				expr_mrk = EXPR_NXT(expr_mrk);
 			expr_sub_end = EXPR_PRV(expr_mrk);
 
-			/*   create first start expression   */
+			/* create first start expression */
 			expr_start = *expr_crs;
 			EXPR_TYPE(expr_start) = PTN_START;
 			EXPR_PRV(expr_start) = PTN_END;
 			EXPR_NXT(expr_start) = expr_sub_start;
 			*expr_crs += 3;
 
-			/*   create first end expression   */
+			/* create first end expression */
 			expr_end = *expr_crs;
 			EXPR_TYPE(expr_end) = PTN_END;
 			EXPR_PRV(expr_end) = expr_sub_end;
 			EXPR_NXT(expr_end) = expr_at;
 			*expr_crs += 3;
 
-			/*   relink following expression before sub expression   */
+			/* relink following expression before sub expression */
 			EXPR_DATA_1(expr_at) = expr_start;
 			EXPR_PRV(expr_mrk) = expr_at;
 			EXPR_NXT(expr_at) = expr_mrk;
 
-			/*   relink sub expression to start and end   */
+			/* relink sub expression to start and end */
 			EXPR_PRV(expr_sub_start) = expr_start;
 			EXPR_NXT(expr_sub_end) = expr_end;
 
-			/*   check expressions were after alternate and got moved into
-			     a sub expression, previous expressions already checked   */
+			/* check expressions were after alternate and got moved into
+			 * a sub expression, previous expressions already checked */
 			if(!pattern_compile_3(expr_data, EXPR_DATA_1(expr_at), expr_max, expr_crs))
 				return 0;
 		}
@@ -1269,7 +1271,7 @@ int EXPORT_CALL _lou_pattern_compile(const widechar *input, const int input_max,
 	if(!pattern_compile_1(input, input_max, &input_crs, expr_data, expr_max, &expr_data[0], &expr_data[1]))
 		return 0;
 
-	/*   shift past the last end   */
+	/* shift past the last end */
 	expr_data[0] += 3;
 
 	if(!pattern_compile_2(expr_data, 2, expr_max, &expr_data[0]))
@@ -1314,40 +1316,40 @@ static void pattern_reverse_expression(widechar *expr_data, const int expr_start
 
 	expr_end = EXPR_NXT(expr_start);
 
-	/*   empty expression   */
+	/* empty expression */
 	if(EXPR_TYPE(expr_end) == PTN_END)
 		return;
 
-	/*   find end expression   */
+	/* find end expression */
 	while(EXPR_TYPE(expr_end) != PTN_END)
 		expr_end = EXPR_NXT(expr_end);
 
 	expr_crs = EXPR_PRV(expr_end);
 	expr_prv = EXPR_PRV(expr_crs);
 
-	/*   relink expression before end expression   */
+	/* relink expression before end expression */
 	EXPR_NXT(expr_start) = expr_crs;
 	EXPR_PRV(expr_crs)   = expr_start;
 	EXPR_NXT(expr_crs)   = expr_prv;
 
-	/*   reverse any branching expressions   */
+	/* reverse any branching expressions */
 	pattern_reverse_branch(expr_data, expr_crs);
 
 	while(expr_prv != expr_start)
 	{
-		/*   shift current expression   */
+		/* shift current expression */
 		expr_crs = expr_prv;
 		expr_prv = EXPR_PRV(expr_prv);
 
-		/*   reverse any branching expressions   */
+		/* reverse any branching expressions */
 		pattern_reverse_branch(expr_data, expr_crs);
 
-		/*   relink current expression   */
+		/* relink current expression */
 		EXPR_PRV(expr_crs) = EXPR_NXT(expr_crs);
 		EXPR_NXT(expr_crs) = expr_prv;
 	}
 
-	/*   relink expression after start expression   */
+	/* relink expression after start expression */
 	EXPR_PRV(expr_crs) = EXPR_NXT(expr_crs);
 	EXPR_NXT(expr_crs) = expr_end;
 	EXPR_PRV(expr_end) = expr_crs;
@@ -1404,14 +1406,14 @@ static int pattern_check_expression(
 
 	data = NULL;
 
-	/*   save input_crs to know if loop consumed input   */
+	/* save input_crs to know if loop consumed input */
 	input_start = *input_crs;
 
 	CHECK_OUTPUT(START, 0, __LINE__, "check start")
 
 	while(!(EXPR_TYPE(expr_crs) == PTN_END && EXPR_TYPE(expr_crs) == PTN_END))
 	{
-		/*   end of input expression   */
+		/* end of input expression */
 		if(EXPR_TYPE(expr_crs) == PTN_END_OF_INPUT)
 		{
 		if(*input_crs * input_dir >= input_minmax * input_dir)
@@ -1432,7 +1434,7 @@ static int pattern_check_expression(
 		}
 		}
 
-		/*   no more input   */
+		/* no more input */
 		if(*input_crs * input_dir >= input_minmax * input_dir)
 		{
 			switch(EXPR_TYPE(expr_crs))
@@ -1491,7 +1493,7 @@ static int pattern_check_expression(
 
 		case PTN_ZERO_MORE:
 
-			/*   check if loop already started   */
+			/* check if loop already started */
 			if(expr_crs == loop_crs)
 			{
 				loop_cnts[EXPR_DATA_1(loop_crs)]++;
@@ -1499,20 +1501,20 @@ static int pattern_check_expression(
 			}
 			else
 			{
-				/*   check if loop nested, wasn't running but has a count   */
+				/* check if loop nested, wasn't running but has a count */
 				if(loop_cnts[EXPR_DATA_1(expr_crs)])
 				{
 					CHECK_OUTPUT(SHOW, 0, __LINE__, "loop already running")
 					goto loop_next;
 				}
 
-				/*   start loop   */
+				/* start loop */
 				loop_crs = expr_crs;
 				loop_cnts[EXPR_DATA_1(loop_crs)] = 1;
 				CHECK_OUTPUT(SHOW, 0, __LINE__, "loop start")
 			}
 
-			/*   start loop expression   */
+			/* start loop expression */
 			input_crs_prv = *input_crs;
 			ret = pattern_check_expression(input, input_crs, input_minmax, input_dir, expr_data, hook, hook_data, hook_max, EXPR_DATA_0(expr_crs), not, loop_crs, loop_cnts);
 			if(ret)
@@ -1523,7 +1525,7 @@ static int pattern_check_expression(
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "loop failed")
 			*input_crs = input_crs_prv;
 
-			/*   check loop count   */
+			/* check loop count */
 			loop_cnts[EXPR_DATA_1(loop_crs)]--;
 			if(EXPR_TYPE(expr_crs) == PTN_ONE_MORE)
 			{
@@ -1536,7 +1538,7 @@ static int pattern_check_expression(
 					CHECK_OUTPUT(SHOW, 0, __LINE__, "loop+ passed")
 			}
 
-			/*   continue after loop   */
+			/* continue after loop */
 			loop_next:
 			expr_crs = EXPR_NXT(expr_crs);
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "loop next")
@@ -1544,10 +1546,10 @@ static int pattern_check_expression(
 
 		case PTN_OPTIONAL:
 
-			/*   save current state   */
+			/* save current state */
 			input_crs_prv = *input_crs;
 
-			/*   start optional expression   */
+			/* start optional expression */
 			CHECK_OUTPUT(CALL, 0, __LINE__, "option start")
 			if(pattern_check_expression(input, input_crs, input_minmax, input_dir, expr_data, hook, hook_data, hook_max, EXPR_DATA_0(expr_crs), not, loop_crs, loop_cnts))
 			{
@@ -1556,7 +1558,7 @@ static int pattern_check_expression(
 			}
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "option failed")
 
-			/*   continue after optional expression   */
+			/* continue after optional expression */
 			*input_crs = input_crs_prv;
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "no option start")
 			expr_crs = EXPR_NXT(expr_crs);
@@ -1564,10 +1566,10 @@ static int pattern_check_expression(
 
 		case PTN_ALTERNATE:
 
-			/*   save current state   */
+			/* save current state */
 			input_crs_prv = *input_crs;
 
-			/*   start first expression   */
+			/* start first expression */
 			CHECK_OUTPUT(CALL, 0, __LINE__, "or 1 start")
 			if(pattern_check_expression(input, input_crs, input_minmax, input_dir, expr_data, hook, hook_data, hook_max, EXPR_DATA_0(expr_crs), not, loop_crs, loop_cnts))
 			{
@@ -1576,7 +1578,7 @@ static int pattern_check_expression(
 			}
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "or 1 failed")
 
-			/*   start second expression (no need to push)   */
+			/* start second expression (no need to push) */
 			*input_crs = input_crs_prv;
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "or 2 start")
 			expr_crs = EXPR_DATA_1(expr_crs);
@@ -1633,12 +1635,12 @@ static int pattern_check_expression(
 				return 0;
 			}
 
-			/*   copy expression data   */
+			/* copy expression data */
 			data = EXPR_CONST_DATA(expr_crs);
 			for(i = 0; i < data[0]; i++)
 				hook_data[i] = data[i + 1];
 
-			/*   call hook function   */
+			/* call hook function */
 			ret = hook(input[*input_crs], data[0]);
 			if(ret && not)
 			{
@@ -1663,34 +1665,34 @@ static int pattern_check_expression(
 			return 0;
 		}
 
-		/*   check end expression    */
+		/* check end expression  */
 		while(EXPR_TYPE(expr_crs) == PTN_END)
 		{
 			CHECK_OUTPUT(SHOW, 0, __LINE__, "end")
 
-			/*   check for end of expressions   */
+			/* check for end of expressions */
 			if(EXPR_NXT(expr_crs) == PTN_END)
 				break;
 
 			expr_crs = EXPR_NXT(expr_crs);
 
-			/*   returning loop   */
+			/* returning loop */
 			if(EXPR_TYPE(expr_crs) == PTN_ZERO_MORE || EXPR_TYPE(expr_crs) == PTN_ONE_MORE)
 			{
 				CHECK_OUTPUT(SHOW, 0, __LINE__, "end loop")
 
-				/*   check that loop consumed input   */
+				/* check that loop consumed input */
 				if(*input_crs == input_start)
 				{
 					CHECK_OUTPUT(RETURN, 0, __LINE__, "loop failed:  did not consume")
 					return 0;
 				}
 
-				/*   loops do not continue to the next expression   */
+				/* loops do not continue to the next expression */
 				break;
 			}
 
-			/*   returning not   */
+			/* returning not */
 			if(EXPR_TYPE(expr_crs) == PTN_NOT)
 				not = !not;
 

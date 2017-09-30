@@ -670,7 +670,7 @@ int main(int argn, char **args)
 			blank_pass = 0;
 		}
 		
-		/*   clear emphasis   */
+		/* clear emphasis */
 		memset(emphasis, 0, BUF_MAX);
 		tnote5Len =
 		tnote4Len =

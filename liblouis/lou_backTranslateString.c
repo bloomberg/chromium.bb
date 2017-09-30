@@ -234,8 +234,8 @@ static TranslationTableCharacter *
 back_findCharOrDots (widechar c, int m,
 		     const TranslationTableHeader *table)
 {
-/*Look up character or dot pattern in the appropriate  
-* table. */
+/* Look up character or dot pattern in the appropriate
+ * table. */
   static TranslationTableCharacter noChar =
     { 0, 0, 0, CTC_Space, 32, 32, 32 };
   static TranslationTableCharacter noDots =
@@ -319,8 +319,8 @@ isBegWord (const TranslationTableHeader *table,
 	   int dest,
 	   widechar *currentOutput)
 {
-/*See if this is really the beginning of a word. Look at what has 
-* already been translated. */
+/* See if this is really the beginning of a word. Look at what has
+ * already been translated. */
   int k;
   if (dest == 0)
     return 1;
@@ -345,7 +345,7 @@ isEndWord (const TranslationTableHeader *table,
 {
   if (mode & partialTrans)
     return 0;
-  /*See if this is really the end of a word. */
+  /* See if this is really the end of a word. */
   int k;
   const TranslationTableCharacter *dots;
   TranslationTableOffset testRuleOffset;
@@ -402,7 +402,7 @@ handleMultind (const TranslationTableHeader *table,
 	       int *doingMultind,
 	       const TranslationTableRule *multindRule)
 {
-/*Handle multille braille indicators*/
+/* Handle multille braille indicators */
   int found = 0;
   if (!*doingMultind)
     return 0;
@@ -547,7 +547,7 @@ back_selectRule (const TranslationTableHeader *table,
 		 int *passSrc, const widechar **passInstructions, int *passIC,
 		 int *startMatch, int *startReplace, int *endReplace)
 {
-/*check for valid back-translations */
+/* check for valid back-translations */
   int length = srcmax - src;
   TranslationTableOffset ruleOffset = 0;
   static TranslationTableRule pseudoRule = { 0 };
@@ -564,7 +564,7 @@ back_selectRule (const TranslationTableHeader *table,
 	case 0:
 	  if (length < 2 || (itsANumber && (dots->attributes & CTC_LitDigit)))
 	    break;
-	  /*Hash function optimized for backward translation */
+	  /* Hash function optimized for backward translation */
 	  makeHash = (unsigned long int) dots->realchar << 8;
 	  makeHash += (unsigned long int) (back_findCharOrDots
 					   (currentInput[src + 1],
@@ -578,7 +578,7 @@ back_selectRule (const TranslationTableHeader *table,
 	  length = 1;
 	  ruleOffset = dots->otherRules;
 	  break;
-	case 2:		/*No rule found */
+	case 2: /* No rule found */
 	  *currentRule = &pseudoRule;
 	  *currentOpcode = pseudoRule.opcode = CTO_None;
 	  *currentDotslen = pseudoRule.dotslen = 1;
@@ -615,7 +615,7 @@ back_selectRule (const TranslationTableHeader *table,
 					    & (*currentRule)->before)))
 		{
 		  switch (*currentOpcode)
-		    {		/*check validity of this Translation */
+		    { /* check validity of this Translation */
 		    case CTO_Context:
 		      if (back_passDoTest(table, src, srcmax, currentInput, *currentOpcode, *currentRule, passSrc, passInstructions, passIC, startMatch, startReplace, endReplace))
 		        return;
@@ -782,12 +782,12 @@ back_selectRule (const TranslationTableHeader *table,
 
 					patterns = (widechar*)&table->ruleArea[(*currentRule)->patterns];
 
-					/*   check before pattern   */
+					/* check before pattern */
 					pattern = &patterns[1];
 					if(!_lou_pattern_check(currentInput, src - 1, -1, -1, pattern, table))
 						break;
 
-					/*   check after pattern   */
+					/* check after pattern */
 					pattern = &patterns[patterns[0]];
 					if(!_lou_pattern_check(currentInput, src + (*currentRule)->dotslen, srcmax, 1, pattern, table))
 						break;
@@ -798,7 +798,7 @@ back_selectRule (const TranslationTableHeader *table,
 		      break;
 		    }
 		}
-	    }			/*Done with checking this rule */
+	    } /* Done with checking this rule */
 	  ruleOffset = (*currentRule)->dotsnext;
 	}
     }
@@ -896,7 +896,7 @@ undefinedDots (widechar dots,
 {
   if (mode & noUndefinedDots)
     return 1;
-  /*Print out dot numbers */
+  /* Print out dot numbers */
   widechar buffer[20];
   int k = 1;
   buffer[0] = '\\';
@@ -952,7 +952,7 @@ putCharacter (widechar dots,
 	      int *nextUpper,
 	      int allUpper, int allUpperPhrase)
 {
-/*Output character(s) corresponding to a Unicode braille Character*/
+/* Output character(s) corresponding to a Unicode braille Character */
   TranslationTableOffset offset =
     (back_findCharOrDots (dots, 1, table))->definitionRule;
   if (offset)
@@ -1087,7 +1087,7 @@ makeCorrections (const TranslationTableHeader *table,
 		length = 1;
 		ruleOffset = character->otherRules;
 		break;
-	      case 2:		/*No rule found */
+	      case 2: /* No rule found */
 		currentOpcode = CTO_Always;
 		ruleOffset = 0;
 		break;
@@ -1159,9 +1159,9 @@ backTranslateString (const TranslationTableHeader *table,
   int allUpperPhrase;
   int itsANumber;
   int itsALetter;
-  /*Back translation */
+  /* Back translation */
   int srcword = 0;
-  int destword = 0;		/* last word translated */
+  int destword = 0; /* last word translated */
   TranslationTableOpcode previousOpcode;
   int doingMultind = 0;
   const TranslationTableRule *multindRule;
@@ -1172,7 +1172,7 @@ backTranslateString (const TranslationTableHeader *table,
   *src = *dest = 0;
   while (*src < srcmax)
     {
-/*the main translation loop */
+/* the main translation loop */
       int currentDotslen; /* length of current find string */
       TranslationTableOpcode currentOpcode;
       const TranslationTableRule *currentRule; /* pointer to current rule in table */
@@ -1343,7 +1343,7 @@ backTranslateString (const TranslationTableHeader *table,
       if ((currentOpcode >= CTO_Always && currentOpcode <= CTO_None) ||
 	  (currentOpcode >= CTO_Digit && currentOpcode <= CTO_LitDigit))
 	previousOpcode = currentOpcode;
-    }				/*end of translation loop */
+    } /* end of translation loop */
 failure:
 
   if (destword != 0 && *src < srcmax && !checkAttr (currentInput[*src],
@@ -1359,9 +1359,9 @@ failure:
 	  break;
     }
   return 1;
-}				/*translation completed */
+} /* translation completed */
 
-/*Multipass translation*/
+/* Multipass translation */
 
 static int
 matchcurrentInput (const widechar *currentInput,
@@ -1776,7 +1776,7 @@ translatePass (const TranslationTableHeader *table,
   *src = *dest = 0;
   _lou_resetPassVariables();
   while (*src < srcmax)
-    {				/*the main multipass translation loop */
+    { /* the main multipass translation loop */
       TranslationTableOpcode currentOpcode;
       const TranslationTableRule *currentRule; /* pointer to current rule in table */
       int passSrc;
