@@ -77,7 +77,7 @@ nobase_dist_bin_SCRIPTS = \
 	lou_maketable.d/wrap_patgen.sh
 endif
 
-SOURCE_FORMATTER := clang-format -i
+SOURCE_FORMATTER = clang-format -i
 
 .PHONY : format-sources
 format-sources :

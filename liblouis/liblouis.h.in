@@ -36,7 +36,10 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif /* __cplusplus */
 
+// clang-format interacts badly with @foo@
+// clang-format off
 typedef @WIDECHAR_TYPE@ widechar;
+// clang-format on
 typedef unsigned short formtype;
 
 #ifdef _MSC_VER

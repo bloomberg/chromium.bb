@@ -47,11 +47,10 @@ liblouis_la_SOURCES =				\
 nodist_liblouis_la_SOURCES = \
 	liblouis.h
 
-SOURCE_FORMATTER := clang-format -i
+SOURCE_FORMATTER = clang-format -i
 
 .PHONY : format-sources
 format-sources :
 	for file in $(SOURCES); do $(SOURCE_FORMATTER) $$file; done
-# FIXME: ignore WIDECHAR line in liblouis.h.in
-	cp liblouis.h liblouis.h.in
+	$(SOURCE_FORMATTER) liblouis.h.in
 
