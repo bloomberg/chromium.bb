@@ -687,9 +687,9 @@ doPassSearch (const TranslationTableHeader *table,
 		    itsTrue = 0;
 		  else
 		    itsTrue =
-		      (((findCharOrDots (currentInput[(*searchSrc)++],
+		      ((findCharOrDots (currentInput[(*searchSrc)++],
 					 passCharDots, table)->
-			 attributes & attributes)) ? 1 : 0);
+			 attributes & attributes) ? 1 : 0);
 		  if (!itsTrue)
 		    break;
 		}
@@ -1668,7 +1668,7 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength, int
 	  if (*src >= compbrlStart)
 	    {
 	      *cursorStatus = 2;
-	      return (doCompTrans (compbrlStart, compbrlEnd, table, src, dest, srcmax, destmax, mode, currentInput, currentOutput, srcMapping, prevSrcMapping, emphasisBuffer, transNoteBuffer, transRule, inputPositions, outputPositions, cursorPosition, cursorStatus, compbrlStart, compbrlEnd));
+	      return doCompTrans (compbrlStart, compbrlEnd, table, src, dest, srcmax, destmax, mode, currentInput, currentOutput, srcMapping, prevSrcMapping, emphasisBuffer, transNoteBuffer, transRule, inputPositions, outputPositions, cursorPosition, cursorStatus, compbrlStart, compbrlEnd);
 	    }
 	}
       else if (*cursorPosition >= *src && *cursorPosition < (*src + inLength))
@@ -2836,7 +2836,7 @@ doCompbrl (const TranslationTableHeader *table,
   for (stringEnd = *src; stringEnd < srcmax; stringEnd++)
     if (checkAttr (currentInput[stringEnd], CTC_Space, 0, table))
       break;
-  return (doCompTrans (stringStart, stringEnd, table, src, dest, srcmax, destmax, mode, currentInput, currentOutput, srcMapping, prevSrcMapping, emphasisBuffer, transNoteBuffer, transRule, inputPositions, outputPositions, cursorPosition, cursorStatus, compbrlStart, compbrlEnd));
+  return doCompTrans (stringStart, stringEnd, table, src, dest, srcmax, destmax, mode, currentInput, currentOutput, srcMapping, prevSrcMapping, emphasisBuffer, transNoteBuffer, transRule, inputPositions, outputPositions, cursorPosition, cursorStatus, compbrlStart, compbrlEnd);
 }
 
 static int
