@@ -24,13 +24,13 @@ BraceWrapping:
   AfterClass:      false
   AfterControlStatement: false
   AfterEnum:       false
-  AfterFunction:   true
+  AfterFunction:   false
   AfterNamespace:  false
   AfterObjCDeclaration: false
   AfterStruct:     false
   AfterUnion:      false
   BeforeCatch:     false
-  BeforeElse:      true
+  BeforeElse:      false
   IndentBraces:    false
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
@@ -85,5 +85,5 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard:        Auto
 TabWidth:        4
-UseTab:          Never
+UseTab:          ForIndentation
 ...
