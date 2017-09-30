@@ -480,6 +480,14 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
         return true;
     }
 
+    private void commitCodePointOnUiThread(int codePoint, int pendingAccentToSet) {
+        StringBuilder builder = new StringBuilder();
+        builder.appendCodePoint(codePoint);
+        String text = builder.toString();
+        mImeAdapter.sendCompositionToNative(text, 1, true, 0);
+        setCombiningAccentOnUiThread(pendingAccentToSet);
+    }
+
     private boolean handleCombiningAccentOnUiThread(final KeyEvent event) {
         // TODO(changwan): this will break the current composition. check if we can
         // implement it in the renderer instead.
@@ -487,24 +495,40 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
         int unicodeChar = event.getUnicodeChar();
 
         if (action != KeyEvent.ACTION_DOWN) return false;
+
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+            // We clear the pending accent on receiving a backspace key event (and also delete the
+            // preceding character).
+            setCombiningAccentOnUiThread(0);
+            return false;
+        }
+
         if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) != 0) {
-            int pendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
-            StringBuilder builder = new StringBuilder();
-            builder.appendCodePoint(pendingAccent);
-            updateComposingTextOnUiThread(builder.toString(), 1, true);
-            setCombiningAccentOnUiThread(pendingAccent);
+            int newPendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
+            if (mPendingAccent != 0) {
+                // Already have an accent pending. Commit the previous accent. If the newly-typed
+                // accent is not the same as the previous one, set it as pending.
+                if (newPendingAccent == mPendingAccent) {
+                    commitCodePointOnUiThread(mPendingAccent, 0);
+                } else {
+                    commitCodePointOnUiThread(mPendingAccent, newPendingAccent);
+                }
+                return true;
+            }
+
+            // No accent currently pending. Just set the new accent as the pending accent and
+            // return.
+            setCombiningAccentOnUiThread(newPendingAccent);
             return true;
         } else if (mPendingAccent != 0 && unicodeChar != 0) {
             int combined = KeyEvent.getDeadChar(mPendingAccent, unicodeChar);
             if (combined != 0) {
-                StringBuilder builder = new StringBuilder();
-                builder.appendCodePoint(combined);
-                String text = builder.toString();
-                commitTextOnUiThread(text, 1);
+                commitCodePointOnUiThread(combined, 0);
                 return true;
             }
             // Noncombinable character; commit the accent character and fall through to sending
             // the key event for the character afterwards.
+            commitCodePointOnUiThread(mPendingAccent, 0);
             finishComposingTextOnUiThread();
         }
         return false;
@@ -532,7 +556,6 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
     }
 
     private void finishComposingTextOnUiThread() {
-        cancelCombiningAccentOnUiThread();
         mImeAdapter.finishComposingText();
     }
 
