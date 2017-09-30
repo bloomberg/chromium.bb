@@ -243,6 +243,10 @@ add_dependencies(aom_rtcd aom_version)
 add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
 add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 
+if (NOT MSVC AND NOT APPLE)
+  target_link_libraries(aom ${AOM_LIB_LINK_TYPE} m)
+endif ()
+
 # List of object and static library targets.
 set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_encoder_stats aom_mem
     aom_scale aom)
