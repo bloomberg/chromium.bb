@@ -45,7 +45,7 @@ static const struct option longopts[] =
   { "version", no_argument, NULL, 'v' },
   { "forward", no_argument, NULL, 'f' },
   { "backward", no_argument, NULL, 'b' },
-  { NULL, 0, NULL, 0 }
+  { NULL, 0, NULL, 0 },
 };
 
 const char version_etc_copyright[] =

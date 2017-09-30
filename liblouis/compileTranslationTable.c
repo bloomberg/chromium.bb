@@ -116,7 +116,7 @@ static const char *characterClassNames[] = {
   "math",
   "sign",
   "litdigit",
-  NULL
+  NULL,
 };
 
 typedef struct CharacterClass {
@@ -540,7 +540,7 @@ definedCharOrDots (FileInfo * nested,
     .attributes = CTC_Space,
     .realchar = 32,
     .uppercase = 32,
-    .lowercase = 32
+    .lowercase = 32,
   };
   static TranslationTableCharacter noDots = {
     .next = 0,
@@ -549,7 +549,7 @@ definedCharOrDots (FileInfo * nested,
     .attributes = CTC_Space,
     .realchar = B16,
     .uppercase = B16,
-    .lowercase = B16
+    .lowercase = B16,
   };
   TranslationTableCharacter *notFound;
   TranslationTableCharacter *charOrDots = compile_findCharOrDots (c, m, table);
