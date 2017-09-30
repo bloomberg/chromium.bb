@@ -74,10 +74,12 @@ typedef struct {
   int eob_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
   int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
-  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
 #if BR_NODE
+  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
-#endif
+#else   // BR_NODE
+  int lps_cost[LEVEL_CONTEXTS][2];
+#endif  // BR_NODE
 #if CONFIG_CTX1D
   int eob_mode_cost[TX_CLASSES][2];
   int empty_line_cost[TX_CLASSES][EMPTY_LINE_CONTEXTS][2];

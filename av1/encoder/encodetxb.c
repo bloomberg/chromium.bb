@@ -523,15 +523,24 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
 }
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
-                              const int coeff_lps[COEFF_BASE_RANGE + 1]) {
+                              const int *coeff_lps) {
   const tran_low_t min_level = 1 + NUM_BASE_LEVELS;
   const tran_low_t max_level = 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE;
   (void)ctx;
   if (abs_qc >= min_level) {
+#if BR_NODE
     if (abs_qc >= max_level)
       return coeff_lps[COEFF_BASE_RANGE];  // COEFF_BASE_RANGE * cost0;
     else
       return coeff_lps[(abs_qc - min_level)];  //  * cost0 + cost1;
+#else
+    const int cost0 = coeff_lps[0];
+    const int cost1 = coeff_lps[1];
+    if (abs_qc >= max_level)
+      return COEFF_BASE_RANGE * cost0;
+    else
+      return (abs_qc - min_level) * cost0 + cost1;
+#endif
   } else {
     return 0;
   }
@@ -1119,20 +1128,33 @@ static int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
         get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
+#if BR_NODE
     cost_diff = -level_cost[0] + low_level_cost[1] - low_level_cost[0];
+#else
+    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
+#endif
   } else if (abs_qc < 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *level_cost =
         get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
 
+#if BR_NODE
     cost_diff = -level_cost[abs_qc - 1 - NUM_BASE_LEVELS] +
                 low_level_cost[abs(*low_coeff) - 1 - NUM_BASE_LEVELS];
+#else
+    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
+#endif
   } else if (abs_qc == 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
+#if BR_NODE
     cost_diff = -get_golomb_cost(abs_qc) - low_level_cost[COEFF_BASE_RANGE] +
                 low_level_cost[COEFF_BASE_RANGE - 1];
+#else
+    cost_diff =
+        -get_golomb_cost(abs_qc) + low_level_cost[1] - low_level_cost[0];
+#endif
   } else {
     assert(abs_qc > 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE);
     const tran_low_t abs_low_coeff = abs(*low_coeff);
