@@ -90,7 +90,7 @@ void DedicatedWorkerGlobalScope::postMessage(
     const MessagePortArray& ports,
     ExceptionState& exception_state) {
   // Disentangle the port in preparation for sending it to the remote context.
-  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
+  auto channels = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;

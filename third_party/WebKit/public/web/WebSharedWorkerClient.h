@@ -32,7 +32,6 @@
 #define WebSharedWorkerClient_h
 
 #include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/web_feature.mojom-shared.h"
 #include "public/web/WebDevToolsAgentClient.h"

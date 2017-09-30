@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_APP_WEB_MESSAGE_PORT_H_
 
 #include "base/android/jni_weak_ref.h"
-#include "content/common/message_port.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 
 namespace content {
 
@@ -17,7 +17,7 @@ class AppWebMessagePort {
       mojo::ScopedMessagePipeHandle handle,
       const base::android::JavaRef<jobject>& jobject);
 
-  static std::vector<MessagePort> UnwrapJavaArray(
+  static std::vector<blink::MessagePortChannel> UnwrapJavaArray(
       JNIEnv* env,
       const base::android::JavaRef<jobjectArray>& jports);
 
@@ -46,7 +46,7 @@ class AppWebMessagePort {
 
   void OnMessagesAvailable();
 
-  MessagePort port_;
+  blink::MessagePortChannel channel_;
   JavaObjectWeakGlobalRef java_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWebMessagePort);

@@ -40,7 +40,6 @@
 #include "content/child/web_database_observer_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/webfileutilities_impl.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/render_process_messages.h"
@@ -455,12 +454,6 @@ unsigned long long RendererBlinkPlatformImpl::VisitedLinkHash(
 
 bool RendererBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
-}
-
-void RendererBlinkPlatformImpl::CreateMessageChannel(
-    std::unique_ptr<blink::WebMessagePortChannel>* channel1,
-    std::unique_ptr<blink::WebMessagePortChannel>* channel2) {
-  WebMessagePortChannelImpl::CreatePair(channel1, channel2);
 }
 
 blink::WebPrescientNetworking*

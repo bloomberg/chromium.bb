@@ -181,7 +181,7 @@ class DedicatedWorkerTest : public ::testing::Test {
 
   void DispatchMessageEvent() {
     WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(
-        nullptr /* message */, MessagePortChannelArray());
+        nullptr /* message */, Vector<MessagePortChannel>());
   }
 
   DedicatedWorkerMessagingProxyForTest* WorkerMessagingProxy() {

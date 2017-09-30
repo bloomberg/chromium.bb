@@ -66,7 +66,7 @@ void MessagePort::postMessage(ScriptState* script_state,
   if (!IsEntangled())
     return;
   DCHECK(GetExecutionContext());
-  DCHECK(entangled_channel_);
+  DCHECK(!IsNeutered());
 
   // Make sure we aren't connected to any of the passed-in ports.
   for (unsigned i = 0; i < ports.size(); ++i) {
@@ -77,42 +77,22 @@ void MessagePort::postMessage(ScriptState* script_state,
       return;
     }
   }
-  MessagePortChannelArray channels = MessagePort::DisentanglePorts(
+  WebVector<MessagePortChannel> channels = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
 
   StringView wire_data = message->GetWireData();
-  WebMessagePortChannelArray web_channels =
-      ToWebMessagePortChannelArray(std::move(channels));
-  entangled_channel_->PostMessage(
+  channel_.PostMessage(
       reinterpret_cast<const uint8_t*>(wire_data.Characters8()),
-      wire_data.length(), std::move(web_channels));
+      wire_data.length(), channels.ReleaseVector());
 }
 
-// static
-WebMessagePortChannelArray MessagePort::ToWebMessagePortChannelArray(
-    MessagePortChannelArray channels) {
-  WebMessagePortChannelArray web_channels(channels.size());
-  for (size_t i = 0; i < channels.size(); ++i)
-    web_channels[i] = std::move(channels[i]);
-  return web_channels;
-}
-
-// static
-MessagePortArray* MessagePort::ToMessagePortArray(
-    ExecutionContext* context,
-    WebMessagePortChannelArray web_channels) {
-  MessagePortChannelArray channels(web_channels.size());
-  for (size_t i = 0; i < web_channels.size(); ++i)
-    channels[i] = std::move(web_channels[i]);
-  return MessagePort::EntanglePorts(*context, std::move(channels));
-}
-
-std::unique_ptr<WebMessagePortChannel> MessagePort::Disentangle() {
-  DCHECK(entangled_channel_);
-  entangled_channel_->SetClient(nullptr);
-  return std::move(entangled_channel_);
+MessagePortChannel MessagePort::Disentangle() {
+  DCHECK(!IsNeutered());
+  auto result = std::move(channel_);
+  channel_ = MessagePortChannel();
+  return result;
 }
 
 // Invoked to notify us that there are messages available for this port.
@@ -138,56 +118,59 @@ void MessagePort::start() {
   if (started_)
     return;
 
-  entangled_channel_->SetClient(this);
+  // Note that MessagePortChannel may call this callback on any thread.
+  channel_.SetCallback(ConvertToBaseCallback(CrossThreadBind(
+      &MessagePort::MessageAvailable, WrapCrossThreadWeakPersistent(this))));
   started_ = true;
   MessageAvailable();
 }
 
 void MessagePort::close() {
-  if (IsEntangled())
-    entangled_channel_->SetClient(nullptr);
+  // A closed port should not be neutered, so don't disconnect the message pipe.
+  // TODO(crbug.com/673526): Make sure that transfering a closed port keeps the
+  // port closed.
   closed_ = true;
 }
 
-void MessagePort::Entangle(std::unique_ptr<WebMessagePortChannel> remote) {
+void MessagePort::Entangle(mojo::ScopedMessagePipeHandle handle) {
+  Entangle(MessagePortChannel(std::move(handle)));
+}
+
+void MessagePort::Entangle(MessagePortChannel channel) {
   // Only invoked to set our initial entanglement.
-  DCHECK(!entangled_channel_);
+  DCHECK(!channel_.GetHandle().is_valid());
+  DCHECK(channel.GetHandle().is_valid());
   DCHECK(GetExecutionContext());
 
-  entangled_channel_ = std::move(remote);
+  channel_ = std::move(channel);
 }
 
 const AtomicString& MessagePort::InterfaceName() const {
   return EventTargetNames::MessagePort;
 }
 
-static bool TryGetMessageFrom(WebMessagePortChannel& web_channel,
-                              RefPtr<SerializedScriptValue>& message,
-                              MessagePortChannelArray& channels) {
-  WebVector<uint8_t> message_data;
-  WebMessagePortChannelArray web_channels;
-  if (!web_channel.TryGetMessage(&message_data, web_channels))
+bool MessagePort::TryGetMessage(RefPtr<SerializedScriptValue>& message,
+                                Vector<MessagePortChannel>& channels) {
+  if (IsNeutered())
     return false;
 
-  if (web_channels.size()) {
-    channels.resize(web_channels.size());
-    for (size_t i = 0; i < web_channels.size(); ++i)
-      channels[i] = std::move(web_channels[i]);
-  }
+  std::vector<uint8_t> message_data;
+  std::vector<MessagePortChannel> channels_vector;
+  if (!channel_.GetMessage(&message_data, &channels_vector))
+    return false;
+
+  channels.Shrink(0);
+  channels.ReserveCapacity(channels_vector.size());
+  channels.AppendRange(std::make_move_iterator(channels_vector.begin()),
+                       std::make_move_iterator(channels_vector.end()));
+
   message = SerializedScriptValue::Create(
-      reinterpret_cast<const char*>(message_data.Data()), message_data.size());
+      reinterpret_cast<const char*>(message_data.data()), message_data.size());
   return true;
 }
 
-bool MessagePort::TryGetMessage(RefPtr<SerializedScriptValue>& message,
-                                MessagePortChannelArray& channels) {
-  if (!entangled_channel_)
-    return false;
-  return TryGetMessageFrom(*entangled_channel_, message, channels);
-}
-
 void MessagePort::DispatchMessages() {
-  // Signal to |messageAvailable()| that there are no ongoing
+  // Signal to |MessageAvailable()| that there are no ongoing
   // dispatches of messages. This can cause redundantly posted
   // tasks, but safely avoids messages languishing.
   ReleaseStore(&pending_dispatch_task_, 0);
@@ -214,7 +197,7 @@ void MessagePort::DispatchMessages() {
     }
 
     RefPtr<SerializedScriptValue> message;
-    MessagePortChannelArray channels;
+    Vector<MessagePortChannel> channels;
     if (!TryGetMessage(message, channels))
       break;
 
@@ -235,12 +218,12 @@ bool MessagePort::HasPendingActivity() const {
   return started_ && IsEntangled();
 }
 
-MessagePortChannelArray MessagePort::DisentanglePorts(
+Vector<MessagePortChannel> MessagePort::DisentanglePorts(
     ExecutionContext* context,
     const MessagePortArray& ports,
     ExceptionState& exception_state) {
   if (!ports.size())
-    return MessagePortChannelArray();
+    return Vector<MessagePortChannel>();
 
   HeapHashSet<Member<MessagePort>> visited;
 
@@ -259,7 +242,7 @@ MessagePortChannelArray MessagePort::DisentanglePorts(
       exception_state.ThrowDOMException(
           kDataCloneError,
           "Port at index " + String::Number(i) + " is " + type + ".");
-      return MessagePortChannelArray();
+      return Vector<MessagePortChannel>();
     }
     visited.insert(port);
   }
@@ -267,14 +250,23 @@ MessagePortChannelArray MessagePort::DisentanglePorts(
   UseCounter::Count(context, WebFeature::kMessagePortsTransferred);
 
   // Passed-in ports passed validity checks, so we can disentangle them.
-  MessagePortChannelArray port_array(ports.size());
+  Vector<MessagePortChannel> channels;
+  channels.ReserveInitialCapacity(ports.size());
   for (unsigned i = 0; i < ports.size(); ++i)
-    port_array[i] = ports[i]->Disentangle();
-  return port_array;
+    channels.push_back(ports[i]->Disentangle());
+  return channels;
 }
 
-MessagePortArray* MessagePort::EntanglePorts(ExecutionContext& context,
-                                             MessagePortChannelArray channels) {
+MessagePortArray* MessagePort::EntanglePorts(
+    ExecutionContext& context,
+    Vector<MessagePortChannel> channels) {
+  return EntanglePorts(context,
+                       WebVector<MessagePortChannel>(std::move(channels)));
+}
+
+MessagePortArray* MessagePort::EntanglePorts(
+    ExecutionContext& context,
+    WebVector<MessagePortChannel> channels) {
   // https://html.spec.whatwg.org/multipage/comms.html#message-ports
   // |ports| should be an empty array, not null even when there is no ports.
   MessagePortArray* port_array = new MessagePortArray(channels.size());
@@ -284,6 +276,10 @@ MessagePortArray* MessagePort::EntanglePorts(ExecutionContext& context,
     (*port_array)[i] = port;
   }
   return port_array;
+}
+
+MojoHandle MessagePort::EntangledHandleForTesting() const {
+  return channel_.GetHandle().get().value();
 }
 
 DEFINE_TRACE(MessagePort) {

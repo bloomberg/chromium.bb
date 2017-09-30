@@ -64,7 +64,7 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(std::move(data), origin, last_event_id, source,
                             ports, suborigin);
   }
-  static MessageEvent* Create(MessagePortChannelArray channels,
+  static MessageEvent* Create(Vector<MessagePortChannel> channels,
                               RefPtr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
@@ -125,7 +125,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   MessagePortArray ports();
   bool isPortsDirty() const { return is_ports_dirty_; }
 
-  MessagePortChannelArray ReleaseChannels() { return std::move(channels_); }
+  Vector<MessagePortChannel> ReleaseChannels() { return std::move(channels_); }
 
   const AtomicString& InterfaceName() const override;
 
@@ -191,7 +191,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
-               MessagePortChannelArray,
+               Vector<MessagePortChannel>,
                const String& suborigin);
 
   MessageEvent(const String& data,
@@ -216,7 +216,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   // non-empty at a time. EntangleMessagePorts() moves between the states.
   Member<MessagePortArray> ports_;
   bool is_ports_dirty_ = true;
-  MessagePortChannelArray channels_;
+  Vector<MessagePortChannel> channels_;
   String suborigin_;
 };
 

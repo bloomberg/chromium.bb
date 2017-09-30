@@ -5,7 +5,6 @@
 #include "content/renderer/shared_worker/shared_worker_client_impl.h"
 
 #include "content/child/child_thread_impl.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/view_messages.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"

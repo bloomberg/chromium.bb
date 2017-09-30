@@ -17,6 +17,10 @@
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
 
+namespace blink {
+class MessagePortChannel;
+}
+
 namespace service_manager {
 class InterfaceProvider;
 }
@@ -40,7 +44,7 @@ class SharedWorkerRepository final
       blink::WebAddressSpace,
       blink::mojom::SharedWorkerCreationContextType,
       bool data_saver_enabled,
-      std::unique_ptr<blink::WebMessagePortChannel> channel,
+      blink::MessagePortChannel channel,
       std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) override;
   void DocumentDetached(DocumentID document_id) override;
 

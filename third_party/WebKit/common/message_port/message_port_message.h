@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MESSAGE_PORT_MESSAGE_H_
-#define CONTENT_COMMON_MESSAGE_PORT_MESSAGE_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_MESSAGE_H_
+#define THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_MESSAGE_H_
 
 #include <vector>
 
 #include "base/containers/span.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
-namespace content {
+namespace blink {
 
 // This struct represents messages as they are posted over a message port. This
 // type can be serialized as a content::mojom::MessagePortMessage struct.
@@ -30,6 +30,6 @@ struct MessagePortMessage {
   std::vector<mojo::ScopedMessagePipeHandle> ports;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MESSAGE_PORT_MESSAGE_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_MESSAGE_PORT_MESSAGE_H_

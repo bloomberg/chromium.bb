@@ -83,6 +83,8 @@ class WebVector {
 
   WebVector(std::vector<T>&& other) : data_(std::move(other)) {}
 
+  std::vector<T> ReleaseVector() { return std::move(data_); }
+
   WebVector& operator=(const WebVector& other) {
     if (this != &other)
       Assign(other);

@@ -31,10 +31,13 @@ class WebNotificationPresenter;
 class WebSharedWorker;
 }
 
+namespace blink {
+class MessagePortChannel;
+}
+
 namespace content {
 class SharedWorkerDevToolsAgent;
 class WebApplicationCacheHostImpl;
-class WebMessagePortChannelImpl;
 
 // A stub class to receive IPC from browser process and talk to
 // blink::WebSharedWorker. Implements blink::WebSharedWorkerClient.
@@ -90,7 +93,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
 
   // WebSharedWorker will own |channel|.
   void ConnectToChannel(int connection_request_id,
-                        std::unique_ptr<WebMessagePortChannelImpl> channel);
+                        blink::MessagePortChannel channel);
 
   // mojom::SharedWorker methods:
   void Connect(int connection_request_id,
@@ -106,8 +109,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   blink::WebSharedWorker* impl_ = nullptr;
   std::unique_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
-  using PendingChannel = std::pair<int /* connection_request_id */,
-                                   std::unique_ptr<WebMessagePortChannelImpl>>;
+  using PendingChannel =
+      std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   std::vector<PendingChannel> pending_channels_;
 
   ScopedChildProcessReference process_ref_;

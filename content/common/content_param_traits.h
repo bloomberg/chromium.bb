@@ -21,8 +21,8 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/accessibility/ax_modes.h"
 
-namespace content {
-class MessagePort;
+namespace blink {
+class MessagePortChannel;
 }
 
 namespace IPC {
@@ -54,8 +54,8 @@ struct ParamTraits<WebInputEventPointer> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<content::MessagePort> {
-  typedef content::MessagePort param_type;
+struct CONTENT_EXPORT ParamTraits<blink::MessagePortChannel> {
+  typedef blink::MessagePortChannel param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m, base::PickleIterator* iter,
                    param_type* r);

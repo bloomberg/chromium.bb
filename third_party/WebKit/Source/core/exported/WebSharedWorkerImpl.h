@@ -90,7 +90,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       WebAddressSpace,
       bool data_saver_enabled,
       mojo::ScopedMessagePipeHandle content_settings_handle) override;
-  void Connect(std::unique_ptr<WebMessagePortChannel>) override;
+  void Connect(MessagePortChannel) override;
   void TerminateWorkerContext() override;
 
   void PauseWorkerContextOnStart() override;
@@ -121,7 +121,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void DidReceiveScriptLoaderResponse();
   void OnScriptLoaderFinished();
 
-  void ConnectTaskOnWorkerThread(std::unique_ptr<WebMessagePortChannel>);
+  void ConnectTaskOnWorkerThread(MessagePortChannel);
 
   std::unique_ptr<WorkerShadowPage> shadow_page_;
 

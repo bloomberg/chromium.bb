@@ -507,7 +507,7 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     const base::string16& message,
-    const std::vector<MessagePort>& sent_message_ports) {
+    const std::vector<blink::MessagePortChannel>& sent_message_ports) {
   if (!dispatcher_host_)
     return;
 
