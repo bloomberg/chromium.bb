@@ -20,6 +20,8 @@
  * installed.
  */
 
+#include "liblouis.h"
+
 int check_inpos(const char *tableList, const char *str, const int *expected_poslist);
 
 int check_outpos(const char *tableList, const char *str, const int *expected_poslist);
