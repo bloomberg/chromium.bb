@@ -311,7 +311,6 @@ typedef struct frame_contexts {
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-  aom_prob tx_size_probs[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH];
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   aom_prob quarter_tx_size_prob;
 #endif
@@ -492,10 +491,8 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-  // TODO(any): tx_size_totals is only used by the encoder to decide whether
-  // to use forward updates for the coeff probs, and as such it does not really
-  // belong into this structure.
-  unsigned int tx_size_totals[TX_SIZES];
+  // TODO(urvang): Only needed for !CONFIG_VAR_TX case. So can be removed when
+  // CONFIG_VAR_TX flag is removed.
   unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   unsigned int quarter_tx_size[2];
@@ -576,7 +573,6 @@ extern const aom_tree_index
 #endif
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
-extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 extern const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)];
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP

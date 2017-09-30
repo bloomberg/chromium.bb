@@ -678,7 +678,6 @@ int main(int argc, const char **argv) {
 #endif
 
 /* Transform size */
-// TODO(yuec): av1_tx_size_tree has variable sizes, so needs special handling
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   cts_each_dim[0] = 2;
   optimize_entropy_table(&fc.quarter_tx_size[0], probsfile, 1, cts_each_dim,

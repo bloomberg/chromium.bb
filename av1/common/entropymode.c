@@ -2527,55 +2527,6 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
                                                     1] = { -1, -1, 0, -1, -1,
                                                            4,  3,  2, 1 };
 
-// The transform size is coded as an offset to the smallest transform
-// block size.
-const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)] = {
-  {
-      // Max tx_size is 8X8
-      -0, -1,
-  },
-  {
-      // Max tx_size is 16X16
-      -0, 2, -1, -2,
-  },
-  {
-      // Max tx_size is 32X32
-      -0, 2, -1, 4, -2, -3,
-  },
-#if CONFIG_TX64X64
-  {
-      // Max tx_size is 64X64
-      -0, 2, -1, 4, -2, 6, -3, -4,
-  },
-#endif  // CONFIG_TX64X64
-};
-
-static const aom_prob default_tx_size_prob[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
-                                          [MAX_TX_DEPTH] = {
-                                            {
-                                                // Max tx_size is 8X8
-                                                { 100 },
-                                                { 66 },
-                                            },
-                                            {
-                                                // Max tx_size is 16X16
-                                                { 20, 152 },
-                                                { 15, 101 },
-                                            },
-                                            {
-                                                // Max tx_size is 32X32
-                                                { 3, 136, 37 },
-                                                { 5, 52, 13 },
-                                            },
-#if CONFIG_TX64X64
-                                            {
-                                                // Max tx_size is 64X64
-                                                { 1, 64, 136, 127 },
-                                                { 1, 32, 52, 67 },
-                                            },
-#endif  // CONFIG_TX64X64
-                                          };
-
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 static const aom_prob default_quarter_tx_size_prob = 192;
 #endif
@@ -5012,7 +4963,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-  av1_copy(fc->tx_size_probs, default_tx_size_prob);
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
 #endif
@@ -5268,17 +5218,12 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
-  int i, j;
+  int i;
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
 
   if (cm->tx_mode == TX_MODE_SELECT) {
-    for (i = 0; i < MAX_TX_DEPTH; ++i) {
-      for (j = 0; j < TX_SIZE_CONTEXTS; ++j)
-        aom_tree_merge_probs(av1_tx_size_tree[i], pre_fc->tx_size_probs[i][j],
-                             counts->tx_size[i][j], fc->tx_size_probs[i][j]);
-    }
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     fc->quarter_tx_size_prob = av1_mode_mv_merge_probs(
         pre_fc->quarter_tx_size_prob, counts->quarter_tx_size);
