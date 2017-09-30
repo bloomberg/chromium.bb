@@ -58,7 +58,8 @@ class TestSecurityStateHelper {
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
         displayed_password_field_on_http_(false),
         displayed_credit_card_field_on_http_(false),
-        is_incognito_(false) {}
+        is_incognito_(false),
+        is_error_page_(false) {}
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -96,6 +97,8 @@ class TestSecurityStateHelper {
   }
   void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
+  void set_is_error_page(bool is_error_page) { is_error_page_ = is_error_page; }
+
   void set_insecure_field_edit(bool insecure_field_edit) {
     insecure_input_events_.insecure_field_edited = insecure_field_edit;
   }
@@ -118,6 +121,7 @@ class TestSecurityStateHelper {
     state->displayed_credit_card_field_on_http =
         displayed_credit_card_field_on_http_;
     state->is_incognito = is_incognito_;
+    state->is_error_page = is_error_page_;
     state->insecure_input_events = insecure_input_events_;
     return state;
   }
@@ -141,6 +145,7 @@ class TestSecurityStateHelper {
   bool displayed_password_field_on_http_;
   bool displayed_credit_card_field_on_http_;
   bool is_incognito_;
+  bool is_error_page_;
   InsecureInputEventData insecure_input_events_;
 };
 
@@ -670,6 +675,30 @@ TEST(SecurityStateTest, SslCertificateValid) {
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::NONE));
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::DANGEROUS));
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::HTTP_SHOW_WARNING));
+}
+
+// Tests that HTTP_SHOW_WARNING is not set in incognito for error pages.
+TEST(SecurityStateTest, IncognitoErrorPage) {
+  // Enable the "non-secure-while-incognito" configuration.
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+  TestSecurityStateHelper helper;
+  SecurityInfo security_info;
+  helper.SetUrl(GURL("http://nonexistent.test"));
+  helper.set_is_incognito(true);
+  helper.set_is_error_page(true);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_EQ(SecurityLevel::NONE, security_info.security_level);
+  EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+
+  // Sanity-check that if it's not an error page, the security level is
+  // downgraded.
+  helper.set_is_error_page(false);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_TRUE(security_info.incognito_downgraded_security_level);
 }
 
 }  // namespace security_state

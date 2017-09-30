@@ -194,6 +194,9 @@ struct VisibleSecurityState {
   bool displayed_credit_card_field_on_http;
   // True if the page was displayed in an Incognito context.
   bool is_incognito;
+  // True if the page was an error page.
+  // TODO(estark): this field is not populated on iOS. https://crbug.com/760647
+  bool is_error_page;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
