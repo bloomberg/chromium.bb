@@ -279,7 +279,7 @@ main (int argc, char **argv)
 
   set_program_name (argv[0]);
 
-  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
+  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1) {
     switch (optc)
       {
       /* --help and --version exit immediately, per GNU coding standards. */
@@ -297,6 +297,7 @@ main (int argc, char **argv)
 	exit (EXIT_FAILURE);
         break;
       }
+  }
 
   if (optind < argc)
     {

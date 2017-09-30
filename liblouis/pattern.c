@@ -824,7 +824,7 @@ static int pattern_compile_expression(const widechar *input,
 		EXPR_TYPE(*expr_crs) = PTN_ATTRIBUTES;
 
 		attrs0 = attrs1 = 0;
-		for( ; (*input_crs) < input_end; (*input_crs)++)
+		for( ; (*input_crs) < input_end; (*input_crs)++) {
 		switch(input[*input_crs])
 		{
 		case '_':  attrs0 |= CTC_Space;         break;
@@ -849,6 +849,7 @@ static int pattern_compile_expression(const widechar *input,
 		case '^':  attrs1 |= (CTC_EndOfInput >> 16);    break;
 
 		default:  return 0;
+		}
 		}
 		EXPR_DATA_0(*expr_crs) = attrs1;
 		EXPR_DATA_1(*expr_crs) = attrs0;
