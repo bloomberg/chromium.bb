@@ -2473,4 +2473,28 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ("t", text->data());
 }
 
+TEST_F(InputMethodControllerTest,
+       SetCompositionWithPartialGraphemeWithCompositionUnderlineDoesntCrash) {
+  InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 1,
+                                       Color(255, 0, 0), false, 0));
+  Controller().CommitText(" ", ime_text_spans, 0);
+  // Add character U+094D: 'DEVANAGARI SIGN VIRAMA'
+  Controller().SetComposition(String::FromUTF8("\xE0\xA5\x8D"), ime_text_spans,
+                              1, 1);
+}
+
+TEST_F(
+    InputMethodControllerTest,
+    SetCompositionWithPartialGraphemeWithoutCompositionUnderlineDoesntCrash) {
+  InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Controller().CommitText(" ", Vector<ImeTextSpan>(), 0);
+  // Add character U+094D: 'DEVANAGARI SIGN VIRAMA'
+  Controller().SetComposition(String::FromUTF8("\xE0\xA5\x8D"),
+                              Vector<ImeTextSpan>(), 1, 1);
+}
+
 }  // namespace blink

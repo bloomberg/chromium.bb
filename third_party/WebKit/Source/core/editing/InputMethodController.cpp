@@ -765,9 +765,17 @@ void InputMethodController::SetComposition(
   // We shouldn't close typing in the middle of setComposition.
   SetEditableSelectionOffsets(selected_range, TypingContinuation::kContinue);
 
+  // Even though we would've returned already if SetComposition() were called
+  // with an empty string, the composition range could still be empty right now
+  // due to Unicode grapheme cluster position normalization (e.g. if
+  // SetComposition() were passed an extending character which doesn't allow a
+  // grapheme cluster break immediately before.
+  if (!HasComposition())
+    return;
+
   if (ime_text_spans.IsEmpty()) {
     GetDocument().Markers().AddCompositionMarker(
-        EphemeralRange(composition_range_), Color::kBlack,
+        CompositionEphemeralRange(), Color::kBlack,
         StyleableMarker::Thickness::kThin,
         LayoutTheme::GetTheme().PlatformDefaultCompositionBackgroundColor());
     return;
