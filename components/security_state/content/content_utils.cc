@@ -362,6 +362,8 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetVisibleEntry();
+  state->is_error_page =
+      entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR);
   if (!entry || !entry->GetSSL().initialized)
     return state;
 

@@ -163,7 +163,8 @@ SecurityLevel GetSecurityLevelForRequest(
   // not need to be explicitly listed here.
   // TODO(meacer): Remove special case for blob (crbug.com/684751).
   if (!is_cryptographic_with_certificate) {
-    if (!is_origin_secure_callback.Run(url) &&
+    if (!visible_security_state.is_error_page &&
+        !is_origin_secure_callback.Run(url) &&
         (url.IsStandard() || url.SchemeIs(url::kBlobScheme))) {
       return GetSecurityLevelForNonSecureFieldTrial(
           visible_security_state.displayed_password_field_on_http ||
@@ -285,6 +286,7 @@ void SecurityInfoForRequest(
 
   security_info->incognito_downgraded_security_level =
       (visible_security_state.is_incognito &&
+       !visible_security_state.is_error_page &&
        security_info->security_level == HTTP_SHOW_WARNING &&
        (mark_http_as == NON_SECURE_WHILE_INCOGNITO ||
         mark_http_as == NON_SECURE_WHILE_INCOGNITO_OR_EDITING));
@@ -355,7 +357,8 @@ VisibleSecurityState::VisibleSecurityState()
       pkp_bypassed(false),
       displayed_password_field_on_http(false),
       displayed_credit_card_field_on_http(false),
-      is_incognito(false) {}
+      is_incognito(false),
+      is_error_page(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

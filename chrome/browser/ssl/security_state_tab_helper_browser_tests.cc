@@ -43,6 +43,7 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_errors.h"
@@ -330,6 +331,8 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(https_server_.Start());
     host_resolver()->AddRule("*", "127.0.0.1");
+    // Allow tests to trigger error pages.
+    host_resolver()->AddSimulatedFailure("nonexistent.test");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -2447,6 +2450,40 @@ IN_PROC_BROWSER_TEST_F(
       obsolete_description,
       base::ASCIIToUTF16(
           observer.latest_explanations().info_explanations[0].description));
+}
+
+// Tests that the Not Secure chip does not show for error pages on http:// URLs.
+// Regression test for https://crbug.com/760647.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
+  // Set the mode using the command line flag rather than the field trial to
+  // ensure that fieldtrial_testing_config.json does not interfere.
+  base::test::ScopedCommandLine scoped_command_line;
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      security_state::switches::kMarkHttpAs,
+      security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+
+  // Navigate to a URL that results in an error page. Even though the displayed
+  // URL is http://, there shouldn't be a Not Secure warning because the browser
+  // hasn't really navigated to an http:// page.
+  ui_test_utils::NavigateToURL(browser(), GURL("http://nonexistent.test:17"));
+  // Sanity-check that it is indeed an error page.
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 }  // namespace

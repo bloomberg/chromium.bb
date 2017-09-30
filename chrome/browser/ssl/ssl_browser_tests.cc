@@ -1571,7 +1571,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkHTTPAsDangerous) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to a non-local HTTP page.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://example.com/"));
+  GURL url = embedded_test_server()->GetURL("/ssl/google.html");
+  GURL::Replacements http_url_replacements;
+  http_url_replacements.SetHostStr("example.test");
+  url = url.ReplaceComponents(http_url_replacements);
+  ui_test_utils::NavigateToURL(browser(), url);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
