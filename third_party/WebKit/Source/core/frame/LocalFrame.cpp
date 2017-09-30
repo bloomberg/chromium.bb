@@ -650,7 +650,7 @@ PositionWithAffinity LocalFrame::PositionForPoint(const IntPoint& frame_point) {
   const PositionWithAffinity position =
       layout_object->PositionForPoint(result.LocalPoint());
   if (position.IsNull())
-    return PositionWithAffinity(FirstPositionInOrBeforeNode(node));
+    return PositionWithAffinity(FirstPositionInOrBeforeNodeDeprecated(node));
   return position;
 }
 

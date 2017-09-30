@@ -212,12 +212,15 @@ Position PositionAfterContainingSpecialElement(
     const Position&,
     HTMLElement** containing_special_element = nullptr);
 
-inline Position FirstPositionInOrBeforeNode(Node* node) {
-  return Position::FirstPositionInOrBeforeNode(node);
+// TODO(editing-dev): Renaming these two functions below is a first step
+// of moving all call sites from |Node*| to use |const Node&| as a parameter.
+// See crbug.com/766448
+inline Position FirstPositionInOrBeforeNodeDeprecated(Node* node) {
+  return Position::FirstPositionInOrBeforeNodeDeprecated(node);
 }
 
-inline Position LastPositionInOrAfterNode(Node* node) {
-  return Position::LastPositionInOrAfterNode(node);
+inline Position LastPositionInOrAfterNodeDeprecated(Node* node) {
+  return Position::LastPositionInOrAfterNodeDeprecated(node);
 }
 
 CORE_EXPORT Position FirstEditablePositionAfterPositionInRoot(const Position&,

@@ -3214,8 +3214,10 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
     // Find non-anonymous content after.
     for (LayoutObject* layout_object = child->NextInPreOrder(parent);
          layout_object; layout_object = layout_object->NextInPreOrder(parent)) {
-      if (Node* node = layout_object->NonPseudoNode())
-        return PositionWithAffinity(FirstPositionInOrBeforeNode(node));
+      if (Node* node = layout_object->NonPseudoNode()) {
+        return PositionWithAffinity(
+            FirstPositionInOrBeforeNodeDeprecated(node));
+      }
     }
 
     // Find non-anonymous content before.
@@ -3224,12 +3226,12 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
       if (layout_object == parent)
         break;
       if (Node* node = layout_object->NonPseudoNode())
-        return PositionWithAffinity(LastPositionInOrAfterNode(node));
+        return PositionWithAffinity(LastPositionInOrAfterNodeDeprecated(node));
     }
 
     // Use the parent itself unless it too is anonymous.
     if (Node* node = parent->NonPseudoNode())
-      return PositionWithAffinity(FirstPositionInOrBeforeNode(node));
+      return PositionWithAffinity(FirstPositionInOrBeforeNodeDeprecated(node));
 
     // Repeat at the next level up.
     child = parent;

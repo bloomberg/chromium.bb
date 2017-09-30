@@ -64,8 +64,8 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // has applied. This helps us get the color of content pasted into
   // blockquotes right.
   wrapping_style->RemoveStyleAddedByElement(ToHTMLElement(EnclosingNodeOfType(
-      FirstPositionInOrBeforeNode(context), IsMailHTMLBlockquoteElement,
-      kCanCrossEditingBoundary)));
+      FirstPositionInOrBeforeNodeDeprecated(context),
+      IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary)));
 
   // Call collapseTextDecorationProperties first or otherwise it'll copy the
   // value over from in-effect to text-decorations.

@@ -360,7 +360,7 @@ static Position PositionForIndex(HTMLElement* inner_editor, unsigned index) {
 
     NOTREACHED();
   }
-  return LastPositionInOrAfterNode(last_br_or_text);
+  return LastPositionInOrAfterNodeDeprecated(last_br_or_text);
 }
 
 unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
