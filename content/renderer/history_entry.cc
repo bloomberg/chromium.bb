@@ -38,8 +38,6 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using blink::WebFrame;
@@ -57,59 +55,8 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::AddChild() {
   return AddChild(WebHistoryItem());
 }
 
-std::unique_ptr<HistoryEntry::HistoryNode>
-HistoryEntry::HistoryNode::CloneAndReplace(
-    const base::WeakPtr<HistoryEntry>& new_entry,
-    const WebHistoryItem& new_item,
-    bool clone_children_of_target,
-    RenderFrameImpl* target_frame,
-    RenderFrameImpl* current_frame) {
-  bool is_target_frame = target_frame == current_frame;
-  const WebHistoryItem& item_for_create = is_target_frame ? new_item : item_;
-  auto new_history_node =
-      base::MakeUnique<HistoryNode>(new_entry, item_for_create);
-
-  // Use the last committed history item for the frame rather than item_, since
-  // the latter may not accurately reflect which URL is currently committed in
-  // the frame.  See https://crbug.com/612713#c12.
-  const WebHistoryItem& current_item = current_frame->current_history_item();
-  if (is_target_frame && clone_children_of_target && !current_item.IsNull()) {
-    // TODO(creis): Setting the document sequence number here appears to be
-    // unnecessary.  Remove this block if this DCHECK never fires.
-    DCHECK_EQ(current_item.DocumentSequenceNumber(),
-              new_history_node->item().DocumentSequenceNumber());
-  }
-
-  // TODO(creis): This needs to be updated to handle HistoryEntry in
-  // subframe processes, where the main frame isn't guaranteed to be in the
-  // same process.
-  if (current_frame && (clone_children_of_target || !is_target_frame)) {
-    for (WebFrame* child = current_frame->GetWebFrame()->FirstChild(); child;
-         child = child->NextSibling()) {
-      RenderFrameImpl* child_render_frame =
-          RenderFrameImpl::FromWebFrame(child);
-      // TODO(creis): A child frame may be a RenderFrameProxy.  We should still
-      // process its children, but that will be possible when we move this code
-      // to the browser process in https://crbug.com/236848.
-      if (!child_render_frame)
-        continue;
-      HistoryNode* child_history_node =
-          entry_->GetHistoryNodeForFrame(child_render_frame);
-      if (!child_history_node)
-        continue;
-
-      new_history_node->children_.push_back(child_history_node->CloneAndReplace(
-          new_entry, new_item, clone_children_of_target, target_frame,
-          child_render_frame));
-    }
-  }
-  return new_history_node;
-}
-
 void HistoryEntry::HistoryNode::set_item(const WebHistoryItem& item) {
   DCHECK(!item.IsNull());
-  entry_->unique_names_to_items_[item.Target().Utf8()] = this;
-  unique_names_.push_back(item.Target().Utf8());
   item_ = item;
 }
 
@@ -121,13 +68,6 @@ HistoryEntry::HistoryNode::HistoryNode(const base::WeakPtr<HistoryEntry>& entry,
 }
 
 HistoryEntry::HistoryNode::~HistoryNode() {
-  if (!entry_ || item_.IsNull())
-    return;
-
-  for (const std::string& name : unique_names_) {
-    if (entry_->unique_names_to_items_[name] == this)
-      entry_->unique_names_to_items_.erase(name);
-  }
 }
 
 std::vector<HistoryEntry::HistoryNode*> HistoryEntry::HistoryNode::children()
@@ -156,31 +96,6 @@ HistoryEntry::~HistoryEntry() {
 HistoryEntry::HistoryEntry(const WebHistoryItem& root)
     : weak_ptr_factory_(this) {
   root_.reset(new HistoryNode(weak_ptr_factory_.GetWeakPtr(), root));
-}
-
-HistoryEntry* HistoryEntry::CloneAndReplace(const WebHistoryItem& new_item,
-                                            bool clone_children_of_target,
-                                            RenderFrameImpl* target_frame,
-                                            RenderViewImpl* render_view) {
-  HistoryEntry* new_entry = new HistoryEntry();
-  new_entry->root_ =
-      root_->CloneAndReplace(new_entry->weak_ptr_factory_.GetWeakPtr(),
-                             new_item, clone_children_of_target, target_frame,
-                             render_view->GetMainRenderFrame());
-  return new_entry;
-}
-
-HistoryEntry::HistoryNode* HistoryEntry::GetHistoryNodeForFrame(
-    RenderFrameImpl* frame) {
-  if (!frame->GetWebFrame()->Parent())
-    return root_history_node();
-  return unique_names_to_items_[frame->unique_name()];
-}
-
-WebHistoryItem HistoryEntry::GetItemForFrame(RenderFrameImpl* frame) {
-  if (HistoryNode* history_node = GetHistoryNodeForFrame(frame))
-    return history_node->item();
-  return WebHistoryItem();
 }
 
 }  // namespace content

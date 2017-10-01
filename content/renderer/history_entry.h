@@ -46,8 +46,6 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 namespace content {
-class RenderFrameImpl;
-class RenderViewImpl;
 
 class CONTENT_EXPORT HistoryEntry {
  public:
@@ -59,12 +57,6 @@ class CONTENT_EXPORT HistoryEntry {
 
     HistoryNode* AddChild(const blink::WebHistoryItem& item);
     HistoryNode* AddChild();
-    std::unique_ptr<HistoryNode> CloneAndReplace(
-        const base::WeakPtr<HistoryEntry>& new_entry,
-        const blink::WebHistoryItem& new_item,
-        bool clone_children_of_target,
-        RenderFrameImpl* target_frame,
-        RenderFrameImpl* current_frame);
     blink::WebHistoryItem& item() { return item_; }
     void set_item(const blink::WebHistoryItem& item);
     std::vector<HistoryNode*> children() const;
@@ -78,10 +70,6 @@ class CONTENT_EXPORT HistoryEntry {
     base::WeakPtr<HistoryEntry> entry_;
     std::vector<std::unique_ptr<HistoryNode>> children_;
     blink::WebHistoryItem item_;
-    // We need to track multiple names because the name of a frame can change
-    // over its lifetime. This allows us to clean up all of the names this node
-    // has ever known by when it is destroyed.
-    std::vector<std::string> unique_names_;
 
     DISALLOW_COPY_AND_ASSIGN(HistoryNode);
   };
@@ -90,21 +78,11 @@ class CONTENT_EXPORT HistoryEntry {
   HistoryEntry();
   ~HistoryEntry();
 
-  HistoryEntry* CloneAndReplace(const blink::WebHistoryItem& newItem,
-                                bool clone_children_of_target,
-                                RenderFrameImpl* target_frame,
-                                RenderViewImpl* render_view);
-
-  HistoryNode* GetHistoryNodeForFrame(RenderFrameImpl* frame);
-  blink::WebHistoryItem GetItemForFrame(RenderFrameImpl* frame);
   const blink::WebHistoryItem& root() const { return root_->item(); }
   HistoryNode* root_history_node() const { return root_.get(); }
 
  private:
   std::unique_ptr<HistoryNode> root_;
-
-  typedef base::hash_map<std::string, HistoryNode*> UniqueNamesToItems;
-  UniqueNamesToItems unique_names_to_items_;
 
   base::WeakPtrFactory<HistoryEntry> weak_ptr_factory_;
 
