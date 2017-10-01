@@ -10117,8 +10117,15 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
   // when running on desktop GL with compatibility profile because it will
   // never be re-enabled.
   if (attrib_index != 0 || gl_version_info().BehavesLikeGLES()) {
-    state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(
-        attrib_index, attrib->enabled());
+    // Restore the vertex attrib array enable-state according to
+    // the VertexAttrib enabled_in_driver value (which really represents the
+    // state of the virtual context - not the driver - notably, above the
+    // vertex array object emulation layer).
+    if (attrib->enabled_in_driver()) {
+      glEnableVertexAttribArray(attrib_index);
+    } else {
+      glDisableVertexAttribArray(attrib_index);
+    }
   }
 }
 

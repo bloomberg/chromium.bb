@@ -214,7 +214,7 @@ bool VertexAttribManager::ValidateBindings(
     // Make sure that every attrib in enabled_vertex_attribs_ is really enabled
     // in the driver, if AND ONLY IF it is consumed by the current shader
     // program. (Note that since the containing loop is over
-    // enable_vertex_attribs_, not all vertex attribs, it doesn't erroneously
+    // enabled_vertex_attribs_, not all vertex attribs, it doesn't erroneously
     // enable any attribs that should be disabled.)
     // This is for http://crbug.com/756293 but also subsumes some workaround
     // code for use_client_side_arrays_for_stream_buffers.

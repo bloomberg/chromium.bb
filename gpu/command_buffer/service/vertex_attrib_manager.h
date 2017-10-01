@@ -214,6 +214,9 @@ class GPU_EXPORT VertexAttribManager :
     attrib_base_type_mask_[loc / 16] |= base_type << shift_bits;
   }
 
+  // Sets the Enable/DisableVertexAttribArray state in the driver. This state
+  // is tracked for the current virtual context. Because of this, virtual
+  // context restore code should not call this function.
   void SetDriverVertexAttribEnabled(GLuint index, bool enable) {
     DCHECK_LT(index, vertex_attribs_.size());
     VertexAttrib& attrib = vertex_attribs_[index];
