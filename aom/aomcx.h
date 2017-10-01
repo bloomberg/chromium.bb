@@ -492,26 +492,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_MTU,
 
-  /*!\brief Codec control function to set tile_width.
-   *
-   * In encoding this sets expilcit tiles of the given tile width
-   *
-   * By default, the value is 0 and explicit tiles are disabled.
-   *
-   * Experiment: MAX_TILE
-   */
-  AV1E_SET_TILE_WIDTH,
-
-  /*!\brief Codec control function to set tile_height.
-   *
-   * In encoding this sets expilcit tiles of the given tile height
-   *
-   * By default, the value is 0 and explicit tiles are disabled.
-   *
-   * Experiment: MAX_TILE
-   */
-  AV1E_SET_TILE_HEIGHT,
-
   /*!\brief Codec control function to set dependent_horz_tiles.
   *
   * In encoding and decoding, AV1 allows enabling dependent horizontal tile

@@ -414,9 +414,9 @@ static const arg_def_t tile_rows =
             "Number of tile rows to use, log2 (set to 0 while threads > 1)");
 #if CONFIG_MAX_TILE
 static const arg_def_t tile_width =
-    ARG_DEF(NULL, "tile-width", 1, "Width of each tile");
+    ARG_DEF(NULL, "tile-width", 1, "Tile widths (comma separated)");
 static const arg_def_t tile_height =
-    ARG_DEF(NULL, "tile-height", 1, "Height of each tile");
+    ARG_DEF(NULL, "tile-height", 1, "Tile heights (command separated)");
 #endif
 #if CONFIG_DEPENDENT_HORZTILES
 static const arg_def_t tile_dependent_rows =
@@ -553,10 +553,6 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #endif  // CONFIG_EXT_TILE
                                        &tile_cols,
                                        &tile_rows,
-#if CONFIG_MAX_TILE
-                                       &tile_width,
-                                       &tile_height,
-#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                        &tile_dependent_rows,
 #endif
@@ -614,10 +610,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif  // CONFIG_EXT_TILE
                                         AV1E_SET_TILE_COLUMNS,
                                         AV1E_SET_TILE_ROWS,
-#if CONFIG_MAX_TILE
-                                        AV1E_SET_TILE_WIDTH,
-                                        AV1E_SET_TILE_HEIGHT,
-#endif
 #if CONFIG_DEPENDENT_HORZTILES
                                         AV1E_SET_TILE_DEPENDENT_ROWS,
 #endif
@@ -1119,6 +1111,14 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.kf_max_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &kf_disabled, argi)) {
       config->cfg.kf_mode = AOM_KF_DISABLED;
+#if CONFIG_MAX_TILE
+    } else if (arg_match(&arg, &tile_width, argi)) {
+      config->cfg.tile_width_count =
+          arg_parse_list(&arg, config->cfg.tile_widths, MAX_TILE_WIDTHS);
+    } else if (arg_match(&arg, &tile_height, argi)) {
+      config->cfg.tile_height_count =
+          arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
+#endif
     } else {
       int i, match = 0;
       for (i = 0; ctrl_args[i]; i++) {

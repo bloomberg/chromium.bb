@@ -619,6 +619,48 @@ typedef struct aom_codec_enc_cfg {
    * implies a large-scale tile coding.
    */
   unsigned int large_scale_tile;
+
+  /*!\brief Number of explicit tile widths specified
+   *
+   * This value indicates the number of tile widths specified
+   * A value of 0 implies no tile widths are specified.
+   * Tile widths are given in the array tile_widths[]
+   */
+  int tile_width_count;
+
+  /*!\brief Number of explicit tile heights specified
+   *
+   * This value indicates the number of tile heights specified
+   * A value of 0 implies no tile heights are specified.
+   * Tile heights are given in the array tile_heights[]
+   */
+  int tile_height_count;
+
+/*!\brief Maximum number of tile widths in tile widths array
+ *
+ * This define gives the maximum number of elements in the tile_widths array.
+ */
+#define MAX_TILE_WIDTHS 64  // maximum tile width array length
+
+  /*!\brief Array of specified tile widths
+   *
+   * This array specifies tile widths (and may be empty)
+   * The number of widths specified is given by tile_width_count
+   */
+  int tile_widths[MAX_TILE_WIDTHS];
+
+/*!\brief Maximum number of tile heights in tile heights array.
+ *
+ * This define gives the maximum number of elements in the tile_heights array.
+ */
+#define MAX_TILE_HEIGHTS 64  // maximum tile height array length
+
+  /*!\brief Array of specified tile heights
+   *
+   * This array specifies tile heights (and may be empty)
+   * The number of heights specified is given by tile_height_count
+   */
+  int tile_heights[MAX_TILE_HEIGHTS];
 } aom_codec_enc_cfg_t; /**< alias for struct aom_codec_enc_cfg */
 
 /*!\brief Initialize an encoder instance

@@ -927,18 +927,20 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
   av1_get_tile_limits(cm);
 
   // configure tile columns
-  if (cpi->oxcf.tile_width == 0 || cpi->oxcf.tile_height == 0) {
+  if (cpi->oxcf.tile_width_count == 0 || cpi->oxcf.tile_height_count == 0) {
     cm->uniform_tile_spacing_flag = 1;
     cm->log2_tile_cols = AOMMAX(cpi->oxcf.tile_columns, cm->min_log2_tile_cols);
     cm->log2_tile_cols = AOMMIN(cm->log2_tile_cols, cm->max_log2_tile_cols);
   } else {
     int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
-    int size_sb = AOMMIN(cpi->oxcf.tile_width, MAX_TILE_WIDTH_SB);
+    int size_sb, j = 0;
     cm->uniform_tile_spacing_flag = 0;
     for (i = 0, start_sb = 0; start_sb < sb_cols && i < MAX_TILE_COLS; i++) {
       cm->tile_col_start_sb[i] = start_sb;
-      start_sb += size_sb;
+      size_sb = cpi->oxcf.tile_widths[j++];
+      if (j >= cpi->oxcf.tile_width_count) j = 0;
+      start_sb += AOMMIN(size_sb, MAX_TILE_WIDTH_SB);
     }
     cm->tile_cols = i;
     cm->tile_col_start_sb[i] = sb_cols;
@@ -952,10 +954,12 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
   } else {
     int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
     int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
-    int size_sb = AOMMIN(cpi->oxcf.tile_height, cm->max_tile_height_sb);
+    int size_sb, j = 0;
     for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
       cm->tile_row_start_sb[i] = start_sb;
-      start_sb += size_sb;
+      size_sb = cpi->oxcf.tile_heights[j++];
+      if (j >= cpi->oxcf.tile_height_count) j = 0;
+      start_sb += AOMMIN(size_sb, cm->max_tile_height_sb);
     }
     cm->tile_rows = i;
     cm->tile_row_start_sb[i] = sb_rows;
