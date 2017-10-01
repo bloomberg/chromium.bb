@@ -36,6 +36,9 @@ static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_IDENTITY8: return av1_fidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_fidentity16_c;
     case TXFM_TYPE_IDENTITY32: return av1_fidentity32_c;
+#if CONFIG_TX64X64
+    case TXFM_TYPE_IDENTITY64: return av1_fidentity64_c;
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_TX
     default: assert(0); return NULL;
   }

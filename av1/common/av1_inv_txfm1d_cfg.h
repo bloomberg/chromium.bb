@@ -173,6 +173,7 @@ static const TXFM_1D_CFG inv_txfm_1d_row_cfg_dct_32 = {
   TXFM_TYPE_DCT32              // .txfm_type
 };
 
+#if CONFIG_TX64X64
 //  ---------------- row config inv_dct_64 ----------------
 static const TXFM_1D_CFG inv_txfm_1d_row_cfg_dct_64 = {
   64,                          // .txfm_size
@@ -182,6 +183,7 @@ static const TXFM_1D_CFG inv_txfm_1d_row_cfg_dct_64 = {
   inv_cos_bit_row_dct_64,      // .cos_bit
   TXFM_TYPE_DCT64,             // .txfm_type_col
 };
+#endif  // CONFIG_TX64X64
 
 //  ---------------- row config inv_adst_4 ----------------
 static const TXFM_1D_CFG inv_txfm_1d_row_cfg_adst_4 = {
@@ -353,5 +355,17 @@ static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_32 = {
   NULL,                    // .cos_bit
   TXFM_TYPE_IDENTITY32,    // .txfm_type
 };
+
+#if CONFIG_TX64X64
+//  ---------------- row/col config inv_identity_32 ----------------
+static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_64 = {
+  64,                      // .txfm_size
+  1,                       // .stage_num
+  inv_shift_64,            // .shift
+  inv_stage_range_idx_64,  // .stage_range
+  NULL,                    // .cos_bit
+  TXFM_TYPE_IDENTITY64,    // .txfm_type
+};
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_TX
 #endif  // AV1_INV_TXFM2D_CFG_H_

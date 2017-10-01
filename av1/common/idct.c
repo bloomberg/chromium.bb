@@ -1566,7 +1566,7 @@ void av1_iht64x32_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (i = 0; i < n; ++i) {
     IHT_64x32[tx_type].rows(input, outtmp);
     for (j = 0; j < n2; ++j)
-      tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
+      tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
     input += n2;
   }
 
@@ -1628,7 +1628,7 @@ void av1_iht32x64_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   for (i = 0; i < n2; ++i) {
     IHT_32x64[tx_type].rows(input, outtmp);
     for (j = 0; j < n; ++j)
-      tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
+      tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
     input += n;
   }
 
@@ -2107,6 +2107,7 @@ static void inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
 static void inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
                                int stride, const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
+  assert(tx_type == DCT_DCT);
   switch (tx_type) {
 #if !CONFIG_DAALA_DCT64
     case DCT_DCT: idct64x64_add(input, dest, stride, txfm_param); break;
