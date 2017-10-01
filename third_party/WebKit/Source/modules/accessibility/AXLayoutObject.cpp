@@ -2010,6 +2010,16 @@ bool AXLayoutObject::OnNativeSetSelectionAction(const AXRange& selection) {
     return false;
   }
 
+  if (anchor_object->GetLayoutObject()->GetNode()->DispatchEvent(
+          Event::CreateCancelableBubble(EventTypeNames::selectstart)) !=
+      DispatchEventResult::kNotCanceled)
+    return false;
+
+  if (!IsValidSelectionBound(anchor_object) ||
+      !IsValidSelectionBound(focus_object)) {
+    return false;
+  }
+
   // The selection offsets are offsets into the accessible value.
   if (anchor_object == focus_object &&
       anchor_object->GetLayoutObject()->IsTextControl()) {
