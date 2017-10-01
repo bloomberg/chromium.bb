@@ -16,11 +16,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/features.h"
@@ -30,7 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -39,8 +36,6 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -66,66 +61,6 @@ const char kStatsPasswordsKeyDeprecated[] = "stats_passwords";
 const char kStatsBookmarksKeyDeprecated[] = "stats_bookmarks";
 const char kStatsSettingsKeyDeprecated[] = "stats_settings";
 
-typedef std::vector<unsigned char> ImageData;
-
-// Writes |data| to disk and takes ownership of the pointer. On successful
-// completion, it runs |callback|.
-void SaveBitmap(std::unique_ptr<ImageData> data,
-                const base::FilePath& image_path,
-                const base::Closure& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // Make sure the destination directory exists.
-  base::FilePath dir = image_path.DirName();
-  if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
-    LOG(ERROR) << "Failed to create parent directory.";
-    return;
-  }
-
-  if (base::WriteFile(image_path, reinterpret_cast<char*>(&(*data)[0]),
-                      data->size()) == -1) {
-    LOG(ERROR) << "Failed to save image to file.";
-    return;
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
-// Reads a PNG from disk and decodes it. If the bitmap was successfully read
-// from disk the then |out_image| will contain the bitmap image, otherwise it
-// will be NULL.
-void ReadBitmap(const base::FilePath& image_path,
-                gfx::Image** out_image) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  *out_image = NULL;
-
-  // If the path doesn't exist, don't even try reading it.
-  if (!base::PathExists(image_path))
-    return;
-
-  std::string image_data;
-  if (!base::ReadFileToString(image_path, &image_data)) {
-    LOG(ERROR) << "Failed to read PNG file from disk.";
-    return;
-  }
-
-  gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
-      base::RefCountedString::TakeString(&image_data));
-  if (image.IsEmpty()) {
-    LOG(ERROR) << "Failed to decode PNG file.";
-    return;
-  }
-
-  *out_image = new gfx::Image(image);
-}
-
-void RunCallbackIfFileMissing(const base::FilePath& file_path,
-                              const base::Closure& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  if (!base::PathExists(file_path))
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
 void DeleteBitmap(const base::FilePath& image_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   base::DeleteFile(image_path, false);
@@ -135,11 +70,7 @@ void DeleteBitmap(const base::FilePath& image_path) {
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
-    : ProfileAttributesStorage(prefs, user_data_dir),
-      disable_avatar_download_for_testing_(false),
-      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+    : ProfileAttributesStorage(prefs, user_data_dir) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
@@ -685,66 +616,6 @@ void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }
 
-void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
-    size_t icon_index,
-    const base::FilePath& profile_path) {
-  // Downloading is only supported on desktop.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  return;
-#endif
-  DCHECK(!disable_avatar_download_for_testing_);
-
-  // If this is the placeholder avatar, it is already included in the
-  // resources, so it doesn't need to be downloaded (and it will never be
-  // requested from disk by GetHighResAvatarOfProfileAtIndex).
-  if (icon_index == profiles::GetPlaceholderAvatarIndex())
-    return;
-
-  const base::FilePath& file_path =
-      profiles::GetPathOfHighResAvatarAtIndex(icon_index);
-  base::Closure callback =
-      base::Bind(&ProfileInfoCache::DownloadHighResAvatar,
-                 AsWeakPtr(),
-                 icon_index,
-                 profile_path);
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunCallbackIfFileMissing, file_path, callback));
-}
-
-void ProfileInfoCache::SaveAvatarImageAtPath(
-    const base::FilePath& profile_path,
-    const gfx::Image* image,
-    const std::string& key,
-    const base::FilePath& image_path) {
-  cached_avatar_images_[key].reset(new gfx::Image(*image));
-
-  std::unique_ptr<ImageData> data(new ImageData);
-  scoped_refptr<base::RefCountedMemory> png_data = image->As1xPNGBytes();
-  data->assign(png_data->front(), png_data->front() + png_data->size());
-
-  // Remove the file from the list of downloads in progress. Note that this list
-  // only contains the high resolution avatars, and not the Gaia profile images.
-  auto downloader_iter = avatar_images_downloads_in_progress_.find(key);
-  if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
-    // We mustn't delete the avatar downloader right here, since we're being
-    // called by it.
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                              downloader_iter->second.release());
-    avatar_images_downloads_in_progress_.erase(downloader_iter);
-  }
-
-  if (data->empty()) {
-    LOG(ERROR) << "Failed to PNG encode the image.";
-  } else {
-    base::Closure callback = base::Bind(&ProfileInfoCache::OnAvatarPictureSaved,
-        AsWeakPtr(), key, profile_path);
-    file_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveBitmap, base::Passed(&data), image_path, callback));
-  }
-}
-
 const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
     size_t index) const {
   DCHECK_LT(index, GetNumberOfProfiles());
@@ -817,91 +688,6 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
   return LoadAvatarPictureFromPath(GetPathOfProfileAtIndex(index), file_name,
                                    image_path);
-}
-
-void ProfileInfoCache::DownloadHighResAvatar(
-    size_t icon_index,
-    const base::FilePath& profile_path) {
-  // Downloading is only supported on desktop.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  return;
-#endif
-  const char* file_name =
-      profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
-  DCHECK(file_name);
-  // If the file is already being downloaded, don't start another download.
-  if (avatar_images_downloads_in_progress_.count(file_name))
-    return;
-
-  // Start the download for this file. The cache takes ownership of the
-  // avatar downloader, which will be deleted when the download completes, or
-  // if that never happens, when the ProfileInfoCache is destroyed.
-  std::unique_ptr<ProfileAvatarDownloader>& current_downloader =
-      avatar_images_downloads_in_progress_[file_name];
-  current_downloader.reset(
-      new ProfileAvatarDownloader(
-          icon_index,
-          base::Bind(&ProfileInfoCache::SaveAvatarImageAtPath,
-                     base::Unretained(this),
-                     profile_path)));
-
-  current_downloader->Start();
-}
-
-const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
-    const base::FilePath& profile_path,
-    const std::string& key,
-    const base::FilePath& image_path) const {
-  // If the picture is already loaded then use it.
-  if (cached_avatar_images_.count(key)) {
-    if (cached_avatar_images_[key]->IsEmpty())
-      return NULL;
-    return cached_avatar_images_[key].get();
-  }
-
-  // Don't download the image if downloading is disabled for tests.
-  if (disable_avatar_download_for_testing_)
-    return NULL;
-
-  // If the picture is already being loaded then don't try loading it again.
-  if (cached_avatar_images_loading_[key])
-    return NULL;
-  cached_avatar_images_loading_[key] = true;
-
-  gfx::Image** image = new gfx::Image*;
-  file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&ReadBitmap, image_path, image),
-      base::BindOnce(&ProfileInfoCache::OnAvatarPictureLoaded,
-                     const_cast<ProfileInfoCache*>(this)->AsWeakPtr(),
-                     profile_path, key, image));
-  return NULL;
-}
-
-void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
-                                             const std::string& key,
-                                             gfx::Image** image) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cached_avatar_images_loading_[key] = false;
-
-  if (*image) {
-    cached_avatar_images_[key].reset(*image);
-  } else {
-    // Place an empty image in the cache to avoid reloading it again.
-    cached_avatar_images_[key].reset(new gfx::Image());
-  }
-  delete image;
-
-  for (auto& observer : observer_list_)
-    observer.OnProfileHighResAvatarLoaded(profile_path);
-}
-
-void ProfileInfoCache::OnAvatarPictureSaved(
-      const std::string& file_name,
-      const base::FilePath& profile_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  for (auto& observer : observer_list_)
-    observer.OnProfileHighResAvatarLoaded(profile_path);
 }
 
 void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {

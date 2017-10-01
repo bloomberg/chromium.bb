@@ -31,12 +31,10 @@ class Image;
 
 namespace base {
 class DictionaryValue;
-class SequencedTaskRunner;
 }
 
 class PrefService;
 class PrefRegistrySimple;
-class ProfileAvatarDownloader;
 
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
@@ -137,24 +135,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Checks whether the high res avatar at index |icon_index| exists, and
-  // if it does not, calls |DownloadHighResAvatar|.
-  void DownloadHighResAvatarIfNeeded(size_t icon_index,
-                                     const base::FilePath& profile_path);
-
-  // Saves the avatar |image| at |image_path|. This is used both for the
-  // GAIA profile pictures and the ProfileAvatarDownloader that is used to
-  // download the high res avatars.
-  void SaveAvatarImageAtPath(const base::FilePath& profile_path,
-                             const gfx::Image* image,
-                             const std::string& key,
-                             const base::FilePath& image_path);
-
-  void set_disable_avatar_download_for_testing(
-      bool disable_avatar_download_for_testing) {
-    disable_avatar_download_for_testing_ = disable_avatar_download_for_testing;
-  }
-
   // ProfileAttributesStorage:
   void AddProfile(const base::FilePath& profile_path,
                   const base::string16& name,
@@ -168,9 +148,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                                     ProfileAttributesEntry** entry) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, DownloadHighResAvatarTest);
-  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest,
-                           NothingToDownloadHighResAvatarTest);
+  FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
+                           DownloadHighResAvatarTest);
 
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache.
@@ -189,28 +168,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // generic profile avatar.
   const gfx::Image* GetHighResAvatarOfProfileAtIndex(size_t index) const;
 
-  // Starts downloading the high res avatar at index |icon_index| for profile
-  // with path |profile_path|.
-  void DownloadHighResAvatar(size_t icon_index,
-                             const base::FilePath& profile_path);
-
-  // Returns the decoded image at |image_path|. Used both by the GAIA profile
-  // image and the high res avatars.
-  const gfx::Image* LoadAvatarPictureFromPath(
-      const base::FilePath& profile_path,
-      const std::string& key,
-      const base::FilePath& image_path) const;
-
-  // Called when the picture given by |key| has been loaded from disk and
-  // decoded into |image|.
-  void OnAvatarPictureLoaded(const base::FilePath& profile_path,
-                             const std::string& key,
-                             gfx::Image** image) const;
-  // Called when the picture given by |file_name| has been saved to disk.
-  // Used both for the GAIA profile picture and the high res avatar files.
-  void OnAvatarPictureSaved(const std::string& file_name,
-                            const base::FilePath& profile_path);
-
   // Migrate any legacy profile names ("First user", "Default Profile") to
   // new style default names ("Person 1"), and download and high-res avatars
   // used by the profiles.
@@ -221,29 +178,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void RemoveDeprecatedStatistics();
 
   std::vector<std::string> sorted_keys_;
-
-  // A cache of gaia/high res avatar profile pictures. This cache is updated
-  // lazily so it needs to be mutable.
-  mutable std::unordered_map<std::string, std::unique_ptr<gfx::Image>>
-      cached_avatar_images_;
-  // Marks a profile picture as loading from disk. This prevents a picture from
-  // loading multiple times.
-  mutable std::unordered_map<std::string, bool> cached_avatar_images_loading_;
-
-  // Hash table of profile pictures currently being downloaded from the remote
-  // location and the ProfileAvatarDownloader instances downloading them.
-  // This prevents a picture from being downloaded multiple times. The
-  // ProfileAvatarDownloader instances are deleted when the download completes
-  // or when the ProfileInfoCache is destroyed.
-  std::unordered_map<std::string, std::unique_ptr<ProfileAvatarDownloader>>
-      avatar_images_downloads_in_progress_;
-
-  // Determines of the ProfileAvatarDownloader should be created and executed
-  // or not. Only set to true for tests.
-  bool disable_avatar_download_for_testing_;
-
-  // Task runner used for file operation on avatar images.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };
