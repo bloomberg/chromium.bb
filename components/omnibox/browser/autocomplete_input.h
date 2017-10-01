@@ -21,69 +21,38 @@ class AutocompleteSchemeClassifier;
 class AutocompleteInput {
  public:
   AutocompleteInput();
-  // |text| and |cursor_position| represent the input query and location of
-  // the cursor with the query respectively.  |cursor_position| may be set to
-  // base::string16::npos if the input |text| doesn't come directly from the
-  // user's typing.
-  //
-  // |desired_tld| is the user's desired TLD, if one is not already present in
-  // the text to autocomplete.  When this is non-empty, it also implies that
-  // "www." should be prepended to the domain where possible. The |desired_tld|
-  // should not contain a leading '.' (use "com" instead of ".com").
-  //
-  // If |current_url| is set to a valid search result page URL, providers can
-  // use it to perform query refinement. For example, if it is set to an image
-  // search result page, the search provider may generate an image search URL.
-  // Query refinement is only used by mobile ports, so only these set
-  // |current_url| to a non-empty string.
-  //
-  // |current_title| is the title of the page the user is viewing when accessing
-  // the omnibox. This is sometimes set as the description if returning a
-  // URL-what-you-typed match for the current URL.
+  // |text| represents the input query.
   //
   // |current_page_classification| represents the type of page the user is
   // viewing and manner in which the user is accessing the omnibox; it's
   // more than simply the URL.  It includes, for example, whether the page
   // is a search result page doing search term replacement or not.
   //
-  // |prevent_inline_autocomplete| is true if the generated result set should
-  // not require inline autocomplete for the default match.  This is difficult
-  // to explain in the abstract; the practical use case is that after the user
-  // deletes text in the edit, the HistoryURLProvider should make sure not to
-  // promote a match requiring inline autocomplete too highly.
-  //
-  // |prefer_keyword| should be true when the keyword UI is onscreen; this will
-  // bias the autocomplete result set toward the keyword provider when the input
-  // string is a bare keyword.
-  //
-  // |allow_exact_keyword_match| should be false when triggering keyword mode on
-  // the input string would be surprising or wrong, e.g. when highlighting text
-  // in a page and telling the browser to search for it or navigate to it. This
-  // parameter only applies to substituting keywords.
-  //
-  // If |want_asynchronous_matches| is false the controller asks the providers
-  // to only return matches which are synchronously available, which should mean
-  // that all providers will be done immediately.
-  //
-  // |from_omnibox_focus| is true when input is created as a result of the
-  // omnibox being focused, instead of due to user input changes.  Most
-  // providers should not provide matches in this case.  Providers which want to
-  // display matches on focus can use this flag to know when they can do so.
-  //
   // |scheme_classifier| is passed to Parse() to help determine the type of
   // input this is; see comments there.
   AutocompleteInput(const base::string16& text,
-                    size_t cursor_position,
-                    const std::string& desired_tld,
-                    const GURL& current_url,
-                    const base::string16& current_title,
                     metrics::OmniboxEventProto::PageClassification
                         current_page_classification,
-                    bool prevent_inline_autocomplete,
-                    bool prefer_keyword,
-                    bool allow_exact_keyword_match,
-                    bool want_asynchronous_matches,
-                    bool from_omnibox_focus,
+                    const AutocompleteSchemeClassifier& scheme_classifier);
+  // This constructor adds |cursor_position|, related to |text|.
+  // |cursor_position| represents the location of the cursor within the
+  // query |text|. It may be set to base::string16::npos if the input
+  // doesn't come directly from the user's typing.
+  AutocompleteInput(const base::string16& text,
+                    size_t cursor_position,
+                    metrics::OmniboxEventProto::PageClassification
+                        current_page_classification,
+                    const AutocompleteSchemeClassifier& scheme_classifier);
+  // This constructor adds |desired_tld|, related to |text|. |desired_tld|
+  // is the user's desired TLD, if one is not already present in the text to
+  // autocomplete. When this is non-empty, it also implies that "www."
+  // should be prepended to the domain where possible. The |desired_tld|
+  // should not contain a leading '.' (use "com" instead of ".com").
+  AutocompleteInput(const base::string16& text,
+                    size_t cursor_position,
+                    const std::string& desired_tld,
+                    metrics::OmniboxEventProto::PageClassification
+                        current_page_classification,
                     const AutocompleteSchemeClassifier& scheme_classifier);
   AutocompleteInput(const AutocompleteInput& other);
   ~AutocompleteInput();
@@ -149,12 +118,20 @@ class AutocompleteInput {
                   size_t cursor_position,
                   const url::Parsed& parts);
 
-  // The current URL, or an invalid GURL if query refinement is not desired.
+  // The current URL, or an invalid GURL if not applicable or available.
   const GURL& current_url() const { return current_url_; }
+  // Providers that trigger on focus need the current URL to produce a match
+  // that, when displayed, contain the URL of the current page.
+  void set_current_url(const GURL& current_url) { current_url_ = current_url; }
 
   // The title of the current page, corresponding to the current URL, or empty
   // if this is not available.
   const base::string16& current_title() const { return current_title_; }
+  // This is sometimes set as the description if returning a
+  // URL-what-you-typed match for the current URL.
+  void set_current_title(const base::string16& title) {
+    current_title_ = title;
+  }
 
   // The type of page that is currently behind displayed and how it is
   // displayed (e.g., with search term replacement or without).
@@ -180,23 +157,58 @@ class AutocompleteInput {
   bool prevent_inline_autocomplete() const {
     return prevent_inline_autocomplete_;
   }
+  // |prevent_inline_autocomplete| is true if the generated result set should
+  // not require inline autocomplete for the default match. This is difficult
+  // to explain in the abstract; the practical use case is that after the user
+  // deletes text in the edit, the HistoryURLProvider should make sure not to
+  // promote a match requiring inline autocomplete too highly.
+  void set_prevent_inline_autocomplete(bool prevent_inline_autocomplete) {
+    prevent_inline_autocomplete_ = prevent_inline_autocomplete;
+  }
 
   // Returns whether, given an input string consisting solely of a substituting
   // keyword, we should score it like a non-substituting keyword.
   bool prefer_keyword() const { return prefer_keyword_; }
+  // |prefer_keyword| should be true when the keyword UI is onscreen; this
+  // will bias the autocomplete result set toward the keyword provider when
+  // the input string is a bare keyword.
+  void set_prefer_keyword(bool prefer_keyword) {
+    prefer_keyword_ = prefer_keyword;
+  }
 
   // Returns whether this input is allowed to be treated as an exact
   // keyword match.  If not, the default result is guaranteed not to be a
   // keyword search, even if the input is "<keyword> <search string>".
   bool allow_exact_keyword_match() const { return allow_exact_keyword_match_; }
+  // |allow_exact_keyword_match| should be false when triggering keyword
+  // mode on the input string would be surprising or wrong, e.g.  when
+  // highlighting text in a page and telling the browser to search for it or
+  // navigate to it. This member only applies to substituting keywords.
+  void set_allow_exact_keyword_match(bool allow_exact_keyword_match) {
+    allow_exact_keyword_match_ = allow_exact_keyword_match;
+  }
 
   // Returns whether providers should be allowed to make asynchronous requests
   // when processing this input.
   bool want_asynchronous_matches() const { return want_asynchronous_matches_; }
+  // If |want_asynchronous_matches| is false, the controller asks the
+  // providers to only return matches which are synchronously available,
+  // which should mean that all providers will be done immediately.
+  void set_want_asynchronous_matches(bool want_asynchronous_matches) {
+    want_asynchronous_matches_ = want_asynchronous_matches;
+  }
 
   // Returns whether this input query was triggered due to the omnibox being
   // focused.
   bool from_omnibox_focus() const { return from_omnibox_focus_; }
+  // |from_omnibox_focus| should be true when input is created as a result
+  // of the omnibox being focused, instead of due to user input changes.
+  // Most providers should not provide matches in this case.  Providers
+  // which want to display matches on focus can use this flag to know when
+  // they can do so.
+  void set_from_omnibox_focus(bool from_omnibox_focus) {
+    from_omnibox_focus_ = from_omnibox_focus;
+  }
 
   // Returns the terms in |text_| that start with http:// or https:// plus
   // at least one more character, stored without the scheme.  Used in
@@ -212,6 +224,13 @@ class AutocompleteInput {
 
  private:
   friend class AutocompleteProviderTest;
+
+  // The common initialization of the non-default constructors, called after
+  // the initial fields are set. These remaining parameters are used as inputs
+  // to setting the remaining fields.
+  void Init(const base::string16& text,
+            const std::string& desired_tld,
+            const AutocompleteSchemeClassifier& scheme_classifier);
 
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
   // method.

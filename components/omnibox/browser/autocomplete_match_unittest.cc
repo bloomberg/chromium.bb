@@ -464,10 +464,9 @@ TEST(AutocompleteMatchTest, Duplicates) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     SCOPED_TRACE("input=" + base::WideToUTF8(cases[i].input) +
                  " url1=" + cases[i].url1 + " url2=" + cases[i].url2);
-    AutocompleteInput input(
-        base::WideToUTF16(cases[i].input), base::string16::npos, std::string(),
-        GURL(), base::string16(), metrics::OmniboxEventProto::INVALID_SPEC,
-        false, false, true, true, false, TestSchemeClassifier());
+    AutocompleteInput input(base::WideToUTF16(cases[i].input),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
     AutocompleteMatch m1(nullptr, 100, false,
                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     m1.destination_url = GURL(cases[i].url1);

@@ -240,10 +240,10 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url), base::string16(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, false, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(url));
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -268,10 +268,11 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
 
   std::string current_url("http://www.foxnews.com/");
   std::string input_url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
-                          std::string(), GURL(current_url), base::string16(),
-                          metrics::OmniboxEventProto::OTHER, false, false, true,
-                          true, true, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(input_url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(current_url));
+  input.set_from_omnibox_focus(true);
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
@@ -299,10 +300,11 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 
   std::string current_url("http://www.foxnews.com/");
   std::string input_url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(input_url), base::string16::npos,
-                          std::string(), GURL(current_url), base::string16(),
-                          metrics::OmniboxEventProto::OTHER, false, false, true,
-                          true, true, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(input_url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(current_url));
+  input.set_from_omnibox_focus(true);
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
                               base::ASCIIToUTF16("Foo"));
@@ -314,10 +316,11 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
 
   std::string search_url("https://www.google.com/?q=flowers");
   AutocompleteInput srp_input(
-      base::ASCIIToUTF16(search_url), base::string16::npos, std::string(),
-      GURL(search_url), base::string16(),
+      base::ASCIIToUTF16(search_url),
       metrics::OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT,
-      false, false, true, true, true, TestSchemeClassifier());
+      TestSchemeClassifier());
+  srp_input.set_current_url(GURL(search_url));
+  srp_input.set_from_omnibox_focus(true);
 
   provider_->Start(srp_input, false);
   EXPECT_TRUE(provider_->matches().empty());
@@ -335,10 +338,11 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   prefs->SetString(omnibox::kZeroSuggestCachedResults, std::string());
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url), base::string16(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, true, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(url));
+  input.set_from_omnibox_focus(true);
 
   provider_->Start(input, false);
 
@@ -365,10 +369,11 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url), base::string16(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, true, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(url));
+  input.set_from_omnibox_focus(true);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
@@ -419,10 +424,11 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   CreatePersonalizedFieldTrial();
 
   std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url), base::string16::npos,
-                          std::string(), GURL(url), base::string16(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, true, false,
-                          true, true, true, TestSchemeClassifier());
+  AutocompleteInput input(base::ASCIIToUTF16(url),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_current_url(GURL(url));
+  input.set_from_omnibox_focus(true);
 
   // Set up the pref to cache the response from the previous run.
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"

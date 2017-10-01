@@ -400,15 +400,18 @@ void OmniboxEditModel::StartAutocomplete(bool has_selected_text,
   if (is_keyword_selected())
     cursor_position += input_text.length() - user_text_.length();
 
-  input_ = AutocompleteInput(
-      input_text, cursor_position, std::string(), client_->GetURL(),
-      client_->GetTitle(), ClassifyPage(),
+  input_ = AutocompleteInput(input_text, cursor_position, ClassifyPage(),
+                             client_->GetSchemeClassifier());
+  input_.set_current_url(client_->GetURL());
+  input_.set_current_title(client_->GetTitle());
+  input_.set_prevent_inline_autocomplete(
       prevent_inline_autocomplete || just_deleted_text_ ||
-          (has_selected_text && inline_autocomplete_text_.empty()) ||
-          (paste_state_ != NONE),
-      is_keyword_selected(),
-      is_keyword_selected() || allow_exact_keyword_match_, true, false,
-      client_->GetSchemeClassifier());
+      (has_selected_text && inline_autocomplete_text_.empty()) ||
+      (paste_state_ != NONE));
+  input_.set_prefer_keyword(is_keyword_selected());
+  input_.set_allow_exact_keyword_match(is_keyword_selected() ||
+                                       allow_exact_keyword_match_);
+
   omnibox_controller_->StartAutocomplete(input_);
 }
 
@@ -463,13 +466,16 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // to "foodnetwork.com", ctrl-enter will navigate to "foo.com", not
     // "foodnetwork.com".  At the time of writing, this behavior matches
     // Internet Explorer, but not Firefox.
-    input_ = AutocompleteInput(
+    AutocompleteInput input(
         has_temporary_text_ ? view_->GetText() : input_.text(),
-        input_.cursor_position(), "com", GURL(), base::string16(),
-        input_.current_page_classification(),
-        input_.prevent_inline_autocomplete(), input_.prefer_keyword(),
-        input_.allow_exact_keyword_match(), input_.want_asynchronous_matches(),
-        input_.from_omnibox_focus(), client_->GetSchemeClassifier());
+        input_.cursor_position(), "com", input_.current_page_classification(),
+        client_->GetSchemeClassifier());
+    input.set_prevent_inline_autocomplete(input_.prevent_inline_autocomplete());
+    input.set_prefer_keyword(input_.prefer_keyword());
+    input.set_allow_exact_keyword_match(input_.allow_exact_keyword_match());
+    input.set_want_asynchronous_matches(input_.want_asynchronous_matches());
+    input.set_from_omnibox_focus(input_.from_omnibox_focus());
+    input_ = input;
     AutocompleteMatch url_match(
         autocomplete_controller()->history_url_provider()->SuggestExactInput(
             input_, input_.canonicalized_url(), false));
@@ -556,12 +562,12 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_text = user_input_in_progress_ ? user_text_ : permanent_text_;
   // Create a dummy AutocompleteInput for use in calling SuggestExactInput()
   // to create an alternate navigational match.
-  AutocompleteInput alternate_input(
-      input_text, base::string16::npos, std::string(),
-      // Somehow we can occasionally get here with no active tab.  It's not
-      // clear why this happens.
-      client_->GetURL(), client_->GetTitle(), ClassifyPage(), false, false,
-      true, true, false, client_->GetSchemeClassifier());
+  AutocompleteInput alternate_input(input_text, ClassifyPage(),
+                                    client_->GetSchemeClassifier());
+  // Somehow we can occasionally get here with no active tab.  It's not
+  // clear why this happens.
+  alternate_input.set_current_url(client_->GetURL());
+  alternate_input.set_current_title(client_->GetTitle());
   std::unique_ptr<OmniboxNavigationObserver> observer(
       client_->CreateOmniboxNavigationObserver(
           input_text, match,
@@ -886,10 +892,11 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // We avoid PermanentURL() here because it's not guaranteed to give us the
     // actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
-    input_ = AutocompleteInput(
-        permanent_text_, base::string16::npos, std::string(), client_->GetURL(),
-        client_->GetTitle(), ClassifyPage(), false, false, true, true, true,
-        client_->GetSchemeClassifier());
+    input_ = AutocompleteInput(permanent_text_, ClassifyPage(),
+                               client_->GetSchemeClassifier());
+    input_.set_current_url(client_->GetURL());
+    input_.set_current_title(client_->GetTitle());
+    input_.set_from_omnibox_focus(true);
     autocomplete_controller()->Start(input_);
   }
 

@@ -61,10 +61,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // TODO: Rather than send this second request by talking to the controller
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
-  autocomplete_controller->Start(AutocompleteInput(
-      base::ASCIIToUTF16("kw command"), base::string16::npos, std::string(),
-      GURL(), base::string16(), metrics::OmniboxEventProto::NTP, true, false,
-      true, true, false, ChromeAutocompleteSchemeClassifier(profile)));
+  AutocompleteInput input(base::ASCIIToUTF16("kw command"),
+                          metrics::OmniboxEventProto::NTP,
+                          ChromeAutocompleteSchemeClassifier(profile));
+  autocomplete_controller->Start(input);
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
