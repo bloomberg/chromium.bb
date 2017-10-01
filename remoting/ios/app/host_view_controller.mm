@@ -103,6 +103,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   [super viewDidLoad];
   _hostView = [[EAGLView alloc] initWithFrame:CGRectZero];
   _hostView.translatesAutoresizingMaskIntoConstraints = NO;
+
+  // Allow the host view to handle raw gestures.
+  _hostView.isAccessibilityElement = YES;
+  _hostView.accessibilityTraits = UIAccessibilityTraitAllowsDirectInteraction;
   [self.view addSubview:_hostView];
 
   UILayoutGuide* safeAreaLayoutGuide =
@@ -203,6 +207,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                                   _hasPhysicalKeyboard = hasPhysicalKeyboard;
                                   [_clientKeyboard becomeFirstResponder];
                                 }];
+
+  UIAccessibilityPostNotification(
+      UIAccessibilityAnnouncementNotification,
+      l10n_util::GetNSString(IDS_HOST_CONNECTED_ANNOUNCEMENT));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -299,6 +307,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
 - (void)keyboardShouldHide {
   _clientKeyboard.showsSoftKeyboard = NO;
+}
+
+- (void)menuShouldShow {
+  [self didTap:_floatingButton];
 }
 
 #pragma mark - RemotingSettingsViewControllerDelegate

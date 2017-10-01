@@ -13,6 +13,7 @@
 @protocol ClientGesturesDelegate<NSObject>
 - (void)keyboardShouldShow;
 - (void)keyboardShouldHide;
+- (void)menuShouldShow;
 @end
 
 @interface ClientGestures : NSObject
