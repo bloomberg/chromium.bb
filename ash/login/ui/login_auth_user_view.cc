@@ -14,8 +14,10 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -104,8 +106,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
   // Build child views.
   user_view_ = new LoginUserView(LoginDisplayStyle::kLarge,
                                  true /*show_dropdown*/, on_tap);
-  password_view_ = new LoginPasswordView(
-      base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)));
+  password_view_ = new LoginPasswordView();
   // Enable layer rendering so the password opacity can be animated.
   password_view_->SetPaintToLayer();
   password_view_->layer()->SetFillsBoundsOpaquely(false);
@@ -116,6 +117,12 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
                        base::BindRepeating(&LoginPasswordView::Backspace,
                                            base::Unretained(password_view_)));
   DCHECK(pin_view_->layer());
+  // Initialization of |password_view_| is deferred because it needs the
+  // |pin_view_| pointer.
+  password_view_->Init(
+      base::Bind(&LoginAuthUserView::OnAuthSubmit, base::Unretained(this)),
+      base::Bind(&LoginPinView::OnPasswordTextChanged,
+                 base::Unretained(pin_view_)));
 
   // Build layout.
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
@@ -181,8 +188,9 @@ LoginAuthUserView::~LoginAuthUserView() = default;
 void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
   // TODO(jdufault): Implement additional auth methods.
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
-
   bool has_password = (auth_methods & AUTH_PASSWORD) != 0;
+  bool has_pin = (auth_methods & AUTH_PIN) != 0;
+
   password_view_->SetEnabled(has_password);
   password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
@@ -195,7 +203,15 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods) {
     password_view_->RequestFocus();
   }
 
-  pin_view_->SetVisible(auth_methods_ & AUTH_PIN);
+  pin_view_->SetVisible(has_pin);
+
+  if (has_password && has_pin) {
+    password_view_->SetPlaceholderText(
+        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
+  } else if (has_password) {
+    password_view_->SetPlaceholderText(
+        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PLACEHOLDER));
+  }
 
   // Only the active auth user view has a password displayed. If that is the
   // case, then render the user view as if it was always focused, since clicking
