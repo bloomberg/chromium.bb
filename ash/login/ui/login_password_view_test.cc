@@ -23,8 +23,11 @@ class LoginPasswordViewTest : public LoginTestBase {
   void SetUp() override {
     LoginTestBase::SetUp();
 
-    view_ = new LoginPasswordView(base::Bind(
-        &LoginPasswordViewTest::OnPasswordSubmit, base::Unretained(this)));
+    view_ = new LoginPasswordView();
+    view_->Init(base::Bind(&LoginPasswordViewTest::OnPasswordSubmit,
+                           base::Unretained(this)),
+                base::Bind(&LoginPasswordViewTest::OnPasswordTextChanged,
+                           base::Unretained(this)));
     ShowWidgetWithContent(view_);
   }
 
@@ -33,8 +36,14 @@ class LoginPasswordViewTest : public LoginTestBase {
     password_ = password;
   }
 
+  // Called when the password field text changed.
+  void OnPasswordTextChanged(bool is_empty) {
+    is_password_field_empty_ = is_empty;
+  }
+
   LoginPasswordView* view_ = nullptr;
   base::Optional<base::string16> password_;
+  bool is_password_field_empty_ = true;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginPasswordViewTest);
@@ -92,17 +101,23 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitClearsPassword) {
   ui::test::EventGenerator& generator = GetEventGenerator();
 
   // Submit 'a' password.
+  EXPECT_TRUE(is_password_field_empty_);
   generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
+  EXPECT_FALSE(is_password_field_empty_);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_TRUE(is_password_field_empty_);
   EXPECT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("a"), *password_);
 
   password_.reset();
 
-  // Submit 'b' password
+  // Submit 'b' password.
   generator.PressKey(ui::KeyboardCode::VKEY_B, 0);
+  EXPECT_FALSE(is_password_field_empty_);
   generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_TRUE(is_password_field_empty_);
   EXPECT_TRUE(password_.has_value());
+  // The submitted password is 'b' instead of "ab".
   EXPECT_EQ(base::ASCIIToUTF16("b"), *password_);
 }
 
