@@ -175,23 +175,27 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     }
 
     private void showRemoteViews(RemoteViews remoteViews) {
-        final View inflatedView = remoteViews.apply(mActivity, getBottomBarView());
-        if (mClickableIDs != null && mClickPendingIntent != null) {
-            for (int id: mClickableIDs) {
-                if (id < 0) return;
-                View view = inflatedView.findViewById(id);
-                if (view != null) view.setOnClickListener(mBottomBarClickListener);
+        try {
+            final View inflatedView = remoteViews.apply(mActivity, getBottomBarView());
+            if (mClickableIDs != null && mClickPendingIntent != null) {
+                for (int id: mClickableIDs) {
+                    if (id < 0) return;
+                    View view = inflatedView.findViewById(id);
+                    if (view != null) view.setOnClickListener(mBottomBarClickListener);
+                }
             }
+            getBottomBarView().addView(inflatedView, 1);
+            inflatedView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    inflatedView.removeOnLayoutChangeListener(this);
+                    mFullscreenManager.setBottomControlsHeight(v.getHeight());
+                }
+            });
+        } catch (RemoteViews.ActionException e) {
+            Log.e(TAG, "Failed to inflate the RemoteViews", e);
         }
-        getBottomBarView().addView(inflatedView, 1);
-        inflatedView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                inflatedView.removeOnLayoutChangeListener(this);
-                mFullscreenManager.setBottomControlsHeight(v.getHeight());
-            }
-        });
     }
 
     private static void sendPendingIntentWithUrl(PendingIntent pendingIntent, Intent extraIntent,
