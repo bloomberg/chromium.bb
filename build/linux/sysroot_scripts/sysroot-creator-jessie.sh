@@ -60,6 +60,8 @@ DEBIAN_PACKAGES="\
   libdbus-1-3
   libdbus-1-dev
   libdbus-glib-1-2
+  libdconf-dev
+  libdconf1
   libdrm2
   libdrm-dev
   libdrm-nouveau2

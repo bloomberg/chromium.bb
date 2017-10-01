@@ -10,8 +10,6 @@ http://ftp.us.debian.org/debian/pool/main/a/attr/libattr1_2.4.47-2_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/a/audit/libaudit1_2.4-1+b1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/a/avahi/libavahi-client3_0.6.31-5_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/a/avahi/libavahi-common3_0.6.31-5_arm64.deb
-http://ftp.us.debian.org/debian/pool/main/b/bluez/libbluetooth3_5.23-2+b1_arm64.deb
-http://ftp.us.debian.org/debian/pool/main/b/bluez/libbluetooth-dev_5.23-2+b1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/b/brltty/libbrlapi0.6_5.2~20141018-5_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/b/brltty/libbrlapi-dev_5.2~20141018-5_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/c/cairo/libcairo2_1.14.0-2.1+deb8u2_arm64.deb
@@ -21,6 +19,8 @@ http://ftp.us.debian.org/debian/pool/main/c/cairo/libcairo-script-interpreter2_1
 http://ftp.us.debian.org/debian/pool/main/d/dbus-glib/libdbus-glib-1-2_0.102-1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/d/dbus/libdbus-1-3_1.8.22-0+deb8u1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/d/dbus/libdbus-1-dev_1.8.22-0+deb8u1_arm64.deb
+http://ftp.us.debian.org/debian/pool/main/d/d-conf/libdconf1_0.22.0-1_arm64.deb
+http://ftp.us.debian.org/debian/pool/main/d/d-conf/libdconf-dev_0.22.0-1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/e/e2fsprogs/comerr-dev_2.1-1.42.12-2+b1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/e/e2fsprogs/libcomerr2_1.42.12-2+b1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/e/elfutils/libelf1_0.159-4.2_arm64.deb
@@ -167,6 +167,8 @@ http://ftp.us.debian.org/debian/pool/main/x/x11proto-xext/x11proto-xext-dev_7.3.
 http://ftp.us.debian.org/debian/pool/main/x/x11proto-xinerama/x11proto-xinerama-dev_1.2.1-2_all.deb
 http://ftp.us.debian.org/debian/pool/main/z/zlib/zlib1g_1.2.8.dfsg-2+b1_arm64.deb
 http://ftp.us.debian.org/debian/pool/main/z/zlib/zlib1g-dev_1.2.8.dfsg-2+b1_arm64.deb
+http://security.debian.org/pool/updates/main/b/bluez/libbluetooth3_5.23-2+deb8u1_arm64.deb
+http://security.debian.org/pool/updates/main/b/bluez/libbluetooth-dev_5.23-2+deb8u1_arm64.deb
 http://security.debian.org/pool/updates/main/c/cups/libcups2_1.7.5-11+deb8u1_arm64.deb
 http://security.debian.org/pool/updates/main/c/cups/libcups2-dev_1.7.5-11+deb8u1_arm64.deb
 http://security.debian.org/pool/updates/main/e/expat/libexpat1_2.1.0-6+deb8u4_arm64.deb
@@ -175,8 +177,8 @@ http://security.debian.org/pool/updates/main/f/fontconfig/libfontconfig1_2.11.0-
 http://security.debian.org/pool/updates/main/f/fontconfig/libfontconfig1-dev_2.11.0-6.3+deb8u1_arm64.deb
 http://security.debian.org/pool/updates/main/f/freetype/libfreetype6_2.5.2-3+deb8u2_arm64.deb
 http://security.debian.org/pool/updates/main/f/freetype/libfreetype6-dev_2.5.2-3+deb8u2_arm64.deb
-http://security.debian.org/pool/updates/main/g/gdk-pixbuf/libgdk-pixbuf2.0-0_2.31.1-2+deb8u5_arm64.deb
-http://security.debian.org/pool/updates/main/g/gdk-pixbuf/libgdk-pixbuf2.0-dev_2.31.1-2+deb8u5_arm64.deb
+http://security.debian.org/pool/updates/main/g/gdk-pixbuf/libgdk-pixbuf2.0-0_2.31.1-2+deb8u6_arm64.deb
+http://security.debian.org/pool/updates/main/g/gdk-pixbuf/libgdk-pixbuf2.0-dev_2.31.1-2+deb8u6_arm64.deb
 http://security.debian.org/pool/updates/main/g/glibc/libc6_2.19-18+deb8u10_arm64.deb
 http://security.debian.org/pool/updates/main/g/glibc/libc6-dev_2.19-18+deb8u10_arm64.deb
 http://security.debian.org/pool/updates/main/g/gnutls28/libgnutls28-dev_3.3.8-6+deb8u6_arm64.deb
