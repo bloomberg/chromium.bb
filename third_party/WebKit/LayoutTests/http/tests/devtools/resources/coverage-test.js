@@ -6,13 +6,19 @@ InspectorTest.startCoverage = function()
 {
     UI.viewManager.showView("coverage");
     var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-    coverageView._startRecording();
+    coverageView._startRecording(false);
 }
 
 InspectorTest.stopCoverage = function()
 {
     var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
     return coverageView._stopRecording();
+}
+
+InspectorTest.pollCoverage = function()
+{
+    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+    return coverageView._poll();
 }
 
 InspectorTest.sourceDecorated = async function(source)

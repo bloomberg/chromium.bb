@@ -22,14 +22,21 @@ Tests the gutter decorations in target source code after ScriptFormatterEditorAc
 17: -         return a + 5;
 18: -     }
 19:   
-20: +     return [inner1, inner2, inner3, inner4, inner5][index];
-21: + }
-22:   
-23: + function performActions() {
-24: +     return outer(1)(0) + outer(3)(0);
-25: + }
-26: - function outer2() {
-27: -     return outer(0)(0);
-28: - }
+20: +     if (index === 7) {
+21: -         console.error('This will never happen!');
+22: -     }
+23:   
+24: +     // Make sure these are not collected.
+25: +     if (!self.__funcs)
+26: +         self.__funcs = [inner1, inner2, inner3, inner4, inner5];
+27: +     return self.__funcs[index];
+28: + }
 29:   
+30: + function performActions() {
+31: +     return outer(1)(0) + outer(3)(0);
+32: + }
+33: - function outer2() {
+34: -     return outer(0)(0);
+35: - }
+36:   
 

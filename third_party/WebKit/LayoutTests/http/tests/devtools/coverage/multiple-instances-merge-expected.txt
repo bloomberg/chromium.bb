@@ -1,7 +1,7 @@
 
 Tests the coverage list view after finishing recording in the Coverage view.
 
-http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 270 unused: 132 total: 402
+http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 385 unused: 183 total: 568
 http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css CSS used: 90 unused: 119 total: 209
 0: + body {
 1: +     background-color: lightblue;
@@ -39,13 +39,20 @@ http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css CSS us
 9:   
 10: +   function inner3(a) { return a + 3; } function inner4(a) { return a + 4; } function inner5(a) { return a + 5; }
 11:   
-12: +   return [inner1, inner2, inner3, inner4, inner5][index];
-13: + }
-14:   
-15: + function performActions() {
-16: +   return outer(1)(0) + outer(3)(0);
-17: + } function outer2() {
-18: -   return outer(0)(0);
-19: - }
-20:   
+12: +   if (index === 7) {
+13: -     console.error('This will never happen!');
+14: -   }
+15:   
+16: +   // Make sure these are not collected.
+17: +   if (!self.__funcs)
+18: +     self.__funcs = [inner1, inner2, inner3, inner4, inner5];
+19: +   return self.__funcs[index];
+20: + }
+21:   
+22: + function performActions() {
+23: +   return outer(1)(0) + outer(3)(0);
+24: + } function outer2() {
+25: -   return outer(0)(0);
+26: - }
+27:   
 
