@@ -193,11 +193,11 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 
 .auth-container .submit-button {
   color: #FFFFFF;
-  height: 24px;
-  margin: 12px 0 4px 0;
+  height: 20px;
+  margin: 15px 0 5px 0;
   opacity: 1;
   padding: 0;
-  width: 24px;
+  width: 20px;
 }
 
 .auth-container .custom-icon-shown .submit-button {
@@ -264,22 +264,25 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 .password-container {
   height: 34px;
   margin-top: 6px;
-  width: 180px;
+  width: 184px; /* Input line width - Submit button width */
 }
 
 .capslock-on .password-container {
-  width: 160px;
+  width: 164px; /* Input line width - Caps lock icon width */
 }
 
 .custom-icon-shown .password-container {
   -webkit-padding-start: 8px;
   height: 39px;
   margin-top: 1px;
-  width: 145px;
+  width: 149px; /* Input line width -
+                   (Submit button width + Custom icon width) */
 }
 
 .capslock-on .custom-icon-shown .password-container {
-  width: 125px;
+  width: 129px; /* Input line width -
+                   (Submit button width + Caps lock icon width +
+                   Custom icon width) */
 }
 
 .pod input[type='password'] {
