@@ -16,10 +16,15 @@ namespace ash {
 class LoginDataDispatcher;
 class LockContentsView;
 
+namespace mojom {
+enum class TrayActionState;
+}
+
 // Contains the debug UI strip (ie, add user, toggle PIN buttons).
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
-  explicit LockDebugView(LoginDataDispatcher* data_dispatcher);
+  LockDebugView(mojom::TrayActionState initial_note_action_state,
+                LoginDataDispatcher* data_dispatcher);
   ~LockDebugView() override;
 
   // views::View:
@@ -41,6 +46,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
 
   views::View* debug_;
   views::View* toggle_blur_;
+  views::View* toggle_note_action_;
   views::View* add_user_;
   views::View* remove_user_;
 

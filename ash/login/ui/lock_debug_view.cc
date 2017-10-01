@@ -5,7 +5,9 @@
 #include "ash/login/ui/lock_debug_view.h"
 
 #include <algorithm>
+#include <string>
 
+#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
@@ -33,14 +35,6 @@ struct UserMetadata {
   views::View* view = nullptr;
 };
 
-// Wraps |view| so it is sized to its preferred dimensions.
-views::View* WrapViewForPreferredSize(views::View* view) {
-  auto* proxy = new NonAccessibleView();
-  proxy->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
-  proxy->AddChildView(view);
-  return proxy;
-}
-
 // Creates a button with |text| that cannot be focused.
 views::MdTextButton* CreateButton(views::ButtonListener* listener,
                                   const std::string& text) {
@@ -57,8 +51,11 @@ views::MdTextButton* CreateButton(views::ButtonListener* listener,
 class LockDebugView::DebugDataDispatcherTransformer
     : public LoginDataDispatcher::Observer {
  public:
-  explicit DebugDataDispatcherTransformer(LoginDataDispatcher* dispatcher)
-      : root_dispatcher_(dispatcher) {
+  DebugDataDispatcherTransformer(
+      mojom::TrayActionState initial_lock_screen_note_state,
+      LoginDataDispatcher* dispatcher)
+      : root_dispatcher_(dispatcher),
+        lock_screen_note_state_(initial_lock_screen_note_state) {
     root_dispatcher_->AddObserver(this);
   }
   ~DebugDataDispatcherTransformer() override {
@@ -112,6 +109,16 @@ class LockDebugView::DebugDataDispatcherTransformer
                                            debug_user->enable_pin);
   }
 
+  void ToggleLockScreenNoteButton() {
+    if (lock_screen_note_state_ == mojom::TrayActionState::kAvailable) {
+      lock_screen_note_state_ = mojom::TrayActionState::kNotAvailable;
+    } else {
+      lock_screen_note_state_ = mojom::TrayActionState::kAvailable;
+    }
+
+    debug_dispatcher_.SetLockScreenNoteState(lock_screen_note_state_);
+  }
+
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<mojom::UserInfoPtr>& users) override {
     // Update root_users_ to new source data.
@@ -133,6 +140,10 @@ class LockDebugView::DebugDataDispatcherTransformer
       }
     }
   }
+  void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override {
+    lock_screen_note_state_ = state;
+    debug_dispatcher_.SetLockScreenNoteState(state);
+  }
 
  private:
   // The debug overlay UI takes ground-truth data from |root_dispatcher_|,
@@ -147,15 +158,21 @@ class LockDebugView::DebugDataDispatcherTransformer
   // Metadata for users that the UI is displaying.
   std::vector<UserMetadata> debug_users_;
 
+  // The current lock screen note action state.
+  mojom::TrayActionState lock_screen_note_state_;
+
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
 
-LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
-    : debug_data_dispatcher_(
-          base::MakeUnique<DebugDataDispatcherTransformer>(data_dispatcher)) {
+LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
+                             LoginDataDispatcher* data_dispatcher)
+    : debug_data_dispatcher_(base::MakeUnique<DebugDataDispatcherTransformer>(
+          initial_note_action_state,
+          data_dispatcher)) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
 
-  lock_ = new LockContentsView(debug_data_dispatcher_->debug_dispatcher());
+  lock_ = new LockContentsView(initial_note_action_state,
+                               debug_data_dispatcher_->debug_dispatcher());
   AddChildView(lock_);
 
   debug_ = new NonAccessibleView();
@@ -163,13 +180,19 @@ LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
   AddChildView(debug_);
 
   toggle_blur_ = CreateButton(this, "Blur");
-  debug_->AddChildView(WrapViewForPreferredSize(toggle_blur_));
+  debug_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(toggle_blur_));
+
+  toggle_note_action_ = CreateButton(this, "Toggle note action");
+  debug_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(toggle_note_action_));
 
   add_user_ = CreateButton(this, "Add");
-  debug_->AddChildView(WrapViewForPreferredSize(add_user_));
+  debug_->AddChildView(login_layout_util::WrapViewForPreferredSize(add_user_));
 
   remove_user_ = CreateButton(this, "Remove");
-  debug_->AddChildView(WrapViewForPreferredSize(remove_user_));
+  debug_->AddChildView(
+      login_layout_util::WrapViewForPreferredSize(remove_user_));
 
   user_column_ = new NonAccessibleView();
   user_column_->SetLayoutManager(
@@ -193,6 +216,11 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Enable or disable wallpaper blur.
   if (sender == toggle_blur_) {
     LockScreen::Get()->ToggleBlurForDebug();
+    return;
+  }
+
+  if (sender == toggle_note_action_) {
+    debug_data_dispatcher_->ToggleLockScreenNoteButton();
     return;
   }
 

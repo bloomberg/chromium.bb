@@ -49,7 +49,8 @@ void ExpectNotFocused(views::View* view) {
 // Verifies that the password input box has focus.
 TEST_F(LockScreenSanityTest, PasswordIsInitiallyFocused) {
   // Build lock screen.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
 
   // The lock screen requires at least one user.
   SetUserCount(1);
@@ -68,7 +69,8 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
     return;
 
   // Build lock screen.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
 
   // The lock screen requires at least one user.
   SetUserCount(1);
@@ -93,7 +95,8 @@ TEST_F(LockScreenSanityTest, TabGoesFromLockToShelfAndBackToLock) {
       session_manager::SessionState::LOCKED);
 
   // Create lock screen.
-  auto* lock = new LockContentsView(data_dispatcher());
+  auto* lock = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                    data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(lock);
   views::View* shelf = Shelf::ForWindow(lock->GetWidget()->GetNativeWindow())
@@ -127,7 +130,8 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
-  auto* lock = new LockContentsView(data_dispatcher());
+  auto* lock = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                    data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(lock);
   views::View* status_area =

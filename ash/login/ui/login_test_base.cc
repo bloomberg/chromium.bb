@@ -4,8 +4,11 @@
 
 #include "ash/login/ui/login_test_base.h"
 
+#include <string>
+
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
@@ -19,7 +22,7 @@ namespace ash {
 // A WidgetDelegate which ensures that |initially_focused| gets focus.
 class LoginTestBase::WidgetDelegate : public views::WidgetDelegate {
  public:
-  WidgetDelegate(views::View* content) : content_(content) {}
+  explicit WidgetDelegate(views::View* content) : content_(content) {}
   ~WidgetDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -35,9 +38,9 @@ class LoginTestBase::WidgetDelegate : public views::WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };
 
-LoginTestBase::LoginTestBase() {}
+LoginTestBase::LoginTestBase() = default;
 
-LoginTestBase::~LoginTestBase() {}
+LoginTestBase::~LoginTestBase() = default;
 
 void LoginTestBase::ShowWidgetWithContent(views::View* content) {
   EXPECT_FALSE(widget_) << "CreateWidget can only be called once.";
