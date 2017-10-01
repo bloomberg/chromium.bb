@@ -226,8 +226,9 @@ int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
   // the max superblock size. To do this, shift right (and round up) to get the
   // tile size in max super-blocks and then shift left again to convert it to
   // mi units.
+  const int shift = log2_tile_num + MAX_MIB_SIZE_LOG2;
   const int max_sb_tile_size =
-      ROUND_POWER_OF_TWO(mi_frame_size, log2_tile_num + MAX_MIB_SIZE_LOG2);
+      ALIGN_POWER_OF_TWO(mi_frame_size, shift) >> shift;
   const int mi_tile_size = max_sb_tile_size << MAX_MIB_SIZE_LOG2;
 
   // The actual number of tiles is the ceiling of the frame size in mi units
