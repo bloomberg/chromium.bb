@@ -830,19 +830,6 @@ hooks = [
                 '-d', 'src/tools/luci-go/linux64',
     ],
   },
-  {
-    'name': 'drmemory',
-    'pattern': '.',
-    'condition': 'host_os == "win"',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--platform=win32',
-                '--no_auth',
-                '--bucket', 'chromium-drmemory',
-                '-s', 'src/third_party/drmemory/drmemory-windows-sfx.exe.sha1',
-              ],
-  },
   # Pull the Syzygy binaries, used for optimization and instrumentation.
   {
     'name': 'syzygy-binaries',
