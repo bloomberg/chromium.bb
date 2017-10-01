@@ -4715,7 +4715,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
   cm->error_resilient_mode = aom_rb_read_bit(rb);
 #if CONFIG_REFERENCE_BUFFER
-  if (cm->frame_type == KEY_FRAME) {
+  if (frame_is_intra_only(cm)) {
     cm->use_reference_buffer = aom_rb_read_bit(rb);
 #if !CONFIG_OBU
     read_sequence_header(&pbi->seq_params);

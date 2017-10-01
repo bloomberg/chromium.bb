@@ -4578,7 +4578,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
   aom_wb_write_bit(wb, cm->error_resilient_mode);
 
-  if (cm->frame_type == KEY_FRAME) {
+  if (frame_is_intra_only(cm)) {
 #if CONFIG_REFERENCE_BUFFER
     aom_wb_write_bit(wb, cm->use_reference_buffer);
     if (cm->use_reference_buffer) {
