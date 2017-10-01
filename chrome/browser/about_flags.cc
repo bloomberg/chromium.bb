@@ -3231,6 +3231,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxUIVerticalMarginVariations,
                                     "OmniboxUIVerticalMarginVariations")},
 
+    {"omnibox-ui-swap-title-and-url",
+     flag_descriptions::kOmniboxUISwapTitleAndUrlName,
+     flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
+
     {"use-suggestions-even-if-few",
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureName,
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureDescription, kOsAll,
