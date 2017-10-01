@@ -673,6 +673,17 @@ static void av1_init_intra_predictors_internal(void) {
   assert(NELEMENTS(mode_to_angle_map) == INTRA_MODES);
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_TX64X64
+#define INIT_RECTANGULAR(p, type)             \
+  p[TX_4X8] = aom_##type##_predictor_4x8;     \
+  p[TX_8X4] = aom_##type##_predictor_8x4;     \
+  p[TX_8X16] = aom_##type##_predictor_8x16;   \
+  p[TX_16X8] = aom_##type##_predictor_16x8;   \
+  p[TX_16X32] = aom_##type##_predictor_16x32; \
+  p[TX_32X16] = aom_##type##_predictor_32x16; \
+  p[TX_32X64] = aom_##type##_predictor_32x64; \
+  p[TX_64X32] = aom_##type##_predictor_64x32;
+#else
 #define INIT_RECTANGULAR(p, type)             \
   p[TX_4X8] = aom_##type##_predictor_4x8;     \
   p[TX_8X4] = aom_##type##_predictor_8x4;     \
@@ -680,6 +691,7 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_16X8] = aom_##type##_predictor_16x8;   \
   p[TX_16X32] = aom_##type##_predictor_16x32; \
   p[TX_32X16] = aom_##type##_predictor_32x16;
+#endif  // CONFIG_TX64X64
 
 #if CONFIG_TX64X64
 #define INIT_NO_4X4(p, type)                  \
