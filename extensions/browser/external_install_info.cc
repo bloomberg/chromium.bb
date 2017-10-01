@@ -12,6 +12,7 @@ ExternalInstallInfo::ExternalInstallInfo(const std::string& extension_id,
     : extension_id(extension_id),
       creation_flags(creation_flags),
       mark_acknowledged(mark_acknowledged) {}
+ExternalInstallInfo::ExternalInstallInfo(ExternalInstallInfo&& other) = default;
 
 ExternalInstallInfoFile::ExternalInstallInfoFile(
     const std::string& extension_id,
@@ -26,6 +27,8 @@ ExternalInstallInfoFile::ExternalInstallInfoFile(
       path(path),
       crx_location(crx_location),
       install_immediately(install_immediately) {}
+ExternalInstallInfoFile::ExternalInstallInfoFile(
+    ExternalInstallInfoFile&& other) = default;
 
 ExternalInstallInfoFile::~ExternalInstallInfoFile() {}
 
@@ -40,6 +43,8 @@ ExternalInstallInfoUpdateUrl::ExternalInstallInfoUpdateUrl(
       install_parameter(install_parameter),
       update_url(std::move(update_url)),
       download_location(download_location) {}
+ExternalInstallInfoUpdateUrl::ExternalInstallInfoUpdateUrl(
+    ExternalInstallInfoUpdateUrl&& other) = default;
 
 ExternalInstallInfoUpdateUrl::~ExternalInstallInfoUpdateUrl() {}
 

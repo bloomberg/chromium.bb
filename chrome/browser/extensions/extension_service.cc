@@ -249,23 +249,21 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 
 void ExtensionService::OnExternalProviderUpdateComplete(
     const ExternalProviderInterface* provider,
-    const std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>&
-        update_url_extensions,
-    const std::vector<std::unique_ptr<ExternalInstallInfoFile>>&
-        file_extensions,
+    const std::vector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
+    const std::vector<ExternalInstallInfoFile>& file_extensions,
     const std::set<std::string>& removed_extensions) {
   // Update pending_extension_manager() with the new extensions first.
   for (const auto& extension : update_url_extensions)
-    OnExternalExtensionUpdateUrlFound(*extension, false);
+    OnExternalExtensionUpdateUrlFound(extension, false);
   for (const auto& extension : file_extensions)
-    OnExternalExtensionFileFound(*extension);
+    OnExternalExtensionFileFound(extension);
 
 #if DCHECK_IS_ON()
   for (const std::string& id : removed_extensions) {
     for (const auto& extension : update_url_extensions)
-      DCHECK_NE(id, extension->extension_id);
+      DCHECK_NE(id, extension.extension_id);
     for (const auto& extension : file_extensions)
-      DCHECK_NE(id, extension->extension_id);
+      DCHECK_NE(id, extension.extension_id);
   }
 #endif
 

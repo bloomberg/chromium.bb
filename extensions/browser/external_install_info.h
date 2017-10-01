@@ -18,6 +18,7 @@ struct ExternalInstallInfo {
   ExternalInstallInfo(const std::string& extension_id,
                       int creation_flags,
                       bool mark_acknowledged);
+  ExternalInstallInfo(ExternalInstallInfo&& other);
   virtual ~ExternalInstallInfo() {}
 
   std::string extension_id;
@@ -36,6 +37,7 @@ struct ExternalInstallInfoFile : public ExternalInstallInfo {
                           int creation_flags,
                           bool mark_acknowledged,
                           bool install_immediately);
+  ExternalInstallInfoFile(ExternalInstallInfoFile&& other);
   ~ExternalInstallInfoFile() override;
 
   base::Version version;
@@ -51,6 +53,7 @@ struct ExternalInstallInfoUpdateUrl : public ExternalInstallInfo {
                                Manifest::Location download_location,
                                int creation_flags,
                                bool mark_acknowledged);
+  ExternalInstallInfoUpdateUrl(ExternalInstallInfoUpdateUrl&& other);
   ~ExternalInstallInfoUpdateUrl() override;
 
   std::string install_parameter;
