@@ -13,6 +13,7 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/note_action_launch_button.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -28,10 +29,14 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -150,10 +155,16 @@ const std::vector<LoginUserView*>& LockContentsView::TestApi::user_views()
   return view_->user_views_;
 }
 
+views::View* LockContentsView::TestApi::note_action() const {
+  return view_->note_action_;
+}
+
 LockContentsView::UserState::UserState(AccountId account_id)
     : account_id(account_id) {}
 
-LockContentsView::LockContentsView(LoginDataDispatcher* data_dispatcher)
+LockContentsView::LockContentsView(
+    mojom::TrayActionState initial_note_action_state,
+    LoginDataDispatcher* data_dispatcher)
     : NonAccessibleView(kLockContentsViewName),
       data_dispatcher_(data_dispatcher),
       display_observer_(this) {
@@ -166,6 +177,15 @@ LockContentsView::LockContentsView(LoginDataDispatcher* data_dispatcher)
   // switch to the system tray. LockContentsView should otherwise not be
   // focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
+
+  SetLayoutManager(new views::FillLayout());
+
+  main_view_ = new NonAccessibleView();
+  AddChildView(main_view_);
+
+  note_action_ =
+      new NoteActionLaunchButton(initial_note_action_state, data_dispatcher_);
+  AddChildView(note_action_);
 }
 
 LockContentsView::~LockContentsView() {
@@ -175,6 +195,15 @@ LockContentsView::~LockContentsView() {
 
 void LockContentsView::Layout() {
   View::Layout();
+
+  // Layout note action in the top right corner - the action origin is offset
+  // to the left from the contents view top right corner by the width of the
+  // action view.
+  note_action_->SizeToPreferredSize();
+  gfx::Size action_size = note_action_->GetPreferredSize();
+  note_action_->SetPosition(GetLocalBounds().top_right() -
+                            gfx::Vector2d(action_size.width(), 0));
+
   if (scroller_)
     scroller_->ClipHeightTo(size().height(), size().height());
 }
@@ -207,11 +236,10 @@ void LockContentsView::OnUsersChanged(
     const std::vector<mojom::UserInfoPtr>& users) {
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
-  RemoveAllChildViews(true /*delete_children*/);
+  main_view_->RemoveAllChildViews(true /*delete_children*/);
   user_views_.clear();
   opt_secondary_auth_ = nullptr;
   scroller_ = nullptr;
-  root_layout_ = nullptr;
   rotation_actions_.clear();
 
   // Build user state list.
@@ -219,13 +247,12 @@ void LockContentsView::OnUsersChanged(
   for (const mojom::UserInfoPtr& user : users)
     users_.push_back(UserState{user->account_id});
 
-  // Build view hierarchy.
-  root_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal);
-  root_layout_->set_main_axis_alignment(
+  main_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal);
+  main_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  root_layout_->set_cross_axis_alignment(
+  main_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(root_layout_);
+  main_view_->SetLayoutManager(main_layout_);
 
   // Add auth user.
   primary_auth_ = new LoginAuthUserView(
@@ -233,7 +260,7 @@ void LockContentsView::OnUsersChanged(
       base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
       base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
                  base::Unretained(this), true /*is_primary*/));
-  AddChildView(primary_auth_);
+  main_view_->AddChildView(primary_auth_);
 
   // Build layout for additional users.
   if (users.size() == 2)
@@ -312,7 +339,7 @@ void LockContentsView::CreateLowDensityLayout(
   DCHECK_EQ(users.size(), 2u);
 
   // Space between auth user and alternative user.
-  AddChildView(MakeOrientationViewWithWidths(
+  main_view_->AddChildView(MakeOrientationViewWithWidths(
       kLowDensityDistanceBetweenUsersInLandscapeDp,
       kLowDensityDistanceBetweenUsersInPortraitDp));
 
@@ -323,24 +350,24 @@ void LockContentsView::CreateLowDensityLayout(
       base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
                  base::Unretained(this), false /*is_primary*/));
   opt_secondary_auth_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-  AddChildView(opt_secondary_auth_);
+  main_view_->AddChildView(opt_secondary_auth_);
 }
 
 void LockContentsView::CreateMediumDensityLayout(
     const std::vector<mojom::UserInfoPtr>& users) {
   // Insert spacing before (left of) auth.
-  AddChildViewAt(MakeOrientationViewWithWidths(
-                     kMediumDensityMarginLeftOfAuthUserLandscapeDp,
-                     kMediumDensityMarginLeftOfAuthUserPortraitDp),
-                 0);
+  main_view_->AddChildViewAt(MakeOrientationViewWithWidths(
+                                 kMediumDensityMarginLeftOfAuthUserLandscapeDp,
+                                 kMediumDensityMarginLeftOfAuthUserPortraitDp),
+                             0);
   // Insert spacing between auth and user list.
-  AddChildView(MakeOrientationViewWithWidths(
+  main_view_->AddChildView(MakeOrientationViewWithWidths(
       kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp,
       kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp));
 
   // Add additional users.
   auto* row = new NonAccessibleView();
-  AddChildView(row);
+  main_view_->AddChildView(row);
   auto* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            kMediumDensityVerticalDistanceBetweenUsersDp);
@@ -358,9 +385,9 @@ void LockContentsView::CreateMediumDensityLayout(
   // Insert dynamic spacing on left/right of the content which changes based on
   // screen rotation and display size.
   auto* left = new NonAccessibleView();
-  AddChildViewAt(left, 0);
+  main_view_->AddChildViewAt(left, 0);
   auto* right = new NonAccessibleView();
-  AddChildView(right);
+  main_view_->AddChildView(right);
   AddRotationAction(base::BindRepeating(
       [](views::BoxLayout* layout, views::View* left, views::View* right,
          bool landscape) {
@@ -372,7 +399,7 @@ void LockContentsView::CreateMediumDensityLayout(
           layout->SetFlexForView(right, 1);
         }
       },
-      root_layout_, left, right));
+      main_layout_, left, right));
 }
 
 void LockContentsView::CreateHighDensityLayout(
@@ -381,15 +408,15 @@ void LockContentsView::CreateHighDensityLayout(
 
   // Insert spacing before and after the auth view.
   auto* fill = new NonAccessibleView();
-  AddChildViewAt(fill, 0);
-  root_layout_->SetFlexForView(fill, 1);
+  main_view_->AddChildViewAt(fill, 0);
+  main_layout_->SetFlexForView(fill, 1);
 
   fill = new NonAccessibleView();
-  AddChildView(fill);
-  root_layout_->SetFlexForView(fill, 1);
+  main_view_->AddChildView(fill);
+  main_layout_->SetFlexForView(fill, 1);
 
   // Padding left of user list.
-  AddChildView(MakeOrientationViewWithWidths(
+  main_view_->AddChildView(MakeOrientationViewWithWidths(
       kHighDensityHorizontalPaddingLeftOfUserListLandscapeDp,
       kHighDensityHorizontalPaddingLeftOfUserListPortraitDp));
 
@@ -413,10 +440,10 @@ void LockContentsView::CreateHighDensityLayout(
   scroller_ = new views::ScrollView();
   scroller_->SetContents(row);
   scroller_->ClipHeightTo(size().height(), size().height());
-  AddChildView(scroller_);
+  main_view_->AddChildView(scroller_);
 
   // Padding right of user list.
-  AddChildView(MakeOrientationViewWithWidths(
+  main_view_->AddChildView(MakeOrientationViewWithWidths(
       kHighDensityHorizontalPaddingRightOfUserListLandscapeDp,
       kHighDensityHorizontalPaddingRightOfUserListPortraitDp));
 }

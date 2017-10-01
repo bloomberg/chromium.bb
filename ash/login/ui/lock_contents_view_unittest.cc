@@ -9,6 +9,7 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_user_view.h"
+#include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +25,8 @@ using LockContentsViewUnitTest = LoginTestBase;
 
 TEST_F(LockContentsViewUnitTest, DisplayMode) {
   // Build lock screen with 1 user.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(contents);
 
@@ -67,7 +69,29 @@ TEST_F(LockContentsViewUnitTest, DisplayMode) {
 
 // Verifies that the single user view is centered.
 TEST_F(LockContentsViewUnitTest, SingleUserCentered) {
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+  ShowWidgetWithContent(contents);
+
+  LockContentsView::TestApi test_api(contents);
+  LoginAuthUserView* auth_view = test_api.primary_auth();
+  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  int expected_margin =
+      (widget_bounds.width() - auth_view->GetPreferredSize().width()) / 2;
+  gfx::Rect auth_bounds = auth_view->GetBoundsInScreen();
+
+  EXPECT_NE(0, expected_margin);
+  EXPECT_EQ(expected_margin, auth_bounds.x());
+  EXPECT_EQ(expected_margin,
+            widget_bounds.width() - (auth_bounds.x() + auth_bounds.width()));
+}
+
+// Verifies that the single user view is centered when lock screen notes are
+// enabled.
+TEST_F(LockContentsViewUnitTest, SingleUserCenteredNoteActionEnabled) {
+  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
+                                        data_dispatcher());
   SetUserCount(1);
   ShowWidgetWithContent(contents);
 
@@ -89,7 +113,8 @@ TEST_F(LockContentsViewUnitTest, SingleUserCentered) {
 // mode.
 TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
   // Build lock screen with three users.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
   LockContentsView::TestApi test_api(contents);
   SetUserCount(3);
   ShowWidgetWithContent(contents);
@@ -137,7 +162,8 @@ TEST_F(LockContentsViewUnitTest, AutoLayoutAfterRotation) {
 // Ensures that when swapping between two users, only auth method display swaps.
 TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   // Build lock screen with two users.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
   LockContentsView::TestApi test_api(contents);
   SetUserCount(2);
   ShowWidgetWithContent(contents);
@@ -176,7 +202,8 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
 // Ensures that when swapping from a user list, the entire user info is swapped.
 TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
   // Build lock screen with five users.
-  auto* contents = new LockContentsView(data_dispatcher());
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
   LockContentsView::TestApi test_api(contents);
   SetUserCount(5);
   EXPECT_EQ(users().size() - 1, test_api.user_views().size());
@@ -206,6 +233,65 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryAuthUser) {
       EXPECT_TRUE(emails.insert(email).second);
     }
   }
+}
+
+// Verifies note action view bounds.
+TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+  ShowWidgetWithContent(contents);
+
+  LockContentsView::TestApi test_api(contents);
+
+  // The note action button should not be visible if the note action is not
+  // available.
+  EXPECT_FALSE(test_api.note_action()->visible());
+
+  // When the note action becomes available, the note action button should be
+  // shown.
+  data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
+  EXPECT_TRUE(test_api.note_action()->visible());
+
+  // Verify the bounds of the note action button are as expected.
+  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
+  EXPECT_EQ(gfx::Rect(widget_bounds.top_right() -
+                          gfx::Vector2d(note_action_size.width(), 0),
+                      note_action_size),
+            test_api.note_action()->GetBoundsInScreen());
+
+  // If the note action is disabled again, the note action button should be
+  // hidden.
+  data_dispatcher()->SetLockScreenNoteState(
+      mojom::TrayActionState::kNotAvailable);
+  EXPECT_FALSE(test_api.note_action()->visible());
+}
+
+// Verifies the note action view bounds when note action is available at lock
+// contents view creation.
+TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
+  auto* contents = new LockContentsView(mojom::TrayActionState::kAvailable,
+                                        data_dispatcher());
+  SetUserCount(1);
+  ShowWidgetWithContent(contents);
+
+  LockContentsView::TestApi test_api(contents);
+
+  // Verify the note action button is visible and positioned in the top rigth
+  // corner of the screen.
+  EXPECT_TRUE(test_api.note_action()->visible());
+  gfx::Rect widget_bounds = widget()->GetWindowBoundsInScreen();
+  gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
+  EXPECT_EQ(gfx::Rect(widget_bounds.top_right() -
+                          gfx::Vector2d(note_action_size.width(), 0),
+                      note_action_size),
+            test_api.note_action()->GetBoundsInScreen());
+
+  // If the note action is disabled, the note action button should be hidden.
+  data_dispatcher()->SetLockScreenNoteState(
+      mojom::TrayActionState::kNotAvailable);
+  EXPECT_FALSE(test_api.note_action()->visible());
 }
 
 }  // namespace ash
