@@ -64,6 +64,7 @@
 #endif
 #include "av1/decoder/detokenize.h"
 #include "av1/decoder/dsubexp.h"
+#include "av1/decoder/symbolrate.h"
 
 #if CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
 #include "av1/common/warped_motion.h"
@@ -5199,7 +5200,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_LV_MAP
-  av1_read_txb_probs(fc, cm->tx_mode, &r);
+  av1_read_txb_probs(fc, cm->tx_mode, &r, &cm->counts);
 #endif  // CONFIG_LV_MAP
 
 #if !CONFIG_NEW_MULTISYMBOL
@@ -5704,6 +5705,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_LV_MAP
       av1_adapt_coef_probs(cm);
 #endif  // CONFIG_LV_MAP
+#if CONFIG_SYMBOLRATE
+      av1_dump_symbol_rate(cm);
+#endif
       av1_adapt_intra_frame_probs(cm);
       av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                  cm->tile_rows * cm->tile_cols);

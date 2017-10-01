@@ -102,6 +102,7 @@ set(CONFIG_LOWBITDEPTH 1 CACHE NUMBER "Enables low bit depth support.")
 set(CONFIG_REALTIME_ONLY 0 CACHE NUMBER "Support only realtime encodes.")
 set(CONFIG_SIZE_LIMIT 0 CACHE NUMBER "Limit max decode width/height.")
 set(CONFIG_SPATIAL_RESAMPLING 1 CACHE NUMBER "Spatial resampling.")
+set(CONFIG_SYMBOLRATE 0 CACHE NUMBER "Enables symbol rate accounting.")
 
 # AV1 experiment flags.
 set(CONFIG_ADAPT_SCAN 0 CACHE NUMBER "AV1 experiment flag.")

@@ -394,6 +394,7 @@ CONFIG_LIST="
     decode_perf_tests
     encode_perf_tests
     bitstream_debug
+    symbolrate
     coefficient_range_checking
     lowbitdepth
     highbitdepth
@@ -452,6 +453,7 @@ CMDLINE_SELECT="
     encode_perf_tests
     coefficient_range_checking
     bitstream_debug
+    symbolrate
     lowbitdepth
     highbitdepth
     experimental

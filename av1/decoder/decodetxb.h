@@ -28,5 +28,6 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int plane, tran_low_t *tcoeffs,
                                    TX_SIZE tx_size, int16_t *max_scan_line,
                                    int *eob);
-void av1_read_txb_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r);
+void av1_read_txb_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r,
+                        FRAME_COUNTS *counts);
 #endif  //  DECODETXB_H_
