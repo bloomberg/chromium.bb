@@ -9,11 +9,16 @@
 
 <script>
 async function test() {
+  await TestRunner.evaluateInPagePromise('performActions()');
   CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.pollCoverage();
+  CoverageTestRunner.dumpCoverageListView();
+  TestRunner.addResult('Reloading Page');
+  await InspectorTest.reloadPagePromise();
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
-
   CoverageTestRunner.dumpCoverageListView();
+
   TestRunner.completeTest();
 }
 

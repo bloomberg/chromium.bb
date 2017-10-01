@@ -10,7 +10,14 @@ function outer(index) {
 
   function inner3(a) { return a + 3; } function inner4(a) { return a + 4; } function inner5(a) { return a + 5; }
 
-  return [inner1, inner2, inner3, inner4, inner5][index];
+  if (index === 7) {
+    console.error('This will never happen!');
+  }
+
+  // Make sure these are not collected.
+  if (!self.__funcs)
+    self.__funcs = [inner1, inner2, inner3, inner4, inner5];
+  return self.__funcs[index];
 }
 
 function performActions() {
