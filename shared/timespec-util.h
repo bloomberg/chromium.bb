@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <time.h>
 
 #define NSEC_PER_SEC 1000000000
 
