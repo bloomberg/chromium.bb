@@ -28,6 +28,7 @@ static const float kTitleMargin = 12.f;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    self.isAccessibilityElement = YES;
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.font = [MDCTypography body2Font];
     _titleLabel.textColor = RemotingTheme.hostListHeaderTitleColor;
@@ -58,6 +59,7 @@ static const float kTitleMargin = 12.f;
 
 - (void)setText:(NSString*)text {
   _titleLabel.text = text;
+  self.accessibilityLabel = text;
 }
 
 @end
