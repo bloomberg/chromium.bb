@@ -33,6 +33,7 @@ static const CGFloat kCellPadding = 22.f;
 }
 
 - (void)commonInit {
+  self.isAccessibilityElement = YES;
   self.backgroundColor = RemotingTheme.setupListBackgroundColor;
 
   _numberContainerView = [[UIView alloc] init];
@@ -89,6 +90,7 @@ static const CGFloat kCellPadding = 22.f;
 }
 
 - (void)setContentText:(NSString*)text number:(NSInteger)number {
+  self.accessibilityLabel = text;
   _contentLabel.text = text;
   _numberLabel.text = [@(number) stringValue];
 }

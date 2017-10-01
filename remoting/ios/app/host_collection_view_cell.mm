@@ -51,6 +51,8 @@ static const CGFloat kHostCardIconSize = 45.f;
 }
 
 - (void)commonInit {
+  self.isAccessibilityElement = YES;
+
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   _imageView.contentMode = UIViewContentModeCenter;
@@ -151,6 +153,9 @@ static const CGFloat kHostCardIconSize = 45.f;
                   base::SysNSStringToUTF16(hostInfo.updatedTime))
             : l10n_util::GetNSString(IDS_HOST_OFFLINE_SUBTITLE);
   }
+
+  self.accessibilityLabel = [NSString
+      stringWithFormat:@"%@\n%@", _titleLabel.text, _statusLabel.text];
 }
 
 #pragma mark - UICollectionReusableView
@@ -160,6 +165,7 @@ static const CGFloat kHostCardIconSize = 45.f;
   _hostInfo = nil;
   _statusLabel.text = nil;
   _titleLabel.text = nil;
+  self.accessibilityLabel = nil;
 }
 
 @end
