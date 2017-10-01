@@ -35,7 +35,7 @@ WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() {}
 
 std::unique_ptr<WebURLLoader> WebURLLoaderMockFactoryImpl::CreateURLLoader(
     std::unique_ptr<WebURLLoader> default_loader) {
-  return base::MakeUnique<WebURLLoaderMock>(this, std::move(default_loader));
+  return std::make_unique<WebURLLoaderMock>(this, std::move(default_loader));
 }
 
 void WebURLLoaderMockFactoryImpl::RegisterURL(const WebURL& url,

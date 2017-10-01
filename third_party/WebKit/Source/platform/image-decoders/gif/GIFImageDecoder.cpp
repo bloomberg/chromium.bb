@@ -26,9 +26,9 @@
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include <limits>
+#include <memory>
 #include "platform/image-decoders/SegmentStream.h"
 #include "platform/wtf/NotFound.h"
-#include "platform/wtf/PtrUtil.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ void GIFImageDecoder::OnSetData(SegmentReader* data) {
 
   std::unique_ptr<SegmentStream> segment_stream;
   if (!segment_stream_) {
-    segment_stream = base::MakeUnique<SegmentStream>();
+    segment_stream = std::make_unique<SegmentStream>();
     segment_stream_ = segment_stream.get();
   }
 

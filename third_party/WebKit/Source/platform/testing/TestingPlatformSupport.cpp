@@ -56,7 +56,6 @@
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/wtf/CryptographicallyRandomNumber.h"
 #include "platform/wtf/CurrentTime.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/WTF.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/InterfaceProvider.h"
@@ -78,7 +77,7 @@ class TestingPlatformSupport::TestingInterfaceProvider
                     mojo::ScopedMessagePipeHandle handle) override {
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeStrongBinding(
-          WTF::MakeUnique<MockMimeRegistry>(),
+          std::make_unique<MockMimeRegistry>(),
           mojom::blink::MimeRegistryRequest(std::move(handle)));
       return;
     }

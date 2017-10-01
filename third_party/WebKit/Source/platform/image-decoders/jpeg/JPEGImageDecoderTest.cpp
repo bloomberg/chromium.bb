@@ -34,7 +34,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/typed_arrays/ArrayBuffer.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
@@ -90,7 +89,7 @@ void ReadYUV(size_t max_decoded_bytes,
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
   std::unique_ptr<ImagePlanes> dummy_image_planes =
-      WTF::MakeUnique<ImagePlanes>();
+      std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(dummy_image_planes));
 
   bool size_is_available = decoder->IsSizeAvailable();
@@ -126,7 +125,7 @@ void ReadYUV(size_t max_decoded_bytes,
   planes[2] = ((char*)planes[1]) + row_bytes[1] * u_size.Height();
 
   std::unique_ptr<ImagePlanes> image_planes =
-      WTF::MakeUnique<ImagePlanes>(planes, row_bytes);
+      std::make_unique<ImagePlanes>(planes, row_bytes);
   decoder->SetImagePlanes(std::move(image_planes));
 
   ASSERT_TRUE(decoder->DecodeToYUV());
@@ -262,7 +261,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
   decoder->SetData(data.get(), true);
 
-  std::unique_ptr<ImagePlanes> image_planes = WTF::MakeUnique<ImagePlanes>();
+  std::unique_ptr<ImagePlanes> image_planes = std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(image_planes));
   ASSERT_TRUE(decoder->IsSizeAvailable());
   ASSERT_FALSE(decoder->CanDecodeToYUV());

@@ -38,6 +38,8 @@
 
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
+#include <memory>
+
 namespace blink {
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alpha_option,
@@ -99,7 +101,7 @@ void PNGImageDecoder::Parse(ParseQuery query) {
     return;
 
   if (!reader_)
-    reader_ = WTF::MakeUnique<PNGImageReader>(this, offset_);
+    reader_ = std::make_unique<PNGImageReader>(this, offset_);
 
   if (!reader_->Parse(*data_, query))
     SetFailed();

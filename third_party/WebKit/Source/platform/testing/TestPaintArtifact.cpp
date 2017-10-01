@@ -17,7 +17,6 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -145,7 +144,7 @@ const PaintArtifact& TestPaintArtifact::Build() {
 }
 
 DisplayItemClient& TestPaintArtifact::NewClient() {
-  dummy_clients_.push_back(WTF::MakeUnique<DummyRectClient>());
+  dummy_clients_.push_back(std::make_unique<DummyRectClient>());
   return *dummy_clients_.back();
 }
 

@@ -25,10 +25,10 @@
 
 #include "platform/network/NetworkStateNotifier.h"
 
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Threading.h"
 
@@ -256,7 +256,7 @@ void NetworkStateNotifier::AddObserver(ObserverListMap& map,
   ObserverListMap::AddResult result =
       map.insert(std::move(task_runner), nullptr);
   if (result.is_new_entry)
-    result.stored_value->value = WTF::MakeUnique<ObserverList>();
+    result.stored_value->value = std::make_unique<ObserverList>();
 
   DCHECK(result.stored_value->value->observers.Find(observer) == kNotFound);
   result.stored_value->value->observers.push_back(observer);

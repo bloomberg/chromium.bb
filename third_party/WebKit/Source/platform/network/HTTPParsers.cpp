@@ -32,6 +32,7 @@
 
 #include "platform/network/HTTPParsers.h"
 
+#include <memory>
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -828,7 +829,7 @@ bool ParseContentRangeHeaderFor206(const String& content_range,
 std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
     const String& headerValue) {
   std::unique_ptr<ServerTimingHeaderVector> headers =
-      WTF::MakeUnique<ServerTimingHeaderVector>();
+      std::make_unique<ServerTimingHeaderVector>();
 
   if (!headerValue.IsNull()) {
     DCHECK(headerValue.Is8Bit());
@@ -852,7 +853,7 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
         tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, description);
       }
 
-      headers->push_back(WTF::MakeUnique<ServerTimingHeader>(
+      headers->push_back(std::make_unique<ServerTimingHeader>(
           name.ToString(), value, description));
 
       if (!tokenizer.Consume(',')) {
