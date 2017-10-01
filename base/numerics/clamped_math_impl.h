@@ -78,17 +78,35 @@ struct ClampedAddOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
-  static V Do(T x, U y) {
-    // TODO(jschuh) Make this "constexpr if" once we're C++17.
+  static constexpr V Do(T x, U y) {
     if (ClampedAddFastOp<T, U>::is_supported)
       return ClampedAddFastOp<T, U>::template Do<V>(x, y);
 
-    V result;
-    // TODO(jschuh) C++14 constexpr allows a compile-time constant optimization.
-    const V saturated = CommonMaxOrMin<V>(IsValueNegative(y));
-    return BASE_NUMERICS_LIKELY((CheckedAddOp<T, U>::Do(x, y, &result)))
-               ? result
-               : saturated;
+    // Pick a destination type wide enough to compute the saturation direction.
+    // The saturation check in the final return statement covers the case where
+    // one type is out-of-bounds. It's structured this way to avoid unnecessary
+    // run-time conversions when we have a compile-time-constant.
+    using Promotion = typename std::conditional_t<
+        IsTypeInRangeForNumericType<V, T>::value ||
+            IsTypeInRangeForNumericType<V, U>::value,
+        V, typename BigEnoughPromotion<T, U>::type>;
+    Promotion result;
+    if (BASE_NUMERICS_LIKELY((CheckedAddOp<T, U>::Do(x, y, &result))))
+      return saturated_cast<V>(result);
+
+    // This is the normal saturation case, which includes a compile-time
+    // constant optimization.
+    if (IsTypeInRangeForNumericType<V, T>::value &&
+        IsTypeInRangeForNumericType<V, U>::value) {
+      return CommonMaxOrMin<V>(
+          (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
+          IsValueNegative(y));
+    }
+
+    // Otherwise the out-of-range-type determines the saturation direction.
+    return IsTypeInRangeForNumericType<V, T>::value
+               ? CommonMaxOrMin<V>(IsValueNegative(y))
+               : CommonMaxOrMin<V>(IsValueNegative(x));
   }
 };
 
@@ -102,17 +120,36 @@ struct ClampedSubOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
-  static V Do(T x, U y) {
+  static constexpr V Do(T x, U y) {
     // TODO(jschuh) Make this "constexpr if" once we're C++17.
     if (ClampedSubFastOp<T, U>::is_supported)
       return ClampedSubFastOp<T, U>::template Do<V>(x, y);
 
-    V result;
-    // TODO(jschuh) C++14 constexpr allows a compile-time constant optimization.
-    const V saturated = CommonMaxOrMin<V>(!IsValueNegative(y));
-    return BASE_NUMERICS_LIKELY((CheckedSubOp<T, U>::Do(x, y, &result)))
-               ? result
-               : saturated;
+    // Pick a destination type wide enough to compute the saturation direction.
+    // The saturation check in the final return statement covers the case where
+    // one type is out-of-bounds. It's structured this way to avoid unnecessary
+    // run-time conversions when we have a compile-time-constant.
+    using Promotion = typename std::conditional_t<
+        IsTypeInRangeForNumericType<V, T>::value ||
+            IsTypeInRangeForNumericType<V, U>::value,
+        V, typename BigEnoughPromotion<T, U>::type>;
+    Promotion result;
+    if (BASE_NUMERICS_LIKELY((CheckedSubOp<T, U>::Do(x, y, &result))))
+      return saturated_cast<V>(result);
+
+    // This is the normal saturation case, which includes a compile-time
+    // constant optimization.
+    if (IsTypeInRangeForNumericType<V, T>::value &&
+        IsTypeInRangeForNumericType<V, U>::value) {
+      return CommonMaxOrMin<V>(
+          (IsCompileTimeConstant(x) && IsValueNegative(x)) ||
+          !IsValueNegative(y));
+    }
+
+    // Otherwise the out-of-range-type determines the saturation direction.
+    return IsTypeInRangeForNumericType<V, T>::value
+               ? CommonMaxOrMin<V>(!IsValueNegative(y))
+               : CommonMaxOrMin<V>(IsValueNegative(x));
   }
 };
 
@@ -126,7 +163,7 @@ struct ClampedMulOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
-  static V Do(T x, U y) {
+  static constexpr V Do(T x, U y) {
     // TODO(jschuh) Make this "constexpr if" once we're C++17.
     if (ClampedMulFastOp<T, U>::is_supported)
       return ClampedMulFastOp<T, U>::template Do<V>(x, y);
@@ -150,7 +187,7 @@ struct ClampedDivOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
-  static V Do(T x, U y) {
+  static constexpr V Do(T x, U y) {
     V result;
     if (BASE_NUMERICS_LIKELY((CheckedDivOp<T, U>::Do(x, y, &result))))
       return result;
@@ -170,7 +207,7 @@ struct ClampedModOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
-  static V Do(T x, U y) {
+  static constexpr V Do(T x, U y) {
     V result;
     return BASE_NUMERICS_LIKELY((CheckedModOp<T, U>::Do(x, y, &result)))
                ? result
@@ -190,7 +227,7 @@ struct ClampedLshOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = T;
   template <typename V = result_type>
-  static V Do(T x, U shift) {
+  static constexpr V Do(T x, U shift) {
     static_assert(!std::is_signed<U>::value, "Shift value must be unsigned.");
     if (BASE_NUMERICS_LIKELY(shift < std::numeric_limits<T>::digits)) {
       // Shift as unsigned to avoid undefined behavior.
@@ -214,7 +251,7 @@ struct ClampedRshOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = T;
   template <typename V = result_type>
-  static V Do(T x, U shift) {
+  static constexpr V Do(T x, U shift) {
     static_assert(!std::is_signed<U>::value, "Shift value must be unsigned.");
     // Signed right shift is odd, because it saturates to -1 or 0.
     const V saturated = as_unsigned(V(0)) - IsValueNegative(x);
