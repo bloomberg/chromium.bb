@@ -639,7 +639,6 @@ public class PostMessageTest {
     // transferred to JS and full communication can happen on it.
     // Do this by sending a message to JS and let it echo'ing the message with
     // some text prepended to it.
-    @RetryOnFailure // crbug.com/715960
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     @Test
