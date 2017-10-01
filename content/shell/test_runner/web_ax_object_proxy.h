@@ -165,7 +165,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   std::string ColumnIndexRange();
   v8::Local<v8::Object> CellForColumnAndRow(int column, int row);
   void SetSelectedTextRange(int selection_start, int length);
-  void SetSelection(v8::Local<v8::Value> anchor_object,
+  bool SetSelection(v8::Local<v8::Value> anchor_object,
                     int anchor_offset,
                     v8::Local<v8::Value> focus_object,
                     int focus_offset);
