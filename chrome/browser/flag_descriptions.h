@@ -571,14 +571,17 @@ extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
 extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
 extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
 
-extern const char kOmniboxUIShowSuggestionFaviconsName[];
-extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
-
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
 extern const char kOmniboxUINarrowDropdownName[];
 extern const char kOmniboxUINarrowDropdownDescription[];
+
+extern const char kOmniboxUIShowSuggestionFaviconsName[];
+extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
+
+extern const char kOmniboxUISwapTitleAndUrlName[];
+extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
 extern const char kOmniboxUIVerticalLayoutName[];
 extern const char kOmniboxUIVerticalLayoutDescription[];

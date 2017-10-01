@@ -913,12 +913,6 @@ const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[] =
     "Elides trivially informative subdomains from suggested URLs in the "
     "Omnibox dropdown (e.g. www. and m.).";
 
-const char kOmniboxUIShowSuggestionFaviconsName[] =
-    "Omnibox UI Show Suggestion Favicons";
-const char kOmniboxUIShowSuggestionFaviconsDescription[] =
-    "Shows favicons instead of generic vector icons for URL suggestions in the "
-    "Omnibox dropdown.";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 
@@ -929,6 +923,17 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
 const char kOmniboxUINarrowDropdownName[] = "Omnibox UI Narrow Dropdown";
 const char kOmniboxUINarrowDropdownDescription[] =
     "Makes the suggestions dropdown width match the omnibox width.";
+
+const char kOmniboxUIShowSuggestionFaviconsName[] =
+    "Omnibox UI Show Suggestion Favicons";
+const char kOmniboxUIShowSuggestionFaviconsDescription[] =
+    "Shows favicons instead of generic vector icons for URL suggestions in the "
+    "Omnibox dropdown.";
+
+const char kOmniboxUISwapTitleAndUrlName[] = "Omnibox UI Swap Title and URL";
+const char kOmniboxUISwapTitleAndUrlDescription[] =
+    "In the omnibox dropdown, shows titles before URLs when both are "
+    "available.";
 
 const char kOmniboxUIVerticalLayoutName[] = "Omnibox UI Vertical Layout";
 const char kOmniboxUIVerticalLayoutDescription[] =
