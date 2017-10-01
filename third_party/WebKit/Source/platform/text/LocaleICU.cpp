@@ -36,7 +36,6 @@
 #include <limits>
 #include <memory>
 #include "platform/wtf/DateMath.h"
-#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -188,7 +187,7 @@ std::unique_ptr<Vector<String>> LocaleICU::CreateLabelVector(
   if (udat_countSymbols(date_format, type) != start_index + size)
     return std::unique_ptr<Vector<String>>();
 
-  std::unique_ptr<Vector<String>> labels = WTF::MakeUnique<Vector<String>>();
+  std::unique_ptr<Vector<String>> labels = std::make_unique<Vector<String>>();
   labels->ReserveCapacity(size);
   bool is_stand_alone_month = (type == UDAT_STANDALONE_MONTHS) ||
                               (type == UDAT_STANDALONE_SHORT_MONTHS);
@@ -222,7 +221,7 @@ std::unique_ptr<Vector<String>> LocaleICU::CreateLabelVector(
 }
 
 static std::unique_ptr<Vector<String>> CreateFallbackWeekDayShortLabels() {
-  std::unique_ptr<Vector<String>> labels = WTF::MakeUnique<Vector<String>>();
+  std::unique_ptr<Vector<String>> labels = std::make_unique<Vector<String>>();
   labels->ReserveCapacity(7);
   labels->push_back("Sun");
   labels->push_back("Mon");
@@ -254,7 +253,7 @@ void LocaleICU::InitializeCalendar() {
 }
 
 static std::unique_ptr<Vector<String>> CreateFallbackMonthLabels() {
-  std::unique_ptr<Vector<String>> labels = WTF::MakeUnique<Vector<String>>();
+  std::unique_ptr<Vector<String>> labels = std::make_unique<Vector<String>>();
   labels->ReserveCapacity(WTF_ARRAY_LENGTH(WTF::kMonthFullName));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::kMonthFullName); ++i)
     labels->push_back(WTF::kMonthFullName[i]);
@@ -291,7 +290,7 @@ bool LocaleICU::IsRTL() {
 }
 
 static std::unique_ptr<Vector<String>> CreateFallbackAMPMLabels() {
-  std::unique_ptr<Vector<String>> labels = WTF::MakeUnique<Vector<String>>();
+  std::unique_ptr<Vector<String>> labels = std::make_unique<Vector<String>>();
   labels->ReserveCapacity(2);
   labels->push_back("AM");
   labels->push_back("PM");

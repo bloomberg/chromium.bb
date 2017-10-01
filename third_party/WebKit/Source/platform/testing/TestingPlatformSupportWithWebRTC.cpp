@@ -4,6 +4,7 @@
 
 #include "platform/testing/TestingPlatformSupportWithWebRTC.h"
 
+#include <memory>
 #include "public/platform/WebRTCError.h"
 #include "public/platform/WebRTCRtpReceiver.h"
 #include "public/platform/WebRTCRtpSender.h"
@@ -106,7 +107,7 @@ void MockWebRTCPeerConnectionHandler::Stop() {}
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*) {
-  return WTF::MakeUnique<MockWebRTCPeerConnectionHandler>();
+  return std::make_unique<MockWebRTCPeerConnectionHandler>();
 }
 
 }  // namespace blink
