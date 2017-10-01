@@ -55,11 +55,6 @@ def GetSuppressions():
   vg_mac = ReadSuppressionsFromFile(supp_filename)
   result['mac_suppressions'] = vg_mac
 
-  supp_filename = JOIN(suppressions_root, "drmemory", "suppressions.txt")
-  result['drmem_suppressions'] = ReadSuppressionsFromFile(supp_filename)
-  supp_filename = JOIN(suppressions_root, "drmemory", "suppressions_full.txt")
-  result['drmem_full_suppressions'] = ReadSuppressionsFromFile(supp_filename)
-
   return result
 
 

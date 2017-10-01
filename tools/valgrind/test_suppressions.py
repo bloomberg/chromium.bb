@@ -145,10 +145,6 @@ def main(argv):
       cur_supp += supp['mac_suppressions']
     elif all([re.search("Linux%20", url) for url in all_reports[r]]):
       cur_supp += supp['linux_suppressions']
-    if all(["DrMemory" in url for url in all_reports[r]]):
-      cur_supp += supp['drmem_suppressions']
-    if all(["DrMemory%20full" in url for url in all_reports[r]]):
-      cur_supp += supp['drmem_full_suppressions']
 
     # Test if this report is already suppressed
     skip = False

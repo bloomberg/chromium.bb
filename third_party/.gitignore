@@ -52,8 +52,6 @@
 /devtools-node-modules
 /directxsdk
 /dom_distiller_js/dist
-/drmemory/drmemory-windows-sfx.exe
-/drmemory/unpacked
 /elfutils/src
 /errorprone/lib
 /espresso/lib/*-2.2.1-*.jar
