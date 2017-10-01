@@ -103,10 +103,8 @@ class ExternalProviderImpl : public ExternalProviderInterface {
 
   // Retrieves the extensions that were found in this provider.
   void RetrieveExtensionsFromPrefs(
-      std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>*
-          external_update_url_extensions,
-      std::vector<std::unique_ptr<ExternalInstallInfoFile>>*
-          external_file_extensions);
+      std::vector<ExternalInstallInfoUpdateUrl>* external_update_url_extensions,
+      std::vector<ExternalInstallInfoFile>* external_file_extensions);
 
   // Location for external extensions that are provided by this provider from
   // local crx files.

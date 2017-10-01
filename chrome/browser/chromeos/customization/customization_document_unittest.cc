@@ -194,12 +194,11 @@ class MockExternalProviderVisitor
                bool(const ExternalInstallInfoUpdateUrl&, bool));
   MOCK_METHOD1(OnExternalProviderReady,
                void(const extensions::ExternalProviderInterface* provider));
-  MOCK_METHOD4(
-      OnExternalProviderUpdateComplete,
-      void(const extensions::ExternalProviderInterface*,
-           const std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>&,
-           const std::vector<std::unique_ptr<ExternalInstallInfoFile>>&,
-           const std::set<std::string>& removed_extensions));
+  MOCK_METHOD4(OnExternalProviderUpdateComplete,
+               void(const extensions::ExternalProviderInterface*,
+                    const std::vector<ExternalInstallInfoUpdateUrl>&,
+                    const std::vector<ExternalInstallInfoFile>&,
+                    const std::set<std::string>& removed_extensions));
 };
 
 class ServicesCustomizationDocumentTest : public testing::Test {

@@ -473,10 +473,8 @@ class MockProviderVisitor
 
   void OnExternalProviderUpdateComplete(
       const ExternalProviderInterface* provider,
-      const std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>&
-          update_url_extensions,
-      const std::vector<std::unique_ptr<ExternalInstallInfoFile>>&
-          file_extensions,
+      const std::vector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
+      const std::vector<ExternalInstallInfoFile>& file_extensions,
       const std::set<std::string>& removed_extensions) override {
     ADD_FAILURE() << "MockProviderVisitor does not provide incremental updates,"
                      " use MockUpdateProviderVisitor instead.";
@@ -544,17 +542,15 @@ class MockUpdateProviderVisitor : public MockProviderVisitor {
 
   void OnExternalProviderUpdateComplete(
       const ExternalProviderInterface* provider,
-      const std::vector<std::unique_ptr<ExternalInstallInfoUpdateUrl>>&
-          update_url_extensions,
-      const std::vector<std::unique_ptr<ExternalInstallInfoFile>>&
-          file_extensions,
+      const std::vector<ExternalInstallInfoUpdateUrl>& update_url_extensions,
+      const std::vector<ExternalInstallInfoFile>& file_extensions,
       const std::set<std::string>& removed_extensions) override {
     for (const auto& extension_info : update_url_extensions)
-      update_url_extension_ids_.insert(extension_info->extension_id);
+      update_url_extension_ids_.insert(extension_info.extension_id);
     EXPECT_EQ(update_url_extension_ids_.size(), update_url_extensions.size());
 
     for (const auto& extension_info : file_extensions)
-      file_extension_ids_.insert(extension_info->extension_id);
+      file_extension_ids_.insert(extension_info.extension_id);
     EXPECT_EQ(file_extension_ids_.size(), file_extensions.size());
 
     for (const auto& extension_id : removed_extensions)
