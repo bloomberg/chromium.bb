@@ -71,10 +71,8 @@ TEST(TitledUrlMatchUtilsTest, TitledUrlMatchToAutocompleteMatch) {
   scoped_refptr<MockAutocompleteProvider> provider =
       new MockAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   TestSchemeClassifier classifier;
-  AutocompleteInput input(input_text, base::string16::npos, std::string(),
-                          GURL(), base::string16(),
-                          metrics::OmniboxEventProto::NTP, false, false, true,
-                          true, false, classifier);
+  AutocompleteInput input(input_text, metrics::OmniboxEventProto::NTP,
+                          classifier);
   const base::string16 fixed_up_input(input_text);
 
   AutocompleteMatch autocomplete_match = TitledUrlMatchToAutocompleteMatch(
@@ -129,10 +127,8 @@ TEST(TitledUrlMatchUtilsTest, EmptyInlineAutocompletion) {
   scoped_refptr<MockAutocompleteProvider> provider =
       new MockAutocompleteProvider(AutocompleteProvider::Type::TYPE_BOOKMARK);
   TestSchemeClassifier classifier;
-  AutocompleteInput input(input_text, base::string16::npos, std::string(),
-                          GURL(), base::string16(),
-                          metrics::OmniboxEventProto::NTP, false, false, true,
-                          true, false, classifier);
+  AutocompleteInput input(input_text, metrics::OmniboxEventProto::NTP,
+                          classifier);
   const base::string16 fixed_up_input(input_text);
 
   AutocompleteMatch autocomplete_match = TitledUrlMatchToAutocompleteMatch(

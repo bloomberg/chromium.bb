@@ -734,10 +734,10 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
 }
 
 TEST_F(ShortcutsProviderTest, DoesNotProvideOnFocus) {
-  AutocompleteInput input(ASCIIToUTF16("about:o"), base::string16::npos,
-                          std::string(), GURL(), base::string16(),
-                          metrics::OmniboxEventProto::INVALID_SPEC, false,
-                          false, true, true, true, TestSchemeClassifier());
+  AutocompleteInput input(ASCIIToUTF16("about:o"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_from_omnibox_focus(true);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->matches().empty());
 }

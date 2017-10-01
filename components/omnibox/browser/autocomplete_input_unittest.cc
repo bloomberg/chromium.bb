@@ -178,10 +178,10 @@ TEST(AutocompleteInputTest, InputType) {
 
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input, base::string16::npos,
-                            std::string(), GURL(), base::string16(),
-                            OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true, false, TestSchemeClassifier());
+    AutocompleteInput input(input_cases[i].input,
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    input.set_prevent_inline_autocomplete(true);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
@@ -221,9 +221,9 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, base::string16::npos, "com",
-                            GURL(), base::string16(),
-                            OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true, false, TestSchemeClassifier());
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    input.set_prevent_inline_autocomplete(true);
     EXPECT_EQ(input_cases[i].type, input.type());
     if (input_cases[i].type == metrics::OmniboxInputType::URL)
       EXPECT_EQ(input_cases[i].spec, input.canonicalized_url().spec());
@@ -233,10 +233,11 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteInputTest, InputCrash) {
-  AutocompleteInput input(base::WideToUTF16(L"\uff65@s"), base::string16::npos,
-                          std::string(), GURL(), base::string16(),
-                          OmniboxEventProto::INVALID_SPEC, true, false, true,
-                          true, false, TestSchemeClassifier());
+  AutocompleteInput input(base::WideToUTF16(L"\uff65@s"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  // Not strictly necessary, but let's be thorough.
+  input.set_prevent_inline_autocomplete(true);
 }
 
 TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
@@ -278,10 +279,6 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
                                                    TestSchemeClassifier(),
                                                    &scheme,
                                                    &host);
-    AutocompleteInput input(input_cases[i].input, base::string16::npos,
-                            std::string(), GURL(), base::string16(),
-                            OmniboxEventProto::INVALID_SPEC, true, false, true,
-                            true, false, TestSchemeClassifier());
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
     EXPECT_EQ(input_cases[i].host.begin, host.begin);
@@ -320,9 +317,9 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
   for (size_t i = 0; i < arraysize(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(
-        input_cases[i].input, input_cases[i].cursor_position, std::string(),
-        GURL(), base::string16(), OmniboxEventProto::INVALID_SPEC, true, false,
-        true, true, false, TestSchemeClassifier());
+        input_cases[i].input, input_cases[i].cursor_position,
+        metrics::OmniboxEventProto::OTHER, TestSchemeClassifier());
+    input.set_prevent_inline_autocomplete(true);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,
               input.cursor_position());

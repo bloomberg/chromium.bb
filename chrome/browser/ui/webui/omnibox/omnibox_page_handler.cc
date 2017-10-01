@@ -199,12 +199,12 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   ResetController();
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
-      base::UTF8ToUTF16(input_string), cursor_position, std::string(), GURL(),
-      base::string16(),
+      base::UTF8ToUTF16(input_string), cursor_position,
       static_cast<metrics::OmniboxEventProto::PageClassification>(
           page_classification),
-      prevent_inline_autocomplete, prefer_keyword, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile_));
+  input_.set_prevent_inline_autocomplete(prevent_inline_autocomplete);
+  input_.set_prefer_keyword(prefer_keyword);
   controller_->Start(input_);
 }
 

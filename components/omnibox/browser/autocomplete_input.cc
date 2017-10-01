@@ -76,29 +76,56 @@ AutocompleteInput::AutocompleteInput()
 
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
-    size_t cursor_position,
-    const std::string& desired_tld,
-    const GURL& current_url,
-    const base::string16& current_title,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
-    bool prevent_inline_autocomplete,
-    bool prefer_keyword,
-    bool allow_exact_keyword_match,
-    bool want_asynchronous_matches,
-    bool from_omnibox_focus,
+    const AutocompleteSchemeClassifier& scheme_classifier)
+    : cursor_position_(std::string::npos),
+      current_page_classification_(current_page_classification),
+      prevent_inline_autocomplete_(false),
+      prefer_keyword_(false),
+      allow_exact_keyword_match_(true),
+      want_asynchronous_matches_(true),
+      from_omnibox_focus_(false) {
+  Init(text, std::string(), scheme_classifier);
+}
+
+AutocompleteInput::AutocompleteInput(
+    const base::string16& text,
+    size_t cursor_position,
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
     const AutocompleteSchemeClassifier& scheme_classifier)
     : cursor_position_(cursor_position),
-      current_url_(current_url),
-      current_title_(current_title),
       current_page_classification_(current_page_classification),
-      prevent_inline_autocomplete_(prevent_inline_autocomplete),
-      prefer_keyword_(prefer_keyword),
-      allow_exact_keyword_match_(allow_exact_keyword_match),
-      want_asynchronous_matches_(want_asynchronous_matches),
-      from_omnibox_focus_(from_omnibox_focus) {
-  DCHECK(cursor_position <= text.length() ||
-         cursor_position == base::string16::npos)
-      << "Text: '" << text << "', cp: " << cursor_position;
+      prevent_inline_autocomplete_(false),
+      prefer_keyword_(false),
+      allow_exact_keyword_match_(true),
+      want_asynchronous_matches_(true),
+      from_omnibox_focus_(false) {
+  Init(text, std::string(), scheme_classifier);
+}
+
+AutocompleteInput::AutocompleteInput(
+    const base::string16& text,
+    size_t cursor_position,
+    const std::string& desired_tld,
+    metrics::OmniboxEventProto::PageClassification current_page_classification,
+    const AutocompleteSchemeClassifier& scheme_classifier)
+    : cursor_position_(cursor_position),
+      current_page_classification_(current_page_classification),
+      prevent_inline_autocomplete_(false),
+      prefer_keyword_(false),
+      allow_exact_keyword_match_(true),
+      want_asynchronous_matches_(true),
+      from_omnibox_focus_(false) {
+  Init(text, desired_tld, scheme_classifier);
+}
+
+void AutocompleteInput::Init(
+    const base::string16& text,
+    const std::string& desired_tld,
+    const AutocompleteSchemeClassifier& scheme_classifier) {
+  DCHECK(cursor_position_ <= text.length() ||
+         cursor_position_ == base::string16::npos)
+      << "Text: '" << text << "', cp: " << cursor_position_;
   // None of the providers care about leading white space so we always trim it.
   // Providers that care about trailing white space handle trimming themselves.
   if ((base::TrimWhitespace(text, base::TRIM_LEADING, &text_) &
@@ -110,9 +137,6 @@ AutocompleteInput::AutocompleteInput(
   type_ = Parse(text_, desired_tld, scheme_classifier, &parts_, &scheme_,
                 &canonicalized_url);
   PopulateTermsPrefixedByHttpOrHttps(text_, &terms_prefixed_by_http_or_https_);
-
-  if (type_ == metrics::OmniboxInputType::INVALID)
-    return;
 
   if (((type_ == metrics::OmniboxInputType::UNKNOWN) ||
        (type_ == metrics::OmniboxInputType::URL)) &&

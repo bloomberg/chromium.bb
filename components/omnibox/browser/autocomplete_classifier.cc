@@ -65,10 +65,12 @@ void AutocompleteClassifier::Classify(
     GURL* alternate_nav_url) {
   DCHECK(!inside_classify_);
   base::AutoReset<bool> reset(&inside_classify_, true);
-  controller_->Start(AutocompleteInput(
-      text, base::string16::npos, std::string(), GURL(), base::string16(),
-      page_classification, true, prefer_keyword, allow_exact_keyword_match,
-      false, false, *scheme_classifier_));
+  AutocompleteInput input(text, page_classification, *scheme_classifier_);
+  input.set_prevent_inline_autocomplete(true);
+  input.set_prefer_keyword(prefer_keyword);
+  input.set_allow_exact_keyword_match(allow_exact_keyword_match);
+  input.set_want_asynchronous_matches(false);
+  controller_->Start(input);
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {
