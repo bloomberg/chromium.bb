@@ -72,6 +72,7 @@ fuzzer_test("pdf_codec_jbig2_fuzzer") {
   deps = [
     "//third_party/pdfium/testing/libfuzzer:pdf_codec_jbig2_fuzzer",
   ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("pdf_hint_table_fuzzer") {
@@ -117,6 +118,7 @@ if (pdf_enable_xfa) {
       "//third_party/pdfium/testing/libfuzzer:pdf_codec_bmp_fuzzer",
     ]
     seed_corpus = "corpora/pdf_codec_bmp"
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }
 
   fuzzer_test("pdf_codec_gif_fuzzer") {
@@ -126,6 +128,7 @@ if (pdf_enable_xfa) {
     ]
     dict = "dicts/pdf_codec_gif.dict"
     seed_corpus = "corpora/pdf_codec_gif"
+    additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
   }
 
   fuzzer_test("pdf_codec_jpeg_fuzzer") {
