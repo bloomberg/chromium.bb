@@ -1502,13 +1502,6 @@ split_static_library("browser") {
     "win/titlebar_config.h",
   ]
 
-  if (!is_android) {
-    sources += [
-      "embedded_ui_service_info_factory.cc",
-      "embedded_ui_service_info_factory.h",
-    ]
-  }
-
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
@@ -1775,884 +1768,6 @@ split_static_library("browser") {
     "//ui/surface",
     "//ui/web_dialogs",
   ]
-
-  # Android does in-process PAC, so must link against V8 directly. Other
-  # platforms use OOP Mojo resolution.
-  if (is_android) {
-    deps += [
-      "//net:net_utility_services",
-      "//net:net_with_v8",
-      "//v8",
-    ]
-  } else {
-    deps += [
-      "//chrome/app/vector_icons",
-      "//chrome/browser/resources:component_extension_resources",
-      "//components/vector_icons",
-      "//components/zoom",
-      "//net:net",
-    ]
-    sources += [
-      "sync/sessions/browser_list_router_helper.cc",
-      "sync/sessions/browser_list_router_helper.h",
-    ]
-  }
-
-  if (is_chromeos && use_cras) {
-    defines += [ "USE_CRAS" ]
-  }
-
-  if (toolkit_views) {
-    deps += [ "//ui/views" ]
-  }
-
-  if (is_win || is_mac) {
-    # Sources (generally "desktop OS importers") used only on Mac & Windows.
-    sources += [
-      "crash_upload_list/crash_upload_list_crashpad.cc",
-      "crash_upload_list/crash_upload_list_crashpad.h",
-      "recovery/recovery_install_global_error.cc",
-      "recovery/recovery_install_global_error.h",
-      "recovery/recovery_install_global_error_factory.cc",
-      "recovery/recovery_install_global_error_factory.h",
-    ]
-  } else {
-    sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
-  }
-
-  if (enable_extensions) {
-    sources += [
-      "accessibility/accessibility_extension_api.cc",
-      "accessibility/accessibility_extension_api.h",
-      "accessibility/animation_policy_prefs.cc",
-      "accessibility/animation_policy_prefs.h",
-      "autocomplete/keyword_extensions_delegate_impl.cc",
-      "autocomplete/keyword_extensions_delegate_impl.h",
-      "autocomplete/shortcuts_extensions_manager.cc",
-      "autocomplete/shortcuts_extensions_manager.h",
-      "browsing_data/hosted_apps_counter.cc",
-      "browsing_data/hosted_apps_counter.h",
-      "content_settings/content_settings_internal_extension_provider.cc",
-      "content_settings/content_settings_internal_extension_provider.h",
-      "drive/drive_notification_manager_factory.cc",
-      "drive/drive_notification_manager_factory.h",
-      "guest_view/app_view/chrome_app_view_guest_delegate.cc",
-      "guest_view/app_view/chrome_app_view_guest_delegate.h",
-      "guest_view/chrome_guest_view_manager_delegate.cc",
-      "guest_view/chrome_guest_view_manager_delegate.h",
-      "guest_view/extension_options/chrome_extension_options_guest_delegate.cc",
-      "guest_view/extension_options/chrome_extension_options_guest_delegate.h",
-      "guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.cc",
-      "guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h",
-      "guest_view/web_view/chrome_web_view_guest_delegate.cc",
-      "guest_view/web_view/chrome_web_view_guest_delegate.h",
-      "guest_view/web_view/chrome_web_view_permission_helper_delegate.cc",
-      "guest_view/web_view/chrome_web_view_permission_helper_delegate.h",
-      "guest_view/web_view/context_menu_content_type_web_view.cc",
-      "guest_view/web_view/context_menu_content_type_web_view.h",
-      "media/capture_access_handler_base.cc",
-      "media/capture_access_handler_base.h",
-      "media/cast_transport_host_filter.cc",
-      "media/cast_transport_host_filter.h",
-      "media/extension_media_access_handler.cc",
-      "media/extension_media_access_handler.h",
-      "media/webrtc/desktop_capture_access_handler.cc",
-      "media/webrtc/desktop_capture_access_handler.h",
-      "media/webrtc/tab_capture_access_handler.cc",
-      "media/webrtc/tab_capture_access_handler.h",
-      "metrics/extensions_metrics_provider.cc",
-      "metrics/extensions_metrics_provider.h",
-      "renderer_context_menu/context_menu_content_type_app_mode.cc",
-      "renderer_context_menu/context_menu_content_type_app_mode.h",
-      "renderer_context_menu/context_menu_content_type_extension_popup.cc",
-      "renderer_context_menu/context_menu_content_type_extension_popup.h",
-      "renderer_context_menu/context_menu_content_type_platform_app.cc",
-      "renderer_context_menu/context_menu_content_type_platform_app.h",
-      "renderer_host/chrome_extension_message_filter.cc",
-      "renderer_host/chrome_extension_message_filter.h",
-      "search/hotword_audio_history_handler.cc",
-      "search/hotword_audio_history_handler.h",
-      "search/hotword_client.h",
-      "search/hotword_service.cc",
-      "search/hotword_service.h",
-      "search/hotword_service_factory.cc",
-      "search/hotword_service_factory.h",
-      "signin/chrome_proximity_auth_client.cc",
-      "signin/chrome_proximity_auth_client.h",
-      "signin/easy_unlock_app_manager.cc",
-      "signin/easy_unlock_app_manager.h",
-      "signin/easy_unlock_auth_attempt.cc",
-      "signin/easy_unlock_auth_attempt.h",
-      "signin/easy_unlock_metrics.cc",
-      "signin/easy_unlock_metrics.h",
-      "signin/easy_unlock_notification_controller.cc",
-      "signin/easy_unlock_notification_controller.h",
-      "signin/easy_unlock_notification_controller_chromeos.cc",
-      "signin/easy_unlock_notification_controller_chromeos.h",
-      "signin/easy_unlock_screenlock_state_handler.cc",
-      "signin/easy_unlock_screenlock_state_handler.h",
-      "signin/easy_unlock_service.cc",
-      "signin/easy_unlock_service.h",
-      "signin/easy_unlock_service_factory.cc",
-      "signin/easy_unlock_service_factory.h",
-      "signin/easy_unlock_service_regular.cc",
-      "signin/easy_unlock_service_regular.h",
-      "signin/easy_unlock_service_signin_chromeos.cc",
-      "signin/easy_unlock_service_signin_chromeos.h",
-      "speech/extension_api/tts_engine_extension_api.cc",
-      "speech/extension_api/tts_engine_extension_api.h",
-      "speech/extension_api/tts_engine_extension_observer.cc",
-      "speech/extension_api/tts_engine_extension_observer.h",
-      "speech/extension_api/tts_extension_api.cc",
-      "speech/extension_api/tts_extension_api.h",
-      "sync_file_system/conflict_resolution_policy.h",
-      "sync_file_system/drive_backend/callback_helper.h",
-      "sync_file_system/drive_backend/callback_tracker.cc",
-      "sync_file_system/drive_backend/callback_tracker.h",
-      "sync_file_system/drive_backend/callback_tracker_internal.cc",
-      "sync_file_system/drive_backend/callback_tracker_internal.h",
-      "sync_file_system/drive_backend/conflict_resolver.cc",
-      "sync_file_system/drive_backend/conflict_resolver.h",
-      "sync_file_system/drive_backend/drive_backend_constants.cc",
-      "sync_file_system/drive_backend/drive_backend_constants.h",
-      "sync_file_system/drive_backend/drive_backend_util.cc",
-      "sync_file_system/drive_backend/drive_backend_util.h",
-      "sync_file_system/drive_backend/drive_service_on_worker.cc",
-      "sync_file_system/drive_backend/drive_service_on_worker.h",
-      "sync_file_system/drive_backend/drive_service_wrapper.cc",
-      "sync_file_system/drive_backend/drive_service_wrapper.h",
-      "sync_file_system/drive_backend/drive_uploader_on_worker.cc",
-      "sync_file_system/drive_backend/drive_uploader_on_worker.h",
-      "sync_file_system/drive_backend/drive_uploader_wrapper.cc",
-      "sync_file_system/drive_backend/drive_uploader_wrapper.h",
-      "sync_file_system/drive_backend/folder_creator.cc",
-      "sync_file_system/drive_backend/folder_creator.h",
-      "sync_file_system/drive_backend/leveldb_wrapper.cc",
-      "sync_file_system/drive_backend/leveldb_wrapper.h",
-      "sync_file_system/drive_backend/list_changes_task.cc",
-      "sync_file_system/drive_backend/list_changes_task.h",
-      "sync_file_system/drive_backend/local_to_remote_syncer.cc",
-      "sync_file_system/drive_backend/local_to_remote_syncer.h",
-      "sync_file_system/drive_backend/metadata_database.cc",
-      "sync_file_system/drive_backend/metadata_database.h",
-      "sync_file_system/drive_backend/metadata_database_index.cc",
-      "sync_file_system/drive_backend/metadata_database_index.h",
-      "sync_file_system/drive_backend/metadata_database_index_interface.h",
-      "sync_file_system/drive_backend/metadata_database_index_on_disk.cc",
-      "sync_file_system/drive_backend/metadata_database_index_on_disk.h",
-      "sync_file_system/drive_backend/metadata_db_migration_util.cc",
-      "sync_file_system/drive_backend/metadata_db_migration_util.h",
-      "sync_file_system/drive_backend/register_app_task.cc",
-      "sync_file_system/drive_backend/register_app_task.h",
-      "sync_file_system/drive_backend/remote_change_processor_on_worker.cc",
-      "sync_file_system/drive_backend/remote_change_processor_on_worker.h",
-      "sync_file_system/drive_backend/remote_change_processor_wrapper.cc",
-      "sync_file_system/drive_backend/remote_change_processor_wrapper.h",
-      "sync_file_system/drive_backend/remote_to_local_syncer.cc",
-      "sync_file_system/drive_backend/remote_to_local_syncer.h",
-      "sync_file_system/drive_backend/sync_engine.cc",
-      "sync_file_system/drive_backend/sync_engine.h",
-      "sync_file_system/drive_backend/sync_engine_context.cc",
-      "sync_file_system/drive_backend/sync_engine_context.h",
-      "sync_file_system/drive_backend/sync_engine_initializer.cc",
-      "sync_file_system/drive_backend/sync_engine_initializer.h",
-      "sync_file_system/drive_backend/sync_task.cc",
-      "sync_file_system/drive_backend/sync_task.h",
-      "sync_file_system/drive_backend/sync_task_manager.cc",
-      "sync_file_system/drive_backend/sync_task_manager.h",
-      "sync_file_system/drive_backend/sync_task_token.cc",
-      "sync_file_system/drive_backend/sync_task_token.h",
-      "sync_file_system/drive_backend/sync_worker.cc",
-      "sync_file_system/drive_backend/sync_worker.h",
-      "sync_file_system/drive_backend/sync_worker_interface.h",
-      "sync_file_system/drive_backend/task_dependency_manager.cc",
-      "sync_file_system/drive_backend/task_dependency_manager.h",
-      "sync_file_system/drive_backend/tracker_id_set.cc",
-      "sync_file_system/drive_backend/tracker_id_set.h",
-      "sync_file_system/drive_backend/uninstall_app_task.cc",
-      "sync_file_system/drive_backend/uninstall_app_task.h",
-      "sync_file_system/file_change.cc",
-      "sync_file_system/file_change.h",
-      "sync_file_system/file_status_observer.h",
-      "sync_file_system/local/local_file_change_tracker.cc",
-      "sync_file_system/local/local_file_change_tracker.h",
-      "sync_file_system/local/local_file_sync_context.cc",
-      "sync_file_system/local/local_file_sync_context.h",
-      "sync_file_system/local/local_file_sync_service.cc",
-      "sync_file_system/local/local_file_sync_service.h",
-      "sync_file_system/local/local_file_sync_status.cc",
-      "sync_file_system/local/local_file_sync_status.h",
-      "sync_file_system/local/local_origin_change_observer.h",
-      "sync_file_system/local/root_delete_helper.cc",
-      "sync_file_system/local/root_delete_helper.h",
-      "sync_file_system/local/sync_file_system_backend.cc",
-      "sync_file_system/local/sync_file_system_backend.h",
-      "sync_file_system/local/syncable_file_operation_runner.cc",
-      "sync_file_system/local/syncable_file_operation_runner.h",
-      "sync_file_system/local/syncable_file_system_operation.cc",
-      "sync_file_system/local/syncable_file_system_operation.h",
-      "sync_file_system/local_change_processor.h",
-      "sync_file_system/logger.cc",
-      "sync_file_system/logger.h",
-      "sync_file_system/remote_change_processor.h",
-      "sync_file_system/remote_file_sync_service.cc",
-      "sync_file_system/remote_file_sync_service.h",
-      "sync_file_system/subtree_set.cc",
-      "sync_file_system/subtree_set.h",
-      "sync_file_system/sync_action.cc",
-      "sync_file_system/sync_action.h",
-      "sync_file_system/sync_callbacks.h",
-      "sync_file_system/sync_direction.h",
-      "sync_file_system/sync_event_observer.h",
-      "sync_file_system/sync_file_metadata.cc",
-      "sync_file_system/sync_file_metadata.h",
-      "sync_file_system/sync_file_status.h",
-      "sync_file_system/sync_file_system_service.cc",
-      "sync_file_system/sync_file_system_service.h",
-      "sync_file_system/sync_file_system_service_factory.cc",
-      "sync_file_system/sync_file_system_service_factory.h",
-      "sync_file_system/sync_file_type.h",
-      "sync_file_system/sync_operation_type.cc",
-      "sync_file_system/sync_operation_type.h",
-      "sync_file_system/sync_process_runner.cc",
-      "sync_file_system/sync_process_runner.h",
-      "sync_file_system/sync_service_state.h",
-      "sync_file_system/sync_status_code.cc",
-      "sync_file_system/sync_status_code.h",
-      "sync_file_system/syncable_file_system_util.cc",
-      "sync_file_system/syncable_file_system_util.h",
-      "sync_file_system/task_logger.cc",
-      "sync_file_system/task_logger.h",
-    ]
-    public_deps += [
-      "//chrome/browser/apps",
-      "//chrome/browser/extensions",
-    ]
-    allow_circular_includes_from += [
-      "//chrome/browser/apps",
-      "//chrome/browser/extensions",
-    ]
-    deps += [
-      "//apps",
-      "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
-      "//chrome/common/extensions/api",
-      "//chrome/common/extensions/api:api_registration",
-      "//chrome/common/extensions/api:extensions_features",
-      "//components/drive",
-      "//components/guest_view/browser",
-      "//extensions/components/javascript_dialog_extensions_client",
-      "//media/cast:net",
-      "//services/device/public/interfaces",
-    ]
-  }
-  if (enable_background) {
-    sources += [
-      "background/background_application_list_model.cc",
-      "background/background_application_list_model.h",
-      "background/background_contents_service.cc",
-      "background/background_contents_service.h",
-      "background/background_contents_service_factory.cc",
-      "background/background_contents_service_factory.h",
-      "background/background_mode_manager.cc",
-      "background/background_mode_manager.h",
-      "background/background_mode_manager_aura.cc",
-      "background/background_mode_manager_chromeos.cc",
-      "background/background_mode_manager_mac.mm",
-      "background/background_mode_manager_win.cc",
-      "background/background_mode_optimizer.cc",
-      "background/background_mode_optimizer.h",
-      "background/background_trigger.h",
-    ]
-    if (!use_aura || is_win || is_chromeos) {
-      sources -= [ "background/background_mode_manager_aura.cc" ]
-    }
-  }
-  if (enable_dice_support) {
-    sources += [
-      "signin/dice_response_handler.cc",
-      "signin/dice_response_handler.h",
-    ]
-  }
-  if (enable_spellcheck) {
-    sources += [
-      "spellchecker/spell_check_host_impl.cc",
-      "spellchecker/spell_check_host_impl.h",
-      "spellchecker/spellcheck_custom_dictionary.cc",
-      "spellchecker/spellcheck_custom_dictionary.h",
-      "spellchecker/spellcheck_factory.cc",
-      "spellchecker/spellcheck_factory.h",
-      "spellchecker/spellcheck_hunspell_dictionary.cc",
-      "spellchecker/spellcheck_hunspell_dictionary.h",
-      "spellchecker/spellcheck_message_filter_platform_mac.cc",
-      "spellchecker/spellcheck_service.cc",
-      "spellchecker/spellcheck_service.h",
-    ]
-
-    if (has_spellcheck_panel) {
-      sources += [
-        "spellchecker/spell_check_panel_host_impl.cc",
-        "spellchecker/spell_check_panel_host_impl.h",
-      ]
-    }
-
-    deps += [
-      "//components/spellcheck/browser",
-      "//components/spellcheck/common:common",
-    ]
-
-    if (!is_android) {
-      deps += [ "//third_party/hunspell" ]
-    }
-  }
-  if (enable_nacl) {
-    sources += [
-      "nacl_host/nacl_browser_delegate_impl.cc",
-      "nacl_host/nacl_browser_delegate_impl.h",
-      "nacl_host/nacl_infobar_delegate.cc",
-      "nacl_host/nacl_infobar_delegate.h",
-    ]
-    deps += [ "//components/nacl/browser" ]
-  }
-
-  if (enable_plugins) {
-    sources += [
-      "browsing_data/browsing_data_flash_lso_helper.cc",
-      "browsing_data/browsing_data_flash_lso_helper.h",
-      "component_updater/pepper_flash_component_installer.cc",
-      "component_updater/pepper_flash_component_installer.h",
-      "metrics/plugin_metrics_provider.cc",
-      "metrics/plugin_metrics_provider.h",
-      "pepper_broker_infobar_delegate.cc",
-      "pepper_broker_infobar_delegate.h",
-      "pepper_flash_settings_manager.cc",
-      "pepper_flash_settings_manager.h",
-      "plugins/chrome_content_browser_client_plugins_part.cc",
-      "plugins/chrome_content_browser_client_plugins_part.h",
-      "plugins/chrome_plugin_service_filter.cc",
-      "plugins/chrome_plugin_service_filter.h",
-      "plugins/flash_download_interception.cc",
-      "plugins/flash_download_interception.h",
-      "plugins/flash_permission_context.cc",
-      "plugins/flash_permission_context.h",
-      "plugins/flash_temporary_permission_tracker.cc",
-      "plugins/flash_temporary_permission_tracker.h",
-      "plugins/flash_temporary_permission_tracker_factory.cc",
-      "plugins/flash_temporary_permission_tracker_factory.h",
-      "plugins/plugin_data_remover_helper.cc",
-      "plugins/plugin_data_remover_helper.h",
-      "plugins/plugin_finder.cc",
-      "plugins/plugin_finder.h",
-      "plugins/plugin_info_message_filter.cc",
-      "plugins/plugin_info_message_filter.h",
-      "plugins/plugin_infobar_delegates.cc",
-      "plugins/plugin_infobar_delegates.h",
-      "plugins/plugin_installer.cc",
-      "plugins/plugin_installer.h",
-      "plugins/plugin_installer_observer.cc",
-      "plugins/plugin_installer_observer.h",
-      "plugins/plugin_metadata.cc",
-      "plugins/plugin_metadata.h",
-      "plugins/plugin_observer.cc",
-      "plugins/plugin_observer.h",
-      "plugins/plugin_policy_handler.cc",
-      "plugins/plugin_policy_handler.h",
-      "plugins/plugin_prefs.cc",
-      "plugins/plugin_prefs.h",
-      "plugins/plugin_prefs_factory.cc",
-      "plugins/plugin_prefs_factory.h",
-      "plugins/plugin_status_pref_setter.cc",
-      "plugins/plugin_status_pref_setter.h",
-      "plugins/plugin_utils.cc",
-      "plugins/plugin_utils.h",
-      "plugins/plugins_field_trial.cc",
-      "plugins/plugins_field_trial.h",
-      "plugins/plugins_resource_service.cc",
-      "plugins/plugins_resource_service.h",
-      "renderer_host/pepper/chrome_browser_pepper_host_factory.cc",
-      "renderer_host/pepper/chrome_browser_pepper_host_factory.h",
-      "renderer_host/pepper/device_id_fetcher.cc",
-      "renderer_host/pepper/device_id_fetcher.h",
-      "renderer_host/pepper/monitor_finder_mac.h",
-      "renderer_host/pepper/monitor_finder_mac.mm",
-      "renderer_host/pepper/pepper_broker_message_filter.cc",
-      "renderer_host/pepper/pepper_broker_message_filter.h",
-      "renderer_host/pepper/pepper_flash_browser_host.cc",
-      "renderer_host/pepper/pepper_flash_browser_host.h",
-      "renderer_host/pepper/pepper_flash_clipboard_message_filter.cc",
-      "renderer_host/pepper/pepper_flash_clipboard_message_filter.h",
-      "renderer_host/pepper/pepper_flash_drm_host.cc",
-      "renderer_host/pepper/pepper_flash_drm_host.h",
-      "renderer_host/pepper/pepper_isolated_file_system_message_filter.cc",
-      "renderer_host/pepper/pepper_isolated_file_system_message_filter.h",
-      "renderer_host/pepper/pepper_output_protection_message_filter.cc",
-      "renderer_host/pepper/pepper_output_protection_message_filter.h",
-      "renderer_host/pepper/pepper_platform_verification_message_filter.cc",
-      "renderer_host/pepper/pepper_platform_verification_message_filter.h",
-    ]
-    deps += [
-      "//components/pdf/browser",
-      "//media:media_features",
-      "//ppapi/features",
-      "//ppapi/proxy:ipc",
-      "//services/device/public/interfaces",
-      "//third_party/adobe/flash:flapper_version_h",
-    ]
-  }
-
-  if (enable_offline_pages) {
-    sources += [
-      "offline_pages/background_loader_offliner.cc",
-      "offline_pages/background_loader_offliner.h",
-      "offline_pages/downloads/resource_throttle.cc",
-      "offline_pages/downloads/resource_throttle.h",
-      "offline_pages/fresh_offline_content_observer.cc",
-      "offline_pages/fresh_offline_content_observer.h",
-      "offline_pages/offline_page_bookmark_observer.cc",
-      "offline_pages/offline_page_bookmark_observer.h",
-      "offline_pages/offline_page_info_handler.cc",
-      "offline_pages/offline_page_info_handler.h",
-      "offline_pages/offline_page_mhtml_archiver.cc",
-      "offline_pages/offline_page_mhtml_archiver.h",
-      "offline_pages/offline_page_model_factory.h",
-      "offline_pages/offline_page_origin_utils.h",
-      "offline_pages/offline_page_request_interceptor.cc",
-      "offline_pages/offline_page_request_interceptor.h",
-      "offline_pages/offline_page_request_job.cc",
-      "offline_pages/offline_page_request_job.h",
-      "offline_pages/offline_page_tab_helper.cc",
-      "offline_pages/offline_page_tab_helper.h",
-      "offline_pages/offline_page_utils.cc",
-      "offline_pages/offline_page_utils.h",
-      "offline_pages/offliner_helper.cc",
-      "offline_pages/offliner_helper.h",
-      "offline_pages/offliner_user_data.cc",
-      "offline_pages/offliner_user_data.h",
-      "offline_pages/prefetch/offline_metrics_collector_impl.cc",
-      "offline_pages/prefetch/offline_metrics_collector_impl.h",
-      "offline_pages/prefetch/offline_prefetch_download_client.cc",
-      "offline_pages/prefetch/offline_prefetch_download_client.h",
-      "offline_pages/prefetch/prefetch_background_task.h",
-      "offline_pages/prefetch/prefetch_background_task_handler_impl.cc",
-      "offline_pages/prefetch/prefetch_background_task_handler_impl.h",
-      "offline_pages/prefetch/prefetch_configuration_impl.cc",
-      "offline_pages/prefetch/prefetch_configuration_impl.h",
-      "offline_pages/prefetch/prefetch_importer_impl.cc",
-      "offline_pages/prefetch/prefetch_importer_impl.h",
-      "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
-      "offline_pages/prefetch/prefetch_instance_id_proxy.h",
-      "offline_pages/prefetch/prefetch_service_factory.cc",
-      "offline_pages/prefetch/prefetch_service_factory.h",
-      "offline_pages/prefetch/prefetched_pages_notifier.cc",
-      "offline_pages/prefetch/prefetched_pages_notifier.h",
-      "offline_pages/recent_tab_helper.cc",
-      "offline_pages/recent_tab_helper.h",
-      "offline_pages/request_coordinator_factory.h",
-      "offline_pages/resource_loading_observer.h",
-    ]
-    if (is_android) {
-      sources += [
-        "offline_pages/android/background_scheduler_bridge.cc",
-        "offline_pages/android/background_scheduler_bridge.h",
-        "offline_pages/android/cct_origin_observer.cc",
-        "offline_pages/android/cct_origin_observer.h",
-        "offline_pages/android/cct_request_observer.cc",
-        "offline_pages/android/cct_request_observer.h",
-        "offline_pages/android/downloads/offline_page_download_bridge.cc",
-        "offline_pages/android/downloads/offline_page_download_bridge.h",
-        "offline_pages/android/downloads/offline_page_infobar_delegate.cc",
-        "offline_pages/android/downloads/offline_page_infobar_delegate.h",
-        "offline_pages/android/downloads/offline_page_notification_bridge.cc",
-        "offline_pages/android/downloads/offline_page_notification_bridge.h",
-        "offline_pages/android/load_termination_listener_impl.cc",
-        "offline_pages/android/load_termination_listener_impl.h",
-        "offline_pages/android/offline_page_bridge.cc",
-        "offline_pages/android/offline_page_bridge.h",
-        "offline_pages/android/offline_page_model_factory.cc",
-        "offline_pages/android/offline_page_origin_utils_android.cc",
-        "offline_pages/android/offline_page_utils_android.cc",
-        "offline_pages/android/prefetch_background_task_android.cc",
-        "offline_pages/android/prefetch_background_task_android.h",
-        "offline_pages/android/prefetched_pages_notifier_android.cc",
-        "offline_pages/android/request_coordinator_factory.cc",
-      ]
-    }
-    deps += [
-      "//components/offline_pages/content/background_loader",
-      "//components/offline_pages/content/renovations",
-      "//components/offline_pages/core",
-      "//components/offline_pages/core/background:background_offliner",
-      "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
-      "//components/offline_pages/core/prefetch",
-      "//components/offline_pages/core/recent_tabs",
-      "//components/offline_pages/core/renovations",
-      "//components/offline_pages/core/request_header:request_header",
-    ]
-
-    # Used to build test harness locally. The harness is used manually to
-    # produce multiple offline pages to evaluate quality of the snapshots.
-    # This will only be built iff. |enable_offline_pages_harness| is set while
-    # |enable_offline_pages| and |is_android| are both true.
-    if (enable_offline_pages_harness && is_android) {
-      sources += [
-        "offline_pages/android/evaluation/evaluation_test_scheduler.cc",
-        "offline_pages/android/evaluation/evaluation_test_scheduler.h",
-        "offline_pages/android/evaluation/offline_page_evaluation_bridge.cc",
-        "offline_pages/android/evaluation/offline_page_evaluation_bridge.h",
-      ]
-    }
-  }
-
-  if (enable_hotwording) {
-    defines += [ "ENABLE_HOTWORDING" ]
-  }
-
-  if (is_chromeos && use_dbus) {
-    deps += [ "//device/media_transfer_protocol" ]
-  }
-  if (is_win || is_mac || (is_chromeos && use_dbus)) {
-    sources += [
-      "media_galleries/fileapi/device_media_async_file_util.cc",
-      "media_galleries/fileapi/device_media_async_file_util.h",
-      "media_galleries/fileapi/mtp_device_async_delegate.cc",
-      "media_galleries/fileapi/mtp_device_async_delegate.h",
-      "media_galleries/fileapi/mtp_device_map_service.cc",
-      "media_galleries/fileapi/mtp_device_map_service.h",
-      "media_galleries/fileapi/mtp_file_stream_reader.cc",
-      "media_galleries/fileapi/mtp_file_stream_reader.h",
-    ]
-  }
-
-  if (use_udev) {
-    deps += [ "//device/udev_linux" ]
-  }
-
-  if (is_linux && !is_chromeos) {
-    deps += [ "//third_party/speech-dispatcher" ]
-  }
-
-  if (is_chromeos) {
-    sources += [
-      "component_updater/cros_component_installer.cc",
-      "component_updater/cros_component_installer.h",
-      "download/notification/download_item_notification.cc",
-      "download/notification/download_item_notification.h",
-      "download/notification/download_notification_manager.cc",
-      "download/notification/download_notification_manager.h",
-      "feedback/feedback_util_chromeos.cc",
-      "feedback/feedback_util_chromeos.h",
-      "media/chromeos_login_media_access_handler.cc",
-      "media/chromeos_login_media_access_handler.h",
-      "media/public_session_media_access_handler.cc",
-      "media/public_session_media_access_handler.h",
-      "media/public_session_tab_capture_access_handler.cc",
-      "media/public_session_tab_capture_access_handler.h",
-      "memory/memory_kills_histogram.h",
-      "memory/memory_kills_monitor.cc",
-      "memory/memory_kills_monitor.h",
-      "metrics/chromeos_metrics_provider.cc",
-      "metrics/chromeos_metrics_provider.h",
-      "metrics/leak_detector/leak_detector_controller.cc",
-      "metrics/leak_detector/leak_detector_controller.h",
-      "metrics/leak_detector/leak_detector_remote_controller.cc",
-      "metrics/leak_detector/leak_detector_remote_controller.h",
-      "metrics/perf/cpu_identity.cc",
-      "metrics/perf/cpu_identity.h",
-      "metrics/perf/perf_output.cc",
-      "metrics/perf/perf_output.h",
-      "metrics/perf/random_selector.cc",
-      "metrics/perf/random_selector.h",
-      "metrics/perf/windowed_incognito_observer.cc",
-      "metrics/perf/windowed_incognito_observer.h",
-      "policy/default_geolocation_policy_handler.cc",
-      "policy/default_geolocation_policy_handler.h",
-      "task_manager/providers/arc/arc_process_task.cc",
-      "task_manager/providers/arc/arc_process_task.h",
-      "task_manager/providers/arc/arc_process_task_provider.cc",
-      "task_manager/providers/arc/arc_process_task_provider.h",
-    ]
-    deps += [
-      "//chrome/browser/chromeos",
-      "//services/ui/public/cpp/input_devices",
-      "//services/ui/public/cpp/input_devices:input_device_controller",
-      "//ui/ozone",
-    ]
-    public_deps += [
-      "//components/metrics/leak_detector:interfaces",
-      "//components/metrics/leak_detector:leak_detector",
-    ]
-    allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
-  } else {  # Non-ChromeOS.
-    sources += [
-      "policy/cloud/user_cloud_policy_manager_factory.cc",
-      "policy/cloud/user_cloud_policy_manager_factory.h",
-      "policy/cloud/user_policy_signin_service_base.cc",
-      "policy/cloud/user_policy_signin_service_base.h",
-      "policy/cloud/user_policy_signin_service_factory.cc",
-      "policy/cloud/user_policy_signin_service_factory.h",
-      "signin/chrome_signin_status_metrics_provider_delegate.cc",
-      "signin/chrome_signin_status_metrics_provider_delegate.h",
-    ]
-  }
-
-  if (use_cups) {
-    configs += [ "//printing:cups" ]
-  }
-
-  if (use_gnome_keyring) {
-    sources += [
-      "password_manager/native_backend_gnome_x.cc",
-      "password_manager/native_backend_gnome_x.h",
-    ]
-    configs += [ "//components/os_crypt:gnome_keyring" ]
-  }
-
-  if (use_aura) {
-    # Cross-platform Aura files.
-    sources += [
-      # This file is called _views but has Aura calls in it.
-      "download/drag_download_item_views.cc",
-      "lifetime/application_lifetime_aura.cc",
-      "platform_util_aura.cc",
-      "ui/views/frame/browser_frame_mus.cc",
-      "ui/views/frame/browser_frame_mus.h",
-      "ui/views/frame/browser_non_client_frame_view_mus.cc",
-      "ui/views/frame/browser_non_client_frame_view_mus.h",
-    ]
-    deps += [
-      "//content/public/common",
-      "//services/ui/public/cpp",
-      "//services/ui/public/cpp/input_devices",
-      "//ui/aura",
-      "//ui/compositor",
-      "//ui/snapshot",
-      "//ui/views/mus",
-    ]
-  }
-
-  if (use_ash) {
-    # Cross-platform Ash sources.
-    sources += [
-      "media/webrtc/desktop_media_list_ash.cc",
-      "media/webrtc/desktop_media_list_ash.h",
-      "signin/signin_error_notifier_ash.cc",
-      "signin/signin_error_notifier_ash.h",
-      "signin/signin_error_notifier_factory_ash.cc",
-      "signin/signin_error_notifier_factory_ash.h",
-      "sync/sync_error_notifier_ash.cc",
-      "sync/sync_error_notifier_ash.h",
-      "sync/sync_error_notifier_factory_ash.cc",
-      "sync/sync_error_notifier_factory_ash.h",
-    ]
-    deps += [ "//ash" ]
-  }
-
-  if (use_x11) {
-    sources += [
-      "chrome_browser_main_extra_parts_x11.cc",
-      "chrome_browser_main_extra_parts_x11.h",
-      "password_manager/password_store_x.cc",
-      "password_manager/password_store_x.h",
-    ]
-  }
-  if (use_aura && !use_ozone && is_desktop_linux) {
-    deps += [ "//chrome/browser/ui/libgtkui" ]
-  }
-  if (is_posix) {
-    deps += [ "//chrome/app:shutdown_signal_handlers" ]
-  }
-  if (is_posix && !is_mac) {
-    sources += [
-      "//chrome/app/chrome_crash_reporter_client.cc",
-      "//chrome/app/chrome_crash_reporter_client.h",
-    ]
-    deps += [
-      "//components/crash/content/app",
-      "//components/crash/content/browser",
-      "//components/version_info:generate_version_info",
-    ]
-  }
-  if (use_nss_certs) {
-    sources += [
-      "certificate_manager_model.cc",
-      "certificate_manager_model.h",
-      "net/nss_context.cc",
-      "net/nss_context.h",
-      "net/nss_context_chromeos.cc",
-      "net/nss_context_linux.cc",
-    ]
-    if (is_chromeos) {
-      sources -= [ "net/nss_context_linux.cc" ]
-    }
-  }
-
-  if (enable_basic_printing || enable_print_preview) {
-    # Some form of printing support.
-    sources += [
-      "printing/print_job.cc",
-      "printing/print_job.h",
-      "printing/print_job_manager.cc",
-      "printing/print_job_manager.h",
-      "printing/print_job_worker.cc",
-      "printing/print_job_worker.h",
-      "printing/print_job_worker_owner.cc",
-      "printing/print_job_worker_owner.h",
-      "printing/print_view_manager_base.cc",
-      "printing/print_view_manager_base.h",
-      "printing/print_view_manager_common.cc",
-      "printing/print_view_manager_common.h",
-      "printing/printer_query.cc",
-      "printing/printer_query.h",
-      "printing/printing_init.cc",
-      "printing/printing_init.h",
-      "printing/printing_message_filter.cc",
-      "printing/printing_message_filter.h",
-    ]
-    deps += [
-      "//components/printing/browser",
-      "//components/printing/service/public/interfaces",
-      "//printing",
-    ]
-
-    if (is_win) {
-      sources += [
-        "printing/pdf_to_emf_converter.cc",
-        "printing/pdf_to_emf_converter.h",
-      ]
-    }
-    if (enable_print_preview) {
-      # Full printing on top of the above.
-      sources += [
-        "printing/background_printing_manager.cc",
-        "printing/background_printing_manager.h",
-        "printing/cloud_print/cloud_print_proxy_service.cc",
-        "printing/cloud_print/cloud_print_proxy_service.h",
-        "printing/cloud_print/cloud_print_proxy_service_factory.cc",
-        "printing/cloud_print/cloud_print_proxy_service_factory.h",
-        "printing/print_dialog_cloud.cc",
-        "printing/print_dialog_cloud.h",
-        "printing/print_dialog_cloud_posix.cc",
-        "printing/print_dialog_cloud_win.cc",
-        "printing/print_error_dialog.cc",
-        "printing/print_error_dialog.h",
-        "printing/print_preview_context_menu_observer.cc",
-        "printing/print_preview_context_menu_observer.h",
-        "printing/print_preview_data_service.cc",
-        "printing/print_preview_data_service.h",
-        "printing/print_preview_dialog_controller.cc",
-        "printing/print_preview_dialog_controller.h",
-        "printing/print_preview_message_handler.cc",
-        "printing/print_preview_message_handler.h",
-        "printing/print_view_manager.cc",
-        "printing/print_view_manager.h",
-        "printing/printer_manager_dialog.h",
-        "printing/printer_manager_dialog_linux.cc",
-        "printing/printer_manager_dialog_mac.mm",
-        "printing/printer_manager_dialog_win.cc",
-        "printing/pwg_raster_converter.cc",
-        "printing/pwg_raster_converter.h",
-        "service_process/service_process_control.cc",
-        "service_process/service_process_control.h",
-        "service_process/service_process_control_mac.mm",
-      ]
-      deps += [ "//chrome/common:service_process_mojom" ]
-    } else {
-      # Partial-only printing support.
-      sources += [
-        "printing/print_view_manager_basic.cc",
-        "printing/print_view_manager_basic.h",
-      ]
-    }
-  }
-  if (enable_captive_portal_detection) {
-    sources += [
-      "captive_portal/captive_portal_login_detector.cc",
-      "captive_portal/captive_portal_login_detector.h",
-      "captive_portal/captive_portal_service.cc",
-      "captive_portal/captive_portal_service.h",
-      "captive_portal/captive_portal_service_factory.cc",
-      "captive_portal/captive_portal_service_factory.h",
-      "captive_portal/captive_portal_tab_helper.cc",
-      "captive_portal/captive_portal_tab_helper.h",
-      "captive_portal/captive_portal_tab_reloader.cc",
-      "captive_portal/captive_portal_tab_reloader.h",
-      "component_updater/ssl_error_assistant_component_installer.cc",
-      "component_updater/ssl_error_assistant_component_installer.h",
-      "ssl/captive_portal_metrics_recorder.cc",
-      "ssl/captive_portal_metrics_recorder.h",
-    ]
-  }
-  if (enable_session_service) {
-    sources += [
-      "sessions/session_restore.cc",
-      "sessions/session_restore.h",
-      "sessions/session_restore_delegate.cc",
-      "sessions/session_restore_delegate.h",
-      "sessions/session_restore_observer.h",
-      "sessions/session_restore_stats_collector.cc",
-      "sessions/session_restore_stats_collector.h",
-      "sessions/session_service.cc",
-      "sessions/session_service.h",
-      "sessions/session_service_factory.cc",
-      "sessions/session_service_factory.h",
-      "sessions/session_service_utils.cc",
-      "sessions/session_service_utils.h",
-      "sessions/tab_loader.cc",
-      "sessions/tab_loader.h",
-      "sessions/tab_loader_delegate.cc",
-      "sessions/tab_loader_delegate.h",
-    ]
-  }
-
-  if (!is_android && !is_chromeos) {
-    sources += [
-      "metrics/desktop_session_duration/audible_contents_tracker.cc",
-      "metrics/desktop_session_duration/audible_contents_tracker.h",
-      "metrics/desktop_session_duration/chrome_visibility_observer.cc",
-      "metrics/desktop_session_duration/chrome_visibility_observer.h",
-      "metrics/desktop_session_duration/desktop_session_duration_observer.cc",
-      "metrics/desktop_session_duration/desktop_session_duration_observer.h",
-      "metrics/desktop_session_duration/desktop_session_duration_tracker.cc",
-      "metrics/desktop_session_duration/desktop_session_duration_tracker.h",
-      "metrics/upgrade_metrics_provider.cc",
-      "metrics/upgrade_metrics_provider.h",
-      "net/disk_cache_dir_policy_handler.cc",
-      "net/disk_cache_dir_policy_handler.h",
-      "notifications/fullscreen_notification_blocker.cc",
-      "notifications/fullscreen_notification_blocker.h",
-      "notifications/screen_lock_notification_blocker.cc",
-      "notifications/screen_lock_notification_blocker.h",
-      "platform_util.cc",
-      "policy/cloud/user_policy_signin_service.cc",
-      "policy/cloud/user_policy_signin_service.h",
-      "profiles/avatar_menu_actions_desktop.cc",
-      "profiles/avatar_menu_actions_desktop.h",
-      "profiles/avatar_menu_desktop.cc",
-      "profiles/avatar_menu_observer.h",
-      "profiles/profile_list_desktop.cc",
-      "profiles/profile_list_desktop.h",
-      "profiles/profile_statistics.cc",
-      "profiles/profile_statistics.h",
-      "profiles/profile_statistics_aggregator.cc",
-      "profiles/profile_statistics_aggregator.h",
-      "profiles/profile_statistics_common.cc",
-      "profiles/profile_statistics_common.h",
-      "profiles/profile_statistics_factory.cc",
-      "profiles/profile_statistics_factory.h",
-      "signin/force_signin_verifier.cc",
-      "signin/force_signin_verifier.h",
-      "signin/signin_global_error.cc",
-      "signin/signin_global_error.h",
-      "signin/signin_global_error_factory.cc",
-      "signin/signin_global_error_factory.h",
-      "upgrade_detector_impl.cc",
-      "upgrade_detector_impl.h",
-    ]
-  } else {
-    sources += [
-      "media/protected_media_identifier_permission_context.cc",
-      "media/protected_media_identifier_permission_context.h",
-    ]
-  }
 
   if (is_android) {
     sources += [
@@ -3127,6 +2242,14 @@ split_static_library("browser") {
 
     deps -= [ "//components/storage_monitor" ]
 
+    # Android does in-process PAC, so must link against V8 directly. Other
+    # platforms use OOP Mojo resolution.
+    deps += [
+      "//net:net_utility_services",
+      "//net:net_with_v8",
+      "//v8",
+    ]
+
     if (enable_supervised_users) {
       sources += [
         "supervised_user/child_accounts/child_account_feedback_reporter_android.cc",
@@ -3136,7 +2259,6 @@ split_static_library("browser") {
       ]
     }
   } else {
-    # Non-Android.
     sources += [
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
@@ -3189,6 +2311,8 @@ split_static_library("browser") {
       "download/download_shelf.h",
       "download/download_shelf_context_menu.cc",
       "download/download_shelf_context_menu.h",
+      "embedded_ui_service_info_factory.cc",
+      "embedded_ui_service_info_factory.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
       "feedback/feedback_profile_observer.cc",
@@ -3435,6 +2559,8 @@ split_static_library("browser") {
       "sync/glue/extension_setting_data_type_controller.h",
       "sync/glue/theme_data_type_controller.cc",
       "sync/glue/theme_data_type_controller.h",
+      "sync/sessions/browser_list_router_helper.cc",
+      "sync/sessions/browser_list_router_helper.h",
       "sync/sync_ui_util.cc",
       "sync/sync_ui_util.h",
       "task_manager/providers/browser_process_task.cc",
@@ -3532,69 +2658,85 @@ split_static_library("browser") {
     ]
     deps += [
       ":theme_properties",
+      "//chrome/app/vector_icons",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
+      "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/search:generated",
       "//chrome/common/importer:interfaces",
       "//components/cryptauth",
       "//components/cryptauth/proto",
       "//components/feedback",
       "//components/keep_alive_registry",
+      "//components/vector_icons",
       "//components/web_modal",
+      "//components/zoom",
+      "//net:net",
     ]
   }
 
-  if (enable_library_cdms) {
+  if (is_chromeos) {
     sources += [
-      "component_updater/widevine_cdm_component_installer.cc",
-      "component_updater/widevine_cdm_component_installer.h",
+      "component_updater/cros_component_installer.cc",
+      "component_updater/cros_component_installer.h",
+      "download/notification/download_item_notification.cc",
+      "download/notification/download_item_notification.h",
+      "download/notification/download_notification_manager.cc",
+      "download/notification/download_notification_manager.h",
+      "feedback/feedback_util_chromeos.cc",
+      "feedback/feedback_util_chromeos.h",
+      "media/chromeos_login_media_access_handler.cc",
+      "media/chromeos_login_media_access_handler.h",
+      "media/public_session_media_access_handler.cc",
+      "media/public_session_media_access_handler.h",
+      "media/public_session_tab_capture_access_handler.cc",
+      "media/public_session_tab_capture_access_handler.h",
+      "memory/memory_kills_histogram.h",
+      "memory/memory_kills_monitor.cc",
+      "memory/memory_kills_monitor.h",
+      "metrics/chromeos_metrics_provider.cc",
+      "metrics/chromeos_metrics_provider.h",
+      "metrics/leak_detector/leak_detector_controller.cc",
+      "metrics/leak_detector/leak_detector_controller.h",
+      "metrics/leak_detector/leak_detector_remote_controller.cc",
+      "metrics/leak_detector/leak_detector_remote_controller.h",
+      "metrics/perf/cpu_identity.cc",
+      "metrics/perf/cpu_identity.h",
+      "metrics/perf/perf_output.cc",
+      "metrics/perf/perf_output.h",
+      "metrics/perf/random_selector.cc",
+      "metrics/perf/random_selector.h",
+      "metrics/perf/windowed_incognito_observer.cc",
+      "metrics/perf/windowed_incognito_observer.h",
+      "policy/default_geolocation_policy_handler.cc",
+      "policy/default_geolocation_policy_handler.h",
+      "task_manager/providers/arc/arc_process_task.cc",
+      "task_manager/providers/arc/arc_process_task.h",
+      "task_manager/providers/arc/arc_process_task_provider.cc",
+      "task_manager/providers/arc/arc_process_task_provider.h",
     ]
-  }
-
-  if (!is_chrome_branded) {
-    sources += [
-      "search/local_files_ntp_source.cc",
-      "search/local_files_ntp_source.h",
-    ]
-  }
-
-  if (enable_vr) {
-    if (is_android) {
-      deps += [ "android/vr_shell:vr_android" ]
-      configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
-    }
-  }
-
-  if (is_mac) {
     deps += [
-      "//chrome/app_shim",
-      "//chrome/browser/apps/app_shim",
-      "//chrome/browser/ui/cocoa/notifications:common",
-      "//third_party/crashpad/crashpad/client:client",
-      "//third_party/google_toolbox_for_mac",
-      "//third_party/mozilla",
+      "//chrome/browser/chromeos",
+      "//services/ui/public/cpp/input_devices",
+      "//services/ui/public/cpp/input_devices:input_device_controller",
+      "//ui/ozone",
     ]
-    libs += [
-      "Accelerate.framework",
-      "AddressBook.framework",
-      "AudioUnit.framework",
-      "DiskArbitration.framework",
-      "IOKit.framework",
-      "ImageCaptureCore.framework",
-      "OpenGL.framework",
-      "QuartzCore.framework",
-      "SecurityInterface.framework",
+    public_deps += [
+      "//components/metrics/leak_detector:interfaces",
+      "//components/metrics/leak_detector:leak_detector",
     ]
-
-    if (mac_views_browser) {
-      sources += [ "global_keyboard_shortcuts_views_mac.mm" ]
-    } else {
-      sources += [ "global_keyboard_shortcuts_cocoa_mac.mm" ]
-    }
-  }
-
-  if (enable_rlz) {
-    deps += [ ":rlz" ]
+    allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
+  } else {  # Non-ChromeOS.
+    sources += [
+      "policy/cloud/user_cloud_policy_manager_factory.cc",
+      "policy/cloud/user_cloud_policy_manager_factory.h",
+      "policy/cloud/user_policy_signin_service_base.cc",
+      "policy/cloud/user_policy_signin_service_base.h",
+      "policy/cloud/user_policy_signin_service_factory.cc",
+      "policy/cloud/user_policy_signin_service_factory.h",
+      "signin/chrome_signin_status_metrics_provider_delegate.cc",
+      "signin/chrome_signin_status_metrics_provider_delegate.h",
+    ]
   }
 
   if (is_win) {
@@ -3660,6 +2802,34 @@ split_static_library("browser") {
     }
   }
 
+  if (is_mac) {
+    deps += [
+      "//chrome/app_shim",
+      "//chrome/browser/apps/app_shim",
+      "//chrome/browser/ui/cocoa/notifications:common",
+      "//third_party/crashpad/crashpad/client:client",
+      "//third_party/google_toolbox_for_mac",
+      "//third_party/mozilla",
+    ]
+    libs += [
+      "Accelerate.framework",
+      "AddressBook.framework",
+      "AudioUnit.framework",
+      "DiskArbitration.framework",
+      "IOKit.framework",
+      "ImageCaptureCore.framework",
+      "OpenGL.framework",
+      "QuartzCore.framework",
+      "SecurityInterface.framework",
+    ]
+
+    if (mac_views_browser) {
+      sources += [ "global_keyboard_shortcuts_views_mac.mm" ]
+    } else {
+      sources += [ "global_keyboard_shortcuts_cocoa_mac.mm" ]
+    }
+  }
+
   if (is_linux) {
     if (use_aura) {
       deps += [ "//third_party/fontconfig" ]
@@ -3671,48 +2841,6 @@ split_static_library("browser") {
       configs += [ "//build/config/linux:x11" ]
       deps += [ "//ui/gfx/x" ]
     }
-  }
-
-  if (is_linux || is_win || is_mac) {
-    sources += [
-      "payments/chrome_payment_request_delegate.cc",
-      "payments/chrome_payment_request_delegate.h",
-      "payments/payment_request_factory.cc",
-      "payments/payment_request_factory.h",
-    ]
-    deps += [ "//components/payments/content" ]
-  }
-
-  if (is_linux || is_win) {
-    sources += [
-      "renderer_context_menu/spelling_options_submenu_observer.cc",
-      "renderer_context_menu/spelling_options_submenu_observer.h",
-      "webshare/share_service_impl.cc",
-      "webshare/share_service_impl.h",
-    ]
-  }
-
-  if (enable_desktop_in_product_help) {
-    sources += [
-      "feature_engagement/bookmark/bookmark_tracker.cc",
-      "feature_engagement/bookmark/bookmark_tracker.h",
-      "feature_engagement/bookmark/bookmark_tracker_factory.cc",
-      "feature_engagement/bookmark/bookmark_tracker_factory.h",
-      "feature_engagement/feature_tracker.cc",
-      "feature_engagement/feature_tracker.h",
-      "feature_engagement/incognito_window/incognito_window_tracker.cc",
-      "feature_engagement/incognito_window/incognito_window_tracker.h",
-      "feature_engagement/incognito_window/incognito_window_tracker_factory.cc",
-      "feature_engagement/incognito_window/incognito_window_tracker_factory.h",
-      "feature_engagement/new_tab/new_tab_tracker.cc",
-      "feature_engagement/new_tab/new_tab_tracker.h",
-      "feature_engagement/new_tab/new_tab_tracker_factory.cc",
-      "feature_engagement/new_tab/new_tab_tracker_factory.h",
-      "feature_engagement/session_duration_updater.cc",
-      "feature_engagement/session_duration_updater.h",
-      "feature_engagement/session_duration_updater_factory.cc",
-      "feature_engagement/session_duration_updater_factory.h",
-    ]
   }
 
   if (is_desktop_linux) {
@@ -3730,6 +2858,8 @@ split_static_library("browser") {
       "speech/tts_linux.cc",
       "web_applications/web_app_linux.cc",
     ]
+
+    deps += [ "//third_party/speech-dispatcher" ]
 
     if (enable_native_notifications) {
       sources += [
@@ -3771,8 +2901,912 @@ split_static_library("browser") {
     }
   }
 
+  if (is_posix) {
+    deps += [ "//chrome/app:shutdown_signal_handlers" ]
+  }
+
+  if (is_win || is_mac) {
+    # Sources (generally "desktop OS importers") used only on Mac & Windows.
+    sources += [
+      "crash_upload_list/crash_upload_list_crashpad.cc",
+      "crash_upload_list/crash_upload_list_crashpad.h",
+      "recovery/recovery_install_global_error.cc",
+      "recovery/recovery_install_global_error.h",
+      "recovery/recovery_install_global_error_factory.cc",
+      "recovery/recovery_install_global_error_factory.h",
+    ]
+  } else {
+    sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
+  }
+
+  if (is_win || is_linux) {
+    sources += [
+      "renderer_context_menu/spelling_options_submenu_observer.cc",
+      "renderer_context_menu/spelling_options_submenu_observer.h",
+      "webshare/share_service_impl.cc",
+      "webshare/share_service_impl.h",
+    ]
+  }
+
+  if (is_chromeos && use_cras) {
+    defines += [ "USE_CRAS" ]
+  }
+
+  if (!is_android && !is_chromeos) {
+    sources += [
+      "metrics/desktop_session_duration/audible_contents_tracker.cc",
+      "metrics/desktop_session_duration/audible_contents_tracker.h",
+      "metrics/desktop_session_duration/chrome_visibility_observer.cc",
+      "metrics/desktop_session_duration/chrome_visibility_observer.h",
+      "metrics/desktop_session_duration/desktop_session_duration_observer.cc",
+      "metrics/desktop_session_duration/desktop_session_duration_observer.h",
+      "metrics/desktop_session_duration/desktop_session_duration_tracker.cc",
+      "metrics/desktop_session_duration/desktop_session_duration_tracker.h",
+      "metrics/upgrade_metrics_provider.cc",
+      "metrics/upgrade_metrics_provider.h",
+      "net/disk_cache_dir_policy_handler.cc",
+      "net/disk_cache_dir_policy_handler.h",
+      "notifications/fullscreen_notification_blocker.cc",
+      "notifications/fullscreen_notification_blocker.h",
+      "notifications/screen_lock_notification_blocker.cc",
+      "notifications/screen_lock_notification_blocker.h",
+      "platform_util.cc",
+      "policy/cloud/user_policy_signin_service.cc",
+      "policy/cloud/user_policy_signin_service.h",
+      "profiles/avatar_menu_actions_desktop.cc",
+      "profiles/avatar_menu_actions_desktop.h",
+      "profiles/avatar_menu_desktop.cc",
+      "profiles/avatar_menu_observer.h",
+      "profiles/profile_list_desktop.cc",
+      "profiles/profile_list_desktop.h",
+      "profiles/profile_statistics.cc",
+      "profiles/profile_statistics.h",
+      "profiles/profile_statistics_aggregator.cc",
+      "profiles/profile_statistics_aggregator.h",
+      "profiles/profile_statistics_common.cc",
+      "profiles/profile_statistics_common.h",
+      "profiles/profile_statistics_factory.cc",
+      "profiles/profile_statistics_factory.h",
+      "signin/force_signin_verifier.cc",
+      "signin/force_signin_verifier.h",
+      "signin/signin_global_error.cc",
+      "signin/signin_global_error.h",
+      "signin/signin_global_error_factory.cc",
+      "signin/signin_global_error_factory.h",
+      "upgrade_detector_impl.cc",
+      "upgrade_detector_impl.h",
+    ]
+  } else {
+    sources += [
+      "media/protected_media_identifier_permission_context.cc",
+      "media/protected_media_identifier_permission_context.h",
+    ]
+  }
+
+  if (is_posix && !is_mac) {
+    sources += [
+      "//chrome/app/chrome_crash_reporter_client.cc",
+      "//chrome/app/chrome_crash_reporter_client.h",
+    ]
+    deps += [
+      "//components/crash/content/app",
+      "//components/crash/content/browser",
+      "//components/version_info:generate_version_info",
+    ]
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    sources += [
+      "password_manager/password_store_signin_notifier_impl.cc",
+      "password_manager/password_store_signin_notifier_impl.h",
+    ]
+  }
+
+  if (is_win || is_mac || is_linux) {
+    sources += [
+      "payments/chrome_payment_request_delegate.cc",
+      "payments/chrome_payment_request_delegate.h",
+      "payments/payment_request_factory.cc",
+      "payments/payment_request_factory.h",
+    ]
+    deps += [ "//components/payments/content" ]
+  }
+
+  if (is_win || is_mac || (is_chromeos && use_dbus)) {
+    sources += [
+      "media_galleries/fileapi/device_media_async_file_util.cc",
+      "media_galleries/fileapi/device_media_async_file_util.h",
+      "media_galleries/fileapi/mtp_device_async_delegate.cc",
+      "media_galleries/fileapi/mtp_device_async_delegate.h",
+      "media_galleries/fileapi/mtp_device_map_service.cc",
+      "media_galleries/fileapi/mtp_device_map_service.h",
+      "media_galleries/fileapi/mtp_file_stream_reader.cc",
+      "media_galleries/fileapi/mtp_file_stream_reader.h",
+    ]
+    if (is_chromeos && use_dbus) {
+      deps += [ "//device/media_transfer_protocol" ]
+    }
+  }
+
+  if (toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
+  if (use_ash) {
+    # Cross-platform Ash sources.
+    sources += [
+      "media/webrtc/desktop_media_list_ash.cc",
+      "media/webrtc/desktop_media_list_ash.h",
+      "signin/signin_error_notifier_ash.cc",
+      "signin/signin_error_notifier_ash.h",
+      "signin/signin_error_notifier_factory_ash.cc",
+      "signin/signin_error_notifier_factory_ash.h",
+      "sync/sync_error_notifier_ash.cc",
+      "sync/sync_error_notifier_ash.h",
+      "sync/sync_error_notifier_factory_ash.cc",
+      "sync/sync_error_notifier_factory_ash.h",
+    ]
+    deps += [ "//ash" ]
+  }
+
+  if (use_aura) {
+    # Cross-platform Aura files.
+    sources += [
+      # This file is called _views but has Aura calls in it.
+      "download/drag_download_item_views.cc",
+      "lifetime/application_lifetime_aura.cc",
+      "platform_util_aura.cc",
+      "ui/views/frame/browser_frame_mus.cc",
+      "ui/views/frame/browser_frame_mus.h",
+      "ui/views/frame/browser_non_client_frame_view_mus.cc",
+      "ui/views/frame/browser_non_client_frame_view_mus.h",
+    ]
+    deps += [
+      "//content/public/common",
+      "//services/ui/public/cpp",
+      "//services/ui/public/cpp/input_devices",
+      "//ui/aura",
+      "//ui/compositor",
+      "//ui/snapshot",
+      "//ui/views/mus",
+    ]
+  }
+
+  if (use_aura && !use_ozone && is_desktop_linux) {
+    deps += [ "//chrome/browser/ui/libgtkui" ]
+  }
+
+  if (use_x11) {
+    sources += [
+      "chrome_browser_main_extra_parts_x11.cc",
+      "chrome_browser_main_extra_parts_x11.h",
+      "password_manager/password_store_x.cc",
+      "password_manager/password_store_x.h",
+    ]
+  }
+
   if (enable_app_list) {
     deps += [ "//ui/app_list" ]
+  }
+
+  if (enable_background) {
+    sources += [
+      "background/background_application_list_model.cc",
+      "background/background_application_list_model.h",
+      "background/background_contents_service.cc",
+      "background/background_contents_service.h",
+      "background/background_contents_service_factory.cc",
+      "background/background_contents_service_factory.h",
+      "background/background_mode_manager.cc",
+      "background/background_mode_manager.h",
+      "background/background_mode_manager_aura.cc",
+      "background/background_mode_manager_chromeos.cc",
+      "background/background_mode_manager_mac.mm",
+      "background/background_mode_manager_win.cc",
+      "background/background_mode_optimizer.cc",
+      "background/background_mode_optimizer.h",
+      "background/background_trigger.h",
+    ]
+    if (!use_aura || is_win || is_chromeos) {
+      sources -= [ "background/background_mode_manager_aura.cc" ]
+    }
+  }
+
+  if (enable_basic_printing || enable_print_preview) {
+    # Some form of printing support.
+    sources += [
+      "printing/print_job.cc",
+      "printing/print_job.h",
+      "printing/print_job_manager.cc",
+      "printing/print_job_manager.h",
+      "printing/print_job_worker.cc",
+      "printing/print_job_worker.h",
+      "printing/print_job_worker_owner.cc",
+      "printing/print_job_worker_owner.h",
+      "printing/print_view_manager_base.cc",
+      "printing/print_view_manager_base.h",
+      "printing/print_view_manager_common.cc",
+      "printing/print_view_manager_common.h",
+      "printing/printer_query.cc",
+      "printing/printer_query.h",
+      "printing/printing_init.cc",
+      "printing/printing_init.h",
+      "printing/printing_message_filter.cc",
+      "printing/printing_message_filter.h",
+    ]
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/service/public/interfaces",
+      "//printing",
+    ]
+
+    if (is_win) {
+      sources += [
+        "printing/pdf_to_emf_converter.cc",
+        "printing/pdf_to_emf_converter.h",
+      ]
+    }
+    if (enable_print_preview) {
+      # Full printing on top of the above.
+      sources += [
+        "printing/background_printing_manager.cc",
+        "printing/background_printing_manager.h",
+        "printing/cloud_print/cloud_print_proxy_service.cc",
+        "printing/cloud_print/cloud_print_proxy_service.h",
+        "printing/cloud_print/cloud_print_proxy_service_factory.cc",
+        "printing/cloud_print/cloud_print_proxy_service_factory.h",
+        "printing/print_dialog_cloud.cc",
+        "printing/print_dialog_cloud.h",
+        "printing/print_dialog_cloud_posix.cc",
+        "printing/print_dialog_cloud_win.cc",
+        "printing/print_error_dialog.cc",
+        "printing/print_error_dialog.h",
+        "printing/print_preview_context_menu_observer.cc",
+        "printing/print_preview_context_menu_observer.h",
+        "printing/print_preview_data_service.cc",
+        "printing/print_preview_data_service.h",
+        "printing/print_preview_dialog_controller.cc",
+        "printing/print_preview_dialog_controller.h",
+        "printing/print_preview_message_handler.cc",
+        "printing/print_preview_message_handler.h",
+        "printing/print_view_manager.cc",
+        "printing/print_view_manager.h",
+        "printing/printer_manager_dialog.h",
+        "printing/printer_manager_dialog_linux.cc",
+        "printing/printer_manager_dialog_mac.mm",
+        "printing/printer_manager_dialog_win.cc",
+        "printing/pwg_raster_converter.cc",
+        "printing/pwg_raster_converter.h",
+        "service_process/service_process_control.cc",
+        "service_process/service_process_control.h",
+        "service_process/service_process_control_mac.mm",
+      ]
+      deps += [ "//chrome/common:service_process_mojom" ]
+    } else {
+      # Partial-only printing support.
+      sources += [
+        "printing/print_view_manager_basic.cc",
+        "printing/print_view_manager_basic.h",
+      ]
+    }
+  }
+
+  if (enable_captive_portal_detection) {
+    sources += [
+      "captive_portal/captive_portal_login_detector.cc",
+      "captive_portal/captive_portal_login_detector.h",
+      "captive_portal/captive_portal_service.cc",
+      "captive_portal/captive_portal_service.h",
+      "captive_portal/captive_portal_service_factory.cc",
+      "captive_portal/captive_portal_service_factory.h",
+      "captive_portal/captive_portal_tab_helper.cc",
+      "captive_portal/captive_portal_tab_helper.h",
+      "captive_portal/captive_portal_tab_reloader.cc",
+      "captive_portal/captive_portal_tab_reloader.h",
+      "component_updater/ssl_error_assistant_component_installer.cc",
+      "component_updater/ssl_error_assistant_component_installer.h",
+      "ssl/captive_portal_metrics_recorder.cc",
+      "ssl/captive_portal_metrics_recorder.h",
+    ]
+  }
+
+  if (enable_desktop_in_product_help) {
+    sources += [
+      "feature_engagement/bookmark/bookmark_tracker.cc",
+      "feature_engagement/bookmark/bookmark_tracker.h",
+      "feature_engagement/bookmark/bookmark_tracker_factory.cc",
+      "feature_engagement/bookmark/bookmark_tracker_factory.h",
+      "feature_engagement/feature_tracker.cc",
+      "feature_engagement/feature_tracker.h",
+      "feature_engagement/incognito_window/incognito_window_tracker.cc",
+      "feature_engagement/incognito_window/incognito_window_tracker.h",
+      "feature_engagement/incognito_window/incognito_window_tracker_factory.cc",
+      "feature_engagement/incognito_window/incognito_window_tracker_factory.h",
+      "feature_engagement/new_tab/new_tab_tracker.cc",
+      "feature_engagement/new_tab/new_tab_tracker.h",
+      "feature_engagement/new_tab/new_tab_tracker_factory.cc",
+      "feature_engagement/new_tab/new_tab_tracker_factory.h",
+      "feature_engagement/session_duration_updater.cc",
+      "feature_engagement/session_duration_updater.h",
+      "feature_engagement/session_duration_updater_factory.cc",
+      "feature_engagement/session_duration_updater_factory.h",
+    ]
+  }
+
+  if (enable_dice_support) {
+    sources += [
+      "signin/dice_response_handler.cc",
+      "signin/dice_response_handler.h",
+    ]
+  }
+
+  if (enable_extensions) {
+    sources += [
+      "accessibility/accessibility_extension_api.cc",
+      "accessibility/accessibility_extension_api.h",
+      "accessibility/animation_policy_prefs.cc",
+      "accessibility/animation_policy_prefs.h",
+      "autocomplete/keyword_extensions_delegate_impl.cc",
+      "autocomplete/keyword_extensions_delegate_impl.h",
+      "autocomplete/shortcuts_extensions_manager.cc",
+      "autocomplete/shortcuts_extensions_manager.h",
+      "browsing_data/hosted_apps_counter.cc",
+      "browsing_data/hosted_apps_counter.h",
+      "content_settings/content_settings_internal_extension_provider.cc",
+      "content_settings/content_settings_internal_extension_provider.h",
+      "drive/drive_notification_manager_factory.cc",
+      "drive/drive_notification_manager_factory.h",
+      "guest_view/app_view/chrome_app_view_guest_delegate.cc",
+      "guest_view/app_view/chrome_app_view_guest_delegate.h",
+      "guest_view/chrome_guest_view_manager_delegate.cc",
+      "guest_view/chrome_guest_view_manager_delegate.h",
+      "guest_view/extension_options/chrome_extension_options_guest_delegate.cc",
+      "guest_view/extension_options/chrome_extension_options_guest_delegate.h",
+      "guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.cc",
+      "guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h",
+      "guest_view/web_view/chrome_web_view_guest_delegate.cc",
+      "guest_view/web_view/chrome_web_view_guest_delegate.h",
+      "guest_view/web_view/chrome_web_view_permission_helper_delegate.cc",
+      "guest_view/web_view/chrome_web_view_permission_helper_delegate.h",
+      "guest_view/web_view/context_menu_content_type_web_view.cc",
+      "guest_view/web_view/context_menu_content_type_web_view.h",
+      "media/capture_access_handler_base.cc",
+      "media/capture_access_handler_base.h",
+      "media/cast_transport_host_filter.cc",
+      "media/cast_transport_host_filter.h",
+      "media/extension_media_access_handler.cc",
+      "media/extension_media_access_handler.h",
+      "media/webrtc/desktop_capture_access_handler.cc",
+      "media/webrtc/desktop_capture_access_handler.h",
+      "media/webrtc/tab_capture_access_handler.cc",
+      "media/webrtc/tab_capture_access_handler.h",
+      "metrics/extensions_metrics_provider.cc",
+      "metrics/extensions_metrics_provider.h",
+      "renderer_context_menu/context_menu_content_type_app_mode.cc",
+      "renderer_context_menu/context_menu_content_type_app_mode.h",
+      "renderer_context_menu/context_menu_content_type_extension_popup.cc",
+      "renderer_context_menu/context_menu_content_type_extension_popup.h",
+      "renderer_context_menu/context_menu_content_type_platform_app.cc",
+      "renderer_context_menu/context_menu_content_type_platform_app.h",
+      "renderer_host/chrome_extension_message_filter.cc",
+      "renderer_host/chrome_extension_message_filter.h",
+      "search/hotword_audio_history_handler.cc",
+      "search/hotword_audio_history_handler.h",
+      "search/hotword_client.h",
+      "search/hotword_service.cc",
+      "search/hotword_service.h",
+      "search/hotword_service_factory.cc",
+      "search/hotword_service_factory.h",
+      "signin/chrome_proximity_auth_client.cc",
+      "signin/chrome_proximity_auth_client.h",
+      "signin/easy_unlock_app_manager.cc",
+      "signin/easy_unlock_app_manager.h",
+      "signin/easy_unlock_auth_attempt.cc",
+      "signin/easy_unlock_auth_attempt.h",
+      "signin/easy_unlock_metrics.cc",
+      "signin/easy_unlock_metrics.h",
+      "signin/easy_unlock_notification_controller.cc",
+      "signin/easy_unlock_notification_controller.h",
+      "signin/easy_unlock_notification_controller_chromeos.cc",
+      "signin/easy_unlock_notification_controller_chromeos.h",
+      "signin/easy_unlock_screenlock_state_handler.cc",
+      "signin/easy_unlock_screenlock_state_handler.h",
+      "signin/easy_unlock_service.cc",
+      "signin/easy_unlock_service.h",
+      "signin/easy_unlock_service_factory.cc",
+      "signin/easy_unlock_service_factory.h",
+      "signin/easy_unlock_service_regular.cc",
+      "signin/easy_unlock_service_regular.h",
+      "signin/easy_unlock_service_signin_chromeos.cc",
+      "signin/easy_unlock_service_signin_chromeos.h",
+      "speech/extension_api/tts_engine_extension_api.cc",
+      "speech/extension_api/tts_engine_extension_api.h",
+      "speech/extension_api/tts_engine_extension_observer.cc",
+      "speech/extension_api/tts_engine_extension_observer.h",
+      "speech/extension_api/tts_extension_api.cc",
+      "speech/extension_api/tts_extension_api.h",
+      "sync_file_system/conflict_resolution_policy.h",
+      "sync_file_system/drive_backend/callback_helper.h",
+      "sync_file_system/drive_backend/callback_tracker.cc",
+      "sync_file_system/drive_backend/callback_tracker.h",
+      "sync_file_system/drive_backend/callback_tracker_internal.cc",
+      "sync_file_system/drive_backend/callback_tracker_internal.h",
+      "sync_file_system/drive_backend/conflict_resolver.cc",
+      "sync_file_system/drive_backend/conflict_resolver.h",
+      "sync_file_system/drive_backend/drive_backend_constants.cc",
+      "sync_file_system/drive_backend/drive_backend_constants.h",
+      "sync_file_system/drive_backend/drive_backend_util.cc",
+      "sync_file_system/drive_backend/drive_backend_util.h",
+      "sync_file_system/drive_backend/drive_service_on_worker.cc",
+      "sync_file_system/drive_backend/drive_service_on_worker.h",
+      "sync_file_system/drive_backend/drive_service_wrapper.cc",
+      "sync_file_system/drive_backend/drive_service_wrapper.h",
+      "sync_file_system/drive_backend/drive_uploader_on_worker.cc",
+      "sync_file_system/drive_backend/drive_uploader_on_worker.h",
+      "sync_file_system/drive_backend/drive_uploader_wrapper.cc",
+      "sync_file_system/drive_backend/drive_uploader_wrapper.h",
+      "sync_file_system/drive_backend/folder_creator.cc",
+      "sync_file_system/drive_backend/folder_creator.h",
+      "sync_file_system/drive_backend/leveldb_wrapper.cc",
+      "sync_file_system/drive_backend/leveldb_wrapper.h",
+      "sync_file_system/drive_backend/list_changes_task.cc",
+      "sync_file_system/drive_backend/list_changes_task.h",
+      "sync_file_system/drive_backend/local_to_remote_syncer.cc",
+      "sync_file_system/drive_backend/local_to_remote_syncer.h",
+      "sync_file_system/drive_backend/metadata_database.cc",
+      "sync_file_system/drive_backend/metadata_database.h",
+      "sync_file_system/drive_backend/metadata_database_index.cc",
+      "sync_file_system/drive_backend/metadata_database_index.h",
+      "sync_file_system/drive_backend/metadata_database_index_interface.h",
+      "sync_file_system/drive_backend/metadata_database_index_on_disk.cc",
+      "sync_file_system/drive_backend/metadata_database_index_on_disk.h",
+      "sync_file_system/drive_backend/metadata_db_migration_util.cc",
+      "sync_file_system/drive_backend/metadata_db_migration_util.h",
+      "sync_file_system/drive_backend/register_app_task.cc",
+      "sync_file_system/drive_backend/register_app_task.h",
+      "sync_file_system/drive_backend/remote_change_processor_on_worker.cc",
+      "sync_file_system/drive_backend/remote_change_processor_on_worker.h",
+      "sync_file_system/drive_backend/remote_change_processor_wrapper.cc",
+      "sync_file_system/drive_backend/remote_change_processor_wrapper.h",
+      "sync_file_system/drive_backend/remote_to_local_syncer.cc",
+      "sync_file_system/drive_backend/remote_to_local_syncer.h",
+      "sync_file_system/drive_backend/sync_engine.cc",
+      "sync_file_system/drive_backend/sync_engine.h",
+      "sync_file_system/drive_backend/sync_engine_context.cc",
+      "sync_file_system/drive_backend/sync_engine_context.h",
+      "sync_file_system/drive_backend/sync_engine_initializer.cc",
+      "sync_file_system/drive_backend/sync_engine_initializer.h",
+      "sync_file_system/drive_backend/sync_task.cc",
+      "sync_file_system/drive_backend/sync_task.h",
+      "sync_file_system/drive_backend/sync_task_manager.cc",
+      "sync_file_system/drive_backend/sync_task_manager.h",
+      "sync_file_system/drive_backend/sync_task_token.cc",
+      "sync_file_system/drive_backend/sync_task_token.h",
+      "sync_file_system/drive_backend/sync_worker.cc",
+      "sync_file_system/drive_backend/sync_worker.h",
+      "sync_file_system/drive_backend/sync_worker_interface.h",
+      "sync_file_system/drive_backend/task_dependency_manager.cc",
+      "sync_file_system/drive_backend/task_dependency_manager.h",
+      "sync_file_system/drive_backend/tracker_id_set.cc",
+      "sync_file_system/drive_backend/tracker_id_set.h",
+      "sync_file_system/drive_backend/uninstall_app_task.cc",
+      "sync_file_system/drive_backend/uninstall_app_task.h",
+      "sync_file_system/file_change.cc",
+      "sync_file_system/file_change.h",
+      "sync_file_system/file_status_observer.h",
+      "sync_file_system/local/local_file_change_tracker.cc",
+      "sync_file_system/local/local_file_change_tracker.h",
+      "sync_file_system/local/local_file_sync_context.cc",
+      "sync_file_system/local/local_file_sync_context.h",
+      "sync_file_system/local/local_file_sync_service.cc",
+      "sync_file_system/local/local_file_sync_service.h",
+      "sync_file_system/local/local_file_sync_status.cc",
+      "sync_file_system/local/local_file_sync_status.h",
+      "sync_file_system/local/local_origin_change_observer.h",
+      "sync_file_system/local/root_delete_helper.cc",
+      "sync_file_system/local/root_delete_helper.h",
+      "sync_file_system/local/sync_file_system_backend.cc",
+      "sync_file_system/local/sync_file_system_backend.h",
+      "sync_file_system/local/syncable_file_operation_runner.cc",
+      "sync_file_system/local/syncable_file_operation_runner.h",
+      "sync_file_system/local/syncable_file_system_operation.cc",
+      "sync_file_system/local/syncable_file_system_operation.h",
+      "sync_file_system/local_change_processor.h",
+      "sync_file_system/logger.cc",
+      "sync_file_system/logger.h",
+      "sync_file_system/remote_change_processor.h",
+      "sync_file_system/remote_file_sync_service.cc",
+      "sync_file_system/remote_file_sync_service.h",
+      "sync_file_system/subtree_set.cc",
+      "sync_file_system/subtree_set.h",
+      "sync_file_system/sync_action.cc",
+      "sync_file_system/sync_action.h",
+      "sync_file_system/sync_callbacks.h",
+      "sync_file_system/sync_direction.h",
+      "sync_file_system/sync_event_observer.h",
+      "sync_file_system/sync_file_metadata.cc",
+      "sync_file_system/sync_file_metadata.h",
+      "sync_file_system/sync_file_status.h",
+      "sync_file_system/sync_file_system_service.cc",
+      "sync_file_system/sync_file_system_service.h",
+      "sync_file_system/sync_file_system_service_factory.cc",
+      "sync_file_system/sync_file_system_service_factory.h",
+      "sync_file_system/sync_file_type.h",
+      "sync_file_system/sync_operation_type.cc",
+      "sync_file_system/sync_operation_type.h",
+      "sync_file_system/sync_process_runner.cc",
+      "sync_file_system/sync_process_runner.h",
+      "sync_file_system/sync_service_state.h",
+      "sync_file_system/sync_status_code.cc",
+      "sync_file_system/sync_status_code.h",
+      "sync_file_system/syncable_file_system_util.cc",
+      "sync_file_system/syncable_file_system_util.h",
+      "sync_file_system/task_logger.cc",
+      "sync_file_system/task_logger.h",
+    ]
+    public_deps += [
+      "//chrome/browser/apps",
+      "//chrome/browser/extensions",
+    ]
+    allow_circular_includes_from += [
+      "//chrome/browser/apps",
+      "//chrome/browser/extensions",
+    ]
+    deps += [
+      "//apps",
+      "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
+      "//chrome/common/extensions/api",
+      "//chrome/common/extensions/api:api_registration",
+      "//chrome/common/extensions/api:extensions_features",
+      "//components/drive",
+      "//components/guest_view/browser",
+      "//extensions/components/javascript_dialog_extensions_client",
+      "//media/cast:net",
+      "//services/device/public/interfaces",
+    ]
+  }
+
+  if (enable_hotwording) {
+    defines += [ "ENABLE_HOTWORDING" ]
+  }
+
+  if (enable_library_cdms) {
+    sources += [
+      "component_updater/widevine_cdm_component_installer.cc",
+      "component_updater/widevine_cdm_component_installer.h",
+    ]
+  }
+
+  if (enable_mdns) {
+    sources += [
+      "local_discovery/service_discovery_client_impl.cc",
+      "local_discovery/service_discovery_client_impl.h",
+      "local_discovery/service_discovery_client_mdns.cc",
+      "local_discovery/service_discovery_client_mdns.h",
+      "printing/cloud_print/privet_traffic_detector.cc",
+      "printing/cloud_print/privet_traffic_detector.h",
+    ]
+  }
+
+  if (enable_mojo_media) {
+    sources += [
+      "media/output_protection_impl.cc",
+      "media/output_protection_impl.h",
+    ]
+    deps += [ "//media/mojo/interfaces" ]
+    if (mojo_media_host == "browser") {
+      deps += [
+        "//media/mojo/interfaces:constants",
+        "//media/mojo/services",
+      ]
+    }
+  }
+
+  if (enable_nacl) {
+    sources += [
+      "nacl_host/nacl_browser_delegate_impl.cc",
+      "nacl_host/nacl_browser_delegate_impl.h",
+      "nacl_host/nacl_infobar_delegate.cc",
+      "nacl_host/nacl_infobar_delegate.h",
+    ]
+    deps += [ "//components/nacl/browser" ]
+  }
+
+  if (enable_offline_pages) {
+    sources += [
+      "offline_pages/background_loader_offliner.cc",
+      "offline_pages/background_loader_offliner.h",
+      "offline_pages/downloads/resource_throttle.cc",
+      "offline_pages/downloads/resource_throttle.h",
+      "offline_pages/fresh_offline_content_observer.cc",
+      "offline_pages/fresh_offline_content_observer.h",
+      "offline_pages/offline_page_bookmark_observer.cc",
+      "offline_pages/offline_page_bookmark_observer.h",
+      "offline_pages/offline_page_info_handler.cc",
+      "offline_pages/offline_page_info_handler.h",
+      "offline_pages/offline_page_mhtml_archiver.cc",
+      "offline_pages/offline_page_mhtml_archiver.h",
+      "offline_pages/offline_page_model_factory.h",
+      "offline_pages/offline_page_origin_utils.h",
+      "offline_pages/offline_page_request_interceptor.cc",
+      "offline_pages/offline_page_request_interceptor.h",
+      "offline_pages/offline_page_request_job.cc",
+      "offline_pages/offline_page_request_job.h",
+      "offline_pages/offline_page_tab_helper.cc",
+      "offline_pages/offline_page_tab_helper.h",
+      "offline_pages/offline_page_utils.cc",
+      "offline_pages/offline_page_utils.h",
+      "offline_pages/offliner_helper.cc",
+      "offline_pages/offliner_helper.h",
+      "offline_pages/offliner_user_data.cc",
+      "offline_pages/offliner_user_data.h",
+      "offline_pages/prefetch/offline_metrics_collector_impl.cc",
+      "offline_pages/prefetch/offline_metrics_collector_impl.h",
+      "offline_pages/prefetch/offline_prefetch_download_client.cc",
+      "offline_pages/prefetch/offline_prefetch_download_client.h",
+      "offline_pages/prefetch/prefetch_background_task.h",
+      "offline_pages/prefetch/prefetch_background_task_handler_impl.cc",
+      "offline_pages/prefetch/prefetch_background_task_handler_impl.h",
+      "offline_pages/prefetch/prefetch_configuration_impl.cc",
+      "offline_pages/prefetch/prefetch_configuration_impl.h",
+      "offline_pages/prefetch/prefetch_importer_impl.cc",
+      "offline_pages/prefetch/prefetch_importer_impl.h",
+      "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
+      "offline_pages/prefetch/prefetch_instance_id_proxy.h",
+      "offline_pages/prefetch/prefetch_service_factory.cc",
+      "offline_pages/prefetch/prefetch_service_factory.h",
+      "offline_pages/prefetch/prefetched_pages_notifier.cc",
+      "offline_pages/prefetch/prefetched_pages_notifier.h",
+      "offline_pages/recent_tab_helper.cc",
+      "offline_pages/recent_tab_helper.h",
+      "offline_pages/request_coordinator_factory.h",
+      "offline_pages/resource_loading_observer.h",
+    ]
+    if (is_android) {
+      sources += [
+        "offline_pages/android/background_scheduler_bridge.cc",
+        "offline_pages/android/background_scheduler_bridge.h",
+        "offline_pages/android/cct_origin_observer.cc",
+        "offline_pages/android/cct_origin_observer.h",
+        "offline_pages/android/cct_request_observer.cc",
+        "offline_pages/android/cct_request_observer.h",
+        "offline_pages/android/downloads/offline_page_download_bridge.cc",
+        "offline_pages/android/downloads/offline_page_download_bridge.h",
+        "offline_pages/android/downloads/offline_page_infobar_delegate.cc",
+        "offline_pages/android/downloads/offline_page_infobar_delegate.h",
+        "offline_pages/android/downloads/offline_page_notification_bridge.cc",
+        "offline_pages/android/downloads/offline_page_notification_bridge.h",
+        "offline_pages/android/load_termination_listener_impl.cc",
+        "offline_pages/android/load_termination_listener_impl.h",
+        "offline_pages/android/offline_page_bridge.cc",
+        "offline_pages/android/offline_page_bridge.h",
+        "offline_pages/android/offline_page_model_factory.cc",
+        "offline_pages/android/offline_page_origin_utils_android.cc",
+        "offline_pages/android/offline_page_utils_android.cc",
+        "offline_pages/android/prefetch_background_task_android.cc",
+        "offline_pages/android/prefetch_background_task_android.h",
+        "offline_pages/android/prefetched_pages_notifier_android.cc",
+        "offline_pages/android/request_coordinator_factory.cc",
+      ]
+    }
+    deps += [
+      "//components/offline_pages/content/background_loader",
+      "//components/offline_pages/content/renovations",
+      "//components/offline_pages/core",
+      "//components/offline_pages/core/background:background_offliner",
+      "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
+      "//components/offline_pages/core/prefetch",
+      "//components/offline_pages/core/recent_tabs",
+      "//components/offline_pages/core/renovations",
+      "//components/offline_pages/core/request_header:request_header",
+    ]
+
+    # Used to build test harness locally. The harness is used manually to
+    # produce multiple offline pages to evaluate quality of the snapshots.
+    # This will only be built iff. |enable_offline_pages_harness| is set while
+    # |enable_offline_pages| and |is_android| are both true.
+    if (enable_offline_pages_harness && is_android) {
+      sources += [
+        "offline_pages/android/evaluation/evaluation_test_scheduler.cc",
+        "offline_pages/android/evaluation/evaluation_test_scheduler.h",
+        "offline_pages/android/evaluation/offline_page_evaluation_bridge.cc",
+        "offline_pages/android/evaluation/offline_page_evaluation_bridge.h",
+      ]
+    }
+  }
+
+  if (enable_plugins) {
+    sources += [
+      "browsing_data/browsing_data_flash_lso_helper.cc",
+      "browsing_data/browsing_data_flash_lso_helper.h",
+      "component_updater/pepper_flash_component_installer.cc",
+      "component_updater/pepper_flash_component_installer.h",
+      "metrics/plugin_metrics_provider.cc",
+      "metrics/plugin_metrics_provider.h",
+      "pepper_broker_infobar_delegate.cc",
+      "pepper_broker_infobar_delegate.h",
+      "pepper_flash_settings_manager.cc",
+      "pepper_flash_settings_manager.h",
+      "plugins/chrome_content_browser_client_plugins_part.cc",
+      "plugins/chrome_content_browser_client_plugins_part.h",
+      "plugins/chrome_plugin_service_filter.cc",
+      "plugins/chrome_plugin_service_filter.h",
+      "plugins/flash_download_interception.cc",
+      "plugins/flash_download_interception.h",
+      "plugins/flash_permission_context.cc",
+      "plugins/flash_permission_context.h",
+      "plugins/flash_temporary_permission_tracker.cc",
+      "plugins/flash_temporary_permission_tracker.h",
+      "plugins/flash_temporary_permission_tracker_factory.cc",
+      "plugins/flash_temporary_permission_tracker_factory.h",
+      "plugins/plugin_data_remover_helper.cc",
+      "plugins/plugin_data_remover_helper.h",
+      "plugins/plugin_finder.cc",
+      "plugins/plugin_finder.h",
+      "plugins/plugin_info_message_filter.cc",
+      "plugins/plugin_info_message_filter.h",
+      "plugins/plugin_infobar_delegates.cc",
+      "plugins/plugin_infobar_delegates.h",
+      "plugins/plugin_installer.cc",
+      "plugins/plugin_installer.h",
+      "plugins/plugin_installer_observer.cc",
+      "plugins/plugin_installer_observer.h",
+      "plugins/plugin_metadata.cc",
+      "plugins/plugin_metadata.h",
+      "plugins/plugin_observer.cc",
+      "plugins/plugin_observer.h",
+      "plugins/plugin_policy_handler.cc",
+      "plugins/plugin_policy_handler.h",
+      "plugins/plugin_prefs.cc",
+      "plugins/plugin_prefs.h",
+      "plugins/plugin_prefs_factory.cc",
+      "plugins/plugin_prefs_factory.h",
+      "plugins/plugin_status_pref_setter.cc",
+      "plugins/plugin_status_pref_setter.h",
+      "plugins/plugin_utils.cc",
+      "plugins/plugin_utils.h",
+      "plugins/plugins_field_trial.cc",
+      "plugins/plugins_field_trial.h",
+      "plugins/plugins_resource_service.cc",
+      "plugins/plugins_resource_service.h",
+      "renderer_host/pepper/chrome_browser_pepper_host_factory.cc",
+      "renderer_host/pepper/chrome_browser_pepper_host_factory.h",
+      "renderer_host/pepper/device_id_fetcher.cc",
+      "renderer_host/pepper/device_id_fetcher.h",
+      "renderer_host/pepper/monitor_finder_mac.h",
+      "renderer_host/pepper/monitor_finder_mac.mm",
+      "renderer_host/pepper/pepper_broker_message_filter.cc",
+      "renderer_host/pepper/pepper_broker_message_filter.h",
+      "renderer_host/pepper/pepper_flash_browser_host.cc",
+      "renderer_host/pepper/pepper_flash_browser_host.h",
+      "renderer_host/pepper/pepper_flash_clipboard_message_filter.cc",
+      "renderer_host/pepper/pepper_flash_clipboard_message_filter.h",
+      "renderer_host/pepper/pepper_flash_drm_host.cc",
+      "renderer_host/pepper/pepper_flash_drm_host.h",
+      "renderer_host/pepper/pepper_isolated_file_system_message_filter.cc",
+      "renderer_host/pepper/pepper_isolated_file_system_message_filter.h",
+      "renderer_host/pepper/pepper_output_protection_message_filter.cc",
+      "renderer_host/pepper/pepper_output_protection_message_filter.h",
+      "renderer_host/pepper/pepper_platform_verification_message_filter.cc",
+      "renderer_host/pepper/pepper_platform_verification_message_filter.h",
+    ]
+    deps += [
+      "//components/pdf/browser",
+      "//media:media_features",
+      "//ppapi/features",
+      "//ppapi/proxy:ipc",
+      "//services/device/public/interfaces",
+      "//third_party/adobe/flash:flapper_version_h",
+    ]
+  }
+
+  if (enable_rlz) {
+    deps += [ ":rlz" ]
+  }
+
+  if (enable_service_discovery) {
+    sources += [
+      "local_discovery/endpoint_resolver.cc",
+      "local_discovery/endpoint_resolver.h",
+      "local_discovery/service_discovery_client.cc",
+      "local_discovery/service_discovery_client.h",
+      "local_discovery/service_discovery_client_mac.h",
+      "local_discovery/service_discovery_client_mac.mm",
+      "local_discovery/service_discovery_client_mac_factory.h",
+      "local_discovery/service_discovery_client_mac_factory.mm",
+      "local_discovery/service_discovery_device_lister.cc",
+      "local_discovery/service_discovery_device_lister.h",
+      "local_discovery/service_discovery_shared_client.cc",
+      "local_discovery/service_discovery_shared_client.h",
+      "printing/cloud_print/cloud_print_printer_list.cc",
+      "printing/cloud_print/cloud_print_printer_list.h",
+      "printing/cloud_print/device_description.cc",
+      "printing/cloud_print/device_description.h",
+      "printing/cloud_print/gcd_api_flow.cc",
+      "printing/cloud_print/gcd_api_flow.h",
+      "printing/cloud_print/gcd_api_flow_impl.cc",
+      "printing/cloud_print/gcd_api_flow_impl.h",
+      "printing/cloud_print/gcd_constants.cc",
+      "printing/cloud_print/gcd_constants.h",
+      "printing/cloud_print/privet_confirm_api_flow.cc",
+      "printing/cloud_print/privet_confirm_api_flow.h",
+      "printing/cloud_print/privet_constants.cc",
+      "printing/cloud_print/privet_constants.h",
+      "printing/cloud_print/privet_device_lister.cc",
+      "printing/cloud_print/privet_device_lister.h",
+      "printing/cloud_print/privet_device_lister_impl.cc",
+      "printing/cloud_print/privet_device_lister_impl.h",
+      "printing/cloud_print/privet_http.cc",
+      "printing/cloud_print/privet_http.h",
+      "printing/cloud_print/privet_http_asynchronous_factory.cc",
+      "printing/cloud_print/privet_http_asynchronous_factory.h",
+      "printing/cloud_print/privet_http_asynchronous_factory_impl.cc",
+      "printing/cloud_print/privet_http_asynchronous_factory_impl.h",
+      "printing/cloud_print/privet_http_impl.cc",
+      "printing/cloud_print/privet_http_impl.h",
+      "printing/cloud_print/privet_local_printer_lister.cc",
+      "printing/cloud_print/privet_local_printer_lister.h",
+      "printing/cloud_print/privet_notifications.cc",
+      "printing/cloud_print/privet_notifications.h",
+      "printing/cloud_print/privet_notifications_factory.cc",
+      "printing/cloud_print/privet_notifications_factory.h",
+      "printing/cloud_print/privet_url_fetcher.cc",
+      "printing/cloud_print/privet_url_fetcher.h",
+    ]
+  }
+
+  if (enable_session_service) {
+    sources += [
+      "sessions/session_restore.cc",
+      "sessions/session_restore.h",
+      "sessions/session_restore_delegate.cc",
+      "sessions/session_restore_delegate.h",
+      "sessions/session_restore_observer.h",
+      "sessions/session_restore_stats_collector.cc",
+      "sessions/session_restore_stats_collector.h",
+      "sessions/session_service.cc",
+      "sessions/session_service.h",
+      "sessions/session_service_factory.cc",
+      "sessions/session_service_factory.h",
+      "sessions/session_service_utils.cc",
+      "sessions/session_service_utils.h",
+      "sessions/tab_loader.cc",
+      "sessions/tab_loader.h",
+      "sessions/tab_loader_delegate.cc",
+      "sessions/tab_loader_delegate.h",
+    ]
+  }
+
+  if (enable_spellcheck) {
+    sources += [
+      "spellchecker/spell_check_host_impl.cc",
+      "spellchecker/spell_check_host_impl.h",
+      "spellchecker/spellcheck_custom_dictionary.cc",
+      "spellchecker/spellcheck_custom_dictionary.h",
+      "spellchecker/spellcheck_factory.cc",
+      "spellchecker/spellcheck_factory.h",
+      "spellchecker/spellcheck_hunspell_dictionary.cc",
+      "spellchecker/spellcheck_hunspell_dictionary.h",
+      "spellchecker/spellcheck_message_filter_platform_mac.cc",
+      "spellchecker/spellcheck_service.cc",
+      "spellchecker/spellcheck_service.h",
+    ]
+
+    if (has_spellcheck_panel) {
+      sources += [
+        "spellchecker/spell_check_panel_host_impl.cc",
+        "spellchecker/spell_check_panel_host_impl.h",
+      ]
+    }
+
+    deps += [
+      "//components/spellcheck/browser",
+      "//components/spellcheck/common:common",
+    ]
+
+    if (!is_android) {
+      deps += [ "//third_party/hunspell" ]
+    }
   }
 
   if (enable_supervised_users) {
@@ -3875,6 +3909,25 @@ split_static_library("browser") {
       "supervised_user/supervised_user_creation_policy_handler.h",
     ]
   }
+
+  if (enable_vr) {
+    if (is_android) {
+      deps += [ "android/vr_shell:vr_android" ]
+      configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
+    }
+  }
+
+  if (enable_wayland_server) {
+    deps += [
+      "//components/exo",
+      "//components/exo/wayland",
+    ]
+    sources += [
+      "exo_parts.cc",
+      "exo_parts.h",
+    ]
+  }
+
   if (enable_webrtc) {
     sources += [
       "media/audio_debug_recordings_handler.h",
@@ -3897,97 +3950,43 @@ split_static_library("browser") {
       "media/webrtc/webrtc_text_log_handler.h",
     ]
   }
-  if (enable_service_discovery) {
+
+  if (!is_chrome_branded) {
     sources += [
-      "local_discovery/endpoint_resolver.cc",
-      "local_discovery/endpoint_resolver.h",
-      "local_discovery/service_discovery_client.cc",
-      "local_discovery/service_discovery_client.h",
-      "local_discovery/service_discovery_client_mac.h",
-      "local_discovery/service_discovery_client_mac.mm",
-      "local_discovery/service_discovery_client_mac_factory.h",
-      "local_discovery/service_discovery_client_mac_factory.mm",
-      "local_discovery/service_discovery_device_lister.cc",
-      "local_discovery/service_discovery_device_lister.h",
-      "local_discovery/service_discovery_shared_client.cc",
-      "local_discovery/service_discovery_shared_client.h",
-      "printing/cloud_print/cloud_print_printer_list.cc",
-      "printing/cloud_print/cloud_print_printer_list.h",
-      "printing/cloud_print/device_description.cc",
-      "printing/cloud_print/device_description.h",
-      "printing/cloud_print/gcd_api_flow.cc",
-      "printing/cloud_print/gcd_api_flow.h",
-      "printing/cloud_print/gcd_api_flow_impl.cc",
-      "printing/cloud_print/gcd_api_flow_impl.h",
-      "printing/cloud_print/gcd_constants.cc",
-      "printing/cloud_print/gcd_constants.h",
-      "printing/cloud_print/privet_confirm_api_flow.cc",
-      "printing/cloud_print/privet_confirm_api_flow.h",
-      "printing/cloud_print/privet_constants.cc",
-      "printing/cloud_print/privet_constants.h",
-      "printing/cloud_print/privet_device_lister.cc",
-      "printing/cloud_print/privet_device_lister.h",
-      "printing/cloud_print/privet_device_lister_impl.cc",
-      "printing/cloud_print/privet_device_lister_impl.h",
-      "printing/cloud_print/privet_http.cc",
-      "printing/cloud_print/privet_http.h",
-      "printing/cloud_print/privet_http_asynchronous_factory.cc",
-      "printing/cloud_print/privet_http_asynchronous_factory.h",
-      "printing/cloud_print/privet_http_asynchronous_factory_impl.cc",
-      "printing/cloud_print/privet_http_asynchronous_factory_impl.h",
-      "printing/cloud_print/privet_http_impl.cc",
-      "printing/cloud_print/privet_http_impl.h",
-      "printing/cloud_print/privet_local_printer_lister.cc",
-      "printing/cloud_print/privet_local_printer_lister.h",
-      "printing/cloud_print/privet_notifications.cc",
-      "printing/cloud_print/privet_notifications.h",
-      "printing/cloud_print/privet_notifications_factory.cc",
-      "printing/cloud_print/privet_notifications_factory.h",
-      "printing/cloud_print/privet_url_fetcher.cc",
-      "printing/cloud_print/privet_url_fetcher.h",
-    ]
-  }
-  if (enable_mdns) {
-    sources += [
-      "local_discovery/service_discovery_client_impl.cc",
-      "local_discovery/service_discovery_client_impl.h",
-      "local_discovery/service_discovery_client_mdns.cc",
-      "local_discovery/service_discovery_client_mdns.h",
-      "printing/cloud_print/privet_traffic_detector.cc",
-      "printing/cloud_print/privet_traffic_detector.h",
+      "search/local_files_ntp_source.cc",
+      "search/local_files_ntp_source.h",
     ]
   }
 
-  if (enable_mojo_media) {
+  if (use_cups) {
+    configs += [ "//printing:cups" ]
+  }
+
+  if (use_gnome_keyring) {
     sources += [
-      "media/output_protection_impl.cc",
-      "media/output_protection_impl.h",
+      "password_manager/native_backend_gnome_x.cc",
+      "password_manager/native_backend_gnome_x.h",
     ]
-    deps += [ "//media/mojo/interfaces" ]
-    if (mojo_media_host == "browser") {
-      deps += [
-        "//media/mojo/interfaces:constants",
-        "//media/mojo/services",
-      ]
+    configs += [ "//components/os_crypt:gnome_keyring" ]
+  }
+
+  if (use_nss_certs) {
+    sources += [
+      "certificate_manager_model.cc",
+      "certificate_manager_model.h",
+      "net/nss_context.cc",
+      "net/nss_context.h",
+    ]
+    if (is_chromeos) {
+      sources += [ "net/nss_context_chromeos.cc" ]
+    }
+    if (is_desktop_linux) {
+      sources += [ "net/nss_context_linux.cc" ]
     }
   }
 
-  if (enable_wayland_server) {
-    deps += [
-      "//components/exo",
-      "//components/exo/wayland",
-    ]
-    sources += [
-      "exo_parts.cc",
-      "exo_parts.h",
-    ]
-  }
-
-  if (is_win || is_mac || (is_linux && !is_chromeos)) {
-    sources += [
-      "password_manager/password_store_signin_notifier_impl.cc",
-      "password_manager/password_store_signin_notifier_impl.h",
-    ]
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
   }
 
   if (enable_package_mash_services) {
