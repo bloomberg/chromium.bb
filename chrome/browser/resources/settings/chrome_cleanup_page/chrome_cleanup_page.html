@@ -129,11 +129,11 @@
       <div class="start">
         $i18n{chromeCleanupLinkShowFiles}
       </div>
-      <cr-expand-button expanded="{{showFilesToRemove_}}"
+      <cr-expand-button expanded="{{filesToRemoveListExpanded_}}"
           alt="$i18n{chromeCleanupLinkShowFiles}">
       </cr-expand-button>
     </div>
-    <iron-collapse opened="[[showFilesToRemove_]]">
+    <iron-collapse opened="[[filesToRemoveListExpanded_]]">
       <div id="files-to-remove-container">
         <ul id="files-to-remove-list" class="secondary">
           <template is="dom-repeat" items="[[filesToRemove_]]" as="fileName">
