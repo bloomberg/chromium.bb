@@ -448,6 +448,14 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
         frame_view->RemoveViewportConstrainedObject(*this);
     }
   }
+
+  if (old_style && RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      old_style->BackfaceVisibility() != StyleRef().BackfaceVisibility() &&
+      HasLayer()) {
+    // We need to repaint the layer to update the backface visibility value of
+    // the paint chunk.
+    Layer()->SetNeedsRepaint();
+  }
 }
 
 void LayoutBoxModelObject::InvalidateStickyConstraints() {
