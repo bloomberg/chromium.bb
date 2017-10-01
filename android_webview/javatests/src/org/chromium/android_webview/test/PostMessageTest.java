@@ -719,7 +719,6 @@ public class PostMessageTest {
     // 3. Java sends a message using the new channel in 2.
     // 4. Js responds to this message using the channel in 2.
     // 5. Java responds to message in 4 using the channel in 2.
-    @RetryOnFailure // crbug.com/708821
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     @Test
