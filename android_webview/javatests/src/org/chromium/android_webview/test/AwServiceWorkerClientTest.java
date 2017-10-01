@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -111,7 +110,6 @@ public class AwServiceWorkerClientTest {
 
     // Verify that WebView ServiceWorker code can properly handle resource loading errors
     // that happened in ServiceWorker fetches.
-    @RetryOnFailure // crbug.com/676422
     @Test
     @SmallTest
     public void testFetchResourceLoadingError() throws Throwable {
