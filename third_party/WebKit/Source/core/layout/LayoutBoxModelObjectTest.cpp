@@ -11,6 +11,7 @@
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -1035,6 +1036,34 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
 
   // Now try to scroll to the sticky element, this used to crash.
   GetDocument().GetFrame()->DomWindow()->scrollTo(0, 500);
+}
+
+TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
+  // TODO(wangxianzhu): Change this to V175.
+  ScopedSlimmingPaintV2ForTest spv2(true);
+
+  AtomicString base_style =
+      "width: 100px; height: 100px; background: blue; position: absolute";
+  SetBodyInnerHTML("<div id='target' style='" + base_style + "'></div>");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* target_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  ASSERT_NE(nullptr, target_layer);
+  EXPECT_FALSE(target_layer->NeedsRepaint());
+
+  target->setAttribute(HTMLNames::styleAttr,
+                       base_style + "; backface-visibility: hidden");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(target_layer->NeedsRepaint());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(target_layer->NeedsRepaint());
+
+  target->setAttribute(HTMLNames::styleAttr, base_style);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(target_layer->NeedsRepaint());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(target_layer->NeedsRepaint());
 }
 
 }  // namespace blink

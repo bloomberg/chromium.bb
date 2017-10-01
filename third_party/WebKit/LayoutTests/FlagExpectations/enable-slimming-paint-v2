@@ -922,7 +922,6 @@ Bug(none) paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
 # checking failed.
-Bug(none) paint/invalidation/compositing/compositing-reason-removed.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-invoke-deferred-compositing.html [ Failure ]
 Bug(none) paint/invalidation/css-grid-layout/grid-item-z-index-change-repaint.html [ Failure ]
 Bug(none) paint/invalidation/dont-invalidate-root-layer-when-composited-layer-becomes-visible.html [ Failure ]
@@ -936,8 +935,6 @@ Bug(none) paint/invalidation/overflow-hidden-yet-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/paint-invalidation-with-reparent-across-frame-boundaries.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
-Bug(none) paint/invalidation/video-mute-repaint.html [ Failure ]
-Bug(none) paint/invalidation/video-unmute-repaint.html [ Failure ]
 
 # The expectation seems incorrect?
 Bug(none) paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
@@ -1072,6 +1069,8 @@ Bug(none) paint/invalidation/repaint-overlay/layers.html [ Failure ]
 Bug(none) paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Failure ]
 Bug(none) paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/animated-svg-as-image-transformed-offscreen.html [ Failure ]
+Bug(none) paint/invalidation/video-mute-repaint.html [ Failure ]
+Bug(none) paint/invalidation/video-unmute-repaint.html [ Failure ]
 Bug(none) paint/invalidation/window-resize-vertical-writing-mode.html [ Failure ]
 
 # Wrong invalidation/painting/rasterization for multicol. Different layer tree.
