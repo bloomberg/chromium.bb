@@ -1012,10 +1012,19 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
     TEST_EXPECTED_VALUE(1, checked_dst + Src(1));
     TEST_EXPECTED_FAILURE(checked_dst - SrcLimits::max());
 
-    const ClampedNumeric<Dst> clamped_dst;
+    ClampedNumeric<Dst> clamped_dst;
     TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst + SrcLimits::max());
     TEST_EXPECTED_VALUE(1, clamped_dst + Src(1));
     TEST_EXPECTED_VALUE(DstLimits::Underflow(), clamped_dst - SrcLimits::max());
+    clamped_dst += SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst);
+    clamped_dst = DstLimits::max();
+    clamped_dst += SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst);
+    clamped_dst = DstLimits::max();
+    clamped_dst -= SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Underflow(), clamped_dst);
+    clamped_dst = 0;
 
     TEST_EXPECTED_RANGE(RANGE_OVERFLOW, SrcLimits::max());
     TEST_EXPECTED_RANGE(RANGE_VALID, static_cast<Src>(1));
@@ -1104,13 +1113,22 @@ struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_NARROW> {
     TEST_EXPECTED_FAILURE(checked_dst + static_cast<Src>(-1));
     TEST_EXPECTED_FAILURE(checked_dst + SrcLimits::lowest());
 
-    const ClampedNumeric<Dst> clamped_dst;
+    ClampedNumeric<Dst> clamped_dst;
     TEST_EXPECTED_VALUE(1, clamped_dst + static_cast<Src>(1));
     TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst + SrcLimits::max());
     TEST_EXPECTED_VALUE(DstLimits::Underflow(),
                         clamped_dst + static_cast<Src>(-1));
     TEST_EXPECTED_VALUE(DstLimits::Underflow(),
                         clamped_dst + SrcLimits::lowest());
+    clamped_dst += SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst);
+    clamped_dst = DstLimits::max();
+    clamped_dst += SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Overflow(), clamped_dst);
+    clamped_dst = DstLimits::max();
+    clamped_dst -= SrcLimits::max();
+    TEST_EXPECTED_VALUE(DstLimits::Underflow(), clamped_dst);
+    clamped_dst = 0;
 
     TEST_EXPECTED_RANGE(RANGE_OVERFLOW, SrcLimits::max());
     TEST_EXPECTED_RANGE(RANGE_VALID, static_cast<Src>(1));
