@@ -50,8 +50,10 @@ bool FixedBackgroundPaintsInLocalCoordinates(
   if (!root_layer || root_layer->GetCompositingState() == kNotComposited)
     return false;
 
-  return root_layer->GetCompositedLayerMapping()
-      ->BackgroundLayerPaintsFixedRootBackground();
+  CompositedLayerMapping* mapping = root_layer->GetCompositedLayerMapping();
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return !mapping->BackgroundPaintsOntoScrollingContentsLayer();
+  return mapping->BackgroundLayerPaintsFixedRootBackground();
 }
 
 LayoutSize CalculateFillTileSize(const LayoutBoxModelObject& obj,
@@ -427,16 +429,31 @@ bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
                                           const LayoutBoxModelObject* container,
                                           const GlobalPaintFlags flags) {
-  LayoutRect rect = obj.ViewRect();
-  if (FixedBackgroundPaintsInLocalCoordinates(obj, flags)) {
-    rect.SetLocation(LayoutPoint());
+  LocalFrameView* frame_view = obj.View()->GetFrameView();
+  if (!frame_view)
+    return LayoutRect();
+
+  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+  DCHECK(layout_viewport);
+
+  LayoutRect rect = LayoutRect(
+      LayoutPoint(), LayoutSize(layout_viewport->VisibleContentRect().Size()));
+
+  if (FixedBackgroundPaintsInLocalCoordinates(obj, flags))
+    return rect;
+
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // The LayoutView is the only object that can paint a fixed background into
+    // its scrolling contents layer, so it gets a special adjustment here.
+    if (obj.IsLayoutView())
+      rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
   } else {
-    if (LocalFrameView* frame_view = obj.View()->GetFrameView())
-      rect.SetLocation(IntPoint(frame_view->ScrollOffsetInt()));
-    // Compensate the translations created by ScrollRecorders.
-    // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
-    rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
+    rect.SetLocation(IntPoint(frame_view->ScrollOffsetInt()));
   }
+
+  // Compensate the translations created by ScrollRecorders.
+  // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
+  rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
 
   if (container)
     rect.MoveBy(LayoutPoint(-container->LocalToAbsolute(FloatPoint())));

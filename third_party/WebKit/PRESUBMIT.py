@@ -112,8 +112,8 @@ def _CheckForForbiddenNamespace(input_api, output_api):
     def source_file_filter(path):
         return input_api.FilterSourceFile(path,
                                           white_list=[r'third_party/WebKit/Source/.*\.(h|cpp)$'],
-                                          black_list=[r'third_party/WebKit/Source/(platform|controller)/'])
-
+                                          black_list=[r'third_party/WebKit/Source/(platform|controller)/',
+                                                      r'.*Test\.(h|cpp)$'])
     comment_re = input_api.re.compile(r'^\s*//')
     result = []
     for namespace in chromium_namespaces:
