@@ -59,7 +59,7 @@ list .label-img-wrapper {
   z-index: -1;
 }
 
-<if expr="not is_macosx and not is_ios">
+<if expr="not is_macosx">
 html[dir=rtl] list > .folder .label-img-wrapper > * {
   transform: scaleX(-1);
 }

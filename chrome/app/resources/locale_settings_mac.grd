@@ -16,13 +16,7 @@
     <output filename="platform_locale_settings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="platform_locale_settings_en-US.pak" type="data_package" lang="en" />
     <output filename="platform_locale_settings_es.pak" type="data_package" lang="es" />
-    <if expr="is_ios">
-      <!-- iOS uses es-MX for es-419 -->
-      <output filename="platform_locale_settings_es-MX.pak" type="data_package" lang="es-419" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="platform_locale_settings_es-419.pak" type="data_package" lang="es-419" />
-    </if>
+    <output filename="platform_locale_settings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="platform_locale_settings_et.pak" type="data_package" lang="et" />
     <output filename="platform_locale_settings_fa.pak" type="data_package" lang="fa" />
     <output filename="platform_locale_settings_fi.pak" type="data_package" lang="fi" />
@@ -48,13 +42,7 @@
          be 'nb'. -->
     <output filename="platform_locale_settings_nb.pak" type="data_package" lang="no" />
     <output filename="platform_locale_settings_pl.pak" type="data_package" lang="pl" />
-    <if expr="is_ios">
-      <!-- iOS uses pt for pt-BR -->
-      <output filename="platform_locale_settings_pt.pak" type="data_package" lang="pt-BR" />
-    </if>
-    <if expr="not is_ios">
-      <output filename="platform_locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
-    </if>
+    <output filename="platform_locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="platform_locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
     <output filename="platform_locale_settings_ro.pak" type="data_package" lang="ro" />
     <output filename="platform_locale_settings_ru.pak" type="data_package" lang="ru" />

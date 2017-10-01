@@ -69,7 +69,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_L" file="common/app_window_minimize_light.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="common/app_window_minimize_active.png" />
       </if>
-      <if expr="toolkit_views or is_macosx or is_ios">
+      <if expr="toolkit_views or is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BACK" file="common/browser_back_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_D" file="common/browser_back_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_H" file="common/browser_back_hover.png" />
@@ -99,7 +99,7 @@
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_PAIRING_TICK" file="cros/bluetooth_pairing_tick.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="common/favicon_bookmarks.png" />
-      <if expr="is_macosx or is_ios">
+      <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="mac/bookmark_bar_folder.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED" file="mac/bookmark_bar_folder_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED" file="mac/bookmark_bar_folder_supervised.png" />
@@ -186,7 +186,7 @@
         </if>
         <structure type="chrome_scaled_image" name="IDR_FIRST_RUN_COMPLETION" file="cros/first_run_completion.png" />
       </if>
-      <if expr="toolkit_views or is_macosx or is_ios">
+      <if expr="toolkit_views or is_macosx">
         <structure type="chrome_scaled_image" name="IDR_FORWARD" file="common/browser_forward_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="common/browser_forward_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="common/browser_forward_hover.png" />
@@ -209,7 +209,7 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="legacy/avatar_menu_profile.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="legacy/avatar_menu_disconnect.png" />
       </if>
-      <if expr="not is_android and not is_ios and not chromeos">
+      <if expr="not is_android and not chromeos">
         <!-- User Manager tutorial -->
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME" file="common/user_manager_tutorial/your_chrome.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS" file="common/user_manager_tutorial/guests.png" />
@@ -268,8 +268,6 @@
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="mac/overlay_drop_shadow.png" />
-      </if>
-      <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
@@ -471,26 +469,26 @@
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_ATTRIBUTION" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_NTP_BACKGROUND" file="notused.png" />
-      <if expr="not is_macosx and not is_ios">
-        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="notused.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="notused.png" />
-      </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="mac/theme_default_inactive.png" />
         <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INACTIVE" file="mac/theme_default_inactive_background.png" />
         <if expr="mac_views_browser">
           <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="mac/theme_default_inactive.png" />
         </if>
       </if>
+      <if expr="not is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="notused.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="notused.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_V" file="notused.png" />
-      <if expr="not is_macosx and not is_ios">
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="mac/theme_default_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="mac/theme_default_active_background.png" />
+      </if>
+      <if expr="not is_macosx">
         <!-- This identifier exists to give us something to associate with a custom image that a theme can provide.
              In normal themes, it's unused. -->
         <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="notused.png" />
-      </if>
-      <if expr="is_macosx or is_ios">
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="mac/theme_default_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="mac/theme_default_active_background.png" />
       </if>
       <!-- Instant Extended API toolbar background is common for all platforms. -->
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
@@ -499,7 +497,7 @@
         <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_INCOGNITO" file="mac/throbber_waiting_incognito.png" />
         <structure type="chrome_scaled_image" name="IDR_THROBBER_INCOGNITO" file="mac/throbber_incognito.png" />
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="mac/toolbar_shade_top.png" />
       </if>
       <if expr="is_macosx">

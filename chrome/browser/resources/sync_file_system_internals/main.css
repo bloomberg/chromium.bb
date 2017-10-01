@@ -70,7 +70,7 @@ tbody tr:nth-child(odd) {
   width: 18px;
 }
 
-<if expr="not is_macosx and not is_ios">
+<if expr="not is_macosx">
 html[dir=rtl] .file-icon-cell .folder-image {
   transform: scaleX(-1);
 }
