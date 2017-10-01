@@ -789,6 +789,10 @@ Securely access your computer from your iOS device. It's fast, simple and free.
         Email these instructions
       </message>
 
+      <message desc="Message being spoken for accessibility when the user is just connected to the remote device." name="IDS_HOST_CONNECTED_ANNOUNCEMENT">
+        You are connected to your remote device. To open the menu, please tap the screen with four fingers.
+      </message>
+
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
       </message>
