@@ -1742,8 +1742,25 @@ void LocalFrameView::ScrollContentsIfNeededRecursive() {
 
 void LocalFrameView::InvalidateBackgroundAttachmentFixedObjects() {
   for (const auto& layout_object : background_attachment_fixed_objects_) {
-    layout_object->SetShouldDoFullPaintInvalidation(
-        PaintInvalidationReason::kBackground);
+    bool needs_scrolling_contents_layer_invalidation = false;
+    if (layout_object->HasLayer()) {
+      PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
+      if (layer->GetBackgroundPaintLocation() ==
+          kBackgroundPaintInScrollingContents) {
+        needs_scrolling_contents_layer_invalidation = true;
+      }
+    }
+    if (needs_scrolling_contents_layer_invalidation) {
+      // BoxPaintInvalidator doesn't want to invalidate scrolling contents layer
+      // whenever the LayoutObject is marked ShouldDoFullPaintInvalidation() -
+      // see crrev.com/433093.  (LayoutObject doesn't track full-invalidation
+      // reasons independently, so it's not safe for BoxPaintInvalidator to have
+      // special handling of kBackground.)
+      layout_object->SetBackgroundChangedSinceLastPaintInvalidation();
+    } else {
+      layout_object->SetShouldDoFullPaintInvalidation(
+          PaintInvalidationReason::kBackground);
+    }
   }
 }
 
