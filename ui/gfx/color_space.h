@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <ostream>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -196,6 +197,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Populate |icc_profile| with an ICC profile that represents this color
   // space. Returns false if this space is not representable.
   bool GetICCProfile(ICCProfile* icc_profile) const;
+  bool GetICCProfileData(std::vector<char>* data) const;
 
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
   bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;

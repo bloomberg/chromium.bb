@@ -213,7 +213,7 @@ ColorSpace ColorSpace::GetParametricApproximation() const {
 
   // Query the ICC profile, if available, for the parametric approximation.
   ICCProfile icc_profile;
-  if (GetICCProfile(&icc_profile)) {
+  if (icc_profile_id_ && GetICCProfile(&icc_profile)) {
     return icc_profile.GetParametricColorSpace();
   } else {
     DLOG(ERROR)
@@ -468,6 +468,47 @@ bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
   }
   *icc_profile = ICCProfile::FromData(data->data(), data->size());
   DCHECK(icc_profile->IsValid());
+  return true;
+}
+
+bool ColorSpace::GetICCProfileData(std::vector<char>* output_data) const {
+  if (!IsValid()) {
+    DLOG(ERROR) << "Cannot fetch ICCProfile for invalid space.";
+    return false;
+  }
+  if (matrix_ != MatrixID::RGB) {
+    DLOG(ERROR) << "Not creating non-RGB ICCProfile";
+    return false;
+  }
+  if (range_ != RangeID::FULL) {
+    DLOG(ERROR) << "Not creating non-full-range ICCProfile";
+    return false;
+  }
+
+  // If this was created from an ICC profile, retrieve that exact profile.
+  ICCProfile icc_profile;
+  if (ICCProfile::FromId(icc_profile_id_, &icc_profile)) {
+    *output_data = icc_profile.data_;
+    return true;
+  }
+
+  // Otherwise, construct an ICC profile based on the best approximated
+  // primaries and matrix.
+  SkMatrix44 to_XYZD50_matrix;
+  GetPrimaryMatrix(&to_XYZD50_matrix);
+  SkColorSpaceTransferFn fn;
+  if (!GetTransferFunction(&fn)) {
+    DLOG(ERROR) << "Failed to get ColorSpace transfer function for ICCProfile.";
+    return false;
+  }
+  sk_sp<SkData> data = SkICC::WriteToICC(fn, to_XYZD50_matrix);
+  if (!data || !data->size()) {
+    DLOG(ERROR) << "Failed to create SkICC.";
+    return false;
+  }
+  const char* data_as_char = reinterpret_cast<const char*>(data->data());
+  output_data->insert(output_data->begin(), data_as_char,
+                      data_as_char + data->size());
   return true;
 }
 
