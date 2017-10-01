@@ -39,10 +39,6 @@ split_static_library("ui") {
 
   sources = [
     "accelerator_utils.h",
-    "android/android_about_app_info.cc",
-    "android/android_about_app_info.h",
-    "android/external_protocol_dialog_android.cc",
-    "android/status_tray_android.cc",
     "app_list/app_list_util.cc",
     "app_list/app_list_util.h",
 
@@ -95,12 +91,8 @@ split_static_library("ui") {
     "bookmarks/bookmark_utils.h",
     "bookmarks/recently_used_folders_combo_model.cc",
     "bookmarks/recently_used_folders_combo_model.h",
-    "browser_commands_mac.cc",
-    "browser_commands_mac.h",
     "browser_dialogs.cc",
     "browser_dialogs.h",
-    "browser_mac.cc",
-    "browser_mac.h",
     "browser_navigator_params.cc",
     "browser_navigator_params.h",
     "browser_ui_prefs.cc",
@@ -148,7 +140,6 @@ split_static_library("ui") {
     "permission_bubble/permission_prompt.h",
     "prefs/prefs_tab_helper.cc",
     "prefs/prefs_tab_helper.h",
-    "process_singleton_dialog_linux.h",
     "profile_chooser_constants.h",
     "profile_error_dialog.cc",
     "profile_error_dialog.h",
@@ -327,7 +318,6 @@ split_static_library("ui") {
     "webui/version_handler.h",
     "webui/version_ui.cc",
     "webui/version_ui.h",
-    "window_sizer/window_sizer_mac.mm",
   ]
 
   defines = []
@@ -538,6 +528,8 @@ split_static_library("ui") {
 
   if (is_android) {
     sources += [
+      "android/android_about_app_info.cc",
+      "android/android_about_app_info.h",
       "android/autofill/autofill_keyboard_accessory_view.cc",
       "android/autofill/autofill_keyboard_accessory_view.h",
       "android/autofill/autofill_logger_android.cc",
@@ -561,6 +553,7 @@ split_static_library("ui") {
       "android/content_settings/popup_blocked_infobar_delegate.h",
       "android/context_menu_helper.cc",
       "android/context_menu_helper.h",
+      "android/external_protocol_dialog_android.cc",
       "android/infobars/ads_blocked_infobar.cc",
       "android/infobars/ads_blocked_infobar.h",
       "android/infobars/app_banner_infobar_android.cc",
@@ -621,6 +614,7 @@ split_static_library("ui") {
       "android/snackbars/auto_signin_prompt_controller.cc",
       "android/snackbars/auto_signin_prompt_controller.h",
       "android/ssl_client_certificate_request.cc",
+      "android/status_tray_android.cc",
       "android/tab_contents/chrome_web_contents_view_delegate_android.cc",
       "android/tab_contents/chrome_web_contents_view_delegate_android.h",
       "android/tab_model/android_live_tab_context.cc",
@@ -958,8 +952,6 @@ split_static_library("ui") {
       "webui/foreign_session_handler.cc",
       "webui/foreign_session_handler.h",
       "webui/help/version_updater.h",
-      "webui/help/version_updater_mac.h",
-      "webui/help/version_updater_mac.mm",
       "webui/history_login_handler.cc",
       "webui/history_login_handler.h",
       "webui/identity_internals_ui.cc",
@@ -1403,7 +1395,6 @@ split_static_library("ui") {
       "startup/default_browser_infobar_delegate.h",
       "startup/default_browser_prompt.cc",
       "startup/default_browser_prompt.h",
-      "startup/default_browser_prompt_win.cc",
       "sync/one_click_signin_links_delegate.h",
       "sync/one_click_signin_links_delegate_impl.cc",
       "sync/one_click_signin_links_delegate_impl.h",
@@ -1420,9 +1411,6 @@ split_static_library("ui") {
       "webui/settings/settings_default_browser_handler.h",
       "webui/settings/system_handler.cc",
       "webui/settings/system_handler.h",
-      "webui/settings_utils_linux.cc",
-      "webui/settings_utils_mac.mm",
-      "webui/settings_utils_win.cc",
       "webui/signin/inline_login_handler.cc",
       "webui/signin/inline_login_handler.h",
       "webui/signin/inline_login_handler_impl.cc",
@@ -1457,12 +1445,7 @@ split_static_library("ui") {
       "webui/welcome_ui.h",
     ]
 
-    if (is_mac && !mac_views_browser) {
-      sources += [
-        "startup/session_crashed_infobar_delegate.cc",
-        "startup/session_crashed_infobar_delegate.h",
-      ]
-    } else {
+    if (!is_mac || mac_views_browser) {
       sources += [
         "views/frame/avatar_button_manager.cc",
         "views/frame/avatar_button_manager.h",
@@ -1479,36 +1462,40 @@ split_static_library("ui") {
     }
   }
 
-  if (is_win || is_desktop_linux || is_chromeos) {
-    sources += [
-      "input_method/input_method_engine_base.cc",
-      "input_method/input_method_engine_base.h",
-    ]
-  }
-
-  if (is_win || is_desktop_linux) {
-    sources += [
-      "input_method/input_method_engine.cc",
-      "input_method/input_method_engine.h",
-    ]
-  }
-
-  if (is_chromeos || is_mac || is_win) {
+  if (is_win || is_mac || is_chromeos) {
     sources += [
       "webui/cast/cast_ui.cc",
       "webui/cast/cast_ui.h",
     ]
   }
 
-  if (is_mac || is_win) {
+  if (is_win || is_mac) {
     sources += [
       "webui/settings/native_certificates_handler.cc",
       "webui/settings/native_certificates_handler.h",
     ]
   }
 
+  if (is_win || is_linux) {
+    sources += [
+      "input_method/input_method_engine_base.cc",
+      "input_method/input_method_engine_base.h",
+    ]
+
+    if (!is_chromeos) {
+      sources += [
+        "input_method/input_method_engine.cc",
+        "input_method/input_method_engine.h",
+      ]
+    }
+  }
+
   if (is_mac) {
     sources += [
+      "browser_commands_mac.cc",
+      "browser_commands_mac.h",
+      "browser_mac.cc",
+      "browser_mac.h",
       "certificate_viewer_mac.h",
       "certificate_viewer_mac.mm",
       "cocoa/accelerator_utils_cocoa.mm",
@@ -1628,6 +1615,10 @@ split_static_library("ui") {
       "passwords/manage_passwords_icon.cc",
       "passwords/manage_passwords_icon.h",
       "web_contents_sizer.mm",
+      "webui/help/version_updater_mac.h",
+      "webui/help/version_updater_mac.mm",
+      "webui/settings_utils_mac.mm",
+      "window_sizer/window_sizer_mac.mm",
     ]
     deps += [
       "//chrome/app/nibs:localizer_table",
@@ -1638,6 +1629,12 @@ split_static_library("ui") {
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac:accelerated_widget_mac",
     ]
+    include_dirs = [ "$target_gen_dir" ]
+    libs += [
+      "Carbon.framework",
+      "Quartz.framework",
+    ]
+
     if (mac_views_browser) {
       # MacViews sources that we still want to keep behind a compile-time flag.
       # TODO(jackhou): Move items to general views sources out of here.
@@ -2245,13 +2242,10 @@ split_static_library("ui") {
         "javascript_dialogs/javascript_dialog_cocoa.mm",
         "javascript_dialogs/javascript_dialog_mac.cc",
         "proximity_auth/proximity_auth_error_bubble_stub.cc",
+        "startup/session_crashed_infobar_delegate.cc",
+        "startup/session_crashed_infobar_delegate.h",
       ]
     }
-    include_dirs = [ "$target_gen_dir" ]
-    libs += [
-      "Carbon.framework",
-      "Quartz.framework",
-    ]
   } else {  # non-Mac.
     sources += [ "web_contents_sizer.cc" ]
   }
@@ -2272,6 +2266,7 @@ split_static_library("ui") {
       "desktop_ios_promotion/sms_service_factory.h",
       "network_profile_bubble.cc",
       "network_profile_bubble.h",
+      "startup/default_browser_prompt_win.cc",
       "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
       "views/chrome_cleaner_dialog_win.h",
@@ -2324,6 +2319,7 @@ split_static_library("ui") {
       "webui/module_database_conflicts_handler.h",
       "webui/settings/chrome_cleanup_handler.cc",
       "webui/settings/chrome_cleanup_handler.h",
+      "webui/settings_utils_win.cc",
       "webui/welcome_win10_handler.cc",
       "webui/welcome_win10_handler.h",
       "webui/welcome_win10_ui.cc",
@@ -2379,6 +2375,7 @@ split_static_library("ui") {
       "views/status_icons/status_icon_linux_wrapper.h",
       "webui/help/version_updater_basic.cc",
       "webui/help/version_updater_basic.h",
+      "webui/settings_utils_linux.cc",
     ]
     deps += [
       "//ui/base/ime",
@@ -2424,6 +2421,7 @@ split_static_library("ui") {
     sources += [
       "certificate_dialogs.cc",
       "certificate_dialogs.h",
+      "process_singleton_dialog_linux.h",
       "webui/certificate_viewer_ui.cc",
       "webui/certificate_viewer_ui.h",
       "webui/certificate_viewer_webui.cc",
@@ -2431,9 +2429,6 @@ split_static_library("ui") {
     ]
     if (use_aura) {
       deps += [ "//third_party/fontconfig" ]
-      if (use_dbus) {
-        deps += [ "//dbus" ]
-      }
     }
 
     # WindowFinder implementation selection is a bit tricky, so do all here
@@ -2744,8 +2739,6 @@ split_static_library("ui") {
         "views/find_bar_host.h",
         "views/find_bar_view.cc",
         "views/find_bar_view.h",
-        "views/frame/browser_command_handler_linux.cc",
-        "views/frame/browser_command_handler_linux.h",
         "views/frame/browser_frame.cc",
         "views/frame/browser_frame.h",
         "views/frame/browser_non_client_frame_view.cc",
@@ -2827,7 +2820,6 @@ split_static_library("ui") {
         "views/passwords/manage_passwords_icon_views.h",
         "views/permission_bubble/chooser_bubble_ui_views.cc",
         "views/permission_bubble/permission_prompt_impl_views.cc",
-        "views/process_singleton_dialog_linux.cc",
         "views/profiles/profile_indicator_icon.cc",
         "views/profiles/profile_indicator_icon.h",
         "views/profiles/user_manager_view.cc",
@@ -2842,8 +2834,6 @@ split_static_library("ui") {
         "views/ssl_client_certificate_selector.h",
         "views/status_bubble_views.cc",
         "views/status_bubble_views.h",
-        "views/status_icons/status_tray_linux.cc",
-        "views/status_icons/status_tray_linux.h",
         "views/tab_dialogs_views.cc",
         "views/tab_dialogs_views.h",
         "views/tab_icon_view.cc",
@@ -2903,13 +2893,6 @@ split_static_library("ui") {
         "views/webshare/webshare_target_picker_view.h",
       ]
 
-      if (use_aura) {
-        deps += [
-          "//services/ui/public/cpp",
-          "//services/ui/public/interfaces",
-        ]
-      }
-
       if (!is_chromeos) {
         sources += [
           "views/frame/opaque_browser_frame_view.cc",
@@ -2934,10 +2917,27 @@ split_static_library("ui") {
           "views/sync/one_click_signin_dialog_view.h",
         ]
       }
+
+      if (use_aura) {
+        deps += [
+          "//services/ui/public/cpp",
+          "//services/ui/public/interfaces",
+        ]
+      }
     }
 
     if (is_desktop_linux) {
       sources += [ "views/chrome_views_delegate_linux.cc" ]
+    }
+
+    if (is_linux) {
+      sources += [
+        "views/frame/browser_command_handler_linux.cc",
+        "views/frame/browser_command_handler_linux.h",
+        "views/process_singleton_dialog_linux.cc",
+        "views/status_icons/status_tray_linux.cc",
+        "views/status_icons/status_tray_linux.h",
+      ]
     }
 
     if (is_win) {
@@ -3300,6 +3300,11 @@ split_static_library("ui") {
       "webui/app_list/start_page_ui.cc",
       "webui/app_list/start_page_ui.h",
     ]
+    deps += [
+      "//ui/app_list",
+      "//ui/app_list/vector_icons",
+    ]
+
     if (is_chromeos) {
       sources += [
         "app_icon_loader_delegate.h",
@@ -3355,10 +3360,6 @@ split_static_library("ui") {
         "views/arc_app_dialog_view.cc",
       ]
     }
-    deps += [
-      "//ui/app_list",
-      "//ui/app_list/vector_icons",
-    ]
   } else {
     sources += [
       "app_list/app_list_service.h",
@@ -3539,6 +3540,10 @@ split_static_library("ui") {
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing:csd_proto",
     ]
+  }
+
+  if (use_dbus) {
+    deps += [ "//dbus" ]
   }
 
   if (use_gio) {
