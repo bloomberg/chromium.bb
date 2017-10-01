@@ -3,23 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Pretty-prints certificates as an openssl-annotated PEM file.
+"""Pretty-prints certificates as an openssl-annotated PEM file."""
 
-Usage: print_certificates.py [SOURCE]...
-
-Each SOURCE can be one of:
-  (1) A server name such as www.google.com.
-  (2) A PEM [*] file containing one or more CERTIFICATE blocks
-  (3) A binary file containing DER-encoded certificate
-
-When multiple SOURCEs are listed, all certificates in them are concatenated. If
-no SOURCE is given then data will be read from stdin.
-
-[*] Parsing of PEM files is relaxed - leading indentation whitespace will be
-stripped (needed for copy-pasting data from NetLogs).
-"""
-
+import argparse
 import base64
+import errno
 import os
 import re
 import subprocess
@@ -49,17 +37,17 @@ def read_certificates_data_from_server(hostname):
   return ""
 
 
-def read_sources_from_commandline():
+def read_sources_from_commandline(sources):
   """Processes the command lines and returns an array of all the sources
   bytes."""
   sources_bytes = []
 
-  if len(sys.argv) == 1:
-    # If no commonand-line arguments were given to the program, read input from
+  if not sources:
+    # If no command-line arguments were given to the program, read input from
     # stdin.
     sources_bytes.append(sys.stdin.read())
   else:
-    for arg in sys.argv[1:]:
+    for arg in sources:
       # If the argument identifies a file path, read it
       if os.path.exists(arg):
         sources_bytes.append(read_file_to_string(arg))
@@ -102,43 +90,132 @@ def extract_certificates(source_bytes):
   return [source_bytes]
 
 
-def pretty_print_certificate(certificate_der):
-  p = subprocess.Popen(["openssl", "x509", "-text", "-inform", "DER",
-                        "-outform", "PEM"],
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+def pretty_print_certificate(command, certificate_der):
+  try:
+    p = subprocess.Popen(command,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+  except OSError, e:
+    if e.errno == errno.ENOENT:
+      sys.stderr.write("Failed to execute %s\n" % command[0])
+      return ""
+    raise
+
   result = p.communicate(certificate_der)
 
   if p.returncode == 0:
     return result[0]
 
   # Otherwise failed.
-  sys.stderr.write("Failed: %s\n" % result[1])
+  sys.stderr.write("Failed: %s: %s\n" % (" ".join(command), result[1]))
   return ""
 
 
-def pretty_print_certificates(certificates_der):
+def openssl_text_pretty_printer(certificate_der, unused_certificate_number):
+  return pretty_print_certificate(["openssl", "x509", "-text", "-inform",
+                                   "DER", "-noout"], certificate_der)
+
+
+def pem_pretty_printer(certificate_der, unused_certificate_number):
+  return pretty_print_certificate(["openssl", "x509", "-inform", "DER",
+                                   "-outform", "PEM"], certificate_der)
+
+
+def der2ascii_pretty_printer(certificate_der, unused_certificate_number):
+  return pretty_print_certificate(["der2ascii"], certificate_der)
+
+
+def header_pretty_printer(unused_certificate_der, certificate_number):
+  return """===========================================
+Certificate%d
+===========================================""" % certificate_number
+
+
+# This is actually just used as a magic value, since pretty_print_certificates
+# special-cases der output.
+def der_printer():
+  raise RuntimeError
+
+
+def pretty_print_certificates(certificates_der, pretty_printers):
+  # Need to special-case DER output to avoid adding any newlines, and to
+  # only allow a single certificate to be output.
+  if pretty_printers == [der_printer]:
+    if len(certificates_der) > 1:
+      sys.stderr.write("DER output only supports a single certificate, "
+                       "ignoring %d remaining certs\n" % (
+                           len(certificates_der) - 1))
+    return certificates_der[0]
+
   result = ""
   for i in range(len(certificates_der)):
     certificate_der = certificates_der[i]
-    pretty = pretty_print_certificate(certificate_der)
-    result += """===========================================
-Certificate%d
-===========================================
-%s
-""" % (i, pretty)
+    pretty = []
+    for pretty_printer in pretty_printers:
+      pretty_printed = pretty_printer(certificate_der, i)
+      if pretty_printed:
+        pretty.append(pretty_printed)
+    result += "\n".join(pretty) + "\n"
   return result
 
 
+def parse_outputs(outputs):
+  pretty_printers = []
+  output_map = {"der2ascii": der2ascii_pretty_printer,
+                "openssl_text": openssl_text_pretty_printer,
+                "pem": pem_pretty_printer,
+                "header": header_pretty_printer,
+                "der": der_printer}
+  for output_name in outputs.split(','):
+    if output_name not in output_map:
+      sys.stderr.write("Invalid output type: %s\n" % output_name)
+      return []
+    pretty_printers.append(output_map[output_name])
+  if der_printer in pretty_printers and len(pretty_printers) > 1:
+      sys.stderr.write("Output type der must be used alone.\n")
+      return []
+  return pretty_printers
+
+
 def main():
-  sources_bytes = read_sources_from_commandline()
+  parser = argparse.ArgumentParser(
+      description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+
+  # TODO(mattm): support der2ascii as an input format too.
+  parser.add_argument('sources', metavar='SOURCE', nargs='*',
+                      help='''Each SOURCE can be one of:
+  (1) A server name such as www.google.com.
+  (2) A PEM [*] file containing one or more CERTIFICATE blocks
+  (3) A binary file containing DER-encoded certificate
+
+When multiple SOURCEs are listed, all certificates in them
+are concatenated. If no SOURCE is given then data will be
+read from stdin.
+
+[*] Parsing of PEM files is relaxed - leading indentation
+whitespace will be stripped (needed for copy-pasting data
+from NetLogs).''')
+
+  parser.add_argument(
+      '--output', dest='outputs', action='store',
+      default="header,der2ascii,openssl_text,pem",
+      help='output formats to use. Default: %(default)s')
+
+  args = parser.parse_args()
+
+  sources_bytes = read_sources_from_commandline(args.sources)
+
+  pretty_printers = parse_outputs(args.outputs)
+  if not pretty_printers:
+    sys.stderr.write('No pretty printers selected.\n')
+    sys.exit(1)
 
   certificates_der = []
   for source_bytes in sources_bytes:
     certificates_der.extend(extract_certificates(source_bytes))
 
-  print pretty_print_certificates(certificates_der)
+  sys.stdout.write(pretty_print_certificates(certificates_der, pretty_printers))
 
 
 if __name__ == "__main__":
