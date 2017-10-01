@@ -179,7 +179,7 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         fc->eob_mode_cdf[tx_size][plane][tx_class][0] = AOM_ICDF(
             128 * (aom_cdf_prob)fc->eob_mode[tx_size][plane][tx_class]);
         fc->eob_mode_cdf[tx_size][plane][tx_class][1] = AOM_ICDF(32768);
-        fc->eob_mode_cdf[tx_size][plane][tx_class][2] = AOM_ICDF(0);
+        fc->eob_mode_cdf[tx_size][plane][tx_class][2] = 0;
       }
     }
   }
@@ -192,7 +192,7 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
               (aom_cdf_prob)fc->empty_line[tx_size][plane][tx_class][ctx]);
           fc->empty_line_cdf[tx_size][plane][tx_class][ctx][1] =
               AOM_ICDF(32768);
-          fc->empty_line_cdf[tx_size][plane][tx_class][ctx][2] = AOM_ICDF(0);
+          fc->empty_line_cdf[tx_size][plane][tx_class][ctx][2] = 0;
         }
       }
     }
@@ -204,7 +204,7 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
           fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][0] = AOM_ICDF(
               128 * (aom_cdf_prob)fc->hv_eob[tx_size][plane][tx_class][ctx]);
           fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][1] = AOM_ICDF(32768);
-          fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][2] = AOM_ICDF(0);
+          fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][2] = 0;
         }
       }
     }
