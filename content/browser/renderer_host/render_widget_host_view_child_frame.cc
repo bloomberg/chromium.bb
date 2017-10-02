@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -80,7 +79,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
       background_color_(SK_ColorWHITE),
-      destroy_was_called_(false),
       weak_factory_(this) {
   if (!IsUsingMus()) {
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
@@ -93,14 +91,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  // This is diagnostic code to capture a stacktrace in the case where this
-  // class is destructed without calling Destroy(). This code will be removed
-  // once a representative sample of stack traces are collected (or we determine
-  // that this isn't actually happening).
-  // https://crbug.com/762511 .
-  if (!destroy_was_called_)
-    base::debug::DumpWithoutCrashing();
-
   // TODO(wjmaclean): The next two lines are a speculative fix for
   // https://crbug.com/760074, based on the theory that perhaps something is
   // destructing the class without calling Destroy() first.
@@ -370,7 +360,6 @@ void RenderWidgetHostViewChildFrame::RenderProcessGone(
 }
 
 void RenderWidgetHostViewChildFrame::Destroy() {
-  destroy_was_called_ = true;
   // FrameSinkIds registered with RenderWidgetHostInputEventRouter
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.

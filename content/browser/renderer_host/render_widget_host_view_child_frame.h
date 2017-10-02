@@ -311,10 +311,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   std::unique_ptr<TouchSelectionControllerClientChildFrame>
       selection_controller_client_;
 
-  // Used to trigger a non-crashing stack dump when this class is destructed
-  // without calling Destroy() first.
-  bool destroy_was_called_;
-
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };
