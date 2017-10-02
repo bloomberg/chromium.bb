@@ -107,7 +107,6 @@ class CastChannelAPITest : public ExtensionApiTest {
     {
       InSequence sequence;
 
-      EXPECT_CALL(*mock_cast_socket_, AddObserver(_));
       EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
               Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
@@ -133,8 +132,6 @@ class CastChannelAPITest : public ExtensionApiTest {
     mock_cast_socket_->SetKeepAlive(true);
     {
       InSequence sequence;
-      EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
-          .WillOnce(SaveArg<0>(&message_observer_));
       EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
               Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
@@ -143,6 +140,8 @@ class CastChannelAPITest : public ExtensionApiTest {
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN))
           .RetiresOnSaturation();
+      EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
+          .WillOnce(SaveArg<0>(&message_observer_));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .Times(2)
           .WillRepeatedly(Return(ReadyState::CLOSED));
@@ -301,15 +300,18 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 
   {
     InSequence sequence;
-    EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
-        .WillOnce(SaveArg<0>(&message_observer_));
+
     EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
         .WillOnce(WithArgs<0>(
             Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
               callback.Run(mock_cast_socket_);
             })));
     EXPECT_CALL(*mock_cast_socket_, ready_state())
-        .Times(3)
+        .WillOnce(Return(ReadyState::OPEN));
+    EXPECT_CALL(*mock_cast_socket_, AddObserver(_))
+        .WillOnce(SaveArg<0>(&message_observer_));
+    EXPECT_CALL(*mock_cast_socket_, ready_state())
+        .Times(2)
         .WillRepeatedly(Return(ReadyState::OPEN));
     EXPECT_CALL(*mock_cast_socket_, Close(_))
         .WillOnce(InvokeCompletionCallback<0>(net::OK));

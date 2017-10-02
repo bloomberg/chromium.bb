@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/cast_channel/cast_socket.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,11 +48,8 @@ class CastSocketService {
   // Parameters:
   // |open_params|: Parameters necessary to open a Cast channel.
   // |open_cb|: OnOpenCallback invoked when cast socket is opened.
-  // |observer|: Observer handles messages and errors on newly opened socket.
-  // Does not take ownership of |observer|.
   int OpenSocket(const CastSocketOpenParams& open_params,
-                 CastSocket::OnOpenCallback open_cb,
-                 CastSocket::Observer* observer);
+                 CastSocket::OnOpenCallback open_cb);
 
   // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
   // operation finishes. If cast socket with |ip_endpoint| already exists,
@@ -59,12 +57,14 @@ class CastSocketService {
   // |ip_endpoint|: IP address and port of the remote host.
   // |net_log|: Log of socket events.
   // |open_cb|: OnOpenCallback invoked when cast socket is opened.
-  // |observer|: Observer handles messages and errors on newly opened socket.
-  // Does not take ownership of |observer|.
   virtual int OpenSocket(const net::IPEndPoint& ip_endpoint,
                          net::NetLog* net_log,
-                         CastSocket::OnOpenCallback open_cb,
-                         CastSocket::Observer* observer);
+                         CastSocket::OnOpenCallback open_cb);
+
+  // Adds |observer| to socket service. When socket service opens cast socket,
+  // it passes |observer| to opened socket.
+  // Does not take ownership of |observer|.
+  void AddObserver(CastSocket::Observer* observer);
 
   // Remove |observer| from each socket in |sockets_|
   void RemoveObserver(CastSocket::Observer* observer);
@@ -86,6 +86,9 @@ class CastSocketService {
 
   // The collection of CastSocket keyed by channel_id.
   std::map<int, std::unique_ptr<CastSocket>> sockets_;
+
+  // List of socket observers.
+  base::ObserverList<CastSocket::Observer> observers_;
 
   scoped_refptr<Logger> logger_;
 

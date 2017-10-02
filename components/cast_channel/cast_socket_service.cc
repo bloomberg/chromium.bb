@@ -89,10 +89,8 @@ CastSocket* CastSocketService::GetSocket(
 }
 
 int CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
-                                  CastSocket::OnOpenCallback open_cb,
-                                  CastSocket::Observer* observer) {
+                                  CastSocket::OnOpenCallback open_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(observer);
   auto* socket = GetSocket(open_params.ip_endpoint);
 
   if (!socket) {
@@ -105,15 +103,17 @@ int CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
     }
   }
 
-  socket->AddObserver(observer);
+  for (auto& observer : observers_)
+    socket->AddObserver(&observer);
+
   socket->Connect(std::move(open_cb));
+
   return socket->id();
 }
 
 int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                                   net::NetLog* net_log,
-                                  CastSocket::OnOpenCallback open_cb,
-                                  CastSocket::Observer* observer) {
+                                  CastSocket::OnOpenCallback open_cb) {
   auto connect_timeout = base::TimeDelta::FromSeconds(kConnectTimeoutSecs);
   auto ping_interval = base::TimeDelta::FromSeconds(kPingIntervalInSecs);
   auto liveness_timeout =
@@ -122,12 +122,26 @@ int CastSocketService::OpenSocket(const net::IPEndPoint& ip_endpoint,
                                    liveness_timeout, ping_interval,
                                    CastDeviceCapability::NONE);
 
-  return OpenSocket(open_params, std::move(open_cb), observer);
+  return OpenSocket(open_params, std::move(open_cb));
+}
+
+void CastSocketService::AddObserver(CastSocket::Observer* observer) {
+  DCHECK(observer);
+
+  if (observers_.HasObserver(observer))
+    return;
+
+  observers_.AddObserver(observer);
+  for (auto& socket_it : sockets_)
+    socket_it.second->AddObserver(observer);
 }
 
 void CastSocketService::RemoveObserver(CastSocket::Observer* observer) {
+  DCHECK(observer);
+
   for (auto& socket_it : sockets_)
     socket_it.second->RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 void CastSocketService::SetSocketForTest(
