@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
@@ -267,21 +266,35 @@ public class MultiWindowUtils implements ActivityStateListener {
     }
 
     /**
-     * @param activity The {@link Activity} to check.
-     * @return Whether or not {@code activity} should run in pre-N Samsung multi-instance mode.
+     * @return Whether there is already an browser instance of Chrome already running.
      */
-    public boolean shouldRunInLegacyMultiInstanceMode(ChromeLauncherActivity activity) {
+    private static boolean isChromeBrowserActivityRunning() {
+        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
+            Activity activity = reference.get();
+            if (activity == null) continue;
+
+            String className = activity.getClass().getName();
+            if (TextUtils.equals(className, ChromeTabbedActivity.class.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return Whether or not activity should run in pre-N Samsung multi-instance mode.
+     */
+    public boolean shouldRunInLegacyMultiInstanceMode(Activity activity, Intent intent) {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP
-                && TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
-                && isLegacyMultiWindow(activity)
-                && activity.isChromeBrowserActivityRunning();
+                && TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN)
+                && isLegacyMultiWindow(activity) && isChromeBrowserActivityRunning();
     }
 
     /**
      * Makes |intent| able to support multi-instance in pre-N Samsung multi-window mode.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void makeLegacyMultiInstanceIntent(ChromeLauncherActivity activity, Intent intent) {
+    public void makeLegacyMultiInstanceIntent(Activity activity, Intent intent) {
         if (isLegacyMultiWindow(activity)) {
             if (TextUtils.equals(ChromeTabbedActivity.class.getName(),
                     intent.getComponent().getClassName())) {
