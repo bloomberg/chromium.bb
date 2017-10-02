@@ -9,6 +9,7 @@
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/test/test_context_provider.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "media/base/video_frame.h"
@@ -70,7 +71,8 @@ class VideoFrameSubmitterTest : public ::testing::Test {
       : thread_("ThreadForTest"),
         now_src_(new base::SimpleTestTickClock()),
         begin_frame_source_(new viz::FakeExternalBeginFrameSource(0.f, false)),
-        provider_(new StrictMock<MockVideoFrameProvider>()) {}
+        provider_(new StrictMock<MockVideoFrameProvider>()),
+        context_provider_(cc::TestContextProvider::Create()) {}
 
   void SetUp() override {
     thread_.StartAndWaitForTesting();
@@ -86,12 +88,22 @@ class VideoFrameSubmitterTest : public ::testing::Test {
   }
 
   void MakeSubmitter() {
-    submitter_ = std::make_unique<VideoFrameSubmitter>(provider_.get());
+    submitter_ = base::MakeUnique<VideoFrameSubmitter>(
+        provider_.get(),
+        base::BindRepeating(&VideoFrameSubmitterTest::ProvideContext,
+                            base::Unretained(this)));
     viz::mojom::blink::CompositorFrameSinkPtr submitter_sink;
     viz::mojom::blink::CompositorFrameSinkRequest request =
         mojo::MakeRequest(&submitter_sink);
     sink_ = std::make_unique<StrictMock<MockCompositorFrameSink>>(&request);
     submitter_->SetSink(&submitter_sink);
+  }
+
+  void ProvideContext(
+      base::OnceCallback<void(viz::ContextProvider*)> callback) {
+    thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::Unretained(context_provider_.get())));
   }
 
  protected:
@@ -100,6 +112,7 @@ class VideoFrameSubmitterTest : public ::testing::Test {
   std::unique_ptr<viz::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<StrictMock<MockCompositorFrameSink>> sink_;
   std::unique_ptr<StrictMock<MockVideoFrameProvider>> provider_;
+  scoped_refptr<cc::TestContextProvider> context_provider_;
   std::unique_ptr<VideoFrameSubmitter> submitter_;
 };
 

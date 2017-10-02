@@ -19,6 +19,7 @@
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
 #include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
+#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -78,6 +79,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
       base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
           blink::WebSurfaceLayerBridgeObserver*)> bridge_callback,
+      blink::WebContextProviderCallback context_provider_callback,
       scoped_refptr<viz::ContextProvider> context_provider);
 
   ~WebMediaPlayerParams();
@@ -148,6 +150,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return create_bridge_callback_;
   }
 
+  blink::WebContextProviderCallback context_provider_callback() const {
+    return context_provider_callback_;
+  }
+
   CreateCapabilitiesRecorderCB create_capabilities_recorder_cb() const {
     return create_capabilities_recorder_cb_;
   }
@@ -178,6 +184,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
       blink::WebSurfaceLayerBridgeObserver*)>
       create_bridge_callback_;
+  blink::WebContextProviderCallback context_provider_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);

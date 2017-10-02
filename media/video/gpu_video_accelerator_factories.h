@@ -35,6 +35,10 @@ namespace gpu {
 struct SyncToken;
 };
 
+namespace viz {
+class ContextProvider;
+}
+
 namespace media {
 
 class VideoDecodeAccelerator;
@@ -128,6 +132,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Returns the supported codec profiles of video encode accelerator.
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
+
+  virtual viz::ContextProvider* GetMediaContextProvider() = 0;
 
  protected:
   friend class base::RefCounted<GpuVideoAcceleratorFactories>;

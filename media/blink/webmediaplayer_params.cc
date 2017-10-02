@@ -30,6 +30,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
     base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
         blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback,
+    blink::WebContextProviderCallback context_provider_callback,
     scoped_refptr<viz::ContextProvider> context_provider)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
@@ -52,6 +53,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       create_capabilities_recorder_cb_(
           std::move(create_capabilities_recorder_cb)),
       create_bridge_callback_(create_bridge_callback),
+      context_provider_callback_(std::move(context_provider_callback)),
       context_provider_(std::move(context_provider)) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}

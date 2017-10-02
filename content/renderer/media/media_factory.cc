@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/buildflag.h"
 #include "content/public/common/content_client.h"
@@ -31,6 +32,7 @@
 #include "media/filters/context_3d.h"
 #include "media/media_features.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -101,6 +103,31 @@ class FrameFetchContext : public media::ResourceFetchContext {
   blink::WebLocalFrame* frame_;
   DISALLOW_COPY_AND_ASSIGN(FrameFetchContext);
 };
+
+void ObtainAndSetContextProvider(
+    base::OnceCallback<void(viz::ContextProvider*)>
+        set_context_provider_callback,
+    media::GpuVideoAcceleratorFactories* factories) {
+  viz::ContextProvider* context_provider = factories->GetMediaContextProvider();
+  std::move(set_context_provider_callback).Run(context_provider);
+}
+
+// Obtains the media ContextProvider and calls the given callback on the same
+// thread this is called on. Obtaining the media ContextProvider requires
+// getting GPuVideoAcceleratorFactories, which must be done on the main
+// thread.
+void PostMediaContextProviderToCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    base::OnceCallback<void(viz::ContextProvider*)>
+        set_context_provider_callback) {
+  base::PostTaskAndReplyWithResult(
+      main_task_runner.get(), FROM_HERE, base::BindOnce([]() {
+        return content::RenderThreadImpl::current()->GetGpuFactories();
+      }),
+      base::BindOnce(&ObtainAndSetContextProvider,
+                     std::move(set_context_provider_callback)));
+}
+
 }  // namespace
 
 namespace content {
@@ -274,6 +301,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           base::Bind(&MediaFactory::CreateVideoDecodeStatsRecorder,
                      base::Unretained(this)),
           base::Bind(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
+          base::BindRepeating(
+              &PostMediaContextProviderToCallback,
+              RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
           RenderThreadImpl::current()->SharedMainThreadContextProvider()));
 
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
