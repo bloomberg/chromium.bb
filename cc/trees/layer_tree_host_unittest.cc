@@ -5629,13 +5629,20 @@ class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
-      scoped_refptr<viz::ContextProvider> compositor_context_provider,
-      scoped_refptr<viz::ContextProvider> worker_context_provider) override {
-    auto context = TestWebGraphicsContext3D::Create();
-    context->SetMaxSamples(4);
-    context->set_support_multisample_compatibility(false);
-    context->set_gpu_rasterization(true);
-    auto context_provider = TestContextProvider::Create(std::move(context));
+      scoped_refptr<viz::ContextProvider> ignored_compositor_context_provider,
+      scoped_refptr<viz::ContextProvider> ignored_worker_context_provider)
+      override {
+    auto context_provider = TestContextProvider::Create();
+    context_provider->UnboundTestContext3d()->SetMaxSamples(4);
+    context_provider->UnboundTestContext3d()
+        ->set_support_multisample_compatibility(false);
+    context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
+    auto worker_context_provider = TestContextProvider::CreateWorker();
+    worker_context_provider->UnboundTestContext3d()->SetMaxSamples(4);
+    worker_context_provider->UnboundTestContext3d()
+        ->set_support_multisample_compatibility(false);
+    worker_context_provider->UnboundTestContext3d()->set_gpu_rasterization(
+        true);
     return LayerTreeHostTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(context_provider),
         std::move(worker_context_provider));

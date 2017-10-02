@@ -2579,19 +2579,6 @@
       ]
     },
     {
-      "id": 238,
-      "description": "On Intel GPUs MSAA performance is not acceptable for GPU rasterization",
-      "cr_bugs": [527565, 751919],
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "multi_gpu_category": "any",
-      "features": [
-        "msaa_is_slow"
-      ]
-    },
-    {
       "id": 239,
       "description": "Reset TexImage2D base level to 0 on Intel Mac 10.12.4",
       "cr_bugs": [705865],

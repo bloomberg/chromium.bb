@@ -12233,14 +12233,11 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusTrigger) {
 
 // Tests that SetContentHasSlowPaths behaves as expected.
 TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSlowPaths) {
-  std::unique_ptr<TestWebGraphicsContext3D> context_with_msaa =
-      TestWebGraphicsContext3D::Create();
-  context_with_msaa->SetMaxSamples(4);
-  context_with_msaa->set_gpu_rasterization(true);
   LayerTreeSettings msaaSettings = DefaultSettings();
   msaaSettings.gpu_rasterization_msaa_sample_count = 4;
-  EXPECT_TRUE(CreateHostImpl(msaaSettings, FakeLayerTreeFrameSink::Create3d(
-                                               std::move(context_with_msaa))));
+  EXPECT_TRUE(CreateHostImpl(
+      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+                        msaaSettings.gpu_rasterization_msaa_sample_count)));
 
   // Set initial state, with slow paths on.
   host_impl_->SetHasGpuRasterizationTrigger(true);
@@ -12271,15 +12268,11 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSlowPaths) {
 
 // Tests that SetDeviceScaleFactor correctly impacts GPU rasterization.
 TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
-  // Create a host impl with MSAA support.
-  std::unique_ptr<TestWebGraphicsContext3D> context_with_msaa =
-      TestWebGraphicsContext3D::Create();
-  context_with_msaa->SetMaxSamples(4);
-  context_with_msaa->set_gpu_rasterization(true);
+  // Create a host impl with MSAA support (4 samples).
   LayerTreeSettings msaaSettings = DefaultSettings();
   msaaSettings.gpu_rasterization_msaa_sample_count = -1;
-  EXPECT_TRUE(CreateHostImpl(msaaSettings, FakeLayerTreeFrameSink::Create3d(
-                                               std::move(context_with_msaa))));
+  EXPECT_TRUE(CreateHostImpl(
+      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(4)));
 
   // Set initial state, before varying scale factor.
   host_impl_->SetHasGpuRasterizationTrigger(true);
@@ -12311,14 +12304,11 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
 // Tests that explicit MSAA sample count correctly impacts GPU rasterization.
 TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusExplicitMSAACount) {
   // Create a host impl with MSAA support and a forced sample count of 4.
-  std::unique_ptr<TestWebGraphicsContext3D> context_with_msaa =
-      TestWebGraphicsContext3D::Create();
-  context_with_msaa->SetMaxSamples(4);
-  context_with_msaa->set_gpu_rasterization(true);
   LayerTreeSettings msaaSettings = DefaultSettings();
   msaaSettings.gpu_rasterization_msaa_sample_count = 4;
-  EXPECT_TRUE(CreateHostImpl(msaaSettings, FakeLayerTreeFrameSink::Create3d(
-                                               std::move(context_with_msaa))));
+  EXPECT_TRUE(CreateHostImpl(
+      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+                        msaaSettings.gpu_rasterization_msaa_sample_count)));
 
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
@@ -12367,16 +12357,17 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
   void CreateHostImplWithCaps(bool msaa_is_slow, bool avoid_stencil_buffers) {
     LayerTreeSettings settings = DefaultSettings();
     settings.gpu_rasterization_msaa_sample_count = 4;
-    auto context_provider = TestContextProvider::Create();
-    context_provider->UnboundTestContext3d()->SetMaxSamples(4);
-    context_provider->UnboundTestContext3d()->set_msaa_is_slow(msaa_is_slow);
-    context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
-    context_provider->UnboundTestContext3d()->set_avoid_stencil_buffers(
-        avoid_stencil_buffers);
-    auto msaa_is_normal_layer_tree_frame_sink =
-        FakeLayerTreeFrameSink::Create3d(context_provider);
-    EXPECT_TRUE(CreateHostImpl(
-        settings, std::move(msaa_is_normal_layer_tree_frame_sink)));
+    auto frame_sink =
+        FakeLayerTreeFrameSink::Builder()
+            .AllContexts(&TestWebGraphicsContext3D::SetMaxSamples,
+                         settings.gpu_rasterization_msaa_sample_count)
+            .AllContexts(&TestWebGraphicsContext3D::set_msaa_is_slow,
+                         msaa_is_slow)
+            .AllContexts(&TestWebGraphicsContext3D::set_gpu_rasterization, true)
+            .AllContexts(&TestWebGraphicsContext3D::set_avoid_stencil_buffers,
+                         avoid_stencil_buffers)
+            .Build();
+    EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
   }
 };
 
@@ -12427,16 +12418,16 @@ class MsaaCompatibilityLayerTreeHostImplTest : public LayerTreeHostImplTest {
       bool support_multisample_compatibility) {
     LayerTreeSettings settings = DefaultSettings();
     settings.gpu_rasterization_msaa_sample_count = 4;
-    auto context_provider = TestContextProvider::Create();
-    context_provider->UnboundTestContext3d()->SetMaxSamples(4);
-    context_provider->UnboundTestContext3d()
-        ->set_support_multisample_compatibility(
-            support_multisample_compatibility);
-    context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
-    auto msaa_is_normal_layer_tree_frame_sink =
-        FakeLayerTreeFrameSink::Create3d(context_provider);
-    EXPECT_TRUE(CreateHostImpl(
-        settings, std::move(msaa_is_normal_layer_tree_frame_sink)));
+    auto frame_sink =
+        FakeLayerTreeFrameSink::Builder()
+            .AllContexts(&TestWebGraphicsContext3D::SetMaxSamples,
+                         settings.gpu_rasterization_msaa_sample_count)
+            .AllContexts(&TestWebGraphicsContext3D::
+                             set_support_multisample_compatibility,
+                         support_multisample_compatibility)
+            .AllContexts(&TestWebGraphicsContext3D::set_gpu_rasterization, true)
+            .Build();
+    EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
   }
 };
 
@@ -13185,6 +13176,25 @@ TEST_F(LayerTreeHostImplTest, DrawAfterDroppingTileResources) {
   DrawFrame();
   EXPECT_LT(0.f, layer->raster_page_scale());
   EXPECT_GT(layer->tilings()->num_tilings(), 0u);
+}
+
+TEST_F(LayerTreeHostImplTest, NeedUpdateGpuRasterization) {
+  EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  EXPECT_TRUE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+
+  host_impl_->SetContentHasSlowPaths(true);
+  EXPECT_TRUE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+
+  host_impl_->SetContentHasNonAAPaint(true);
+  EXPECT_TRUE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
 }
 
 }  // namespace

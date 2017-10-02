@@ -403,6 +403,8 @@ void TestWebGraphicsContext3D::getIntegerv(
     *value = unpack_alignment_;
   else if (pname == GL_FRAMEBUFFER_BINDING)
     *value = current_framebuffer_;
+  else if (pname == GL_MAX_SAMPLES)
+    *value = test_capabilities_.max_samples;
 }
 
 void TestWebGraphicsContext3D::getProgramiv(GLuint program,

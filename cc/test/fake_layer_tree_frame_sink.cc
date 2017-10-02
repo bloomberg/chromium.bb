@@ -15,6 +15,21 @@
 
 namespace cc {
 
+FakeLayerTreeFrameSink::Builder::Builder()
+    : compositor_context_provider_(TestContextProvider::Create()),
+      worker_context_provider_(TestContextProvider::CreateWorker()) {}
+
+FakeLayerTreeFrameSink::Builder::~Builder() = default;
+
+std::unique_ptr<FakeLayerTreeFrameSink>
+FakeLayerTreeFrameSink::Builder::Build() {
+  DCHECK(compositor_context_provider_);
+  DCHECK(worker_context_provider_);
+  return FakeLayerTreeFrameSink::Create3d(
+      std::move(compositor_context_provider_),
+      std::move(worker_context_provider_));
+}
+
 FakeLayerTreeFrameSink::FakeLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::ContextProvider> worker_context_provider)
