@@ -611,7 +611,8 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     default:
       DLOG(WARNING) << "Unhandled error code: " << error;
-      LoadAuthExtension(true, false /* offline */);
+      CallJS("invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::NONE));
       core_oobe_view_->ShowSignInError(
           0, l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR), std::string(),
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);

@@ -173,6 +173,15 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     JSExpect(JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".isInvalid");
   }
 
+  // Checks that machine, password and user inputs are valid.
+  void TestNoError() {
+    TestLoginVisible();
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".isInvalid");
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".isInvalid");
+    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) +
+             ".isInvalid");
+  }
+
   // Checks if autocomplete domain is visible for the user input.
   void TestDomainVisible() {
     JSExpect("!" + JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) +
@@ -249,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginSuccess) {
 
 // Test successful Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
-  TestLoginVisible();
+  TestNoError();
   TestDomainVisible();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -267,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_LoginErrors) {
 // Test different UI errors for Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   SetupActiveDirectoryJSNotifications();
-  TestLoginVisible();
+  TestNoError();
   TestDomainVisible();
 
   content::DOMMessageQueue message_queue;
@@ -296,6 +305,13 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser, kPassword);
   WaitForMessage(&message_queue, "\"ShowAuthError\"");
   TestPasswordError();
+  TestDomainVisible();
+
+  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_UNKNOWN);
+  SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser, kPassword);
+  WaitForMessage(&message_queue, "\"ShowAuthError\"");
+  // Inputs are not invalidated for the unknown error.
+  TestNoError();
   TestDomainVisible();
 }
 
