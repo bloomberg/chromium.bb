@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -136,10 +137,8 @@ int CountExtensionItems(const ExtensionContextMenuModel& model) {
       if (base::StartsWith(actual_label, expected_label,
                            base::CompareCase::SENSITIVE))
         ++num_items_found;
-      if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-          command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+      if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id))
         ++num_custom_found;
-      }
     }
   }
   // The only custom extension items present on the menu should be those we
@@ -155,8 +154,7 @@ void VerifyItems(const ExtensionContextMenuModel& model,
   size_t j = 0;
   for (int i = 0; i < model.GetItemCount(); i++) {
     int command_id = model.GetCommandIdAt(i);
-    if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-        command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST &&
+    if (ContextMenuMatcher::IsExtensionsCustomCommandId(command_id) &&
         model.IsCommandIdVisible(command_id)) {
       ASSERT_LT(j, item_number.size());
       EXPECT_EQ(base::ASCIIToUTF16(item_label() + item_number[j]),
