@@ -13,7 +13,7 @@ import android.view.animation.Interpolator;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEventFilter;
@@ -34,14 +34,7 @@ import java.util.List;
 /**
  * Layout defining the animation and positioning of the tabs during the edge swipe effect.
  */
-public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwipeLayout.Property> {
-    /**
-     * Animation properties
-     */
-    public enum Property {
-        OFFSET,
-    }
-
+public class ToolbarSwipeLayout extends Layout {
     private static final boolean ANONYMIZE_NON_FOCUSED_TAB = true;
 
     // Unit is millisecond / screen.
@@ -254,10 +247,17 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
         float end = offsetTo;
         long duration = (long) (ANIMATION_SPEED_SCREEN * Math.abs(start - end) / getWidth());
         if (duration > 0) {
-            addToAnimation(this, Property.OFFSET, start, end, duration, 0);
+            CompositorAnimator offsetAnimation =
+                    CompositorAnimator.ofFloat(getAnimationHandler(), start, end, duration, null);
+            offsetAnimation.addUpdateListener(new CompositorAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(CompositorAnimator animator) {
+                    mOffset = animator.getAnimatedValue();
+                    mOffsetTarget = mOffset;
+                }
+            });
+            offsetAnimation.start();
         }
-
-        requestRender();
     }
 
     @Override
@@ -346,22 +346,6 @@ public class ToolbarSwipeLayout extends Layout implements Animatable<ToolbarSwip
         mOffset = 0;
         mOffsetTarget = 0;
     }
-
-    /**
-     * Sets a property for an animation.
-     * @param prop The property to update
-     * @param value New value of the property
-     */
-    @Override
-    public void setProperty(Property prop, float value) {
-        if (prop == Property.OFFSET) {
-            mOffset = value;
-            mOffsetTarget = mOffset;
-        }
-    }
-
-    @Override
-    public void onPropertyAnimationFinished(Property prop) {}
 
     @Override
     protected EventFilter getEventFilter() {
