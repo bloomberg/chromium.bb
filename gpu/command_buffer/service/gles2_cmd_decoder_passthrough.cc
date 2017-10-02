@@ -613,6 +613,7 @@ bool GLES2DecoderPassthroughImpl::Initialize(
         glRequestExtensionANGLE(default_extension);
       }
     }
+    context->ReinitializeDynamicBindings();
   }
 
   // Each context initializes its own feature info because some extensions may
