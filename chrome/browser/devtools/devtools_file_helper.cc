@@ -224,7 +224,7 @@ void DevToolsFileHelper::Save(const std::string& url,
                               const std::string& content,
                               bool save_as,
                               const SaveCallback& saveCallback,
-                              const SaveCallback& cancelCallback) {
+                              const CancelCallback& cancelCallback) {
   PathsMap::iterator it = saved_files_.find(url);
   if (it != saved_files_.end() && !save_as) {
     SaveAsFileSelected(url, content, saveCallback, it->second);
@@ -292,7 +292,8 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
   base::DictionaryValue* files_map = update.Get();
   files_map->SetWithoutPathExpansion(base::MD5String(url),
                                      base::CreateFilePathValue(path));
-  callback.Run();
+  std::string file_system_path = path.AsUTF8Unsafe();
+  callback.Run(file_system_path);
   file_task_runner_->PostTask(FROM_HERE, BindOnce(&WriteToFile, path, content));
 }
 

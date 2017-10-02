@@ -1148,9 +1148,12 @@ void DevToolsUIBindings::DevicesUpdated(
                      NULL);
 }
 
-void DevToolsUIBindings::FileSavedAs(const std::string& url) {
+void DevToolsUIBindings::FileSavedAs(const std::string& url,
+                                     const std::string& file_system_path) {
   base::Value url_value(url);
-  CallClientFunction("DevToolsAPI.savedURL", &url_value, NULL, NULL);
+  base::Value file_system_path_value(file_system_path);
+  CallClientFunction("DevToolsAPI.savedURL", &url_value,
+                     &file_system_path_value, NULL);
 }
 
 void DevToolsUIBindings::CanceledFileSaveAs(const std::string& url) {

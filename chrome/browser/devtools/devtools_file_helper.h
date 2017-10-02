@@ -58,7 +58,8 @@ class DevToolsFileHelper {
                      Delegate* delegate);
   ~DevToolsFileHelper();
 
-  typedef base::Callback<void(void)> SaveCallback;
+  typedef base::Callback<void(const std::string&)> SaveCallback;
+  typedef base::Callback<void()> CancelCallback;
   typedef base::Callback<void(void)> AppendCallback;
   typedef base::Callback<void(const base::string16&,
                               const base::Callback<void(bool)>&)>
@@ -71,7 +72,7 @@ class DevToolsFileHelper {
             const std::string& content,
             bool save_as,
             const SaveCallback& saveCallback,
-            const SaveCallback& cancelCallback);
+            const CancelCallback& cancelCallback);
 
   // Append |content| to the file that has been associated with given |url|.
   // The |url| can be associated with a file via calling Save method.
