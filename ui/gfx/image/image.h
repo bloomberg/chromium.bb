@@ -152,9 +152,7 @@ class GFX_EXPORT Image {
   scoped_refptr<base::RefCountedMemory> Copy1xPNGBytes() const;
   ImageSkia* CopyImageSkia() const;
   SkBitmap* CopySkBitmap() const;
-#if defined(OS_IOS)
-  UIImage* CopyUIImage() const;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   NSImage* CopyNSImage() const;
 #endif
 

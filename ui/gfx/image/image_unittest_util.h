@@ -94,7 +94,7 @@ PlatformImage CreatePlatformImage();
 gfx::Image::RepresentationType GetPlatformRepresentationType();
 
 PlatformImage ToPlatformType(const gfx::Image& image);
-PlatformImage CopyPlatformType(const gfx::Image& image);
+gfx::Image CopyViaPlatformType(const gfx::Image& image);
 
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y);
 void CheckColors(SkColor color1, SkColor color2);
