@@ -27,9 +27,13 @@ void RawHttpResponse::SendResponse(const SendBytesCallback& send,
   std::string response;
   if (!headers_.empty()) {
     response = headers_;
-    if (!base::EndsWith(response, "\n", base::CompareCase::SENSITIVE))
-      response += "\r\n";
-    response += "\r\n" + contents_;
+    // LocateEndOfHeadersHelper() searches for the first "\n\n" and "\n\r\n" as
+    // the end of the header.
+    std::size_t index = response.find_last_not_of("\r\n");
+    if (index != std::string::npos)
+      response.erase(index + 1);
+    response += "\n\n";
+    response += contents_;
   } else {
     response = contents_;
   }
