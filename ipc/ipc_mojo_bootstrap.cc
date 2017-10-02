@@ -32,7 +32,6 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
-#include "mojo/public/cpp/bindings/tracked_scoped_refptr.h"
 
 namespace IPC {
 
@@ -205,11 +204,7 @@ class ChannelAssociatedGroupController
       return;
     {
       base::AutoLock locker(lock_);
-      // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after
-      // bug investigation.
-      CHECK(base::ContainsKey(endpoints_, id));
-      endpoints_[id].CheckObjectIsValid();
-
+      DCHECK(ContainsKey(endpoints_, id));
       Endpoint* endpoint = endpoints_[id].get();
       DCHECK(!endpoint->client());
       DCHECK(!endpoint->closed());
@@ -230,10 +225,7 @@ class ChannelAssociatedGroupController
     DCHECK(client);
 
     base::AutoLock locker(lock_);
-    // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after bug
-    // investigation.
-    CHECK(base::ContainsKey(endpoints_, id));
-    endpoints_[id].CheckObjectIsValid();
+    DCHECK(ContainsKey(endpoints_, id));
 
     Endpoint* endpoint = endpoints_[id].get();
     endpoint->AttachClient(client, std::move(runner));
@@ -251,10 +243,7 @@ class ChannelAssociatedGroupController
     DCHECK(mojo::IsValidInterfaceId(id));
 
     base::AutoLock locker(lock_);
-    // TODO(crbug.com/750267, crbug.com/754946): Change this to DCHECK after bug
-    // investigation.
-    CHECK(base::ContainsKey(endpoints_, id));
-    endpoints_[id].CheckObjectIsValid();
+    DCHECK(ContainsKey(endpoints_, id));
 
     Endpoint* endpoint = endpoints_[id].get();
     endpoint->DetachClient();
@@ -883,7 +872,7 @@ class ChannelAssociatedGroupController
   // ID #1 is reserved for the mojom::Channel interface.
   uint32_t next_interface_id_ = 2;
 
-  std::map<uint32_t, mojo::TrackedScopedRefPtr<Endpoint>> endpoints_;
+  std::map<uint32_t, scoped_refptr<Endpoint>> endpoints_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelAssociatedGroupController);
 };
