@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -20,6 +21,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -72,23 +74,29 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
   }
 }
 
-std::unique_ptr<views::ImageButton> GenerateDeleteButton(
+std::unique_ptr<views::ImageButton> CreateDeleteButton(
     views::ButtonListener* listener) {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  std::unique_ptr<views::ImageButton> button(new views::ImageButton(listener));
-  button->SetImage(views::ImageButton::STATE_NORMAL,
-                   rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
-  button->SetImage(views::ImageButton::STATE_HOVERED,
-                   rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-  button->SetImage(views::ImageButton::STATE_PRESSED,
-                   rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+  std::unique_ptr<views::ImageButton> button;
+  if (ChromeLayoutProvider::Get()->IsHarmonyMode()) {
+    button.reset(views::CreateVectorImageButton(listener));
+    views::SetImageFromVectorIcon(button.get(), kTrashCanIcon);
+  } else {
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    button = base::MakeUnique<views::ImageButton>(listener);
+    button->SetImage(views::ImageButton::STATE_NORMAL,
+                     rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
+    button->SetImage(views::ImageButton::STATE_HOVERED,
+                     rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
+    button->SetImage(views::ImageButton::STATE_PRESSED,
+                     rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+  }
   button->SetFocusForPlatform();
   button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETE));
   return button;
 }
 
-std::unique_ptr<views::Label> GenerateDeletedPasswordLabel() {
+std::unique_ptr<views::Label> CreateDeletedPasswordLabel() {
   auto text = base::MakeUnique<views::Label>(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED),
       CONTEXT_DEPRECATED_SMALL);
@@ -96,7 +104,7 @@ std::unique_ptr<views::Label> GenerateDeletedPasswordLabel() {
   return text;
 }
 
-std::unique_ptr<views::Link> GenerateUndoLink(views::LinkListener* listener) {
+std::unique_ptr<views::Link> CreateUndoLink(views::LinkListener* listener) {
   std::unique_ptr<views::Link> undo_link(
       new views::Link(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)));
   undo_link->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
@@ -109,7 +117,7 @@ std::unique_ptr<views::Link> GenerateUndoLink(views::LinkListener* listener) {
 
 }  // namespace
 
-std::unique_ptr<views::Label> GenerateUsernameLabel(
+std::unique_ptr<views::Label> CreateUsernameLabel(
     const autofill::PasswordForm& form) {
   auto label = base::MakeUnique<views::Label>(GetDisplayUsername(form),
                                               CONTEXT_DEPRECATED_SMALL);
@@ -117,14 +125,14 @@ std::unique_ptr<views::Label> GenerateUsernameLabel(
   return label;
 }
 
-std::unique_ptr<views::Textfield> GenerateUsernameEditable(
+std::unique_ptr<views::Textfield> CreateUsernameEditable(
     const autofill::PasswordForm& form) {
   auto editable = base::MakeUnique<views::Textfield>();
   editable->SetText(form.username_value);
   return editable;
 }
 
-std::unique_ptr<views::Label> GeneratePasswordLabel(
+std::unique_ptr<views::Label> CreatePasswordLabel(
     const autofill::PasswordForm& form,
     bool is_password_visible) {
   base::string16 text =
@@ -205,9 +213,9 @@ int ManagePasswordItemsView::PasswordFormRow::GetFixedHeight(
   if (state != password_manager::ui::MANAGE_STATE)
     return 0;
   std::unique_ptr<views::ImageButton> delete_button(
-      GenerateDeleteButton(nullptr));
-  std::unique_ptr<views::Link> link(GenerateUndoLink(nullptr));
-  std::unique_ptr<views::Label> label(GenerateDeletedPasswordLabel());
+      CreateDeleteButton(nullptr));
+  std::unique_ptr<views::Link> link(CreateUndoLink(nullptr));
+  std::unique_ptr<views::Label> label(CreateDeletedPasswordLabel());
   views::View* row_views[] = {delete_button.get(), link.get(), label.get()};
   return std::accumulate(row_views, row_views + arraysize(row_views), 0,
                          [](int max_height, const views::View* view) {
@@ -221,10 +229,10 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
   BuildColumnSetIfNeeded(layout, THREE_COLUMN_SET);
   layout->StartRow(0, THREE_COLUMN_SET);
   std::unique_ptr<views::Label> username_label(
-      GenerateUsernameLabel(*password_form_));
+      CreateUsernameLabel(*password_form_));
   std::unique_ptr<views::Label> password_label(
-      GeneratePasswordLabel(*password_form_, false));
-  delete_button_ = GenerateDeleteButton(this).release();
+      CreatePasswordLabel(*password_form_, false));
+  delete_button_ = CreateDeleteButton(this).release();
   // TODO(https://crbug.com/761767): Remove this workaround once the grid layout
   // bug is fixed.
   const int username_width = username_label->CalculatePreferredSize().width();
@@ -258,8 +266,8 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
 void ManagePasswordItemsView::PasswordFormRow::AddUndoRow(
     views::GridLayout* layout) {
   ResetControls();
-  std::unique_ptr<views::Label> text = GenerateDeletedPasswordLabel();
-  std::unique_ptr<views::Link> undo_link = GenerateUndoLink(this);
+  std::unique_ptr<views::Label> text = CreateDeletedPasswordLabel();
+  std::unique_ptr<views::Link> undo_link = CreateUndoLink(this);
   undo_link_ = undo_link.get();
   BuildColumnSetIfNeeded(layout, TWO_COLUMN_SET);
   layout->StartRow(0, TWO_COLUMN_SET);
