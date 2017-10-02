@@ -32,7 +32,6 @@ const char kToastElementLaunchAttribute[] = "launch";
 const char kVisualElement[] = "visual";
 
 // Name of the template used for default Chrome notifications.
-// https://msdn.microsoft.com/library/1a437614-4259-426b-8e3f-ca57368b2e7a
 const char kDefaultTemplate[] = "ToastGeneric";
 
 // The XML version header that has to be stripped from the output.
@@ -55,8 +54,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   // TODO(finnur): Set the correct binding template based on the |notification|.
   builder->StartBindingElement(kDefaultTemplate);
 
-  // Content for the ToastText04 toast template.
-  // https://msdn.microsoft.com/library/1a437614-4259-426b-8e3f-ca57368b2e7a#ToastText04
+  // Content for the toast template.
   builder->WriteTextElement("1", base::UTF16ToUTF8(notification.title()));
   builder->WriteTextElement("2", base::UTF16ToUTF8(notification.message()));
   builder->WriteTextElement("3",
