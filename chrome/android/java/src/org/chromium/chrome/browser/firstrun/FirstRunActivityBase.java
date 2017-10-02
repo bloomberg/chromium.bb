@@ -11,8 +11,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -87,7 +87,7 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
                 @Override
                 public void onSendFinished(PendingIntent pendingIntent, Intent intent,
                         int resultCode, String resultData, Bundle resultExtras) {
-                    if (ChromeLauncherActivity.isCustomTabIntent(intent)) {
+                    if (LaunchIntentDispatcher.isCustomTabIntent(intent)) {
                         CustomTabsConnection.getInstance().sendFirstRunCallbackIfNecessary(
                                 intent, complete);
                     }

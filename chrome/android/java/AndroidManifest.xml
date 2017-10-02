@@ -177,8 +177,6 @@ by a child template that "extends" this file.
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.APP_BROWSER" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
@@ -405,6 +403,15 @@ by a child template that "extends" this file.
             </intent-filter>
             {% endblock %}
         </activity>
+        <activity-alias android:name="com.google.android.apps.chrome.LauncherMain"
+            android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
             android:theme="@style/TabbedModeTheme"
             android:exported="false"
