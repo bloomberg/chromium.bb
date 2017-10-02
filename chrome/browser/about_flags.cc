@@ -3528,6 +3528,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAsyncDns)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-overflow-icons-for-media-controls",
+     flag_descriptions::kOverflowIconsForMediaControlsName,
+     flag_descriptions::kOverflowIconsForMediaControlsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kOverflowIconsForMediaControls)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
