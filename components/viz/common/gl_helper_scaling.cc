@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/rect.h"
@@ -195,9 +196,12 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     }
   }
 
-  // Sets the overall scale ratio for the entire chain of Scalers.
-  void SetFinalScaleRatio(const gfx::Vector2d& from, const gfx::Vector2d& to) {
-    final_scale_ratio_.emplace(FinalScaleRatio{from, to});
+  // Sets the overall scale ratio and swizzle for the entire chain of Scalers.
+  void SetChainProperties(const gfx::Vector2d& from,
+                          const gfx::Vector2d& to,
+                          bool swizzle) {
+    chain_properties_.emplace(ChainProperties{
+        from, to, static_cast<GLenum>(swizzle ? GL_BGRA_EXT : GL_RGBA)});
   }
 
   // WARNING: This method should only be called by external clients, since they
@@ -205,10 +209,14 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   // of Scalers).
   bool IsSameScaleRatio(const gfx::Vector2d& from,
                         const gfx::Vector2d& to) const override {
-    return AreRatiosEqual(final_scale_ratio_->from.x(),
-                          final_scale_ratio_->to.x(), from.x(), to.x()) &&
-           AreRatiosEqual(final_scale_ratio_->from.y(),
-                          final_scale_ratio_->to.y(), from.y(), to.y());
+    const gfx::Vector2d& overall_from = chain_properties_->scale_from;
+    const gfx::Vector2d& overall_to = chain_properties_->scale_to;
+    return AreRatiosEqual(overall_from.x(), overall_to.x(), from.x(), to.x()) &&
+           AreRatiosEqual(overall_from.y(), overall_to.y(), from.y(), to.y());
+  }
+
+  GLenum GetReadbackFormat() const override {
+    return chain_properties_->readback_format;
   }
 
  private:
@@ -394,13 +402,14 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   std::unique_ptr<ScalerImpl> subscaler_;
 
   // This last member is only set on ScalerImpls that are exposed to external
-  // modules. This is so the client can query the overall scale ratio provided
-  // by a chain of ScalerImpls.
-  struct FinalScaleRatio {
-    gfx::Vector2d from;
-    gfx::Vector2d to;
+  // modules. This is so the client can query the overall scale ratio and
+  // swizzle provided by a chain of ScalerImpls.
+  struct ChainProperties {
+    gfx::Vector2d scale_from;
+    gfx::Vector2d scale_to;
+    GLenum readback_format;
   };
-  base::Optional<FinalScaleRatio> final_scale_ratio_;
+  base::Optional<ChainProperties> chain_properties_;
 };
 
 // The important inputs for this function is |x_ops| and |y_ops|. They represent
@@ -577,7 +586,7 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
     ret = base::MakeUnique<ScalerImpl>(gl_, this, scaler_stages[i],
                                        std::move(ret));
   }
-  ret->SetFinalScaleRatio(scale_from, scale_to);
+  ret->SetChainProperties(scale_from, scale_to, swizzle);
   return ret;
 }
 
@@ -589,7 +598,7 @@ GLHelperScaling::CreateGrayscalePlanerizer(bool vertically_flip_texture,
                              vertically_flip_texture, swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetColorWeights(0, kRGBtoGrayscaleColorWeights);
-  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
 }
 
@@ -618,7 +627,7 @@ GLHelperScaling::CreateI420Planerizer(int plane,
     default:
       NOTREACHED();
   }
-  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
 }
 
@@ -632,7 +641,7 @@ GLHelperScaling::CreateI420MrtPass1Planerizer(bool vertically_flip_texture,
   result->SetColorWeights(0, kRGBtoYColorWeights);
   result->SetColorWeights(1, kRGBtoUColorWeights);
   result->SetColorWeights(2, kRGBtoVColorWeights);
-  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
 }
 
@@ -643,7 +652,7 @@ GLHelperScaling::CreateI420MrtPass2Planerizer(bool vertically_flip_texture,
                              gfx::Vector2d(1, 1),     true,
                              vertically_flip_texture, swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
-  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
 }
 

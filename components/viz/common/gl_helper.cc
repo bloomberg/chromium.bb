@@ -72,6 +72,61 @@ class TextureHolder {
   DISALLOW_COPY_AND_ASSIGN(TextureHolder);
 };
 
+class I420ConverterImpl : public I420Converter {
+ public:
+  I420ConverterImpl(GLES2Interface* gl,
+                    GLHelperScaling* scaler_impl,
+                    bool flip_vertically,
+                    bool swizzle,
+                    bool use_mrt);
+
+  ~I420ConverterImpl() override;
+
+  void Convert(GLuint src_texture,
+               const gfx::Size& src_texture_size,
+               GLHelper::ScalerInterface* optional_scaler,
+               const gfx::Rect& output_rect,
+               GLuint y_plane_texture,
+               GLuint u_plane_texture,
+               GLuint v_plane_texture) override;
+
+  GLenum GetReadbackFormat() const override;
+
+ protected:
+  // Returns true if the planerizer should use the faster, two-pass shaders to
+  // generate the YUV planar outputs. If false, the source will be scanned three
+  // times, once for each Y/U/V plane.
+  bool use_mrt() const { return !v_planerizer_; }
+
+  // Reallocates the intermediate and plane textures, if needed.
+  void EnsureTexturesSizedFor(const gfx::Size& scaler_output_size,
+                              const gfx::Size& y_texture_size,
+                              const gfx::Size& chroma_texture_size,
+                              GLuint y_plane_texture,
+                              GLuint u_plane_texture,
+                              GLuint v_plane_texture);
+
+  GLES2Interface* const gl_;
+
+ private:
+  // These generate the Y/U/V planes. If MRT is being used, |y_planerizer_|
+  // generates the Y and interim UV plane, |u_planerizer_| generates the final U
+  // and V planes, and |v_planerizer_| is unused. If MRT is not being used, each
+  // of these generates only one of the Y/U/V planes.
+  const std::unique_ptr<GLHelper::ScalerInterface> y_planerizer_;
+  const std::unique_ptr<GLHelper::ScalerInterface> u_planerizer_;
+  const std::unique_ptr<GLHelper::ScalerInterface> v_planerizer_;
+
+  // Intermediate texture, holding the scaler's output.
+  base::Optional<TextureHolder> intermediate_;
+
+  // Intermediate texture, holding the UV interim output (if the MRT shader is
+  // being used).
+  base::Optional<ScopedTexture> uv_;
+
+  DISALLOW_COPY_AND_ASSIGN(I420ConverterImpl);
+};
+
 }  // namespace
 
 typedef GLHelperReadbackSupport::FormatSupport FormatSupport;
@@ -136,8 +191,7 @@ class GLHelper::CopyTextureToImpl
                      size_t bytes_per_pixel,
                      const base::Callback<void(bool)>& callback);
 
-  void ReadbackPlane(GLuint framebuffer,
-                     const gfx::Size& texture_size,
+  void ReadbackPlane(const gfx::Size& texture_size,
                      int row_stride_bytes,
                      unsigned char* data,
                      int size_shift,
@@ -223,7 +277,8 @@ class GLHelper::CopyTextureToImpl
 
   // A readback pipeline that also converts the data to YUV before
   // reading it back.
-  class ReadbackYUVImpl : public ReadbackYUVInterface {
+  class ReadbackYUVImpl : public I420ConverterImpl,
+                          public ReadbackYUVInterface {
    public:
     ReadbackYUVImpl(GLES2Interface* gl,
                     CopyTextureToImpl* copy_impl,
@@ -231,6 +286,8 @@ class GLHelper::CopyTextureToImpl
                     bool flip_vertically,
                     ReadbackSwizzle swizzle,
                     bool use_mrt);
+
+    ~ReadbackYUVImpl() override;
 
     void SetScaler(std::unique_ptr<GLHelper::ScalerInterface> scaler) override;
 
@@ -250,15 +307,6 @@ class GLHelper::CopyTextureToImpl
                      const base::Callback<void(bool)>& callback) override;
 
    private:
-    // Returns true if ReadbackYUV should use the faster, two-pass
-    // "planerizers" to generate the YUV planar outputs. If false, the source
-    // will be scanned three times, once for each Y/U/V plane.
-    bool use_mrt() const { return !v_planerizer_; }
-
-    // Reallocates the intermediate and plane textures and their associated
-    // readback framebuffers, if needed.
-    void EnsureTexturesSizedFor(const gfx::Size& output_size);
-
     GLES2Interface* gl_;
     CopyTextureToImpl* copy_impl_;
     ReadbackSwizzle swizzle_;
@@ -267,23 +315,10 @@ class GLHelper::CopyTextureToImpl
     // to ReadbackYUV().
     std::unique_ptr<GLHelper::ScalerInterface> scaler_;
 
-    // These generate the Y/U/V planes. If MRT is being used, |y_planerizer_|
-    // generates the Y and interim UV plane, |u_planerizer_| generates the final
-    // U and V planes, and |v_planerizer_| is unused. If MRT is not being used,
-    // each of these generates only one of the Y/U/V planes.
-    const std::unique_ptr<GLHelper::ScalerInterface> y_planerizer_;
-    const std::unique_ptr<GLHelper::ScalerInterface> u_planerizer_;
-    const std::unique_ptr<GLHelper::ScalerInterface> v_planerizer_;
-
-    // Intermediate texture, holding the scaler's output.
-    base::Optional<TextureHolder> intermediate_;
-
-    // These hold the output textures for each Y/U/V plane. |uv_| is only used
-    // if MRT is being used.
-    base::Optional<TextureHolder> y_;
-    base::Optional<ScopedTexture> uv_;
-    base::Optional<TextureHolder> u_;
-    base::Optional<TextureHolder> v_;
+    // These are the output textures for each Y/U/V plane.
+    ScopedTexture y_;
+    ScopedTexture u_;
+    ScopedTexture v_;
 
     // Framebuffers used by ReadbackPlane(). They are cached here so as to not
     // be re-allocated for every frame of video.
@@ -884,7 +919,6 @@ void GLHelper::InsertOrderingBarrier() {
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
-    GLuint framebuffer,
     const gfx::Size& texture_size,
     int row_stride_bytes,
     unsigned char* data,
@@ -892,7 +926,6 @@ void GLHelper::CopyTextureToImpl::ReadbackPlane(
     const gfx::Rect& paste_rect,
     ReadbackSwizzle swizzle,
     const base::Callback<void(bool)>& callback) {
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   const size_t offset = row_stride_bytes * (paste_rect.y() >> size_shift) +
                         (paste_rect.x() >> size_shift);
   ReadbackAsync(texture_size, paste_rect.width() >> size_shift,
@@ -901,8 +934,131 @@ void GLHelper::CopyTextureToImpl::ReadbackPlane(
                 GL_UNSIGNED_BYTE, 4, callback);
 }
 
-// YUV readback constructors. Initiates the main scaler pipeline and
-// one planar scaler for each of the Y, U and V planes.
+I420Converter::I420Converter() = default;
+I420Converter::~I420Converter() = default;
+
+// static
+gfx::Size I420Converter::GetYPlaneTextureSize(const gfx::Size& output_size) {
+  return gfx::Size((output_size.width() + 3) / 4, output_size.height());
+}
+
+// static
+gfx::Size I420Converter::GetChromaPlaneTextureSize(
+    const gfx::Size& output_size) {
+  return gfx::Size((output_size.width() + 7) / 8,
+                   (output_size.height() + 1) / 2);
+}
+
+namespace {
+
+I420ConverterImpl::I420ConverterImpl(GLES2Interface* gl,
+                                     GLHelperScaling* scaler_impl,
+                                     bool flip_vertically,
+                                     bool swizzle,
+                                     bool use_mrt)
+    : gl_(gl),
+      y_planerizer_(
+          use_mrt
+              ? scaler_impl->CreateI420MrtPass1Planerizer(flip_vertically,
+                                                          swizzle)
+              : scaler_impl->CreateI420Planerizer(0, flip_vertically, swizzle)),
+      u_planerizer_(
+          use_mrt
+              ? scaler_impl->CreateI420MrtPass2Planerizer(false, swizzle)
+              : scaler_impl->CreateI420Planerizer(1, flip_vertically, swizzle)),
+      v_planerizer_(use_mrt ? nullptr
+                            : scaler_impl->CreateI420Planerizer(2,
+                                                                flip_vertically,
+                                                                swizzle)) {}
+
+I420ConverterImpl::~I420ConverterImpl() = default;
+
+void I420ConverterImpl::Convert(GLuint src_texture,
+                                const gfx::Size& src_texture_size,
+                                GLHelper::ScalerInterface* optional_scaler,
+                                const gfx::Rect& output_rect,
+                                GLuint y_plane_texture,
+                                GLuint u_plane_texture,
+                                GLuint v_plane_texture) {
+  const gfx::Size scaler_output_size =
+      optional_scaler ? output_rect.size() : gfx::Size();
+  const gfx::Size y_texture_size = GetYPlaneTextureSize(output_rect.size());
+  const gfx::Size chroma_texture_size =
+      GetChromaPlaneTextureSize(output_rect.size());
+  EnsureTexturesSizedFor(scaler_output_size, y_texture_size,
+                         chroma_texture_size, y_plane_texture, u_plane_texture,
+                         v_plane_texture);
+
+  // Scale first, if needed.
+  if (optional_scaler) {
+    // The scaler should not be configured to do any swizzling.
+    DCHECK_EQ(optional_scaler->GetReadbackFormat(),
+              static_cast<GLenum>(GL_RGBA));
+    optional_scaler->Scale(src_texture, src_texture_size,
+                           intermediate_->texture(), output_rect);
+  }
+
+  // Convert the intermediate (or source) texture into Y, U and V planes.
+  const GLuint texture =
+      optional_scaler ? intermediate_->texture() : src_texture;
+  const gfx::Size texture_size =
+      optional_scaler ? intermediate_->size() : src_texture_size;
+  if (use_mrt()) {
+    y_planerizer_->ScaleToMultipleOutputs(texture, texture_size,
+                                          y_plane_texture, uv_->id(),
+                                          gfx::Rect(y_texture_size));
+    u_planerizer_->ScaleToMultipleOutputs(uv_->id(), y_texture_size,
+                                          u_plane_texture, v_plane_texture,
+                                          gfx::Rect(chroma_texture_size));
+  } else {
+    y_planerizer_->Scale(texture, texture_size, y_plane_texture,
+                         gfx::Rect(y_texture_size));
+    u_planerizer_->Scale(texture, texture_size, u_plane_texture,
+                         gfx::Rect(chroma_texture_size));
+    v_planerizer_->Scale(texture, texture_size, v_plane_texture,
+                         gfx::Rect(chroma_texture_size));
+  }
+}
+
+GLenum I420ConverterImpl::GetReadbackFormat() const {
+  return y_planerizer_->GetReadbackFormat();
+}
+
+void I420ConverterImpl::EnsureTexturesSizedFor(
+    const gfx::Size& scaler_output_size,
+    const gfx::Size& y_texture_size,
+    const gfx::Size& chroma_texture_size,
+    GLuint y_plane_texture,
+    GLuint u_plane_texture,
+    GLuint v_plane_texture) {
+  // Reallocate the intermediate texture, if needed.
+  if (!scaler_output_size.IsEmpty()) {
+    if (!intermediate_ || intermediate_->size() != scaler_output_size)
+      intermediate_.emplace(gl_, scaler_output_size);
+  } else {
+    intermediate_ = base::nullopt;
+  }
+
+  // Size the interim UV plane and the three output planes.
+  const auto SetRGBATextureSize = [this](const gfx::Size& size) {
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  };
+  if (use_mrt()) {
+    uv_.emplace(gl_);
+    gl_->BindTexture(GL_TEXTURE_2D, uv_->id());
+    SetRGBATextureSize(y_texture_size);
+  }
+  gl_->BindTexture(GL_TEXTURE_2D, y_plane_texture);
+  SetRGBATextureSize(y_texture_size);
+  gl_->BindTexture(GL_TEXTURE_2D, u_plane_texture);
+  SetRGBATextureSize(chroma_texture_size);
+  gl_->BindTexture(GL_TEXTURE_2D, v_plane_texture);
+  SetRGBATextureSize(chroma_texture_size);
+}
+
+}  // namespace
+
 GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
     GLES2Interface* gl,
     CopyTextureToImpl* copy_impl,
@@ -910,36 +1066,26 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
     bool flip_vertically,
     ReadbackSwizzle swizzle,
     bool use_mrt)
-    : gl_(gl),
+    : I420ConverterImpl(gl,
+                        scaler_impl,
+                        flip_vertically,
+                        swizzle == kSwizzleBGRA,
+                        use_mrt),
+      gl_(gl),
       copy_impl_(copy_impl),
       swizzle_(swizzle),
-      y_planerizer_(use_mrt ? scaler_impl->CreateI420MrtPass1Planerizer(
-                                  flip_vertically,
-                                  (swizzle == kSwizzleBGRA))
-                            : scaler_impl->CreateI420Planerizer(
-                                  0,
-                                  flip_vertically,
-                                  (swizzle == kSwizzleBGRA))),
-      u_planerizer_(use_mrt ? scaler_impl->CreateI420MrtPass2Planerizer(
-                                  false,
-                                  (swizzle == kSwizzleBGRA))
-                            : scaler_impl->CreateI420Planerizer(
-                                  1,
-                                  flip_vertically,
-                                  (swizzle == kSwizzleBGRA))),
-      v_planerizer_(use_mrt ? nullptr
-                            : scaler_impl->CreateI420Planerizer(
-                                  2,
-                                  flip_vertically,
-                                  (swizzle == kSwizzleBGRA))),
+      y_(gl_),
+      u_(gl_),
+      v_(gl_),
       y_readback_framebuffer_(gl_),
       u_readback_framebuffer_(gl_),
       v_readback_framebuffer_(gl_) {}
 
+GLHelper::CopyTextureToImpl::ReadbackYUVImpl::~ReadbackYUVImpl() = default;
+
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::SetScaler(
     std::unique_ptr<GLHelper::ScalerInterface> scaler) {
   scaler_ = std::move(scaler);
-  intermediate_ = base::nullopt;
 }
 
 GLHelper::ScalerInterface*
@@ -963,98 +1109,35 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   DCHECK(!(paste_location.x() & 1));
   DCHECK(!(paste_location.y() & 1));
 
-  EnsureTexturesSizedFor(output_rect.size());
-
   GLuint mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
-
-  // Scale first, if needed.
-  if (scaler_) {
-    scaler_->Scale(mailbox_texture, src_texture_size, intermediate_->texture(),
-                   output_rect);
-  }
-
-  // Convert the intermediate (or source) texture into Y, U and V planes.
-  const GLuint texture = scaler_ ? intermediate_->texture() : mailbox_texture;
-  const gfx::Size texture_size =
-      scaler_ ? intermediate_->size() : src_texture_size;
-  if (use_mrt()) {
-    y_planerizer_->ScaleToMultipleOutputs(texture, texture_size, y_->texture(),
-                                          uv_->id(), gfx::Rect(y_->size()));
-    u_planerizer_->ScaleToMultipleOutputs(uv_->id(), y_->size(), u_->texture(),
-                                          v_->texture(), gfx::Rect(u_->size()));
-  } else {
-    y_planerizer_->Scale(texture, texture_size, y_->texture(),
-                         gfx::Rect(y_->size()));
-    u_planerizer_->Scale(texture, texture_size, u_->texture(),
-                         gfx::Rect(u_->size()));
-    v_planerizer_->Scale(texture, texture_size, v_->texture(),
-                         gfx::Rect(v_->size()));
-  }
-
+  I420ConverterImpl::Convert(mailbox_texture, src_texture_size, scaler_.get(),
+                             output_rect, y_, u_, v_);
   gl_->DeleteTextures(1, &mailbox_texture);
 
   // Read back planes, one at a time. Keep the video frame alive while doing the
   // readback.
   const gfx::Rect paste_rect(paste_location, output_rect.size());
-  copy_impl_->ReadbackPlane(y_readback_framebuffer_.id(), y_->size(),
+  const auto SetUpAndBindFramebuffer = [this](GLuint framebuffer,
+                                              GLuint texture) {
+    gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, texture, 0);
+  };
+  SetUpAndBindFramebuffer(y_readback_framebuffer_, y_);
+  copy_impl_->ReadbackPlane(GetYPlaneTextureSize(output_rect.size()),
                             y_plane_row_stride_bytes, y_plane_data, 0,
                             paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(u_readback_framebuffer_.id(), u_->size(),
-                            u_plane_row_stride_bytes, u_plane_data, 1,
-                            paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(v_readback_framebuffer_.id(), v_->size(),
-                            v_plane_row_stride_bytes, v_plane_data, 1,
-                            paste_rect, swizzle_, callback);
+  SetUpAndBindFramebuffer(u_readback_framebuffer_, u_);
+  const gfx::Size chroma_texture_size =
+      GetChromaPlaneTextureSize(output_rect.size());
+  copy_impl_->ReadbackPlane(chroma_texture_size, u_plane_row_stride_bytes,
+                            u_plane_data, 1, paste_rect, swizzle_,
+                            base::Bind(&nullcallback));
+  SetUpAndBindFramebuffer(v_readback_framebuffer_, v_);
+  copy_impl_->ReadbackPlane(chroma_texture_size, v_plane_row_stride_bytes,
+                            v_plane_data, 1, paste_rect, swizzle_, callback);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::EnsureTexturesSizedFor(
-    const gfx::Size& output_size) {
-  // Reallocate the intermediate texture, if needed.
-  if (scaler_) {
-    if (!intermediate_ || intermediate_->size() != output_size)
-      intermediate_.emplace(gl_, output_size);
-  }
-
-  // Reallocate the Y plane, if necessary.
-  gfx::Size required_size((output_size.width() + 3) / 4, output_size.height());
-  if (y_ && y_->size() == required_size)
-    return;  // If Y didn't need to be enlarged, U and V don't either.
-  y_.emplace(gl_, required_size);
-  {
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
-        gl_, y_readback_framebuffer_.id());
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, y_->texture(), 0);
-  }
-  if (use_mrt()) {
-    uv_.emplace(gl_);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, uv_->id());
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, required_size.width(),
-                    required_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                    nullptr);
-  }
-
-  // Reallocate the chroma planes, if necessary.
-  required_size =
-      gfx::Size((output_size.width() + 7) / 8, (output_size.height() + 1) / 2);
-  if (u_ && u_->size() == required_size)
-    return;
-  u_.emplace(gl_, required_size);
-  {
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
-        gl_, u_readback_framebuffer_.id());
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, u_->texture(), 0);
-  }
-  v_.emplace(gl_, required_size);
-  {
-    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
-        gl_, v_readback_framebuffer_.id());
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, v_->texture(), 0);
-  }
 }
 
 bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
@@ -1067,9 +1150,15 @@ bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
   return (support == GLHelperReadbackSupport::SUPPORTED);
 }
 
-GLHelperReadbackSupport* GLHelper::GetReadbackSupport() {
-  LazyInitReadbackSupportImpl();
-  return readback_support_.get();
+std::unique_ptr<I420Converter> GLHelper::CreateI420Converter(
+    bool vertically_flip_texture,
+    bool swizzle,
+    bool use_mrt) {
+  InitCopyTextToImpl();
+  InitScalerImpl();
+  return std::make_unique<I420ConverterImpl>(
+      gl_, scaler_impl_.get(), vertically_flip_texture, swizzle,
+      use_mrt && (copy_texture_to_impl_->MaxDrawBuffers() >= 2));
 }
 
 std::unique_ptr<ReadbackYUVInterface>
@@ -1100,6 +1189,11 @@ std::unique_ptr<ReadbackYUVInterface> GLHelper::CreateReadbackPipelineYUV(
   InitCopyTextToImpl();
   return copy_texture_to_impl_->CreateReadbackPipelineYUV(flip_vertically,
                                                           use_mrt);
+}
+
+GLHelperReadbackSupport* GLHelper::GetReadbackSupport() {
+  LazyInitReadbackSupportImpl();
+  return readback_support_.get();
 }
 
 }  // namespace viz
