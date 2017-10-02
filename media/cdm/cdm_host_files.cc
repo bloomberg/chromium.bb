@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/media/cdm_host_files.h"
+#include "media/cdm/cdm_host_files.h"
 
 #include <map>
 #include <memory>
@@ -18,15 +18,14 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
-#include "content/common/media/cdm_host_file.h"
-#include "content/public/common/cdm_info.h"
-#include "content/public/common/content_client.h"
 #include "media/cdm/api/content_decryption_module_ext.h"
 #include "media/cdm/cdm_paths.h"
 
+// Needed for finding CDM path from CDM adapter path.
+// TODO(crbug.com/403462): Remove this after CDM adapter is deprecated.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -81,11 +80,12 @@ CdmHostFiles::~CdmHostFiles() {
 
 // static
 std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
-    const base::FilePath& cdm_adapter_path) {
+    const base::FilePath& cdm_adapter_path,
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
   DVLOG(1) << __func__;
   std::unique_ptr<CdmHostFiles> cdm_host_files =
       base::MakeUnique<CdmHostFiles>();
-  cdm_host_files->OpenFiles(cdm_adapter_path);
+  cdm_host_files->OpenFiles(cdm_adapter_path, cdm_host_file_paths);
   return cdm_host_files;
 }
 
@@ -163,19 +163,18 @@ CdmHostFiles::Status CdmHostFiles::InitVerification(
   return Status::kSuccess;
 }
 
-void CdmHostFiles::OpenFiles(const base::FilePath& cdm_adapter_path) {
+void CdmHostFiles::OpenFiles(
+    const base::FilePath& cdm_adapter_path,
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
   OpenCdmFiles(cdm_adapter_path);
-  OpenCommonFiles();
+  OpenCommonFiles(cdm_host_file_paths);
 }
 
-void CdmHostFiles::OpenCommonFiles() {
+void CdmHostFiles::OpenCommonFiles(
+    const std::vector<CdmHostFilePath>& cdm_host_file_paths) {
   DCHECK(common_files_.empty());
 
-  std::vector<CdmHostFilePath> cdm_host_file_paths;
-  GetContentClient()->AddContentDecryptionModules(nullptr,
-                                                  &cdm_host_file_paths);
-
-  for (const CdmHostFilePath& value : cdm_host_file_paths) {
+  for (const auto& value : cdm_host_file_paths) {
     common_files_.push_back(
         CdmHostFile::Create(value.file_path, value.sig_file_path));
   }
@@ -231,4 +230,4 @@ bool IsCdm(const base::FilePath& cdm_adapter_path) {
   return !GetCdmPath(cdm_adapter_path).empty();
 }
 
-}  // namespace content
+}  // namespace media

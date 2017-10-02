@@ -536,7 +536,7 @@ void ChromeContentClient::AddPepperPlugins(
 
 void ChromeContentClient::AddContentDecryptionModules(
     std::vector<content::CdmInfo>* cdms,
-    std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {
+    std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
   if (cdms) {
 // TODO(jrummell): Need to have a better flag to indicate systems Widevine
 // is available on. For now we continue to use ENABLE_LIBRARY_CDMS so that

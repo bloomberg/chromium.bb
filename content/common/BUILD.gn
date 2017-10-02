@@ -581,23 +581,6 @@ source_set("common") {
     ]
   }
 
-  if (enable_cdm_host_verification) {
-    sources += [
-      "media/cdm_host_file.cc",
-      "media/cdm_host_file.h",
-      "media/cdm_host_files.cc",
-      "media/cdm_host_files.h",
-    ]
-    deps += [
-      "//media/cdm:cdm_paths",
-
-      # Needed for finding CDM path from CDM adapter path.
-      # TODO(xhwang): Remove this dependency when CDM adapter is deprecated.
-      # See http://crbug.com/403462
-      "//third_party/widevine/cdm:headers",
-    ]
-  }
-
   if (is_fuchsia) {
     sources += [
       "font_list_fuchsia.cc",
