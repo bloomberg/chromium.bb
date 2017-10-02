@@ -52,7 +52,7 @@ LayoutEmbeddedContent::LayoutEmbeddedContent(Element* element)
   SetInline(false);
 }
 
-void LayoutEmbeddedContent::Deref() {
+void LayoutEmbeddedContent::Release() {
   if (--ref_count_ <= 0)
     delete this;
 }
@@ -76,14 +76,14 @@ void LayoutEmbeddedContent::Destroy() {
   // call to destroy may not actually destroy the layout object. We can keep it
   // around because of references from the LocalFrameView class. (The actual
   // destruction of the class happens in PostDestroy() which is called from
-  // Deref()).
+  // Release()).
   //
   // But, we've told the system we've destroyed the layoutObject, which happens
   // when the DOM node is destroyed. So there is a good change the DOM node this
   // object points too is invalid, so we have to clear the node so we make sure
   // we don't access it in the future.
   ClearNode();
-  Deref();
+  Release();
 }
 
 LayoutEmbeddedContent::~LayoutEmbeddedContent() {

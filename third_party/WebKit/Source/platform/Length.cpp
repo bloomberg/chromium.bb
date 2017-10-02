@@ -70,7 +70,7 @@ class CalculationValueHandleMap {
       map_.Set(index, nullptr);
       map_.erase(index);
     } else {
-      value->Deref();
+      value->Release();
     }
   }
 
@@ -164,7 +164,7 @@ CalculationValue& Length::GetCalculationValue() const {
 
 void Length::IncrementCalculatedRef() const {
   DCHECK(IsCalculated());
-  GetCalculationValue().Ref();
+  GetCalculationValue().AddRef();
 }
 
 void Length::DecrementCalculatedRef() const {

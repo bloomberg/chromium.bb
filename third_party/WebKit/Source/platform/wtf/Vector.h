@@ -31,6 +31,7 @@
 #include "platform/wtf/ConditionalDestructor.h"
 #include "platform/wtf/ContainerAnnotations.h"
 #include "platform/wtf/Forward.h"  // For default Vector template parameters.
+#include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/NotFound.h"
 #include "platform/wtf/StdLibExtras.h"

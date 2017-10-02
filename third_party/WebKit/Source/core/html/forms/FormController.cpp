@@ -137,16 +137,16 @@ FormElementKey& FormElementKey::operator=(const FormElementKey& other) {
 
 void FormElementKey::Ref() const {
   if (GetName())
-    GetName()->Ref();
+    GetName()->AddRef();
   if (GetType())
-    GetType()->Ref();
+    GetType()->AddRef();
 }
 
 void FormElementKey::Deref() const {
   if (GetName())
-    GetName()->Deref();
+    GetName()->Release();
   if (GetType())
-    GetType()->Deref();
+    GetType()->Release();
 }
 
 inline bool operator==(const FormElementKey& a, const FormElementKey& b) {

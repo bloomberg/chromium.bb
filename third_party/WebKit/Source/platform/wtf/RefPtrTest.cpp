@@ -31,7 +31,7 @@ TEST(RefPtrTest, LeakRef) {
   EXPECT_TRUE(leaked);
   EXPECT_TRUE(leaked->HasOneRef());
   EXPECT_EQ(raw, leaked);
-  leaked->Deref();
+  leaked->Release();
 }
 
 TEST(RefPtrTest, MoveAssignmentOperator) {

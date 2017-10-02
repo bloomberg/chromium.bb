@@ -47,8 +47,8 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) override;
 
-  void Ref() { ++ref_count_; }
-  void Deref();
+  void AddRef() { ++ref_count_; }
+  void Release();
 
   // LayoutEmbeddedContent::ChildFrameView returns the LocalFrameView associated
   // with the current Node, if Node is HTMLFrameOwnerElement. This is different

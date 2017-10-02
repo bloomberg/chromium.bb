@@ -452,9 +452,9 @@ inline void CSSSelector::SetValue(const AtomicString& value,
   // Need to do ref counting manually for the union.
   if (!has_rare_data_) {
     if (data_.value_)
-      data_.value_->Deref();
+      data_.value_->Release();
     data_.value_ = value.Impl();
-    data_.value_->Ref();
+    data_.value_->AddRef();
     return;
   }
   data_.rare_data_->matching_value_ =
@@ -485,7 +485,7 @@ inline CSSSelector::CSSSelector(const QualifiedName& tag_q_name,
       tag_is_implicit_(tag_is_implicit),
       relation_is_affected_by_pseudo_content_(false) {
   data_.tag_q_name_ = tag_q_name.Impl();
-  data_.tag_q_name_->Ref();
+  data_.tag_q_name_->AddRef();
 }
 
 inline CSSSelector::CSSSelector(const CSSSelector& o)
@@ -501,23 +501,23 @@ inline CSSSelector::CSSSelector(const CSSSelector& o)
           o.relation_is_affected_by_pseudo_content_) {
   if (o.match_ == kTag) {
     data_.tag_q_name_ = o.data_.tag_q_name_;
-    data_.tag_q_name_->Ref();
+    data_.tag_q_name_->AddRef();
   } else if (o.has_rare_data_) {
     data_.rare_data_ = o.data_.rare_data_;
-    data_.rare_data_->Ref();
+    data_.rare_data_->AddRef();
   } else if (o.data_.value_) {
     data_.value_ = o.data_.value_;
-    data_.value_->Ref();
+    data_.value_->AddRef();
   }
 }
 
 inline CSSSelector::~CSSSelector() {
   if (match_ == kTag)
-    data_.tag_q_name_->Deref();
+    data_.tag_q_name_->Release();
   else if (has_rare_data_)
-    data_.rare_data_->Deref();
+    data_.rare_data_->Release();
   else if (data_.value_)
-    data_.value_->Deref();
+    data_.value_->Release();
 }
 
 inline const QualifiedName& CSSSelector::TagQName() const {

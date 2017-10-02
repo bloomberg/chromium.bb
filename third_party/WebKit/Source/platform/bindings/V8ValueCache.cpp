@@ -43,7 +43,7 @@ void StringCacheMapTraits::Dispose(v8::Isolate* isolate,
                                    v8::Global<v8::String> value,
                                    StringImpl* key) {
   V8PerIsolateData::From(isolate)->GetStringCache()->InvalidateLastString();
-  key->Deref();
+  key->Release();
 }
 
 void StringCacheMapTraits::DisposeWeak(
@@ -51,7 +51,7 @@ void StringCacheMapTraits::DisposeWeak(
   V8PerIsolateData::From(data.GetIsolate())
       ->GetStringCache()
       ->InvalidateLastString();
-  data.GetParameter()->Deref();
+  data.GetParameter()->Release();
 }
 
 void StringCacheMapTraits::OnWeakCallback(
@@ -147,7 +147,7 @@ v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
 
   v8::UniquePersistent<v8::String> wrapper(isolate, new_string);
 
-  string_impl->Ref();
+  string_impl->AddRef();
   wrapper.MarkIndependent();
   string_cache_.Set(string_impl, std::move(wrapper), &last_v8_string_);
   last_string_impl_ = string_impl;

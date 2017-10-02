@@ -377,8 +377,8 @@ class DummyRefCounted : public RefCounted<DummyRefCounted> {
     is_deleted_ = false;
   }
   ~DummyRefCounted() { is_deleted_ = true; }
-  void Ref() {
-    WTF::RefCounted<DummyRefCounted>::Ref();
+  void AddRef() {
+    WTF::RefCounted<DummyRefCounted>::AddRef();
     ++ref_invokes_count_;
   }
 

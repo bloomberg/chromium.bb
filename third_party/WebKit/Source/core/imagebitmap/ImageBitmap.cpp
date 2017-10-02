@@ -194,7 +194,7 @@ RefPtr<Uint8Array> CopyImageData(const RefPtr<StaticBitmapImage>& input) {
 }
 
 void freePixels(const void*, void* pixels) {
-  static_cast<Uint8Array*>(pixels)->Deref();
+  static_cast<Uint8Array*>(pixels)->Release();
 }
 
 RefPtr<StaticBitmapImage> NewImageFromRaster(

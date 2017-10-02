@@ -18,7 +18,7 @@ RefPtr<ScriptStateForTesting> ScriptStateForTesting::Create(
       WTF::AdoptRef(new ScriptStateForTesting(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
   // is alive.  This is deref()ed in the weak callback of the v8::Context.
-  script_state->Ref();
+  script_state->AddRef();
   return script_state;
 }
 

@@ -44,7 +44,7 @@ class WTF_EXPORT ThreadSafeRefCountedBase {
  public:
   ThreadSafeRefCountedBase() : ref_count_(1) {}
 
-  void Ref() { ref_count_.Increment(); }
+  void AddRef() { ref_count_.Increment(); }
   bool HasOneRef() const { return ref_count_.IsOne(); }
 
  protected:
@@ -69,7 +69,7 @@ struct DefaultThreadSafeRefCountedTraits {
 template <typename T, typename Traits = DefaultThreadSafeRefCountedTraits<T>>
 class ThreadSafeRefCounted : public ThreadSafeRefCountedBase {
  public:
-  void Deref() {
+  void Release() {
     if (DerefBase())
       Traits::Destruct(static_cast<T*>(this));
   }

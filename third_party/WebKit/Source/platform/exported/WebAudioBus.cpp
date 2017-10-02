@@ -36,7 +36,7 @@ void WebAudioBus::Initialize(unsigned number_of_channels,
   audio_bus->SetSampleRate(sample_rate);
 
   if (private_)
-    private_->Deref();
+    private_->Release();
 
   private_ = audio_bus.LeakRef();
 }
@@ -51,7 +51,7 @@ void WebAudioBus::ResizeSmaller(size_t new_length) {
 
 void WebAudioBus::Reset() {
   if (private_) {
-    private_->Deref();
+    private_->Release();
     private_ = nullptr;
   }
 }
@@ -83,7 +83,7 @@ float* WebAudioBus::ChannelData(unsigned channel_index) {
 
 RefPtr<AudioBus> WebAudioBus::Release() {
   RefPtr<AudioBus> audio_bus(private_);
-  private_->Deref();
+  private_->Release();
   private_ = nullptr;
   return audio_bus;
 }

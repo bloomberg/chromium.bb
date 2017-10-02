@@ -54,7 +54,7 @@ static void* Allocate(CFIndex size, CFOptionFlags, void*) {
     if (underlying_string) {
       g_current_string = 0;
       underlying_string
-          ->Ref();  // Balanced by call to deref in deallocate below.
+          ->AddRef();  // Balanced by call to deref in deallocate below.
     }
   }
   StringImpl** header = static_cast<StringImpl**>(WTF::Partitions::FastMalloc(
@@ -76,7 +76,7 @@ static void DeallocateOnMainThread(void* header_pointer) {
   StringImpl** header = static_cast<StringImpl**>(header_pointer);
   StringImpl* underlying_string = *header;
   DCHECK(underlying_string);
-  underlying_string->Deref();  // Balanced by call to ref in allocate above.
+  underlying_string->Release();  // Balanced by call to ref in allocate above.
   WTF::Partitions::FastFree(header);
 }
 
@@ -89,7 +89,8 @@ static void Deallocate(void* pointer, void*) {
     if (!IsMainThread()) {
       internal::CallOnMainThread(&DeallocateOnMainThread, header);
     } else {
-      underlying_string->Deref();  // Balanced by call to ref in allocate above.
+      underlying_string
+          ->Release();  // Balanced by call to ref in allocate above.
       WTF::Partitions::FastFree(header);
     }
   }
