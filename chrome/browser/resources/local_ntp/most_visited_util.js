@@ -225,13 +225,7 @@ function fillMostVisited(location, fill) {
       domain: params.dom || ''
     };
   } else {
-    var apiHandle = chrome.embeddedSearch.newTabPage;
-    // Note: This does not actually result in any logging; it's a workaround for
-    // crbug.com/698675. It effectively sets the "instant support" state of the
-    // tab to true, which makes later calls to fetch the most visited items
-    // succeed.
-    apiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_ALL_TILES_RECEIVED);
-    data = apiHandle.getMostVisitedItemData(params.rid);
+    data = chrome.embeddedSearch.newTabPage.getMostVisitedItemData(params.rid);
     if (!data)
       return;
   }
