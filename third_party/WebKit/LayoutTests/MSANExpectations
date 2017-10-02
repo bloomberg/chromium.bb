@@ -24,6 +24,7 @@ crbug.com/522315 [ Linux ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Crash 
 
 crbug.com/517704 [ Linux ] external/wpt/encoding/api-invalid-label.html [ Timeout Pass ]
 crbug.com/708175 [ Linux ] external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
+crbug.com/708175 [ Linux ] virtual/mojo-blobs/external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 
 crbug.com/701433 [ Linux ] crypto/subtle/worker-subtle-crypto-concurrent.html [ Timeout Pass ]
 crbug.com/701563 [ Linux ] external/wpt/svg/interfaces.html [ Timeout Pass ]
@@ -48,6 +49,7 @@ crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/r
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
 crbug.com/736554 [ Linux ] external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
+crbug.com/736554 [ Linux ] virtual/mojo-blobs/external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
