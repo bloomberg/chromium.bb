@@ -47,14 +47,7 @@ TEST(FeatureProviderTest, ManifestFeatureAvailability) {
   const FeatureProvider* provider = FeatureProvider::GetByName("manifest");
 
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                           .Set("name", "test extension")
-                           .Set("version", "1")
-                           .Set("description", "hello there")
-                           .Build())
-          .Build();
-  ASSERT_TRUE(extension.get());
+      ExtensionBuilder("test extension").Build();
 
   const Feature* feature = provider->GetFeature("description");
   EXPECT_EQ(Feature::IS_AVAILABLE,
@@ -104,24 +97,9 @@ TEST(FeatureProviderTest, PermissionFeatureAvailability) {
   const FeatureProvider* provider = FeatureProvider::GetByName("permission");
 
   scoped_refptr<const Extension> app =
-      ExtensionBuilder()
-          .SetManifest(
-              DictionaryBuilder()
-                  .Set("name", "test app")
-                  .Set("version", "1")
-                  .Set("app",
-                       DictionaryBuilder()
-                           .Set("background",
-                                DictionaryBuilder()
-                                    .Set("scripts", ListBuilder()
-                                                        .Append("background.js")
-                                                        .Build())
-                                    .Build())
-                           .Build())
-                  .Set("permissions", ListBuilder().Append("power").Build())
-                  .Build())
+      ExtensionBuilder("test app", ExtensionBuilder::Type::PLATFORM_APP)
+          .AddPermission("power")
           .Build();
-  ASSERT_TRUE(app.get());
   ASSERT_TRUE(app->is_platform_app());
 
   // A permission requested in the manifest is available.
