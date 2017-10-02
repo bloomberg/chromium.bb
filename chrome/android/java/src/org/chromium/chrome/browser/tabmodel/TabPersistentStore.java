@@ -110,29 +110,29 @@ public class TabPersistentStore extends TabPersister {
          * been loaded.
          * @param tabCountAtStartup How many tabs there are in the TabModels.
          */
-        void onInitialized(int tabCountAtStartup) {}
+        public void onInitialized(int tabCountAtStartup) {}
 
         /**
          * Called when details about a Tab are read from the metadata file.
          */
-        void onDetailsRead(int index, int id, String url,
-                boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {}
+        public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
+                boolean isIncognitoActiveIndex) {}
 
         /**
          * To be called when the TabStates have all been loaded.
          */
-        void onStateLoaded() {}
+        public void onStateLoaded() {}
 
         /**
          * To be called when the TabState from another instance has been merged.
          */
-        void onStateMerged() {}
+        public void onStateMerged() {}
 
         /**
          * Called when the metadata file has been saved out asynchronously.
          * This currently does not get called when the metadata file is saved out on the UI thread.
          */
-        void onMetadataSavedAsynchronously() {}
+        public void onMetadataSavedAsynchronously() {}
     }
 
     /** Stores information about a TabModel. */
