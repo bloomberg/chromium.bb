@@ -585,7 +585,11 @@ ImageSkia Image::AsImageSkia() const {
   return IsEmpty() ? ImageSkia() : *ToImageSkia();
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_IOS)
+UIImage* Image::AsUIImage() const {
+  return IsEmpty() ? nil : ToUIImage();
+}
+#elif defined(OS_MACOSX)
 NSImage* Image::AsNSImage() const {
   return IsEmpty() ? nil : ToNSImage();
 }
