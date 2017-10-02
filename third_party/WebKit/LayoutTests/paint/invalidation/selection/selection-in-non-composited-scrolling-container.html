@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <script src="../resources/text-based-repaint.js"></script>
 <input id="target"size="5"  value="test test test">
 <script>
 window.testIsAsync = true;
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 if (window.internals)
   window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
