@@ -272,6 +272,10 @@
     "label": "//chrome/test:chrome_app_unittests",
     "type": "console_test_launcher",
   },
+  "chrome_elf_import_unittests": {
+    "label": "//chrome_elf:chrome_elf_import_unittests",
+    "type": "raw",
+  },
   "chrome_elf_unittests": {
     "label": "//chrome_elf:chrome_elf_unittests",
     "type": "raw",

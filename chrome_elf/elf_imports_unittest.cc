@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -17,7 +18,11 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/test/launcher/test_launcher.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "base/win/pe_image.h"
+#include "build/build_config.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -75,8 +80,9 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   GetImports(dll, &elf_imports);
 
   // Check that ELF has imports.
-  ASSERT_LT(0u, elf_imports.size()) << "Ensure the chrome_elf_unittests "
-    "target was built, instead of chrome_elf_unittests.exe";
+  ASSERT_LT(0u, elf_imports.size())
+      << "Ensure the chrome_elf_import_unittests "
+         "target was built, instead of chrome_elf_import_unittests.exe";
 
   static const char* const kValidFilePatterns[] = {
     "KERNEL32.dll",
@@ -141,9 +147,9 @@ TEST_F(ELFImportsTest, DISABLED_ChromeElfLoadSanityTestImpl) {
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_elf.dll");
 
-  // We don't expect user32 to be loaded in chrome_elf_unittests. If this test
-  // case fails, then it means that a dependency on user32 has crept into the
-  // chrome_elf_unittests executable, which needs to be removed.
+  // We don't expect user32 to be loaded in chrome_elf_import_unittests. If this
+  // test case fails, then it means that a dependency on user32 has crept into
+  // the chrome_elf_imports_unittests executable, which needs to be removed.
   // NOTE: it may be a secondary dependency of another system DLL.  If so,
   // try adding a "/DELAYLOAD:<blah>.dll" to the build.gn file.
   ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
@@ -166,13 +172,31 @@ TEST_F(ELFImportsTest, ChromeExeSanityCheck) {
   GetImports(exe, &exe_imports);
 
   // Check that chrome.exe has imports.
-  ASSERT_LT(0u, exe_imports.size()) << "Ensure the chrome_elf_unittests "
-    "target was built, instead of chrome_elf_unittests.exe";
+  ASSERT_LT(0u, exe_imports.size())
+      << "Ensure the chrome_elf_import_unittests "
+         "target was built, instead of chrome_elf_import_unittests.exe";
 
   // Chrome.exe's first import must be ELF.
-  EXPECT_EQ("chrome_elf.dll", exe_imports[0]) <<
-      "Illegal import order in chrome.exe (ensure the chrome_elf_unittest "
-      "target was built, instead of just chrome_elf_unittests.exe)";
+  EXPECT_EQ("chrome_elf.dll", exe_imports[0])
+      << "Illegal import order in chrome.exe (ensure the "
+         "chrome_elf_import_unittest "
+         "target was built, instead of just chrome_elf_import_unittests.exe)";
 }
 
 }  // namespace
+
+int main(int argc, char** argv) {
+  // Ensure that the CommandLine instance honors the command line passed in
+  // instead of the default behavior on Windows which is to use the shell32
+  // CommandLineToArgvW API. The chrome_elf_imports_unittests test suite should
+  // not depend on user32 directly or indirectly (For the curious shell32
+  // depends on user32)
+  base::CommandLine::InitUsingArgvForTesting(argc, argv);
+
+  install_static::ScopedInstallDetails scoped_install_details;
+
+  base::TestSuite test_suite(argc, argv);
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+}
