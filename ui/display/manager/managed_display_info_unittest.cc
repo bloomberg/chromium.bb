@@ -125,26 +125,26 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
   EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
 }
 
-TEST_F(DisplayInfoTest, InputDevicesTest) {
+TEST_F(DisplayInfoTest, TouchDevicesTest) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
 
-  EXPECT_EQ(0u, info.input_devices().size());
+  EXPECT_EQ(0u, info.touch_device_identifiers().size());
 
-  info.AddInputDevice(10);
-  EXPECT_EQ(1u, info.input_devices().size());
-  EXPECT_EQ(10, info.input_devices()[0]);
-  info.AddInputDevice(11);
-  EXPECT_EQ(2u, info.input_devices().size());
-  EXPECT_EQ(10, info.input_devices()[0]);
-  EXPECT_EQ(11, info.input_devices()[1]);
+  info.AddTouchDevice(10u);
+  EXPECT_EQ(1u, info.touch_device_identifiers().size());
+  EXPECT_TRUE(info.HasTouchDevice(10u));
+  info.AddTouchDevice(11u);
+  EXPECT_EQ(2u, info.touch_device_identifiers().size());
+  EXPECT_TRUE(info.HasTouchDevice(10u));
+  EXPECT_TRUE(info.HasTouchDevice(11u));
 
   ManagedDisplayInfo copy_info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
   copy_info.Copy(info);
-  EXPECT_EQ(2u, copy_info.input_devices().size());
-  copy_info.ClearInputDevices();
-  EXPECT_EQ(0u, copy_info.input_devices().size());
+  EXPECT_EQ(2u, copy_info.touch_device_identifiers().size());
+  copy_info.ClearTouchDevices();
+  EXPECT_EQ(0u, copy_info.touch_device_identifiers().size());
 }
 
 TEST_F(DisplayInfoTest, TouchCalibrationTest) {

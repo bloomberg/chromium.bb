@@ -57,7 +57,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
     UpdateData();
     ~UpdateData();
 
-    std::map<int32_t, double> device_to_scale;
+    std::map<uint32_t, double> device_to_scale;
     std::vector<ui::TouchDeviceTransform> touch_device_transforms;
   };
 

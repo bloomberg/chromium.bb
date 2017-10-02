@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -17,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -91,18 +93,20 @@ TouchCalibrationData::TouchCalibrationData(
 
 // static
 uint32_t TouchCalibrationData::GenerateTouchDeviceIdentifier(
-    const std::string& device_name,
-    uint16_t vendor_id,
-    uint16_t product_id) {
-  std::string hash_str = device_name + "-" + base::UintToString(vendor_id) +
-                         "-" + base::UintToString(product_id);
+    const ui::TouchscreenDevice& device) {
+  std::string hash_str = device.name + "-" +
+                         base::UintToString(device.vendor_id) + "-" +
+                         base::UintToString(device.product_id);
   return base::PersistentHash(hash_str);
 }
 
 // static
 uint32_t TouchCalibrationData::GetFallbackTouchDeviceIdentifier() {
+  ui::TouchscreenDevice device;
+  device.name = kFallbackTouchDeviceName;
+  device.vendor_id = device.product_id = 0;
   static const uint32_t kFallbackTouchDeviceIdentifier =
-      GenerateTouchDeviceIdentifier(kFallbackTouchDeviceName, 0, 0);
+      GenerateTouchDeviceIdentifier(device);
   return kFallbackTouchDeviceIdentifier;
 }
 
@@ -371,7 +375,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
 
   active_rotation_source_ = native_info.active_rotation_source_;
   touch_support_ = native_info.touch_support_;
-  input_devices_ = native_info.input_devices_;
+  touch_device_identifiers_ = native_info.touch_device_identifiers_;
   device_scale_factor_ = native_info.device_scale_factor_;
   DCHECK(!native_info.bounds_in_native_.IsEmpty());
   bounds_in_native_ = native_info.bounds_in_native_;
@@ -471,18 +475,13 @@ gfx::Size ManagedDisplayInfo::GetNativeModeSize() const {
 
 std::string ManagedDisplayInfo::ToString() const {
   int rotation_degree = static_cast<int>(GetActiveRotation()) * 90;
-  std::string devices_str;
-
-  for (size_t i = 0; i < input_devices_.size(); ++i) {
-    devices_str += base::IntToString(input_devices_[i]);
-    if (i != input_devices_.size() - 1)
-      devices_str += ", ";
-  }
+  std::string touch_device_count_str =
+      base::UintToString(touch_device_identifiers_.size());
 
   std::string result = base::StringPrintf(
       "ManagedDisplayInfo[%lld] native bounds=%s, size=%s, device-scale=%g, "
       "overscan=%s, rotation=%d, ui-scale=%g, touchscreen=%s, "
-      "input_devices=[%s]",
+      "touch device count=[%" PRIuS "]",
       static_cast<long long int>(id_), bounds_in_native_.ToString().c_str(),
       size_in_pixel_.ToString().c_str(), device_scale_factor_,
       overscan_insets_in_dip_.ToString().c_str(), rotation_degree,
@@ -491,7 +490,7 @@ std::string ManagedDisplayInfo::ToString() const {
           ? "yes"
           : touch_support_ == Display::TOUCH_SUPPORT_UNAVAILABLE ? "no"
                                                                  : "unknown",
-      devices_str.c_str());
+      touch_device_identifiers_.size());
 
   return result;
 }
@@ -515,12 +514,19 @@ bool ManagedDisplayInfo::Use125DSFForUIScaling() const {
   return Display::IsInternalDisplayId(id_);
 }
 
-void ManagedDisplayInfo::AddInputDevice(int id) {
-  input_devices_.push_back(id);
+void ManagedDisplayInfo::AddTouchDevice(uint32_t touch_device_identifier) {
+  touch_device_identifiers_.insert(touch_device_identifier);
+  set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
 }
 
-void ManagedDisplayInfo::ClearInputDevices() {
-  input_devices_.clear();
+void ManagedDisplayInfo::ClearTouchDevices() {
+  touch_device_identifiers_.clear();
+  set_touch_support(Display::TOUCH_SUPPORT_UNAVAILABLE);
+}
+
+bool ManagedDisplayInfo::HasTouchDevice(
+    uint32_t touch_device_identifier) const {
+  return touch_device_identifiers_.count(touch_device_identifier);
 }
 
 void ResetDisplayIdForTest() {

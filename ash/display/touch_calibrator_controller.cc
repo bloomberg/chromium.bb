@@ -114,8 +114,7 @@ void TouchCalibratorController::CompleteCalibration(
   for (const auto& device : device_list) {
     if (device.id == touch_device_id_) {
       touch_device_identifier =
-          display::TouchCalibrationData::GenerateTouchDeviceIdentifier(
-              device.name, device.vendor_id, device.product_id);
+          display::TouchCalibrationData::GenerateTouchDeviceIdentifier(device);
       did_find_touch_device = true;
       break;
     }
