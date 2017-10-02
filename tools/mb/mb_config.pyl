@@ -378,6 +378,12 @@
       'Battor Agent Win': 'official_goma_minimal_symbols_clang',
     },
 
+    'chromium.sandbox': {
+      'Linux Builder SANDBOX': 'release_bot',
+      'Deterministic Linux SANDBOX': 'release_bot',
+      'Fuchsia Compile SANDBOX': 'release_bot_fuchsia',
+    },
+
     'chromium.swarm': {
       'Android N5 Swarm': 'android_release_bot_minimal_symbols',
       'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
