@@ -228,7 +228,6 @@ class ShellSurface : public SurfaceTreeHost,
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
-  void OnSurfaceContentSizeChanged() override;
   void OnSetFrame(SurfaceFrameType type) override;
 
   // Overridden from SurfaceObserver:
