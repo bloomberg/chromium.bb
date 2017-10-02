@@ -1,13 +1,11 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Stores information about the user's brower and system configuration.
-// The system configuration fields are recorded once per client session.
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "SystemProfileProtos";
 option java_package = "org.chromium.components.metrics";
 
@@ -15,6 +13,8 @@ package metrics;
 
 import "extension_install.proto";
 
+// Stores information about the user's brower and system configuration.
+// The system configuration fields are recorded once per client session.
 // Next tag: 26
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
@@ -65,7 +65,7 @@ message SystemProfileProto {
   // The date the user enabled UMA, in seconds since the epoch.
   // If the user has toggled the UMA enabled state multiple times, this will
   // be the most recent date on which UMA was enabled.
-  // For privacy, this is rounded to the nearest hour.
+  // For privacy, this is rounded to the nearest hour (M30+).
   optional int64 uma_enabled_date = 3;
 
   // The time when the client was installed, in seconds since the epoch.
@@ -101,8 +101,8 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
-  // Next tag for Hardware: 18
   // Information on the user's hardware.
+  // Next tag: 18
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
     optional string cpu_architecture = 1;
@@ -115,8 +115,12 @@ message SystemProfileProto {
     optional int64 dll_base = 3;
 
     // The hardware_class describes the current machine model, e.g. "MacPro1,1"
-    // on Mac, or "Nexus 5" on Android. Only implemented on OS X, Android, and
-    // Chrome OS.
+    // on Mac, "iPhone9,3" on iOS or "Nexus 5" on Android. Implemented on OS X,
+    // iOS, Android, Chrome OS.
+    //
+    // The iOS device hardware class was added in Chrome M60 release. Prior
+    // to that, device hardware class was incorrectly recorded in
+    // cpu_architecture field.
     //
     // For Chrome OS, the device hardware class ID is a unique string associated
     // with each Chrome OS device product revision generally assigned at
@@ -151,7 +155,8 @@ message SystemProfileProto {
       // The signature reported by CPUID (from EAX).
       optional uint32 signature = 2;
 
-      // Number of logical processors/cores on the current machine.
+      // Number of logical processors/cores on the current machine, which
+      // includes hyperthreaded cores.
       optional uint32 num_cores = 3;
     }
     optional CPU cpu = 13;
@@ -329,13 +334,13 @@ message SystemProfileProto {
 
     // Describe wifi access point information.
     message WifiAccessPoint {
-      // Vendor prefix of the access point's BSSID, these are OUIs
+      // Vendor prefix of the access point's BSSID. These are OUIs
       // (Organizationally Unique Identifiers) registered by
       // the IEEE and are encoded with the first byte in bits 16-23, the
       // second byte in bits 8-15 and the third byte in bits 0-7.
       optional uint32 vendor_prefix = 1;
 
-      // Access point seurity mode definitions.
+      // Access point security mode definitions.
       enum SecurityMode {
         SECURITY_UNKNOWN = 0;
         SECURITY_WPA = 1;
@@ -358,7 +363,7 @@ message SystemProfileProto {
         optional string model_name = 2;
 
         // The device name (sometimes the same as the model_number),
-        // for example "Dummynet"
+        // for example "Dummynet".
         optional string device_name = 3;
 
         // The list of vendor-specific OUIs (Organziationally Unqiue
@@ -370,7 +375,7 @@ message SystemProfileProto {
       // The wireless access point vendor information.
       optional VendorInformation vendor_info = 3;
     }
-    // Information of the wireless AP that device is connected to.
+    // Information of the wireless access point that device is connected to.
     optional WifiAccessPoint access_point_info = 5;
 
     // Derived from net::NetworkQualityEstimator::EffectiveConnectionType
@@ -386,6 +391,7 @@ message SystemProfileProto {
       EFFECTIVE_CONNECTION_TYPE_3G = 5;
       EFFECTIVE_CONNECTION_TYPE_4G = 6;
     }
+
     // Deprecated: The connection type according to
     // net::NetworkQualityEstimator. EffectiveConnectionType is the connection
     // type whose typical performance is most similar to the measured
@@ -418,7 +424,7 @@ message SystemProfileProto {
     optional int64 last_automatic_start_timestamp = 2;
 
     // The date at which Google Update last successfully sent an update check
-    // and recieved an intact response from the server, in seconds since the
+    // and received an intact response from the server, in seconds since the
     // Unix epoch. (The updates don't need to be successfully installed.)
     optional int64 last_update_check_timestamp = 3;
 
@@ -770,7 +776,7 @@ message SystemProfileProto {
     // Dolby vision support.
     optional bool dolby_vision_support = 19;
 
-    // Supported EOTFs.
+    // Supported EOTF's.
     // EOTF support according to the spec:
     //   eotf_support & 0x1 -> SDR supported
     //   (eotf_support > 1) & 0x1 -> traditional HDR supported
@@ -793,8 +799,8 @@ message SystemProfileProto {
 
   // Information about the current wireless access point. Collected directly
   // from the wireless access point via standard apis if the device is
-  // connected to the Internet wirelessly.
-  // This is only used by Chromecast family.
+  // connected to the Internet wirelessly. Introduced for Chrome on TV devices
+  // but also can be collected by ChromeOS, Android or other clients.
   message ExternalAccessPoint {
     // The manufacturer name, for example "ASUSTeK Computer Inc.".
     optional string manufacturer = 1;
@@ -908,7 +914,7 @@ message SystemProfileProto {
   repeated AntiVirusProduct antivirus_product = 23;
 
   enum ComponentId {
-    // Represents any component that is not one of the below.
+    // The client transmitted a component ID the server does not recognize.
     UNKNOWN = 1;
 
     // All the following are various components.
@@ -925,6 +931,8 @@ message SystemProfileProto {
     SW_REPORTER = 12;
     WIDEVINE_CDM = 13;
     EPSON_INKJET_PRINTER_ESCPR = 14;
+    CROS_TERMINA = 15;
+    STAR_CUPS_DRIVER = 16;
   }
 
   // Information about what Chrome components are registered and at which

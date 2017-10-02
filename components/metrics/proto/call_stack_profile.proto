@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Call stack sample data for a given profiling session.
-
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "CallStackProfileProtos";
 option java_package = "org.chromium.components.metrics";
 
@@ -14,6 +13,7 @@ package metrics;
 
 import "execution_context.proto";
 
+// Call stack sample data for a given profiling session.
 // Next tag: 5
 message CallStackProfile {
   // Describes an entry in the callstack.
@@ -36,9 +36,10 @@ message CallStackProfile {
     optional int64 count = 2;
 
     // This repeating field indicates the current phase of the system such as
-    // whether it is in startup, general operation, or shutdown. It is a full
-    // list with the first sample and after that each indicates only the new
-    // phases that are achieved.
+    // whether it is in startup, general operation, or shutdown. The first
+    // Sample of a CallStackProfile will list all phases that have been reached;
+    // later samples will list only the new phases that occurred since the
+    // previous one.
     repeated ProcessPhase process_phase = 3;
   }
 

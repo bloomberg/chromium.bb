@@ -1,12 +1,11 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Protocol buffer for Chrome UMA (User Metrics Analysis).
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "ChromeUserMetricsExtensionProtos";
 option java_package = "org.chromium.components.metrics";
 
@@ -16,12 +15,12 @@ import "cast_logs.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
 import "omnibox_event.proto";
+import "perf_data.proto";
+import "printer_event.proto";
+import "sampled_profile.proto";
 import "system_profile.proto";
 import "translate_event.proto";
-import "printer_event.proto";
 import "user_action_event.proto";
-import "perf_data.proto";
-import "sampled_profile.proto";
 
 // Next tag: 17
 message ChromeUserMetricsExtension {
@@ -71,7 +70,7 @@ message ChromeUserMetricsExtension {
   repeated TranslateEventProto translate_event = 15;
   repeated PrinterEventProto printer_event = 16;
 
-  // This field is no longer used. Use |sampled_profile| instead.
+  // Deprecated: use |sampled_profile| instead.
   repeated PerfDataProto perf_data = 8 [deprecated=true];
 
   // A list of all collected sample-based profiles since the last UMA upload.

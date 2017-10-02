@@ -5,15 +5,16 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "SampledProfileProtos";
 option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-import "call_stack_profile.proto";
 import "execution_context.proto";
 import "perf_data.proto";
 import "perf_stat.proto";
+import "call_stack_profile.proto";
 
 // Protocol buffer for collected sample-based profiling data.
 // Contains the parameters and data from a single profile collection event.

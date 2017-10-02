@@ -4,9 +4,9 @@
 
 syntax = "proto2";
 
-package ukm;
-
 option optimize_for = LITE_RUNTIME;
+
+package ukm;
 
 // Next tag: 6
 message Entry {

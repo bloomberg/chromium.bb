@@ -5,6 +5,7 @@
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "ExecutionContextProtos";
 option java_package = "org.chromium.components.metrics";
 
@@ -54,20 +55,20 @@ enum Thread {
 // the lifetime of a process.
 enum ProcessPhase {
   // The browser's main message loop has been started.
-  // Based on histogram Startup.BrowserMessageLoopStartTime.
+  // Based on histogram Startup.MessageLoopStartTime
   MAIN_LOOP_START = 0;
 
   // The beginning of navigation in the first web contents' main frame.
-  // Based on histogram Startup.FirstWebContents.MainNavigationStart.
+  // Based on histogram Startup.FirstWebContents.MainNavigationStart
   MAIN_NAVIGATION_START = 1;
 
   // The navigation is committed (first bytes received) in the first web
   // contents' main frame.
-  // Based on histogram Startup.FirstWebContents.MainNavigationFinished.
+  // Based on histogram Startup.FirstWebContents.MainNavigationFinished
   MAIN_NAVIGATION_FINISHED = 2;
 
   // First non-empty paint of the first web contents.
-  // Based on histogram Startup.FirstWebContents.NonEmptyPaint2.
+  // Based on histogram Startup.FirstWebContents.NonEmptyPaint2
   FIRST_NONEMPTY_PAINT = 3;
 
   // Process shutdown has begun.
