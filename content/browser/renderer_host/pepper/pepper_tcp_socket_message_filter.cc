@@ -52,7 +52,7 @@ using ppapi::TCPSocketVersion;
 
 namespace {
 
-size_t g_num_instances = 0;
+size_t g_num_tcp_filter_instances = 0;
 
 }  // namespace
 
@@ -87,7 +87,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
   DCHECK(host);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ++g_num_instances;
+  ++g_num_tcp_filter_instances;
   host_->AddInstanceObserver(instance_, this);
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id_, &render_frame_id_)) {
@@ -125,7 +125,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ++g_num_instances;
+  ++g_num_tcp_filter_instances;
   host_->AddInstanceObserver(instance_, this);
   if (!host->GetRenderFrameIDsForInstance(
           instance, &render_process_id_, &render_frame_id_)) {
@@ -141,12 +141,12 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
     socket_->Close();
   if (ssl_socket_)
     ssl_socket_->Disconnect();
-  --g_num_instances;
+  --g_num_tcp_filter_instances;
 }
 
 // static
 size_t PepperTCPSocketMessageFilter::GetNumInstances() {
-  return g_num_instances;
+  return g_num_tcp_filter_instances;
 }
 
 scoped_refptr<base::TaskRunner>

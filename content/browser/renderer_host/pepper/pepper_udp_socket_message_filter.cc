@@ -45,7 +45,7 @@ using ppapi::proxy::UDPSocketResourceConstants;
 
 namespace {
 
-size_t g_num_instances = 0;
+size_t g_num_udp_filter_instances = 0;
 
 }  // namespace
 
@@ -82,7 +82,7 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
       render_frame_id_(0),
       is_potentially_secure_plugin_context_(
           host->IsPotentiallySecurePluginContext(instance)) {
-  ++g_num_instances;
+  ++g_num_udp_filter_instances;
   DCHECK(host);
 
   if (!host->GetRenderFrameIDsForInstance(
@@ -93,12 +93,12 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
 
 PepperUDPSocketMessageFilter::~PepperUDPSocketMessageFilter() {
   Close();
-  --g_num_instances;
+  --g_num_udp_filter_instances;
 }
 
 // static
 size_t PepperUDPSocketMessageFilter::GetNumInstances() {
-  return g_num_instances;
+  return g_num_udp_filter_instances;
 }
 
 scoped_refptr<base::TaskRunner>
