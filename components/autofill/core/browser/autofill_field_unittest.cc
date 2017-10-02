@@ -705,12 +705,17 @@ INSTANTIATE_TEST_CASE_P(
             {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
              "11"},
             NotNumericMonthsContentsNoPlaceholder()},
-        // The AngularJS framework adds a prefix to number types. Test that it
-        // is removed.
+        // The AngularJS framework can add a "number:" prefix to select values.
         FillWithExpirationMonthTestCase{
             {"number:1", "number:2", "number:3", "number:4", "number:5",
              "number:6", "number:7", "number:8", "number:9", "number:10",
              "number:11", "number:12"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // The AngularJS framework can add a "string:" prefix to select values.
+        FillWithExpirationMonthTestCase{
+            {"string:1", "string:2", "string:3", "string:4", "string:5",
+             "string:6", "string:7", "string:8", "string:9", "string:10",
+             "string:11", "string:12"},
             NotNumericMonthsContentsNoPlaceholder()},
         // Values start at 0 and the first content is a placeholder.
         FillWithExpirationMonthTestCase{
