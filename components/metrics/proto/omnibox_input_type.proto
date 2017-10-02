@@ -1,17 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Stores information about an omnibox interaction.
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "OmniboxInputTypeProtos";
 option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
+// Stores information about an omnibox interaction.
 // What kind of input the user provided.
 // Note that the type below may be misleading.  For example, "http:/" alone
 // cannot be opened as a URL, so it is marked as a QUERY; yet the user

@@ -1,12 +1,11 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Stores information about translate UI, translate Ranekr and user interaction.
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "TranslateEventProtos";
 option java_package = "org.chromium.components.metrics";
 
@@ -27,8 +26,8 @@ message TranslateEventProto {
   // Target language of the translation.
   optional string target_language = 2;
 
-  // The country where the user is. 2-letter country code. This
-  // corresponds to the stored permanent country in VariationsService.
+  // The country where the user is. 2-letter country code. This corresponds to
+  // the stored permanent country in VariationsService.
   optional string country = 14;
 
   // The following counts are extracted from TranslatePrefs.
@@ -67,7 +66,7 @@ message TranslateEventProto {
   optional RankerResponse ranker_response = 9;
 
   // The action performed by the user in the translate UI.
-  // Next tag 28.
+  // Next tag: 28
   enum EventType {
     // The feedback event does not correspond to any of the enumerated
     // cases.

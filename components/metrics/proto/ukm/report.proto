@@ -4,16 +4,16 @@
 
 syntax = "proto2";
 
-package ukm;
-
 option optimize_for = LITE_RUNTIME;
+
+package ukm;
 
 import "ukm/entry.proto";
 import "ukm/source.proto";
 import "system_profile.proto";
 
 // This is the message type sent from Chrome to the UKM collector.
-// Next tag: 6
+// Next tag: 7
 message Report {
   // A unique identifier for a Chrome install. This ID should be used only
   // in UKM reports, and not linked to any other data sources.

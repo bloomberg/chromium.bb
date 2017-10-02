@@ -1,17 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Histogram-collected metrics.
 
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
+
 option java_outer_classname = "HistogramEventProtos";
 option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
+// Histogram-collected metrics.
 // Next tag: 4
 message HistogramEventProto {
   // The name of the histogram, hashed.
