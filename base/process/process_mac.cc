@@ -71,19 +71,6 @@ bool Process::SetProcessBackgrounded(PortProvider* port_provider,
     return false;
   }
 
-  // Latency QoS regulates timer throttling/accuracy. Select default tier
-  // on foreground because precise timer firing isn't needed.
-  struct task_qos_policy qos_policy = {
-      background ? LATENCY_QOS_TIER_5 : LATENCY_QOS_TIER_UNSPECIFIED,
-      background ? THROUGHPUT_QOS_TIER_5 : THROUGHPUT_QOS_TIER_UNSPECIFIED};
-  result = task_policy_set(task_port, TASK_OVERRIDE_QOS_POLICY,
-                           reinterpret_cast<task_policy_t>(&qos_policy),
-                           TASK_QOS_POLICY_COUNT);
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_set TASK_OVERRIDE_QOS_POLICY";
-    return false;
-  }
-
   return true;
 }
 
