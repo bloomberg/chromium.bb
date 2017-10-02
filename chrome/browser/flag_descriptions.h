@@ -998,6 +998,9 @@ extern const char kChromeHomeSwipeLogicButtonOnly[];
 extern const char kChromeHomeName[];
 extern const char kChromeHomeDescription[];
 
+extern const char kChromeMemexName[];
+extern const char kChromeMemexDescription[];
+
 extern const char kContentSuggestionsCategoryOrderName[];
 extern const char kContentSuggestionsCategoryOrderDescription[];
 

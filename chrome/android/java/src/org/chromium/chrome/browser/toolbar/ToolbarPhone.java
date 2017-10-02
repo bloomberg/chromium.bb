@@ -49,6 +49,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -495,15 +496,12 @@ public class ToolbarPhone extends ToolbarLayout
         if (mLocationBar != null && mLocationBar.hasFocus()) return;
 
         if (mToggleTabStackButton == v) {
-            // The button is clickable before the native library is loaded
-            // and the listener is setup.
-            if (mToggleTabStackButton != null && mToggleTabStackButton.isClickable()
-                    && mTabSwitcherListener != null) {
-                dismissTabSwitcherCallout();
-                cancelAppMenuUpdateBadgeAnimation();
-                mTabSwitcherListener.onClick(mToggleTabStackButton);
-                RecordUserAction.record("MobileToolbarShowStackView");
+            if (ChromeFeatureList.isInitialized()
+                    && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
+                openMemexUI();
+                return;
             }
+            handleToggleTabStack();
         } else if (mNewTabButton == v) {
             v.setEnabled(false);
 
@@ -518,8 +516,25 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
+    private void handleToggleTabStack() {
+        // The button is clickable before the native library is loaded
+        // and the listener is setup.
+        if (mToggleTabStackButton != null && mToggleTabStackButton.isClickable()
+                && mTabSwitcherListener != null) {
+            dismissTabSwitcherCallout();
+            cancelAppMenuUpdateBadgeAnimation();
+            mTabSwitcherListener.onClick(mToggleTabStackButton);
+            RecordUserAction.record("MobileToolbarShowStackView");
+        }
+    }
+
     @Override
     public boolean onLongClick(View v) {
+        if (v == mToggleTabStackButton && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
+            handleToggleTabStack();
+            return true;
+        }
         CharSequence description = null;
         if (v == mToggleTabStackButton) {
             description = getResources().getString(R.string.open_tabs);
