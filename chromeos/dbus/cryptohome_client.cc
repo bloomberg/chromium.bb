@@ -178,13 +178,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void GetSystemSalt(const GetSystemSaltCallback& callback) override {
+  void GetSystemSalt(
+      DBusMethodCallback<std::vector<uint8_t>> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnGetSystemSalt,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override,
@@ -1020,21 +1021,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles the result of GetSystemSalt().
-  void OnGetSystemSalt(const GetSystemSaltCallback& callback,
+  void OnGetSystemSalt(DBusMethodCallback<std::vector<uint8_t>> callback,
                        dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8_t>());
+      std::move(callback).Run(base::nullopt);
       return;
     }
     dbus::MessageReader reader(response);
-    const uint8_t* bytes = NULL;
+    const uint8_t* bytes = nullptr;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8_t>());
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(DBUS_METHOD_CALL_SUCCESS,
-                 std::vector<uint8_t>(bytes, bytes + length));
+    std::move(callback).Run(std::vector<uint8_t>(bytes, bytes + length));
   }
 
   // Calls a method without result values.

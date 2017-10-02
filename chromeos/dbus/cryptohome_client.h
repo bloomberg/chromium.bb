@@ -63,10 +63,6 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // handler invocation later.
   using AsyncMethodCallback = DBusMethodCallback<int /* async_id */>;
 
-  // A callback for GetSystemSalt().
-  typedef base::Callback<void(DBusMethodCallStatus call_status,
-                              const std::vector<uint8_t>& system_salt)>
-      GetSystemSaltCallback;
   // A callback to handle LowDiskSpace signals.
   typedef base::Callback<void(uint64_t disk_free_bytes)> LowDiskSpaceHandler;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.  The result
@@ -183,7 +179,8 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Calls GetSystemSalt method.  |callback| is called after the method call
   // succeeds.
-  virtual void GetSystemSalt(const GetSystemSaltCallback& callback) = 0;
+  virtual void GetSystemSalt(
+      DBusMethodCallback<std::vector<uint8_t>> callback) = 0;
 
   // Calls GetSanitizedUsername method.  |callback| is called after the method
   // call succeeds.

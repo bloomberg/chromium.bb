@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -76,13 +78,11 @@ void SystemSaltGetter::DidWaitForServiceToBeAvailable(
 
 void SystemSaltGetter::DidGetSystemSalt(
     const GetSystemSaltCallback& callback,
-    DBusMethodCallStatus call_status,
-    const std::vector<uint8_t>& system_salt) {
-  if (call_status == DBUS_METHOD_CALL_SUCCESS &&
-      !system_salt.empty() &&
-      system_salt.size() % 2 == 0U) {
-      raw_salt_ = system_salt;
-    system_salt_ = ConvertRawSaltToHexString(system_salt);
+    base::Optional<std::vector<uint8_t>> system_salt) {
+  if (system_salt.has_value() && !system_salt->empty() &&
+      system_salt->size() % 2 == 0U) {
+    raw_salt_ = std::move(system_salt).value();
+    system_salt_ = ConvertRawSaltToHexString(raw_salt_);
 
     std::vector<base::Closure> callbacks;
     callbacks.swap(on_system_salt_ready_);

@@ -140,9 +140,9 @@ void FakeCryptohomeClient::GetAccountDiskUsage(
 }
 
 void FakeCryptohomeClient::GetSystemSalt(
-    const GetSystemSaltCallback& callback) {
+    DBusMethodCallback<std::vector<uint8_t>> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, system_salt_));
+      FROM_HERE, base::BindOnce(std::move(callback), system_salt_));
 }
 
 void FakeCryptohomeClient::GetSanitizedUsername(
