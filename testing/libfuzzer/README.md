@@ -14,8 +14,7 @@ libFuzzer is an in-process coverage-driven evolutionary fuzzer. It helps
 engineers to uncover potential security & stability problems earlier.
 
 *** note
-**Requirements:** libFuzzer in Chrome is supported with GN on Linux only.
-Check [Reference] for experimental platform availability.
+**Requirements:** libFuzzer in Chrome is supported with GN on Mac and Linux only.
 ***
 
 ## Integration Status
