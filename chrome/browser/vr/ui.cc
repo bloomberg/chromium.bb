@@ -100,11 +100,12 @@ bool Ui::ShouldRenderWebVr() {
   return scene_manager_->ShouldRenderWebVr();
 }
 
-void Ui::OnGlInitialized(unsigned int content_texture_id) {
+void Ui::OnGlInitialized(unsigned int content_texture_id,
+                         UiElementRenderer::TextureLocation content_location) {
   vr_shell_renderer_ = base::MakeUnique<vr::VrShellRenderer>();
   ui_renderer_ =
       base::MakeUnique<vr::UiRenderer>(scene_.get(), vr_shell_renderer_.get());
-  scene_manager_->OnGlInitialized(content_texture_id);
+  scene_manager_->OnGlInitialized(content_texture_id, content_location);
 }
 
 void Ui::OnAppButtonClicked() {

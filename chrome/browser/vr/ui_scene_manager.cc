@@ -812,8 +812,10 @@ bool UiSceneManager::ShouldRenderWebVr() {
   return scene_->web_vr_rendering_enabled();
 }
 
-void UiSceneManager::OnGlInitialized(unsigned int content_texture_id) {
-  main_content_->set_texture_id(content_texture_id);
+void UiSceneManager::OnGlInitialized(
+    unsigned int content_texture_id,
+    UiElementRenderer::TextureLocation content_location) {
+  main_content_->SetTexture(content_texture_id, content_location);
   scene_->OnGlInitialized();
 
   ConfigureScene();

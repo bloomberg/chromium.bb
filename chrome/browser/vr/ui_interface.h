@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_UI_INTERFACE_H_
 #define CHROME_BROWSER_VR_UI_INTERFACE_H_
 
+#include "ui_element_renderer.h"
+
 namespace gfx {
 class Transform;
 }
@@ -26,7 +28,9 @@ class UiInterface {
 
   virtual bool ShouldRenderWebVr() = 0;
 
-  virtual void OnGlInitialized(unsigned int content_texture_id) = 0;
+  virtual void OnGlInitialized(
+      unsigned int content_texture_id,
+      UiElementRenderer::TextureLocation content_location) = 0;
   virtual void OnAppButtonClicked() = 0;
   virtual void OnAppButtonGesturePerformed(
       UiInterface::Direction direction) = 0;
