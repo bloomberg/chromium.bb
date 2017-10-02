@@ -173,11 +173,16 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       uint64_t suggested_max_size,
       const SimpleExperiment& experiment);
 
-  // Searches |active_entries_| for the entry corresponding to |key|. If found,
-  // returns the found entry. Otherwise, creates a new entry and returns that.
-  scoped_refptr<SimpleEntryImpl> CreateOrFindActiveEntry(
+  // Looks at current state of |entries_pending_doom_| and |active_entries_|
+  // relevant to |entry_hash|, and, as appropriate, either returns a valid entry
+  // matching |entry_hash| and |key|, or returns nullptr and sets |*post_doom|
+  // to point to a vector of closures which will be invoked when it's an
+  // appropriate time to try again.  The caller is expected to append its retry
+  // closure to that vector.
+  scoped_refptr<SimpleEntryImpl> CreateOrFindActiveOrDoomedEntry(
       uint64_t entry_hash,
-      const std::string& key);
+      const std::string& key,
+      std::vector<base::Closure>** post_doom);
 
   // Given a hash, will try to open the corresponding Entry. If we have an Entry
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
