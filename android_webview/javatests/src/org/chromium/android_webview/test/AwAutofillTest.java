@@ -395,6 +395,8 @@ public class AwAutofillTest {
     private static class AwAutofillManagerHelper extends AwAutofillManager {
         private CallbackHelper mVirtualViewEntered = new CallbackHelper();
         private CallbackHelper mVirtualValueChanged = new CallbackHelper();
+        private CallbackHelper mCommitCallbackHelper = new CallbackHelper();
+        private CallbackHelper mCancelCallbackHelper = new CallbackHelper();
         private AwContents mAwContents;
         private TestViewStructure mTestViewStructure;
         private ArrayList<Pair<Integer, AutofillValue>> mChangedValues;
@@ -446,8 +448,32 @@ public class AwAutofillTest {
         public ArrayList<Pair<Integer, AutofillValue>> getChangedValues() {
             return mChangedValues;
         }
+
+        public void clearChangedValues() {
+            if (mChangedValues != null) mChangedValues.clear();
+        }
+
+        @Override
+        public void commit() {
+            mCommitCallbackHelper.notifyCalled();
+        }
+
+        public CallbackHelper getCommitCallbackHelper() {
+            return mCommitCallbackHelper;
+        }
+
+        @Override
+        public void cancel() {
+            mCancelCallbackHelper.notifyCalled();
+        }
+
+        public CallbackHelper getCancelCallbackHelper() {
+            return mCancelCallbackHelper;
+        }
     }
 
+    public static final String FILE = "/login.html";
+    public static final String FILE_URL = "file:///android_asset/autofill.html";
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
@@ -468,6 +494,7 @@ public class AwAutofillTest {
                     }
                 });
         mHelper.setAwContents(mTestContainerView.getAwContents());
+        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
     }
 
     @Test
@@ -475,7 +502,6 @@ public class AwAutofillTest {
     @Feature({"AndroidWebView"})
     public void testBasicAutofill() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
                 + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
@@ -487,13 +513,11 @@ public class AwAutofillTest {
                 + "<input type='submit'>"
                 + "</form></body></html>";
         final int totalControls = 3;
-        final String file = "/login.html";
         try {
-            final String url = webServer.setResponse(file, data, null);
+            final String url = webServer.setResponse(FILE, data, null);
             mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                     mContentsClient.getOnPageFinishedHelper(), url);
-            mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
-                    mContentsClient, "document.getElementById('text1').select();");
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
             CallbackHelper callbackHelper = mHelper.getVirtualValueChangedCallbackHelper();
             int count = callbackHelper.getCallCount();
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
@@ -556,17 +580,14 @@ public class AwAutofillTest {
             callbackHelper.waitForCallback(count, totalControls);
 
             // Verify form filled by Javascript
-            String value0 = mActivityTestRule.executeJavaScriptAndWaitForResult(
-                    mTestContainerView.getAwContents(), mContentsClient,
-                    "document.getElementById('text1').value;");
+            String value0 =
+                    executeJavaScriptAndWaitForResult("document.getElementById('text1').value;");
             assertEquals("\"example@example.com\"", value0);
-            String value1 = mActivityTestRule.executeJavaScriptAndWaitForResult(
-                    mTestContainerView.getAwContents(), mContentsClient,
+            String value1 = executeJavaScriptAndWaitForResult(
                     "document.getElementById('checkbox1').value;");
             assertEquals("\"on\"", value1);
-            String value2 = mActivityTestRule.executeJavaScriptAndWaitForResult(
-                    mTestContainerView.getAwContents(), mContentsClient,
-                    "document.getElementById('select1').value;");
+            String value2 =
+                    executeJavaScriptAndWaitForResult("document.getElementById('select1').value;");
             assertEquals("\"2\"", value2);
         } finally {
             webServer.shutdown();
@@ -578,18 +599,15 @@ public class AwAutofillTest {
     @Feature({"AndroidWebView"})
     public void testNotifyVirtualValueChanged() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
                 + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
                 + "</form></body></html>";
-        final String file = "/login.html";
         try {
-            final String url = webServer.setResponse(file, data, null);
+            final String url = webServer.setResponse(FILE, data, null);
             mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                     mContentsClient.getOnPageFinishedHelper(), url);
-            mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
-                    mContentsClient, "document.getElementById('text1').select();");
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
             CallbackHelper callbackHelper = mHelper.getVirtualValueChangedCallbackHelper();
             int count = callbackHelper.getCallCount();
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
@@ -618,18 +636,15 @@ public class AwAutofillTest {
     @Feature({"AndroidWebView"})
     public void testJavascriptNotTriggerNotifyVirtualValueChanged() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
                 + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
                 + "</form></body></html>";
-        final String file = "/login.html";
         try {
-            final String url = webServer.setResponse(file, data, null);
+            final String url = webServer.setResponse(FILE, data, null);
             mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
                     mContentsClient.getOnPageFinishedHelper(), url);
-            mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
-                    mContentsClient, "document.getElementById('text1').select();");
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
             CallbackHelper callbackHelper = mHelper.getVirtualValueChangedCallbackHelper();
             int count = callbackHelper.getCallCount();
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
@@ -639,8 +654,7 @@ public class AwAutofillTest {
             assertEquals(1, values.size());
             assertEquals("a", values.get(0).second.getTextValue());
             count = callbackHelper.getCallCount();
-            mActivityTestRule.executeJavaScriptAndWaitForResult(mTestContainerView.getAwContents(),
-                    mContentsClient, "document.getElementById('text1').value='c';");
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').value='c';");
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             // Check if NotifyVirtualValueChanged() called one more time and value is 'cb', this
             // means javascript change didn't trigger the NotifyVirtualValueChanged().
@@ -653,6 +667,117 @@ public class AwAutofillTest {
         } finally {
             webServer.shutdown();
         }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCommit() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        final String data =
+                "<html><head></head><body><form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='password' id='passwordid' name='passwordname'"
+                + "<input type='submit'>"
+                + "</form></body></html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                    mContentsClient.getOnPageFinishedHelper(), url);
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            CallbackHelper valueChangedCallback = mHelper.getVirtualValueChangedCallbackHelper();
+            int count = valueChangedCallback.getCallCount();
+            // Commit() hasn't been called.
+            assertEquals(0, count);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            valueChangedCallback.waitForCallback(count);
+            mHelper.invokeOnProvideAutoFillVirtualStructure();
+            // Fill the password.
+            executeJavaScriptAndWaitForResult("document.getElementById('passwordid').select();");
+            count = valueChangedCallback.getCallCount();
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
+            valueChangedCallback.waitForCallback(count);
+            CallbackHelper commitCallbackHelper = mHelper.getCommitCallbackHelper();
+            count = commitCallbackHelper.getCallCount();
+            // Commit() hasn't been called.
+            assertEquals(0, count);
+            mHelper.clearChangedValues();
+            // Submit form.
+            executeJavaScriptAndWaitForResult("document.getElementById('formid').submit();");
+            commitCallbackHelper.waitForCallback(count);
+            ArrayList<Pair<Integer, AutofillValue>> values = mHelper.getChangedValues();
+            assertEquals(2, values.size());
+            assertEquals("a", values.get(0).second.getTextValue());
+            assertEquals("b", values.get(1).second.getTextValue());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testLoadFileURL() throws Throwable {
+        CallbackHelper valueChangedCallback = mHelper.getVirtualValueChangedCallbackHelper();
+        int count = valueChangedCallback.getCallCount();
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), FILE_URL);
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+        valueChangedCallback.waitForCallback(count);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCancelCalledForFirstQuery() throws Throwable {
+        mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), FILE_URL);
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        CallbackHelper cacelCallback = mHelper.getCancelCallbackHelper();
+        int count = cacelCallback.getCallCount();
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+        cacelCallback.waitForCallback(count);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCancelCalledWhenMovingToOtherForm() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        final String data =
+                "<html><head></head><body><form action='a.html' name='formname' id='formid'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='submit'></form>"
+                + "<form action='a.html' name='formname' id='formid2'>"
+                + "<input type='text' id='text2' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='submit'>"
+                + "</form></body></html>";
+        try {
+            final String url = webServer.setResponse(FILE, data, null);
+            mActivityTestRule.loadUrlSync(mTestContainerView.getAwContents(),
+                    mContentsClient.getOnPageFinishedHelper(), url);
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+            CallbackHelper cancelCallback = mHelper.getCancelCallbackHelper();
+            int count = cancelCallback.getCallCount();
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            cancelCallback.waitForCallback(count);
+            // Move to form2, cancel() should be called again.
+            executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
+            count = cancelCallback.getCallCount();
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            cancelCallback.waitForCallback(count);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    private String executeJavaScriptAndWaitForResult(String code) throws Throwable {
+        return mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mTestContainerView.getAwContents(), mContentsClient, code);
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {
