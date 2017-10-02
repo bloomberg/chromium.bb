@@ -170,7 +170,6 @@ class LayoutThemeMac final : public LayoutTheme {
   static const int kSliderTrackBorderWidth = 1;
 
  protected:
-  void AdjustMediaSliderThumbSize(ComputedStyle&) const;
   String ExtraFullscreenStyleSheet() override;
 
   // Controls color values returned from platformFocusRingColor(). systemColor()
