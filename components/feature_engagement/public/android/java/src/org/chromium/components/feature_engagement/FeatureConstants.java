@@ -13,6 +13,7 @@ public final class FeatureConstants {
     public static final String DOWNLOAD_PAGE_SCREENSHOT_FEATURE = "IPH_DownloadPageScreenshot";
     public static final String DOWNLOAD_HOME_FEATURE = "IPH_DownloadHome";
     public static final String CHROME_HOME_EXPAND_FEATURE = "IPH_ChromeHomeExpand";
+    public static final String CHROME_HOME_MENU_HEADER_FEATURE = "IPH_ChromeHomeMenuHeader";
     public static final String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     public static final String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
 

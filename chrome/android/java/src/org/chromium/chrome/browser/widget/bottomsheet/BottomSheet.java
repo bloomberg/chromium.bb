@@ -1706,9 +1706,9 @@ public class BottomSheet
     public void showHelpBubble(boolean fromMenu) {
         final Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
 
-        boolean notifyDismissed =
-                tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
-        if (!fromMenu && !notifyDismissed) return;
+        boolean showColdStartIph = !fromMenu
+                && tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
+        if (!fromMenu && !showColdStartIph) return;
 
         boolean showExpandButtonHelpBubble = mDefaultToolbarView.isUsingExpandButton();
 
@@ -1728,7 +1728,11 @@ public class BottomSheet
         helpBubble.addOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss() {
-                if (notifyDismissed) tracker.dismissed(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
+                if (fromMenu) {
+                    tracker.dismissed(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
+                } else {
+                    tracker.dismissed(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
+                }
 
                 ViewHighlighter.turnOffHighlight(anchorView);
             }

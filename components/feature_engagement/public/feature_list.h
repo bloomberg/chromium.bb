@@ -53,6 +53,8 @@ DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
 DEFINE_VARIATION_PARAM(kIPHDownloadPageScreenshotFeature,
                        "IPH_DownloadPageScreenshot");
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
+DEFINE_VARIATION_PARAM(kIPHChromeHomeMenuHeaderFeature,
+                       "IPH_ChromeHomeMenuHeader");
 DEFINE_VARIATION_PARAM(kIPHMediaDownloadFeature, "IPH_MediaDownload");
 #endif  // defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
@@ -80,6 +82,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadPageFeature),
         VARIATION_ENTRY(kIPHDownloadPageScreenshotFeature),
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
+        VARIATION_ENTRY(kIPHChromeHomeMenuHeaderFeature),
         VARIATION_ENTRY(kIPHMediaDownloadFeature),
 #elif defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
         VARIATION_ENTRY(kIPHBookmarkFeature),

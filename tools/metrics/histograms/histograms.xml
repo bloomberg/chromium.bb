@@ -97364,6 +97364,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="InProductHelp.NotifyEventReadyState"/>
   <affected-histogram name="InProductHelp.ShouldTriggerHelpUI"/>
   <suffix name="IPH_Bookmark" label="In product help bookmark."/>
+  <suffix name="IPH_ChromeHomeExpand"
+      label="In product help for Chrome Home shown on cold start."/>
+  <suffix name="IPH_ChromeHomeMenuHeader"
+      label="In product help for Chrome Home shown as a header in the app
+             menu."/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
   <suffix name="IPH_DataSaverDetail"
