@@ -1,0 +1,30 @@
+<table>
+  <tr>
+    <td class='column-entry-left'>Directory Name</td>
+    <td class='column-entry'>Line Coverage</td>
+  </tr>
+  {% for dir_entry in dir_entries %}
+  <tr class='light-row'>
+    <td>
+      <pre><a href='{{ dir_entry.href }}'>{{ dir_entry.name }}</a></pre>
+    </td>
+    <td class='{{ dir_entry.color_class }}'>
+      <pre> {{ dir_entry.percentage_coverage }}% ({{ dir_entry.executed_lines }}/{{ dir_entry.total_lines }})</pre>
+    </td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td class='column-entry-left'>File Name</td>
+    <td class='column-entry'>Line Coverage</td>
+  </tr>
+  {% for file_entry in file_entries %}
+  <tr class='light-row'>
+    <td>
+      <pre><a href='{{ file_entry.href }}'>{{ file_entry.name }}</a></pre>
+    </td>
+    <td class='{{ file_entry.color_class }}'>
+      <pre>  {{ file_entry.percentage_coverage }}% ({{ file_entry.executed_lines }}/{{ file_entry.total_lines }})</pre>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
