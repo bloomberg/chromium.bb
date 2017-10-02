@@ -48659,9 +48659,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown">
   <owner>treib@chromium.org</owner>
   <summary>
-    The number of static logos and animated logos shown to users. Note that this
-    is recorded both for logos from the cache and for fresh (or revalidated)
-    logos, so it can be recorded twice per NTP impression. Android and iOS only.
+    The number of static logos and animated logos shown to users. Note that the
+    base version of this histogram is recorded both for logos from the cache and
+    for fresh logos, so it can be recorded twice per NTP impression.
   </summary>
 </histogram>
 
@@ -48681,7 +48681,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>treib@chromium.org</owner>
   <summary>
     The amount of time between opening an NTP and the logo appearing. Only
-    recorded when there is a logo, and only recorded once per NTP. Android only.
+    recorded when there is a logo, and only recorded once per NTP.
   </summary>
 </histogram>
 

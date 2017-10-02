@@ -8,7 +8,8 @@
 // The different types of events that are logged from the NTP. This enum is used
 // to transfer information from the NTP javascript to the renderer and is *not*
 // used as a UMA enum histogram's logged value.
-// Note: Keep in sync with browser/resources/local_ntp/most_visited_single.js
+// Note: Keep in sync with browser/resources/local_ntp/local_ntp.js, voice.js,
+// and most_visited_single.js.
 enum NTPLoggingEventType {
   // Deleted: NTP_SERVER_SIDE_SUGGESTION = 0,
   // Deleted: NTP_CLIENT_SIDE_SUGGESTION = 1,
@@ -60,7 +61,16 @@ enum NTPLoggingEventType {
   NTP_VOICE_ERROR_NO_MATCH = 28,
   NTP_VOICE_ERROR_OTHER = 29,
 
-  NTP_EVENT_TYPE_LAST = NTP_VOICE_ERROR_OTHER
+  // A static Doodle was shown, coming from cache.
+  NTP_STATIC_LOGO_SHOWN_FROM_CACHE = 30,
+  // A static Doodle was shown, coming from the network.
+  NTP_STATIC_LOGO_SHOWN_FRESH = 31,
+  // A call-to-action Doodle image was shown, coming from cache.
+  NTP_CTA_LOGO_SHOWN_FROM_CACHE = 32,
+  // A call-to-action Doodle image was shown, coming from the network.
+  NTP_CTA_LOGO_SHOWN_FRESH = 33,
+
+  NTP_EVENT_TYPE_LAST = NTP_CTA_LOGO_SHOWN_FRESH
 };
 
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_
