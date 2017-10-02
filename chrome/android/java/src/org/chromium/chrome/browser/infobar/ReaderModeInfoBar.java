@@ -15,6 +15,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -59,7 +60,11 @@ public class ReaderModeInfoBar extends InfoBar {
     @Override
     protected void createCompactLayoutContent(InfoBarCompactLayout layout) {
         TextView prompt = new TextView(getContext());
-        prompt.setText(R.string.reader_view_text);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_READER_FOR_ACCESSIBILITY)) {
+            prompt.setText(R.string.reader_view_text_alt);
+        } else {
+            prompt.setText(R.string.reader_view_text);
+        }
         prompt.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getContext().getResources().getDimension(R.dimen.infobar_text_size));
         prompt.setTextColor(

@@ -13,6 +13,7 @@ namespace chrome {
 namespace android {
 
 // Alphabetical:
+extern const base::Feature kAllowReaderForAccessibility;
 extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;

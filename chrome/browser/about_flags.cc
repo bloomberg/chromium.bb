@@ -1223,8 +1223,8 @@ const FeatureEntry::FeatureVariation kSpeculativePreconnectFeatureVariations[] =
 // UMA histogram. This histogram shows the number of startups with a given flag
 // enabled. If you'd like to see user counts instead, make sure to switch to
 // to "count users" view on the dashboard. When adding new entries, the enum
-// "LoginCustomFlags" must be updated in histograms.xml. See note in
-// histograms.xml and don't forget to run AboutFlagsHistogramTest unit test
+// "LoginCustomFlags" must be updated in histograms/enums.xml. See note in
+// enums.xml and don't forget to run AboutFlagsHistogramTest unit test
 // to calculate and verify checksum.
 //
 // When adding a new choice, add it to the end of the list.
@@ -3540,6 +3540,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverflowIconsForMediaControlsName,
      flag_descriptions::kOverflowIconsForMediaControlsDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kOverflowIconsForMediaControls)},
+
+#if defined(OS_ANDROID)
+    {"allow-reader-for-accessibility",
+     flag_descriptions::kAllowReaderForAccessibilityName,
+     flag_descriptions::kAllowReaderForAccessibilityDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAllowReaderForAccessibility)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in

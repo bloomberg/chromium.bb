@@ -957,6 +957,9 @@ extern const char kAiaFetchingDescription[];
 extern const char kAccessibilityTabSwitcherName[];
 extern const char kAccessibilityTabSwitcherDescription[];
 
+extern const char kAllowReaderForAccessibilityName[];
+extern const char kAllowReaderForAccessibilityDescription[];
+
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
 
