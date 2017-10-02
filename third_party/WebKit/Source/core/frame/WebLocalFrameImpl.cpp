@@ -1046,6 +1046,9 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
           ? context_menu_node_
           : nullptr;
 
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
+
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
   if (plugin_container && plugin_container->ExecuteEditCommand(name))
@@ -1057,6 +1060,9 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
 bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
                                        const WebString& value) {
   DCHECK(GetFrame());
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer();

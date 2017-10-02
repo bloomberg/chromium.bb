@@ -12031,4 +12031,16 @@ TEST_P(ParameterizedWebFrameTest, PrintIframeUnderDetached) {
       web_view_helper.LocalMainFrame()->FirstChild()->FirstChild()));
 }
 
+TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad("about:blank");
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+
+  EXPECT_FALSE(frame->GetFrame()->HasReceivedUserGesture());
+  frame->ExecuteScript(WebScriptSource(WebString("document.execCommand('copy');")));
+  EXPECT_FALSE(frame->GetFrame()->HasReceivedUserGesture());
+  frame->ExecuteCommand(WebString::FromUTF8("Paste"));
+  EXPECT_TRUE(frame->GetFrame()->HasReceivedUserGesture());
+}
+
 }  // namespace blink
