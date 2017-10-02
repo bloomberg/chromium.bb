@@ -173,7 +173,7 @@ body .section-header > h3 {
 .page-banner-text {
   -webkit-padding-end: 8px;
   -webkit-padding-start: 26px;
-  background-image: url(../../../../ui/webui/resources/images/business.svg);
+  background-image: url(../../../ui/webui/resources/images/business.svg);
   background-position: 0 center;
   background-repeat: no-repeat;
   background-size: 18px;
