@@ -2505,6 +2505,7 @@ test("browser_tests") {
           "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm",
           "../browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm",
           "../browser/ui/cocoa/browser_window_controller_browsertest.mm",
+          "../browser/ui/cocoa/browser_window_touch_bar_browsertest.mm",
           "../browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm",
           "../browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm",
           "../browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm",
