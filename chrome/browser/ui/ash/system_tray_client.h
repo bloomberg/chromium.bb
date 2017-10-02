@@ -81,7 +81,6 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void ShowNetworkCreate(const std::string& type) override;
   void ShowThirdPartyVpnCreate(const std::string& extension_id) override;
   void ShowNetworkSettings(const std::string& network_id) override;
-  void ShowProxySettings() override;
   void SignOut() override;
   void RequestRestartForUpdate() override;
 

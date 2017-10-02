@@ -24,7 +24,7 @@ const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 const char kJsApiNetworkDropdownShow[] = "networkDropdownShow";
 const char kJsApiNetworkDropdownHide[] = "networkDropdownHide";
 const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
-const char kJsApiLaunchProxySettingsDialog[] = "launchProxySettingsDialog";
+const char kJsApiLaunchInternetDetailDialog[] = "launchInternetDetailDialog";
 const char kJsApiLaunchAddWiFiNetworkDialog[] = "launchAddWiFiNetworkDialog";
 const char kJsApiShowNetworkDetails[] = "showNetworkDetails";
 
@@ -68,17 +68,17 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleNetworkDropdownRefresh);
 
   // MD-OOBE
-  AddCallback(kJsApiLaunchProxySettingsDialog,
-              &NetworkDropdownHandler::HandleLaunchProxySettingsDialog);
+  AddCallback(kJsApiLaunchInternetDetailDialog,
+              &NetworkDropdownHandler::HandleLaunchInternetDetailDialog);
   AddCallback(kJsApiLaunchAddWiFiNetworkDialog,
               &NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog);
   AddRawCallback(kJsApiShowNetworkDetails,
                  &NetworkDropdownHandler::HandleShowNetworkDetails);
 }
 
-void NetworkDropdownHandler::HandleLaunchProxySettingsDialog() {
+void NetworkDropdownHandler::HandleLaunchInternetDetailDialog() {
   // Empty string opens the internet detail dialog for the default network.
-  LoginDisplayHost::default_host()->OpenProxySettings("");
+  LoginDisplayHost::default_host()->OpenInternetDetailDialog("");
 }
 
 void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
@@ -96,8 +96,7 @@ void NetworkDropdownHandler::HandleShowNetworkDetails(
     const base::ListValue* args) {
   std::string guid;
   args->GetString(0, &guid);
-  // OpenProxySettings shows the internet detail dialog for the network.
-  LoginDisplayHost::default_host()->OpenProxySettings(guid);
+  LoginDisplayHost::default_host()->OpenInternetDetailDialog(guid);
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
@@ -44,25 +44,23 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
+InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIProxySettingsHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::Create(
+      chrome::kChromeUIInternetDetailDialogHost);
 
   AddInternetStrings(source);
 
   source->SetJsonPath("strings.js");
-  source->SetDefaultResource(IDR_PROXY_SETTINGS_HTML);
+  source->SetDefaultResource(IDR_INTERNET_DETAIL_DIALOG_HTML);
   source->DisableContentSecurityPolicy();
 
-  source->AddResourcePath("internet_detail_dialog.html",
-                          IDR_INTERNET_DETAIL_DIALOG_HTML);
   source->AddResourcePath("internet_detail_dialog.js",
                           IDR_INTERNET_DETAIL_DIALOG_JS);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
-ProxySettingsUI::~ProxySettingsUI() {}
+InternetDetailDialogUI::~InternetDetailDialogUI() {}
 
 }  // namespace chromeos

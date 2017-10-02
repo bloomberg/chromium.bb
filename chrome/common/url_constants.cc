@@ -129,7 +129,8 @@ const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIOobeURL[] = "chrome://oobe/";
 const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
-const char kChromeUIProxySettingsURL[] = "chrome://proxy-settings/";
+const char kChromeUIIntenetDetailDialogURL[] =
+    "chrome://internet-detail-dialog/";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
 const char kChromeUISetTimeURL[] = "chrome://set-time/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
@@ -315,7 +316,7 @@ const char kChromeUINetworkHost[] = "network";
 const char kChromeUIOobeHost[] = "oobe";
 const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIPowerHost[] = "power";
-const char kChromeUIProxySettingsHost[] = "proxy-settings";
+const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
 const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUISetTimeHost[] = "set-time";
@@ -732,7 +733,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIOobeHost,
     kChromeUIOSCreditsHost,
     kChromeUIPowerHost,
-    kChromeUIProxySettingsHost,
+    kChromeUIInternetDetailDialogHost,
     kChromeUIVoiceSearchHost,
 #endif
 #if defined(OS_WIN) || defined(OS_CHROMEOS)

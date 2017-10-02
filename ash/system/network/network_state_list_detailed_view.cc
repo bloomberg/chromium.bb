@@ -168,7 +168,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       login_(login),
       info_button_(nullptr),
       settings_button_(nullptr),
-      proxy_settings_button_(nullptr),
       info_bubble_(nullptr) {}
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
@@ -202,8 +201,6 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
 
   if (sender == settings_button_)
     ShowSettings();
-  else if (sender == proxy_settings_button_)
-    Shell::Get()->system_tray_controller()->ShowProxySettings();
 
   if (owner()->system_tray())
     owner()->system_tray()->CloseBubble();
@@ -252,26 +249,11 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       IDS_ASH_STATUS_TRAY_NETWORK_INFO);
   tri_view()->AddView(TriView::Container::END, info_button_);
 
-  if (login_ != LoginStatus::NOT_LOGGED_IN) {
-    DCHECK(!settings_button_);
-    settings_button_ = new SystemMenuButton(
-        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-        IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
-
-    // Allow the user to access settings only if user is logged in
-    // and showing settings is allowed. There are situations (supervised user
-    // creation flow) when session is started but UI flow continues within
-    // login UI, i.e., no browser window is yet available.
-    if (!Shell::Get()->session_controller()->ShouldEnableSettings())
-      settings_button_->SetEnabled(false);
-
-    tri_view()->AddView(TriView::Container::END, settings_button_);
-  } else {
-    proxy_settings_button_ = new SystemMenuButton(
-        this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-        IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS);
-    tri_view()->AddView(TriView::Container::END, proxy_settings_button_);
-  }
+  DCHECK(!settings_button_);
+  settings_button_ = new SystemMenuButton(
+      this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
+      IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
+  tri_view()->AddView(TriView::Container::END, settings_button_);
 }
 
 void NetworkStateListDetailedView::ShowSettings() {
@@ -282,10 +264,19 @@ void NetworkStateListDetailedView::ShowSettings() {
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {
-  if (proxy_settings_button_) {
-    proxy_settings_button_->SetEnabled(
-        NetworkHandler::Get()->network_state_handler()->DefaultNetwork() !=
-        nullptr);
+  if (settings_button_) {
+    if (login_ == LoginStatus::NOT_LOGGED_IN) {
+      // When not logged in, only enable the settings button if there is a
+      // default (i.e. connected or connecting) network to show settings for.
+      settings_button_->SetEnabled(
+          !!NetworkHandler::Get()->network_state_handler()->DefaultNetwork());
+    } else {
+      // Otherwise, enable if showing settings is allowed. There are situations
+      // (supervised user creation flow) when the session is started but UI flow
+      // continues within login UI, i.e., no browser window is yet available.
+      settings_button_->SetEnabled(
+          Shell::Get()->session_controller()->ShouldEnableSettings());
+    }
   }
   if (list_type_ == LIST_TYPE_NETWORK) {
     NetworkStateHandler* network_state_handler =

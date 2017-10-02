@@ -128,9 +128,6 @@ interface SystemTrayClient {
   // be any string.
   ShowNetworkSettings(string network_id);
 
-  // Shows UI for changing proxy settings.
-  ShowProxySettings();
-
   // Attempts to sign out the user.
   // TODO(jamescook): Migrate to a user or login service. crbug.com/665582
   SignOut();

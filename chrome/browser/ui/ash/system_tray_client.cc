@@ -415,7 +415,8 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
     return;
   if (!LoginState::Get()->IsUserLoggedIn()) {
     DCHECK(!network_id.empty());
-    chromeos::LoginDisplayHost::default_host()->OpenProxySettings(network_id);
+    chromeos::LoginDisplayHost::default_host()->OpenInternetDetailDialog(
+        network_id);
     return;
   }
 
@@ -448,14 +449,6 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   }
   base::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);
-}
-
-void SystemTrayClient::ShowProxySettings() {
-  LoginState* login_state = LoginState::Get();
-  // User is not logged in.
-  CHECK(!login_state->IsUserLoggedIn() ||
-        login_state->GetLoggedInUserType() == LoginState::LOGGED_IN_USER_NONE);
-  chromeos::LoginDisplayHost::default_host()->OpenProxySettings("");
 }
 
 void SystemTrayClient::SignOut() {

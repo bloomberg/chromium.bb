@@ -219,7 +219,7 @@ Polymer({
         polymerIcon: 'oobe-welcome-20:add-proxy',
         customData: {
           onTap: function() {
-            self.OpenProxySettingsDialog_();
+            self.OpenInternetDetailDialog_();
           },
         },
       });
@@ -294,8 +294,8 @@ Polymer({
    *
    * @private
    */
-  OpenProxySettingsDialog_: function(item) {
-    chrome.send('launchProxySettingsDialog');
+  OpenInternetDetailDialog_: function(item) {
+    chrome.send('launchInternetDetailDialog');
   },
 
   /**
