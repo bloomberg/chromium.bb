@@ -322,6 +322,11 @@ deps = {
   'src/third_party/glslang/src':
     Var('chromium_git') + '/external/github.com/google/glslang.git' + '@' + '210c6bf4d8119dc5f8ac21da2d4c87184f7015e0',
 
+  'src/third_party/google_toolbox_for_mac/src': {
+      'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
+      'condition': 'checkout_ios or checkout_mac',
+  },
+
   'src/third_party/googletest/src':
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '7f8fefabedf2965980585be8c2bff97458f28e0b',
 
@@ -417,6 +422,16 @@ deps = {
 
   'src/third_party/libyuv':
     Var('chromium_git') + '/libyuv/libyuv.git' + '@' + '5b1af9a33545895ea12c52bf007f17914de19173',  # from r1670
+
+  'src/third_party/lighttpd': {
+      'url': Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
+      'condition': 'checkout_mac or checkout_win',
+  },
+
+  'src/third_party/lss': {
+      'url': Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
+      'condition': 'checkout_android or checkout_linux',
+  },
 
   'src/third_party/material_design_icons/src': {
       'url': Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
@@ -593,38 +608,6 @@ deps = {
   },
 }
 
-
-deps_os = {
-  'win': {
-    # TODO(phajdan.jr): move all lighttpd entries to deps behind condition.
-    'src/third_party/lighttpd':
-      Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
-  },
-  'ios': {
-    # TODO(phajdan.jr): move all google_toolbox_for_mac entries to deps behind condition.
-    'src/third_party/google_toolbox_for_mac/src':
-      Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
-  },
-  'mac': {
-    # TODO(phajdan.jr): move all google_toolbox_for_mac entries to deps behind condition.
-    'src/third_party/google_toolbox_for_mac/src':
-      Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
-
-    # TODO(phajdan.jr): move all lighttpd entries to deps behind condition.
-    'src/third_party/lighttpd':
-      Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
-  },
-  'unix': {
-    # TODO(phajdan.jr): move all lss entries together to deps behind proper condition.
-    'src/third_party/lss':
-      Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
-  },
-  'android': {
-    # TODO(phajdan.jr): move all lss entries together to deps behind proper condition.
-    'src/third_party/lss':
-      Var('chromium_git') + '/linux-syscall-support.git' + '@' + Var('lss_revision'),
-  },
-}
 
 include_rules = [
   # Everybody can use some things.
