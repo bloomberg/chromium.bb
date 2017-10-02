@@ -145,14 +145,18 @@ AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
   CHECK(!instance_) << "There can be only one instance of"
                     << " WinAccessibilityEventMonitor at a time.";
   instance_ = this;
-  win_event_hook_handle_ = SetWinEventHook(
-      EVENT_MIN,
-      EVENT_MAX,
-      GetModuleHandle(NULL),
-      &AccessibilityEventRecorderWin::WinEventHookThunk,
-      GetCurrentProcessId(),
-      0,  // Hook all threads
-      WINEVENT_INCONTEXT);
+
+  // For now, just use out of context events when running as a utility to watch
+  // events (no BrowserAccessibilityManager), because otherwise Chrome events
+  // are not getting reported. Being in context is better so that for
+  // TEXT_REMOVED and TEXT_INSERTED events, we can query the text that was
+  // inserted or removed and include that in the log.
+  int context = manager ? WINEVENT_INCONTEXT : WINEVENT_OUTOFCONTEXT;
+  win_event_hook_handle_ =
+      SetWinEventHook(EVENT_MIN, EVENT_MAX, GetModuleHandle(NULL),
+                      &AccessibilityEventRecorderWin::WinEventHookThunk, pid,
+                      0,  // Hook all threads
+                      context);
   CHECK(win_event_hook_handle_);
 }
 
