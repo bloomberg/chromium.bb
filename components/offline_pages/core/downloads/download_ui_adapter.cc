@@ -187,6 +187,15 @@ void DownloadUIAdapter::OnChanged(const SavePageRequest& request) {
     return;
 
   std::string guid = request.client_id().id;
+
+  // There is a chance that when OnChanged comes from RequestCoordinator,
+  // the item has already been downloaded and this update would cause an
+  // incorrect "in progress" state to be shown in UI.
+  bool page_already_added =
+      items_.find(guid) != items_.end() && !items_[guid]->is_request;
+  if (page_already_added)
+    return;
+
   bool temporarily_hidden =
       delegate_->IsTemporarilyHiddenInUI(request.client_id());
   items_[guid] = base::MakeUnique<ItemInfo>(request, temporarily_hidden);
