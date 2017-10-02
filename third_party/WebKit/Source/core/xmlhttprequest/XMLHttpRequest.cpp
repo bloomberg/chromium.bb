@@ -43,6 +43,7 @@
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLDocument.h"
@@ -60,6 +61,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/FileMetadata.h"
 #include "platform/HTTPNames.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"
@@ -1112,6 +1114,17 @@ void XMLHttpRequest::CreateRequest(RefPtr<EncodedFormData> http_body,
   if (async_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestAsynchronous);
+    if (GetExecutionContext()->IsDocument()) {
+      // Update histogram for usage of async xhr within pagedismissal.
+      auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
+      if (pagedismissal != Document::kNoDismissal) {
+        UseCounter::Count(GetDocument(), WebFeature::kAsyncXhrInPageDismissal);
+        DEFINE_STATIC_LOCAL(EnumerationHistogram,
+                            asyncxhr_pagedismissal_histogram,
+                            ("XHR.Async.PageDismissal", 5));
+        asyncxhr_pagedismissal_histogram.Count(pagedismissal);
+      }
+    }
     if (upload_)
       request.SetReportUploadProgress(true);
 
@@ -1126,6 +1139,16 @@ void XMLHttpRequest::CreateRequest(RefPtr<EncodedFormData> http_body,
 
   // Use count for XHR synchronous requests.
   UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
+  if (GetExecutionContext()->IsDocument()) {
+    // Update histogram for usage of sync xhr within pagedismissal.
+    auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
+    if (pagedismissal != Document::kNoDismissal) {
+      UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
+      DEFINE_STATIC_LOCAL(EnumerationHistogram, syncxhr_pagedismissal_histogram,
+                          ("XHR.Sync.PageDismissal", 5));
+      syncxhr_pagedismissal_histogram.Count(pagedismissal);
+    }
+  }
   ThreadableLoader::LoadResourceSynchronously(execution_context, request, *this,
                                               options, resource_loader_options);
 
