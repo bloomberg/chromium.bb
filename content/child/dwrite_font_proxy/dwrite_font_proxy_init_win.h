@@ -23,7 +23,7 @@ CONTENT_EXPORT void UninitializeDWriteFontProxy();
 // font IPC messages. This should only be called when running as a test.
 CONTENT_EXPORT void SetDWriteFontProxySenderForTesting(IPC::Sender* sender);
 
-// Allows ChildThreadImpl to register a thread saef sender to DWriteFontProxy
+// Allows ChildThreadImpl to register a thread safe sender to DWriteFontProxy
 // so we don't depend on being on the main thread to use DWriteFontProxy.
 CONTENT_EXPORT void UpdateDWriteFontProxySender(IPC::Sender*);
 

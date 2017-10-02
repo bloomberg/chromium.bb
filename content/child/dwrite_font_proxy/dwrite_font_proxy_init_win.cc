@@ -59,6 +59,12 @@ void InitializeDWriteFontProxy() {
 
   IPC::Sender* sender = g_sender_override;
 
+  // Hack for crbug.com/631254: set the sender if we can get one, so that when
+  // Flash calls into the font proxy from a different thread we will have a
+  // sender available.
+  if (!sender && ChildThreadImpl::current())
+    sender = ChildThreadImpl::current()->thread_safe_sender();
+
   if (!g_font_collection) {
     mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
         &g_font_collection, factory.Get(), sender);
