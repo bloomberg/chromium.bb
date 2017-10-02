@@ -4730,7 +4730,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         for (j = 0; j < AOMMIN(cm->mib_size, cm->mi_rows - mi_row); j++) {
           for (k = 0; k < AOMMIN(cm->mib_size, cm->mi_cols - mi_col); k++) {
             cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
-                .mbmi.current_delta_lf_from_base = current_delta_lf_from_base;
+                .mbmi.current_delta_lf_from_base =
+                clamp(current_delta_lf_from_base, 0, MAX_LOOP_FILTER);
 #if CONFIG_LOOPFILTER_LEVEL
             for (int lf_id = 0; lf_id < FRAME_LF_COUNT; ++lf_id) {
               cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)]
