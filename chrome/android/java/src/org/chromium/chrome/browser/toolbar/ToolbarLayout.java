@@ -719,6 +719,14 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
     }
 
+    /**
+     * Opens the Memex UI in the current tab.
+     */
+    protected void openMemexUI() {
+        getLocationBar().hideSuggestions();
+        if (mToolbarTabController != null) mToolbarTabController.openMemexUI();
+    }
+
     @Override
     public void setMenuButtonHighlight(boolean highlight) {
         mHighlightingMenu = highlight;

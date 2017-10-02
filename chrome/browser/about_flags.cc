@@ -1955,6 +1955,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-home-swipe-logic", flag_descriptions::kChromeHomeSwipeLogicName,
      flag_descriptions::kChromeHomeSwipeLogicDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kChromeHomeSwipeLogicChoices)},
+    {"enable-chrome-memex", flag_descriptions::kChromeMemexName,
+     flag_descriptions::kChromeMemexDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeMemexFeature)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,

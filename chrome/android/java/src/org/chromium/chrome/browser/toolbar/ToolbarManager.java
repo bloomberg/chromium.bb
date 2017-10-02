@@ -124,6 +124,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public static final int MINIMUM_LOAD_PROGRESS = 5;
 
+    private static final String CHROME_MEMEX_URL = "https://chrome-memex.corp.google.com";
+
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
@@ -965,6 +967,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             homePageUrl = UrlConstants.NTP_URL;
         }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
+    }
+
+    @Override
+    public void openMemexUI() {
+        Tab currentTab = mToolbarModel.getTab();
+        if (currentTab == null) return;
+        currentTab.loadUrl(new LoadUrlParams(CHROME_MEMEX_URL, PageTransition.AUTO_BOOKMARK));
     }
 
     /**

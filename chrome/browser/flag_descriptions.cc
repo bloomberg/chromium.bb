@@ -1613,6 +1613,11 @@ const char kChromeHomeDescription[] =
     "Enables Chrome Home on Android. You must restart the browser"
     " twice for changes to take effect.";
 
+const char kChromeMemexName[] = "Chrome Memex";
+const char kChromeMemexDescription[] =
+    "Enables Chrome Memex homepage on Android. Restricted to opted-in "
+    "Googlers.";
+
 const char kContentSuggestionsCategoryOrderName[] =
     "Default content suggestions category order (e.g. on NTP)";
 const char kContentSuggestionsCategoryOrderDescription[] =
