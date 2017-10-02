@@ -17,6 +17,7 @@ if (NOT EMSCRIPTEN)
   endif ()
 endif ()
 
+option(ENABLE_ADOPTED_EXPERIMENTS "Enable adopted experiments." ON)
 option(ENABLE_CCACHE "Enable ccache support." OFF)
 option(ENABLE_DISTCC "Enable distcc support." OFF)
 option(ENABLE_DOCS "Enable documentation generation (doxygen required)." ON)
