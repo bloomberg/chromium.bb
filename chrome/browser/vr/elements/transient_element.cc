@@ -37,8 +37,10 @@ SimpleTransientElement::SimpleTransientElement(const base::TimeDelta& timeout)
 
 SimpleTransientElement::~SimpleTransientElement() {}
 
-void SimpleTransientElement::OnBeginFrame(const base::TimeTicks& time) {
-  super::OnBeginFrame(time);
+void SimpleTransientElement::OnBeginFrame(
+    const base::TimeTicks& time,
+    const gfx::Vector3dF& head_direction) {
+  super::OnBeginFrame(time, head_direction);
 
   // Do nothing if we're not going to be visible.
   if (GetTargetOpacity() != opacity_when_visible())
@@ -65,8 +67,9 @@ ShowUntilSignalTransientElement::ShowUntilSignalTransientElement(
 ShowUntilSignalTransientElement::~ShowUntilSignalTransientElement() {}
 
 void ShowUntilSignalTransientElement::OnBeginFrame(
-    const base::TimeTicks& time) {
-  super::OnBeginFrame(time);
+    const base::TimeTicks& time,
+    const gfx::Vector3dF& head_direction) {
+  super::OnBeginFrame(time, head_direction);
 
   // Do nothing if we're not going to be visible.
   if (GetTargetOpacity() != opacity_when_visible())

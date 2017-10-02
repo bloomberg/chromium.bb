@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/test/animation_utils.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +28,9 @@ TEST(SimpleTransientElementTest, Visibility) {
 
   // Enable, and ensure that the element transiently disappears.
   element.SetVisible(true);
-  element.OnBeginFrame(MsToTicks(10));
+  element.OnBeginFrame(MsToTicks(10), kForwardVector);
   EXPECT_EQ(element.opacity_when_visible(), element.opacity());
-  element.OnBeginFrame(MsToTicks(2010));
+  element.OnBeginFrame(MsToTicks(2010), kForwardVector);
   EXPECT_EQ(0.0f, element.opacity());
 }
 
@@ -42,21 +43,21 @@ TEST(SimpleTransientElementTest, RefreshVisibility) {
   // Enable, and ensure that the element is visible.
   element.SetVisible(true);
   EXPECT_EQ(element.opacity_when_visible(), element.opacity());
-  element.OnBeginFrame(MsToTicks(1000));
+  element.OnBeginFrame(MsToTicks(1000), kForwardVector);
 
   // Refresh visibility, and ensure that the element still transiently
   // disappears, but at a later time.
   element.RefreshVisible();
-  element.OnBeginFrame(MsToTicks(2000));
+  element.OnBeginFrame(MsToTicks(2000), kForwardVector);
   EXPECT_EQ(element.opacity_when_visible(), element.opacity());
-  element.OnBeginFrame(MsToTicks(3000));
+  element.OnBeginFrame(MsToTicks(3000), kForwardVector);
   EXPECT_EQ(0.0f, element.opacity());
 
   // Refresh visibility, and ensure that disabling hides the element.
   element.SetVisible(true);
   EXPECT_EQ(element.opacity_when_visible(), element.opacity());
   element.RefreshVisible();
-  element.OnBeginFrame(MsToTicks(4000));
+  element.OnBeginFrame(MsToTicks(4000), kForwardVector);
   EXPECT_EQ(element.opacity_when_visible(), element.opacity());
   element.SetVisible(false);
   EXPECT_EQ(0.0f, element.opacity());
@@ -83,28 +84,28 @@ TEST(SimpleTransientElementTest, VisibilityChildren) {
   parent->AddChild(std::move(element));
 
   // Child hidden because parent is hidden.
-  scene.OnBeginFrame(MsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
   EXPECT_FALSE(child->IsVisible());
   EXPECT_FALSE(parent->IsVisible());
 
   // Setting visiblity on parent should make the child visible.
   parent->SetVisible(true);
-  scene.OnBeginFrame(MsToTicks(10), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(10), kForwardVector);
   EXPECT_TRUE(child->IsVisible());
   EXPECT_TRUE(parent->IsVisible());
 
   // Make sure the elements go away.
-  scene.OnBeginFrame(MsToTicks(2010), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(2010), kForwardVector);
   EXPECT_FALSE(child->IsVisible());
   EXPECT_FALSE(parent->IsVisible());
 
   // Test again, but this time manually set the visibility to false.
   parent->SetVisible(true);
-  scene.OnBeginFrame(MsToTicks(2020), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(2020), kForwardVector);
   EXPECT_TRUE(child->IsVisible());
   EXPECT_TRUE(parent->IsVisible());
   parent->SetVisible(false);
-  scene.OnBeginFrame(MsToTicks(2030), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(2030), kForwardVector);
   EXPECT_FALSE(child->IsVisible());
   EXPECT_FALSE(parent->IsVisible());
 }
@@ -142,16 +143,16 @@ TEST_F(ShowUntilSignalElementTest, ElementHidesAfterSignal) {
 
   // Make element visible.
   element().SetVisible(true);
-  element().OnBeginFrame(MsToTicks(10));
+  element().OnBeginFrame(MsToTicks(10), kForwardVector);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Signal, element should still be visible since time < min duration.
   element().Signal();
-  element().OnBeginFrame(MsToTicks(200));
+  element().OnBeginFrame(MsToTicks(200), kForwardVector);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Element hides and callback triggered.
-  element().OnBeginFrame(MsToTicks(2010));
+  element().OnBeginFrame(MsToTicks(2010), kForwardVector);
   EXPECT_EQ(0.0f, element().opacity());
   EXPECT_TRUE(callback_triggered());
   EXPECT_EQ(TransientElementHideReason::kSignal, hide_reason());
@@ -163,15 +164,15 @@ TEST_F(ShowUntilSignalElementTest, TimedOut) {
 
   // Make element visible.
   element().SetVisible(true);
-  element().OnBeginFrame(MsToTicks(10));
+  element().OnBeginFrame(MsToTicks(10), kForwardVector);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Element should be visible since we haven't signalled.
-  element().OnBeginFrame(MsToTicks(2010));
+  element().OnBeginFrame(MsToTicks(2010), kForwardVector);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
 
   // Element hides and callback triggered.
-  element().OnBeginFrame(MsToTicks(6010));
+  element().OnBeginFrame(MsToTicks(6010), kForwardVector);
   EXPECT_EQ(0.0f, element().opacity());
   EXPECT_TRUE(callback_triggered());
   EXPECT_EQ(TransientElementHideReason::kTimeout, hide_reason());
@@ -183,15 +184,15 @@ TEST_F(ShowUntilSignalElementTest, RefreshVisibility) {
   // Enable, and ensure that the element is visible.
   element().SetVisible(true);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
-  element().OnBeginFrame(MsToTicks(1000));
+  element().OnBeginFrame(MsToTicks(1000), kForwardVector);
   element().Signal();
 
   // Refresh visibility, and ensure that the element still transiently
   // disappears, but at a later time.
   element().RefreshVisible();
-  element().OnBeginFrame(MsToTicks(2500));
+  element().OnBeginFrame(MsToTicks(2500), kForwardVector);
   EXPECT_EQ(element().opacity_when_visible(), element().opacity());
-  element().OnBeginFrame(MsToTicks(3000));
+  element().OnBeginFrame(MsToTicks(3000), kForwardVector);
   EXPECT_EQ(0.0f, element().opacity());
   EXPECT_EQ(TransientElementHideReason::kSignal, hide_reason());
 }

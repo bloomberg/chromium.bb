@@ -67,7 +67,8 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
-  scene_->root_element().UpdateInheritedProperties();
+  scene_->root_element().UpdateComputedOpacityRecursive();
+  scene_->root_element().UpdateWorldSpaceTransformRecursive();
   UiElement* element = scene_->GetUiElementByName(name);
   if (!element)
     return false;
@@ -78,7 +79,8 @@ bool UiSceneManagerTest::IsVisible(UiElementName name) const {
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& trace_context,
     const std::set<UiElementName>& names) const {
-  scene_->root_element().UpdateInheritedProperties();
+  scene_->root_element().UpdateComputedOpacityRecursive();
+  scene_->root_element().UpdateWorldSpaceTransformRecursive();
   SCOPED_TRACE(trace_context);
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -92,7 +94,8 @@ void UiSceneManagerTest::VerifyElementsVisible(
 
 bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
                                           bool visible) const {
-  scene_->root_element().UpdateInheritedProperties();
+  scene_->root_element().UpdateComputedOpacityRecursive();
+  scene_->root_element().UpdateWorldSpaceTransformRecursive();
   for (auto name : names) {
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
@@ -110,7 +113,8 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
 bool UiSceneManagerTest::VerifyRequiresLayout(
     const std::set<UiElementName>& names,
     bool requires_layout) const {
-  scene_->root_element().UpdateInheritedProperties();
+  scene_->root_element().UpdateComputedOpacityRecursive();
+  scene_->root_element().UpdateWorldSpaceTransformRecursive();
   for (auto name : names) {
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);

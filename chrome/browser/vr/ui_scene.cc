@@ -61,28 +61,39 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 
 void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
                            const gfx::Vector3dF& look_at) {
+  // Process all animations and pre-binding work. I.e., induce any time-related
+  // "dirtiness" on the scene graph.
   for (auto& element : *root_element_) {
-    // Process all animations before calculating object transforms.
-    element.OnBeginFrame(current_time);
+    element.set_update_phase(UiElement::kDirty);
+    element.OnBeginFrame(current_time, look_at);
+    element.set_update_phase(UiElement::kUpdatedAnimations);
   }
 
+  // Propagate updates across bindings.
   for (auto& element : *root_element_) {
-    for (auto& binding : element.bindings()) {
-      binding->Update();
-    }
+    element.UpdateBindings();
+    element.set_update_phase(UiElement::kUpdatedBindings);
   }
 
+  // We must now update visibility since some texture update optimizations rely
+  // on accurate visibility information.
+  root_element_->UpdateComputedOpacityRecursive();
+
+  // Update textures and sizes.
+  for (auto& element : *root_element_) {
+    element.PrepareToDraw();
+    element.set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+  }
+
+  // Update layout, which depends on size.
   for (auto& element : *root_element_) {
     element.LayOutChildren();
-    element.AdjustRotationForHeadPose(look_at);
+    element.set_update_phase(UiElement::kUpdatedLayout);
   }
 
-  root_element_->UpdateInheritedProperties();
-}
-
-void UiScene::PrepareToDraw() {
-  for (auto& element : *root_element_)
-    element.PrepareToDraw();
+  // Now that we have finalized our local values, we can safely update our
+  // final, baked transform.
+  root_element_->UpdateWorldSpaceTransformRecursive();
 }
 
 UiElement& UiScene::root_element() {
