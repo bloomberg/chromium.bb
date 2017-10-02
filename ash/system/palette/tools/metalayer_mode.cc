@@ -4,7 +4,7 @@
 
 #include "ash/system/palette/tools/metalayer_mode.h"
 
-#include "ash/palette_delegate.h"
+#include "ash/highlighter/highlighter_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -56,17 +56,18 @@ PaletteToolId MetalayerMode::GetToolId() const {
 void MetalayerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::Get()->palette_delegate()->ShowMetalayer(
+  Shell::Get()->highlighter_controller()->SetExitCallback(
       base::BindOnce(&MetalayerMode::OnMetalayerSessionComplete,
                      weak_factory_.GetWeakPtr()),
-      activated_via_button_);
+      !activated_via_button_ /* no retries if activated via button */);
+  Shell::Get()->highlighter_controller()->SetEnabled(true);
   delegate()->HidePalette();
 }
 
 void MetalayerMode::OnDisable() {
   CommonPaletteTool::OnDisable();
 
-  Shell::Get()->palette_delegate()->HideMetalayer();
+  Shell::Get()->highlighter_controller()->SetEnabled(false);
   activated_via_button_ = false;
 }
 

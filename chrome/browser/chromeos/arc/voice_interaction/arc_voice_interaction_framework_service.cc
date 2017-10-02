@@ -22,6 +22,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -226,10 +227,13 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
       framework_instance->StartVoiceInteractionSession(IsHomescreenActive());
     }
   }
+
+  highlighter_client_ = std::make_unique<HighlighterControllerClient>(this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  highlighter_client_.reset();
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
