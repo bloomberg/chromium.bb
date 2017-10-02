@@ -257,7 +257,6 @@ EXPERIMENT_LIST="
     convolve_round
     compound_round
     ext_tx
-    dpcm_intra
     tx64x64
     ext_intra
     intra_interp
@@ -560,7 +559,6 @@ post_process_cmdline() {
     enabled compound_round && soft_enable convolve_round
     enabled intra_edge && enable_feature ext_intra
     enabled chroma_2x2 && disable_feature chroma_sub8x8
-    enabled dpcm_intra && enable_feature ext_tx
     enabled chroma_sub8x8 && enable_feature cb4x4
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
