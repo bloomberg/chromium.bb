@@ -13,8 +13,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 
@@ -59,8 +59,7 @@ class CHROMEOS_EXPORT SystemSaltGetter {
   void DidWaitForServiceToBeAvailable(const GetSystemSaltCallback& callback,
                                       bool service_is_available);
   void DidGetSystemSalt(const GetSystemSaltCallback& callback,
-                        DBusMethodCallStatus call_status,
-                        const RawSalt& system_salt);
+                        base::Optional<std::vector<uint8_t>> system_salt);
 
   RawSalt raw_salt_;
   std::string system_salt_;
