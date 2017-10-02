@@ -175,10 +175,11 @@ def _PrintPerDeviceOutput(devices, results, single_line=False):
 def _RunMemUsage(devices, package_name):
   def mem_usage_helper(d):
     ret = []
-    proc_map = d.GetPids(package_name)
-    for name, pids in proc_map.iteritems():
-      for pid in pids:
-        ret.append((name, pid, d.GetMemoryUsageForPid(pid)))
+    proc_map = _GetPackagePids(d, package_name)
+    for name in sorted(proc_map.iterkeys()):
+      for pid in proc_map[name]:
+        ret.append(
+            (name, '\n'.join(d.RunShellCommand(['dumpsys', 'meminfo', pid]))))
     return ret
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
@@ -187,11 +188,11 @@ def _RunMemUsage(devices, package_name):
     if not result:
       print 'No processes found.'
     else:
-      for name, pid, usage in sorted(result):
-        print '%s(%s):' % (name, pid)
-        for k, v in sorted(usage.iteritems()):
-          print '    %s=%d' % (k, v)
-        print
+      for name, usage in sorted(result):
+        print _Colorize(
+            '==== Output of "dumpsys meminfo %s" ====' % name,
+            colorama.Fore.GREEN)
+        print usage
 
 
 def _DuHelper(device, path_spec, run_as=None):
@@ -401,7 +402,8 @@ class _LogcatProcessor(object):
     self._UpdateMyPids()
 
   def _UpdateMyPids(self):
-    for name, pids in self._device.GetPids(self._package_name).items():
+    package_pids = _GetPackagePids(self._device, self._package_name)
+    for name, pids in package_pids.iteritems():
       if ':' not in name:
         self._primary_pid = int(pids[0])
       self._my_pids.update(int(p) for p in pids)
@@ -531,9 +533,15 @@ def _RunLogcat(device, package_name, mapping_path, verbose):
       deobfuscate.Close()
 
 
+def _GetPackagePids(device, package_name):
+  return dict((k, v) for k, v in device.GetPids(package_name).iteritems()
+              if k == package_name or k.startswith(package_name + ':'))
+
+
 def _RunPs(devices, package_name):
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
-  all_pids = parallel_devices.GetPids(package_name).pGet(None)
+  all_pids = parallel_devices.pMap(
+      lambda d: _GetPackagePids(d, package_name)).pGet(None)
   for proc_map in _PrintPerDeviceOutput(devices, all_pids):
     if not proc_map:
       print 'No processes found.'
