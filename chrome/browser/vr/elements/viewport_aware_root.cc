@@ -40,6 +40,12 @@ ViewportAwareRoot::ViewportAwareRoot() {
 
 ViewportAwareRoot::~ViewportAwareRoot() = default;
 
+void ViewportAwareRoot::OnBeginFrame(const base::TimeTicks& time,
+                                     const gfx::Vector3dF& head_direction) {
+  UiElement::OnBeginFrame(time, head_direction);
+  AdjustRotationForHeadPose(head_direction);
+}
+
 void ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
   DCHECK(!look_at.IsZero());
@@ -81,7 +87,7 @@ bool ViewportAwareRoot::HasVisibleChildren() {
   return ElementHasVisibleChildren(this);
 }
 
-void ViewportAwareRoot::OnUpdatedInheritedProperties() {
+void ViewportAwareRoot::OnUpdatedWorldSpaceTransform() {
   // We must not inherit a transform.
   DCHECK(parent()->world_space_transform().IsIdentity());
 }

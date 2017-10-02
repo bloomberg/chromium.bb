@@ -95,7 +95,6 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
       controller_info.touchpad_button_state, &gesture_list,
       &controller_info.target_point, &controller_info.reticle_render_target);
 
-  ui_->scene()->PrepareToDraw();
   ui_->ui_renderer()->Draw(render_info, controller_info);
 
   // We produce GL errors while rendering. Clear them all so that we can check

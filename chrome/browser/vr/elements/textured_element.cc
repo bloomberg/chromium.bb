@@ -50,8 +50,9 @@ void TexturedElement::UpdateTexture() {
 void TexturedElement::UpdateElementSize() {
   // Updating the height according to width is a hack.  This may be overridden.
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  float height = drawn_size.height() / drawn_size.width() * size().width();
-  SetSize(size().width(), height);
+  float height =
+      drawn_size.height() / drawn_size.width() * stale_size().width();
+  SetSize(stale_size().width(), height);
 }
 
 void TexturedElement::Render(

@@ -460,7 +460,8 @@ void UiSceneManager::CreateUrlBar(Model* model) {
       base::Bind(
           [](Rect* r, const float& value) {
             r->SetSize(kLoadingIndicatorWidth * value, kLoadingIndicatorHeight);
-            r->SetTranslate(r->size().width() * 0.5f, 0.0f, 0.001f);
+            r->SetTranslate(kLoadingIndicatorWidth * value * 0.5f, 0.0f,
+                            0.001f);
           },
           base::Unretained(indicator_fg.get()))));
   scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));

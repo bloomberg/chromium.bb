@@ -861,11 +861,6 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   if (!ShouldDrawWebVr())
     UpdateController(render_info_primary_.head_pose);
 
-  // Ensure that all elements are ready before drawing. Eg., elements may have
-  // been dirtied due to animation on input processing and need to regenerate
-  // textures.
-  ui_->scene()->PrepareToDraw();
-
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
                  render_info_primary_.surface_texture_size,
                  &render_info_primary_);

@@ -9,6 +9,7 @@
 #include "base/numerics/ranges.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -89,8 +90,7 @@ void VrTestContext::DrawFrame() {
   render_info.left_eye_info.view_proj_matrix = proj_matrix * head_pose_;
 
   // Update the render position of all UI elements (including desktop).
-  ui_->scene()->OnBeginFrame(current_time, gfx::Vector3dF(0.f, 0.f, -1.f));
-  ui_->scene()->PrepareToDraw();
+  ui_->scene()->OnBeginFrame(current_time, kForwardVector);
   ui_->OnProjMatrixChanged(render_info.left_eye_info.proj_matrix);
   ui_->ui_renderer()->Draw(render_info, *controller_info_);
 

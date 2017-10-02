@@ -165,7 +165,7 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
 
   EXPECT_FALSE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
   child->SetVisible(false);
-  scene.root_element().UpdateInheritedProperties();
+  scene.root_element().UpdateComputedOpacityRecursive();
   EXPECT_TRUE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
 }
 

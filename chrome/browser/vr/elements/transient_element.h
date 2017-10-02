@@ -41,7 +41,8 @@ class SimpleTransientElement : public TransientElement {
   explicit SimpleTransientElement(const base::TimeDelta& timeout);
   ~SimpleTransientElement() override;
 
-  void OnBeginFrame(const base::TimeTicks& time) override;
+  void OnBeginFrame(const base::TimeTicks& time,
+                    const gfx::Vector3dF& head_direction) override;
 
  private:
   typedef TransientElement super;
@@ -68,7 +69,8 @@ class ShowUntilSignalTransientElement : public TransientElement {
       const base::Callback<void(TransientElementHideReason)>& callback);
   ~ShowUntilSignalTransientElement() override;
 
-  void OnBeginFrame(const base::TimeTicks& time) override;
+  void OnBeginFrame(const base::TimeTicks& time,
+                    const gfx::Vector3dF& head_direction) override;
 
   // This must be called before the set timeout to hide the element.
   void Signal();

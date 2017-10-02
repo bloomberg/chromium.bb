@@ -63,9 +63,21 @@ class UiElement : public cc::AnimationTarget {
     kScaleIndex = 2,
   };
 
+  enum UpdatePhase {
+    kDirty = 0,
+    kUpdatedAnimations,
+    kUpdatedBindings,
+    kUpdatedComputedOpacity,
+    kUpdatedTexturesAndSizes,
+    kUpdatedLayout,
+    kUpdatedWorldSpaceTransform,
+    kClean = kUpdatedWorldSpaceTransform,
+  };
+
   virtual void PrepareToDraw();
 
-  virtual void OnBeginFrame(const base::TimeTicks& time);
+  virtual void OnBeginFrame(const base::TimeTicks& time,
+                            const gfx::Vector3dF& head_direction);
 
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
@@ -125,7 +137,7 @@ class UiElement : public cc::AnimationTarget {
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
 
-  gfx::SizeF size() const { return size_; }
+  gfx::SizeF size() const;
   void SetSize(float width, float hight);
 
   // It is assumed that operations is of size 4 with a component for layout
@@ -155,7 +167,7 @@ class UiElement : public cc::AnimationTarget {
     corner_radius_ = corner_radius;
   }
 
-  float computed_opacity() const { return computed_opacity_; }
+  float computed_opacity() const;
   void set_computed_opacity(float computed_opacity) {
     computed_opacity_ = computed_opacity;
   }
@@ -182,9 +194,7 @@ class UiElement : public cc::AnimationTarget {
   void SetMode(ColorScheme::Mode mode);
   ColorScheme::Mode mode() const { return mode_; }
 
-  const gfx::Transform& world_space_transform() const {
-    return world_space_transform_;
-  }
+  const gfx::Transform& world_space_transform() const;
   void set_world_space_transform(const gfx::Transform& transform) {
     world_space_transform_ = transform;
   }
@@ -200,6 +210,7 @@ class UiElement : public cc::AnimationTarget {
   const std::vector<std::unique_ptr<BindingBase>>& bindings() {
     return bindings_;
   }
+  void UpdateBindings();
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -245,13 +256,8 @@ class UiElement : public cc::AnimationTarget {
 
   virtual gfx::Transform LocalTransform() const;
 
-  // Handles positioning adjustment for element which may reposition itself
-  // automatically under certain circumstances. For example, viewport aware
-  // element needs to reposition itself when the element is too far to the left
-  // or right where the head is pointing.
-  virtual void AdjustRotationForHeadPose(const gfx::Vector3dF& look_at);
-
-  void UpdateInheritedProperties();
+  void UpdateComputedOpacityRecursive();
+  void UpdateWorldSpaceTransformRecursive();
 
   std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
   const std::vector<std::unique_ptr<UiElement>>& children() const {
@@ -275,13 +281,19 @@ class UiElement : public cc::AnimationTarget {
     return const_reverse_iterator(nullptr);
   }
 
+  void set_update_phase(UpdatePhase phase) { phase_ = phase; }
+
  protected:
   virtual void OnSetMode();
-  virtual void OnUpdatedInheritedProperties();
+  virtual void OnUpdatedWorldSpaceTransform();
 
   AnimationPlayer& animation_player() { return animation_player_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
+
+  // This is to be used only during the texture / size updated phase (i.e., to
+  // change your size based on your old size).
+  gfx::SizeF stale_size() const;
 
  private:
   // Valid IDs are non-negative.
@@ -352,6 +364,8 @@ class UiElement : public cc::AnimationTarget {
   std::vector<std::unique_ptr<UiElement>> children_;
 
   std::vector<std::unique_ptr<BindingBase>> bindings_;
+
+  UpdatePhase phase_ = kClean;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

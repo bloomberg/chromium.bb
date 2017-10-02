@@ -53,10 +53,6 @@ class UiScene {
   void OnBeginFrame(const base::TimeTicks& current_time,
                     const gfx::Vector3dF& look_at);
 
-  // This function gets called just before rendering the elements in the
-  // frame lifecycle. After this function, no element should be dirtied.
-  void PrepareToDraw();
-
   UiElement& root_element();
 
   UiElement* GetUiElementById(int element_id) const;
