@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_reader.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
@@ -110,7 +109,7 @@ void ArcDocumentsProviderFileStreamReader::OnResolveToContentUrl(
   DCHECK(!content_url_resolved_);
 
   if (content_url.is_valid()) {
-    underlying_reader_ = base::MakeUnique<ArcContentFileSystemFileStreamReader>(
+    underlying_reader_ = std::make_unique<ArcContentFileSystemFileStreamReader>(
         content_url, offset_);
   }
   content_url_resolved_ = true;

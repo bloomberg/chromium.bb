@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -92,7 +92,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+        std::make_unique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
@@ -100,7 +100,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     ArcAuthNotification::DisableForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 

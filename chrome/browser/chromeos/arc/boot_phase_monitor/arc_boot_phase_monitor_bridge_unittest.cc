@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 
+#include <memory>
+
 #include "base/threading/platform_thread.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -24,17 +26,17 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::MakeUnique<chromeos::FakeSessionManagerClient>());
+        std::make_unique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
 
     disable_cpu_restriction_counter_ = 0;
     record_uma_counter_ = 0;
-    testing_profile_ = base::MakeUnique<TestingProfile>();
-    arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
-    bridge_service_ = base::MakeUnique<ArcBridgeService>();
+    testing_profile_ = std::make_unique<TestingProfile>();
+    arc_session_manager_ = std::make_unique<ArcSessionManager>(
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    bridge_service_ = std::make_unique<ArcBridgeService>();
 
-    boot_phase_monitor_bridge_ = base::MakeUnique<ArcBootPhaseMonitorBridge>(
+    boot_phase_monitor_bridge_ = std::make_unique<ArcBootPhaseMonitorBridge>(
         testing_profile_.get(), bridge_service_.get());
     boot_phase_monitor_bridge_->SetDelegateForTesting(
         std::make_unique<TestDelegateImpl>(this));

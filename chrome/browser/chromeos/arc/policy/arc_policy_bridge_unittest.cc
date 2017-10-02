@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
@@ -93,14 +92,14 @@ void ExpectStringWithClosure(base::Closure quit_closure,
 
 arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
     const std::string& expected) {
-  auto was_run = base::MakeUnique<CheckedBoolean>();
+  auto was_run = std::make_unique<CheckedBoolean>();
   return base::Bind(&ExpectString, base::Passed(&was_run), expected);
 }
 
 arc::ArcPolicyBridge::ReportComplianceCallback PolicyComplianceCallback(
     base::Closure quit_closure,
     const std::string& expected) {
-  auto was_run = base::MakeUnique<CheckedBoolean>();
+  auto was_run = std::make_unique<CheckedBoolean>();
   return base::Bind(&ExpectStringWithClosure, quit_closure,
                     base::Passed(&was_run), expected);
 }
@@ -117,7 +116,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   ArcPolicyBridgeTest() {}
 
   void SetUp() override {
-    bridge_service_ = base::MakeUnique<ArcBridgeService>();
+    bridge_service_ = std::make_unique<ArcBridgeService>();
     EXPECT_CALL(policy_service_,
                 GetPolicies(policy::PolicyNamespace(
                     policy::POLICY_DOMAIN_CHROME, std::string())))
@@ -125,26 +124,26 @@ class ArcPolicyBridgeTest : public testing::Test {
     EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
         .Times(1);
 
-    policy_instance_ = base::MakeUnique<FakePolicyInstance>();
+    policy_instance_ = std::make_unique<FakePolicyInstance>();
     bridge_service_->policy()->SetInstance(policy_instance_.get());
 
     // Setting up user profile for ReportCompliance() tests.
     chromeos::FakeChromeUserManager* const fake_user_manager =
         new chromeos::FakeChromeUserManager();
     user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(fake_user_manager);
+        std::make_unique<chromeos::ScopedUserManagerEnabler>(fake_user_manager);
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId("user@gmail.com", "1111111111"));
     fake_user_manager->AddUser(account_id);
     fake_user_manager->LoginUser(account_id);
-    testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    testing_profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile("user@gmail.com");
     ASSERT_TRUE(profile_);
 
     // TODO(hidehiko): Use Singleton instance tied to BrowserContext.
-    policy_bridge_ = base::MakeUnique<ArcPolicyBridge>(
+    policy_bridge_ = std::make_unique<ArcPolicyBridge>(
         profile_, bridge_service_.get(), &policy_service_);
     policy_bridge_->OverrideIsManagedForTesting(true);
   }
@@ -190,7 +189,7 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(
+      std::make_unique<base::Value>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
@@ -216,7 +215,7 @@ TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
+      std::make_unique<base::Value>("http://chromium.org"), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
@@ -224,7 +223,7 @@ TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
   policy_map().Set(policy::key::kDisableScreenshots,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(true), nullptr);
+                   std::make_unique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"screenCaptureDisabled\":true}"));
 }
@@ -233,7 +232,7 @@ TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(false), nullptr);
+                   std::make_unique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
@@ -242,7 +241,7 @@ TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
   policy_map().Set(policy::key::kAudioCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(false), nullptr);
+                   std::make_unique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"unmuteMicrophoneDisabled\":true}"));
 }
@@ -251,19 +250,19 @@ TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(1), nullptr);
+                   std::make_unique<base::Value>(1), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(2), nullptr);
+                   std::make_unique<base::Value>(2), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":true}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(3), nullptr);
+                   std::make_unique<base::Value>(3), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
 }
@@ -272,7 +271,7 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
   policy_map().Set(policy::key::kExternalStorageDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(true), nullptr);
+                   std::make_unique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"mountPhysicalMediaDisabled\":true}"));
 }
@@ -303,11 +302,11 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(ArcCertsSyncMode::COPY_CA_CERTS), nullptr);
+      std::make_unique<base::Value>(ArcCertsSyncMode::COPY_CA_CERTS), nullptr);
   policy_map().Set(policy::key::kOpenNetworkConfiguration,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(kFakeONC), nullptr);
+                   std::make_unique<base::Value>(kFakeONC), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"caCerts\":"
       "[{\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24"
@@ -322,7 +321,7 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(ArcCertsSyncMode::SYNC_DISABLED), nullptr);
+      std::make_unique<base::Value>(ArcCertsSyncMode::SYNC_DISABLED), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
@@ -330,7 +329,7 @@ TEST_F(ArcPolicyBridgeTest, DeveloperToolsDisabledTest) {
   policy_map().Set(policy::key::kDeveloperToolsDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(true), nullptr);
+                   std::make_unique<base::Value>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"debuggingFeaturesDisabled\":true}"));
 }
@@ -339,7 +338,7 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(
+      std::make_unique<base::Value>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
@@ -351,11 +350,11 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
+      std::make_unique<base::Value>("http://chromium.org"), nullptr);
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::MakeUnique<base::Value>(false), nullptr);
+                   std::make_unique<base::Value>(false), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
       "[{\"installType\":\"REQUIRED\","

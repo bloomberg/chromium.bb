@@ -51,16 +51,16 @@ class ArcTtsServiceTest : public testing::Test {
   ~ArcTtsServiceTest() override = default;
 
   void SetUp() override {
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    testing_profile_ = base::MakeUnique<TestingProfile>();
-    arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
-    tts_controller_ = base::MakeUnique<TestableTtsController>();
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    testing_profile_ = std::make_unique<TestingProfile>();
+    arc_session_manager_ = std::make_unique<ArcSessionManager>(
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    tts_controller_ = std::make_unique<TestableTtsController>();
 
     ArcTtsService::GetFactory()->SetTestingFactoryAndUse(
         testing_profile_.get(),
         [](content::BrowserContext* context) -> std::unique_ptr<KeyedService> {
-          return base::MakeUnique<ArcTtsService>(
+          return std::make_unique<ArcTtsService>(
               context, ArcServiceManager::Get()->arc_bridge_service());
         });
     tts_service_ = ArcTtsService::GetForBrowserContext(testing_profile_.get());

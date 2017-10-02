@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
@@ -50,15 +49,15 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
     fake_file_system_.AddFile(
         File(kArcUrl, kData, kMimeType, File::Seekable::NO));
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    profile_ = base::MakeUnique<TestingProfile>();
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    profile_ = std::make_unique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
     ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
         profile_.get(), &CreateArcFileSystemOperationRunnerForTesting);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &fake_file_system_);
 
-    async_file_util_ = base::MakeUnique<ArcContentFileSystemAsyncFileUtil>();
+    async_file_util_ = std::make_unique<ArcContentFileSystemAsyncFileUtil>();
   }
 
  protected:

@@ -11,7 +11,6 @@
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -446,7 +445,7 @@ void ArcSupportHost::SetRequestOpenAppCallbackForTesting(
 bool ArcSupportHost::Initialize() {
   DCHECK(message_host_);
 
-  auto loadtime_data = base::MakeUnique<base::DictionaryValue>();
+  auto loadtime_data = std::make_unique<base::DictionaryValue>();
   loadtime_data->SetString("appWindow", l10n_util::GetStringUTF16(
                                             IDS_ARC_PLAYSTORE_ICON_TITLE_BETA));
   loadtime_data->SetString(

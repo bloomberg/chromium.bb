@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -59,12 +58,12 @@ class ArcSupportHostTest : public testing::Test {
 
   void SetUp() override {
     user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+        std::make_unique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
 
-    profile_ = base::MakeUnique<TestingProfile>();
-    support_host_ = base::MakeUnique<ArcSupportHost>(profile_.get());
-    fake_arc_support_ = base::MakeUnique<FakeArcSupport>(support_host_.get());
+    profile_ = std::make_unique<TestingProfile>();
+    support_host_ = std::make_unique<ArcSupportHost>(profile_.get());
+    fake_arc_support_ = std::make_unique<FakeArcSupport>(support_host_.get());
   }
 
   void TearDown() override {
@@ -82,19 +81,19 @@ class ArcSupportHostTest : public testing::Test {
   FakeArcSupport* fake_arc_support() { return fake_arc_support_.get(); }
 
   MockAuthDelegate* CreateMockAuthDelegate() {
-    auth_delegate_ = base::MakeUnique<MockAuthDelegate>();
+    auth_delegate_ = std::make_unique<MockAuthDelegate>();
     support_host_->SetAuthDelegate(auth_delegate_.get());
     return auth_delegate_.get();
   }
 
   MockTermsOfServiceDelegate* CreateMockTermsOfServiceDelegate() {
-    tos_delegate_ = base::MakeUnique<MockTermsOfServiceDelegate>();
+    tos_delegate_ = std::make_unique<MockTermsOfServiceDelegate>();
     support_host_->SetTermsOfServiceDelegate(tos_delegate_.get());
     return tos_delegate_.get();
   }
 
   MockErrorDelegate* CreateMockErrorDelegate() {
-    error_delegate_ = base::MakeUnique<MockErrorDelegate>();
+    error_delegate_ = std::make_unique<MockErrorDelegate>();
     support_host_->SetErrorDelegate(error_delegate_.get());
     return error_delegate_.get();
   }

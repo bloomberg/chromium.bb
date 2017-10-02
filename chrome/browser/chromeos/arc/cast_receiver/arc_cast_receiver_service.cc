@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,7 +56,7 @@ ArcCastReceiverService::ArcCastReceiverService(content::BrowserContext* context,
     : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->cast_receiver()->AddObserver(this);
 
-  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(
       Profile::FromBrowserContext(context)->GetPrefs());
   // Observe prefs for the Cast Receiver. We can use base::Unretained() here

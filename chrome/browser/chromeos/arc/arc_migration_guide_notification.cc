@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 
+#include <memory>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -56,7 +57,7 @@ class ArcMigrationGuideNotificationDelegate
 void DoShowArcMigrationSuccessNotification(
     const message_center::NotifierId& notifier_id) {
   message_center::MessageCenter::Get()->AddNotification(
-      base::MakeUnique<message_center::Notification>(
+      std::make_unique<message_center::Notification>(
           message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
           base::string16(),  // title
           l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
@@ -109,7 +110,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
     data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
         IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
     message_center::MessageCenter::Get()->AddNotification(
-        base::MakeUnique<message_center::Notification>(
+        std::make_unique<message_center::Notification>(
             message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
             l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -68,9 +67,9 @@ ArcServiceLauncher* g_arc_service_launcher = nullptr;
 }  // namespace
 
 ArcServiceLauncher::ArcServiceLauncher()
-    : arc_service_manager_(base::MakeUnique<ArcServiceManager>()),
-      arc_session_manager_(base::MakeUnique<ArcSessionManager>(
-          base::MakeUnique<ArcSessionRunner>(
+    : arc_service_manager_(std::make_unique<ArcServiceManager>()),
+      arc_session_manager_(std::make_unique<ArcSessionManager>(
+          std::make_unique<ArcSessionRunner>(
               base::Bind(ArcSession::Create,
                          arc_service_manager_->arc_bridge_service())))) {
   DCHECK(g_arc_service_launcher == nullptr);
@@ -171,7 +170,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =
-      base::MakeUnique<ArcPlayStoreEnabledPreferenceHandler>(
+      std::make_unique<ArcPlayStoreEnabledPreferenceHandler>(
           profile, arc_session_manager_.get());
   arc_play_store_enabled_preference_handler_->Start();
 }
@@ -190,8 +189,8 @@ void ArcServiceLauncher::ResetForTesting() {
   // No recreation of arc_service_manager. Pointers to its ArcBridgeService
   // may be referred from existing KeyedService, so destoying it would cause
   // unexpected behavior, specifically on test teardown.
-  arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-      base::MakeUnique<ArcSessionRunner>(base::Bind(
+  arc_session_manager_ = std::make_unique<ArcSessionManager>(
+      std::make_unique<ArcSessionRunner>(base::Bind(
           ArcSession::Create, arc_service_manager_->arc_bridge_service())));
 }
 

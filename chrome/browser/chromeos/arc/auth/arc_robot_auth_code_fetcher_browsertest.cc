@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -79,12 +78,12 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    interceptor_ = base::MakeUnique<policy::TestRequestInterceptor>(
+    interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
         "localhost", content::BrowserThread::GetTaskRunnerForThread(
                          content::BrowserThread::IO));
 
     user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+        std::make_unique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
 
     const AccountId account_id(AccountId::FromUserEmail(kFakeUserName));
@@ -97,7 +96,7 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
         connector->GetDeviceCloudPolicyManager();
 
     cloud_policy_manager->StartConnection(
-        base::MakeUnique<policy::MockCloudPolicyClient>(),
+        std::make_unique<policy::MockCloudPolicyClient>(),
         connector->GetInstallAttributes());
 
     policy::MockCloudPolicyClient* const cloud_policy_client =
@@ -155,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
   std::string auth_code;
   bool fetch_success = false;
 
-  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+  auto robot_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   FetchAuthCode(robot_fetcher.get(), &fetch_success, &auth_code);
 
   EXPECT_TRUE(fetch_success);
@@ -172,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
   std::string auth_code = "NOT-YET-FETCHED";
   bool fetch_success = true;
 
-  auto robot_fetcher = base::MakeUnique<ArcRobotAuthCodeFetcher>();
+  auto robot_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   FetchAuthCode(robot_fetcher.get(), &fetch_success, &auth_code);
 
   EXPECT_FALSE(fetch_success);

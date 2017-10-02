@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"

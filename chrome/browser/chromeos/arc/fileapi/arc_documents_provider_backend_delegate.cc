@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -40,7 +39,7 @@ ArcDocumentsProviderBackendDelegate::CreateFileStreamReader(
     storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return base::MakeUnique<ArcDocumentsProviderFileStreamReader>(url, offset);
+  return std::make_unique<ArcDocumentsProviderFileStreamReader>(url, offset);
 }
 
 std::unique_ptr<storage::FileStreamWriter>

@@ -150,7 +150,7 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
   if (arc_session_manager->is_directly_started()) {
     // Unless this is opt-in boot, start monitoring window activation changes to
     // prioritize/throttle the container when needed.
-    throttle_ = base::MakeUnique<ArcInstanceThrottle>();
+    throttle_ = std::make_unique<ArcInstanceThrottle>();
     VLOG(2) << "ArcInstanceThrottle created in OnBootCompleted()";
   }
 
@@ -163,7 +163,7 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
 void ArcBootPhaseMonitorBridge::OnArcInitialStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // ARC apps for opt-in finished doing their jobs. Start the throttle.
-  throttle_ = base::MakeUnique<ArcInstanceThrottle>();
+  throttle_ = std::make_unique<ArcInstanceThrottle>();
   VLOG(2) << "ArcInstanceThrottle created in OnArcInitialStart()";
 }
 

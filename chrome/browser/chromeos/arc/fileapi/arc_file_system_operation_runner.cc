@@ -65,7 +65,7 @@ std::unique_ptr<ArcFileSystemOperationRunner>
 ArcFileSystemOperationRunner::CreateForTesting(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service) {
-  // We can't use base::MakeUnique() here because we are calling a private
+  // We can't use std::make_unique() here because we are calling a private
   // constructor.
   return base::WrapUnique<ArcFileSystemOperationRunner>(
       new ArcFileSystemOperationRunner(context, bridge_service, false));

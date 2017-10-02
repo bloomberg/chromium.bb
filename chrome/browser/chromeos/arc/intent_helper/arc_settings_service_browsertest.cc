@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -340,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kArcBackupRestoreEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   UpdatePolicy(policy);
 
@@ -360,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   // The policy is set to true.
   policy.Set(policy::key::kArcBackupRestoreEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
              nullptr);
   UpdatePolicy(policy);
 
@@ -403,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kArcLocationServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   UpdatePolicy(policy);
 
@@ -424,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   // The policy is set to true.
   policy.Set(policy::key::kArcLocationServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
              nullptr);
   UpdatePolicy(policy);
 
@@ -463,12 +462,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ProxyModePolicyTest) {
   policy.Set(
       policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(ProxyPrefs::kAutoDetectProxyModeName),
+      std::make_unique<base::Value>(ProxyPrefs::kAutoDetectProxyModeName),
       nullptr);
   UpdatePolicy(policy);
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode",
                                    ProxyPrefs::kAutoDetectProxyModeName);
   expected_proxy_config->SetString("pacUrl", "http://wpad/wpad.dat");
@@ -484,11 +483,11 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ONCProxyPolicyTest) {
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(kONCPolicy), nullptr);
+             std::make_unique<base::Value>(kONCPolicy), nullptr);
   UpdatePolicy(policy);
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode", ProxyPrefs::kPacScriptProxyModeName);
   expected_proxy_config->SetString("pacUrl", kONCPacUrl);
 
@@ -506,15 +505,15 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoSourcesTest) {
   policy.Set(
       policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::MakeUnique<base::Value>(ProxyPrefs::kFixedServersProxyModeName),
+      std::make_unique<base::Value>(ProxyPrefs::kFixedServersProxyModeName),
       nullptr);
   policy.Set(policy::key::kProxyServer, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>("proxy:8888"), nullptr);
+             std::make_unique<base::Value>("proxy:8888"), nullptr);
   UpdatePolicy(policy);
 
   std::unique_ptr<base::DictionaryValue> proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   proxy_config->SetString("mode", ProxyPrefs::kAutoDetectProxyModeName);
   ProxyConfigDictionary proxy_config_dict(std::move(proxy_config));
   const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
@@ -525,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoSourcesTest) {
   RunUntilIdle();
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode",
                                    ProxyPrefs::kFixedServersProxyModeName);
   expected_proxy_config->SetString("host", "proxy");
@@ -539,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ProxyPrefTest) {
   fake_intent_helper_instance_->clear_broadcasts();
 
   std::unique_ptr<base::DictionaryValue> proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   proxy_config->SetString("mode", ProxyPrefs::kPacScriptProxyModeName);
   proxy_config->SetString("pac_url", "http://proxy");
   browser()->profile()->GetPrefs()->Set(proxy_config::prefs::kProxy,
@@ -547,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ProxyPrefTest) {
   RunUntilIdle();
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode", ProxyPrefs::kPacScriptProxyModeName);
   expected_proxy_config->SetString("pacUrl", "http://proxy");
   EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
@@ -559,14 +558,14 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkProxyConfigTest) {
   fake_intent_helper_instance_->clear_broadcasts();
 
   std::unique_ptr<base::DictionaryValue> proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   proxy_config->SetString("mode", ProxyPrefs::kFixedServersProxyModeName);
   proxy_config->SetString("server", "proxy:8080");
   SetProxyConfigForNetworkService(kDefaultServicePath, proxy_config.get());
   RunUntilIdle();
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode",
                                    ProxyPrefs::kFixedServersProxyModeName);
   expected_proxy_config->SetString("host", "proxy");
@@ -581,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   fake_intent_helper_instance_->clear_broadcasts();
   // Set proxy confog for default network.
   std::unique_ptr<base::DictionaryValue> default_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   default_proxy_config->SetString("mode",
                                   ProxyPrefs::kFixedServersProxyModeName);
   default_proxy_config->SetString("server", "default/proxy:8080");
@@ -591,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
 
   // Set proxy confog for WI-FI network.
   std::unique_ptr<base::DictionaryValue> wifi_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   wifi_proxy_config->SetString("mode", ProxyPrefs::kFixedServersProxyModeName);
   wifi_proxy_config->SetString("server", "wifi/proxy:8080");
   SetProxyConfigForNetworkService(kWifi0ServicePath, wifi_proxy_config.get());
@@ -599,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
 
   // Observe default network proxy config broadcast.
   std::unique_ptr<base::DictionaryValue> expected_default_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_default_proxy_config->SetString(
       "mode", ProxyPrefs::kFixedServersProxyModeName);
   expected_default_proxy_config->SetString("host", "default/proxy");
@@ -614,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
 
   // Observe WI-FI network proxy config broadcast.
   std::unique_ptr<base::DictionaryValue> expected_wifi_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_wifi_proxy_config->SetString("mode",
                                         ProxyPrefs::kFixedServersProxyModeName);
   expected_wifi_proxy_config->SetString("host", "wifi/proxy");
@@ -648,15 +647,15 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoONCProxyPolicyTest) {
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(kUserONCPolicy), nullptr);
+             std::make_unique<base::Value>(kUserONCPolicy), nullptr);
   policy.Set(policy::key::kDeviceOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
              policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(kDeviceONCPolicy), nullptr);
+             std::make_unique<base::Value>(kDeviceONCPolicy), nullptr);
   UpdatePolicy(policy);
 
   std::unique_ptr<base::DictionaryValue> expected_proxy_config(
-      base::MakeUnique<base::DictionaryValue>());
+      std::make_unique<base::DictionaryValue>());
   expected_proxy_config->SetString("mode",
                                    ProxyPrefs::kFixedServersProxyModeName);
   expected_proxy_config->SetString("host", "proxy");
