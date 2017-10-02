@@ -21,7 +21,6 @@
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_features.h"
 
 using base::HexEncode;
 using base::Time;
@@ -296,7 +295,7 @@ TEST(X509CertificateTest, TeletexStringControlChars) {
       subject.organization_names[0]);
 }
 
-TEST(X509CertificateTest, TeletexStringIsLatin1OrCp1252) {
+TEST(X509CertificateTest, TeletexStringIsLatin1NotCp1252) {
   base::FilePath certs_dir =
       GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
 
@@ -305,26 +304,14 @@ TEST(X509CertificateTest, TeletexStringIsLatin1OrCp1252) {
   ASSERT_TRUE(cert);
 
   const CertPrincipal& subject = cert->subject();
-#if BUILDFLAG(USE_BYTE_CERTS) && !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
-  // use_byte_certs: ICU ISO-8859-1 seems to be CP1252 actually.
-  //   (but with use_platform_icu_alternatives it's not.)
-  EXPECT_EQ(
-      "~\x7F\xE2\x82\xAC\xC2\x81\xE2\x80\x9A\xC6\x92\xE2\x80\x9E\xE2\x80\xA6"
-      "\xE2\x80\xA0\xE2\x80\xA1\xCB\x86\xE2\x80\xB0\xC5\xA0\xE2\x80\xB9\xC5\x92"
-      "\xC2\x8D\xC5\xBD\xC2\x8F\xC2\x90\xE2\x80\x98\xE2\x80\x99\xE2\x80\x9C\xE2"
-      "\x80\x9D\xE2\x80\xA2\xE2\x80\x93\xE2\x80\x94\xCB\x9C\xE2\x84\xA2\xC5\xA1"
-      "\xE2\x80\xBA\xC5\x93\xC2\x9D\xC5\xBE\xC5\xB8\xC2\xA0",
-      subject.organization_names[0]);
-#else
-  // NSS, Win, Android, iOS: TeletexString is decoded as latin1, so 127-160 get
-  // decoded to equivalent unicode control chars.
+  // TeletexString is decoded as latin1, so 127-160 get decoded to equivalent
+  // unicode control chars.
   EXPECT_EQ(
       "~\x7F\xC2\x80\xC2\x81\xC2\x82\xC2\x83\xC2\x84\xC2\x85\xC2\x86\xC2\x87"
       "\xC2\x88\xC2\x89\xC2\x8A\xC2\x8B\xC2\x8C\xC2\x8D\xC2\x8E\xC2\x8F\xC2\x90"
       "\xC2\x91\xC2\x92\xC2\x93\xC2\x94\xC2\x95\xC2\x96\xC2\x97\xC2\x98\xC2\x99"
       "\xC2\x9A\xC2\x9B\xC2\x9C\xC2\x9D\xC2\x9E\xC2\x9F\xC2\xA0",
       subject.organization_names[0]);
-#endif
 }
 
 TEST(X509CertificateTest, TeletexStringIsNotARealT61String) {
