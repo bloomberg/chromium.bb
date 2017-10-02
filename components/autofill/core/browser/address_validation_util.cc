@@ -97,6 +97,15 @@ void InitializeAddressFromProfile(const AutofillProfile& profile,
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP));
 }
 
+void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
+  if (profile->GetRawInfo(ADDRESS_HOME_COUNTRY).empty())
+    profile->SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY);
+  if (profile->GetRawInfo(ADDRESS_HOME_STATE).empty())
+    profile->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::EMPTY);
+  if (profile->GetRawInfo(ADDRESS_HOME_ZIP).empty())
+    profile->SetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::EMPTY);
+}
+
 }  // namespace
 
 namespace address_validation_util {
@@ -116,6 +125,7 @@ AutofillProfile::ValidityState ValidateAddress(
     // unclear which, if any, rule should apply.
     SetAllValidityStates(profile, AutofillProfile::UNVALIDATED);
     SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::INVALID);
+    SetEmptyValidityIfEmpty(profile);
     return AutofillProfile::INVALID;
   }
 
@@ -148,6 +158,9 @@ AutofillProfile::ValidityState ValidateAddress(
       profile_validity = AutofillProfile::INVALID;
     }
   }
+
+  SetEmptyValidityIfEmpty(profile);
+
   return profile_validity;
 }
 
