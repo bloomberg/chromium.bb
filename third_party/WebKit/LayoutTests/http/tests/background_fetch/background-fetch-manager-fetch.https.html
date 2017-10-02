@@ -81,7 +81,7 @@ promise_test(function(test) {
       }
     ],
     title: 'My Background Fetch',
-    totalDownloadSize: 1024
+    downloadTotal: 1024
   };
 
   let registration = null;
@@ -96,8 +96,11 @@ promise_test(function(test) {
       assert_true(backgroundFetchRegistration instanceof BackgroundFetchRegistration);
       assert_equals(backgroundFetchRegistration.id, id);
       assert_object_equals(backgroundFetchRegistration.icons, options.icons);
-      assert_equals(backgroundFetchRegistration.totalDownloadSize, options.totalDownloadSize);
+      assert_equals(backgroundFetchRegistration.downloadTotal, options.downloadTotal);
       assert_equals(backgroundFetchRegistration.title, options.title);
+
+      // TODO(crbug.com/769770): Remove support for the deprecated attributes.
+      assert_equals(backgroundFetchRegistration.totalDownloadSize, options.downloadTotal);
     });
 
 }, 'BackgroundFetchManager.fetch() returns a BackgroundFetchRegistration object.');

@@ -32,9 +32,9 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::BackgroundFetchOptionsDataView,
       const content::BackgroundFetchOptions& options) {
     return options.title;
   }
-  static int64_t total_download_size(
+  static uint64_t download_total(
       const content::BackgroundFetchOptions& options) {
-    return options.total_download_size;
+    return options.download_total;
   }
 
   static bool Read(blink::mojom::BackgroundFetchOptionsDataView data,
@@ -49,6 +49,22 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchRegistration& registration) {
     return registration.id;
   }
+  static uint64_t upload_total(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.upload_total;
+  }
+  static uint64_t uploaded(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.uploaded;
+  }
+  static uint64_t download_total(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.download_total;
+  }
+  static uint64_t downloaded(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.downloaded;
+  }
   static const std::vector<content::IconDefinition>& icons(
       const content::BackgroundFetchRegistration& registration) {
     return registration.icons;
@@ -56,10 +72,6 @@ struct CONTENT_EXPORT
   static const std::string& title(
       const content::BackgroundFetchRegistration& registration) {
     return registration.title;
-  }
-  static int64_t total_download_size(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.total_download_size;
   }
 
   static bool Read(blink::mojom::BackgroundFetchRegistrationDataView data,

@@ -425,14 +425,20 @@ interface BackgroundFetchManager
     method fetch
     method get
     method getIds
-interface BackgroundFetchRegistration
+interface BackgroundFetchRegistration : EventTarget
     attribute @@toStringTag
+    getter downloadTotal
+    getter downloaded
     getter icons
     getter id
+    getter onprogress
     getter title
     getter totalDownloadSize
+    getter uploadTotal
+    getter uploaded
     method abort
     method constructor
+    setter onprogress
 interface BarProp
     attribute @@toStringTag
     getter visible
