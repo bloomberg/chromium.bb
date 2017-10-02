@@ -37,6 +37,7 @@ class LayoutThemeMobile : public LayoutThemeDefault {
 
   void AdjustInnerSpinButtonStyle(ComputedStyle&) const override;
 
+  String ExtraMediaControlsStyleSheet() override;
   String ExtraFullscreenStyleSheet() override;
 
   Color PlatformTapHighlightColor() const override {

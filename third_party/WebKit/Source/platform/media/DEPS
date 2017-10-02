@@ -1,4 +1,0 @@
-include_rules = [
-    "+third_party/zlib/google/compression_utils.h",
-    "+ui/base/resource",
-]
