@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -151,18 +152,16 @@ class GeolocationPermissionContextTests
 PermissionRequestID GeolocationPermissionContextTests::RequestID(
     int request_id) {
   return PermissionRequestID(
-      web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID(),
-      request_id);
+      web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID(), request_id);
 }
 
 PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
     int tab,
     int request_id) {
   return PermissionRequestID(
-      extra_tabs_[tab]->GetRenderProcessHost()->GetID(),
-      extra_tabs_[tab]->GetMainFrame()->GetRoutingID(),
-      request_id);
+      extra_tabs_[tab]->GetMainFrame()->GetProcess()->GetID(),
+      extra_tabs_[tab]->GetMainFrame()->GetRoutingID(), request_id);
 }
 
 void GeolocationPermissionContextTests::RequestGeolocationPermission(
@@ -201,8 +200,9 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentForTab(
     int tab,
     int request_id,
     bool allowed) {
-  CheckPermissionMessageSentInternal(static_cast<MockRenderProcessHost*>(
-      extra_tabs_[tab]->GetRenderProcessHost()),
+  CheckPermissionMessageSentInternal(
+      static_cast<MockRenderProcessHost*>(
+          extra_tabs_[tab]->GetMainFrame()->GetProcess()),
       request_id, allowed);
 }
 
