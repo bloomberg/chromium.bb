@@ -38,17 +38,19 @@ static const int kMinPinLength = 6;
   if (self) {
     self.backgroundColor = [UIColor clearColor];
 
+    NSString* rememberPinText =
+        l10n_util::GetNSString(IDS_REMEMBER_PIN_ON_THIS_DEVICE);
     _pairingSwitch = [[UISwitch alloc] init];
     _pairingSwitch.tintColor = RemotingTheme.pinEntryPairingColor;
     _pairingSwitch.transform = CGAffineTransformMakeScale(0.5, 0.5);
+    _pairingSwitch.accessibilityLabel = rememberPinText;
     _pairingSwitch.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingSwitch];
 
     _pairingLabel = [[UILabel alloc] init];
     _pairingLabel.textColor = RemotingTheme.pinEntryPairingColor;
     _pairingLabel.font = [UIFont systemFontOfSize:12.f];
-    _pairingLabel.text =
-        l10n_util::GetNSString(IDS_REMEMBER_PIN_ON_THIS_DEVICE);
+    _pairingLabel.text = rememberPinText;
     _pairingLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingLabel];
 
@@ -99,6 +101,8 @@ static const int kMinPinLength = 6;
                                                  _pinButton, _pinEntry)];
 
     _supportsPairing = YES;
+
+    self.accessibilityElements = @[ _pinEntry, _pairingSwitch, _pinButton ];
   }
   return self;
 }
@@ -155,6 +159,7 @@ static const int kMinPinLength = 6;
 - (void)setSupportsPairing:(BOOL)supportsPairing {
   _supportsPairing = supportsPairing;
   _pairingSwitch.hidden = !_supportsPairing;
+  _pairingSwitch.isAccessibilityElement = _supportsPairing;
   [_pairingSwitch setOn:NO animated:NO];
   _pairingLabel.hidden = !_supportsPairing;
 }

@@ -55,4 +55,9 @@ void SetAccessibilityInfoFromImage(UIButton* button) {
       [button imageForState:UIControlStateNormal].accessibilityLabel;
 }
 
+void SetAccessibilityFocusElement(id element) {
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  element);
+}
+
 }  // namespace remoting

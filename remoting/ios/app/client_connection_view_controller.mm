@@ -17,6 +17,7 @@
 #import "remoting/ios/app/pin_entry_view.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/session_reconnect_view.h"
+#import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/facade/remoting_authentication.h"
@@ -411,6 +412,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
       [self stringWithHostNameForId:IDS_CONNECTING_TO_HOST_MESSAGE];
+  [self focusOnStatusLabel];
 
   _pinEntryView.hidden = YES;
 
@@ -449,6 +451,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_pinEntryView endEditing:YES];
   _statusLabel.text =
       [self stringWithHostNameForId:IDS_CONNECTED_TO_HOST_MESSAGE];
+  [self focusOnStatusLabel];
 
   _pinEntryView.hidden = YES;
   [_pinEntryView clearPinEntry];
@@ -476,6 +479,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)showReconnect {
   _statusLabel.text =
       [self stringWithHostNameForId:IDS_CONNECTION_CLOSED_FOR_HOST_MESSAGE];
+  [self focusOnStatusLabel];
 
   _iconView.backgroundColor = RemotingTheme.hostErrorColor;
 
@@ -551,6 +555,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     _reconnectView.errorText = message;
   }
   _reconnectView.hidden = NO;
+  remoting::SetAccessibilityFocusElement(_reconnectView);
 }
 
 - (void)didProvidePin:(NSString*)pin createPairing:(BOOL)createPairing {
@@ -621,6 +626,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (NSString*)stringWithHostNameForId:(int)messageId {
   return l10n_util::GetNSStringF(messageId,
                                  base::SysNSStringToUTF16(_remoteHostName));
+}
+
+- (void)focusOnStatusLabel {
+  remoting::SetAccessibilityFocusElement(_statusLabel);
 }
 
 @end
