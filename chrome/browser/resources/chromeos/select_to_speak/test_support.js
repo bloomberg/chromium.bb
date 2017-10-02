@@ -18,7 +18,8 @@ chrome.automation.getDesktop = function() {};
  * Set necessary constants.
  */
 chrome.automation.RoleType = {
-  WINDOW: 'window'
+  WINDOW: 'window',
+  ROOT_WEB_AREA: 'rootWebArea'
 };
 chrome.automation.StateType = {
   INVISIBLE: 'invisible'

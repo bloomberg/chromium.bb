@@ -56,6 +56,29 @@ const NodeState = {
 };
 
 /**
+ * Gets the first window containing this node.
+ */
+function getNearestContainingWindow(node) {
+  // Go upwards to root nodes' parents until we find the first window.
+  if (node.root.role == RoleType.ROOT_WEB_AREA) {
+    var nextRootParent = node;
+    while (nextRootParent != null && nextRootParent.role != RoleType.WINDOW &&
+           nextRootParent.root != null &&
+           nextRootParent.root.role == RoleType.ROOT_WEB_AREA) {
+      nextRootParent = nextRootParent.root.parent;
+    }
+    return nextRootParent;
+  }
+  // If the parent isn't a root web area, just walk up the tree to find the
+  // nearest window.
+  var parent = node;
+  while (parent != null && parent.role != chrome.automation.RoleType.WINDOW) {
+    parent = parent.parent;
+  }
+  return parent;
+}
+
+/**
  * Gets the current visiblity state for a given node.
  *
  * @param {AutomationNode} node The starting node.
@@ -75,10 +98,7 @@ function getNodeState(node) {
     return NodeState.NODE_STATE_INVISIBLE;
   }
   // Walk up the tree to make sure the window it is in is not invisible.
-  var parent = node;
-  while (parent != null && parent.role != chrome.automation.RoleType.WINDOW) {
-    parent = parent.parent;
-  }
+  var parent = getNearestContainingWindow(node);
   if (parent != null && parent.state[chrome.automation.StateType.INVISIBLE]) {
     return NodeState.NODE_STATE_INVISIBLE;
   }
@@ -123,6 +143,13 @@ var SelectToSpeak = function() {
     // hit test is a MOUSE_RELEASED accessibility event.
     desktop.addEventListener(
         EventType.MOUSE_RELEASED, this.onAutomationHitTest_.bind(this), true);
+
+    // When Select-To-Speak is active, we do a hit test on the active node
+    // and the result is a HOVER accessibility event. This event is used to
+    // check that the current node is in the foreground window.
+    desktop.addEventListener(
+        EventType.HOVER, this.onHitTestCheckCurrentNodeMatches_.bind(this),
+        true);
   }.bind(this));
 
   /** @private { ?string } */
@@ -416,7 +443,7 @@ SelectToSpeak.prototype = {
             (function(node, isLast, event) {
               if (event.type == 'start') {
                 this.currentNode_ = node;
-                this.updateFromNodeState_(node);
+                this.testCurrentNode_();
               } else if (
                   event.type == 'interrupted' || event.type == 'cancelled') {
                 this.clearFocusRingAndNode_();
@@ -534,8 +561,9 @@ SelectToSpeak.prototype = {
    * Updates the speech and focus ring states based on a node's current state.
    *
    * @param {AutomationNode} node The node to use for udpates
+   * @param {boolean} inForeground Whether the node is in the foreground window.
    */
-  updateFromNodeState_: function(node) {
+  updateFromNodeState_: function(node, inForeground) {
     switch (getNodeState(node)) {
       case NodeState.NODE_STATE_INVALID:
         // If the node is invalid, stop speaking entirely.
@@ -549,7 +577,12 @@ SelectToSpeak.prototype = {
         break;
       case NodeState.NODE_STATE_NORMAL:
       default:
-        chrome.accessibilityPrivate.setFocusRing([node.location], this.color_);
+        if (inForeground) {
+          chrome.accessibilityPrivate.setFocusRing(
+              [node.location], this.color_);
+        } else {
+          this.clearFocusRing_();
+        }
     }
   },
 
@@ -560,6 +593,33 @@ SelectToSpeak.prototype = {
     if (this.currentNode_ == null) {
       return;
     }
-    this.updateFromNodeState_(this.currentNode_);
+    if (this.currentNode_.location === undefined) {
+      // Don't do the hit test because there is no location to test against.
+      // Just directly update Select To Speak from node state.
+      this.updateFromNodeState_(this.currentNode_, false);
+    } else {
+      // Do a hit test to make sure the node is not in a background window
+      // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
+      // called, and we will use that result plus the currentNode's state to
+      // deterimine how to set the focus and whether to stop speech.
+      this.desktop_.hitTest(
+          this.currentNode_.location.left, this.currentNode_.location.top,
+          EventType.HOVER);
+    }
+  },
+
+  /**
+   * Checks that the current node is in the same window as the HitTest node.
+   * Uses this information to update Select-To-Speak from node state.
+   */
+  onHitTestCheckCurrentNodeMatches_: function(evt) {
+    if (this.currentNode_ == null) {
+      return;
+    }
+    var parent = getNearestContainingWindow(evt.target);
+    var currentParent = getNearestContainingWindow(this.currentNode_);
+    var inForeground =
+        currentParent != null && parent != null && currentParent == parent;
+    this.updateFromNodeState_(this.currentNode_, inForeground);
   }
 };
