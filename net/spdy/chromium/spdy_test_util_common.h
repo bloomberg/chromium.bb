@@ -503,12 +503,6 @@ class SpdyTestUtil {
 
   void set_default_url(const GURL& url) { default_url_ = url; }
 
-  static const char* GetMethodKey();
-  static const char* GetStatusKey();
-  static const char* GetHostKey();
-  static const char* GetSchemeKey();
-  static const char* GetPathKey();
-
  private:
   // |content_length| may be NULL, in which case the content-length
   // header will be omitted.
