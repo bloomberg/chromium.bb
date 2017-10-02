@@ -20,6 +20,8 @@
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -180,8 +182,32 @@ void VrTestContext::HandleInput(ui::Event* event) {
 }
 
 void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
+  unsigned int content_texture_id = CreateFakeContentTexture();
+
   window_size_ = window_size;
-  ui_->OnGlInitialized(0);
+  ui_->OnGlInitialized(content_texture_id,
+                       UiElementRenderer::kTextureLocationLocal);
+}
+
+unsigned int VrTestContext::CreateFakeContentTexture() {
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(1, 1);
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->clear(0xFF000080);
+
+  SkPixmap pixmap;
+  CHECK(surface->peekPixels(&pixmap));
+
+  SkColorType type = pixmap.colorType();
+  DCHECK(type == kRGBA_8888_SkColorType || type == kBGRA_8888_SkColorType);
+  GLint format = (type == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA);
+
+  unsigned int texture_id;
+  glGenTextures(1, &texture_id);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexImage2D(GL_TEXTURE_2D, 0, format, pixmap.width(), pixmap.height(), 0,
+               format, GL_UNSIGNED_BYTE, pixmap.addr());
+
+  return texture_id;
 }
 
 void VrTestContext::OnContentEnter(const gfx::PointF& normalized_hit_point) {}

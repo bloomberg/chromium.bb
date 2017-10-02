@@ -638,7 +638,7 @@ TEST_F(UiSceneManagerTest, RendererUsesCorrectOpacity) {
 
   ContentElement* content_element =
       static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
-  content_element->set_texture_id(1);
+  content_element->SetTexture(0, vr::UiElementRenderer::kTextureLocationLocal);
   TexturedElement::SetInitializedForTesting();
 
   CheckRendererOpacityRecursive(&scene_->root_element());

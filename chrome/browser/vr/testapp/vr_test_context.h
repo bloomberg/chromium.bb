@@ -62,6 +62,8 @@ class VrTestContext : public vr::ContentInputDelegate,
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
 
  private:
+  unsigned int CreateFakeContentTexture();
+
   std::unique_ptr<Ui> ui_;
   gfx::Size window_size_;
 
