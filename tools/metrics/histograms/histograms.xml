@@ -10415,6 +10415,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ContentSettings.Popups.FirstDocumentEngagementTime" units="ms">
+  <obsolete>
+    Deprecated in favor of ContentSettings.Popups.FirstDocumentEngagementTime2.
+  </obsolete>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total duration a popup WebContents is visible / foregrounded
+    for the duration of its first document load. This time is measured from the
+    first navigation commit to the time either the WebContents is destroyed or
+    when a new navigation commits.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.Popups.FirstDocumentEngagementTime2"
+    units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the total duration a popup WebContents is visible / foregrounded
@@ -82913,6 +82927,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The time for the new tab page to start executing JavaScript.
+  </summary>
+</histogram>
+
+<histogram name="Tab.OpenedPopup.PopupToCrossOriginRedirectTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from when a tab opens a popup to when it navigates itself
+    cross-origin in the background.
+  </summary>
+</histogram>
+
+<histogram name="Tab.OpenedPopup.VisibleTimeAfterCrossOriginRedirect"
+    units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total time a tab is visible after it navigates itself
+    cross-origin in the background. Measured at WebContents destruction. The tab
+    must have opened a popup (as classified by the popup blocker) before the
+    navigation.
   </summary>
 </histogram>
 

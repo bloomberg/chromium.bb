@@ -30,7 +30,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 const char kPopupEngagement[] =
-    "ContentSettings.Popups.FirstDocumentEngagementTime";
+    "ContentSettings.Popups.FirstDocumentEngagementTime2";
 
 class PopupTrackerBrowserTest : public InProcessBrowserTest {
  public:
@@ -174,4 +174,16 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WhitelistedPopup_HasTracker) {
   destroyed_watcher.Wait();
 
   tester.ExpectTotalCount(kPopupEngagement, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, NoOpener_NoTracker) {
+  const GURL url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  content::WebContents* new_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  EXPECT_FALSE(PopupTracker::FromWebContents(new_contents));
 }

@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
@@ -385,6 +386,11 @@ void TabWebContentsDelegateAndroid::AddNewContents(
   DCHECK_NE(disposition, WindowOpenDisposition::SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
   DCHECK_NE(disposition, WindowOpenDisposition::CURRENT_TAB);
+
+  // At this point the |new_contents| is beyond the popup blocker, but we use
+  // the same logic for determining if the popup tracker needs to be attached.
+  if (source && PopupBlockerTabHelper::ConsiderForPopupBlocking(disposition))
+    PopupTracker::CreateForWebContents(new_contents, source);
 
   TabHelpers::AttachTabHelpers(new_contents);
 
