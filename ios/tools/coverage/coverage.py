@@ -105,7 +105,7 @@ class _DirectoryCoverageReportHtmlGenerator(object):
     """Adds a file or directory entry to the directory html coverage report.
 
     Args:
-      html_report_path: A path to the file or directory's html report.
+      html_report_path: A relative path to the file or directory's html report.
       name: Base name of the file or directory.
       total_lines: total number of lines.
       executed_lines: executed number of lines.
@@ -149,7 +149,8 @@ class _DirectoryCoverageReportHtmlGenerator(object):
     dir_entries.sort(
         key=lambda entry: float(entry['executed_lines']) / entry['total_lines'])
 
-    html_header = self._header_template.render(css_path=self._css_path)
+    html_header = self._header_template.render(
+        css_path=os.path.relpath(self._css_path, os.path.dirname(output_path)))
     html_table = self._table_template.render(dir_entries=dir_entries,
                                              file_entries=file_entries)
     html_footer = self._footer_template.render()
@@ -405,18 +406,21 @@ def _GenerateCoverageHtmlReportForDirectory(dir_path, dir_line_coverage_report,
     sub_path = os.path.normpath(os.path.join(dir_path, sub_name))
     sub_path_html_report_path = _GetCoverageHtmlReportPath(
         sub_path, output_dir)
+    relative_sub_path_html_report_path = os.path.relpath(
+        sub_path_html_report_path,
+        os.path.dirname(_GetCoverageHtmlReportPath(dir_path, output_dir)))
 
     if dir_line_coverage_report.ContainsDirectory(sub_path):
       total_lines, executed_lines = (
           dir_line_coverage_report.GetCoverageForDirectory(sub_path))
-      html_generator.AddTableEntry(sub_path_html_report_path,
+      html_generator.AddTableEntry(relative_sub_path_html_report_path,
                                    os.path.basename(sub_path),
                                    total_lines,
                                    executed_lines)
     elif file_line_coverage_report.ContainsFile(sub_path):
       total_lines, executed_lines = (
           file_line_coverage_report.GetCoverageForFile(sub_path))
-      html_generator.AddTableEntry(sub_path_html_report_path,
+      html_generator.AddTableEntry(relative_sub_path_html_report_path,
                                    os.path.basename(sub_path),
                                    total_lines,
                                    executed_lines)
@@ -460,14 +464,14 @@ def _OverwriteHtmlReportsIndexFile(top_level_dir, dir_line_coverage_report,
 
   html_report_path = _GetCoverageHtmlReportPath(top_level_dir,
                                                 output_dir)
+  relative_html_report_path = os.path.relpath(html_report_path, output_dir)
   total_lines, executed_lines = (
       dir_line_coverage_report.GetCoverageForDirectory(top_level_dir))
   index_html_generator.AddTableEntry(
-      html_report_path, os.path.basename(top_level_dir), total_lines,
+      relative_html_report_path, os.path.basename(top_level_dir), total_lines,
       executed_lines)
 
-  index_file_path = os.path.join(output_dir,
-                                 'index.html')
+  index_file_path = os.path.join(output_dir, 'index.html')
   index_html_generator.WriteHtmlCoverageReport(index_file_path)
 
 
