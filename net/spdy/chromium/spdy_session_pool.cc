@@ -136,33 +136,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const GURL& url,
     bool enable_ip_based_pooling,
     const NetLogWithSource& net_log) {
-  UnclaimedPushedStreamMap::iterator url_it =
-      unclaimed_pushed_streams_.find(url);
-  if (!url.is_empty() && url_it != unclaimed_pushed_streams_.end()) {
-    DCHECK(url.SchemeIsCryptographic());
-    for (WeakSessionList::iterator it = url_it->second.begin();
-         it != url_it->second.end();) {
-      base::WeakPtr<SpdySession> spdy_session = *it;
-      // Lazy deletion of destroyed SpdySessions.
-      if (!spdy_session) {
-        it = url_it->second.erase(it);
-        continue;
-      }
-      ++it;
-      const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
-      if (!(spdy_session_key.proxy_server() == key.proxy_server()) ||
-          !(spdy_session_key.privacy_mode() == key.privacy_mode())) {
-        continue;
-      }
-      if (!spdy_session->VerifyDomainAuthentication(
-              key.host_port_pair().host())) {
-        continue;
-      }
-      return spdy_session;
-    }
-    if (url_it->second.empty()) {
-      unclaimed_pushed_streams_.erase(url_it);
-    }
+  base::WeakPtr<SpdySession> session = push_promise_index_.Find(key, url);
+  if (session) {
+    return session;
   }
 
   AvailableSessionMap::iterator it = LookupAvailableSessionByKey(key);
@@ -303,52 +279,6 @@ void SpdySessionPool::CloseAllSessions() {
     CloseCurrentSessionsHelper(ERR_ABORTED, "Closing all sessions.",
                                false /* idle_only */);
   }
-}
-
-void SpdySessionPool::RegisterUnclaimedPushedStream(
-    GURL url,
-    base::WeakPtr<SpdySession> spdy_session) {
-  DCHECK(!url.is_empty());
-  // This SpdySessionPool must own |spdy_session|.
-  DCHECK(base::ContainsKey(sessions_, spdy_session.get()));
-  UnclaimedPushedStreamMap::iterator url_it =
-      unclaimed_pushed_streams_.lower_bound(url);
-  if (url_it == unclaimed_pushed_streams_.end() || url_it->first != url) {
-    WeakSessionList list;
-    list.push_back(std::move(spdy_session));
-    UnclaimedPushedStreamMap::value_type value(std::move(url), std::move(list));
-    unclaimed_pushed_streams_.insert(url_it, std::move(value));
-    return;
-  }
-  url_it->second.push_back(spdy_session);
-}
-
-void SpdySessionPool::UnregisterUnclaimedPushedStream(
-    const GURL& url,
-    SpdySession* spdy_session) {
-  DCHECK(!url.is_empty());
-  UnclaimedPushedStreamMap::iterator url_it =
-      unclaimed_pushed_streams_.find(url);
-  DCHECK(url_it != unclaimed_pushed_streams_.end());
-  size_t removed = 0;
-  for (WeakSessionList::iterator it = url_it->second.begin();
-       it != url_it->second.end();) {
-    // Lazy deletion of destroyed SpdySessions.
-    if (!*it) {
-      it = url_it->second.erase(it);
-      continue;
-    }
-    if (it->get() == spdy_session) {
-      it = url_it->second.erase(it);
-      ++removed;
-      break;
-    }
-    ++it;
-  }
-  if (url_it->second.empty()) {
-    unclaimed_pushed_streams_.erase(url_it);
-  }
-  DCHECK_EQ(1u, removed);
 }
 
 std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
