@@ -24,6 +24,7 @@
 #include "components/safe_browsing/browser/threat_details_history.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
@@ -266,7 +267,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     resource->threat_source = threat_source;
     resource->web_contents_getter =
         SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-            web_contents()->GetRenderProcessHost()->GetID(),
+            web_contents()->GetMainFrame()->GetProcess()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
   }
 
@@ -297,7 +298,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
               static_cast<int>(actual_resource_map.size()));
     for (const ClientSafeBrowsingReportRequest::Resource& expected_resource :
          expected_pb.resources()) {
-      ASSERT_TRUE(actual_resource_map.count(expected_resource.id()) > 0);
+      ASSERT_GT(actual_resource_map.count(expected_resource.id()), 0u);
       VerifyResource(*actual_resource_map[expected_resource.id()],
                      expected_resource);
     }
@@ -313,7 +314,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     // be unique).
     ASSERT_EQ(expected_pb.dom_size(), static_cast<int>(actual_dom_map.size()));
     for (const HTMLElement& expected_element : expected_pb.dom()) {
-      ASSERT_TRUE(actual_dom_map.count(expected_element.id()) > 0);
+      ASSERT_GT(actual_dom_map.count(expected_element.id()), 0u);
       VerifyElement(*actual_dom_map[expected_element.id()], expected_element);
     }
 
@@ -375,7 +376,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
               static_cast<int>(actual_attributes_map.size()));
     for (const HTMLElement::Attribute& expected_attribute :
          expected.attribute()) {
-      ASSERT_TRUE(actual_attributes_map.count(expected_attribute.name()) > 0);
+      ASSERT_GT(actual_attributes_map.count(expected_attribute.name()), 0u);
       EXPECT_EQ(expected_attribute.value(),
                 actual_attributes_map[expected_attribute.name()]);
     }
