@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -451,9 +452,11 @@ public class BottomSheet
      * @return True if the touch is inside the swipable area of the toolbar.
      */
     private boolean isTouchInSwipableXRange(MotionEvent e) {
-        // If the sheet is already open or the experiment is not enabled, no need to restrict the
-        // swipe area.
-        if (mActivity == null || isSheetOpen()) return true;
+        // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
+        // there is no need to restrict the swipe area.
+        if (mActivity == null || isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
+            return true;
+        }
 
         String logicType = FeatureUtilities.getChromeHomeSwipeLogicType();
 
