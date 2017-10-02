@@ -17,8 +17,9 @@
 #if CONFIG_SYMBOLRATE
 static INLINE void av1_dump_symbol_rate(struct AV1Common *cm) {
   const FRAME_COUNTS *counts = &cm->counts;
-  printf("%d %d %d %d\n", counts->coeff_num[0], counts->coeff_num[1],
-         counts->symbol_num[0], counts->symbol_num[1]);
+  printf("%d %d %d %d %d %d\n", cm->current_video_frame, cm->show_frame,
+         counts->coeff_num[0], counts->coeff_num[1], counts->symbol_num[0],
+         counts->symbol_num[1]);
 }
 static INLINE int av1_read_record_symbol(FRAME_COUNTS *counts, aom_reader *r,
                                          aom_cdf_prob *cdf, int nsymbs,
