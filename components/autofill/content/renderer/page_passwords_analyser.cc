@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
@@ -27,33 +26,28 @@ namespace {
 const char* kTypeAttributes[] = {"text", "email", "tel", "password"};
 const char* kTypeTextAttributes[] = {"text", "email", "tel"};
 
-using ConsoleLevel = blink::WebConsoleMessage::Level;
-
 // ConsoleLogger provides a convenient interface for logging messages to the
 // DevTools console, both in terms of wrapping and formatting console messages
 // along with their parameters, and in ordering messages so that higher-priority
 // warnings are displayed first.
-class ConsoleLogger {
+class ConsoleLogger : public PagePasswordsAnalyserLogger {
  public:
-  static const ConsoleLevel kError = blink::WebConsoleMessage::kLevelError;
-  static const ConsoleLevel kWarning = blink::WebConsoleMessage::kLevelWarning;
-  static const ConsoleLevel kVerbose = blink::WebConsoleMessage::kLevelVerbose;
-
-  ConsoleLogger(blink::WebLocalFrame* frame) : frame_(frame) {}
+  ConsoleLogger(blink::WebLocalFrame* frame)
+      : PagePasswordsAnalyserLogger(), frame_(frame) {}
 
   void Send(const std::string& message,
             ConsoleLevel level,
-            const blink::WebNode& node) {
+            const blink::WebNode& node) override {
     Send(message, level, std::vector<blink::WebNode>{node});
   }
 
   void Send(const std::string& message,
             ConsoleLevel level,
-            const std::vector<blink::WebNode>& nodes) {
+            const std::vector<blink::WebNode>& nodes) override {
     node_buffer_[level].push_back(Entry{message, nodes});
   }
 
-  void Flush() {
+  void Flush() override {
     for (ConsoleLevel level : {kError, kWarning, kVerbose}) {
       for (Entry& entry : node_buffer_[level]) {
         std::string parameter_string;
@@ -202,7 +196,7 @@ bool TrackElementIfUntracked(
 std::vector<FormInputCollection> ExtractFormsForAnalysis(
     const blink::WebDocument& document,
     std::set<blink::WebNode>* skip_nodes,
-    ConsoleLogger* console_logger) {
+    PagePasswordsAnalyserLogger* logger) {
   std::vector<FormInputCollection> form_input_collections;
 
   // Keep track of inputs that are inside <form> elements to find the complement
@@ -242,8 +236,8 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
       continue;
     // Any password fields inside <form> elements will have been skipped,
     // leaving just those without associated forms.
-    console_logger->Send("Password field is not contained in a form:",
-                         ConsoleLogger::kVerbose, password_inputs[i]);
+    logger->Send("Password field is not contained in a form:",
+                 PagePasswordsAnalyserLogger::kVerbose, password_inputs[i]);
   }
   // Check for input fields that are not contained inside forms, to make sure
   // their id attributes don't conflict with other fields also not contained
@@ -266,13 +260,13 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
     if (nodes.size() <= 1)
       continue;
     if (!id_attr.empty()) {
-      console_logger->Send(
+      logger->Send(
           base::StringPrintf("Found %zu elements with non-unique id #%s:",
                              nodes.size(), id_attr.c_str()),
-          ConsoleLogger::kError, nodes);
+          PagePasswordsAnalyserLogger::kError, nodes);
     } else {
-      console_logger->Send("The id attribute must be unique and non-empty:",
-                           ConsoleLogger::kError, nodes);
+      logger->Send("The id attribute must be unique and non-empty:",
+                   PagePasswordsAnalyserLogger::kError, nodes);
     }
   }
 
@@ -361,7 +355,7 @@ void GuessAutocompleteAttributesForPasswordFields(
 // Error and warning messages specific to an individual form (for example,
 // autocomplete attributes, or missing username fields, etc.).
 void AnalyseForm(const FormInputCollection& form_input_collection,
-                 ConsoleLogger* console_logger) {
+                 PagePasswordsAnalyserLogger* logger) {
   const blink::WebFormElement& form = form_input_collection.form;
   const std::vector<blink::WebFormControlElement>& inputs =
       form_input_collection.inputs;
@@ -384,10 +378,10 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
     // every password field, but providing one ensures that the Password
     // Manager associates the correct account name with the password (for
     // example in password reset forms).
-    console_logger->Send(
+    logger->Send(
         "Password forms should have (optionally hidden) "
         "username fields for accessibility:",
-        ConsoleLogger::kVerbose, form);
+        PagePasswordsAnalyserLogger::kVerbose, form);
   } else {
     // By default (if the other heuristics fail), the first text field
     // preceding a password field will be considered the username field.
@@ -399,11 +393,11 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   }
 
   if (FormIsTooComplex(signature)) {
-    console_logger->Send(
+    logger->Send(
         "Multiple forms should be contained in their own "
         "form elements; break up complex forms into ones that represent a "
         "single action:",
-        ConsoleLogger::kVerbose, form);
+        PagePasswordsAnalyserLogger::kVerbose, form);
     return;
   }
 
@@ -426,11 +420,11 @@ void AnalyseForm(const FormInputCollection& form_input_collection,
   for (size_t i = 0; i < inputs.size(); ++i) {
     if (autocomplete_suggestions.count(i) &&
         !inputs[i].HasAttribute("autocomplete"))
-      console_logger->Send(
+      logger->Send(
           "Input elements should have autocomplete "
           "attributes (suggested: \"" +
               autocomplete_suggestions[i] + "\"):",
-          ConsoleLogger::kVerbose, inputs[i]);
+          PagePasswordsAnalyserLogger::kVerbose, inputs[i]);
   }
 }
 
@@ -445,22 +439,28 @@ void PagePasswordsAnalyser::Reset() {
   skip_nodes_.clear();
 }
 
-void PagePasswordsAnalyser::AnalyseDocumentDOM(blink::WebLocalFrame* frame) {
+void PagePasswordsAnalyser::AnalyseDocumentDOM(
+    blink::WebLocalFrame* frame,
+    PagePasswordsAnalyserLogger* logger) {
   DCHECK(frame);
-  ConsoleLogger console_logger(frame);
 
   blink::WebDocument document(frame->GetDocument());
   // Extract all the forms from the DOM, and provide relevant warnings.
   std::vector<FormInputCollection> forms(
-      ExtractFormsForAnalysis(document, &skip_nodes_, &console_logger));
+      ExtractFormsForAnalysis(document, &skip_nodes_, logger));
 
   // Analyse each form in turn, for example with respect to autocomplete
   // attributes.
   for (const FormInputCollection& form_input_collection : forms)
-    AnalyseForm(form_input_collection, &console_logger);
+    AnalyseForm(form_input_collection, logger);
 
   // Finally, send all the warnings and errors to the console.
-  console_logger.Flush();
+  logger->Flush();
+}
+
+void PagePasswordsAnalyser::AnalyseDocumentDOM(blink::WebLocalFrame* frame) {
+  ConsoleLogger console_logger(frame);
+  AnalyseDocumentDOM(frame, &console_logger);
 }
 
 }  // namespace autofill
