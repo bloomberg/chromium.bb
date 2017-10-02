@@ -96,10 +96,6 @@ void WebVrUrlToastTexture::Draw(SkCanvas* canvas,
 
 void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
                                      const gfx::Rect& text_bounds) {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
-  render_text->SetDisplayRect(text_bounds);
-
   int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
 
   url::Parsed parsed;
@@ -123,6 +119,8 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   if (!UiTexture::GetFontList(pixel_font_height, formatted_url, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
+  std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
+  render_text->SetDisplayRect(text_bounds);
   render_text->SetFontList(font_list);
   render_text->SetColor(color_scheme().transient_warning_foreground);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
