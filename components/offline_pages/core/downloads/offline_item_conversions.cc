@@ -59,6 +59,8 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
     case SavePageRequest::RequestState::PAUSED:
       item.state = OfflineItemState::PAUSED;
       break;
+    default:
+      NOTREACHED();
   }
 
   item.progress.value = 0;
