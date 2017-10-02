@@ -47887,7 +47887,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.AnimatedLogoDownloadTime" units="ms">
-  <owner>ianwen@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     The amount of time it takes to download the animated logo. Android only.
   </summary>
@@ -48635,30 +48635,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.LogoClick" enum="NewTabPageLogoClick">
-  <owner>ianwen@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
-    Histogram tracking how many users click on the static logo or animated logo
-    on NTP. Android and iOS only.
+    The number of clicks on the static/call-to-action/animated logo on the NTP.
   </summary>
 </histogram>
 
 <histogram name="NewTabPage.LogoDownloadOutcome"
     enum="NewTabPageLogoDownloadOutcome">
-  <owner>ianwen@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     Outcome of downloading search provider's logos. It measures whether
     download/parsing is successful, revalidation and parsing work properly, etc.
-    Android and iOS only.
   </summary>
 </histogram>
 
 <histogram name="NewTabPage.LogoDownloadTime" units="ms">
-  <owner>ianwen@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
     The amount of time it took to download the static logo. This includes
     requests where there was no logo, or where an existing logo was revalidated
     (so no new image data was downloaded), but it does not include failed
-    requests. Android and iOS only.
+    requests.
   </summary>
 </histogram>
 

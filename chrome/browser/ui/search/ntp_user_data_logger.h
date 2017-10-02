@@ -85,7 +85,9 @@ class NTPUserDataLogger
   // the tab/shutting down Chrome), or when the user navigates to a URL.
   void EmitNtpStatistics(base::TimeDelta load_time);
 
-  void RecordDoodleEvent(base::TimeDelta time, bool is_cta, bool from_cache);
+  void RecordDoodleImpression(base::TimeDelta time,
+                              bool is_cta,
+                              bool from_cache);
 
   // Records whether we have yet logged an impression for the tile at a given
   // index. A typical NTP will log 8 impressions, but could record fewer for new

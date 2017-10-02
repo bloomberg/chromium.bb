@@ -69,7 +69,14 @@ enum NTPLoggingEventType {
   // A call-to-action Doodle image was shown, coming from the network.
   NTP_CTA_LOGO_SHOWN_FRESH = 33,
 
-  NTP_EVENT_TYPE_LAST = NTP_CTA_LOGO_SHOWN_FRESH
+  // A static Doodle was clicked.
+  NTP_STATIC_LOGO_CLICKED = 34,
+  // A call-to-action Doodle was clicked.
+  NTP_CTA_LOGO_CLICKED = 35,
+  // An animated Doodle was clicked.
+  NTP_ANIMATED_LOGO_CLICKED = 36,
+
+  NTP_EVENT_TYPE_LAST = NTP_ANIMATED_LOGO_CLICKED
 };
 
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

@@ -119,6 +119,13 @@ var LOG_TYPE = {
   NTP_CTA_LOGO_SHOWN_FROM_CACHE: 32,
   // A call-to-action Doodle image was shown, coming from the network.
   NTP_CTA_LOGO_SHOWN_FRESH: 33,
+
+  // A static Doodle was clicked.
+  NTP_STATIC_LOGO_CLICKED: 34,
+  // A call-to-action Doodle was clicked.
+  NTP_CTA_LOGO_CLICKED: 35,
+  // An animated Doodle was clicked.
+  NTP_ANIMATED_LOGO_CLICKED: 36,
 };
 
 
@@ -899,14 +906,19 @@ var applyDoodleMetadata = function(metadata) {
   if (metadata.animatedUrl) {
     logoDoodleLink.removeAttribute('href');
     logoDoodleLink.onclick = function(e) {
+      ntpApiHandle.logEvent(LOG_TYPE.NTP_CTA_LOGO_CLICKED);
       e.preventDefault();
       logoDoodleImage.src = metadata.animatedUrl;
       logoDoodleLink.href = metadata.onClickUrl;
-      logoDoodleLink.onclick = null;
+      logoDoodleLink.onclick = function() {
+        ntpApiHandle.logEvent(LOG_TYPE.NTP_ANIMATED_LOGO_CLICKED);
+      };
     };
   } else {
     logoDoodleLink.href = metadata.onClickUrl;
-    logoDoodleLink.onclick = null;
+    logoDoodleLink.onclick = function() {
+      ntpApiHandle.logEvent(LOG_TYPE.NTP_STATIC_LOGO_CLICKED);
+    };
   }
 };
 
