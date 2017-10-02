@@ -285,24 +285,6 @@ static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
-static void cfl_build_prediction(const int16_t *pred_buf_q3, uint8_t *dst,
-                                 int dst_stride, int width, int height,
-                                 int alpha_q3, int dc_pred, int use_hbd,
-                                 int bit_depth) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_hbd) {
-    uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
-    cfl_build_prediction_hbd(pred_buf_q3, dst_16, dst_stride, width, height,
-                             alpha_q3, dc_pred, bit_depth);
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  (void)use_hbd;
-  (void)bit_depth;
-  cfl_build_prediction_lbd(pred_buf_q3, dst, dst_stride, width, height,
-                           alpha_q3, dc_pred);
-}
-
 void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int plane) {
   CFL_CTX *const cfl = xd->cfl;
@@ -316,9 +298,18 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   const int alpha_q3 =
       cfl_idx_to_alpha(mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, plane - 1);
 
-  cfl_build_prediction(pred_buf_q3, dst, dst_stride, tx_size_wide[tx_size],
-                       tx_size_high[tx_size], alpha_q3, cfl->dc_pred[plane - 1],
-                       get_bitdepth_data_path_index(xd), xd->bd);
+#if CONFIG_HIGHBITDEPTH
+  if (get_bitdepth_data_path_index(xd)) {
+    uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst);
+    cfl_build_prediction_hbd(pred_buf_q3, dst_16, dst_stride,
+                             tx_size_wide[tx_size], tx_size_high[tx_size],
+                             alpha_q3, cfl->dc_pred[plane - 1], xd->bd);
+    return;
+  }
+#endif  // CONFIG_HIGHBITDEPTH
+  cfl_build_prediction_lbd(pred_buf_q3, dst, dst_stride, tx_size_wide[tx_size],
+                           tx_size_high[tx_size], alpha_q3,
+                           cfl->dc_pred[plane - 1]);
 }
 
 static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
