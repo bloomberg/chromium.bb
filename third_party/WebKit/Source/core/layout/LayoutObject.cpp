@@ -3133,20 +3133,8 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
 
     node = ancestor->GetNode();
 
-    if (!node) {
-      if (!ancestor->VirtualContinuation())
-        continue;
-
-      // This is an anonymous continuation; ie. our ancestor is really the split
-      // inline. Find it by spooling to the end of the continuation chain.
-
-      while (LayoutBoxModelObject* cont = ancestor->VirtualContinuation())
-        ancestor = cont;
-
-      node = ancestor->GetNode();
-
-      DCHECK(node);
-    }
+    if (!node)
+      continue;
 
     // TODO(kochi): If |base| or |node| is nested deep in shadow roots, this
     // loop may get expensive, as isUnclosedNodeOf() can take up to O(N+M) time
