@@ -30,8 +30,10 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
+#include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -90,6 +92,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_animations.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -1147,7 +1150,7 @@ wl_output_transform OutputTransform(display::Display::Rotation rotation) {
 
 class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
  public:
-  WaylandPrimaryDisplayObserver(wl_resource* output_resource)
+  explicit WaylandPrimaryDisplayObserver(wl_resource* output_resource)
       : output_resource_(output_resource) {
     display::Screen::GetScreen()->AddObserver(this);
     SendDisplayMetrics();
@@ -2089,8 +2092,12 @@ void remote_surface_set_window_type(wl_client* client,
                                     uint32_t type) {
   if (type == ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI) {
     auto* widget = GetUserDataAs<ShellSurface>(resource)->GetWidget();
-    if (widget)
+    if (widget) {
       widget->GetNativeWindow()->SetProperty(ash::kShowInOverviewKey, false);
+
+      wm::SetWindowVisibilityAnimationType(
+          widget->GetNativeWindow(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+    }
   }
 }
 
@@ -4302,7 +4309,8 @@ void bind_stylus_tools(wl_client* client,
 
 class WaylandExtendedKeyboardImpl : public KeyboardObserver {
  public:
-  WaylandExtendedKeyboardImpl(Keyboard* keyboard) : keyboard_(keyboard) {
+  explicit WaylandExtendedKeyboardImpl(Keyboard* keyboard)
+      : keyboard_(keyboard) {
     keyboard_->AddObserver(this);
     keyboard_->SetNeedKeyboardKeyAcks(true);
   }
