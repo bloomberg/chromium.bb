@@ -139,6 +139,9 @@ void MediaStreamVideoSource::StopSourceForRestartImpl() {
 
 void MediaStreamVideoSource::OnStopForRestartDone(bool did_stop_for_restart) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state_ == ENDED)
+    return;
+
   DCHECK_EQ(state_, STOPPING_FOR_RESTART);
   if (did_stop_for_restart) {
     state_ = STOPPED_FOR_RESTART;
@@ -178,8 +181,10 @@ void MediaStreamVideoSource::RestartSourceImpl(
 
 void MediaStreamVideoSource::OnRestartDone(bool did_restart) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(state_, RESTARTING);
+  if (state_ == ENDED)
+    return;
 
+  DCHECK_EQ(state_, RESTARTING);
   if (did_restart) {
     state_ = STARTED;
     StartFrameMonitoring();
@@ -253,6 +258,9 @@ void MediaStreamVideoSource::DoStopSource() {
 void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "OnStartDone({result =" << result << "})";
+  if (state_ == ENDED)
+    return;
+
   if (result == MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
