@@ -19,7 +19,7 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-8
+# Chinese braille table by Coscell Kao <coscell@gmail.com> and users in Taiwan (C) 2017-9
 
 # U.S. English 8 dot Computer braille table
 include en-us-comp8.ctb
