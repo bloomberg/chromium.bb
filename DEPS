@@ -836,7 +836,7 @@ hooks = [
   {
     'name': 'orderfiles_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
+    'condition': 'checkout_win',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
