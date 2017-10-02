@@ -295,17 +295,11 @@ bool WKBasedNavigationManagerImpl::CanGoToOffset(int offset) const {
 }
 
 void WKBasedNavigationManagerImpl::GoBack() {
-  if (transient_item_) {
-    transient_item_.reset();
-    delegate_->ClearTransientContent();
-    return;
-  }
-  [delegate_->GetWebViewNavigationProxy() goBack];
+  GoToIndex(GetIndexForOffset(-1));
 }
 
 void WKBasedNavigationManagerImpl::GoForward() {
-  DiscardNonCommittedItems();
-  [delegate_->GetWebViewNavigationProxy() goForward];
+  GoToIndex(GetIndexForOffset(1));
 }
 
 NavigationItemList WKBasedNavigationManagerImpl::GetBackwardItems() const {
@@ -399,6 +393,7 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
 }
 
 void WKBasedNavigationManagerImpl::FinishGoToIndex(int index) {
+  DiscardNonCommittedItems();
   WKBackForwardListItem* wk_item = GetWKItemAtIndex(index);
   DCHECK(wk_item);
   [delegate_->GetWebViewNavigationProxy() goToBackForwardListItem:wk_item];
