@@ -589,6 +589,9 @@ extern const char kOmniboxUIVerticalLayoutDescription[];
 extern const char kOmniboxUIVerticalMarginName[];
 extern const char kOmniboxUIVerticalMarginDescription[];
 
+extern const char kOverflowIconsForMediaControlsName[];
+extern const char kOverflowIconsForMediaControlsDescription[];
+
 extern const char kOriginTrialsName[];
 extern const char kOriginTrialsDescription[];
 

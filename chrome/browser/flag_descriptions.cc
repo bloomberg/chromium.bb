@@ -947,6 +947,11 @@ const char kOriginTrialsName[] = "Origin Trials";
 const char kOriginTrialsDescription[] =
     "Enables origin trials for controlling access to feature/API experiments.";
 
+const char kOverflowIconsForMediaControlsName[] =
+    "Icons on Media Controls Overflow Menu";
+const char kOverflowIconsForMediaControlsDescription[] =
+    "Displays icons on the overflow menu of the native media controls";
+
 const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
 const char kOverlayScrollbarsDescription[] =
     "Enable the experimental overlay scrollbars implementation. You must also "
