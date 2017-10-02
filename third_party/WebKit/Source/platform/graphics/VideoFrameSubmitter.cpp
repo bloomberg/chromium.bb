@@ -15,8 +15,13 @@
 
 namespace blink {
 
-VideoFrameSubmitter::VideoFrameSubmitter(cc::VideoFrameProvider* provider)
-    : provider_(provider), binding_(this), is_rendering_(false) {
+VideoFrameSubmitter::VideoFrameSubmitter(
+    cc::VideoFrameProvider* provider,
+    WebContextProviderCallback context_provider_callback)
+    : provider_(provider),
+      binding_(this),
+      context_provider_callback_(std::move(context_provider_callback)),
+      is_rendering_(false) {
   current_local_surface_id_ = local_surface_id_allocator_.GenerateId();
 }
 
@@ -54,6 +59,9 @@ void VideoFrameSubmitter::StartRendering() {
 void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
   DCHECK(id.is_valid());
 
+  resource_provider_ =
+      std::make_unique<VideoFrameResourceProvider>(context_provider_callback_);
+
   // Class to be renamed.
   mojom::blink::OffscreenCanvasProviderPtr canvas_provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
@@ -80,7 +88,7 @@ void VideoFrameSubmitter::SubmitFrame(viz::BeginFrameAck begin_frame_ack) {
   render_pass->SetNew(50, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                       gfx::Transform());
   render_pass->filters = cc::FilterOperations();
-  resource_provider_.AppendQuads(*render_pass);
+  resource_provider_->AppendQuads(*render_pass);
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.device_scale_factor = 1;

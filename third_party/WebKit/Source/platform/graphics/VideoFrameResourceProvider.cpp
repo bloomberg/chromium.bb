@@ -4,12 +4,31 @@
 
 #include "platform/graphics/VideoFrameResourceProvider.h"
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
-VideoFrameResourceProvider::VideoFrameResourceProvider() = default;
+VideoFrameResourceProvider::VideoFrameResourceProvider(
+    WebContextProviderCallback context_provider_callback)
+    : context_provider_callback_(std::move(context_provider_callback)),
+      weak_ptr_factory_(this) {
+  context_provider_callback_.Run(base::BindOnce(
+      &VideoFrameResourceProvider::Initialize, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void VideoFrameResourceProvider::Initialize(
+    viz::ContextProvider* media_context_provider) {
+  // TODO(lethalantidote): Need to handle null contexts.
+  // https://crbug/768565
+  CHECK(media_context_provider);
+
+  resource_updater_ = base::MakeUnique<cc::VideoResourceUpdater>(
+      media_context_provider, nullptr, false);
+}
 
 void VideoFrameResourceProvider::AppendQuads(viz::RenderPass& render_pass) {
   gfx::Rect rect(0, 0, 10000, 10000);

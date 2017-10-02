@@ -273,7 +273,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                            : base::ThreadTaskRunnerHandle::Get();
   }
 
-  compositor_ = base::MakeUnique<VideoFrameCompositor>(vfc_task_runner_);
+  compositor_ = base::MakeUnique<VideoFrameCompositor>(
+      vfc_task_runner_, params->context_provider_callback());
 
   if (surface_layer_for_video_enabled_) {
     vfc_task_runner_->PostTask(

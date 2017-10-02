@@ -50,13 +50,15 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       feature_list_.InitFromCommandLine("UseSurfaceLayerForVideo", "");
 
       // When SurfaceLayerForVideo is enabled, |compositor_| owns the
-      // |submitter_|. Otherwise, the |compositor_| treats the |submitter_| if
-      // were a VideoFrameProviderClient in the VideoLayer code path, holding
-      // only a bare pointer.
+      // |submitter_|. Otherwise, the |compositor_| treats the |submitter_| as
+      // if it were a VideoFrameProviderClient in the VideoLayer code path,
+      // holding only a bare pointer.
     }
     submitter_ = client_.get();
-    compositor_ =
-        base::MakeUnique<VideoFrameCompositor>(message_loop.task_runner());
+    compositor_ = base::MakeUnique<VideoFrameCompositor>(
+        message_loop.task_runner(),
+        base::BindRepeating(
+            [](base::OnceCallback<void(viz::ContextProvider*)> callback) {}));
 
     if (!IsSurfaceLayerForVideoEnabled()) {
       compositor_->SetVideoFrameProviderClient(client_.get());
