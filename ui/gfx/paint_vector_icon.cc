@@ -439,6 +439,8 @@ void PaintPath(Canvas* canvas,
     previous_command_type = command_type;
   }
 
+  ScopedCanvas scoped_canvas(canvas);
+
   if (dip_size != canvas_size) {
     SkScalar scale = SkIntToScalar(dip_size) / SkIntToScalar(canvas_size);
     canvas->sk_canvas()->scale(scale, scale);
