@@ -27,18 +27,9 @@ source_set("backend") {
   deps = [
     "//base",
     "//chromecast:chromecast_features",
+    "//chromecast/media:libcast_media",
     "//chromecast/media/cma/base",
   ]
-
-  if (is_android) {
-    if (is_cast_using_cma_backend) {
-      deps += [ "//chromecast/media/cma/backend/android:cast_media_android" ]
-    } else {
-      deps += [ ":cast_media_android_dummy" ]
-    }
-  } else {
-    deps += [ ":libcast_media_1.0" ]
-  }
 }
 
 source_set("cast_media_android_dummy") {

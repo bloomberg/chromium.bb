@@ -63,6 +63,7 @@ source_set("unittests") {
     "//base/test:test_support",
     "//chromecast/base",
     "//chromecast/media",
+    "//chromecast/media:libcast_media",
     "//media",
     "//testing/gmock",
     "//testing/gtest",

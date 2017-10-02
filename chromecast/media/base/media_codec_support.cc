@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
-#include "chromecast/media/base/media_caps.h"
 
 namespace chromecast {
 namespace media {
