@@ -811,7 +811,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   #
   # Masked SAD
   #
-  if (aom_config("CONFIG_EXT_INTER") eq "yes") {
     foreach (@block_sizes) {
       ($w, $h) = @$_;
       add_proto qw/unsigned int/, "aom_masked_sad${w}x${h}", "const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask";
@@ -825,7 +824,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
         specialize "aom_highbd_masked_sad${w}x${h}", qw/ssse3/;
       }
     }
-  }
 
   #
   # OBMC SAD
@@ -1143,7 +1141,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     }
   }  # CONFIG_HIGHBITDEPTH
 
-  if (aom_config("CONFIG_EXT_INTER") eq "yes") {
     #
     # Masked Variance / Masked Subpixel Variance
     #
@@ -1162,7 +1159,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
         }
       }
     }
-  }
 
   #
   # OBMC Variance / OBMC Subpixel Variance
@@ -1601,14 +1597,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   }  # CONFIG_HIGHBITDEPTH
 
-  if (aom_config("CONFIG_EXT_INTER") eq "yes") {
     add_proto qw/void aom_comp_mask_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
     add_proto qw/void aom_comp_mask_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
     if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
       add_proto qw/void aom_highbd_comp_mask_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
       add_proto qw/void aom_highbd_comp_mask_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref8, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask, int bd";
     }
-  }
 
 }  # CONFIG_AV1_ENCODER
 

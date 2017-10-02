@@ -255,13 +255,11 @@ if (CONFIG_AV1_ENCODER)
       endif ()
     endif ()
 
-    if (CONFIG_EXT_INTER)
       set(AOM_UNIT_TEST_ENCODER_SOURCES
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
           "${AOM_ROOT}/test/av1_wedge_utils_test.cc"
           "${AOM_ROOT}/test/masked_sad_test.cc"
           "${AOM_ROOT}/test/masked_variance_test.cc")
-    endif ()
 
     if (CONFIG_EXT_TX)
       set(AOM_UNIT_TEST_ENCODER_SOURCES

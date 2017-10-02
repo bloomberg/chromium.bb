@@ -43,8 +43,6 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
-#if CONFIG_EXT_INTER
-
 #if CONFIG_COMPOUND_SEGMENT
 // Set COMPOUND_SEGMENT_TYPE to one of the three
 // 0: Uniform
@@ -65,7 +63,6 @@ typedef enum {
 } SEG_MASK_TYPE;
 
 #endif  // CONFIG_COMPOUND_SEGMENT
-#endif  // CONFIG_EXT_INTER
 
 typedef enum {
   KEY_FRAME = 0,
@@ -87,11 +84,7 @@ static INLINE int is_comp_ref_allowed(BLOCK_SIZE bsize) {
 }
 
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
-#if CONFIG_EXT_INTER
   return mode >= NEARESTMV && mode <= NEW_NEWMV;
-#else
-  return mode >= NEARESTMV && mode <= NEWMV;
-#endif  // CONFIG_EXT_INTER
 }
 
 #if CONFIG_PVQ
@@ -136,7 +129,6 @@ typedef struct {
   int stride[MAX_MB_PLANE];
 } BUFFER_SET;
 
-#if CONFIG_EXT_INTER
 static INLINE int is_inter_singleref_mode(PREDICTION_MODE mode) {
   return mode >= NEARESTMV && mode <= NEWMV;
 }
@@ -282,17 +274,6 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
   return 0;
 }
 
-#else   // !CONFIG_EXT_INTER
-
-static INLINE int have_nearmv_in_inter_mode(PREDICTION_MODE mode) {
-  return (mode == NEARMV);
-}
-
-static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
-  return (mode == NEWMV);
-}
-#endif  // CONFIG_EXT_INTER
-
 /* For keyframes, intra block modes are predicted by the (already decoded)
    modes for the Y blocks to the left and above us; for interframes, there
    is a single probability table. */
@@ -301,9 +282,7 @@ typedef struct {
   PREDICTION_MODE as_mode;
   int_mv as_mv[2];  // first, second inter predictor motion vectors
   int_mv pred_mv[2];
-#if CONFIG_EXT_INTER
   int_mv ref_mv[2];
-#endif  // CONFIG_EXT_INTER
 } b_mode_info;
 
 typedef int8_t MV_REFERENCE_FRAME;
@@ -353,7 +332,6 @@ typedef struct RD_STATS {
 #endif  // CONFIG_RD_DEBUG
 } RD_STATS;
 
-#if CONFIG_EXT_INTER
 // This struct is used to group function args that are commonly
 // sent together in functions related to interinter compound modes
 typedef struct {
@@ -367,7 +345,6 @@ typedef struct {
 #endif  // CONFIG_COMPOUND_SEGMENT
   COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
-#endif  // CONFIG_EXT_INTER
 
 // This structure now relates to 8x8 block regions.
 typedef struct MB_MODE_INFO {
@@ -425,7 +402,6 @@ typedef struct MB_MODE_INFO {
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA
   // interintra members
   INTERINTRA_MODE interintra_mode;
@@ -443,7 +419,6 @@ typedef struct MB_MODE_INFO {
 #if CONFIG_COMPOUND_SEGMENT
   SEG_MASK_TYPE mask_type;
 #endif  // CONFIG_COMPOUND_SEGMENT
-#endif  // CONFIG_EXT_INTER
   MOTION_MODE motion_mode;
 #if CONFIG_MOTION_VAR
   int overlappable_neighbors[2];
@@ -597,12 +572,8 @@ static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
   const int block_size_allowed =
       AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 #endif  // GLOBAL_SUB8X8_USED
-#if CONFIG_EXT_INTER
   return (mode == ZEROMV || mode == ZERO_ZEROMV) && type > TRANSLATION &&
          block_size_allowed;
-#else
-  return mode == ZEROMV && type > TRANSLATION && block_size_allowed;
-#endif  // CONFIG_EXT_INTER
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -839,9 +810,9 @@ typedef struct macroblockd {
   const EobThresholdMD *eob_threshold_md;
 #endif
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SEGMENT
+#if CONFIG_COMPOUND_SEGMENT
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SEGMENT
+#endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_MRC_TX
   uint8_t *mrc_mask;
@@ -1424,7 +1395,6 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,
                       int loff);
 
-#if CONFIG_EXT_INTER
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
 #if CONFIG_INTERINTRA
   // TODO(debargha): Should this be bsize < BLOCK_LARGEST?
@@ -1473,7 +1443,6 @@ static INLINE int is_interintra_allowed_bsize_group(int group) {
 static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
   return (mbmi->ref_frame[1] == INTRA_FRAME) && is_interintra_allowed(mbmi);
 }
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_VAR_TX
 static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
@@ -1509,11 +1478,11 @@ static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
 
 static INLINE int is_motion_variation_allowed_compound(
     const MB_MODE_INFO *mbmi) {
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   if (!has_second_ref(mbmi) && !is_inter_singleref_comp_mode(mbmi->mode))
 #else
   if (!has_second_ref(mbmi))
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
     return 1;
   else
     return 0;
@@ -1556,14 +1525,9 @@ static INLINE MOTION_MODE motion_mode_allowed(
 #if CONFIG_AMVR
   }
 #endif
-#if CONFIG_EXT_INTER
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME &&
       is_motion_variation_allowed_compound(mbmi)) {
-#else
-  if (is_motion_variation_allowed_bsize(mbmi->sb_type) &&
-      is_inter_mode(mbmi->mode) && is_motion_variation_allowed_compound(mbmi)) {
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
 #endif
@@ -1684,23 +1648,13 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
 
   // First check if all modes are ZEROMV
   if (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) {
-#if CONFIG_EXT_INTER
     if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) return 0;
-#else
-    if (mbmi->mode != ZEROMV) return 0;
-#endif  // CONFIG_EXT_INTER
   } else {
-#if CONFIG_EXT_INTER
     if ((mi->bmi[0].as_mode != ZEROMV && mi->bmi[0].as_mode != ZERO_ZEROMV) ||
         (mi->bmi[1].as_mode != ZEROMV && mi->bmi[1].as_mode != ZERO_ZEROMV) ||
         (mi->bmi[2].as_mode != ZEROMV && mi->bmi[2].as_mode != ZERO_ZEROMV) ||
         (mi->bmi[3].as_mode != ZEROMV && mi->bmi[3].as_mode != ZERO_ZEROMV))
       return 0;
-#else
-    if (mi->bmi[0].as_mode != ZEROMV || mi->bmi[1].as_mode != ZEROMV ||
-        mi->bmi[2].as_mode != ZEROMV || mi->bmi[3].as_mode != ZEROMV)
-      return 0;
-#endif  // CONFIG_EXT_INTER
   }
 
 #if !GLOBAL_SUB8X8_USED

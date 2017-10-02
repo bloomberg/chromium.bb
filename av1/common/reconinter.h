@@ -215,7 +215,6 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_EXT_INTER
 // Set to (1 << 5) if the 32-ary codebooks are used for any bock size
 #define MAX_WEDGE_TYPES (1 << 4)
 
@@ -320,9 +319,7 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
                                     BLOCK_SIZE sb_type, int h, int w, int bd);
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_COMPOUND_SEGMENT
-#endif  // CONFIG_EXT_INTER
 
-#if CONFIG_EXT_INTER
 void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      const int subpel_x, const int subpel_y,
@@ -343,7 +340,6 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      int p_col, int p_row, int ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                                      MACROBLOCKD *xd);
-#endif  // CONFIG_EXT_INTER
 
 static INLINE int round_mv_comp_q4(int value) {
   return (value < 0 ? value - 2 : value + 2) / 4;
@@ -425,18 +421,13 @@ void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_SUPERTX
 void av1_build_inter_predictor_sb_sub8x8_extend(const AV1_COMMON *cm,
-                                                MACROBLOCKD *xd,
-#if CONFIG_EXT_INTER
-                                                int mi_row_ori, int mi_col_ori,
-#endif  // CONFIG_EXT_INTER
-                                                int mi_row, int mi_col,
-                                                int plane, BLOCK_SIZE bsize,
-                                                int block);
+                                                MACROBLOCKD *xd, int mi_row_ori,
+                                                int mi_col_ori, int mi_row,
+                                                int mi_col, int plane,
+                                                BLOCK_SIZE bsize, int block);
 
 void av1_build_inter_predictor_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
-#if CONFIG_EXT_INTER
                                          int mi_row_ori, int mi_col_ori,
-#endif  // CONFIG_EXT_INTER
                                          int mi_row, int mi_col, int plane,
                                          BLOCK_SIZE bsize);
 struct macroblockd_plane;
@@ -647,7 +638,6 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 #endif  // CONFIG_MOTION_VAR
 
-#if CONFIG_EXT_INTER
 #define MASK_MASTER_SIZE ((MAX_WEDGE_SIZE) << 1)
 #define MASK_MASTER_STRIDE (MASK_MASTER_SIZE)
 
@@ -708,7 +698,6 @@ void av1_build_wedge_inter_predictor_from_buf(
 #endif  // CONFIG_SUPERTX
     uint8_t *ext_dst0[3], int ext_dst_stride0[3], uint8_t *ext_dst1[3],
     int ext_dst_stride1[3]);
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 #define ASSIGN_ALIGNED_PTRS(p, a, s) \

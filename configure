@@ -264,7 +264,6 @@ EXPERIMENT_LIST="
     filter_intra
     intra_edge
     intrabc
-    ext_inter
     interintra
     wedge
     compound_segment
@@ -522,7 +521,6 @@ post_process_cmdline() {
     soft_enable loopfiltering_across_tiles
     soft_enable var_tx
     soft_enable txmg
-    soft_enable ext_inter
     soft_enable wedge
     soft_enable compound_segment
     soft_enable interintra
@@ -562,7 +560,6 @@ post_process_cmdline() {
     enabled chroma_2x2 && disable_feature chroma_sub8x8
     enabled dpcm_intra && enable_feature ext_tx
     enabled chroma_sub8x8 && enable_feature cb4x4
-    enabled compound_singleref && enable_feature ext_inter
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature ext_refs

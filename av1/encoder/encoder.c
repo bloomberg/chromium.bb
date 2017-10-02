@@ -485,9 +485,7 @@ void av1_initialize_enc(void) {
 #endif
     av1_entropy_mv_init();
     av1_encode_token_init();
-#if CONFIG_EXT_INTER
     av1_init_wedge_masks();
-#endif
     init_done = 1;
   }
 }
@@ -1378,7 +1376,6 @@ MAKE_BFP_SAD4D_WRAPPER(aom_highbd_sad128x32x4d)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_EXT_INTER
 #define HIGHBD_MBFP(BT, MCSDF, MCSVF) \
   cpi->fn_ptr[BT].msdf = MCSDF;       \
   cpi->fn_ptr[BT].msvf = MCSVF;
@@ -1439,7 +1436,6 @@ MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_sad32x128)
 MAKE_MBFP_COMPOUND_SAD_WRAPPER(aom_highbd_masked_sad128x32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR
 #define HIGHBD_OBFP(BT, OSDF, OVF, OSVF) \
@@ -1666,7 +1662,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                    aom_highbd_sad64x128x4d_bits8)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
         HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits8,
                     aom_highbd_8_masked_sub_pixel_variance128x128)
@@ -1728,7 +1723,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
         HIGHBD_MBFP(BLOCK_4X16, aom_highbd_masked_sad4x16_bits8,
                     aom_highbd_8_masked_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
         HIGHBD_OBFP(BLOCK_128X128, aom_highbd_obmc_sad128x128_bits8,
@@ -1989,7 +1983,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                    aom_highbd_sad64x128x4d_bits10)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
         HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits10,
                     aom_highbd_10_masked_sub_pixel_variance128x128)
@@ -2051,7 +2044,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
         HIGHBD_MBFP(BLOCK_4X16, aom_highbd_masked_sad4x16_bits10,
                     aom_highbd_10_masked_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
         HIGHBD_OBFP(BLOCK_128X128, aom_highbd_obmc_sad128x128_bits10,
@@ -2312,7 +2304,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
                    aom_highbd_sad64x128x4d_bits12)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_EXT_INTER
 #if CONFIG_EXT_PARTITION
         HIGHBD_MBFP(BLOCK_128X128, aom_highbd_masked_sad128x128_bits12,
                     aom_highbd_12_masked_sub_pixel_variance128x128)
@@ -2374,7 +2365,6 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
         HIGHBD_MBFP(BLOCK_4X16, aom_highbd_masked_sad4x16_bits12,
                     aom_highbd_12_masked_sub_pixel_variance4x16)
 #endif
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR
 #if CONFIG_EXT_PARTITION
@@ -2493,7 +2483,6 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(cm->mi_rows * cm->mi_cols, 1));
 }
 
-#if CONFIG_EXT_INTER
 void set_compound_tools(AV1_COMMON *cm) {
   (void)cm;
 #if CONFIG_INTERINTRA
@@ -2503,7 +2492,6 @@ void set_compound_tools(AV1_COMMON *cm) {
   cm->allow_masked_compound = 1;
 #endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 }
-#endif  // CONFIG_EXT_INTER
 
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
@@ -2555,9 +2543,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
   }
-#if CONFIG_EXT_INTER
   set_compound_tools(cm);
-#endif  // CONFIG_EXT_INTER
   av1_reset_segment_features(cm);
 #if CONFIG_AMVR
   set_high_precision_mv(cpi, 0, 0);
@@ -3038,7 +3024,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #endif  // CONFIG_MOTION_VAR
 
-#if CONFIG_EXT_INTER
 #define MBFP(BT, MCSDF, MCSVF)  \
   cpi->fn_ptr[BT].msdf = MCSDF; \
   cpi->fn_ptr[BT].msvf = MCSVF;
@@ -3082,7 +3067,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   MBFP(BLOCK_128X32, aom_masked_sad128x32, aom_masked_sub_pixel_variance128x32)
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
@@ -4187,9 +4171,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
   cpi->common.interp_filter = cpi->sf.default_interp_filter;
-#if CONFIG_EXT_INTER
   if (!frame_is_intra_only(&cpi->common)) set_compound_tools(&cpi->common);
-#endif  // CONFIG_EXT_INTER
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,

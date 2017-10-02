@@ -152,10 +152,8 @@ AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/av1_highbd_quantize_sse4.c
 
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/highbd_fwd_txfm_sse4.c
 
-ifeq ($(CONFIG_EXT_INTER),yes)
 AV1_CX_SRCS-yes += encoder/wedge_utils.c
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/wedge_utils_sse2.c
-endif
 
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/error_intrin_avx2.c
 

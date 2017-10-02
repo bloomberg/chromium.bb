@@ -48,9 +48,7 @@ static void initialize_dec(void) {
     aom_dsp_rtcd();
     aom_scale_rtcd();
     av1_init_intra_predictors();
-#if CONFIG_EXT_INTER
     av1_init_wedge_masks();
-#endif  // CONFIG_EXT_INTER
     init_done = 1;
 #if CONFIG_EXT_TX
     for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {

@@ -437,8 +437,7 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)]");
 
-/* ext_inter experiment */
-#if CONFIG_EXT_INTER
+  /* ext_inter experiment */
   /* New compound mode */
   cts_each_dim[0] = INTER_MODE_CONTEXTS;
   cts_each_dim[1] = INTER_COMPOUND_MODES;
@@ -510,7 +509,6 @@ int main(int argc, const char **argv) {
       &fc.compound_interinter[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)]");
-#endif
 
 /* motion_var and warped_motion experiments */
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -664,7 +662,7 @@ int main(int argc, const char **argv) {
 #endif  // CONFIG_EXT_REFS
 
 /* Compound single ref inter mode */
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   cts_each_dim[0] = COMP_INTER_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(&fc.comp_inter_mode[0][0], probsfile, 2, cts_each_dim,

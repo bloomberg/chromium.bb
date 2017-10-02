@@ -81,10 +81,8 @@ static int check_intra_sb(const AV1_COMP *cpi, const TileInfo *const tile,
                           int mi_row, int mi_col, BLOCK_SIZE bsize,
                           PC_TREE *pc_tree);
 static void predict_superblock(const AV1_COMP *const cpi, ThreadData *td,
-#if CONFIG_EXT_INTER
-                               int mi_row_ori, int mi_col_ori,
-#endif  // CONFIG_EXT_INTER
-                               int mi_row_pred, int mi_col_pred, int plane,
+                               int mi_row_ori, int mi_col_ori, int mi_row_pred,
+                               int mi_col_pred, int plane,
                                BLOCK_SIZE bsize_pred, int b_sub8x8, int block);
 static int check_supertx_sb(BLOCK_SIZE bsize, TX_SIZE supertx_size,
                             PC_TREE *pc_tree);
@@ -488,11 +486,7 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
 static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       const MB_MODE_INFO *mbmi,
                                       RD_COUNTS *rdc) {
-  if (mode == ZEROMV
-#if CONFIG_EXT_INTER
-      || mode == ZERO_ZEROMV
-#endif
-      ) {
+  if (mode == ZEROMV || mode == ZERO_ZEROMV) {
     const int num_4x4s =
         num_4x4_blocks_wide_lookup[bsize] * num_4x4_blocks_high_lookup[bsize];
     int ref;
@@ -524,7 +518,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   CANDIDATE_MV *const curr_ref_mv_stack = mbmi_ext->ref_mv_stack[rf_type];
 
-#if CONFIG_EXT_INTER
   if (has_second_ref(mbmi)) {
     // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
     // (like NEARMV) instead
@@ -560,7 +553,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
     }
 #endif  // CONFIG_COMPOUND_SINGLEREF
   } else {
-#endif  // CONFIG_EXT_INTER
     if (mbmi->mode == NEWMV) {
       int i;
       for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
@@ -572,9 +564,7 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
         mi_pred_mv[i] = this_mv;
       }
     }
-#if CONFIG_EXT_INTER
   }
-#endif  // CONFIG_EXT_INTER
 }
 
 static void update_state(const AV1_COMP *const cpi, ThreadData *td,
@@ -1771,7 +1761,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_REFS
         }
 
-#if CONFIG_EXT_INTER
 #if CONFIG_COMPOUND_SINGLEREF
         if (!has_second_ref(mbmi))
           counts->comp_inter_mode[av1_get_inter_mode_context(xd)]
@@ -1808,7 +1797,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           }
         }
 #endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_WARPED_MOTION
@@ -1825,9 +1813,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #if CONFIG_SUPERTX
         if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
-#if CONFIG_EXT_INTER
           if (mbmi->ref_frame[1] != INTRA_FRAME)
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
           {
             if (motion_allowed == WARPED_CAUSAL) {
@@ -1854,11 +1840,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
           }
 #else
-        if (motion_allowed > SIMPLE_TRANSLATION) {
-          counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
-          update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
-                     MOTION_MODES);
-        }
+          if (motion_allowed > SIMPLE_TRANSLATION) {
+            counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
+            update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
+                       MOTION_MODES);
+          }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
@@ -1878,7 +1864,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
-#if CONFIG_EXT_INTER
         if (
 #if CONFIG_COMPOUND_SINGLEREF
             is_inter_anyref_comp_mode(mbmi->mode)
@@ -1903,7 +1888,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif
 #endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
         }
-#endif  // CONFIG_EXT_INTER
       }
     }
 
@@ -1911,7 +1895,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       int16_t mode_ctx;
       const PREDICTION_MODE mode = mbmi->mode;
-#if CONFIG_EXT_INTER
       if (has_second_ref(mbmi)) {
         mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
         ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
@@ -1924,21 +1907,16 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
                                            [INTER_SINGLEREF_COMP_OFFSET(mode)];
 #endif  // CONFIG_COMPOUND_SINGLEREF
       } else {
-#endif  // CONFIG_EXT_INTER
         mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                              mbmi->ref_frame, bsize, -1);
         update_inter_mode_stats(counts, mode, mode_ctx);
-#if CONFIG_EXT_INTER
       }
-#endif  // CONFIG_EXT_INTER
 
       int mode_allowed = (mbmi->mode == NEWMV);
-#if CONFIG_EXT_INTER
       mode_allowed |= (mbmi->mode == NEW_NEWMV);
 #if CONFIG_COMPOUND_SINGLEREF
       mode_allowed |= (mbmi->mode == SR_NEW_NEWMV);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#endif  // CONFIG_EXT_INTER
       if (mode_allowed) {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
@@ -1954,12 +1932,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
       }
 
-#if CONFIG_EXT_INTER
-      if (have_nearmv_in_inter_mode(mbmi->mode))
-#else
-      if (mbmi->mode == NEARMV)
-#endif
-      {
+      if (have_nearmv_in_inter_mode(mbmi->mode)) {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
 
@@ -5565,7 +5538,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif
 }
 
-#if CONFIG_EXT_INTER
 static void make_consistent_compound_tools(AV1_COMMON *cm) {
   (void)cm;
 #if CONFIG_INTERINTRA
@@ -5581,7 +5553,6 @@ static void make_consistent_compound_tools(AV1_COMMON *cm) {
     cm->allow_masked_compound = 0;
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 }
-#endif  // CONFIG_EXT_INTER
 
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5676,9 +5647,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     cm->interp_filter = SWITCHABLE;
 #endif
 
-#if CONFIG_EXT_INTER
     make_consistent_compound_tools(cm);
-#endif  // CONFIG_EXT_INTER
 
     rdc->single_ref_used_flag = 0;
     rdc->compound_ref_used_flag = 0;
@@ -5701,9 +5670,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #endif  // !CONFIG_REF_ADAPT
       }
     }
-#if CONFIG_EXT_INTER
     make_consistent_compound_tools(cm);
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_VAR_TX
 #if CONFIG_RECT_TX_EXT
@@ -5886,9 +5853,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     }
 #endif
   } else {
-#if CONFIG_EXT_INTER
     make_consistent_compound_tools(cm);
-#endif  // CONFIG_EXT_INTER
     encode_frame_internal(cpi);
   }
 }
@@ -6310,7 +6275,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
     // Single ref compound mode
     if (!is_compound && is_inter_singleref_comp_mode(mbmi->mode)) {
       xd->block_refs[1] = xd->block_refs[0];
@@ -6322,7 +6287,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // !CONFIG_INTRABC
       av1_setup_pre_planes(xd, 1, cfg, mi_row, mi_col, &xd->block_refs[1]->sf);
     }
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, block_size);
 
@@ -6503,9 +6468,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_SUPERTX
 static int check_intra_b(PICK_MODE_CONTEXT *ctx) {
   if (!is_inter_mode((&ctx->mic)->mbmi.mode)) return 1;
-#if CONFIG_EXT_INTER
   if (ctx->mic.mbmi.ref_frame[1] == INTRA_FRAME) return 1;
-#endif  // CONFIG_EXT_INTER
   return 0;
 }
 
@@ -6638,10 +6601,8 @@ static int check_supertx_sb(BLOCK_SIZE bsize, TX_SIZE supertx_size,
 }
 
 static void predict_superblock(const AV1_COMP *const cpi, ThreadData *td,
-#if CONFIG_EXT_INTER
-                               int mi_row_ori, int mi_col_ori,
-#endif  // CONFIG_EXT_INTER
-                               int mi_row_pred, int mi_col_pred, int plane,
+                               int mi_row_ori, int mi_col_ori, int mi_row_pred,
+                               int mi_col_pred, int plane,
                                BLOCK_SIZE bsize_pred, int b_sub8x8, int block) {
   // Used in supertx
   // (mi_row_ori, mi_col_ori): location for mv
@@ -6663,7 +6624,7 @@ static void predict_superblock(const AV1_COMP *const cpi, ThreadData *td,
                          &xd->block_refs[ref]->sf);
   }
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   // Single ref compound mode
   if (!is_compound && is_inter_singleref_comp_mode(mbmi->mode)) {
     xd->block_refs[1] = xd->block_refs[0];
@@ -6671,20 +6632,14 @@ static void predict_superblock(const AV1_COMP *const cpi, ThreadData *td,
     av1_setup_pre_planes(xd, 1, cfg, mi_row_pred, mi_col_pred,
                          &xd->block_refs[1]->sf);
   }
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
   if (!b_sub8x8)
-    av1_build_inter_predictor_sb_extend(cm, xd,
-#if CONFIG_EXT_INTER
-                                        mi_row_ori, mi_col_ori,
-#endif  // CONFIG_EXT_INTER
+    av1_build_inter_predictor_sb_extend(cm, xd, mi_row_ori, mi_col_ori,
                                         mi_row_pred, mi_col_pred, plane,
                                         bsize_pred);
   else
-    av1_build_inter_predictor_sb_sub8x8_extend(cm, xd,
-#if CONFIG_EXT_INTER
-                                               mi_row_ori, mi_col_ori,
-#endif  // CONFIG_EXT_INTER
+    av1_build_inter_predictor_sb_sub8x8_extend(cm, xd, mi_row_ori, mi_col_ori,
                                                mi_row_pred, mi_col_pred, plane,
                                                bsize_pred, block);
 }
@@ -6725,12 +6680,8 @@ static void predict_b_extend(const AV1_COMP *const cpi, ThreadData *td,
       dst_buf + (r >> xd->plane[plane].subsampling_y) * dst_stride +
       (c >> xd->plane[plane].subsampling_x);
 
-  predict_superblock(cpi, td,
-#if CONFIG_EXT_INTER
-                     mi_row_ori, mi_col_ori,
-#endif  // CONFIG_EXT_INTER
-                     mi_row_pred, mi_col_pred, plane, bsize_pred, b_sub8x8,
-                     block);
+  predict_superblock(cpi, td, mi_row_ori, mi_col_ori, mi_row_pred, mi_col_pred,
+                     plane, bsize_pred, b_sub8x8, block);
 
   if (!dry_run && (plane == 0) && (block == 0 || !b_sub8x8))
     update_stats(&cpi->common, td, mi_row_pred, mi_col_pred, 1);

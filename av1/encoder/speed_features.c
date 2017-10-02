@@ -196,10 +196,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     // Use transform domain distortion.
     // Note var-tx expt always uses pixel domain distortion.
     sf->use_transform_domain_distortion = 1;
-#if CONFIG_EXT_INTER
     sf->disable_wedge_search_var_thresh = 100;
     sf->fast_wedge_sign_estimate = 1;
-#endif  // CONFIG_EXT_INTER
   }
 
   if (speed >= 3) {
@@ -422,10 +420,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->adaptive_interp_filter_search = 0;
   sf->allow_partition_search_skip = 0;
   sf->use_upsampled_references = 1;
-#if CONFIG_EXT_INTER
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
-#endif  // CONFIG_EXT_INTER
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

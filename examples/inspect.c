@@ -190,37 +190,20 @@ const map_entry tx_type_map[] = { ENUM(DCT_DCT),
 #endif
                                   LAST_ENUM };
 
-const map_entry prediction_mode_map[] = { ENUM(DC_PRED),
-                                          ENUM(V_PRED),
-                                          ENUM(H_PRED),
-                                          ENUM(D45_PRED),
-                                          ENUM(D135_PRED),
-                                          ENUM(D117_PRED),
-                                          ENUM(D153_PRED),
-                                          ENUM(D207_PRED),
-                                          ENUM(D63_PRED),
-                                          ENUM(SMOOTH_PRED),
+const map_entry prediction_mode_map[] = {
+  ENUM(DC_PRED),       ENUM(V_PRED),        ENUM(H_PRED),
+  ENUM(D45_PRED),      ENUM(D135_PRED),     ENUM(D117_PRED),
+  ENUM(D153_PRED),     ENUM(D207_PRED),     ENUM(D63_PRED),
+  ENUM(SMOOTH_PRED),
 #if CONFIG_SMOOTH_HV
-                                          ENUM(SMOOTH_V_PRED),
-                                          ENUM(SMOOTH_H_PRED),
+  ENUM(SMOOTH_V_PRED), ENUM(SMOOTH_H_PRED),
 #endif  // CONFIG_SMOOTH_HV
-                                          ENUM(TM_PRED),
-                                          ENUM(NEARESTMV),
-                                          ENUM(NEARMV),
-                                          ENUM(ZEROMV),
-                                          ENUM(NEWMV),
-#if CONFIG_EXT_INTER
-                                          ENUM(NEAREST_NEARESTMV),
-                                          ENUM(NEAR_NEARMV),
-                                          ENUM(NEAREST_NEWMV),
-                                          ENUM(NEW_NEARESTMV),
-                                          ENUM(NEAR_NEWMV),
-                                          ENUM(NEW_NEARMV),
-                                          ENUM(ZERO_ZEROMV),
-                                          ENUM(NEW_NEWMV),
-#endif
-                                          ENUM(INTRA_INVALID),
-                                          LAST_ENUM };
+  ENUM(TM_PRED),       ENUM(NEARESTMV),     ENUM(NEARMV),
+  ENUM(ZEROMV),        ENUM(NEWMV),         ENUM(NEAREST_NEARESTMV),
+  ENUM(NEAR_NEARMV),   ENUM(NEAREST_NEWMV), ENUM(NEW_NEARESTMV),
+  ENUM(NEAR_NEWMV),    ENUM(NEW_NEARMV),    ENUM(ZERO_ZEROMV),
+  ENUM(NEW_NEWMV),     ENUM(INTRA_INVALID), LAST_ENUM
+};
 
 #if CONFIG_CFL
 const map_entry uv_prediction_mode_map[] = {

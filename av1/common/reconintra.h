@@ -30,7 +30,7 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int ref_stride, uint8_t *dst, int dst_stride,
                              int aoff, int loff, int plane);
 
-#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
+#if CONFIG_INTERINTRA
 // Mapping of interintra to intra mode for use in the intra component
 static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
   DC_PRED, V_PRED, H_PRED, SMOOTH_PRED
@@ -41,7 +41,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
   II_DC_PRED, II_V_PRED, II_H_PRED, II_V_PRED,      II_SMOOTH_PRED, II_V_PRED,
   II_H_PRED,  II_H_PRED, II_V_PRED, II_SMOOTH_PRED, II_SMOOTH_PRED
 };
-#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
+#endif  // CONFIG_INTERINTRA
 
 #if CONFIG_FILTER_INTRA
 #define FILTER_INTRA_PREC_BITS 10

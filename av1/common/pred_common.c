@@ -225,7 +225,7 @@ int av1_get_intra_inter_context(const MACROBLOCKD *xd) {
   }
 }
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
 // The compound/single mode info data structure has one element border above and
 // to the left of the entries corresponding to real macroblocks.
 // The prediction flags in these dummy entries are initialized to 0.
@@ -259,7 +259,7 @@ int av1_get_inter_mode_context(const MACROBLOCKD *xd) {
     return 2;
   }
 }
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_EXT_REFS
 #define CHECK_BACKWARD_REFS(ref_frame) \

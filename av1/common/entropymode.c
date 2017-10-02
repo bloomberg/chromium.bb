@@ -888,7 +888,6 @@ static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
 };
 #endif
 
-#if CONFIG_EXT_INTER
 static const aom_prob default_inter_compound_mode_probs
     [INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1] = {
       { 154, 167, 233, 165, 143, 170, 167 },  // 0 = both zero mv
@@ -1207,7 +1206,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_NEW_MULTISYMBOL
 
 #endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 #ifdef TWO_MODE
@@ -1706,7 +1704,6 @@ const int av1_intra_mode_inv[INTRA_MODES] = {
 };
 #endif  // CONFIG_SMOOTH_HV
 
-#if CONFIG_EXT_INTER
 /* clang-format off */
 #if CONFIG_INTERINTRA
 const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
@@ -1764,7 +1761,6 @@ const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
 const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {};
 #endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 /* clang-format on */
-#endif  // CONFIG_EXT_INTER
 
 const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
   -PARTITION_NONE, 2, -PARTITION_HORZ, 4, -PARTITION_VERT, -PARTITION_SPLIT
@@ -2015,13 +2011,13 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
 // TODO(zoeliu): Default values to be further adjusted based on the collected
 //               stats.
 static const aom_prob default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS] = {
   40, 110, 160, 220
 };
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
 // TODO(huisu): tune these cdfs
 const aom_cdf_prob
@@ -4960,9 +4956,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
 #endif
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
 #endif
@@ -5001,7 +4997,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_EXT_INTER
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
 #if CONFIG_COMPOUND_SINGLEREF
@@ -5024,7 +5019,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
 #endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_SUPERTX
   av1_copy(fc->supertx_prob, default_supertx_prob);
 #endif  // CONFIG_SUPERTX
@@ -5120,12 +5114,12 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
       fc->single_ref_prob[i][j] = av1_mode_mv_merge_probs(
           pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
 
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   for (i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
     fc->comp_inter_mode_prob[i] = av1_mode_mv_merge_probs(
         pre_fc->comp_inter_mode_prob[i], counts->comp_inter_mode[i]);
 
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
     fc->newmv_prob[i] =
@@ -5171,7 +5165,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   }
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_EXT_INTER
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
     aom_tree_merge_probs(
         av1_inter_compound_mode_tree, pre_fc->inter_compound_mode_probs[i],
@@ -5214,7 +5207,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     }
   }
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
-#endif  // CONFIG_EXT_INTER
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {

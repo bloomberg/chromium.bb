@@ -492,14 +492,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   # End av1_high encoder functions
 
-  if (aom_config("CONFIG_EXT_INTER") eq "yes") {
     add_proto qw/uint64_t av1_wedge_sse_from_residuals/, "const int16_t *r1, const int16_t *d, const uint8_t *m, int N";
     specialize qw/av1_wedge_sse_from_residuals sse2/;
     add_proto qw/int av1_wedge_sign_from_residuals/, "const int16_t *ds, const uint8_t *m, int N, int64_t limit";
     specialize qw/av1_wedge_sign_from_residuals sse2/;
     add_proto qw/void av1_wedge_compute_delta_squares/, "int16_t *d, const int16_t *a, const int16_t *b, int N";
     specialize qw/av1_wedge_compute_delta_squares sse2/;
-  }
 
 }
 # end encoder functions

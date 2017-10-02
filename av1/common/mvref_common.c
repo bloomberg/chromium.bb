@@ -123,12 +123,7 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
         ref_mv_stack[index].weight = weight * len;
         ++(*refmv_count);
 
-#if CONFIG_EXT_INTER
-        if (candidate->mode == NEW_NEWMV)
-#else
-        if (candidate->mode == NEWMV)
-#endif  // CONFIG_EXT_INTER
-          ++newmv_count;
+        if (candidate->mode == NEW_NEWMV) ++newmv_count;
       }
 
       if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
@@ -164,12 +159,7 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
           ref_mv_stack[index].weight = len;
           ++(*refmv_count);
 
-#if CONFIG_EXT_INTER
-          if (candidate->mode == NEW_NEWMV)
-#else
-          if (candidate->mode == NEWMV)
-#endif  // CONFIG_EXT_INTER
-            ++newmv_count;
+          if (candidate->mode == NEW_NEWMV) ++newmv_count;
         }
       }
     }
@@ -1043,7 +1033,6 @@ Done:
     mv_ref_list[i].as_int = zeromv.as_int;
 }
 
-#if CONFIG_EXT_INTER
 // This function keeps a mode count for a given MB/SB
 void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
@@ -1093,17 +1082,13 @@ Done:
   if (mode_context)
     mode_context[ref_frame] = counter_to_context[context_counter];
 }
-#endif  // CONFIG_EXT_INTER
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t *ref_mv_count, CANDIDATE_MV *ref_mv_stack,
-#if CONFIG_EXT_INTER
-                      int16_t *compound_mode_context,
-#endif  // CONFIG_EXT_INTER
-                      int_mv *mv_ref_list, int mi_row, int mi_col,
-                      find_mv_refs_sync sync, void *const data,
-                      int16_t *mode_context) {
+                      int16_t *compound_mode_context, int_mv *mv_ref_list,
+                      int mi_row, int mi_col, find_mv_refs_sync sync,
+                      void *const data, int16_t *mode_context) {
   int_mv zeromv[2];
 #if CONFIG_GLOBAL_MOTION
   BLOCK_SIZE bsize = mi->mbmi.sb_type;
@@ -1113,10 +1098,8 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   MV_REFERENCE_FRAME rf[2];
 #endif  // CONFIG_GLOBAL_MOTION
 
-#if CONFIG_EXT_INTER
   av1_update_mv_context(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
                         compound_mode_context);
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_GLOBAL_MOTION
   if (!CONFIG_INTRABC || ref_frame != INTRA_FRAME) {
@@ -1206,14 +1189,8 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int block, int ref, int mi_row, int mi_col,
                                    CANDIDATE_MV *ref_mv_stack,
-                                   uint8_t *ref_mv_count,
-#if CONFIG_EXT_INTER
-                                   int_mv *mv_list,
-#endif  // CONFIG_EXT_INTER
+                                   uint8_t *ref_mv_count, int_mv *mv_list,
                                    int_mv *nearest_mv, int_mv *near_mv) {
-#if !CONFIG_EXT_INTER
-  int_mv mv_list[MAX_MV_REF_CANDIDATES];
-#endif  // !CONFIG_EXT_INTER
   MODE_INFO *const mi = xd->mi[0];
   b_mode_info *bmi = mi->bmi;
   int n;

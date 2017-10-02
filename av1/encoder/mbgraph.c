@@ -59,27 +59,20 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
 #endif
     int distortion;
     unsigned int sse;
-    cpi->find_fractional_mv_step(
-        x, ref_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
-        &v_fn_ptr, 0, mv_sf->subpel_iters_per_step,
-        cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-#if CONFIG_EXT_INTER
-        NULL, 0, 0,
-#endif
-        0, 0, 0);
+    cpi->find_fractional_mv_step(x, ref_mv, cpi->common.allow_high_precision_mv,
+                                 x->errorperbit, &v_fn_ptr, 0,
+                                 mv_sf->subpel_iters_per_step,
+                                 cond_cost_list(cpi, cost_list), NULL, NULL,
+                                 &distortion, &sse, NULL, NULL, 0, 0, 0, 0, 0);
   }
 
-#if CONFIG_EXT_INTER
   if (has_second_ref(&xd->mi[0]->mbmi))
     xd->mi[0]->mbmi.mode = NEW_NEWMV;
   else
-#endif  // CONFIG_EXT_INTER
     xd->mi[0]->mbmi.mode = NEWMV;
 
   xd->mi[0]->mbmi.mv[0] = x->best_mv;
-#if CONFIG_EXT_INTER
   xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
-#endif  // CONFIG_EXT_INTER
 
   av1_build_inter_predictors_sby(&cpi->common, xd, mb_row, mb_col, NULL,
                                  BLOCK_16X16);

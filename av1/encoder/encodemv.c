@@ -233,7 +233,6 @@ void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
   build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], precision);
 }
 
-#if CONFIG_EXT_INTER
 static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
                     const int_mv mvs[2], const int_mv pred_mvs[2],
                     nmv_context_counts *nmv_counts
@@ -372,25 +371,6 @@ static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
 #endif
   }
 }
-#else   // !CONFIG_EXT_INTER
-static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
-                    const int_mv mvs[2], const int_mv pred_mvs[2],
-                    nmv_context_counts *nmv_counts) {
-  int i;
-
-  for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-    int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-    int nmv_ctx =
-        av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                    mbmi_ext->ref_mv_stack[rf_type], i, mbmi->ref_mv_idx);
-    nmv_context_counts *counts = &nmv_counts[nmv_ctx];
-    const MV *ref = &pred_mvs[i].as_mv;
-    const MV diff = { mvs[i].as_mv.row - ref->row,
-                      mvs[i].as_mv.col - ref->col };
-    av1_inc_mv(&diff, counts, 1);
-  }
-}
-#endif  // CONFIG_EXT_INTER
 
 void av1_update_mv_count(ThreadData *td) {
   const MACROBLOCKD *xd = &td->mb.e_mbd;
@@ -418,7 +398,6 @@ void av1_update_mv_count(ThreadData *td) {
       for (idx = 0; idx < 2; idx += num_4x4_w) {
         const int i = idy * 2 + idx;
 
-#if CONFIG_EXT_INTER
         if (have_newmv_in_inter_mode(mi->bmi[i].as_mode))
 
 #if CONFIG_AMVR
@@ -427,19 +406,10 @@ void av1_update_mv_count(ThreadData *td) {
 #else
           inc_mvs_sub8x8(mi, i, mi->bmi[i].as_mv, mbmi_ext, td->counts->mv);
 #endif
-#else
-        if (mi->bmi[i].as_mode == NEWMV)
-          inc_mvs(mbmi, mbmi_ext, mi->bmi[i].as_mv, mi->bmi[i].pred_mv,
-                  td->counts->mv);
-#endif  // CONFIG_EXT_INTER
       }
     }
   } else {
-#if CONFIG_EXT_INTER
     if (have_newmv_in_inter_mode(mbmi->mode))
-#else
-    if (mbmi->mode == NEWMV)
-#endif  // CONFIG_EXT_INTER
 
 #if CONFIG_AMVR
       inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv,

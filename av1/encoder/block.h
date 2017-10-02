@@ -109,9 +109,7 @@ typedef struct {
 #endif
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
-#if CONFIG_EXT_INTER
   int16_t compound_mode_context[MODE_CTX_REF_FRAMES];
-#endif  // CONFIG_EXT_INTER
 } MB_MODE_INFO_EXT;
 
 typedef struct {
@@ -236,7 +234,6 @@ struct macroblock {
   int refmv_mode_cost[REFMV_MODE_CONTEXTS][2];
   int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
 
-#if CONFIG_EXT_INTER
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES];
 #if CONFIG_COMPOUND_SINGLEREF
@@ -246,7 +243,6 @@ struct macroblock {
 #if CONFIG_INTERINTRA
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
 #endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION

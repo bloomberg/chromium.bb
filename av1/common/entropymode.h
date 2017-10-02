@@ -33,12 +33,10 @@ extern "C" {
 #define TX_SIZE_CONTEXTS 2
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
-#if CONFIG_EXT_INTER
 #if CONFIG_COMPOUND_SINGLEREF
 #define INTER_SINGLEREF_COMP_OFFSET(mode) ((mode)-SR_NEAREST_NEARMV)
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)
-#endif  // CONFIG_EXT_INTER
 
 // Number of possible contexts for a color index.
 // As can be seen from av1_get_palette_color_index_context(), the possible
@@ -214,7 +212,6 @@ typedef struct frame_contexts {
   aom_cdf_prob drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)];
 #endif
 
-#if CONFIG_EXT_INTER
   aom_prob inter_compound_mode_probs[INTER_MODE_CONTEXTS]
                                     [INTER_COMPOUND_MODES - 1];
   aom_cdf_prob inter_compound_mode_cdf[INTER_MODE_CONTEXTS]
@@ -240,7 +237,6 @@ typedef struct frame_contexts {
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
                                   [CDF_SIZE(INTERINTRA_MODES)];
 #endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
@@ -308,9 +304,9 @@ typedef struct frame_contexts {
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][COMP_REFS - 1][CDF_SIZE(2)];
 #endif  // CONFIG_EXT_REFS
 #endif
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   aom_prob quarter_tx_size_prob;
 #endif
@@ -450,7 +446,6 @@ typedef struct FRAME_COUNTS {
   unsigned int refmv_mode[REFMV_MODE_CONTEXTS][2];
   unsigned int drl_mode[DRL_MODE_CONTEXTS][2];
 
-#if CONFIG_EXT_INTER
   unsigned int inter_compound_mode[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
 #if CONFIG_COMPOUND_SINGLEREF
   unsigned int inter_singleref_comp_mode[INTER_MODE_CONTEXTS]
@@ -462,7 +457,6 @@ typedef struct FRAME_COUNTS {
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
 #endif  // CONFIG_INTERINTRA
   unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES];
-#endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
@@ -488,9 +482,9 @@ typedef struct FRAME_COUNTS {
 #else
   unsigned int comp_ref[REF_CONTEXTS][COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_REFS
-#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_COMPOUND_SINGLEREF
   unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
-#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+#endif  // CONFIG_COMPOUND_SINGLEREF
   // TODO(urvang): Only needed for !CONFIG_VAR_TX case. So can be removed when
   // CONFIG_VAR_TX flag is removed.
   unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
@@ -553,7 +547,6 @@ extern int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES];
 extern int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES];
 #endif
 
-#if CONFIG_EXT_INTER
 #if CONFIG_INTERINTRA
 extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
@@ -565,7 +558,6 @@ extern const aom_tree_index
     av1_inter_singleref_comp_mode_tree[TREE_SIZE(INTER_SINGLEREF_COMP_MODES)];
 #endif  // CONFIG_COMPOUND_SINGLEREF
 extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
-#endif  // CONFIG_EXT_INTER
 extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
 #if CONFIG_EXT_PARTITION_TYPES
 extern const aom_tree_index

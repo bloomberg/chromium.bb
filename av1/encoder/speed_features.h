@@ -57,7 +57,6 @@ enum {
       (1 << DC_PRED) | (1 << TM_PRED) | (1 << V_PRED) | (1 << H_PRED)
 };
 
-#if CONFIG_EXT_INTER
 enum {
 #if CONFIG_COMPOUND_SINGLEREF
 // TODO(zoeliu): To further consider following single ref comp modes:
@@ -93,17 +92,6 @@ enum {
                             (1 << NEW_NEARMV) | (1 << NEAR_NEWMV) |
                             (1 << NEAR_NEARMV),
 };
-#else   // !CONFIG_EXT_INTER
-enum {
-  INTER_ALL = (1 << NEARESTMV) | (1 << NEARMV) | (1 << ZEROMV) | (1 << NEWMV),
-  INTER_NEAREST = (1 << NEARESTMV),
-  INTER_NEAREST_NEW = (1 << NEARESTMV) | (1 << NEWMV),
-  INTER_NEAREST_ZERO = (1 << NEARESTMV) | (1 << ZEROMV),
-  INTER_NEAREST_NEW_ZERO = (1 << NEARESTMV) | (1 << ZEROMV) | (1 << NEWMV),
-  INTER_NEAREST_NEAR_NEW = (1 << NEARESTMV) | (1 << NEARMV) | (1 << NEWMV),
-  INTER_NEAREST_NEAR_ZERO = (1 << NEARESTMV) | (1 << NEARMV) | (1 << ZEROMV),
-};
-#endif  // CONFIG_EXT_INTER
 
 enum {
   DISABLE_ALL_INTER_SPLIT = (1 << THR_COMP_GA) | (1 << THR_COMP_LA) |
@@ -412,13 +400,11 @@ typedef struct SPEED_FEATURES {
   // Choose a very large value (UINT_MAX) to use 8-tap always
   unsigned int disable_filter_search_var_thresh;
 
-#if CONFIG_EXT_INTER
   // A source variance threshold below which wedge search is disabled
   unsigned int disable_wedge_search_var_thresh;
 
   // Whether fast wedge sign estimate is used
   int fast_wedge_sign_estimate;
-#endif  // CONFIG_EXT_INTER
 
   // These bit masks allow you to enable or disable intra modes for each
   // transform size separately.
