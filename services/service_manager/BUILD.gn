@@ -49,6 +49,7 @@ source_set("service_manager") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/host:lib",
+    "//services/service_manager/sandbox",
   ]
 }
 

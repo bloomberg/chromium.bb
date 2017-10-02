@@ -1,6 +1,7 @@
 {
   "name": "filesystem",
   "display_name": "File System Service",
+  "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

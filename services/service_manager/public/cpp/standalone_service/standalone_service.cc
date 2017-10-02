@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/incoming_broker_client_invitation.h"
@@ -75,6 +76,7 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
 
   mojo::edk::Init();
 
+  base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
   base::Thread io_thread("io_thread");
   io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

@@ -53,9 +53,6 @@ int main(int argc, char** argv) {
 #endif
 
   service_manager::WaitForDebuggerIfNecessary();
-
-  base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
-
   service_manager::RunStandaloneService(base::Bind(&RunServiceMain));
 
   base::TaskScheduler::GetInstance()->Shutdown();
