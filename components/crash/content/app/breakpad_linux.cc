@@ -1711,6 +1711,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
     }
 #if defined(OS_ANDROID)
     // Addtional MIME blocks are added for logging on Android devices.
+    // When make changes to the name, please sync it with
+    // PureJavaExceptionReporter.java if needed.
     static const char android_build_id[] = "android_build_id";
     static const char android_build_fp[] = "android_build_fp";
     static const char device[] = "device";
