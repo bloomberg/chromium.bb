@@ -103,6 +103,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
@@ -115,7 +116,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "device/vr/features/features.h"
+#include "device/vr/vr_service.mojom.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
@@ -160,12 +161,6 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VR)
-#include "device/vr/vr_service_impl.h"  // nogncheck
-#else
-#include "device/vr/vr_service.mojom.h"  // nogncheck
 #endif
 
 using base::TimeDelta;
@@ -294,11 +289,6 @@ void CreateResourceCoordinatorFrameInterface(
     resource_coordinator::mojom::CoordinationUnitRequest request) {
   render_frame_host->GetFrameResourceCoordinator()->AddBinding(
       std::move(request));
-}
-
-template <typename Interface>
-void IgnoreInterfaceRequest(mojo::InterfaceRequest<Interface> request) {
-  // Intentionally ignore the interface request.
 }
 
 // The following functions simplify code paths where the UI thread notifies the
@@ -2967,13 +2957,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
                                      process_->GetID(), routing_id_));
 
-#if BUILDFLAG(ENABLE_VR)
-  registry_->AddInterface<device::mojom::VRService>(base::Bind(
-      &device::VRServiceImpl::Create, GetProcess()->GetID(), GetRoutingID()));
-#else
   registry_->AddInterface<device::mojom::VRService>(
-      base::Bind(&IgnoreInterfaceRequest<device::mojom::VRService>));
-#endif
+      base::Bind(&WebvrServiceProvider::BindWebvrService, GetProcess()->GetID(),
+                 GetRoutingID()));
 
   if (RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
     registry_->AddInterface(base::BindRepeating(

@@ -16,12 +16,14 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
+#include "device/vr/vr_service_impl.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
@@ -385,6 +387,8 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
       new VrShellDelegateProviderFactory);
+  content::WebvrServiceProvider::SetWebvrServiceCallback(
+      base::Bind(&device::VRServiceImpl::Create));
 }
 
 }  // namespace vr_shell
