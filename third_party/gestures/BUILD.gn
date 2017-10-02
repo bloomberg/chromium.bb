@@ -19,12 +19,8 @@ if (!use_system_gestures) {
     include_dirs = [
       ".",
       "include",
-      "//testing/gtest/include",
+      "//third_party/googletest/src/googletest/include",
     ]
-  }
-
-  pkg_config("jsoncpp") {
-    packages = [ "jsoncpp" ]
   }
 
   static_library("gestures") {
@@ -65,13 +61,14 @@ if (!use_system_gestures) {
       "gestures/src/util.cc",
     ]
 
+    deps = [
+      "//third_party/jsoncpp",
+    ]
+
     defines = [ "GESTURES_INTERNAL=1" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      "//build/config/compiler:no_chromium_code",
-      ":jsoncpp",
-    ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
     # gestures uses typeid.
     configs -= [ "//build/config/compiler:no_rtti" ]
