@@ -2027,15 +2027,11 @@ const int kExternalFilesCleanupDelaySeconds = 60;
       NOTREACHED();
       break;
     case AUTHENTICATION_OPERATION_REAUTHENTICATE:
-      [_signinInteractionController
-          reAuthenticateWithCompletion:completion
-                        viewController:self.mainViewController];
+      [_signinInteractionController reAuthenticateWithCompletion:completion];
       break;
     case AUTHENTICATION_OPERATION_SIGNIN:
-      [_signinInteractionController
-          signInWithViewController:self.mainViewController
-                          identity:identity
-                        completion:completion];
+      [_signinInteractionController signInWithIdentity:identity
+                                            completion:completion];
       break;
   }
 }
@@ -2057,11 +2053,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                    PROMO_ACTION_NO_SIGNIN_PROMO
                     dispatcher:self.mainBVC.dispatcher];
 
-  [_signinInteractionController
-      addAccountWithCompletion:^(BOOL success) {
-        _signinInteractionController = nil;
-      }
-                viewController:self.mainViewController];
+  [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
+    _signinInteractionController = nil;
+  }];
 }
 
 - (void)dismissSigninInteractionController {

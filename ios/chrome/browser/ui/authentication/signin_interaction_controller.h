@@ -36,25 +36,21 @@ class ChromeBrowserState;
                           dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Starts user sign-in.
-// * |viewController| is the current view controller.
 // * |identity|, if not nil, the user will be signed in without requiring user
 //   input, using this Chrome identity.
 // * |completion| will be called when the operation is done, and
 //   |succeeded| will notify the caller on whether the user is now signed in.
-- (void)signInWithViewController:(UIViewController*)viewController
-                        identity:(ChromeIdentity*)identity
-                      completion:(signin_ui::CompletionCallback)completion;
+- (void)signInWithIdentity:(ChromeIdentity*)identity
+                completion:(signin_ui::CompletionCallback)completion;
 
 // Re-authenticate the user. This method will always show a sign-in web flow.
 // The completion block will be called when the operation is done, and
 // |succeeded| will notify the caller on whether the user has been
 // correctly re-authenticated.
-- (void)reAuthenticateWithCompletion:(signin_ui::CompletionCallback)completion
-                      viewController:(UIViewController*)viewController;
+- (void)reAuthenticateWithCompletion:(signin_ui::CompletionCallback)completion;
 
 // Starts the flow to add an identity via ChromeIdentityInteractionManager.
-- (void)addAccountWithCompletion:(signin_ui::CompletionCallback)completion
-                  viewController:(UIViewController*)viewController;
+- (void)addAccountWithCompletion:(signin_ui::CompletionCallback)completion;
 
 // Cancels any current process. Calls the completion callback when done.
 - (void)cancel;
