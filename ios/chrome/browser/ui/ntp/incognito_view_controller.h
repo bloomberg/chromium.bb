@@ -10,11 +10,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 
 @protocol UrlLoader;
-
-@protocol IncognitoViewControllerDelegate
-// Sets the alpha for the toolbar's background views.
-- (void)setToolbarBackgroundAlpha:(CGFloat)alpha;
-@end
+@protocol IncognitoViewControllerDelegate;
 
 @interface IncognitoViewController : UIViewController<NewTabPagePanelProtocol>
 
