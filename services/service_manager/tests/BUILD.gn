@@ -41,6 +41,7 @@ service_test("service_manager_unittests") {
     "//services/service_manager/runner/host:unittests",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
+    "//services/service_manager/tests/sandbox",
     "//services/service_manager/tests/service_manager",
     "//services/service_manager/tests/shutdown",
     "//testing/gtest",

@@ -7,4 +7,9 @@ source_set("sandbox") {
   sources = [
     "sandbox_type_unittest.cc",
   ]
+  deps = [
+    "//base",
+    "//services/service_manager/sandbox",
+    "//testing/gtest",
+  ]
 }
