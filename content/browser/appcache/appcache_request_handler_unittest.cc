@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <stack>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/containers/stack.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1040,7 +1040,7 @@ class AppCacheRequestHandlerTest
   // Data members --------------------------------------------------
 
   std::unique_ptr<base::WaitableEvent> test_finished_event_;
-  std::stack<base::OnceClosure> task_stack_;
+  base::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<MockAppCacheService> mock_service_;
   std::unique_ptr<AppCacheBackendImpl> backend_impl_;
   std::unique_ptr<MockFrontend> mock_frontend_;

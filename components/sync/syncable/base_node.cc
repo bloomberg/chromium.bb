@@ -4,8 +4,6 @@
 
 #include "components/sync/syncable/base_node.h"
 
-#include <stack>
-
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/base/time.h"

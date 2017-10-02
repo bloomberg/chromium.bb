@@ -6,8 +6,8 @@
 
 #include <map>
 #include <set>
-#include <stack>
 
+#include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/display/types/display_constants.h"
@@ -81,7 +81,7 @@ UnifiedDesktopLayoutMatrix BuildDisplayMatrix(const DisplayLayout& layout) {
   // Calculate the Cell positions of all displays in the placement list.
   for (const auto& placement : layout.placement_list) {
     int64_t current_display_id = placement.display_id;
-    std::stack<DisplayPlacement> unhandled_displays;
+    base::stack<DisplayPlacement> unhandled_displays;
     while (displays_cells.count(current_display_id) == 0) {
       unhandled_displays.emplace(placement);
       current_display_id = placement.parent_display_id;

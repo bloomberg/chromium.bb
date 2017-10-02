@@ -51,13 +51,13 @@ typedef pthread_mutex_t* MutexHandle;
 #include <ctime>
 #include <iomanip>
 #include <ostream>
-#include <stack>
 #include <string>
 #include <utility>
 
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/stack.h"
 #include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
 #include "base/debug/debugger.h"
@@ -129,7 +129,7 @@ bool show_error_dialogs = false;
 // An assert handler override specified by the client to be called instead of
 // the debug message dialog and process termination. Assert handlers are stored
 // in stack to allow overriding and restoring.
-base::LazyInstance<std::stack<LogAssertHandlerFunction>>::Leaky
+base::LazyInstance<base::stack<LogAssertHandlerFunction>>::Leaky
     log_assert_handler_stack = LAZY_INSTANCE_INITIALIZER;
 
 // A log message handler that gets notified of every log message we process.

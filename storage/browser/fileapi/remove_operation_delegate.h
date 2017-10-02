@@ -5,8 +5,6 @@
 #ifndef STORAGE_BROWSER_FILEAPI_REMOVE_OPERATION_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_REMOVE_OPERATION_DELEGATE_H_
 
-#include <stack>
-
 #include "base/macros.h"
 #include "storage/browser/fileapi/recursive_operation_delegate.h"
 

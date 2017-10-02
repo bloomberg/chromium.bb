@@ -260,6 +260,31 @@ moved (like a `std::vector`). The underlying buffer will be shrunk if there is
 too much wasted space (_unlike_ a `std::vector`). As a result, iterators are
 not stable across mutations.
 
+# Stack
+
+`std::stack` is like `std::queue` in that it is a wrapper around an underlying
+container. The default container is `std::deque` so everything from the deque
+section applies.
+
+Chromium provides `base/containers/stack.h` which defines `base::stack` that
+should be used in preference to std::stack. This changes the underlying
+container to `base::circular_deque`. The result will be very similar to
+manually specifying a `std::vector` for the underlying implementation except
+that the storage will shrink when it gets too empty (vector will never
+reallocate to a smaller size).
+
+Watch out: with some stack usage patterns it's easy to depend on unstable
+behavior:
+
+```cpp
+base::stack<Foo> stack;
+for (...) {
+  Foo& current = stack.top();
+  DoStuff();  // May call stack.push(), say if writing a parser.
+  current.done = true;  // Current may reference deleted item!
+}
+```
+
 ## Appendix
 
 ### Code for map code size comparison
@@ -267,7 +292,7 @@ not stable across mutations.
 This just calls insert and query a number of times, with printfs that prevent
 things from being dead-code eliminated.
 
-```
+```cpp
 TEST(Foo, Bar) {
   base::small_map<std::map<std::string, Flubber>> foo;
   foo.insert(std::make_pair("foo", Flubber(8, "bar")));

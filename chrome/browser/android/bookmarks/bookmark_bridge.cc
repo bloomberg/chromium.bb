@@ -9,6 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/ptr_util.h"
@@ -294,7 +295,7 @@ void BookmarkBridge::GetAllFoldersWithDepths(
 
   // Stack for Depth-First Search of bookmark model. It stores nodes and their
   // heights.
-  std::stack<std::pair<const BookmarkNode*, int> > stk;
+  base::stack<std::pair<const BookmarkNode*, int>> stk;
 
   bookmarkList.push_back(bookmark_model_->mobile_node());
   bookmarkList.push_back(bookmark_model_->bookmark_bar_node());

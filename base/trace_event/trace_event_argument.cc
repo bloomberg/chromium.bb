@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include <stack>
 #include <utility>
 
 #include "base/bits.h"
+#include "base/containers/circular_deque.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -471,84 +471,90 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
     }
   };
 
-  std::stack<State> state_stack;
+  base::circular_deque<State> state_stack;
 
   out->append("{");
-  state_stack.push({State::kTypeDict});
+  state_stack.push_back({State::kTypeDict});
 
   PickleIterator it(pickle_);
   for (const char* type; it.ReadBytes(&type, 1);) {
     switch (*type) {
       case kTypeEndDict:
         out->append("}");
-        state_stack.pop();
+        state_stack.pop_back();
         continue;
 
       case kTypeEndArray:
         out->append("]");
-        state_stack.pop();
+        state_stack.pop_back();
         continue;
     }
 
-    State& current_state = state_stack.top();
-    if (current_state.needs_comma) {
+    // Use an index so it will stay valid across resizes.
+    size_t current_state_index = state_stack.size() - 1;
+    if (state_stack[current_state_index].needs_comma)
       out->append(",");
-    }
 
     switch (*type) {
-      case kTypeStartDict:
-        maybe_append_key_name(current_state, &it, out);
+      case kTypeStartDict: {
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         out->append("{");
-        state_stack.push({State::kTypeDict});
+        state_stack.push_back({State::kTypeDict});
         break;
+      }
 
-      case kTypeStartArray:
-        maybe_append_key_name(current_state, &it, out);
+      case kTypeStartArray: {
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         out->append("[");
-        state_stack.push({State::kTypeArray});
+        state_stack.push_back({State::kTypeArray});
         break;
+      }
 
       case kTypeBool: {
         TraceEvent::TraceValue json_value;
         CHECK(it.ReadBool(&json_value.as_bool));
-        maybe_append_key_name(current_state, &it, out);
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
-      } break;
+        break;
+      }
 
       case kTypeInt: {
         int value;
         CHECK(it.ReadInt(&value));
-        maybe_append_key_name(current_state, &it, out);
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         TraceEvent::TraceValue json_value;
         json_value.as_int = value;
         TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
-      } break;
+        break;
+      }
 
       case kTypeDouble: {
         TraceEvent::TraceValue json_value;
         CHECK(it.ReadDouble(&json_value.as_double));
-        maybe_append_key_name(current_state, &it, out);
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
-      } break;
+        break;
+      }
 
       case kTypeString: {
         std::string value;
         CHECK(it.ReadString(&value));
-        maybe_append_key_name(current_state, &it, out);
+        maybe_append_key_name(state_stack[current_state_index], &it, out);
         TraceEvent::TraceValue json_value;
         json_value.as_string = value.c_str();
         TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
-      } break;
+        break;
+      }
 
       default:
         NOTREACHED();
     }
 
-    current_state.needs_comma = true;
+    state_stack[current_state_index].needs_comma = true;
   }
 
   out->append("}");
-  state_stack.pop();
+  state_stack.pop_back();
 
   DCHECK(state_stack.empty());
 }

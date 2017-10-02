@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <stack>
 #include <string>
 #include <unordered_map>
 

@@ -5,8 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_DEBUG_MARKER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_DEBUG_MARKER_MANAGER_H_
 
-#include <stack>
 #include <string>
+
+#include "base/containers/stack.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -49,7 +50,7 @@ class GPU_EXPORT DebugMarkerManager {
     std::string marker_;
   };
 
-  typedef std::stack<Group> GroupStack;
+  using GroupStack = base::stack<Group>;
 
   GroupStack group_stack_;
   std::string empty_;

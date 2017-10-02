@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <stack>
 #include <string>
 #include <vector>
 

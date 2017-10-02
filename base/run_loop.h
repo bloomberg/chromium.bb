@@ -5,11 +5,11 @@
 #ifndef BASE_RUN_LOOP_H_
 #define BASE_RUN_LOOP_H_
 
-#include <stack>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/containers/stack.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -220,7 +220,7 @@ class BASE_EXPORT RunLoop {
     // A vector-based stack is more memory efficient than the default
     // deque-based stack as the active RunLoop stack isn't expected to ever
     // have more than a few entries.
-    using RunLoopStack = std::stack<RunLoop*, std::vector<RunLoop*>>;
+    using RunLoopStack = base::stack<RunLoop*, std::vector<RunLoop*>>;
 
     bool allow_nesting_ = true;
     RunLoopStack active_run_loops_;

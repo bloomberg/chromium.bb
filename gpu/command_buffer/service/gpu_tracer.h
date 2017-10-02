@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <stack>
 #include <string>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/containers/stack.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -147,7 +147,7 @@ class GPU_EXPORT TraceOutputter : public Outputter {
   uint64_t local_trace_device_id_ = 0;
   uint64_t local_trace_service_id_ = 0;
 
-  std::stack<uint64_t> trace_service_id_stack_[NUM_TRACER_SOURCES];
+  base::stack<uint64_t> trace_service_id_stack_[NUM_TRACER_SOURCES];
 
   DISALLOW_COPY_AND_ASSIGN(TraceOutputter);
 };

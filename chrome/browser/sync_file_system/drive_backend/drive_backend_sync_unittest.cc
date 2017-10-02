@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
-#include <stack>
 #include <utility>
 
+#include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -509,7 +509,7 @@ class DriveBackendSyncTest : public testing::Test,
       return 0;
 
     CannedSyncableFileSystem* file_system = file_systems_[app_id];
-    std::stack<base::FilePath> folders;
+    base::stack<base::FilePath> folders;
     folders.push(base::FilePath());  // root folder
 
     size_t result = 1;

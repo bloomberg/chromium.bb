@@ -33,11 +33,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <stack>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/stack.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -85,8 +85,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
   if (!directory_db.GetFileWithPath(StringToFilePath("/"), &root_id))
     return;
 
-  std::stack<std::pair<SandboxDirectoryDatabase::FileId,
-                       std::string> > paths;
+  base::stack<std::pair<SandboxDirectoryDatabase::FileId, std::string>> paths;
   paths.push(std::make_pair(root_id, ""));
   while (!paths.empty()) {
     SandboxDirectoryDatabase::FileId id = paths.top().first;

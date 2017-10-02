@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <memory>
 #include <set>
-#include <stack>
 
+#include "base/containers/stack.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -287,7 +287,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
   };
 
   // Any path in |pending_directories| is relative to |path_|.
-  std::stack<base::FilePath> pending_directories;
+  base::stack<base::FilePath> pending_directories;
   pending_directories.push(base::FilePath());
 
   while (!pending_directories.empty()) {
@@ -336,7 +336,7 @@ bool DatabaseCheckHelper::ScanHierarchy() {
   size_t visited_files = 0;
   size_t visited_links = 0;
 
-  std::stack<FileId> directories;
+  base::stack<FileId> directories;
   directories.push(0);
 
   // Check if the root directory exists as a directory.

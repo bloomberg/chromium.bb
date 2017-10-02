@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <stack>
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/stack.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -164,7 +164,7 @@ class BASE_EXPORT FileEnumerator {
 
   // A stack that keeps track of which subdirectories we still need to
   // enumerate in the breadth-first search.
-  std::stack<FilePath> pending_paths_;
+  base::stack<FilePath> pending_paths_;
 
   DISALLOW_COPY_AND_ASSIGN(FileEnumerator);
 };

@@ -4,9 +4,8 @@
 
 #include "ppapi/proxy/raw_var_data.h"
 
-#include <stack>
-
 #include "base/containers/hash_tables.h"
+#include "base/containers/stack.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ipc/ipc_message.h"
@@ -91,7 +90,7 @@ std::unique_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
   base::hash_map<int64_t, size_t> visited_map;
   base::hash_set<int64_t> parent_ids;
 
-  std::stack<StackEntry> stack;
+  base::stack<StackEntry> stack;
   stack.push(StackEntry(var, GetOrCreateRawVarData(var, &visited_map,
                                                    &graph->data_)));
 

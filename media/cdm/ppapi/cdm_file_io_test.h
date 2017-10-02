@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <list>
-#include <stack>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/stack.h"
 #include "base/macros.h"
 #include "media/cdm/api/content_decryption_module.h"
 
@@ -132,7 +132,7 @@ class FileIOTest : public cdm::FileIOClient {
   // so that we can test multiple cdm::FileIO objects accessing the same file.
   // In the current implementation, all ACTION_* are performed on the latest
   // opened cdm::FileIO object, hence the stack.
-  std::stack<cdm::FileIO*> file_io_stack_;
+  base::stack<cdm::FileIO*> file_io_stack_;
 };
 
 // Tests cdm::FileIO implementation.

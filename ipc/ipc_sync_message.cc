@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 
-#include <stack>
-
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"

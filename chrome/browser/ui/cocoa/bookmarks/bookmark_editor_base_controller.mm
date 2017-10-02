@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stack>
-
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h"
 
 #include "base/auto_reset.h"
+#include "base/containers/stack.h"
 #include "base/logging.h"
 #include "base/mac/availability.h"
 #include "base/mac/bundle_locations.h"
@@ -548,7 +547,7 @@ NSString* const kOkEnabledName = @"okEnabled";
   // Back up the parent chain for desiredNode, building up a stack
   // of ancestor nodes.  Then crawl down the folderTreeArray looking
   // for each ancestor in order while building up the selectionPath.
-  std::stack<const BookmarkNode*> nodeStack;
+  base::stack<const BookmarkNode*> nodeStack;
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile_);
   const BookmarkNode* rootNode = model->root_node();
   const BookmarkNode* node = desiredNode;

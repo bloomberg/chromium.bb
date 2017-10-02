@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <stack>
 #include <vector>
 
 #include "base/bind.h"
