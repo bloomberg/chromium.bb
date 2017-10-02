@@ -728,7 +728,7 @@ bool NormalPageArena::Coalesce() {
     if (start_of_gap != page->PayloadEnd())
       AddToFreeList(start_of_gap, page->PayloadEnd() - start_of_gap);
   }
-  GetThreadState()->DecreaseAllocatedObjectSize(freed_size);
+  GetThreadState()->Heap().HeapStats().DecreaseAllocatedObjectSize(freed_size);
   DCHECK_EQ(promptly_freed_size_, freed_size);
   promptly_freed_size_ = 0;
   return true;
@@ -851,17 +851,17 @@ void NormalPageArena::SetRemainingAllocationSize(
   //  - if smaller, a net reduction in size since last call to
   //  updateRemainingAllocationSize().
   if (last_remaining_allocation_size_ > remaining_allocation_size_)
-    GetThreadState()->IncreaseAllocatedObjectSize(
+    GetThreadState()->Heap().HeapStats().IncreaseAllocatedObjectSize(
         last_remaining_allocation_size_ - remaining_allocation_size_);
   else if (last_remaining_allocation_size_ != remaining_allocation_size_)
-    GetThreadState()->DecreaseAllocatedObjectSize(
+    GetThreadState()->Heap().HeapStats().DecreaseAllocatedObjectSize(
         remaining_allocation_size_ - last_remaining_allocation_size_);
   last_remaining_allocation_size_ = remaining_allocation_size_;
 }
 
 void NormalPageArena::UpdateRemainingAllocationSize() {
   if (last_remaining_allocation_size_ > RemainingAllocationSize()) {
-    GetThreadState()->IncreaseAllocatedObjectSize(
+    GetThreadState()->Heap().HeapStats().IncreaseAllocatedObjectSize(
         last_remaining_allocation_size_ - RemainingAllocationSize());
     last_remaining_allocation_size_ = RemainingAllocationSize();
   }
@@ -1027,7 +1027,8 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 
   GetThreadState()->Heap().HeapStats().IncreaseAllocatedSpace(
       large_object->size());
-  GetThreadState()->IncreaseAllocatedObjectSize(large_object->size());
+  GetThreadState()->Heap().HeapStats().IncreaseAllocatedObjectSize(
+      large_object->size());
   return result;
 }
 
@@ -1369,8 +1370,10 @@ void NormalPage::Sweep() {
 #endif
   }
 
-  if (marked_object_size)
-    page_arena->GetThreadState()->IncreaseMarkedObjectSize(marked_object_size);
+  if (marked_object_size) {
+    page_arena->GetThreadState()->Heap().HeapStats().IncreaseMarkedObjectSize(
+        marked_object_size);
+  }
 }
 
 void NormalPage::SweepAndCompact(CompactionContext& context) {
@@ -1467,8 +1470,10 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
     allocation_point += size;
     DCHECK(allocation_point <= current_page->PayloadSize());
   }
-  if (marked_object_size)
-    page_arena->GetThreadState()->IncreaseMarkedObjectSize(marked_object_size);
+  if (marked_object_size) {
+    page_arena->GetThreadState()->Heap().HeapStats().IncreaseMarkedObjectSize(
+        marked_object_size);
+  }
 
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
@@ -1733,7 +1738,8 @@ void LargeObjectPage::RemoveFromHeap() {
 
 void LargeObjectPage::Sweep() {
   GetHeapObjectHeader()->Unmark();
-  Arena()->GetThreadState()->IncreaseMarkedObjectSize(size());
+  Arena()->GetThreadState()->Heap().HeapStats().IncreaseMarkedObjectSize(
+      size());
 }
 
 void LargeObjectPage::MakeConsistentForMutator() {

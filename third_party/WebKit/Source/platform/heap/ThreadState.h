@@ -540,11 +540,6 @@ class PLATFORM_EXPORT ThreadState {
   void leaveStaticReferenceRegistrationDisabledScope();
 #endif
 
-  void ResetHeapCounters();
-  void IncreaseAllocatedObjectSize(size_t);
-  void DecreaseAllocatedObjectSize(size_t);
-  void IncreaseMarkedObjectSize(size_t);
-
   v8::Isolate* GetIsolate() const { return isolate_; }
 
   BlinkGC::StackState GetStackState() const { return stack_state_; }
@@ -748,9 +743,6 @@ class PLATFORM_EXPORT ThreadState {
       kLikelyToBePromptlyFreedArraySize - 1;
   std::unique_ptr<int[]> likely_to_be_promptly_freed_;
 
-  // Stats for heap memory of this thread.
-  size_t allocated_object_size_;
-  size_t marked_object_size_;
   size_t reported_memory_to_v8_;
 
   int gc_age_ = 0;
