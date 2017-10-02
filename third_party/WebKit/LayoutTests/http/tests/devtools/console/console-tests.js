@@ -40,7 +40,7 @@
     console.count("title");
   `);
 
-  Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleViewFilter.allLevelsFilterValue());
+  Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleFilter.allLevelsFilterValue());
   ConsoleTestRunner.dumpConsoleMessagesWithClasses();
   TestRunner.completeTest();
 })();
