@@ -29,10 +29,8 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   ~AndroidVideoSurfaceChooserImpl() override;
 
   // AndroidVideoSurfaceChooser
-  void Initialize(UseOverlayCB use_overlay_cb,
-                  UseSurfaceTextureCB use_surface_texture_cb,
-                  AndroidOverlayFactoryCB initial_factory,
-                  const State& initial_state) override;
+  void SetClientCallbacks(UseOverlayCB use_overlay_cb,
+                          UseSurfaceTextureCB use_surface_texture_cb) override;
   void UpdateState(base::Optional<AndroidOverlayFactoryCB> new_factory,
                    const State& new_state) override;
 
@@ -82,6 +80,8 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   OverlayState client_overlay_state_ = kUnknown;
 
   State current_state_;
+
+  bool initial_state_received_ = false;
 
   // Not owned by us.
   base::TickClock* tick_clock_;

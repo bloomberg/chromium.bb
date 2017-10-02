@@ -210,7 +210,7 @@ TEST_F(MediaCodecVideoDecoderTest, SmallVp8IsRejected) {
 
 TEST_F(MediaCodecVideoDecoderTest, InitializeDoesntInitSurfaceOrCodec) {
   EXPECT_CALL(*video_frame_factory_, Initialize(_, _, _)).Times(0);
-  EXPECT_CALL(*surface_chooser_, MockInitialize()).Times(0);
+  EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, _)).Times(0);
   Initialize();
 }
@@ -223,7 +223,7 @@ TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersFrameFactoryInit) {
 
 TEST_F(MediaCodecVideoDecoderTest, FirstDecodeTriggersSurfaceChooserInit) {
   Initialize();
-  EXPECT_CALL(*surface_chooser_, MockInitialize());
+  EXPECT_CALL(*surface_chooser_, MockUpdateState());
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
 }
 
@@ -239,7 +239,7 @@ TEST_F(MediaCodecVideoDecoderTest, FrameFactoryInitFailureIsAnError) {
   ON_CALL(*video_frame_factory_, Initialize(_, _, _))
       .WillByDefault(RunCallback<2>(nullptr));
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::DECODE_ERROR)).Times(1);
-  EXPECT_CALL(*surface_chooser_, MockInitialize()).Times(0);
+  EXPECT_CALL(*surface_chooser_, MockUpdateState()).Times(0);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
 }
 

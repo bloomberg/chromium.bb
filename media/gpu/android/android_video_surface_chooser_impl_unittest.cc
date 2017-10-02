@@ -130,10 +130,12 @@ class AndroidVideoSurfaceChooserImplTest
   void StartChooser(AndroidOverlayFactoryCB factory) {
     chooser_ = base::MakeUnique<AndroidVideoSurfaceChooserImpl>(allow_dynamic_,
                                                                 &tick_clock_);
-    chooser_->Initialize(
+    chooser_->SetClientCallbacks(
         base::Bind(&MockClient::UseOverlayImpl, base::Unretained(&client_)),
-        base::Bind(&MockClient::UseSurfaceTexture, base::Unretained(&client_)),
-        std::move(factory), chooser_state_);
+        base::Bind(&MockClient::UseSurfaceTexture, base::Unretained(&client_)));
+    chooser_->UpdateState(
+        factory ? base::make_optional(std::move(factory)) : base::nullopt,
+        chooser_state_);
   }
 
   // Start the chooser with |overlay_|, and verify that the client is told to

@@ -281,7 +281,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
 
   config_.overlay_info.surface_id = SurfaceManager::kNoSurfaceID;
 
-  EXPECT_CALL(*chooser_, MockInitialize()).Times(0);
+  EXPECT_CALL(*chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(client_, NotifyInitializationComplete(true));
 
   // It would be nicer if we didn't just force this on, since we might do so

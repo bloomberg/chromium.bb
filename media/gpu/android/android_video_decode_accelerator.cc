@@ -451,12 +451,12 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // the synchronous case.  It will be soon, though.  For pre-M, we rely on the
   // fact that |surface_chooser_| won't tell us to use a SurfaceTexture while
   // waiting for an overlay to become ready, for example.
-  surface_chooser_->Initialize(
+  surface_chooser_->SetClientCallbacks(
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
                  weak_this_factory_.GetWeakPtr()),
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
-                 weak_this_factory_.GetWeakPtr(), nullptr),
-      std::move(factory), surface_chooser_state_);
+                 weak_this_factory_.GetWeakPtr(), nullptr));
+  surface_chooser_->UpdateState(std::move(factory), surface_chooser_state_);
 }
 
 void AndroidVideoDecodeAccelerator::OnSurfaceTransition(

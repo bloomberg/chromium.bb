@@ -29,82 +29,60 @@ AndroidVideoSurfaceChooserImpl::AndroidVideoSurfaceChooserImpl(
 
 AndroidVideoSurfaceChooserImpl::~AndroidVideoSurfaceChooserImpl() {}
 
-void AndroidVideoSurfaceChooserImpl::Initialize(
+void AndroidVideoSurfaceChooserImpl::SetClientCallbacks(
     UseOverlayCB use_overlay_cb,
-    UseSurfaceTextureCB use_surface_texture_cb,
-    AndroidOverlayFactoryCB initial_factory,
-    const State& initial_state) {
+    UseSurfaceTextureCB use_surface_texture_cb) {
+  DCHECK(use_overlay_cb && use_surface_texture_cb);
   use_overlay_cb_ = std::move(use_overlay_cb);
   use_surface_texture_cb_ = std::move(use_surface_texture_cb);
-
-  overlay_factory_ = std::move(initial_factory);
-
-  current_state_ = initial_state;
-
-  // Pre-M, we choose now.  This lets Choose() never worry about the pre-M path.
-  if (!allow_dynamic_) {
-    if (overlay_factory_ &&
-        (current_state_.is_fullscreen || current_state_.is_secure ||
-         current_state_.is_required)) {
-      SwitchToOverlay(false);
-    } else {
-      SwitchToSurfaceTexture();
-    }
-  } else {
-    Choose();
-  }
 }
 
 void AndroidVideoSurfaceChooserImpl::UpdateState(
     base::Optional<AndroidOverlayFactoryCB> new_factory,
     const State& new_state) {
+  DCHECK(use_overlay_cb_);
+  bool entered_fullscreen =
+      !current_state_.is_fullscreen && new_state.is_fullscreen;
+  current_state_ = new_state;
+
+  bool factory_changed = new_factory.has_value();
+  if (factory_changed)
+    overlay_factory_ = std::move(*new_factory);
+
+  if (!allow_dynamic_) {
+    if (!initial_state_received_) {
+      initial_state_received_ = true;
+      // Choose here so that Choose() doesn't have to handle non-dynamic.
+      if (overlay_factory_ &&
+          (current_state_.is_fullscreen || current_state_.is_secure ||
+           current_state_.is_required)) {
+        SwitchToOverlay(false);
+      } else {
+        SwitchToSurfaceTexture();
+      }
+    }
+    return;
+  }
+
   // If we're entering fullscreen, clear any previous failure attempt.  It's
   // likely that any previous failure was due to a lack of power efficiency,
   // but entering fs likely changes that anyway.
-  if (!current_state_.is_fullscreen && new_state.is_fullscreen)
+  if (entered_fullscreen)
     most_recent_overlay_failure_ = base::TimeTicks();
 
-  current_state_ = new_state;
-
-  if (!new_factory) {
-    if (allow_dynamic_)
-      Choose();
-    return;
-  }
-
-  overlay_factory_ = std::move(*new_factory);
-
-  // If we started construction of an overlay, but it's not ready yet, then
-  // just drop it.  It's from the wrong factory.
-  if (overlay_)
+  // If the factory changed, we should cancel pending overlay requests and
+  // set the client state back to Unknown if they're using an old overlay.
+  if (factory_changed) {
     overlay_ = nullptr;
-
-  // Pre-M, we can't change the output surface.  Just stop here.
-  if (!allow_dynamic_) {
-    // If we still haven't told the client anything, then it's because an
-    // overlay factory was provided to Initialize(), and changed before the
-    // overlay request finished.  Switch to SurfaceTexture.  We could, I guess,
-    // try to use the new factory if any.
-    if (client_overlay_state_ == kUnknown)
-      SwitchToSurfaceTexture();
-    return;
-  }
-
-  // We're switching factories, so any existing overlay should be cancelled.
-  // We also clear the state back to Unknown so that there's no confusion about
-  // whether the client is using the 'right' overlay; it's not.  Any previous
-  // overlay was from the previous factory.
-  if (client_overlay_state_ == kUsingOverlay) {
-    overlay_ = nullptr;
-    client_overlay_state_ = kUnknown;
+    if (client_overlay_state_ == kUsingOverlay)
+      client_overlay_state_ = kUnknown;
   }
 
   Choose();
 }
 
 void AndroidVideoSurfaceChooserImpl::Choose() {
-  // Pre-M, we decide based on whether we have or don't have a factory.  We
-  // shouldn't be called.
+  // Pre-M we shouldn't be called.
   DCHECK(allow_dynamic_);
 
   // TODO(liberato): should this depend on resolution?
