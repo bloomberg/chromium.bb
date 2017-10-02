@@ -2055,8 +2055,9 @@ void RenderWidgetHostImpl::OnUpdateRect(
     new_auto_size_ = params.view_size;
     if (post_callback) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&RenderWidgetHostImpl::DelayedAutoResized,
-                                    weak_factory_.GetWeakPtr()));
+          FROM_HERE,
+          base::BindOnce(&RenderWidgetHostImpl::DelayedAutoResized,
+                         weak_factory_.GetWeakPtr(), params.sequence_number));
     }
   }
 
@@ -2437,7 +2438,7 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   return true;
 }
 
-void RenderWidgetHostImpl::DelayedAutoResized() {
+void RenderWidgetHostImpl::DelayedAutoResized(uint64_t sequence_number) {
   gfx::Size new_size = new_auto_size_;
   // Clear the new_auto_size_ since the empty value is used as a flag to
   // indicate that no callback is in progress (i.e. without this line
@@ -2448,6 +2449,12 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
   if (delegate_)
     delegate_->ResizeDueToAutoResize(this, new_size);
+
+  viz::LocalSurfaceId local_surface_id(view_->GetLocalSurfaceId());
+  if (local_surface_id.is_valid()) {
+    Send(new ViewMsg_SetLocalSurfaceIdForAutoResize(
+        routing_id_, sequence_number, local_surface_id));
+  }
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {

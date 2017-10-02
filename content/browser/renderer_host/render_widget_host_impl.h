@@ -745,7 +745,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
-  void DelayedAutoResized();
+  void DelayedAutoResized(uint64_t sequence_number);
 
   void WindowSnapshotReachedScreen(int snapshot_id);
 

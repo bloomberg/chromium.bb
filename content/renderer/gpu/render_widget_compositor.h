@@ -93,6 +93,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
+
+  bool IsSurfaceSynchronizationEnabled() const;
+
   // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit
   void SetNeedsForcedRedraw();
