@@ -38,6 +38,22 @@ from pylib import constants
 from pylib.symbols import deobfuscator
 
 
+# Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
+_DALVIK_IGNORE_PATTERN = re.compile('|'.join([
+    r'^Added shared lib',
+    r'^Could not find ',
+    r'^DexOpt:',
+    r'^GC_',
+    r'^Late-enabling CheckJNI',
+    r'^Link of class',
+    r'^No JNI_OnLoad found in',
+    r'^Trying to load lib',
+    r'^Unable to resolve superclass',
+    r'^VFY:',
+    r'^WAIT_',
+    ]))
+
+
 def _Colorize(text, style=''):
   return (style
       + text
@@ -381,7 +397,7 @@ class _LogcatProcessor(object):
     self._deobfuscator = deobfuscate
     self._primary_pid = None
     self._my_pids = set()
-    self._not_my_pids = set()
+    self._seen_pids = set()
     self._UpdateMyPids()
 
   def _UpdateMyPids(self):
@@ -413,7 +429,7 @@ class _LogcatProcessor(object):
       style = colorama.Back.GREEN
     elif priority == 'D':
       style = colorama.Back.BLUE
-    return style + colorama.Style.BRIGHT + colorama.Fore.BLACK
+    return style + colorama.Fore.BLACK
 
   def _ParseLine(self, line):
     tokens = line.split(None, 6)
@@ -440,8 +456,14 @@ class _LogcatProcessor(object):
         date, invokation_time, pid, tid, priority, tag, original_message)
 
   def _PrintParsedLine(self, parsed_line, dim=False):
+    tid_style = ''
+    # Make the main thread bright.
+    if not dim and parsed_line.pid == parsed_line.tid:
+      tid_style = colorama.Style.BRIGHT
     pid_style = self._GetPidStyle(parsed_line.pid, dim)
     # We have to pad before adding color as that changes the width of the tag.
+    pid_str = _Colorize('{:5}'.format(parsed_line.pid), pid_style)
+    tid_str = _Colorize('{:5}'.format(parsed_line.tid), tid_style)
     tag = _Colorize('{:8}'.format(parsed_line.tag),
                     pid_style + ('' if dim else colorama.Style.BRIGHT))
     priority = _Colorize(parsed_line.priority,
@@ -451,34 +473,31 @@ class _LogcatProcessor(object):
       messages = self._deobfuscator.TransformLines(messages)
     for message in messages:
       message = _Colorize(message, pid_style)
-      sys.stdout.write('{} {} {:5} {:5} {} {}: {}\n'.format(
-          parsed_line.date, parsed_line.invokation_time, parsed_line.pid,
-          parsed_line.tid, priority, tag, message))
+      sys.stdout.write('{} {} {} {} {} {}: {}\n'.format(
+          parsed_line.date, parsed_line.invokation_time, pid_str, tid_str,
+          priority, tag, message))
 
   def ProcessLine(self, line, fast=False):
-    dim = False
     if not line or line.startswith('------'):
       return
     log = self._ParseLine(line)
-    if log.pid in self._my_pids or (not fast and
-        (log.priority == 'F' or  # Java crash dump
-         log.tag == 'ActivityManager' or  # Android system
-         log.tag == 'DEBUG')):  # Native crash dump
-      pass  # write
-    elif log.pid in self._not_my_pids:
-      dim = True
-    elif fast:
-      # Skip checking whether our package spawned new processes.
-      self._not_my_pids.add(log.pid)
-      dim = True
-    else:
-      # Check and add the pid if it is a new one from our package.
-      self._UpdateMyPids()
-      if log.pid not in self._my_pids:
-        self._not_my_pids.add(log.pid)
-        dim = True
-    if (self._verbose and not fast) or not dim:
-      self._PrintParsedLine(log, dim)
+    if log.pid not in self._seen_pids:
+      self._seen_pids.add(log.pid)
+      if not fast:
+        self._UpdateMyPids()
+
+    owned_pid = log.pid in self._my_pids
+    if fast and not owned_pid:
+      return
+    if owned_pid and not self._verbose and log.tag == 'dalvikvm':
+      if _DALVIK_IGNORE_PATTERN.match(log.message):
+        return
+
+    if owned_pid or self._verbose or (
+        log.priority == 'F' or  # Java crash dump
+        log.tag == 'ActivityManager' or  # Android system
+        log.tag == 'DEBUG'):  # Native crash dump
+      self._PrintParsedLine(log, not owned_pid)
 
 
 def _RunLogcat(device, package_name, mapping_path, verbose):
