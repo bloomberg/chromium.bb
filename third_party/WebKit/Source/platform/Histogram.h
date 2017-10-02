@@ -78,6 +78,11 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
   CustomCountHistogram& counter_;
 };
 
+#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER_IMPL(name, allow_cross_thread)  \
+  DEFINE_STATIC_LOCAL_IMPL(CustomCountHistogram, scoped_us_counter,      \
+                           (name, 0, 10000000, 50), allow_cross_thread); \
+  ScopedUsHistogramTimer timer(scoped_us_counter);
+
 // Use code like this to record time, in microseconds, to execute a block of
 // code:
 //
@@ -87,10 +92,13 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
 // }
 // This macro records all times between 0us and 10 seconds.
 // Do not change this macro without renaming all metrics that use it!
-#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER(name)                 \
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, scoped_us_counter, \
-                      (name, 0, 10000000, 50));                \
-  ScopedUsHistogramTimer timer(scoped_us_counter);
+#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER(name) \
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_IMPL(name, false)
+
+// Thread-safe variant of SCOPED_BLINK_UMA_HISTOGRAM_TIMER.
+// Use if the histogram can be accessed by multiple threads.
+#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(name) \
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_IMPL(name, true)
 
 }  // namespace blink
 
