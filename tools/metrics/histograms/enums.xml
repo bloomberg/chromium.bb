@@ -23940,6 +23940,7 @@ from previous Chrome versions.
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
+  <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="237964589"
       label="enable-manual-fallback-for-password-saving:disabled"/>
@@ -24277,6 +24278,7 @@ from previous Chrome versions.
   <int value="1219628795" label="PrintScaling:disabled"/>
   <int value="1219826373" label="ServiceWorkerNavigationPreload:enabled"/>
   <int value="1220171692" label="SpeculativeLaunchServiceWorker:enabled"/>
+  <int value="1220274247" label="AllowReaderForAccessibility:disabled"/>
   <int value="1220464509" label="enable-first-run-ui-transitions"/>
   <int value="1221559505" label="enable-spelling-feedback-field-trial"/>
   <int value="1222017136" label="WebRtcUseEchoCanceller3:disabled"/>
