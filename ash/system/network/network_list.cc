@@ -18,6 +18,7 @@
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
+#include "ash/system/network/network_row_title_view.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/networking_config_delegate.h"
 #include "ash/system/power/power_status.h"
@@ -109,10 +110,8 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   explicit SectionHeaderRowView(int title_id)
       : title_id_(title_id),
         container_(nullptr),
-        toggle_(nullptr),
-        style_(
-            new TrayPopupItemStyle(TrayPopupItemStyle::FontStyle::SUB_HEADER)) {
-  }
+        network_row_title_view_(nullptr),
+        toggle_(nullptr) {}
 
   ~SectionHeaderRowView() override {}
 
@@ -120,6 +119,20 @@ class NetworkListView::SectionHeaderRowView : public views::View,
     InitializeLayout();
     AddExtraButtons(enabled);
     AddToggleButton(enabled);
+  }
+
+  void SetSubtitle(int subtitle_id) {
+    network_row_title_view_->SetSubtitle(subtitle_id);
+
+    // The left padding of the toggle is different depending on whether the
+    // subtitle is displayed.
+    const int toggle_left_padding = subtitle_id == 0
+                                        ? kToggleLeftPaddingWithoutSubtitle
+                                        : kToggleLeftPaddingWithSubtitle;
+    const gfx::Insets previous_insets = toggle_->border()->GetInsets();
+    toggle_->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(previous_insets.top(), toggle_left_padding,
+                    previous_insets.bottom(), previous_insets.right())));
   }
 
   virtual void SetIsOn(bool enabled) {
@@ -138,7 +151,6 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   virtual void OnToggleToggled(bool is_on) = 0;
 
   TriView* container() const { return container_; }
-  TrayPopupItemStyle* style() const { return style_.get(); }
 
   int GetHeightForWidth(int w) const override {
     // Make row height fixed avoiding layout manager adjustments.
@@ -158,16 +170,17 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   }
 
  private:
+  static const int kToggleLeftPaddingWithoutSubtitle = 18;
+  static const int kToggleLeftPaddingWithSubtitle = 8;
+
   void InitializeLayout() {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
     container_ = TrayPopupUtils::CreateSubHeaderRowView(false);
     AddChildView(container_);
 
-    views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-    style()->SetupLabel(label);
-    label->SetText(l10n_util::GetStringUTF16(title_id_));
-    container_->AddView(TriView::Container::CENTER, label);
+    network_row_title_view_ = new NetworkRowTitleView(title_id_);
+    container_->AddView(TriView::Container::CENTER, network_row_title_view_);
   }
 
   void AddToggleButton(bool enabled) {
@@ -184,11 +197,12 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   // buttons.
   TriView* container_;
 
+  // View containing the header row view. Is a child of the CENTER of
+  // |container_|.
+  NetworkRowTitleView* network_row_title_view_;
+
   // ToggleButton to toggle section on or off.
   views::ToggleButton* toggle_;
-
-  // TrayPopupItemStyle used to configure labels and buttons.
-  std::unique_ptr<TrayPopupItemStyle> style_;
 
   DISALLOW_COPY_AND_ASSIGN(SectionHeaderRowView);
 };
@@ -424,7 +438,6 @@ NetworkListView::NetworkListView(SystemTrayItem* owner, LoginStatus login)
     : NetworkStateListDetailedView(owner, LIST_TYPE_NETWORK, login),
       needs_relayout_(false),
       no_wifi_networks_view_(nullptr),
-      no_mobile_networks_view_(nullptr),
       mobile_header_view_(nullptr),
       wifi_header_view_(nullptr),
       mobile_separator_view_(nullptr),
@@ -624,11 +637,7 @@ NetworkListView::UpdateNetworkListEntries() {
     index = UpdateSectionHeaderRow(
         NetworkTypePattern::Mobile(),
         cellular_enabled || tether_enabled /* enabled */, index,
-        &mobile_header_view_, &mobile_separator_view_);
-
-    UpdateInfoLabel(mobile_message_id, index, &no_mobile_networks_view_);
-    if (mobile_message_id)
-      ++index;
+        &mobile_header_view_, &mobile_separator_view_, mobile_message_id);
 
     std::unique_ptr<std::set<std::string>> new_cellular_guids =
         UpdateNetworkChildren(NetworkInfo::Type::MOBILE, index);
@@ -817,7 +826,7 @@ void NetworkListView::UpdateInfoLabel(int message_id,
     return;
   }
   if (!info_label)
-    info_label = new TrayInfoLabel(this /* delegate */, message_id);
+    info_label = new TrayInfoLabel(nullptr /* delegate */, message_id);
   else
     info_label->Update(message_id);
 
@@ -825,20 +834,12 @@ void NetworkListView::UpdateInfoLabel(int message_id,
   *info_label_ptr = info_label;
 }
 
-void NetworkListView::OnLabelClicked(int message_id) {
-  if (message_id == IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH)
-    Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
-}
-
-bool NetworkListView::IsLabelClickable(int message_id) const {
-  return message_id == IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
-}
-
 int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
                                             bool enabled,
                                             int child_index,
                                             SectionHeaderRowView** view,
-                                            views::Separator** separator_view) {
+                                            views::Separator** separator_view,
+                                            int subtitle_message_id) {
   if (!*view) {
     if (pattern.MatchesPattern(NetworkTypePattern::Mobile()))
       *view = new MobileHeaderRowView(
@@ -862,6 +863,7 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
   }
 
   (*view)->SetIsOn(enabled);
+  (*view)->SetSubtitle(subtitle_message_id);
   PlaceViewAtIndex(*view, child_index++);
   return child_index;
 }

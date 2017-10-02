@@ -34,6 +34,8 @@ TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)
   Update(message_id);
 }
 
+TrayInfoLabel::~TrayInfoLabel() {}
+
 void TrayInfoLabel::Update(int message_id) {
   message_id_ = message_id;
 

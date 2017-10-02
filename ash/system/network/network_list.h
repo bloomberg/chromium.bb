@@ -14,7 +14,6 @@
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
-#include "ash/system/tray/tray_info_label.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -26,6 +25,7 @@ class View;
 
 namespace ash {
 class HoverHighlightView;
+class TrayInfoLabel;
 class TriView;
 
 namespace tray {
@@ -33,8 +33,7 @@ namespace tray {
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
 class NetworkListView : public NetworkStateListDetailedView,
-                        public network_icon::AnimationObserver,
-                        public TrayInfoLabel::Delegate {
+                        public network_icon::AnimationObserver {
  public:
   class SectionHeaderRowView;
 
@@ -112,17 +111,15 @@ class NetworkListView : public NetworkStateListDetailedView,
 
   // Creates a cellular/tether/Wi-Fi header row |view| and adds it to
   // |scroll_content()| if necessary and reorders the |scroll_content()| placing
-  // the |view| at |child_index|. Returns the index where the next child should
-  // be inserted, i.e., the index directly after the last inserted child.
+  // the |view| at |child_index|. If |subtitle_message_id| is not 0, a subtitle
+  // will be rendered beneath the title. Returns the index where the next child
+  // should be inserted, i.e., the index directly after the last inserted child.
   int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
                              bool enabled,
                              int child_index,
                              SectionHeaderRowView** view,
-                             views::Separator** separator_view);
-
-  // TrayInfoLabel::Delegate:
-  void OnLabelClicked(int message_id) override;
-  bool IsLabelClickable(int message_id) const override;
+                             views::Separator** separator_view,
+                             int subtitle_message_id = 0);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
@@ -134,7 +131,6 @@ class NetworkListView : public NetworkStateListDetailedView,
   bool needs_relayout_;
 
   TrayInfoLabel* no_wifi_networks_view_;
-  TrayInfoLabel* no_mobile_networks_view_;
   SectionHeaderRowView* mobile_header_view_;
   SectionHeaderRowView* wifi_header_view_;
   views::Separator* mobile_separator_view_;
