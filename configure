@@ -541,6 +541,7 @@ post_process_cmdline() {
 
     soft_enable palette_throughput
     soft_enable tempmv_signaling
+    soft_enable cdef_singlepass
 
     # Fix up experiment dependencies
     enabled pvq && disable_feature chroma_2x2
