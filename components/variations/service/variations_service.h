@@ -157,11 +157,6 @@ class VariationsService
     policy_pref_service_ = service;
   }
 
-  // Returns the invalid variations seed signature in base64 format, or an empty
-  // string if the signature was valid, missing, or if signature verification is
-  // disabled.
-  std::string GetInvalidVariationsSeedSignature() const;
-
   // Exposed for testing.
   void GetClientFilterableStateForVersionCalledForTesting();
 

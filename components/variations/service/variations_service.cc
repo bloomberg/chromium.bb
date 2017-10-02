@@ -703,11 +703,6 @@ void VariationsService::RecordSuccessfulFetch() {
   local_state_->SetInteger(prefs::kVariationsFailedToFetchSeedStreak, 0);
 }
 
-std::string VariationsService::GetInvalidVariationsSeedSignature() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return field_trial_creator_.seed_store().GetInvalidSignature();
-}
-
 void VariationsService::GetClientFilterableStateForVersionCalledForTesting() {
   const base::Version current_version(version_info::GetVersionNumber());
   if (!current_version.IsValid())
