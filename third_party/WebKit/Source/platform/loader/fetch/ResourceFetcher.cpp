@@ -657,7 +657,8 @@ Resource* ResourceFetcher::RequestResource(
   ResourceRequest& resource_request = params.MutableResourceRequest();
   network_instrumentation::ScopedResourceLoadTracker
       scoped_resource_load_tracker(identifier, resource_request);
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Fetch.RequestResourceTime");
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
+      "Blink.Fetch.RequestResourceTime");
   // TODO(dproy): Remove this. http://crbug.com/659666
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                UrlForTraceEvent(params.Url()));
@@ -1593,39 +1594,52 @@ void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
         NOTREACHED();
     }
   }
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, image_preloads,
-                      ("PreloadScanner.Counts2.Image", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, image_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Image", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, script_preloads,
-                      ("PreloadScanner.Counts2.Script", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, script_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Script", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheet_preloads,
-                      ("PreloadScanner.Counts2.CSSStyleSheet", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, image_preloads,
+                                  ("PreloadScanner.Counts2.Image", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, image_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Image", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, script_preloads,
+      ("PreloadScanner.Counts2.Script", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, script_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Script", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, stylesheet_preloads,
+      ("PreloadScanner.Counts2.CSSStyleSheet", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, stylesheet_preload_misses,
       ("PreloadScanner.Counts2.Miss.CSSStyleSheet", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, font_preloads,
-                      ("PreloadScanner.Counts2.Font", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, font_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Font", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, media_preloads,
-                      ("PreloadScanner.Counts2.Media", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, media_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Media", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, text_track_preloads,
-                      ("PreloadScanner.Counts2.TextTrack", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, text_track_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.TextTrack", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, import_preloads,
-                      ("PreloadScanner.Counts2.Import", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, import_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Import", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, raw_preloads,
-                      ("PreloadScanner.Counts2.Raw", 0, 100, 25));
-  DEFINE_STATIC_LOCAL(CustomCountHistogram, raw_preload_misses,
-                      ("PreloadScanner.Counts2.Miss.Raw", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, font_preloads,
+                                  ("PreloadScanner.Counts2.Font", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, font_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Font", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, media_preloads,
+                                  ("PreloadScanner.Counts2.Media", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, media_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Media", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, text_track_preloads,
+      ("PreloadScanner.Counts2.TextTrack", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, text_track_preload_misses,
+      ("PreloadScanner.Counts2.Miss.TextTrack", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, import_preloads,
+      ("PreloadScanner.Counts2.Import", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, import_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Import", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, raw_preloads,
+                                  ("PreloadScanner.Counts2.Raw", 0, 100, 25));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, raw_preload_misses,
+      ("PreloadScanner.Counts2.Miss.Raw", 0, 100, 25));
+
   if (images)
     image_preloads.Count(images);
   if (image_misses)
