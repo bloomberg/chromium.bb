@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class LocalFrame;
 class Node;
 
 v8::Local<v8::Value> NodeV8Value(v8::Local<v8::Context>, Node*);
@@ -21,6 +22,11 @@ std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> ResolveNode(
     v8_inspector::V8InspectorSession*,
     Node*,
     const String& object_group);
+
+std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
+NullRemoteObject(v8_inspector::V8InspectorSession* v8_session,
+                 LocalFrame*,
+                 const String& object_group);
 
 }  // namespace blink
 

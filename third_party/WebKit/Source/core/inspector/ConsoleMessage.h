@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class LocalFrame;
 class SourceLocation;
 
 class CORE_EXPORT ConsoleMessage final
@@ -52,8 +53,9 @@ class CORE_EXPORT ConsoleMessage final
   MessageLevel Level() const;
   const String& Message() const;
   const String& WorkerId() const;
+  LocalFrame* Frame() const;
   Vector<DOMNodeId>& Nodes();
-  void SetNodes(Vector<DOMNodeId> nodes);
+  void SetNodes(LocalFrame*, Vector<DOMNodeId> nodes);
 
   DECLARE_TRACE();
 
@@ -70,6 +72,7 @@ class CORE_EXPORT ConsoleMessage final
   unsigned long request_identifier_;
   double timestamp_;
   String worker_id_;
+  WeakMember<LocalFrame> frame_;
   Vector<DOMNodeId> nodes_;
 };
 

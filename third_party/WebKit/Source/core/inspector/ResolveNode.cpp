@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/V8InspectorString.h"
 
 namespace blink {
@@ -25,6 +26,9 @@ std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> ResolveNode(
     v8_inspector::V8InspectorSession* v8_session,
     Node* node,
     const String& object_group) {
+  if (!node)
+    return nullptr;
+
   Document* document =
       node->IsDocumentNode() ? &node->GetDocument() : node->ownerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
@@ -39,6 +43,24 @@ std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> ResolveNode(
   return v8_session->wrapObject(script_state->GetContext(),
                                 NodeV8Value(script_state->GetContext(), node),
                                 ToV8InspectorStringView(object_group));
+}
+
+std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
+NullRemoteObject(v8_inspector::V8InspectorSession* v8_session,
+                 LocalFrame* frame,
+                 const String& object_group) {
+  if (!frame)
+    return nullptr;
+
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  if (!script_state)
+    return nullptr;
+
+  ScriptState::Scope scope(script_state);
+  return v8_session->wrapObject(
+      script_state->GetContext(),
+      NodeV8Value(script_state->GetContext(), nullptr),
+      ToV8InspectorStringView(object_group));
 }
 
 }  // namespace blink

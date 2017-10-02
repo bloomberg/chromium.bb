@@ -132,18 +132,28 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
     entry->setNetworkRequestId(
         IdentifiersFactory::RequestId(message->RequestIdentifier()));
 
-  if (v8_session_ && !message->Nodes().IsEmpty()) {
+  if (v8_session_ && message->Frame() && !message->Nodes().IsEmpty()) {
     ScriptForbiddenScope::AllowUserAgentScript allow_script;
     std::unique_ptr<
         protocol::Array<v8_inspector::protocol::Runtime::API::RemoteObject>>
         remote_objects = protocol::Array<
             v8_inspector::protocol::Runtime::API::RemoteObject>::create();
     for (DOMNodeId node_id : message->Nodes()) {
+      std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>
+          remote_object = nullptr;
       Node* node = DOMNodeIds::NodeForId(node_id);
-      if (node) {
-        auto remote_object = ResolveNode(v8_session_, node, "console");
-        if (remote_object)
-          remote_objects->addItem(std::move(remote_object));
+      if (node)
+        remote_object = ResolveNode(v8_session_, node, "console");
+      if (!remote_object) {
+        remote_object =
+            NullRemoteObject(v8_session_, message->Frame(), "console");
+      }
+      if (remote_object) {
+        remote_objects->addItem(std::move(remote_object));
+      } else {
+        // If a null object could not be referenced, we do not send the message
+        // at all, to avoid situations in which the arguments are misleading.
+        return;
       }
     }
     entry->setArgs(std::move(remote_objects));
