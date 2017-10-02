@@ -444,7 +444,8 @@ void InterstitialHTMLSource::StartDataRequest(
   std::string html;
   // Using this form of the path so we can do exact matching, while ignoring the
   // query (everything after the ? character).
-  GURL url = web_contents->GetURL().GetWithEmptyPath().Resolve(path);
+  GURL url =
+      GURL(chrome::kChromeUIInterstitialURL).GetWithEmptyPath().Resolve(path);
   std::string path_without_query = url.path();
   if (path_without_query == "/ssl") {
     interstitial_delegate.reset(

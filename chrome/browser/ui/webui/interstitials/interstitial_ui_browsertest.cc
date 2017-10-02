@@ -137,6 +137,37 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, InterstitialBackButton) {
   EXPECT_EQ(title, base::ASCIIToUTF16("Interstitials"));
 }
 
+// Tests that view-source: works correctly on chrome://interstitials.
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, InterstitialViewSource) {
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("view-source:chrome://interstitials/"));
+  int found;
+  base::string16 expected_title =
+      base::ASCIIToUTF16("<title>Interstitials</title>");
+  found = ui_test_utils::FindInPage(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title,
+      true, /* Forward */
+      true, /* case_sensitive */
+      nullptr, nullptr);
+  EXPECT_EQ(found, 1);
+}
+
+// Tests that view-source: works correctly on a subpage of
+// chrome://interstitials (using chrome://interstitials/ssl).
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, InterstitialWithPathViewSource) {
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("view-source:chrome://interstitials/ssl"));
+  int found;
+  base::string16 expected_title =
+      base::ASCIIToUTF16("<title>Privacy error</title");
+  found = ui_test_utils::FindInPage(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title,
+      true, /* Forward */
+      true, /* case_sensitive */
+      nullptr, nullptr);
+  EXPECT_EQ(found, 1);
+}
+
 // Checks that the interstitial page uses correct web contents. If not, closing
 // the tab might result in a freed web contents pointer and cause a crash.
 // See https://crbug.com/611706 for details.
