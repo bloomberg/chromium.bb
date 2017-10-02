@@ -2348,6 +2348,48 @@ void GLES2DecoderPassthroughTestBase::DoBufferSubData(GLenum target,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderPassthroughTestBase::DoBindTexture(GLenum target,
+                                                    GLuint client_id) {
+  cmds::BindTexture cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    GLint border,
+    GLenum format,
+    GLenum type,
+    uint32_t shared_memory_id,
+    uint32_t shared_memory_offset) {
+  cmds::TexImage2D cmd;
+  cmd.Init(target, level, internal_format, width, height, format, type,
+           shared_memory_id, shared_memory_offset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoBindFramebuffer(GLenum target,
+                                                        GLuint client_id) {
+  cmds::BindFramebuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoFramebufferTexture2D(
+    GLenum target,
+    GLenum attachment,
+    GLenum textarget,
+    GLuint texture_client_id,
+    GLint level) {
+  cmds::FramebufferTexture2D cmd;
+  cmd.Init(target, attachment, textarget, texture_client_id, level);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const size_t GLES2DecoderPassthroughTestBase::kSharedBufferSize;
@@ -2357,6 +2399,8 @@ const int32_t GLES2DecoderPassthroughTestBase::kInvalidSharedMemoryId;
 
 const uint32_t GLES2DecoderPassthroughTestBase::kNewClientId;
 const GLuint GLES2DecoderPassthroughTestBase::kClientBufferId;
+const GLuint GLES2DecoderPassthroughTestBase::kClientTextureId;
+const GLuint GLES2DecoderPassthroughTestBase::kClientFramebufferId;
 #endif
 
 }  // namespace gles2
