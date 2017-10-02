@@ -538,8 +538,7 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return EditingIgnoresContent(*node) ? BeforeNode(*node)
-                                      : FirstPositionInNode(*node);
+  return FirstPositionInOrBeforeNode(*node);
 }
 
 // static
@@ -548,8 +547,23 @@ PositionTemplate<Strategy>
 PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
-  return EditingIgnoresContent(*node) ? AfterNode(*node)
-                                      : LastPositionInNode(*node);
+  return LastPositionInOrAfterNode(*node);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy>
+PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(const Node& node) {
+  return EditingIgnoresContent(node) ? BeforeNode(node)
+                                     : FirstPositionInNode(node);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy>
+PositionTemplate<Strategy>::LastPositionInOrAfterNode(const Node& node) {
+  return EditingIgnoresContent(node) ? AfterNode(node)
+                                     : LastPositionInNode(node);
 }
 
 PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
