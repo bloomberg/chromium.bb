@@ -15,8 +15,9 @@ function test() {
   var deviceModeThrottling = deviceModeView._toolbar._throttlingConditionsItem;
   var networkPanelThrottling = UI.panels.network.throttlingSelectForTest();
   var networkPanelOfflineCheckbox = UI.panels.network.offlineCheckboxForTest().inputElement;
+  var networkConfigView = self.runtime.sharedInstance(Network.NetworkConfigView);
   var networkConditionsDrawerThrottlingSelector =
-      self.runtime.sharedInstance(Network.NetworkConfigView)._networkThrottlingSelect;
+      networkConfigView.contentElement.querySelector('.network-config-throttling select.chrome-select');
   var performancePanelNetworkThrottling = UI.panels.timeline._networkThrottlingSelect;
   var performancePanelCPUThrottling = UI.panels.timeline._cpuThrottlingSelect;
 
