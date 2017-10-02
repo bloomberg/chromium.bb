@@ -28,6 +28,21 @@ static INLINE int av1_read_record_symbol(FRAME_COUNTS *counts, aom_reader *r,
   return aom_read_symbol(r, cdf, nsymbs, str);
 }
 
+static INLINE int av1_read_record(FRAME_COUNTS *counts, aom_reader *r, int prob,
+                                  const char *str) {
+  (void)str;
+  if (counts) ++counts->symbol_num[0];
+  return aom_read(r, prob, str);
+}
+
+static INLINE int av1_read_record_cdf(FRAME_COUNTS *counts, aom_reader *r,
+                                      const aom_cdf_prob *cdf, int nsymbs,
+                                      const char *str) {
+  (void)str;
+  if (counts) ++counts->symbol_num[0];
+  return aom_read_cdf(r, cdf, nsymbs, str);
+}
+
 static INLINE int av1_read_record_bit(FRAME_COUNTS *counts, aom_reader *r,
                                       const char *str) {
   (void)str;
@@ -36,12 +51,19 @@ static INLINE int av1_read_record_bit(FRAME_COUNTS *counts, aom_reader *r,
 }
 
 static INLINE void av1_record_coeff(FRAME_COUNTS *counts, tran_low_t qcoeff) {
+  assert(qcoeff >= 0);
   if (counts) ++counts->coeff_num[qcoeff != 0];
 }
 #else  // CONFIG_SYMBOLRATE
 
 #define av1_read_record_symbol(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME)
+
+#define av1_read_record(counts, r, prob, ACCT_STR_NAME) \
+  aom_read(r, prob, ACCT_STR_NAME)
+
+#define av1_read_record_cdf(counts, r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_cdf(r, cdf, nsymbs, ACCT_STR_NAME)
 
 #define av1_read_record_bit(counts, r, ACCT_STR_NAME) \
   aom_read_bit(r, ACCT_STR_NAME)

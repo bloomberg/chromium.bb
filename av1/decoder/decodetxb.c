@@ -505,7 +505,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     int16_t dqv = (c == 0) ? dequant[0] : dequant[1];
     tran_low_t *v = &tcoeffs[scan[c]];
 #if CONFIG_SYMBOLRATE
-    av1_record_coeff(counts, *v);
+    av1_record_coeff(counts, abs(*v));
 #endif
     int sign = (*v) < 0;
     *v = (abs(*v) * dqv) >> shift;

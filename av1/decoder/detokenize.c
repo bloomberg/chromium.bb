@@ -24,7 +24,11 @@
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/idct.h"
+#endif
 
+#include "av1/decoder/symbolrate.h"
+
+#if !CONFIG_PVQ || CONFIG_VAR_TX
 #define EOB_CONTEXT_NODE 0
 #define ZERO_CONTEXT_NODE 1
 #define ONE_CONTEXT_NODE 2
@@ -43,31 +47,43 @@
   } while (0)
 
 #if CONFIG_NEW_MULTISYMBOL
-#define READ_COEFF(prob_name, cdf_name, num, r) read_coeff(cdf_name, num, r);
-static INLINE int read_coeff(const aom_cdf_prob *const *cdf, int n,
+#define READ_COEFF(counts, prob_name, cdf_name, num, r) \
+  read_coeff(counts, cdf_name, num, r);
+static INLINE int read_coeff(FRAME_COUNTS *counts,
+                             const aom_cdf_prob *const *cdf, int n,
                              aom_reader *r) {
+#if !CONFIG_SYMBOLRATE
+  (void)counts;
+#endif
   int val = 0;
   int i = 0;
   int count = 0;
   while (count < n) {
     const int size = AOMMIN(n - count, 4);
-    val |= aom_read_cdf(r, cdf[i++], 1 << size, ACCT_STR) << count;
+    val |= av1_read_record_cdf(counts, r, cdf[i++], 1 << size, ACCT_STR)
+           << count;
     count += size;
   }
   return val;
 }
 #else
-#define READ_COEFF(prob_name, cdf_name, num, r) read_coeff(prob_name, num, r);
-static INLINE int read_coeff(const aom_prob *probs, int n, aom_reader *r) {
+#define READ_COEFF(counts, prob_name, cdf_name, num, r) \
+  read_coeff(counts, prob_name, num, r);
+static INLINE int read_coeff(FRAME_COUNTS *counts, const aom_prob *probs, int n,
+                             aom_reader *r) {
+#if !CONFIG_SYMBOLRATE
+  (void)counts;
+#endif
   int i, val = 0;
-  for (i = 0; i < n; ++i) val = (val << 1) | aom_read(r, probs[i], ACCT_STR);
+  for (i = 0; i < n; ++i)
+    val = (val << 1) | av1_read_record(counts, r, probs[i], ACCT_STR);
   return val;
 }
 
 #endif
 
-static int token_to_value(aom_reader *const r, int token, TX_SIZE tx_size,
-                          int bit_depth) {
+static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
+                          TX_SIZE tx_size, int bit_depth) {
 #if !CONFIG_HIGHBITDEPTH
   assert(bit_depth == 8);
 #endif  // !CONFIG_HIGHBITDEPTH
@@ -79,20 +95,25 @@ static int token_to_value(aom_reader *const r, int token, TX_SIZE tx_size,
     case THREE_TOKEN:
     case FOUR_TOKEN: return token;
     case CATEGORY1_TOKEN:
-      return CAT1_MIN_VAL + READ_COEFF(av1_cat1_prob, av1_cat1_cdf, 1, r);
+      return CAT1_MIN_VAL +
+             READ_COEFF(counts, av1_cat1_prob, av1_cat1_cdf, 1, r);
     case CATEGORY2_TOKEN:
-      return CAT2_MIN_VAL + READ_COEFF(av1_cat2_prob, av1_cat2_cdf, 2, r);
+      return CAT2_MIN_VAL +
+             READ_COEFF(counts, av1_cat2_prob, av1_cat2_cdf, 2, r);
     case CATEGORY3_TOKEN:
-      return CAT3_MIN_VAL + READ_COEFF(av1_cat3_prob, av1_cat3_cdf, 3, r);
+      return CAT3_MIN_VAL +
+             READ_COEFF(counts, av1_cat3_prob, av1_cat3_cdf, 3, r);
     case CATEGORY4_TOKEN:
-      return CAT4_MIN_VAL + READ_COEFF(av1_cat4_prob, av1_cat4_cdf, 4, r);
+      return CAT4_MIN_VAL +
+             READ_COEFF(counts, av1_cat4_prob, av1_cat4_cdf, 4, r);
     case CATEGORY5_TOKEN:
-      return CAT5_MIN_VAL + READ_COEFF(av1_cat5_prob, av1_cat5_cdf, 5, r);
+      return CAT5_MIN_VAL +
+             READ_COEFF(counts, av1_cat5_prob, av1_cat5_cdf, 5, r);
     case CATEGORY6_TOKEN: {
       const int skip_bits = (int)sizeof(av1_cat6_prob) -
                             av1_get_cat6_extrabits_size(tx_size, bit_depth);
-      return CAT6_MIN_VAL + READ_COEFF(av1_cat6_prob + skip_bits, av1_cat6_cdf,
-                                       18 - skip_bits, r);
+      return CAT6_MIN_VAL + READ_COEFF(counts, av1_cat6_prob + skip_bits,
+                                       av1_cat6_cdf, 18 - skip_bits, r);
     }
     default:
       assert(0);  // Invalid token.
@@ -149,9 +170,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     dqv_val = &dq_val[band][0];
 #endif  // CONFIG_NEW_QUANT
 
-    comb_token = last_pos ? 2 * aom_read_bit(r, ACCT_STR) + 2
-                          : aom_read_symbol(r, coef_head_cdfs[band][ctx],
-                                            HEAD_TOKENS + first_pos, ACCT_STR) +
+    comb_token = last_pos ? 2 * av1_read_record_bit(xd->counts, r, ACCT_STR) + 2
+                          : av1_read_record_symbol(
+                                xd->counts, r, coef_head_cdfs[band][ctx],
+                                HEAD_TOKENS + first_pos, ACCT_STR) +
                                 !first_pos;
     if (first_pos) {
       if (comb_token == 0) return 0;
@@ -161,6 +183,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     while (!token) {
       *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
       token_cache[scan[c]] = 0;
+#if CONFIG_SYMBOLRATE
+      av1_record_coeff(xd->counts, 0);
+#endif
       ++c;
       dqv = dq[1];
       ctx = get_coef_context(nb, token_cache, c);
@@ -168,18 +193,20 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
       last_pos = (c + 1 == max_eob);
 
-      comb_token = last_pos ? 2 * aom_read_bit(r, ACCT_STR) + 2
-                            : aom_read_symbol(r, coef_head_cdfs[band][ctx],
-                                              HEAD_TOKENS, ACCT_STR) +
-                                  1;
+      comb_token =
+          last_pos
+              ? 2 * av1_read_record_bit(xd->counts, r, ACCT_STR) + 2
+              : av1_read_record_symbol(xd->counts, r, coef_head_cdfs[band][ctx],
+                                       HEAD_TOKENS, ACCT_STR) +
+                    1;
       token = comb_token >> 1;
     }
 
     more_data = comb_token & 1;
 
     if (token > ONE_TOKEN)
-      token +=
-          aom_read_symbol(r, coef_tail_cdfs[band][ctx], TAIL_TOKENS, ACCT_STR);
+      token += av1_read_record_symbol(xd->counts, r, coef_tail_cdfs[band][ctx],
+                                      TAIL_TOKENS, ACCT_STR);
 #if CONFIG_NEW_QUANT
     dqv_val = &dq_val[band][0];
 #endif  // CONFIG_NEW_QUANT
@@ -187,7 +214,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
     token_cache[scan[c]] = av1_pt_energy_class[token];
 
-    val = token_to_value(r, token, tx_size, xd->bd);
+    val = token_to_value(xd->counts, r, token, tx_size, xd->bd);
+#if CONFIG_SYMBOLRATE
+    av1_record_coeff(xd->counts, val);
+#endif
 
 #if CONFIG_NEW_QUANT
     v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val);
@@ -202,7 +232,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     v = (val * dqv) >> dq_shift;
 #endif
 
-    v = (int)check_range(aom_read_bit(r, ACCT_STR) ? -v : v, xd->bd);
+    v = (int)check_range(av1_read_record_bit(xd->counts, r, ACCT_STR) ? -v : v,
+                         xd->bd);
 
     dqcoeff[scan[c]] = v;
 
