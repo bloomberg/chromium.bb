@@ -100,11 +100,13 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
         base::TimeDelta::FromSeconds(0);
   }
 
+ protected:
+  authpolicy::ErrorType auth_error_ = authpolicy::ERROR_NONE;
+
  private:
   bool started_ = false;
   // If valid called after GetUserStatusCallback is called.
   base::OnceClosure on_get_status_closure_;
-  authpolicy::ErrorType auth_error_ = authpolicy::ERROR_NONE;
   std::string display_name_;
   std::string given_name_;
   authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =

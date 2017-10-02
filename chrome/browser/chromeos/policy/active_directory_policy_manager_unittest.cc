@@ -24,8 +24,6 @@
 
 namespace {
 
-// TODO(rsorokin): Replace with MockAuthPolicyClient (see
-// https://crbug.com/753355).
 class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
  public:
   void Init(dbus::Bus* bus) override { NOTIMPLEMENTED(); }
