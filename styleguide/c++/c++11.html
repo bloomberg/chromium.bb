@@ -355,10 +355,8 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 
 <h2 id="whitelist"><a name="core-whitelist-14"></a>C++14 Allowed Features</h2>
 
-<p>Nothing yet. Suggest something!</p>
-<!--<p>The following features are currently allowed.</p>-->
+<p>The following features are currently allowed.</p>
 
-<!--
 <table id="whitelist_lang_list_14" class="unlined striped">
 <tbody>
 
@@ -370,9 +368,16 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <th style='width:240px;'>Notes and Discussion Thread</th>
 </tr>
 
+<tr>
+<td>Relaxed constant expressions</td>
+<td><code>constexpr int Factorial(int n) {<br>&nbsp;&nbsp;int result = 1;<br>&nbsp;&nbsp;while (n > 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;result *= n--;<br>&nbsp;&nbsp;return result;<br>}</code></td>
+<td>Allows use of more declarations, conditional statements and loops inside <code>constexpr</code> functions.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">constexpr specifier</a></td>
+<td>Prefer to <code>const</code> for variables where possible. Use cautiously on functions. Don't go out of the way to convert existing code. <a href="https://google.github.io/styleguide/cppguide.html#Use_of_constexpr">Google Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/Psuq_EKJBAo">Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
--->
 
 <h2 id="whitelist"><a name="library-whitelist"></a>C++11 Allowed Library Features</h2>
 
@@ -972,14 +977,6 @@ for printing or reading in this format. Still seems useful in minor ways.</td>
 <td>Might confuse syntax highlighting in editors. No standard library support
 for printing or reading in this format. Seems less useful and harder on editors
 than binary literals.</td>
-</tr>
-
-<tr>
-<td>Relaxed constant expressions</td>
-<td><code>constexpr int Factorial(int n) {<br>&nbsp;&nbsp;int result = 1;<br>&nbsp;&nbsp;while (n > 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;result *= n--;<br>&nbsp;&nbsp;return result;<br>}</code></td>
-<td>Allows use of more declarations, conditional statements and loops inside <code>constexpr</code> functions.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">constexpr specifier</a></td>
-<td>Likely to get used even without approval, since the C++11 rules were not trivial to remember.</td>
 </tr>
 
 <tr>
