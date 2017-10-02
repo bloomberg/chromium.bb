@@ -158,8 +158,10 @@ public class ArticleSnippetsTest {
 
         mTimestamp = System.currentTimeMillis() - 5 * DateUtils.MINUTE_IN_MILLIS;
 
-        FeatureUtilities.resetChromeHomeEnabledForTests();
-        FeatureUtilities.cacheChromeHomeEnabled();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            FeatureUtilities.resetChromeHomeEnabledForTests();
+            FeatureUtilities.cacheChromeHomeEnabled();
+        });
 
         assertThat(FeatureUtilities.isChromeHomeEnabled(), is(mChromeHomeEnabled));
 
