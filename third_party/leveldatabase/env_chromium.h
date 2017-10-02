@@ -326,6 +326,9 @@ leveldb::Status OpenDB(const leveldb_env::Options& options,
                        const std::string& name,
                        std::unique_ptr<leveldb::DB>* dbptr);
 
+base::StringPiece MakeStringPiece(const leveldb::Slice& s);
+leveldb::Slice MakeSlice(const base::StringPiece& s);
+
 }  // namespace leveldb_env
 
 #endif  // THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_

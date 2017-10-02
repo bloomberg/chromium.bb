@@ -1404,6 +1404,14 @@ leveldb::Status OpenDB(const leveldb_env::Options& options,
   return status;
 }
 
+base::StringPiece MakeStringPiece(const leveldb::Slice& s) {
+  return base::StringPiece(s.data(), s.size());
+}
+
+leveldb::Slice MakeSlice(const base::StringPiece& s) {
+  return leveldb::Slice(s.begin(), s.size());
+}
+
 }  // namespace leveldb_env
 
 namespace leveldb {
