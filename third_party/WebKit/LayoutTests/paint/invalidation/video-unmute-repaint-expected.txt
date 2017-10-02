@@ -49,7 +49,7 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-after'",
+          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [580, 508, 35, 2],
           "reason": "appeared"
         },
@@ -83,7 +83,7 @@
       "reason": "full"
     },
     {
-      "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-after'",
+      "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "appeared"
     }
   ]

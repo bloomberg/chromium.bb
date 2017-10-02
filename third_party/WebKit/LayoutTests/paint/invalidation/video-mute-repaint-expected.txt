@@ -34,7 +34,7 @@
       "bounds": [700, 525],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-after'",
+          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [580, 508, 70, 2],
           "reason": "disappeared"
         },
@@ -83,7 +83,7 @@
       "reason": "full"
     },
     {
-      "object": "LayoutBlockFlow (positioned) DIV class='-internal-track-segment-highlight-after'",
+      "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "disappeared"
     }
   ]

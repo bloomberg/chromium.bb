@@ -416,12 +416,19 @@ audio::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volum
  * Segmented Track
  */
 
-div.-internal-media-controls-segmented-track {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-media-controls-segmented-track {
     margin: 0 -18px;
     position: relative;
+
+    flex: 1 1 0%;
+    min-width: 0;
+    align-self: center;
+    box-sizing: border-box;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-background {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-background {
     width: auto;
     position: absolute;
     background: #dadada;
@@ -432,8 +439,10 @@ div.-internal-media-controls-segmented-track .-internal-track-segment-background
     top: 50%;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before,
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-highlight-after,
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-highlight-before {
     height: auto;
     position: absolute;
     top: 50%;
@@ -443,11 +452,13 @@ div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-
     margin-top: -1px;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-after {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-highlight-after {
     background-color: #4285f4;
 }
 
-div.-internal-media-controls-segmented-track .-internal-track-segment-highlight-before {
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
+input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-highlight-before {
     background-color: #5a5a5a;
 }
 
