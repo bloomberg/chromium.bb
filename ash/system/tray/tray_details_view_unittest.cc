@@ -101,7 +101,7 @@ class TrayDetailsViewTest : public AshTestBase {
     SystemTray* tray = GetPrimarySystemTray();
     TestItem* test_item = new TestItem;
     tray->AddTrayItem(base::WrapUnique(test_item));
-    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+    tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
     RunAllPendingInMessageLoop();
     tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
     RunAllPendingInMessageLoop();
@@ -153,7 +153,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
   ASSERT_TRUE(test_item_2->tray_view() != NULL);
 
   // Show the default view.
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
 
   // Show the detailed view of item 2.
@@ -193,7 +193,7 @@ TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
   SystemTray* tray = GetPrimarySystemTray();
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(base::WrapUnique(test_item));
-  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();

@@ -43,7 +43,8 @@ ash::TrayCast* GetTrayCast() {
 
   // Make sure we actually popup the tray, otherwise the TrayCast instance will
   // not be created.
-  tray->ShowDefaultView(ash::BubbleCreationType::BUBBLE_CREATE_NEW);
+  tray->ShowDefaultView(ash::BubbleCreationType::BUBBLE_CREATE_NEW,
+                        false /* show_by_click */);
 
   return ash::SystemTrayTestApi(tray).tray_cast();
 }

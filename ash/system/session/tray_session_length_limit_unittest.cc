@@ -65,20 +65,20 @@ TEST_F(TraySessionLengthLimitTest, Visibility) {
   SystemTray* system_tray = GetPrimarySystemTray();
 
   // By default there is no session length limit item.
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_FALSE(GetSessionLengthLimitTrayView());
   system_tray->CloseBubble();
 
   // Setting a length limit shows an item in the system tray menu.
   UpdateSessionLengthLimitInMin(10);
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   ASSERT_TRUE(GetSessionLengthLimitTrayView());
   EXPECT_TRUE(GetSessionLengthLimitTrayView()->visible());
   system_tray->CloseBubble();
 
   // Removing the session length limit removes the tray menu item.
   UpdateSessionLengthLimitInMin(0);
-  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   EXPECT_FALSE(GetSessionLengthLimitTrayView());
   system_tray->CloseBubble();
 }

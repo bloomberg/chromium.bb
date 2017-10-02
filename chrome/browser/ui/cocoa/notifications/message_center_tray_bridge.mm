@@ -40,7 +40,7 @@ void MessageCenterTrayBridge::HidePopups() {
   popup_collection_.reset();
 }
 
-bool MessageCenterTrayBridge::ShowMessageCenter() {
+bool MessageCenterTrayBridge::ShowMessageCenter(bool show_by_click) {
   return false;
 }
 

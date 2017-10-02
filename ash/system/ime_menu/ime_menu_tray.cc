@@ -325,7 +325,7 @@ ImeMenuTray::~ImeMenuTray() {
     keyboard_controller->RemoveObserver(this);
 }
 
-void ImeMenuTray::ShowImeMenuBubbleInternal() {
+void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   views::TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
@@ -334,6 +334,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
+  init_params.show_by_click = show_by_click;
 
   views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
@@ -447,7 +448,7 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
   if (bubble_)
     CloseBubble();
   else
-    ShowBubble();
+    ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
   return true;
 }
 
@@ -458,7 +459,7 @@ void ImeMenuTray::CloseBubble() {
   shelf()->UpdateAutoHideState();
 }
 
-void ImeMenuTray::ShowBubble() {
+void ImeMenuTray::ShowBubble(bool show_by_click) {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller && keyboard_controller->keyboard_visible()) {
@@ -468,7 +469,7 @@ void ImeMenuTray::ShowBubble() {
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
   } else {
     base::RecordAction(base::UserMetricsAction("Tray_ImeMenu_Opened"));
-    ShowImeMenuBubbleInternal();
+    ShowImeMenuBubbleInternal(show_by_click);
   }
 }
 
@@ -535,7 +536,7 @@ void ImeMenuTray::OnKeyboardHidden() {
     if (keyboard_controller)
       keyboard_controller->RemoveObserver(this);
 
-    ShowImeMenuBubbleInternal();
+    ShowImeMenuBubbleInternal(false /* show_by_click */);
     return;
   }
 

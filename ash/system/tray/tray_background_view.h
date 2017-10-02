@@ -67,8 +67,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // showing.
   virtual void CloseBubble();
 
-  // Shows the associated tray bubble if one exists.
-  virtual void ShowBubble();
+  // Shows the associated tray bubble if one exists. |show_by_click| indicates
+  // whether the showing operation is initiated by mouse or gesture click.
+  virtual void ShowBubble(bool show_by_click);
 
   // Called whenever the shelf alignment changes.
   virtual void UpdateAfterShelfAlignmentChange();

@@ -91,6 +91,8 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     int max_width = 0;
     int max_height = 0;
     bool close_on_deactivate = true;
+    // Indicates whether tray bubble view is shown by click on the tray view.
+    bool show_by_click = false;
     // If not provided, the bg color will be derived from the NativeTheme.
     base::Optional<SkColor> bg_color;
   };

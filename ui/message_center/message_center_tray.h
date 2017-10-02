@@ -30,10 +30,11 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
                     message_center::MessageCenter* message_center);
   ~MessageCenterTray() override;
 
-  // Shows or updates the message center bubble and hides the popup bubble.
+  // Shows or updates the message center bubble and hides the popup bubble. Set
+  // |show_by_click| to true if bubble is shown by mouse or gesture click.
   // Returns whether the message center is visible after the call, whether or
   // not it was visible before.
-  bool ShowMessageCenterBubble();
+  bool ShowMessageCenterBubble(bool show_by_click);
 
   // Hides the message center if visible and returns whether the message center
   // was visible before.

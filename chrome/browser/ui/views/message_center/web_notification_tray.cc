@@ -46,7 +46,7 @@ void WebNotificationTray::HidePopups() {
   popup_collection_->MarkAllPopupsShown();
 }
 
-bool WebNotificationTray::ShowMessageCenter() {
+bool WebNotificationTray::ShowMessageCenter(bool show_by_click) {
   // Message center not available on Windows/Linux.
   return false;
 }

@@ -403,7 +403,7 @@ void HandleToggleMessageCenterBubble() {
   if (notification_tray->IsMessageCenterBubbleVisible())
     notification_tray->CloseBubble();
   else
-    notification_tray->ShowBubble();
+    notification_tray->ShowBubble(false /* show_by_click */);
 }
 
 void HandleToggleSystemTrayBubble() {
@@ -414,7 +414,7 @@ void HandleToggleSystemTrayBubble() {
   if (tray->HasSystemBubble()) {
     tray->CloseBubble();
   } else {
-    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+    tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
     tray->ActivateBubble();
   }
 }
@@ -542,7 +542,7 @@ void HandleShowImeMenuBubble() {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
     if (ime_menu_tray && ime_menu_tray->visible() &&
         !ime_menu_tray->GetBubbleView()) {
-      ime_menu_tray->ShowBubble();
+      ime_menu_tray->ShowBubble(false /* show_by_click */);
     }
   }
 }
@@ -601,7 +601,7 @@ void HandleShowStylusTools() {
   Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
       ->GetStatusAreaWidget()
       ->palette_tray()
-      ->ShowBubble();
+      ->ShowBubble(false /* show_by_click */);
 }
 
 bool CanHandleShowStylusTools() {

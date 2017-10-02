@@ -15,6 +15,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
@@ -1117,10 +1118,6 @@ TEST_F(LockStateControllerTest, CancelClamshellDisplayOffAfterLock) {
 }
 
 TEST_F(LockStateControllerTest, Screenshot) {
-  // TODO: fails because of no screenshot in mash. http://crbug.com/698033.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   delegate->set_can_take_screenshot(true);
 
@@ -1164,6 +1161,30 @@ TEST_F(LockStateControllerTest, Screenshot) {
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+}
+
+// Tests that volume down key event is properly handled by power button
+// controller when system tray bubble is shown. This is a regression test for
+// crbug.com/765473.
+TEST_F(LockStateControllerTest, VolumeDownKeyWithTrayBubbleShown) {
+  TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+  delegate->set_can_take_screenshot(true);
+  EnableTabletMode(true);
+
+  ASSERT_EQ(0, delegate->handle_take_screenshot_count());
+  // Simulate that pressing volume down key triggers volume bubble view.
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  SystemTray* tray = GetPrimarySystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
+  // Release volume down key while tray bubble is still shown.
+  ASSERT_TRUE(tray->IsSystemBubbleVisible());
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
+  tray->CloseBubble();
+  EXPECT_FALSE(tray->IsSystemBubbleVisible());
+  // Now press power button, verify that it doesn't do screenshot.
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 }
 
 }  // namespace ash

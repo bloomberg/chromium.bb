@@ -284,7 +284,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   if (palette_delegate->ShouldAutoOpenPalette()) {
     if (stylus_state == ui::StylusState::REMOVED && !bubble_) {
       is_bubble_auto_opened_ = true;
-      ShowBubble();
+      ShowBubble(false /* show_by_click */);
     } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
       HidePalette();
     }
@@ -417,7 +417,7 @@ bool PaletteTray::PerformAction(const ui::Event& event) {
     return true;
   }
 
-  ShowBubble();
+  ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
   return true;
 }
 
@@ -425,7 +425,7 @@ void PaletteTray::CloseBubble() {
   HidePalette();
 }
 
-void PaletteTray::ShowBubble() {
+void PaletteTray::ShowBubble(bool show_by_click) {
   if (bubble_)
     return;
 
@@ -443,6 +443,7 @@ void PaletteTray::ShowBubble() {
   init_params.min_width = kPaletteWidth;
   init_params.max_width = kPaletteWidth;
   init_params.close_on_deactivate = true;
+  init_params.show_by_click = show_by_click;
 
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu

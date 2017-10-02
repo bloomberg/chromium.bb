@@ -352,15 +352,16 @@ std::vector<SystemTrayItem*> SystemTray::GetTrayItems() const {
   return result;
 }
 
-void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
+void SystemTray::ShowDefaultView(BubbleCreationType creation_type,
+                                 bool show_by_click) {
   if (creation_type != BUBBLE_USE_EXISTING)
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_MENU_OPENED);
-  ShowItems(GetTrayItems(), false, true, creation_type, false);
+  ShowItems(GetTrayItems(), false, true, creation_type, false, show_by_click);
 }
 
 void SystemTray::ShowPersistentDefaultView() {
-  ShowItems(GetTrayItems(), false, false, BUBBLE_CREATE_NEW, true);
+  ShowItems(GetTrayItems(), false, false, BUBBLE_CREATE_NEW, true, false);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -374,7 +375,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   bool persistent =
       (!activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, persistent);
+  ShowItems(items, true, activate, creation_type, persistent, false);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -482,7 +483,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool can_activate,
                            BubbleCreationType creation_type,
-                           bool persistent) {
+                           bool persistent,
+                           bool show_by_click) {
   // No system tray bubbles in kiosk app mode.
   if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return;
@@ -515,6 +517,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // the user presses Tab. For behavioral consistency with the non-activatable
     // scenario, don't close on deactivation after Tab either.
     init_params.close_on_deactivate = false;
+    init_params.show_by_click = show_by_click;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
@@ -626,7 +629,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
   if (HasSystemBubble() && full_system_tray_menu_) {
     system_bubble_->bubble()->Close();
   } else {
-    ShowDefaultView(BUBBLE_CREATE_NEW);
+    ShowBubble(event.IsMouseEvent() || event.IsGestureEvent());
     if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
       ActivateBubble();
   }
@@ -639,8 +642,8 @@ void SystemTray::CloseBubble() {
   system_bubble_->bubble()->Close();
 }
 
-void SystemTray::ShowBubble() {
-  ShowDefaultView(BUBBLE_CREATE_NEW);
+void SystemTray::ShowBubble(bool show_by_click) {
+  ShowDefaultView(BUBBLE_CREATE_NEW, show_by_click);
 }
 
 views::TrayBubbleView* SystemTray::GetBubbleView() {
