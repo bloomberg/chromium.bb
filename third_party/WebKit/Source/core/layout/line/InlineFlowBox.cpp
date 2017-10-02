@@ -1277,8 +1277,10 @@ void InlineFlowBox::ComputeOverflow(
           flow->LogicalLayoutOverflowRect(line_top, line_bottom);
       child_layout_overflow.Unite(
           LogicalFrameRectIncludingLineHeight(line_top, line_bottom));
-      child_layout_overflow.Move(
-          flow->BoxModelObject().RelativePositionLogicalOffset());
+      if (flow->BoxModelObject().IsRelPositioned()) {
+        child_layout_overflow.Move(
+            flow->BoxModelObject().RelativePositionLogicalOffset());
+      }
       logical_layout_overflow.Unite(child_layout_overflow);
     } else {
       AddReplacedChildOverflow(curr, logical_layout_overflow,
@@ -1504,7 +1506,7 @@ LayoutUnit InlineFlowBox::PlaceEllipsisBox(bool ltr,
   // otherwise iterate from right to left. Varying the order allows us to
   // correctly hide the boxes following the ellipsis.
   LayoutUnit relative_offset =
-      BoxModelObject().IsInline()
+      BoxModelObject().IsInline() && BoxModelObject().IsRelPositioned()
           ? BoxModelObject().RelativePositionLogicalOffset().Width()
           : LayoutUnit();
   logical_left_offset += relative_offset;
