@@ -573,6 +573,7 @@ group("gn_all") {
       "//base:pe_image_test",
       "//chrome/install_static:install_static_unittests",
       "//chrome/installer/setup:setup_unittests",
+      "//chrome_elf:chrome_elf_import_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
       "//cloud_print:cloud_print_unittests",
