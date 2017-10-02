@@ -81,7 +81,9 @@ class UiTexture {
       TextAlignment text_alignment,
       WrappingBehavior wrapping_behavior);
 
-  static std::unique_ptr<gfx::RenderText> CreateRenderText(
+  static std::unique_ptr<gfx::RenderText> CreateRenderText();
+
+  static std::unique_ptr<gfx::RenderText> CreateConfiguredRenderText(
       const base::string16& text,
       const gfx::FontList& font_list,
       SkColor color,

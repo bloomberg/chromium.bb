@@ -249,8 +249,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     if (!GetFontList(pixel_font_height, chip_text, &font_list))
       failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
-    std::unique_ptr<gfx::RenderText> render_text(
-        gfx::RenderText::CreateInstance());
+    std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
     render_text->SetFontList(font_list);
     render_text->SetColor(chip_color);
     render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -312,8 +311,7 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
   if (!GetFontList(pixel_font_height, text, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
   render_text->SetFontList(font_list);
   render_text->SetColor(SK_ColorBLACK);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
