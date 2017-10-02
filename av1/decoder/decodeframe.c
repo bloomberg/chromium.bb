@@ -4856,6 +4856,17 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
         const int idx = cm->ref_frame_map[ref];
+
+        // Most of the time, streams start with a keyframe. In that case,
+        // ref_frame_map will have been filled in at that point and will not
+        // contain any -1's. However, streams are explicitly allowed to start
+        // with an intra-only frame, so long as they don't then signal a
+        // reference to a slot that hasn't been set yet. That's what we are
+        // checking here.
+        if (idx == -1)
+          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                             "Inter frame requests nonexistent reference");
+
         RefBuffer *const ref_frame = &cm->frame_refs[i];
         ref_frame->idx = idx;
         ref_frame->buf = &frame_bufs[idx].buf;
