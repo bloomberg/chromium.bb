@@ -42,6 +42,7 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
   int size = ((cm->mi_rows >> MAX_MIB_SIZE_LOG2) + 1) *
              ((cm->mi_cols >> MAX_MIB_SIZE_LOG2) + 1);
 
+  av1_free_txb_buf(cpi);
   // TODO(jingning): This should be further reduced.
   CHECK_MEM_ERROR(cm, cpi->coeff_buffer_base,
                   aom_malloc(sizeof(*cpi->coeff_buffer_base) * size));
