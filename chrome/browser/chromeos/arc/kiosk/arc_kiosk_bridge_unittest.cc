@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/arc/arc_bridge_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,8 +27,8 @@ namespace arc {
 class ArcKioskBridgeTest : public testing::Test {
  public:
   ArcKioskBridgeTest()
-      : bridge_service_(base::MakeUnique<ArcBridgeService>()),
-        delegate_(base::MakeUnique<MockArcKioskBridgeDelegate>()),
+      : bridge_service_(std::make_unique<ArcBridgeService>()),
+        delegate_(std::make_unique<MockArcKioskBridgeDelegate>()),
         kiosk_bridge_(ArcKioskBridge::CreateForTesting(bridge_service_.get(),
                                                        delegate_.get())) {}
 

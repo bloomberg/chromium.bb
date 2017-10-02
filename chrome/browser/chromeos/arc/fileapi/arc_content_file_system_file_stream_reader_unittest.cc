@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
@@ -77,8 +76,8 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
     fake_file_system_.AddFile(
         File(kArcUrlPipe, kData, kMimeType, File::Seekable::NO));
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    profile_ = base::MakeUnique<TestingProfile>();
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    profile_ = std::make_unique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
     ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
         profile_.get(), &CreateFileSystemOperationRunnerForTesting);

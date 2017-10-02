@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
@@ -124,8 +123,8 @@ class ArcDocumentsProviderRootTest : public testing::Test {
       fake_file_system_.AddDocument(ToDocument(spec));
     }
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    profile_ = base::MakeUnique<TestingProfile>();
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    profile_ = std::make_unique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
     ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
         profile_.get(), &CreateFileSystemOperationRunnerForTesting);
@@ -136,7 +135,7 @@ class ArcDocumentsProviderRootTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_file_system_.InitCalled());
 
-    root_ = base::MakeUnique<ArcDocumentsProviderRoot>(
+    root_ = std::make_unique<ArcDocumentsProviderRoot>(
         ArcFileSystemOperationRunner::GetForBrowserContext(profile_.get()),
         kAuthority, kRootSpec.document_id);
   }

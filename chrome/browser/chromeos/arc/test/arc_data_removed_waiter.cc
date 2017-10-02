@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 
 namespace arc {
@@ -18,7 +17,7 @@ ArcDataRemovedWaiter::~ArcDataRemovedWaiter() {
 }
 
 void ArcDataRemovedWaiter::Wait() {
-  run_loop_ = base::MakeUnique<base::RunLoop>();
+  run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
   run_loop_.reset();
 }

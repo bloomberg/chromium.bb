@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -13,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -146,7 +144,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   }
 
   std::unique_ptr<base::ListValue> ca_certs(
-      base::MakeUnique<base::ListValue>());
+      std::make_unique<base::ListValue>());
   for (const auto& entry : certificates) {
     const base::DictionaryValue* certificate = nullptr;
     if (!entry.GetAsDictionary(&certificate)) {

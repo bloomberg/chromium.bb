@@ -138,7 +138,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnIsSyncingChanged() {
     return;
   }
 
-  auth_notification_ = base::MakeUnique<ArcAuthNotification>(profile_);
+  auth_notification_ = std::make_unique<ArcAuthNotification>(profile_);
 }
 
 }  // namespace arc

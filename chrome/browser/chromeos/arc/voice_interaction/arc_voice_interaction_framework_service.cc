@@ -107,7 +107,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
                          if (blocked_layers.count(owner->layer()->parent()))
                            return nullptr;
                          if (blocked_layers.count(owner->layer())) {
-                           auto layer = base::MakeUnique<ui::Layer>(
+                           auto layer = std::make_unique<ui::Layer>(
                                ui::LayerType::LAYER_SOLID_COLOR);
                            layer->SetBounds(owner->layer()->bounds());
                            layer->SetColor(SK_ColorBLACK);

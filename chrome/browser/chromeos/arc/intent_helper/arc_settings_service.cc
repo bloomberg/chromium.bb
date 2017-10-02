@@ -678,7 +678,7 @@ ArcSettingsService::~ArcSettingsService() {
 
 void ArcSettingsService::OnInstanceReady() {
   impl_ =
-      base::MakeUnique<ArcSettingsServiceImpl>(context_, arc_bridge_service_);
+      std::make_unique<ArcSettingsServiceImpl>(context_, arc_bridge_service_);
 }
 
 void ArcSettingsService::OnInstanceClosed() {

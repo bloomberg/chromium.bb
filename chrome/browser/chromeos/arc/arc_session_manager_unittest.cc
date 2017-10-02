@@ -14,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -159,7 +158,7 @@ class ArcSessionManagerTestBase : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::MakeUnique<chromeos::FakeSessionManagerClient>());
+        std::make_unique<chromeos::FakeSessionManagerClient>());
 
     chromeos::DBusThreadManager::Initialize();
 
@@ -176,9 +175,9 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    arc_service_manager_ = base::MakeUnique<ArcServiceManager>();
-    arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    arc_session_manager_ = std::make_unique<ArcSessionManager>(
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
     // Check initial conditions.
     EXPECT_TRUE(arc_session_manager_->IsSessionStopped());
@@ -223,8 +222,8 @@ class ArcSessionManagerTestBase : public testing::Test {
         ->GetSyncableService(syncer::PREFERENCES)
         ->MergeDataAndStartSyncing(
             syncer::PREFERENCES, syncer::SyncDataList(),
-            base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
-            base::MakeUnique<syncer::SyncErrorFactoryMock>());
+            std::make_unique<syncer::FakeSyncChangeProcessor>(),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -686,7 +685,7 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   // Enable ARC through user pref or by policy, according to the test parameter.
   if (arc_enabled_pref_managed())
     prefs->SetManagedPref(prefs::kArcEnabled,
-                          base::MakeUnique<base::Value>(true));
+                          std::make_unique<base::Value>(true));
   else
     prefs->SetBoolean(prefs::kArcEnabled, true);
   EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
@@ -750,7 +749,7 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
 
   // Set ARC to be managed.
   prefs->SetManagedPref(prefs::kArcEnabled,
-                        base::MakeUnique<base::Value>(true));
+                        std::make_unique<base::Value>(true));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
 
   arc_session_manager()->SetProfile(profile());
@@ -829,7 +828,7 @@ class ArcSessionOobeOptInTest : public ArcSessionManagerTest {
 
  protected:
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ = base::MakeUnique<FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<FakeLoginDisplayHost>();
   }
 
   FakeLoginDisplayHost* login_display_host() {
@@ -889,7 +888,7 @@ class ArcSessionOobeOptInNegotiatorTest
       connector->OverrideIsManagedForTesting(true);
 
       profile()->GetTestingPrefService()->SetManagedPref(
-          prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
+          prefs::kArcEnabled, std::make_unique<base::Value>(true));
     }
 
     arc_session_manager()->SetProfile(profile());

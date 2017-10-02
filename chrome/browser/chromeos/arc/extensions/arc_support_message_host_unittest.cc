@@ -11,7 +11,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -65,7 +64,7 @@ class ArcSupportMessageHostTest : public testing::Test {
   ~ArcSupportMessageHostTest() override = default;
 
   void SetUp() override {
-    client_ = base::MakeUnique<TestClient>();
+    client_ = std::make_unique<TestClient>();
     message_host_ = ArcSupportMessageHost::Create();
     message_host_->Start(client_.get());
   }

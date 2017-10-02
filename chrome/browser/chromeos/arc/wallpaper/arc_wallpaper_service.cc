@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -202,7 +201,7 @@ void ArcWallpaperService::SetWallpaper(const std::vector<uint8_t>& data,
     wallpaper_id = -1;
   // Previous request will be cancelled at destructor of
   // ImageDecoder::ImageRequest.
-  decode_request_ = base::MakeUnique<DecodeRequest>(this, wallpaper_id);
+  decode_request_ = std::make_unique<DecodeRequest>(this, wallpaper_id);
   ImageDecoder::StartWithOptions(decode_request_.get(), data,
                                  ImageDecoder::DEFAULT_CODEC, true,
                                  gfx::Size());

@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -306,7 +305,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
         (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
          AreArcAllOptInPreferencesIgnorableForProfile(profile_));
     if (!suppress_play_store_app) {
-      playstore_launcher_ = base::MakeUnique<ArcAppLauncher>(
+      playstore_launcher_ = std::make_unique<ArcAppLauncher>(
           profile_, kPlayStoreAppId,
           GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
                           {kInitialStartParam}),
@@ -414,7 +413,7 @@ void ArcSessionManager::Initialize() {
   if (!g_disable_ui_for_testing && !IsArcOptInVerificationDisabled() &&
       !IsArcKioskMode()) {
     DCHECK(!support_host_);
-    support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
+    support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
   data_remover_ = std::make_unique<ArcDataRemover>(
@@ -422,7 +421,7 @@ void ArcSessionManager::Initialize() {
       cryptohome::Identification(
           multi_user_util::GetAccountIdFromProfile(profile_)));
 
-  context_ = base::MakeUnique<ArcAuthContext>(profile_);
+  context_ = std::make_unique<ArcAuthContext>(profile_);
 
   if (!g_disable_ui_for_testing ||
       g_enable_check_android_management_for_testing) {
@@ -731,7 +730,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   // Move to RequestEnabledImpl.
   if (!scoped_opt_in_tracker_ &&
       !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
-    scoped_opt_in_tracker_ = base::MakeUnique<ScopedOptInFlowTracker>();
+    scoped_opt_in_tracker_ = std::make_unique<ScopedOptInFlowTracker>();
   }
 
   if (!IsArcTermsOfServiceNegotiationNeeded()) {
@@ -744,11 +743,11 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   if (IsOobeOptInActive()) {
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
-        base::MakeUnique<ArcTermsOfServiceOobeNegotiator>();
+        std::make_unique<ArcTermsOfServiceOobeNegotiator>();
   } else if (support_host_) {
     VLOG(1) << "Use default negotiator.";
     terms_of_service_negotiator_ =
-        base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
+        std::make_unique<ArcTermsOfServiceDefaultNegotiator>(
             profile_->GetPrefs(), support_host_.get());
   }
 
@@ -833,7 +832,7 @@ void ArcSessionManager::StartAndroidManagementCheck() {
   if (g_disable_ui_for_testing)
     return;
 
-  android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
+  android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
       profile_, context_->token_service(), context_->account_id(),
       false /* retry_on_error */);
   android_management_checker_->StartCheck(
@@ -888,7 +887,7 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
     return;
   }
 
-  android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
+  android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
       profile_, context_->token_service(), context_->account_id(),
       true /* retry_on_error */);
   android_management_checker_->StartCheck(

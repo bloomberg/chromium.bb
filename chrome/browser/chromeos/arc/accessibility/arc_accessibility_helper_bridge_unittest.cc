@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
@@ -58,12 +59,12 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
   ArcAccessibilityHelperBridgeTest() = default;
 
   void SetUp() override {
-    wm_helper_ = base::MakeUnique<FakeWMHelper>();
+    wm_helper_ = std::make_unique<FakeWMHelper>();
     exo::WMHelper::SetInstance(wm_helper_.get());
-    testing_profile_ = base::MakeUnique<TestingProfile>();
-    bridge_service_ = base::MakeUnique<ArcBridgeService>();
+    testing_profile_ = std::make_unique<TestingProfile>();
+    bridge_service_ = std::make_unique<ArcBridgeService>();
     accessibility_helper_bridge_ =
-        base::MakeUnique<ArcAccessibilityHelperBridge>(testing_profile_.get(),
+        std::make_unique<ArcAccessibilityHelperBridge>(testing_profile_.get(),
                                                        bridge_service_.get());
   }
 

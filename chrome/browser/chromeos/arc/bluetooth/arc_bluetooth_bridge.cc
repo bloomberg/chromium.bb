@@ -20,7 +20,6 @@
 #include "base/containers/queue.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -376,9 +375,9 @@ ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
   arc_bridge_service_->bluetooth()->AddObserver(this);
 
   app_observer_ =
-      base::MakeUnique<AppInstanceObserver>(this, arc_bridge_service_);
+      std::make_unique<AppInstanceObserver>(this, arc_bridge_service_);
   intent_helper_observer_ =
-      base::MakeUnique<IntentHelperInstanceObserver>(this, arc_bridge_service_);
+      std::make_unique<IntentHelperInstanceObserver>(this, arc_bridge_service_);
 
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
@@ -1192,7 +1191,7 @@ void ArcBluetoothBridge::StartLEScan() {
     return;
   }
   bluetooth_adapter_->StartDiscoverySessionWithFilter(
-      base::MakeUnique<BluetoothDiscoveryFilter>(
+      std::make_unique<BluetoothDiscoveryFilter>(
           device::BLUETOOTH_TRANSPORT_LE),
       base::Bind(&ArcBluetoothBridge::OnDiscoveryStarted,
                  weak_factory_.GetWeakPtr()),
@@ -1345,7 +1344,7 @@ void ArcBluetoothBridge::OnStartLEListenError(
 void ArcBluetoothBridge::StartLEListen(StartLEListenCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::unique_ptr<BluetoothAdvertisement::Data> adv_data =
-      base::MakeUnique<BluetoothAdvertisement::Data>(
+      std::make_unique<BluetoothAdvertisement::Data>(
           BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.

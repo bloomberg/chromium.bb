@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
@@ -38,7 +37,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::MakeUnique<chromeos::FakeSessionManagerClient>());
+        std::make_unique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
 
     SetArcAvailableCommandLineForTesting(
@@ -52,10 +51,10 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_ = profile_builder.Build();
 
-    arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    arc_session_manager_ = std::make_unique<ArcSessionManager>(
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     preference_handler_ =
-        base::MakeUnique<ArcPlayStoreEnabledPreferenceHandler>(
+        std::make_unique<ArcPlayStoreEnabledPreferenceHandler>(
             profile_.get(), arc_session_manager_.get());
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         profile()->GetProfileUserName(), "1234567890"));
@@ -131,7 +130,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest,
 TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, RemoveDataDir_Managed) {
   // Set ARC to be managed and disabled.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
+      prefs::kArcEnabled, std::make_unique<base::Value>(false));
 
   // Starting session manager with prefs::kArcEnabled off in a managed profile
   // does automatically remove Android's data folder.

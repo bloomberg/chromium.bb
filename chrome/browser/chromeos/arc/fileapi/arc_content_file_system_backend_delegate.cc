@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
@@ -37,7 +36,7 @@ ArcContentFileSystemBackendDelegate::CreateFileStreamReader(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcContent, url.type());
   GURL arc_url = FileSystemUrlToArcUrl(url);
-  return base::MakeUnique<ArcContentFileSystemFileStreamReader>(arc_url,
+  return std::make_unique<ArcContentFileSystemFileStreamReader>(arc_url,
                                                                 offset);
 }
 

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 
 namespace arc {
@@ -26,7 +25,7 @@ ArcTermsOfServiceDefaultNegotiator::~ArcTermsOfServiceDefaultNegotiator() {
 void ArcTermsOfServiceDefaultNegotiator::StartNegotiationImpl() {
   DCHECK(!preference_handler_);
   preference_handler_ =
-      base::MakeUnique<ArcOptInPreferenceHandler>(this, pref_service_);
+      std::make_unique<ArcOptInPreferenceHandler>(this, pref_service_);
   // This automatically updates all preferences.
   preference_handler_->Start();
 

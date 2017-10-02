@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -141,7 +141,7 @@ void GpuArcVideoServiceHost::OnBootstrapVideoAcceleratorFactory(
   std::move(callback).Run(std::move(child_handle), token);
 
   mojo::MakeStrongBinding(
-      base::MakeUnique<VideoAcceleratorFactoryService>(),
+      std::make_unique<VideoAcceleratorFactoryService>(),
       mojom::VideoAcceleratorFactoryRequest(std::move(server_pipe)));
 }
 

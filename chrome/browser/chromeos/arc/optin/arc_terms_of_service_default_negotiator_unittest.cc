@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -32,14 +31,14 @@ class ArcTermsOfServiceDefaultNegotiatorTest : public testing::Test {
 
   void SetUp() override {
     user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+        std::make_unique<chromeos::ScopedUserManagerEnabler>(
             new chromeos::FakeChromeUserManager());
 
-    profile_ = base::MakeUnique<TestingProfile>();
+    profile_ = std::make_unique<TestingProfile>();
 
-    support_host_ = base::MakeUnique<ArcSupportHost>(profile_.get());
-    fake_arc_support_ = base::MakeUnique<FakeArcSupport>(support_host_.get());
-    negotiator_ = base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
+    support_host_ = std::make_unique<ArcSupportHost>(profile_.get());
+    fake_arc_support_ = std::make_unique<FakeArcSupport>(support_host_.get());
+    negotiator_ = std::make_unique<ArcTermsOfServiceDefaultNegotiator>(
         profile_->GetPrefs(), support_host());
   }
 
@@ -124,10 +123,10 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
   // The preferences are assigned to the managed false value, and the
   // corresponding checkboxes are unchecked.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, base::MakeUnique<base::Value>(false));
+      prefs::kArcBackupRestoreEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(fake_arc_support()->backup_and_restore_mode());
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
+      prefs::kArcLocationServiceEnabled, std::make_unique<base::Value>(false));
   EXPECT_FALSE(fake_arc_support()->location_service_mode());
 
   // The managed preference values are removed, and the corresponding checkboxes
