@@ -17,12 +17,8 @@ enum VoiceInteractionState {
 
 // Handles voice interaction queries from Android.
 // Next method ID: 6
+// Deprecated method ID: 0
 interface VoiceInteractionFrameworkHost {
-  // Returns a screenshot of currently focused window or empty array if
-  // no window is focused. |data| represents the image encoded in JPEG
-  // format.
-  CaptureFocusedWindow@0() => (array<uint8> data);
-
   // Returns a fullscreen screenshot of the primary display.
   // |data| represents the image encoded in JPEG format.
   [MinVersion=1]CaptureFullscreen@1() => (array<uint8> data);

@@ -70,17 +70,6 @@ constexpr base::TimeDelta kMaxTimeSinceUserInteractionForHistogram =
 
 constexpr int32_t kContextRequestMaxRemainingCount = 2;
 
-void ScreenshotCallback(
-    mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback callback,
-    scoped_refptr<base::RefCountedMemory> data) {
-  if (data.get() == nullptr) {
-    std::move(callback).Run(std::vector<uint8_t>{});
-    return;
-  }
-  std::vector<uint8_t> result(data->front(), data->front() + data->size());
-  std::move(callback).Run(result);
-}
-
 std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
     aura::Window* root_window) {
   LayerSet blocked_layers;
@@ -241,27 +230,6 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-}
-
-void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
-    CaptureFocusedWindowCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!ValidateTimeSinceUserInteraction()) {
-    std::move(callback).Run(std::vector<uint8_t>{});
-    return;
-  }
-
-  aura::Window* window =
-      ash::Shell::Get()->activation_client()->GetActiveWindow();
-
-  if (window == nullptr) {
-    std::move(callback).Run(std::vector<uint8_t>{});
-    return;
-  }
-  ui::GrabWindowSnapshotAsyncJPEG(
-      window, gfx::Rect(window->bounds().size()),
-      base::Bind(&ScreenshotCallback, base::Passed(std::move(callback))));
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
