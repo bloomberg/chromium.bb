@@ -68,3 +68,6 @@ SettingsResetPromptModelBrowserTest.*
 -SBNavigationObserverBrowserTest.VerifySanitizeReferrerChain
 -SBNavigationObserverBrowserTest.WindowLocationRedirect
 -SafeBrowsingServiceTest.MalwareWebSocketBlocked
+
+# crbug.com/770621
+- NavigationControllerBrowserTest.BackSameDocumentAfterBlockedSubframe
