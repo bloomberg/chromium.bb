@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -30,11 +31,16 @@ class TabCollectionMediatorTest : public PlatformTest {
   TabCollectionMediatorTest() {
     SetUpWebStateList();
     mediator_ = [[TabCollectionMediator alloc] init];
+    snapshot_cache_ = [[SnapshotCache alloc] init];
+    mediator_.snapshotCache = snapshot_cache_;
     mediator_.webStateList = web_state_list_.get();
     consumer_ = OCMProtocolMock(@protocol(TabCollectionConsumer));
     mediator_.consumer = consumer_;
   }
-  ~TabCollectionMediatorTest() override { [mediator_ disconnect]; }
+  ~TabCollectionMediatorTest() override {
+    [mediator_ disconnect];
+    [snapshot_cache_ shutdown];
+  }
 
  protected:
   void SetUpWebStateList() {
@@ -60,7 +66,13 @@ class TabCollectionMediatorTest : public PlatformTest {
         web_state_list_->GetWebStateAt(index));
   }
 
+  NSString* GetTabIdAt(int index) {
+    return TabIdTabHelper::FromWebState(GetWebStateAt(index))->tab_id();
+  }
+
+  base::test::ScopedTaskEnvironment task_environment_;
   TabCollectionMediator* mediator_;
+  SnapshotCache* snapshot_cache_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
   id consumer_;
@@ -107,15 +119,7 @@ TEST_F(TabCollectionMediatorTest, TestChangeActiveWebState) {
 }
 
 // Tests that the consumer is notified that a snapshot has been updated.
-TEST_F(TabCollectionMediatorTest, TestTakeSnapshot) {
-  web::TestWebState* web_state = GetWebStateAt(0);
-  TabIdTabHelper::CreateForWebState(web_state);
-  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
-  NSString* tab_id = tab_helper->tab_id();
-
-  id snapshot_cache = OCMClassMock([SnapshotCache class]);
-  [mediator_ takeSnapshotWithCache:snapshot_cache];
-
-  [[snapshot_cache verify] setImage:[OCMArg any] withSessionID:tab_id];
+TEST_F(TabCollectionMediatorTest, TestUpdateSnapshot) {
+  [snapshot_cache_ setImage:[[UIImage alloc] init] withSessionID:GetTabIdAt(0)];
   [[consumer_ verify] updateSnapshotAtIndex:0];
 }

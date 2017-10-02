@@ -34,6 +34,7 @@
 
 @synthesize webStateList = _webStateList;
 @synthesize consumer = _consumer;
+@synthesize snapshotCache = _snapshotCache;
 
 - (instancetype)init {
   self = [super init];
@@ -52,17 +53,15 @@
 
 #pragma mark - Public
 
-- (void)takeSnapshotWithCache:(SnapshotCache*)snapshotCache {
+- (void)takeSnapshot {
   web::WebState* webState = self.webStateList->GetActiveWebState();
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   DCHECK(tabHelper);
   NSString* tabID = tabHelper->tab_id();
-  int index = self.webStateList->active_index();
-  __weak TabCollectionMediator* weakSelf = self;
+  SnapshotCache* snapshotCache = self.snapshotCache;
   webState->TakeSnapshot(base::BindBlockArc(^(const gfx::Image& snapshot) {
                            [snapshotCache setImage:snapshot.ToUIImage()
                                      withSessionID:tabID];
-                           [weakSelf.consumer updateSnapshotAtIndex:index];
                          }),
                          kSnapshotThumbnailSize);
 }
@@ -71,6 +70,7 @@
   _webStateList = nullptr;
   _webStateObserver.reset();
   _scopedWebStateListObserver->RemoveAll();
+  self.snapshotCache = nil;
 }
 
 #pragma mark - Properties
@@ -89,6 +89,16 @@
   DCHECK(consumer);
   _consumer = consumer;
   [self populateConsumerItems];
+}
+
+- (void)setSnapshotCache:(SnapshotCache*)snapshotCache {
+  if (_snapshotCache) {
+    [_snapshotCache removeObserver:self];
+  }
+  _snapshotCache = snapshotCache;
+  if (snapshotCache) {
+    [snapshotCache addObserver:self];
+  }
 }
 
 #pragma mark - WebStateListObserving
@@ -153,6 +163,21 @@
   [self.consumer
       replaceItemAtIndex:index
                 withItem:[self tabCollectionItemFromWebState:webState]];
+}
+
+#pragma mark - SnapshotCacheObserver
+
+- (void)snapshotCache:(SnapshotCache*)snapshotCache
+    didUpdateSnapshotForTab:(NSString*)tabID {
+  for (int i = 0; i < self.webStateList->count(); i++) {
+    TabIdTabHelper* tabHelper =
+        TabIdTabHelper::FromWebState(self.webStateList->GetWebStateAt(i));
+    DCHECK(tabHelper);
+    if ([tabID isEqualToString:tabHelper->tab_id()]) {
+      [self.consumer updateSnapshotAtIndex:i];
+      return;
+    }
+  }
 }
 
 #pragma mark - Private
